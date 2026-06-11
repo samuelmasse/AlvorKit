@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Version>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/TAG').Trim())</Version>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>Zlib</PackageLicenseExpression>
+        <Description>RGFW $(Version) binaries for win-x64, linux-x64 and osx-arm64</Description>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/ColleagueRiley/RGFW</RepositoryUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\" />
+        <Content Include="runtimes\**" PackagePath="runtimes" Visible="false" />
+    </ItemGroup>
+
+</Project>

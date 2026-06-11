@@ -1,0 +1,82 @@
+name: RGFW native package
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["native/rgfw/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  build-win-x64:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pwsh native/rgfw/scripts/build-win64.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-x64
+          path: native/rgfw/runtimes/win-x64
+          if-no-files-found: error
+
+  build-linux-x64:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash native/rgfw/scripts/build-linux64.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64
+          path: native/rgfw/runtimes/linux-x64
+          if-no-files-found: error
+
+  build-osx-arm64:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash native/rgfw/scripts/build-osx-arm64.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: osx-arm64
+          path: native/rgfw/runtimes/osx-arm64
+          if-no-files-found: error
+
+  pack:
+    needs: [build-win-x64, build-linux-x64, build-osx-arm64]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # Each artifact lands in its own runtimes/<rid>/ subdirectory.
+      - uses: actions/download-artifact@v4
+        with:
+          path: native/rgfw/runtimes
+
+      - name: Fail if the TAG version is already on NuGet.org
+        run: |
+          VERSION=$(tr -d '[:space:]' < native/rgfw/TAG)
+          if curl -fsSL "https://api.nuget.org/v3-flatcontainer/alvorkit.rgfw.native/index.json" | grep -q "\"$VERSION\""; then
+            echo "::error::AlvorKit.RGFW.Native $VERSION is already published — bump native/rgfw/TAG."
+            exit 1
+          fi
+
+      - run: dotnet build -c Release native/rgfw/AlvorKit.RGFW.Native.csproj
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: native/rgfw/bin/Release/*.nupkg
+          if-no-files-found: error
+
+      - name: Publish to NuGet.org (push events only)
+        if: github.event_name == 'push'
+        run: >-
+          dotnet nuget push native/rgfw/bin/Release/*.nupkg
+          --api-key "${{ secrets.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
