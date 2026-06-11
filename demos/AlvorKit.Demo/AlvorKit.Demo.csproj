@@ -5,6 +5,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="BigGustave" Version="1.0.6" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.FreeType\AlvorKit.FreeType.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.MiniAudio\AlvorKit.MiniAudio.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.RGFW\AlvorKit.RGFW.csproj" />
     </ItemGroup>

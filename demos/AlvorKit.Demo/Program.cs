@@ -1,5 +1,44 @@
+using AlvorKit.FreeType;
 using AlvorKit.MiniAudio;
 using AlvorKit.RGFW;
+using BigGustave;
+
+// FreeType: render the letter 'a' from a downloaded font and export it as a PNG.
+var fontPath = Path.Combine(Path.GetTempPath(), "Inter.ttf");
+if (!File.Exists(fontPath))
+    File.WriteAllBytes(fontPath, await new HttpClient().GetByteArrayAsync(
+        "https://github.com/google/fonts/raw/main/ofl/inter/Inter%5Bopsz,wght%5D.ttf"));
+
+if (Ft.InitFreeType(out var freetype) != 0)
+{
+    Console.WriteLine("Failed to initialize FreeType.");
+    return 1;
+}
+if (Ft.NewFace(freetype, fontPath, new(0), out var face) != 0
+    || Ft.SetPixelSizes(face, 0, 64) != 0
+    || Ft.LoadChar(face, new('a'), Ft.LoadRender) != 0)
+{
+    Console.WriteLine("Failed to render the glyph.");
+    return 1;
+}
+
+var slot = Marshal.PtrToStructure<FtGlyphSlotRec>(Marshal.PtrToStructure<FtFaceRec>(face).Glyph);
+var bitmap = slot.Bitmap;
+var png = PngBuilder.Create((int)bitmap.Width, (int)bitmap.Rows, false);
+var row = new byte[bitmap.Width];
+for (var y = 0; y < bitmap.Rows; y++)
+{
+    Marshal.Copy(bitmap.Buffer + y * bitmap.Pitch, row, 0, row.Length);
+    for (var x = 0; x < row.Length; x++)
+        png.SetPixel(new Pixel(row[x], row[x], row[x]), x, y);
+}
+var pngPath = Path.GetFullPath("out/a.png");
+Directory.CreateDirectory("out");
+using (var stream = File.Create(pngPath))
+    png.Save(stream);
+Console.WriteLine($"Exported 'a' ({bitmap.Width}x{bitmap.Rows}, gray) to {pngPath}");
+Ft.DoneFace(face);
+Ft.DoneFreeType(freetype);
 
 var window = Rgfw.CreateWindow("AlvorKit.Demo", 0, 0, 800, 450, RgfwWindowFlags.Center);
 if (window == 0)
