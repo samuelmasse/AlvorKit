@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['native/miniaudio/**']
+    paths: ['native/miniaudio/TAG', 'native/miniaudio/REVISION', 'native/miniaudio/miniaudio.c', 'native/miniaudio/*.csproj', 'native/miniaudio/scripts/**']
 
 permissions:
   contents: read

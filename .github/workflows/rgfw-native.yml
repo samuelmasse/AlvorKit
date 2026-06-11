@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["native/rgfw/**"]
+    paths: ["native/rgfw/TAG", "native/rgfw/REVISION", "native/rgfw/rgfw.c", "native/rgfw/*.csproj", "native/rgfw/scripts/**"]
 
 permissions:
   contents: read

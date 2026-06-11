@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['native/freetype/**']
+    paths: ['native/freetype/TAG', 'native/freetype/REVISION', 'native/freetype/*.csproj', 'native/freetype/scripts/**']
 
 permissions:
   contents: read
