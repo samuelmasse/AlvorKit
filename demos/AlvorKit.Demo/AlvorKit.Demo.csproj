@@ -5,7 +5,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\AlvorKit\AlvorKit.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.RGFW\AlvorKit.RGFW.csproj" />
     </ItemGroup>
 
