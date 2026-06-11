@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 # Builds the RGFW linux-x64 binary for AlvorKit.RGFW.Native, at the tag pinned
 # in native/rgfw/TAG. Designed for Ubuntu 24.04.
-# Output: native/rgfw/runtimes/linux-x64/native/libRGFW.so
+# Output: native/rgfw/runtimes/linux-<arch>/native/libRGFW.so
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VERSION="$(tr -d '[:space:]' < "$SCRIPT_DIR/../TAG")"
 WORK_DIR="$HOME/rgfw-build"
 SRC_DIR="$WORK_DIR/RGFW-$VERSION"
-OUT_DIR="$SCRIPT_DIR/../runtimes/linux-x64/native"
+case "$(uname -m)" in
+    x86_64) RID="linux-x64" ;;
+    aarch64) RID="linux-arm64" ;;
+    *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+esac
+OUT_DIR="$SCRIPT_DIR/../runtimes/$RID/native"
 
 # Toolchain + X11 dev headers; RGFW dlopens optional extensions (Xcursor, Xi) at runtime.
 sudo apt-get update -qq

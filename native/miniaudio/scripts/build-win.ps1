@@ -1,6 +1,8 @@
 # Builds the miniaudio win-x64 binary for AlvorKit.MiniAudio.Native, at the tag
 # pinned in native/miniaudio/TAG. Requires Visual Studio with the C++ toolset.
-# Output: native/miniaudio/runtimes/win-x64/native/miniaudio.dll
+# Output: native/miniaudio/runtimes/win-<arch>/native/miniaudio.dll
+
+param([ValidateSet('x64', 'arm64')][string]$Arch = 'x64')
 
 $ErrorActionPreference = 'Stop'
 
@@ -9,13 +11,14 @@ $Version = (Get-Content "$ScriptDir\..\TAG" -Raw).Trim()
 $ImplFile = (Resolve-Path "$ScriptDir\..\miniaudio.c").Path
 $WorkDir = "$env:USERPROFILE\miniaudio-build"
 $SrcDir = "$WorkDir\miniaudio-$Version"
-$OutDir = "$ScriptDir\..\runtimes\win-x64\native"
+$OutDir = "$ScriptDir\..\runtimes\win-$Arch\native"
 
 # Enter the MSVC x64 dev environment (vswhere on PATH keeps Launch-VsDevShell quiet).
 $env:PATH = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer;$env:PATH"
-$VsPath = & vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-if (-not $VsPath) { throw 'No Visual Studio with the C++ toolset found.' }
-& "$VsPath\Common7\Tools\Launch-VsDevShell.ps1" -Arch amd64 -SkipAutomaticLocation | Out-Null
+$VcToolset = if ($Arch -eq 'arm64') { 'Microsoft.VisualStudio.Component.VC.Tools.ARM64' } else { 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' }
+$VsPath = & vswhere.exe -latest -products * -requires $VcToolset -property installationPath
+if (-not $VsPath) { throw "No Visual Studio with the $Arch C++ toolset found." }
+& "$VsPath\Common7\Tools\Launch-VsDevShell.ps1" -Arch $(if ($Arch -eq 'arm64') { 'arm64' } else { 'amd64' }) -SkipAutomaticLocation | Out-Null
 
 # Fetch the pinned source.
 New-Item -ItemType Directory -Force $WorkDir | Out-Null
@@ -28,7 +31,7 @@ if (-not (Test-Path $SrcDir)) {
 
 # Build. miniaudio loads its backends at runtime, so no extra link libraries;
 # /MT so the DLL needs no VC++ Redistributable. Only the DLL ships.
-Set-Location (New-Item -ItemType Directory -Force "$WorkDir\build-win64")
+Set-Location (New-Item -ItemType Directory -Force "$WorkDir\build-win-$Arch")
 cl /nologo /O2 /MT /LD /I $SrcDir /Fe:miniaudio.dll $ImplFile
 if ($LASTEXITCODE -ne 0) { throw "cl failed with exit code $LASTEXITCODE." }
 Copy-Item miniaudio.dll "$OutDir\miniaudio.dll" -Force

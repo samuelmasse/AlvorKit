@@ -1,6 +1,8 @@
 # Builds the RGFW win-x64 binary for AlvorKit.RGFW.Native, at the tag pinned in
 # native/rgfw/TAG. Requires Visual Studio with the C++ toolset.
-# Output: native/rgfw/runtimes/win-x64/native/RGFW.dll
+# Output: native/rgfw/runtimes/win-<arch>/native/RGFW.dll
+
+param([ValidateSet('x64', 'arm64')][string]$Arch = 'x64')
 
 $ErrorActionPreference = 'Stop'
 
@@ -9,13 +11,14 @@ $Version = (Get-Content "$ScriptDir\..\TAG" -Raw).Trim()
 $ImplFile = (Resolve-Path "$ScriptDir\..\rgfw.c").Path
 $WorkDir = "$env:USERPROFILE\rgfw-build"
 $SrcDir = "$WorkDir\RGFW-$Version"
-$OutDir = "$ScriptDir\..\runtimes\win-x64\native"
+$OutDir = "$ScriptDir\..\runtimes\win-$Arch\native"
 
 # Enter the MSVC x64 dev environment (vswhere on PATH keeps Launch-VsDevShell quiet).
 $env:PATH = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer;$env:PATH"
-$VsPath = & vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-if (-not $VsPath) { throw 'No Visual Studio with the C++ toolset found.' }
-& "$VsPath\Common7\Tools\Launch-VsDevShell.ps1" -Arch amd64 -SkipAutomaticLocation | Out-Null
+$VcToolset = if ($Arch -eq 'arm64') { 'Microsoft.VisualStudio.Component.VC.Tools.ARM64' } else { 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' }
+$VsPath = & vswhere.exe -latest -products * -requires $VcToolset -property installationPath
+if (-not $VsPath) { throw "No Visual Studio with the $Arch C++ toolset found." }
+& "$VsPath\Common7\Tools\Launch-VsDevShell.ps1" -Arch $(if ($Arch -eq 'arm64') { 'arm64' } else { 'amd64' }) -SkipAutomaticLocation | Out-Null
 
 # Fetch the pinned source.
 New-Item -ItemType Directory -Force $WorkDir | Out-Null
@@ -28,7 +31,7 @@ if (-not (Test-Path $SrcDir)) {
 
 # Build. Link line per upstream's Makefile; /MT so the DLL needs no VC++ Redistributable.
 # Only the DLL ships — the import .lib/.exp stay in the build dir.
-Set-Location (New-Item -ItemType Directory -Force "$WorkDir\build-win64")
+Set-Location (New-Item -ItemType Directory -Force "$WorkDir\build-win-$Arch")
 cl /nologo /O2 /MT /LD /I $SrcDir /Fe:RGFW.dll $ImplFile gdi32.lib user32.lib shell32.lib opengl32.lib winmm.lib
 if ($LASTEXITCODE -ne 0) { throw "cl failed with exit code $LASTEXITCODE." }
 Copy-Item RGFW.dll "$OutDir\RGFW.dll" -Force

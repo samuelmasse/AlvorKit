@@ -2,7 +2,7 @@
 # Builds the FreeType linux-x64 binary for AlvorKit.FreeType.Native, at the
 # version pinned in native/freetype/TAG (upstream tag VER-x-y-z). Designed
 # for Ubuntu 24.04.
-# Output: native/freetype/runtimes/linux-x64/native/libfreetype.so
+# Output: native/freetype/runtimes/linux-<arch>/native/libfreetype.so
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,7 +10,12 @@ VERSION="$(tr -d '[:space:]' < "$SCRIPT_DIR/../TAG")"
 UPSTREAM_TAG="VER-${VERSION//./-}"
 WORK_DIR="$HOME/freetype-build"
 SRC_DIR="$WORK_DIR/freetype-$UPSTREAM_TAG"
-OUT_DIR="$SCRIPT_DIR/../runtimes/linux-x64/native"
+case "$(uname -m)" in
+    x86_64) RID="linux-x64" ;;
+    aarch64) RID="linux-arm64" ;;
+    *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+esac
+OUT_DIR="$SCRIPT_DIR/../runtimes/$RID/native"
 
 sudo apt-get update -qq
 sudo apt-get install -y -qq build-essential cmake curl ca-certificates

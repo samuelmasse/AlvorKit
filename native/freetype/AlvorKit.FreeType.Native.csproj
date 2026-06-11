@@ -10,7 +10,7 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>FTL OR GPL-2.0-or-later</PackageLicenseExpression>
-        <Description>FreeType $(Version) binaries for win-x64, linux-x64 and osx-arm64</Description>
+        <Description>FreeType $(Version) binaries for win-x64, win-arm64, linux-x64, linux-arm64, osx-x64 and osx-arm64</Description>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://gitlab.freedesktop.org/freetype/freetype</RepositoryUrl>
     </PropertyGroup>

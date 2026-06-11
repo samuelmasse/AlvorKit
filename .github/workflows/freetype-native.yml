@@ -10,41 +10,56 @@ permissions:
   contents: read
 
 jobs:
-  build-win-x64:
-    runs-on: windows-latest
+  build-windows:
+    strategy:
+      matrix:
+        include:
+          - { runner: windows-latest, arch: x64 }
+          - { runner: windows-11-arm, arch: arm64 }
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
-      - run: pwsh native/freetype/scripts/build-win64.ps1
+      - run: pwsh native/freetype/scripts/build-win.ps1 -Arch ${{ matrix.arch }}
       - uses: actions/upload-artifact@v7
         with:
-          name: win-x64
-          path: native/freetype/runtimes/win-x64
+          name: win-${{ matrix.arch }}
+          path: native/freetype/runtimes/win-${{ matrix.arch }}
           if-no-files-found: error
 
-  build-linux-x64:
-    runs-on: ubuntu-24.04
+  build-linux:
+    strategy:
+      matrix:
+        include:
+          - { runner: ubuntu-24.04, rid: linux-x64 }
+          - { runner: ubuntu-24.04-arm, rid: linux-arm64 }
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
-      - run: bash native/freetype/scripts/build-linux64.sh
+      - run: bash native/freetype/scripts/build-linux.sh
       - uses: actions/upload-artifact@v7
         with:
-          name: linux-x64
-          path: native/freetype/runtimes/linux-x64
+          name: ${{ matrix.rid }}
+          path: native/freetype/runtimes/${{ matrix.rid }}
           if-no-files-found: error
 
-  build-osx-arm64:
-    runs-on: macos-26
+  build-macos:
+    strategy:
+      matrix:
+        include:
+          - { runner: macos-26, arch: arm64, rid: osx-arm64 }
+          - { runner: macos-26-intel, arch: x86_64, rid: osx-x64 }
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
-      - run: bash native/freetype/scripts/build-osx-arm64.sh
+      - run: bash native/freetype/scripts/build-osx.sh ${{ matrix.arch }}
       - uses: actions/upload-artifact@v7
         with:
-          name: osx-arm64
-          path: native/freetype/runtimes/osx-arm64
+          name: ${{ matrix.rid }}
+          path: native/freetype/runtimes/${{ matrix.rid }}
           if-no-files-found: error
 
   pack:
-    needs: [build-win-x64, build-linux-x64, build-osx-arm64]
+    needs: [build-windows, build-linux, build-macos]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
