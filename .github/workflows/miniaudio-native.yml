@@ -1,0 +1,82 @@
+name: miniaudio native package
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['native/miniaudio/**']
+
+permissions:
+  contents: read
+
+jobs:
+  build-win-x64:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: pwsh native/miniaudio/scripts/build-win64.ps1
+      - uses: actions/upload-artifact@v7
+        with:
+          name: win-x64
+          path: native/miniaudio/runtimes/win-x64
+          if-no-files-found: error
+
+  build-linux-x64:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - run: bash native/miniaudio/scripts/build-linux64.sh
+      - uses: actions/upload-artifact@v7
+        with:
+          name: linux-x64
+          path: native/miniaudio/runtimes/linux-x64
+          if-no-files-found: error
+
+  build-osx-arm64:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v6
+      - run: bash native/miniaudio/scripts/build-osx-arm64.sh
+      - uses: actions/upload-artifact@v7
+        with:
+          name: osx-arm64
+          path: native/miniaudio/runtimes/osx-arm64
+          if-no-files-found: error
+
+  pack:
+    needs: [build-win-x64, build-linux-x64, build-osx-arm64]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      # Each artifact lands in its own runtimes/<rid>/ subdirectory.
+      - uses: actions/download-artifact@v8
+        with:
+          path: native/miniaudio/runtimes
+
+      - name: Fail if the TAG version is already on NuGet.org
+        run: |
+          VERSION=$(tr -d '[:space:]' < native/miniaudio/TAG)
+          if curl -fsSL "https://api.nuget.org/v3-flatcontainer/alvorkit.miniaudio.native/index.json" | grep -q "\"$VERSION\""; then
+            echo "::error::AlvorKit.MiniAudio.Native $VERSION is already published — bump native/miniaudio/TAG."
+            exit 1
+          fi
+
+      - run: dotnet build -c Release native/miniaudio/AlvorKit.MiniAudio.Native.csproj
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nupkg
+          path: bin/AlvorKit.MiniAudio.Native/Release/*.nupkg
+          if-no-files-found: error
+
+      - name: Publish to NuGet.org (push events only)
+        if: github.event_name == 'push'
+        run: >-
+          dotnet nuget push bin/AlvorKit.MiniAudio.Native/Release/*.nupkg
+          --api-key "${{ secrets.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
