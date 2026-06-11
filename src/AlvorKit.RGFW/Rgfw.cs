@@ -44,4 +44,13 @@ public static partial class Rgfw
 
     [LibraryImport(Lib, EntryPoint = "RGFW_window_setExitKey")]
     public static partial void WindowSetExitKey(nint window, RgfwKey key);
+
+    [LibraryImport(Lib, EntryPoint = "RGFW_window_makeCurrentContext_OpenGL")]
+    public static partial void WindowMakeCurrentContextOpenGL(nint window);
+
+    [LibraryImport(Lib, EntryPoint = "RGFW_window_swapBuffers_OpenGL")]
+    public static partial void WindowSwapBuffersOpenGL(nint window);
+
+    [LibraryImport(Lib, EntryPoint = "RGFW_getProcAddress_OpenGL", StringMarshalling = StringMarshalling.Utf8)]
+    public static partial nint GetProcAddressOpenGL(string procName);
 }

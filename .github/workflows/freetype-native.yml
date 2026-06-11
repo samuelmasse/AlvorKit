@@ -60,8 +60,10 @@ jobs:
       - name: Fail if the TAG version is already on NuGet.org
         run: |
           VERSION=$(tr -d '[:space:]' < native/freetype/TAG)
+          REVISION=$(tr -d '[:space:]' < native/freetype/REVISION 2>/dev/null || true)
+          [ -n "$REVISION" ] && VERSION="$VERSION.$REVISION"
           if curl -fsSL "https://api.nuget.org/v3-flatcontainer/alvorkit.freetype.native/index.json" | grep -q "\"$VERSION\""; then
-            echo "::error::AlvorKit.FreeType.Native $VERSION is already published — bump native/freetype/TAG."
+            echo "::error::AlvorKit.FreeType.Native $VERSION is already published — bump native/freetype/TAG or REVISION."
             exit 1
           fi
 

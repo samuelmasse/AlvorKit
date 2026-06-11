@@ -60,8 +60,10 @@ jobs:
       - name: Fail if the TAG version is already on NuGet.org
         run: |
           VERSION=$(tr -d '[:space:]' < native/rgfw/TAG)
+          REVISION=$(tr -d '[:space:]' < native/rgfw/REVISION 2>/dev/null || true)
+          [ -n "$REVISION" ] && VERSION="$VERSION.$REVISION"
           if curl -fsSL "https://api.nuget.org/v3-flatcontainer/alvorkit.rgfw.native/index.json" | grep -q "\"$VERSION\""; then
-            echo "::error::AlvorKit.RGFW.Native $VERSION is already published — bump native/rgfw/TAG."
+            echo "::error::AlvorKit.RGFW.Native $VERSION is already published — bump native/rgfw/TAG or REVISION."
             exit 1
           fi
 

@@ -11,6 +11,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.FreeType\AlvorKit.FreeType.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.MiniAudio\AlvorKit.MiniAudio.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.RGFW\AlvorKit.RGFW.csproj" />
     </ItemGroup>
 
