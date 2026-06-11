@@ -70,13 +70,13 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: nupkg
-          path: native/rgfw/bin/Release/*.nupkg
+          path: bin/AlvorKit.RGFW.Native/Release/*.nupkg
           if-no-files-found: error
 
       - name: Publish to NuGet.org (push events only)
         if: github.event_name == 'push'
         run: >-
-          dotnet nuget push native/rgfw/bin/Release/*.nupkg
+          dotnet nuget push bin/AlvorKit.RGFW.Native/Release/*.nupkg
           --api-key "${{ secrets.NUGET_API_KEY }}"
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
