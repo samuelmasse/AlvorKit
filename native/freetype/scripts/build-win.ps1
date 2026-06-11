@@ -44,7 +44,7 @@ cmake --fresh -S $SrcDir -B "$WorkDir\build-win-$Arch" -G 'NMake Makefiles' `
 if ($LASTEXITCODE -ne 0) { throw 'cmake configure failed.' }
 cmake --build "$WorkDir\build-win-$Arch"
 if ($LASTEXITCODE -ne 0) { throw 'cmake build failed.' }
-Copy-Item "$WorkDir\build-win64\freetype.dll" "$OutDir\freetype.dll" -Force
+Copy-Item "$WorkDir\build-win-$Arch\freetype.dll" "$OutDir\freetype.dll" -Force
 
 # Verify: imports must be Windows system DLLs only.
 $Deps = & dumpbin /nologo /dependents "$OutDir\freetype.dll" | Select-String '\.dll'
