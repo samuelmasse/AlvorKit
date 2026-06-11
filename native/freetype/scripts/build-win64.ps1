@@ -29,16 +29,19 @@ if (-not (Test-Path $SrcDir)) {
 
 # Build. Internal zlib, optional deps off, static CRT so the DLL needs no
 # VC++ Redistributable. Only the DLL ships.
-cmake --fresh -S $SrcDir -B "$WorkDir\build-win64" -G 'Visual Studio 17 2022' -A x64 `
+# NMake generator: nmake ships with the VC++ toolset itself, so this works on
+# any Visual Studio version — no VS-generator version coupling.
+cmake --fresh -S $SrcDir -B "$WorkDir\build-win64" -G 'NMake Makefiles' `
+    -DCMAKE_BUILD_TYPE=Release `
     -DCMAKE_POLICY_DEFAULT_CMP0091=NEW `
     -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded `
     -DBUILD_SHARED_LIBS=ON `
     -DFT_DISABLE_ZLIB=ON -DFT_DISABLE_BZIP2=ON -DFT_DISABLE_PNG=ON `
     -DFT_DISABLE_HARFBUZZ=ON -DFT_DISABLE_BROTLI=ON
 if ($LASTEXITCODE -ne 0) { throw 'cmake configure failed.' }
-cmake --build "$WorkDir\build-win64" --config Release
+cmake --build "$WorkDir\build-win64"
 if ($LASTEXITCODE -ne 0) { throw 'cmake build failed.' }
-Copy-Item "$WorkDir\build-win64\Release\freetype.dll" "$OutDir\freetype.dll" -Force
+Copy-Item "$WorkDir\build-win64\freetype.dll" "$OutDir\freetype.dll" -Force
 
 # Verify: imports must be Windows system DLLs only.
 $Deps = & dumpbin /nologo /dependents "$OutDir\freetype.dll" | Select-String '\.dll'
