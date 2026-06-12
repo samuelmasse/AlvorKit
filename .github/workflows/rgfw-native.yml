@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['native/rgfw/TAG', 'native/rgfw/REVISION', 'native/rgfw/rgfw.c', 'native/rgfw/*.csproj', 'native/rgfw/scripts/**']
+    paths: ['native/rgfw/TAG', 'native/rgfw/bindgen.json', 'native/rgfw/REVISION', 'native/rgfw/rgfw.c', 'native/rgfw/*.csproj', 'native/rgfw/scripts/**']
 
 permissions:
   contents: read
@@ -15,6 +15,7 @@ jobs:
       matrix:
         include:
           - { runner: windows-latest, arch: x64 }
+          - { runner: windows-latest, arch: x86 }
           - { runner: windows-11-arm, arch: arm64 }
     runs-on: ${{ matrix.runner }}
     steps:
@@ -32,10 +33,11 @@ jobs:
         include:
           - { runner: ubuntu-24.04, rid: linux-x64 }
           - { runner: ubuntu-24.04-arm, rid: linux-arm64 }
+          - { runner: ubuntu-24.04-arm, rid: linux-arm, args: arm }
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
-      - run: bash native/rgfw/scripts/build-linux.sh
+      - run: bash native/rgfw/scripts/build-linux.sh ${{ matrix.args }}
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.rid }}
@@ -84,16 +86,26 @@ jobs:
 
       - run: dotnet build -c Release native/rgfw/AlvorKit.RGFW.Native.csproj
 
+      - name: Generate bindings
+        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- rgfw --strict
+
+      - name: Pack bindings
+        run: |
+          dotnet build -c Release out/bindgen/AlvorKit.RGFW/AlvorKit.RGFW.csproj
+          dotnet build -c Release out/bindgen/AlvorKit.RGFW.Backend/AlvorKit.RGFW.Backend.csproj -p:RestoreAdditionalProjectSources=${{ github.workspace }}/bin/AlvorKit.RGFW.Native/Release
+
       - uses: actions/upload-artifact@v7
         with:
           name: nupkg
-          path: bin/AlvorKit.RGFW.Native/Release/*.nupkg
+          path: |
+            bin/AlvorKit.RGFW.Native/Release/*.nupkg
+            bin/AlvorKit.RGFW/Release/*.nupkg
+            bin/AlvorKit.RGFW.Backend/Release/*.nupkg
           if-no-files-found: error
 
       - name: Publish to NuGet.org (push events only)
         if: github.event_name == 'push'
-        run: >-
-          dotnet nuget push bin/AlvorKit.RGFW.Native/Release/*.nupkg
-          --api-key "${{ secrets.NUGET_API_KEY }}"
-          --source https://api.nuget.org/v3/index.json
-          --skip-duplicate
+        run: |
+          dotnet nuget push bin/AlvorKit.RGFW.Native/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/AlvorKit.RGFW/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/AlvorKit.RGFW.Backend/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

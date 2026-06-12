@@ -1,0 +1,39 @@
+{
+    "namespace": "AlvorKit.FreeType",
+    "apiClass": "Ft",
+    "apiSummary": "The FreeType font rendering library: faces, glyph loading and rasterization. All handles are opaque; functions return FT_Error (0 = success).",
+    "backendClass": "FtBackend",
+    "nativeClass": "FtNative",
+    "nativeLibrary": "freetype",
+    "prefix": "FT_",
+    "workDir": "freetype-build",
+    "sourceDir": "freetype-VER-{tagDashes}",
+    "header": "include/freetype/freetype.h",
+    "tuLines": [
+        "#include <ft2build.h>",
+        "#include FT_FREETYPE_H"
+    ],
+    "includeSubdir": "include",
+    "apiProject": "out/bindgen/AlvorKit.FreeType",
+    "backendProject": "out/bindgen/AlvorKit.FreeType.Backend",
+    "transparentStructs": [
+        "FT_FaceRec",
+        "FT_GlyphSlotRec"
+    ],
+    "outParams": {
+        "FT_Init_FreeType": [
+            "alibrary"
+        ],
+        "FT_New_Face": [
+            "aface"
+        ],
+        "FT_Open_Face": [
+            "aface"
+        ],
+        "FT_New_Memory_Face": [
+            "aface"
+        ]
+    },
+    "skip": {},
+    "sourceUrl": "https://gitlab.freedesktop.org/freetype/freetype/-/archive/VER-{tagDashes}/freetype-VER-{tagDashes}.tar.gz"
+}

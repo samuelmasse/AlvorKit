@@ -4,13 +4,15 @@
         <!-- Version = upstream TAG, plus REVISION as a 4th segment when non-empty:
              a packaging revision of the same upstream (NuGet versions are immutable). -->
         <Version>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/TAG').Trim())</Version>
-        <NativeRevision Condition="Exists('$(MSBuildProjectDirectory)/REVISION')">$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/REVISION').Trim())</NativeRevision>
+        <NativeRevision Condition="Exists('$(MSBuildProjectDirectory)/REVISION')">
+            $([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/REVISION').Trim())</NativeRevision>
         <Version Condition="'$(NativeRevision)' != ''">$(Version).$(NativeRevision)</Version>
         <TargetFramework>netstandard2.0</TargetFramework>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT-0</PackageLicenseExpression>
-        <Description>miniaudio $(Version) binaries for win-x64, win-arm64, linux-x64, linux-arm64, osx-x64 and osx-arm64</Description>
+        <Description>miniaudio $(Version) binaries for win (x64, x86, arm64), linux (x64, arm,
+            arm64) and osx (x64, arm64)</Description>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/mackron/miniaudio</RepositoryUrl>
     </PropertyGroup>

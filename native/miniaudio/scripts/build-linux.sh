@@ -10,15 +10,23 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VERSION="$(tr -d '[:space:]' < "$SCRIPT_DIR/../TAG")"
 WORK_DIR="$HOME/miniaudio-build"
 SRC_DIR="$WORK_DIR/miniaudio-$VERSION"
-case "$(uname -m)" in
-    x86_64) RID="linux-x64" ;;
-    aarch64) RID="linux-arm64" ;;
-    *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
-esac
+TARGET="${1:-native}"
+CC=gcc
+if [[ "$TARGET" == "arm" ]]; then
+    RID="linux-arm"
+    CC=arm-linux-gnueabihf-gcc
+else
+    case "$(uname -m)" in
+        x86_64) RID="linux-x64" ;;
+        aarch64) RID="linux-arm64" ;;
+        *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+    esac
+fi
 OUT_DIR="$SCRIPT_DIR/../runtimes/$RID/native"
 
 sudo apt-get update -qq
 sudo apt-get install -y -qq build-essential curl ca-certificates
+[[ "$TARGET" == "arm" ]] && sudo apt-get install -y -qq gcc-arm-linux-gnueabihf
 
 # Fetch the pinned source.
 mkdir -p "$WORK_DIR" "$OUT_DIR"
@@ -27,7 +35,7 @@ cd "$WORK_DIR"
 
 # Build. Link line per upstream docs (dl, pthread, m); --no-undefined turns
 # underlinking into a build error instead of a load-time failure.
-gcc -shared -fPIC -O2 -Wl,--no-undefined -I "$SRC_DIR" \
+"$CC" -shared -fPIC -O2 -Wl,--no-undefined -I "$SRC_DIR" \
     -o "$OUT_DIR/libminiaudio.so" "$SCRIPT_DIR/../miniaudio.c" \
     -ldl -lpthread -lm
 strip "$OUT_DIR/libminiaudio.so"

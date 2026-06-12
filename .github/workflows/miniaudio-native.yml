@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['native/miniaudio/TAG', 'native/miniaudio/REVISION', 'native/miniaudio/miniaudio.c', 'native/miniaudio/*.csproj', 'native/miniaudio/scripts/**']
+    paths: ['native/miniaudio/TAG', 'native/miniaudio/bindgen.json', 'native/miniaudio/REVISION', 'native/miniaudio/miniaudio.c', 'native/miniaudio/*.csproj', 'native/miniaudio/scripts/**']
 
 permissions:
   contents: read
@@ -15,6 +15,7 @@ jobs:
       matrix:
         include:
           - { runner: windows-latest, arch: x64 }
+          - { runner: windows-latest, arch: x86 }
           - { runner: windows-11-arm, arch: arm64 }
     runs-on: ${{ matrix.runner }}
     steps:
@@ -32,10 +33,11 @@ jobs:
         include:
           - { runner: ubuntu-24.04, rid: linux-x64 }
           - { runner: ubuntu-24.04-arm, rid: linux-arm64 }
+          - { runner: ubuntu-24.04-arm, rid: linux-arm, args: arm }
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
-      - run: bash native/miniaudio/scripts/build-linux.sh
+      - run: bash native/miniaudio/scripts/build-linux.sh ${{ matrix.args }}
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.rid }}
@@ -84,16 +86,26 @@ jobs:
 
       - run: dotnet build -c Release native/miniaudio/AlvorKit.MiniAudio.Native.csproj
 
+      - name: Generate bindings
+        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- miniaudio --strict
+
+      - name: Pack bindings
+        run: |
+          dotnet build -c Release out/bindgen/AlvorKit.MiniAudio/AlvorKit.MiniAudio.csproj
+          dotnet build -c Release out/bindgen/AlvorKit.MiniAudio.Backend/AlvorKit.MiniAudio.Backend.csproj -p:RestoreAdditionalProjectSources=${{ github.workspace }}/bin/AlvorKit.MiniAudio.Native/Release
+
       - uses: actions/upload-artifact@v7
         with:
           name: nupkg
-          path: bin/AlvorKit.MiniAudio.Native/Release/*.nupkg
+          path: |
+            bin/AlvorKit.MiniAudio.Native/Release/*.nupkg
+            bin/AlvorKit.MiniAudio/Release/*.nupkg
+            bin/AlvorKit.MiniAudio.Backend/Release/*.nupkg
           if-no-files-found: error
 
       - name: Publish to NuGet.org (push events only)
         if: github.event_name == 'push'
-        run: >-
-          dotnet nuget push bin/AlvorKit.MiniAudio.Native/Release/*.nupkg
-          --api-key "${{ secrets.NUGET_API_KEY }}"
-          --source https://api.nuget.org/v3/index.json
-          --skip-duplicate
+        run: |
+          dotnet nuget push bin/AlvorKit.MiniAudio.Native/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/AlvorKit.MiniAudio/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/AlvorKit.MiniAudio.Backend/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

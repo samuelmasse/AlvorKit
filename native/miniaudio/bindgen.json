@@ -1,0 +1,43 @@
+{
+    "namespace": "AlvorKit.MiniAudio",
+    "apiClass": "Ma",
+    "apiSummary": "The miniaudio audio library: devices, engines, sounds, waveforms, decoding and node graphs.",
+    "backendClass": "MaBackend",
+    "nativeClass": "MaNative",
+    "nativeLibrary": "miniaudio",
+    "prefix": "ma_",
+    "extraPrefixes": [
+        "alvorkit_"
+    ],
+    "workDir": "miniaudio-build",
+    "sourceDir": "miniaudio-{tag}",
+    "header": "miniaudio.h",
+    "implFile": "miniaudio.c",
+    "apiProject": "out/bindgen/AlvorKit.MiniAudio",
+    "backendProject": "out/bindgen/AlvorKit.MiniAudio.Backend",
+    "extraDefines": [
+        "MA_API="
+    ],
+    "typeRenames": {
+        "ma_backend": "MaBackendKind"
+    },
+    "sizeofShim": "alvorkit.c",
+    "shimExport": "MA_API",
+    "transparentStructs": [
+        "ma_waveform_config"
+    ],
+    "inParams": {
+        "ma_waveform_init": [
+            "pConfig"
+        ]
+    },
+    "outParams": {},
+    "skip": {
+        "ma_log_postf": "intentional skip: variadic printf-style function; C# callers should format text themselves and use ma_log_post"
+    },
+    "sourceUrl": "https://github.com/mackron/miniaudio/archive/refs/tags/{tag}.tar.gz",
+    "boolTypes": [
+        "ma_bool8",
+        "ma_bool32"
+    ]
+}

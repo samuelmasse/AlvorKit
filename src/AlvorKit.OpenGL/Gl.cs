@@ -3,8 +3,7 @@ namespace AlvorKit.OpenGL;
 /// <summary>
 /// Raw OpenGL bindings resolved at runtime through a platform proc loader
 /// (e.g. Rgfw.GetProcAddressOpenGL). Call <see cref="Load"/> once after the
-/// GL context is current. The surface grows function-by-function as the kit
-/// needs them.
+/// GL context is current.
 /// </summary>
 public static unsafe class Gl
 {

@@ -10,15 +10,23 @@ VERSION="$(tr -d '[:space:]' < "$SCRIPT_DIR/../TAG")"
 UPSTREAM_TAG="VER-${VERSION//./-}"
 WORK_DIR="$HOME/freetype-build"
 SRC_DIR="$WORK_DIR/freetype-$UPSTREAM_TAG"
-case "$(uname -m)" in
-    x86_64) RID="linux-x64" ;;
-    aarch64) RID="linux-arm64" ;;
-    *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
-esac
+TARGET="${1:-native}"
+CC=gcc
+if [[ "$TARGET" == "arm" ]]; then
+    RID="linux-arm"
+    CC=arm-linux-gnueabihf-gcc
+else
+    case "$(uname -m)" in
+        x86_64) RID="linux-x64" ;;
+        aarch64) RID="linux-arm64" ;;
+        *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+    esac
+fi
 OUT_DIR="$SCRIPT_DIR/../runtimes/$RID/native"
 
 sudo apt-get update -qq
 sudo apt-get install -y -qq build-essential cmake curl ca-certificates
+[[ "$TARGET" == "arm" ]] && sudo apt-get install -y -qq gcc-arm-linux-gnueabihf
 
 # Fetch the pinned source from upstream GitLab.
 mkdir -p "$WORK_DIR" "$OUT_DIR"
@@ -26,16 +34,17 @@ cd "$WORK_DIR"
 [[ -d "$SRC_DIR" ]] || curl -fsSL "https://gitlab.freedesktop.org/freetype/freetype/-/archive/$UPSTREAM_TAG/freetype-$UPSTREAM_TAG.tar.gz" | tar xz
 
 # Build. Internal zlib, optional deps off — zero library dependencies.
-cmake --fresh -S "$SRC_DIR" -B "$WORK_DIR/build-linux64" \
+cmake --fresh -S "$SRC_DIR" -B "$WORK_DIR/build-$RID" \
+    -DCMAKE_C_COMPILER="$CC" \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DFT_DISABLE_ZLIB=ON -DFT_DISABLE_BZIP2=ON -DFT_DISABLE_PNG=ON \
     -DFT_DISABLE_HARFBUZZ=ON -DFT_DISABLE_BROTLI=ON
-cmake --build "$WORK_DIR/build-linux64" -j
+cmake --build "$WORK_DIR/build-$RID" -j
 
 # CMake produces libfreetype.so.6.x.y plus symlinks; ship the resolved real
 # file under the name the .NET loader probes for.
-cp "$(readlink -f "$WORK_DIR/build-linux64/libfreetype.so")" "$OUT_DIR/libfreetype.so"
+cp "$(readlink -f "$WORK_DIR/build-$RID/libfreetype.so")" "$OUT_DIR/libfreetype.so"
 strip "$OUT_DIR/libfreetype.so"
 
 # Verify: only libc/libm expected.

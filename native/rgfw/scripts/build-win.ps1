@@ -2,7 +2,7 @@
 # native/rgfw/TAG. Requires Visual Studio with the C++ toolset.
 # Output: native/rgfw/runtimes/win-<arch>/native/RGFW.dll
 
-param([ValidateSet('x64', 'arm64')][string]$Arch = 'x64')
+param([ValidateSet('x64', 'x86', 'arm64')][string]$Arch = 'x64')
 
 $ErrorActionPreference = 'Stop'
 
@@ -16,9 +16,10 @@ $OutDir = "$ScriptDir\..\runtimes\win-$Arch\native"
 # Enter the MSVC x64 dev environment (vswhere on PATH keeps Launch-VsDevShell quiet).
 $env:PATH = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer;$env:PATH"
 $VcToolset = if ($Arch -eq 'arm64') { 'Microsoft.VisualStudio.Component.VC.Tools.ARM64' } else { 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' }
+$DevArch = switch ($Arch) { 'x64' { 'amd64' } 'x86' { 'x86' } 'arm64' { 'arm64' } }
 $VsPath = & vswhere.exe -latest -products * -requires $VcToolset -property installationPath
 if (-not $VsPath) { throw "No Visual Studio with the $Arch C++ toolset found." }
-& "$VsPath\Common7\Tools\Launch-VsDevShell.ps1" -Arch $(if ($Arch -eq 'arm64') { 'arm64' } else { 'amd64' }) -SkipAutomaticLocation | Out-Null
+& "$VsPath\Common7\Tools\Launch-VsDevShell.ps1" -Arch $DevArch -SkipAutomaticLocation | Out-Null
 
 # Fetch the pinned source.
 New-Item -ItemType Directory -Force $WorkDir | Out-Null
