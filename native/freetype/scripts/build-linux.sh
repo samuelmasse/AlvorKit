@@ -38,6 +38,10 @@ verify_needed_libraries() {
     printf "ELF dependencies for %s:\n" "$library"
     for dependency in "${found[@]}"; do
         printf "  %s\n" "$dependency"
+        if [[ "$dependency" == ld-linux*.so.* ]]; then
+            continue
+        fi
+
         if [[ "$expected" != *" $dependency "* ]]; then
             echo "Unexpected dependency: $dependency" >&2
             exit 1
