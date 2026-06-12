@@ -1,5 +1,5 @@
 using System.Globalization;
-using System.Runtime.InteropServices;
+using AlvorKit.XxHash;
 
 namespace AlvorKit.Demo.XxHashBench;
 
