@@ -90,7 +90,7 @@ public sealed class BindingGenerationRunner(RepositoryLayout repository, Bindgen
 
     private void VerifyExports(NativeLibraryBinding library, BindingModel model)
     {
-        var verification = NativeExportVerifier.Verify(library.WindowsX64NativeLibraryPath, model);
+        var verification = NativeExportVerifier.Verify(library.HostNativeLibraryPath, model);
         if (!verification.LibraryExists)
         {
             if (options.Strict)

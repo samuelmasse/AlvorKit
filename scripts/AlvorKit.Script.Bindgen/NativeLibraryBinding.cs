@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace AlvorKit.Script.Bindgen;
 
 public sealed class NativeLibraryBinding
@@ -36,7 +38,7 @@ public sealed class NativeLibraryBinding
     public string IncludeDirectory => Path.Combine(SourceDirectory, Config.IncludeSubdir);
     public string HeaderPath => Path.Combine(SourceDirectory, Config.Header);
     public string? SizeofShimPath => Config.SizeofShim is null ? null : Path.Combine(Directory, Config.SizeofShim);
-    public string WindowsX64NativeLibraryPath => Path.Combine(Directory, "runtimes", "win-x64", "native", Config.NativeLibrary + ".dll");
+    public string HostNativeLibraryPath => Path.Combine(Directory, "runtimes", HostRid, "native", HostNativeLibraryFileName);
 
     public static NativeLibraryBinding Load(RepositoryLayout repository, string name)
     {
@@ -53,4 +55,54 @@ public sealed class NativeLibraryBinding
 
     public string ReplaceVersionTokens(string text) =>
         text.Replace("{tag}", Tag).Replace("{tagDashes}", Tag.Replace('.', '-'));
+
+    private string HostNativeLibraryFileName
+    {
+        get
+        {
+            if (OperatingSystem.IsWindows())
+                return Config.NativeLibrary + ".dll";
+            if (OperatingSystem.IsLinux())
+                return "lib" + Config.NativeLibrary + ".so";
+            if (OperatingSystem.IsMacOS())
+                return "lib" + Config.NativeLibrary + ".dylib";
+
+            throw new PlatformNotSupportedException("Native export verification is not configured for this operating system.");
+        }
+    }
+
+    private static string HostRid
+    {
+        get
+        {
+            var arch = RuntimeInformation.ProcessArchitecture;
+            if (OperatingSystem.IsWindows())
+                return arch switch
+                {
+                    Architecture.X64 => "win-x64",
+                    Architecture.X86 => "win-x86",
+                    Architecture.Arm64 => "win-arm64",
+                    _ => throw new PlatformNotSupportedException($"Unsupported Windows architecture: {arch}")
+                };
+
+            if (OperatingSystem.IsLinux())
+                return arch switch
+                {
+                    Architecture.X64 => "linux-x64",
+                    Architecture.Arm64 => "linux-arm64",
+                    Architecture.Arm => "linux-arm",
+                    _ => throw new PlatformNotSupportedException($"Unsupported Linux architecture: {arch}")
+                };
+
+            if (OperatingSystem.IsMacOS())
+                return arch switch
+                {
+                    Architecture.X64 => "osx-x64",
+                    Architecture.Arm64 => "osx-arm64",
+                    _ => throw new PlatformNotSupportedException($"Unsupported macOS architecture: {arch}")
+                };
+
+            throw new PlatformNotSupportedException("Native export verification is not configured for this operating system.");
+        }
+    }
 }

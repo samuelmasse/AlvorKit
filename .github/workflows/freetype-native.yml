@@ -4,7 +4,16 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['native/freetype/TAG', 'native/freetype/bindgen.json', 'native/freetype/REVISION', 'native/freetype/*.csproj', 'native/freetype/scripts/**']
+    paths:
+      [
+        "native/freetype/TAG",
+        "native/freetype/bindgen.json",
+        "native/freetype/REVISION",
+        "native/freetype/*.csproj",
+        "native/freetype/scripts/**",
+        "scripts/Directory.Build.props",
+        "scripts/AlvorKit.Script.Bindgen/**",
+      ]
 
 permissions:
   contents: read
@@ -67,7 +76,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: "10.0.x"
 
       # Each artifact lands in its own runtimes/<rid>/ subdirectory.
       - uses: actions/download-artifact@v8
