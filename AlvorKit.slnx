@@ -2,6 +2,7 @@
 
     <Folder Name="/Demos/">
         <Project Path="demos/AlvorKit.Demo/AlvorKit.Demo.csproj" />
+        <Project Path="demos/AlvorKit.Demo.XxHashBench/AlvorKit.Demo.XxHashBench.csproj" />
     </Folder>
 
     <Folder Name="/Script/">

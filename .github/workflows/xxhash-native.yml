@@ -1,0 +1,121 @@
+name: xxhash native package
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      [
+        "native/xxhash/TAG",
+        "native/xxhash/bindgen.json",
+        "native/xxhash/REVISION",
+        "native/xxhash/xxhash.c",
+        "native/xxhash/*.csproj",
+        "native/xxhash/scripts/**",
+        "scripts/Directory.Build.props",
+        "scripts/AlvorKit.Script.Bindgen/**",
+      ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    strategy:
+      matrix:
+        include:
+          - { runner: windows-latest, arch: x64 }
+          - { runner: windows-latest, arch: x86 }
+          - { runner: windows-11-arm, arch: arm64 }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - run: pwsh native/xxhash/scripts/build-win.ps1 -Arch ${{ matrix.arch }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: win-${{ matrix.arch }}
+          path: native/xxhash/runtimes/win-${{ matrix.arch }}
+          if-no-files-found: error
+
+  build-linux:
+    strategy:
+      matrix:
+        include:
+          - { runner: ubuntu-24.04, rid: linux-x64 }
+          - { runner: ubuntu-24.04-arm, rid: linux-arm64 }
+          - { runner: ubuntu-24.04-arm, rid: linux-arm, args: arm }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - run: bash native/xxhash/scripts/build-linux.sh ${{ matrix.args }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.rid }}
+          path: native/xxhash/runtimes/${{ matrix.rid }}
+          if-no-files-found: error
+
+  build-macos:
+    strategy:
+      matrix:
+        include:
+          - { runner: macos-26, arch: arm64, rid: osx-arm64 }
+          - { runner: macos-26-intel, arch: x86_64, rid: osx-x64 }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - run: bash native/xxhash/scripts/build-osx.sh ${{ matrix.arch }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.rid }}
+          path: native/xxhash/runtimes/${{ matrix.rid }}
+          if-no-files-found: error
+
+  pack:
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      # Each artifact lands in its own runtimes/<rid>/ subdirectory.
+      - uses: actions/download-artifact@v8
+        with:
+          path: native/xxhash/runtimes
+
+      - name: Fail if the TAG version is already on NuGet.org
+        run: |
+          VERSION=$(tr -d '[:space:]' < native/xxhash/TAG)
+          REVISION=$(tr -d '[:space:]' < native/xxhash/REVISION 2>/dev/null || true)
+          [ -n "$REVISION" ] && VERSION="$VERSION.$REVISION"
+          if curl -fsSL "https://api.nuget.org/v3-flatcontainer/alvorkit.xxhash.native/index.json" | grep -q "\"$VERSION\""; then
+            echo "::error::AlvorKit.XxHash.Native $VERSION is already published — bump native/xxhash/TAG or REVISION."
+            exit 1
+          fi
+
+      - run: dotnet build -c Release native/xxhash/AlvorKit.XxHash.Native.csproj
+
+      - name: Generate bindings
+        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- xxhash --strict
+
+      - name: Pack bindings
+        run: |
+          dotnet build -c Release out/bindgen/AlvorKit.XxHash/AlvorKit.XxHash.csproj
+          dotnet build -c Release out/bindgen/AlvorKit.XxHash.Backend/AlvorKit.XxHash.Backend.csproj -p:RestoreAdditionalProjectSources=${{ github.workspace }}/bin/AlvorKit.XxHash.Native/Release
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nupkg
+          path: |
+            bin/AlvorKit.XxHash.Native/Release/*.nupkg
+            bin/AlvorKit.XxHash/Release/*.nupkg
+            bin/AlvorKit.XxHash.Backend/Release/*.nupkg
+          if-no-files-found: error
+
+      - name: Publish to NuGet.org (push events only)
+        if: github.event_name == 'push'
+        run: |
+          dotnet nuget push bin/AlvorKit.XxHash.Native/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/AlvorKit.XxHash/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/AlvorKit.XxHash.Backend/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

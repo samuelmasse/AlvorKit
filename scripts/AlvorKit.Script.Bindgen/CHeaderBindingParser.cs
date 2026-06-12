@@ -204,7 +204,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             enumerator.Location.GetExpansionLocation(out _, out var declarationLine, out _, out _);
             enumerator.Handle.CommentRange.Start.GetExpansionLocation(out _, out var commentLine, out _, out _);
             members.Add(new(
-                CSharpName.FromNativeIdentifier(enumerator.Name, config.Prefix),
+                CSharpName.FromNativeIdentifier(enumerator.Name, config.Prefix, config.DigitNamePrefix),
                 enumerator.Handle.EnumConstantDeclValue,
                 XmlDocComment.Member(enumerator.Handle.RawCommentText.ToString())));
             declarationLines.Add(declarationLine);
@@ -276,7 +276,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             }
 
             built.Fields.Add(new(
-                CSharpName.FromNativeIdentifier(field.Name, config.Prefix),
+                CSharpName.FromNativeIdentifier(field.Name, config.Prefix, config.DigitNamePrefix),
                 managedType,
                 (int)(field.Handle.OffsetOfField / 8),
                 XmlDocComment.Member(field.Handle.RawCommentText.ToString())));
@@ -390,7 +390,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
 
         return new(
             function.Name,
-            CSharpName.FromNativeIdentifier(function.Name, matchingPrefix),
+            CSharpName.FromNativeIdentifier(function.Name, matchingPrefix, config.DigitNamePrefix),
             returnType,
             returnType == "bool" ? BoolMarshaller(function.ReturnType.Handle) : null,
             parameters,
@@ -459,7 +459,8 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
 
             var nativeName = cursor.Handle.Spelling.ToString();
             if (!prefixes.Any(prefix => nativeName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                || valuesByNativeName.ContainsKey(nativeName))
+                || valuesByNativeName.ContainsKey(nativeName)
+                || config.SkipConstants.ContainsKey(nativeName))
                 continue;
 
             var tokens = translationUnitHandle.Tokenize(cursor.Handle.Extent).ToArray()
@@ -483,7 +484,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         foreach (var nativeName in nativeNamesInOrder)
         {
             var prefix = prefixes.First(p => nativeName.StartsWith(p, StringComparison.OrdinalIgnoreCase));
-            var managedName = CSharpName.FromNativeIdentifier(nativeName, prefix);
+            var managedName = CSharpName.FromNativeIdentifier(nativeName, prefix, config.DigitNamePrefix);
             if (usedManagedNames.Add(managedName))
                 constants.Add(new(managedName, valuesByNativeName[nativeName]));
         }
@@ -494,7 +495,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
 
     private string TypeName(string nativeName) =>
         config.TypeRenames.GetValueOrDefault(nativeName)
-        ?? CSharpName.FromNativeTypeName(nativeName, config.Prefix, managedTypePrefix);
+        ?? CSharpName.FromNativeTypeName(nativeName, config.Prefix, managedTypePrefix, config.DigitNamePrefix);
 
     private string? MapNativeType(CXType type, bool isParam = false, bool isReturn = false)
     {

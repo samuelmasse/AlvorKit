@@ -10,6 +10,7 @@ public class BindgenConfig
     public required string NativeClass { get; set; }
     public required string NativeLibrary { get; set; }
     public required string Prefix { get; set; }
+    public string DigitNamePrefix { get; set; } = "Num";
     public required string WorkDir { get; set; }
     public required string SourceDir { get; set; }
     public string? SourceUrl { get; set; }
@@ -31,4 +32,5 @@ public class BindgenConfig
     public string? SizeofShim { get; set; }
     public string ShimExport { get; set; } = "";
     public Dictionary<string, string> Skip { get; set; } = [];
+    public Dictionary<string, string> SkipConstants { get; set; } = [];
 }

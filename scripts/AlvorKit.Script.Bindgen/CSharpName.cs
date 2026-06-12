@@ -10,8 +10,13 @@ public static class CSharpName
         "string", "this", "uint", "ulong", "ushort"
     ];
 
-    /// <summary>Converts RGFW_window_setName to WindowSetName.</summary>
-    public static string FromNativeIdentifier(string nativeName, string nativePrefix)
+    /// <summary>
+    /// Converts RGFW_window_setName to WindowSetName. Digit-leading names get
+    /// <paramref name="digitNamePrefix"/> (XXH32 to Xxh32 with prefix Xxh) and digit-digit
+    /// segment boundaries keep the underscore (XXH3_64bits to Xxh3_64bits), since merging
+    /// the digit runs would garble the name.
+    /// </summary>
+    public static string FromNativeIdentifier(string nativeName, string nativePrefix, string digitNamePrefix = "Num")
     {
         nativeName = nativeName.TrimStart('_');
         var unprefixed = nativeName.StartsWith(nativePrefix, StringComparison.OrdinalIgnoreCase)
@@ -24,17 +29,19 @@ public static class CSharpName
             var tail = segment.Skip(1).All(c => !char.IsAsciiLetterLower(c))
                 ? segment[1..].ToLowerInvariant()
                 : segment[1..];
+            if (managedName.Length > 0 && char.IsAsciiDigit(managedName[^1]) && char.IsAsciiDigit(segment[0]))
+                managedName.Append('_');
             managedName.Append(char.ToUpperInvariant(segment[0])).Append(tail);
         }
 
         if (char.IsAsciiDigit(managedName[0]))
-            managedName.Insert(0, "Num");
+            managedName.Insert(0, digitNamePrefix);
         return managedName.ToString();
     }
 
     /// <summary>Converts RGFW_eventType to RgfwEventType.</summary>
-    public static string FromNativeTypeName(string nativeName, string nativePrefix, string managedTypePrefix) =>
-        managedTypePrefix + FromNativeIdentifier(nativeName, nativePrefix);
+    public static string FromNativeTypeName(string nativeName, string nativePrefix, string managedTypePrefix, string digitNamePrefix = "Num") =>
+        managedTypePrefix + FromNativeIdentifier(nativeName, nativePrefix, digitNamePrefix);
 
     public static string Parameter(string name) => Keywords.Contains(name) ? "@" + name : name;
 }

@@ -1,0 +1,62 @@
+{
+    "namespace": "AlvorKit.XxHash",
+    "apiClass": "Xxh",
+    "apiSummary": "The xxHash fast hashing library: one-shot and streaming XXH32, XXH64 and XXH3 (64 and 128-bit), canonical (big-endian) representations and secret generation.",
+    "backendClass": "XxhBackend",
+    "nativeClass": "XxhNative",
+    "nativeLibrary": "xxhash",
+    "prefix": "XXH_",
+    "extraPrefixes": [
+        "XXH"
+    ],
+    "digitNamePrefix": "Xxh",
+    "workDir": "xxhash-build",
+    "sourceDir": "xxHash-{tag}",
+    "header": "xxhash.h",
+    "implFile": "xxhash.c",
+    "apiProject": "out/bindgen/AlvorKit.XxHash",
+    "backendProject": "out/bindgen/AlvorKit.XxHash.Backend",
+    "typeRenames": {
+        "XXH_errorcode": "XxhErrorCode",
+        "XXH128_hash_t": "XxhHash128",
+        "XXH32_canonical_t": "XxhCanonical32",
+        "XXH64_canonical_t": "XxhCanonical64",
+        "XXH128_canonical_t": "XxhCanonical128"
+    },
+    "inParams": {
+        "XXH32_hashFromCanonical": [
+            "src"
+        ],
+        "XXH64_hashFromCanonical": [
+            "src"
+        ],
+        "XXH128_hashFromCanonical": [
+            "src"
+        ]
+    },
+    "outParams": {
+        "XXH32_canonicalFromHash": [
+            "dst"
+        ],
+        "XXH64_canonicalFromHash": [
+            "dst"
+        ],
+        "XXH128_canonicalFromHash": [
+            "dst"
+        ]
+    },
+    "skip": {},
+    "skipConstants": {
+        "XXHASH_H_5627135585666179": "include guard, not API",
+        "XXH_C23_VN": "internal C23 feature-test value",
+        "XXH_SCALAR": "XXH_VECTOR compile-time dispatch value, meaningless through the shared library",
+        "XXH_SSE2": "XXH_VECTOR compile-time dispatch value, meaningless through the shared library",
+        "XXH_AVX2": "XXH_VECTOR compile-time dispatch value, meaningless through the shared library",
+        "XXH_AVX512": "XXH_VECTOR compile-time dispatch value, meaningless through the shared library",
+        "XXH_NEON": "XXH_VECTOR compile-time dispatch value, meaningless through the shared library",
+        "XXH_VSX": "XXH_VECTOR compile-time dispatch value, meaningless through the shared library",
+        "XXH_SVE": "XXH_VECTOR compile-time dispatch value, meaningless through the shared library",
+        "XXH_LSX": "XXH_VECTOR compile-time dispatch value, meaningless through the shared library"
+    },
+    "sourceUrl": "https://github.com/Cyan4973/xxHash/archive/refs/tags/v{tag}.tar.gz"
+}
