@@ -410,12 +410,23 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         }
 
         var nativeName = parameter.Name.Length > 0 ? parameter.Name : $"arg{index}";
+        var canonical = parameter.Type.Handle.CanonicalType;
+        var isUntypedPointer = modifier.Length == 0
+            && managedType == "nint"
+            && canonical.kind == CXTypeKind.CXType_Pointer
+            && canonical.PointeeType.CanonicalType.kind
+                is CXTypeKind.CXType_Void
+                or CXTypeKind.CXType_Char_S or CXTypeKind.CXType_Char_U
+                or CXTypeKind.CXType_SChar or CXTypeKind.CXType_UChar;
         return new(
             CSharpName.Parameter(nativeName),
             managedType,
             modifier,
             RequiresUtf8StringMarshalling: modifier.Length == 0 && managedType == "string",
-            BoolMarshaller: managedType == "bool" && modifier.Length == 0 ? BoolMarshaller(parameter.Type.Handle) : null);
+            BoolMarshaller: managedType == "bool" && modifier.Length == 0 ? BoolMarshaller(parameter.Type.Handle) : null,
+            IsUntypedPointer: isUntypedPointer,
+            IsConstPointee: isUntypedPointer && canonical.PointeeType.IsConstQualified,
+            IsSizeT: modifier.Length == 0 && CleanTypeSpelling(parameter.Type.Handle) == "size_t");
     }
 
     private string ParameterModifier(string functionName, string parameterName)

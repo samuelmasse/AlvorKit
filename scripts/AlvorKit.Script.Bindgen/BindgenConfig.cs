@@ -33,4 +33,7 @@ public class BindgenConfig
     public string ShimExport { get; set; } = "";
     public Dictionary<string, string> Skip { get; set; } = [];
     public Dictionary<string, string> SkipConstants { get; set; } = [];
+    public bool SpanExtensions { get; set; }
+    public Dictionary<string, string> SpanSkip { get; set; } = [];
+    public Dictionary<string, string[]> SpanParams { get; set; } = [];
 }

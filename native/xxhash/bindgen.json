@@ -46,6 +46,18 @@
         ]
     },
     "skip": {},
+    "spanExtensions": true,
+    "spanSkip": {
+        "XXH3_64bits_reset_withSecret": "the secret is referenced until the streaming session ends, a span cannot outlive the call",
+        "XXH3_64bits_reset_withSecretandSeed": "the secret is referenced until the streaming session ends, a span cannot outlive the call",
+        "XXH3_128bits_reset_withSecret": "the secret is referenced until the streaming session ends, a span cannot outlive the call",
+        "XXH3_128bits_reset_withSecretandSeed": "the secret is referenced until the streaming session ends, a span cannot outlive the call"
+    },
+    "spanParams": {
+        "XXH3_generateSecret_fromSeed": [
+            "secretBuffer"
+        ]
+    },
     "skipConstants": {
         "XXHASH_H_5627135585666179": "include guard, not API",
         "XXH_C23_VN": "internal C23 feature-test value",

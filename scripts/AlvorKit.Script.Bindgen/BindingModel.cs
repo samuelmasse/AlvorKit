@@ -25,7 +25,10 @@ public record BindingParameter(
     string ManagedType,
     string Modifier,
     bool RequiresUtf8StringMarshalling,
-    string? BoolMarshaller);
+    string? BoolMarshaller,
+    bool IsUntypedPointer = false,
+    bool IsConstPointee = false,
+    bool IsSizeT = false);
 
 public record BindingFunction(
     string NativeName,

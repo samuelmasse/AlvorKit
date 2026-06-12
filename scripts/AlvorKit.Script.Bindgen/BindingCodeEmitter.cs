@@ -26,6 +26,8 @@ public sealed class BindingCodeEmitter(BindgenConfig config, string tag)
             File.WriteAllText(Path.Combine(apiDirectory, structType.ManagedName + ".cs"), EmitStruct(structType));
 
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + ".cs"), EmitApiContract(model));
+        if (config.SpanExtensions && EmitSpanExtensions(model) is { } spanExtensions)
+            File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Extensions.cs"), spanExtensions);
         File.WriteAllText(Path.Combine(backendDirectory, config.NativeClass + ".cs"), EmitNativeImports(model));
         File.WriteAllText(Path.Combine(backendDirectory, config.BackendClass + ".cs"), EmitBackend(model));
     }
@@ -92,7 +94,7 @@ public sealed class BindingCodeEmitter(BindgenConfig config, string tag)
         <Project Sdk="Microsoft.NET.Sdk">
 
             <PropertyGroup>
-                <Version>{version}</Version>
+                <Version>{version}</Version>{(config.SpanExtensions ? "\n        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>" : "")}
             </PropertyGroup>
 
         </Project>
@@ -188,6 +190,135 @@ public sealed class BindingCodeEmitter(BindgenConfig config, string tag)
         }
         output.AppendLine("}");
         return output.ToString();
+    }
+
+    /// <summary>
+    /// Extension methods on the API class with every span/pointer combination of
+    /// the buffer parameters: each detected pointer+length pair (or configured
+    /// length-less pointer) can independently become a generic span, pinned for
+    /// the duration of the call.
+    /// </summary>
+    private string? EmitSpanExtensions(BindingModel model)
+    {
+        var overloads = new StringBuilder();
+        foreach (var function in model.Functions)
+        {
+            var candidates = SpanCandidates(function);
+            if (candidates.Count == 0)
+                continue;
+
+            var full = (1 << candidates.Count) - 1;
+            EmitSpanOverload(overloads, function, candidates, full);
+            for (var mask = 1; mask < full; mask++)
+                EmitSpanOverload(overloads, function, candidates, mask);
+        }
+        if (overloads.Length == 0)
+            return null;
+
+        var output = SourceHeader();
+        output.AppendLine($"namespace {config.Namespace};");
+        output.AppendLine();
+        output.AppendLine("/// <summary>");
+        output.AppendLine($"/// Span overloads for the <see cref=\"{config.ApiClass}\"/> functions whose pointer+length parameters describe");
+        output.AppendLine("/// a buffer consumed during the call: the spans (any unmanaged element) are pinned for the duration of");
+        output.AppendLine("/// the call and passed through, in every span/pointer combination.");
+        output.AppendLine("/// </summary>");
+        output.AppendLine($"public static unsafe class {config.ApiClass}Extensions");
+        output.AppendLine("{");
+        output.Append(overloads);
+        output.AppendLine("    // A span holds at most int.MaxValue elements, so the product fits 64-bit nuint for any unmanaged T;");
+        output.AppendLine("    // checked() covers 32-bit processes, where a span describing more memory than the address space");
+        output.AppendLine("    // would otherwise wrap into a silently wrong length.");
+        output.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+        output.AppendLine("    private static nuint ByteLength<T>(ReadOnlySpan<T> span) where T : unmanaged =>");
+        output.AppendLine("        checked((nuint)span.Length * (nuint)sizeof(T));");
+        output.AppendLine("}");
+        return output.ToString();
+    }
+
+    /// <summary>The buffer parameters of a function that can become spans: untyped pointers followed by a size_t, plus configured length-less ones.</summary>
+    private List<(int Pointer, int? Length)> SpanCandidates(BindingFunction function)
+    {
+        var candidates = new List<(int Pointer, int? Length)>();
+        if (config.SpanSkip.ContainsKey(function.NativeName))
+            return candidates;
+
+        var lengthlessParams = config.SpanParams.GetValueOrDefault(function.NativeName, []);
+        var parameters = function.Parameters;
+        for (var i = 0; i < parameters.Count; i++)
+        {
+            if (!parameters[i].IsUntypedPointer)
+                continue;
+            if (i + 1 < parameters.Count && parameters[i + 1].IsSizeT)
+                candidates.Add((i, i + 1));
+            else if (lengthlessParams.Contains(parameters[i].ManagedName.TrimStart('@')))
+                candidates.Add((i, null));
+        }
+        return candidates;
+    }
+
+    private void EmitSpanOverload(StringBuilder output, BindingFunction function, List<(int Pointer, int? Length)> candidates, int mask)
+    {
+        var spanned = candidates.Where((_, index) => (mask & (1 << index)) != 0).ToList();
+        var typeParameterByPointer = spanned.ToDictionary(
+            candidate => candidate.Pointer,
+            candidate => "T" + TypeParameterName(function.Parameters[candidate.Pointer].ManagedName));
+        var pointerByLength = spanned.Where(candidate => candidate.Length is not null)
+            .ToDictionary(candidate => candidate.Length!.Value, candidate => candidate.Pointer);
+
+        var instance = config.ApiClass.ToLowerInvariant();
+        var signature = new List<string> { $"this {config.ApiClass} {instance}" };
+        var arguments = new List<string>();
+        foreach (var (parameter, index) in function.Parameters.Select((parameter, index) => (parameter, index)))
+        {
+            if (typeParameterByPointer.TryGetValue(index, out var typeParameter))
+            {
+                var spanType = parameter.IsConstPointee ? "ReadOnlySpan" : "Span";
+                signature.Add($"{spanType}<{typeParameter}> {parameter.ManagedName}");
+                arguments.Add($"(nint){parameter.ManagedName}Ptr");
+            }
+            else if (pointerByLength.TryGetValue(index, out var pointerIndex))
+            {
+                var pointerParameter = function.Parameters[pointerIndex];
+                arguments.Add($"ByteLength<{typeParameterByPointer[pointerIndex]}>({pointerParameter.ManagedName})");
+            }
+            else
+            {
+                var modifier = parameter.Modifier.Length > 0 ? parameter.Modifier + " " : "";
+                signature.Add($"{modifier}{parameter.ManagedType} {parameter.ManagedName}");
+                arguments.Add($"{modifier}{parameter.ManagedName}");
+            }
+        }
+
+        var typeParameters = spanned.Select(candidate => typeParameterByPointer[candidate.Pointer]).ToList();
+        output.AppendLine($"    /// <inheritdoc cref=\"{config.ApiClass}.{function.ManagedName}\"/>");
+        output.Append($"    public static {function.ReturnType} {function.ManagedName}<{string.Join(", ", typeParameters)}>({string.Join(", ", signature)})");
+        if (typeParameters.Count == 1)
+        {
+            output.AppendLine($" where {typeParameters[0]} : unmanaged");
+        }
+        else
+        {
+            output.AppendLine();
+            foreach (var typeParameter in typeParameters)
+                output.AppendLine($"        where {typeParameter} : unmanaged");
+        }
+        output.AppendLine("    {");
+        foreach (var candidate in spanned)
+        {
+            var parameter = function.Parameters[candidate.Pointer];
+            output.AppendLine($"        fixed ({typeParameterByPointer[candidate.Pointer]}* {parameter.ManagedName}Ptr = {parameter.ManagedName})");
+        }
+        var call = $"{instance}.{function.ManagedName}({string.Join(", ", arguments)})";
+        output.AppendLine($"            {(function.ReturnType == "void" ? call : "return " + call)};");
+        output.AppendLine("    }");
+        output.AppendLine();
+    }
+
+    private static string TypeParameterName(string managedParameterName)
+    {
+        var name = managedParameterName.TrimStart('@');
+        return char.ToUpperInvariant(name[0]) + name[1..];
     }
 
     private string EmitNativeImports(BindingModel model)
