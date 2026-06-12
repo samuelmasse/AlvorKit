@@ -1,56 +1,39 @@
 namespace AlvorKit.RGFW;
 
-/// <summary>Raw bindings over the RGFW shared library (AlvorKit.RGFW.Native).</summary>
-public static partial class Rgfw
+/// <summary>
+/// The RGFW API surface. Every method throws NotImplementedException until a
+/// backend overrides it (e.g. RgfwBackend from AlvorKit.RGFW.Backend).
+/// </summary>
+public class Rgfw
 {
-    private const string Lib = "RGFW";
-
     public const int EventNoWait = 0;
     public const int EventWaitNext = -1;
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_createWindow", StringMarshalling = StringMarshalling.Utf8)]
-    public static partial nint CreateWindow(string name, int x, int y, int w, int h, RgfwWindowFlags flags);
+    public virtual nint CreateWindow(string name, int x, int y, int w, int h, RgfwWindowFlags flags) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_window_close")]
-    public static partial void WindowClose(nint window);
+    public virtual void WindowClose(nint window) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_window_shouldClose")]
-    [return: MarshalAs(UnmanagedType.U1)]
-    public static partial bool WindowShouldClose(nint window);
+    public virtual bool WindowShouldClose(nint window) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_window_setShouldClose")]
-    public static partial void WindowSetShouldClose(nint window, [MarshalAs(UnmanagedType.U1)] bool shouldClose);
+    public virtual void WindowSetShouldClose(nint window, bool shouldClose) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_window_checkEvent")]
-    [return: MarshalAs(UnmanagedType.U1)]
-    public static partial bool WindowCheckEvent(nint window, out RgfwEvent ev);
+    public virtual bool WindowCheckEvent(nint window, out RgfwEvent ev) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_pollEvents")]
-    public static partial void PollEvents();
+    public virtual void PollEvents() => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_waitForEvent")]
-    public static partial void WaitForEvent(int waitMs);
+    public virtual void WaitForEvent(int waitMs) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_window_getSize")]
-    [return: MarshalAs(UnmanagedType.U1)]
-    public static partial bool WindowGetSize(nint window, out int w, out int h);
+    public virtual bool WindowGetSize(nint window, out int w, out int h) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_window_getPosition")]
-    [return: MarshalAs(UnmanagedType.U1)]
-    public static partial bool WindowGetPosition(nint window, out int x, out int y);
+    public virtual bool WindowGetPosition(nint window, out int x, out int y) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_window_setName", StringMarshalling = StringMarshalling.Utf8)]
-    public static partial void WindowSetName(nint window, string name);
+    public virtual void WindowSetName(nint window, string name) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_window_setExitKey")]
-    public static partial void WindowSetExitKey(nint window, RgfwKey key);
+    public virtual void WindowSetExitKey(nint window, RgfwKey key) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_window_makeCurrentContext_OpenGL")]
-    public static partial void WindowMakeCurrentContextOpenGL(nint window);
+    public virtual void WindowMakeCurrentContextOpenGL(nint window) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_window_swapBuffers_OpenGL")]
-    public static partial void WindowSwapBuffersOpenGL(nint window);
+    public virtual void WindowSwapBuffersOpenGL(nint window) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "RGFW_getProcAddress_OpenGL", StringMarshalling = StringMarshalling.Utf8)]
-    public static partial nint GetProcAddressOpenGL(string procName);
+    public virtual nint GetProcAddressOpenGL(string procName) => throw new NotImplementedException();
 }

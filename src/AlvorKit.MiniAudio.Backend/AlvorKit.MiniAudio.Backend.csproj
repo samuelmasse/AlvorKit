@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AlvorKit.MiniAudio.Native" Version="0.11.25.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.MiniAudio\AlvorKit.MiniAudio.csproj" />
+    </ItemGroup>
+
+</Project>

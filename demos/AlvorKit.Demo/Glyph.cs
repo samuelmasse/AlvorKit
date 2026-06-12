@@ -6,17 +6,17 @@ namespace AlvorKit.Demo;
 /// <summary>A glyph rasterized by FreeType into tight grayscale rows.</summary>
 public record Glyph(int Width, int Height, byte[] Pixels)
 {
-    public static Glyph Render(string fontPath, char character, uint pixelHeight)
+    public static Glyph Render(Ft ft, string fontPath, char character, uint pixelHeight)
     {
-        if (Ft.InitFreeType(out var freetype) != 0)
+        if (ft.InitFreeType(out var freetype) != 0)
             throw new InvalidOperationException("Failed to initialize FreeType.");
         try
         {
-            if (Ft.NewFace(freetype, fontPath, new(0), out var face) != 0)
+            if (ft.NewFace(freetype, fontPath, new(0), out var face) != 0)
                 throw new InvalidOperationException($"Failed to load font: {fontPath}");
             try
             {
-                if (Ft.SetPixelSizes(face, 0, pixelHeight) != 0 || Ft.LoadChar(face, new(character), Ft.LoadRender) != 0)
+                if (ft.SetPixelSizes(face, 0, pixelHeight) != 0 || ft.LoadChar(face, new(character), Ft.LoadRender) != 0)
                     throw new InvalidOperationException($"Failed to render glyph: {character}");
 
                 var bitmap = Marshal.PtrToStructure<FtGlyphSlotRec>(Marshal.PtrToStructure<FtFaceRec>(face).Glyph).Bitmap;
@@ -28,12 +28,12 @@ public record Glyph(int Width, int Height, byte[] Pixels)
             }
             finally
             {
-                Ft.DoneFace(face);
+                ft.DoneFace(face);
             }
         }
         finally
         {
-            Ft.DoneFreeType(freetype);
+            ft.DoneFreeType(freetype);
         }
     }
 

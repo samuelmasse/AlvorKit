@@ -4,9 +4,12 @@
         <Project Path="demos/AlvorKit.Demo/AlvorKit.Demo.csproj" />
     </Folder>
 
+    <Project Path="src/AlvorKit.FreeType.Backend/AlvorKit.FreeType.Backend.csproj" />
     <Project Path="src/AlvorKit.FreeType/AlvorKit.FreeType.csproj" />
+    <Project Path="src/AlvorKit.MiniAudio.Backend/AlvorKit.MiniAudio.Backend.csproj" />
     <Project Path="src/AlvorKit.MiniAudio/AlvorKit.MiniAudio.csproj" />
     <Project Path="src/AlvorKit.OpenGL/AlvorKit.OpenGL.csproj" />
+    <Project Path="src/AlvorKit.RGFW.Backend/AlvorKit.RGFW.Backend.csproj" />
     <Project Path="src/AlvorKit.RGFW/AlvorKit.RGFW.csproj" />
 
 </Solution>

@@ -1,50 +1,36 @@
 namespace AlvorKit.MiniAudio;
 
 /// <summary>
-/// Raw bindings over the miniaudio shared library (AlvorKit.MiniAudio.Native).
-/// ma_engine/ma_waveform/ma_sound are caller-allocated opaque blocks — allocate
-/// them with the Sizeof* helpers exported by the native build.
+/// The miniaudio API surface. ma_engine/ma_waveform/ma_sound are caller-allocated
+/// opaque blocks — allocate them with the Sizeof* methods. Every method throws
+/// NotImplementedException until a backend overrides it (e.g. MaBackend from
+/// AlvorKit.MiniAudio.Backend).
 /// </summary>
-public static partial class Ma
+public class Ma
 {
-    private const string Lib = "miniaudio";
+    public virtual nuint SizeofEngine() => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "alvorkit_sizeof_ma_engine")]
-    public static partial nuint SizeofEngine();
+    public virtual nuint SizeofWaveform() => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "alvorkit_sizeof_ma_waveform")]
-    public static partial nuint SizeofWaveform();
+    public virtual nuint SizeofSound() => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "alvorkit_sizeof_ma_sound")]
-    public static partial nuint SizeofSound();
+    public virtual MaResult EngineInit(nint config, nint engine) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "ma_engine_init")]
-    public static partial MaResult EngineInit(nint config, nint engine);
+    public virtual void EngineUninit(nint engine) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "ma_engine_uninit")]
-    public static partial void EngineUninit(nint engine);
+    public virtual MaWaveformConfig WaveformConfigInit(MaFormat format, uint channels, uint sampleRate, MaWaveformType type, double amplitude, double frequency) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "ma_waveform_config_init")]
-    public static partial MaWaveformConfig WaveformConfigInit(MaFormat format, uint channels, uint sampleRate, MaWaveformType type, double amplitude, double frequency);
+    public virtual MaResult WaveformInit(in MaWaveformConfig config, nint waveform) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "ma_waveform_init")]
-    public static partial MaResult WaveformInit(in MaWaveformConfig config, nint waveform);
+    public virtual void WaveformUninit(nint waveform) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "ma_waveform_uninit")]
-    public static partial void WaveformUninit(nint waveform);
+    public virtual MaResult WaveformSetFrequency(nint waveform, double frequency) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "ma_waveform_set_frequency")]
-    public static partial MaResult WaveformSetFrequency(nint waveform, double frequency);
+    public virtual MaResult SoundInitFromDataSource(nint engine, nint dataSource, uint flags, nint group, nint sound) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "ma_sound_init_from_data_source")]
-    public static partial MaResult SoundInitFromDataSource(nint engine, nint dataSource, uint flags, nint group, nint sound);
+    public virtual void SoundUninit(nint sound) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "ma_sound_uninit")]
-    public static partial void SoundUninit(nint sound);
+    public virtual MaResult SoundStart(nint sound) => throw new NotImplementedException();
 
-    [LibraryImport(Lib, EntryPoint = "ma_sound_start")]
-    public static partial MaResult SoundStart(nint sound);
-
-    [LibraryImport(Lib, EntryPoint = "ma_sound_stop")]
-    public static partial MaResult SoundStop(nint sound);
+    public virtual MaResult SoundStop(nint sound) => throw new NotImplementedException();
 }

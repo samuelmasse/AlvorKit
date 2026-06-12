@@ -9,10 +9,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\AlvorKit.FreeType\AlvorKit.FreeType.csproj" />
-        <ProjectReference Include="..\..\src\AlvorKit.MiniAudio\AlvorKit.MiniAudio.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj" />
-        <ProjectReference Include="..\..\src\AlvorKit.RGFW\AlvorKit.RGFW.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.RGFW.Backend\AlvorKit.RGFW.Backend.csproj" />
     </ItemGroup>
 
 </Project>
