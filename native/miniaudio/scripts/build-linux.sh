@@ -12,9 +12,11 @@ WORK_DIR="$HOME/miniaudio-build"
 SRC_DIR="$WORK_DIR/miniaudio-$VERSION"
 TARGET="${1:-native}"
 CC=gcc
+READELF=readelf
 if [[ "$TARGET" == "arm" ]]; then
     RID="linux-arm"
     CC=arm-linux-gnueabihf-gcc
+    READELF=arm-linux-gnueabihf-readelf
 else
     case "$(uname -m)" in
         x86_64) RID="linux-x64" ;;
@@ -23,6 +25,25 @@ else
     esac
 fi
 OUT_DIR="$SCRIPT_DIR/../runtimes/$RID/native"
+
+verify_needed_libraries() {
+    local library="$1"
+    shift
+    local expected=" $* "
+    local found=()
+    local dependency
+
+    mapfile -t found < <("$READELF" -d "$library" | sed -n 's/.*Shared library: \[\(.*\)\]/\1/p')
+
+    printf "ELF dependencies for %s:\n" "$library"
+    for dependency in "${found[@]}"; do
+        printf "  %s\n" "$dependency"
+        if [[ "$expected" != *" $dependency "* ]]; then
+            echo "Unexpected dependency: $dependency" >&2
+            exit 1
+        fi
+    done
+}
 
 sudo apt-get update -qq
 sudo apt-get install -y -qq build-essential curl ca-certificates
@@ -40,6 +61,7 @@ cd "$WORK_DIR"
     -ldl -lpthread -lm
 strip "$OUT_DIR/libminiaudio.so"
 
-# Verify: only libc/libm/libpthread/libdl expected.
-ldd "$OUT_DIR/libminiaudio.so"
+# Verify dependencies without ldd, which cannot inspect cross-built armhf
+# binaries on an arm64 runner.
+verify_needed_libraries "$OUT_DIR/libminiaudio.so" libc.so.6 libm.so.6 libpthread.so.0 libdl.so.2
 echo "OK $OUT_DIR/libminiaudio.so"

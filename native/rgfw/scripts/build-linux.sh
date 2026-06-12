@@ -10,9 +10,11 @@ WORK_DIR="$HOME/rgfw-build"
 SRC_DIR="$WORK_DIR/RGFW-$VERSION"
 TARGET="${1:-native}"
 CC=gcc
+READELF=readelf
 if [[ "$TARGET" == "arm" ]]; then
     RID="linux-arm"
     CC=arm-linux-gnueabihf-gcc
+    READELF=arm-linux-gnueabihf-readelf
 else
     case "$(uname -m)" in
         x86_64) RID="linux-x64" ;;
@@ -21,6 +23,25 @@ else
     esac
 fi
 OUT_DIR="$SCRIPT_DIR/../runtimes/$RID/native"
+
+verify_needed_libraries() {
+    local library="$1"
+    shift
+    local expected=" $* "
+    local found=()
+    local dependency
+
+    mapfile -t found < <("$READELF" -d "$library" | sed -n 's/.*Shared library: \[\(.*\)\]/\1/p')
+
+    printf "ELF dependencies for %s:\n" "$library"
+    for dependency in "${found[@]}"; do
+        printf "  %s\n" "$dependency"
+        if [[ "$expected" != *" $dependency "* ]]; then
+            echo "Unexpected dependency: $dependency" >&2
+            exit 1
+        fi
+    done
+}
 
 # Toolchain + X11 dev headers; RGFW dlopens optional extensions (Xcursor, Xi) at runtime.
 if [[ "$TARGET" == "arm" ]]; then
@@ -47,6 +68,7 @@ cd "$WORK_DIR"
     -lXrandr -lX11 -ldl -lpthread -lm -lGL
 strip "$OUT_DIR/libRGFW.so"
 
-# Verify: only X11/GL/system libraries expected.
-ldd "$OUT_DIR/libRGFW.so"
+# Verify dependencies without ldd, which cannot inspect cross-built armhf
+# binaries on an arm64 runner.
+verify_needed_libraries "$OUT_DIR/libRGFW.so" libc.so.6 libm.so.6 libpthread.so.0 libdl.so.2 libX11.so.6 libXrandr.so.2 libGL.so.1
 echo "OK $OUT_DIR/libRGFW.so"
