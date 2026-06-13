@@ -8,9 +8,8 @@
         <Using Include="AlvorKit.OpenGL" />
     </ItemGroup>
 
-    <!-- Temporary project reference into the generated output until AlvorKit.OpenGL is published to NuGet. -->
     <ItemGroup>
-        <ProjectReference Include="..\..\out\bindgen\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj" />
+        <PackageReference Include="AlvorKit.OpenGL" Version="4.6.1" />
     </ItemGroup>
 
 </Project>
