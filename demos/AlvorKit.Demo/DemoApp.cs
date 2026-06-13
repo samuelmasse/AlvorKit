@@ -31,8 +31,7 @@ public static class DemoApp
             return 1;
         }
 
-        var gl = new GlBackend();
-        gl.Load(rgfw.GetProcAddressOpenGL);
+        var gl = new GlBackend(rgfw.GetProcAddressOpenGL);
         window.GetSize(out var width, out var height);
         Console.WriteLine($"Window created: {width}x{height} - press Escape or close it to exit.");
 

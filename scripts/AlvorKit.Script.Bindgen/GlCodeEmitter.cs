@@ -21,6 +21,8 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         File.WriteAllText(Path.Combine(apiDirectory, model.AllTokens.ManagedName + ".cs"), EmitEnum(model.AllTokens, catchAll: true));
 
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + ".cs"), EmitApiContract(model));
+        if (model.WideConstants.Count > 0)
+            File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Constants.cs"), EmitConstants(model));
         if (new GlExtensionsEmitter(config).Emit(model, SourceHeader()) is { } extensions)
             File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Extensions.cs"), extensions);
         File.WriteAllText(Path.Combine(apiDirectory, "THIRD-PARTY-NOTICES.txt"), EmitThirdPartyNotices(model));
@@ -115,13 +117,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         output.AppendLine("/// </summary>");
         output.AppendLine($"public class {config.ApiClass}");
         output.AppendLine("{");
-        foreach (var constant in model.WideConstants)
-        {
-            output.AppendLine($"    /// <summary>{constant.NativeName} ({AvailabilityText(constant.Availability)}).</summary>");
-            output.AppendLine($"    public const ulong {constant.ManagedName} = 0x{constant.Value:X};");
-        }
-
-        var first = model.WideConstants.Count == 0;
+        var first = true;
         foreach (var command in model.Commands)
         {
             if (!first)
@@ -129,6 +125,31 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
             first = false;
             EmitCommandDocs(output, command);
             output.AppendLine($"    public virtual {command.ReturnType} {command.ManagedName}({Signature(command)}) => throw new NotImplementedException();");
+        }
+        output.AppendLine("}");
+        return output.ToString();
+    }
+
+    /// <summary>
+    /// The tokens whose values overflow the uint-backed enums (GL_TIMEOUT_IGNORED): genuine 64-bit
+    /// sentinel numbers rather than GLenum members, so they are plain constants in their own class.
+    /// </summary>
+    private string EmitConstants(GlBindingModel model)
+    {
+        var output = SourceHeader();
+        output.AppendLine($"namespace {config.Namespace};");
+        output.AppendLine();
+        output.AppendLine($"/// <summary>OpenGL tokens whose values are too wide for the uint-backed {config.ApiClass} enums.</summary>");
+        output.AppendLine($"public static class {config.ApiClass}Constants");
+        output.AppendLine("{");
+        var first = true;
+        foreach (var constant in model.WideConstants)
+        {
+            if (!first)
+                output.AppendLine();
+            first = false;
+            output.AppendLine($"    /// <summary>{constant.NativeName} ({AvailabilityText(constant.Availability)}).</summary>");
+            output.AppendLine($"    public const ulong {constant.ManagedName} = 0x{constant.Value:X};");
         }
         output.AppendLine("}");
         return output.ToString();
@@ -193,20 +214,21 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         output.AppendLine();
         output.AppendLine("/// <summary>");
         output.AppendLine($"/// Implements <see cref=\"{config.ApiClass}\"/> over function pointers resolved from the current OpenGL context.");
-        output.AppendLine("/// Call <see cref=\"Load\"/> once after the context is current.");
+        output.AppendLine("/// Construct it with a proc loader once the context is current.");
         output.AppendLine("/// </summary>");
         output.AppendLine($"public unsafe class {config.BackendClass} : {config.ApiClass}");
         output.AppendLine("{");
         foreach (var command in model.Commands)
-            output.AppendLine($"    private {DelegateType(command)} {command.NativeName};");
+            output.AppendLine($"    private readonly {DelegateType(command)} {command.NativeName};");
 
         output.AppendLine();
         output.AppendLine("    /// <summary>");
         output.AppendLine("    /// Resolves every entry point through <paramref name=\"getProcAddress\"/> (such as");
-        output.AppendLine("    /// Rgfw.GetProcAddressOpenGL). Entry points the context does not provide stay unresolved:");
-        output.AppendLine("    /// calling one throws <see cref=\"EntryPointNotFoundException\"/> naming the function.");
+        output.AppendLine("    /// Rgfw.GetProcAddressOpenGL), which must be called with the OpenGL context current.");
+        output.AppendLine("    /// Entry points the context does not provide stay unresolved: calling one throws");
+        output.AppendLine("    /// <see cref=\"EntryPointNotFoundException\"/> naming the function.");
         output.AppendLine("    /// </summary>");
-        output.AppendLine("    public void Load(Func<string, nint> getProcAddress)");
+        output.AppendLine($"    public {config.BackendClass}(Func<string, nint> getProcAddress)");
         output.AppendLine("    {");
         foreach (var command in model.Commands)
             output.AppendLine($"        {command.NativeName} = ({DelegateType(command)})getProcAddress(\"{command.NativeName}\");");
