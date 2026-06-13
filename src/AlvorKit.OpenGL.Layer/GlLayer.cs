@@ -53,7 +53,16 @@ public unsafe partial class GlLayer(Gl inner) : GlWrapper(inner), IDisposable
     public override uint CreateShaderProgramv(ShaderType type, int count, nint strings) { var id = base.CreateShaderProgramv(type, count, strings); programs.Add(id); return id; }
     public override nint FenceSync(SyncCondition condition, SyncBehaviorFlags flags) { var sync = base.FenceSync(condition, flags); syncs.Add(sync); return sync; }
 
-    public override void DeleteTextures(int n, nint textures) { Untrack(this.textures, n, textures); base.DeleteTextures(n, textures); }
+    public override void DeleteTextures(int n, nint textures)
+    {
+        var ids = (uint*)textures;
+        for (var i = 0; i < n; i++)
+        {
+            this.textures.Remove(ids[i]);
+            textureTargets.Remove(ids[i]);
+        }
+        base.DeleteTextures(n, textures);
+    }
     public override void DeleteBuffers(int n, nint buffers) { Untrack(this.buffers, n, buffers); base.DeleteBuffers(n, buffers); }
     public override void DeleteVertexArrays(int n, nint arrays) { Untrack(vertexArrays, n, arrays); base.DeleteVertexArrays(n, arrays); }
     public override void DeleteFramebuffers(int n, nint framebuffers) { Untrack(this.framebuffers, n, framebuffers); base.DeleteFramebuffers(n, framebuffers); }

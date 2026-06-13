@@ -11,4 +11,8 @@
 
     <Project Path="src/AlvorKit.OpenGL.Layer/AlvorKit.OpenGL.Layer.csproj" />
 
+    <Folder Name="/Tests/">
+        <Project Path="tests/AlvorKit.OpenGL.Layer.Test/AlvorKit.OpenGL.Layer.Test.csproj" />
+    </Folder>
+
 </Solution>

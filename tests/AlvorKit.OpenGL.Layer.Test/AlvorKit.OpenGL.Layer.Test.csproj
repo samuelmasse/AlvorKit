@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
+    </ItemGroup>
+
+</Project>
