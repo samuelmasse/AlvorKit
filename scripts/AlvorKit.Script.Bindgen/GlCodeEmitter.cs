@@ -1,7 +1,7 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Writes the generated OpenGL API contract and proc-loading backend projects.</summary>
-public sealed class GlCodeEmitter(BindgenConfig config, string tag)
+public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTag)
 {
     public void Emit(GlBindingModel model, string repoRoot, string version)
     {
@@ -23,6 +23,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag)
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + ".cs"), EmitApiContract(model));
         if (new GlExtensionsEmitter(config).Emit(model, SourceHeader()) is { } extensions)
             File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Extensions.cs"), extensions);
+        File.WriteAllText(Path.Combine(apiDirectory, "THIRD-PARTY-NOTICES.txt"), EmitThirdPartyNotices(model));
         File.WriteAllText(Path.Combine(backendDirectory, config.BackendClass + ".cs"), EmitBackend(model));
     }
 
@@ -55,6 +56,10 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag)
                 <Version>{version}</Version>
                 <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
             </PropertyGroup>
+
+            <ItemGroup>
+                <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="\" />
+            </ItemGroup>
 
         </Project>
 
@@ -122,11 +127,63 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag)
             if (!first)
                 output.AppendLine();
             first = false;
-            output.AppendLine($"    /// <summary>Maps {command.NativeName} ({AvailabilityText(command.Availability)}).</summary>");
+            EmitCommandDocs(output, command);
             output.AppendLine($"    public virtual {command.ReturnType} {command.ManagedName}({Signature(command)}) => throw new NotImplementedException();");
         }
         output.AppendLine("}");
         return output.ToString();
+    }
+
+    /// <summary>
+    /// The reference-page purpose as the summary (with the availability and GL entry point), then a
+    /// param tag for each parameter the page documents. Falls back to just naming the entry point
+    /// for the commands the reference pages do not cover.
+    /// </summary>
+    private void EmitCommandDocs(StringBuilder output, GlCommand command)
+    {
+        var availability = AvailabilityText(command.Availability);
+        if (command.Documentation?.Summary is { } purpose)
+            output.AppendLine($"    /// <summary>{Capitalize(purpose)} ({availability}). Maps {command.NativeName}.</summary>");
+        else
+            output.AppendLine($"    /// <summary>Maps {command.NativeName} ({availability}).</summary>");
+
+        if (command.Documentation is { } documentation)
+            foreach (var parameter in command.Parameters)
+                if (documentation.Parameters.TryGetValue(parameter.NativeName, out var text))
+                    output.AppendLine($"    /// <param name=\"{parameter.NativeName}\">{text}</param>");
+    }
+
+    private static string Capitalize(string text) =>
+        text.Length > 0 && char.IsAsciiLetterLower(text[0]) ? char.ToUpperInvariant(text[0]) + text[1..] : text;
+
+    /// <summary>
+    /// Attribution for the reference-page prose imported into the XML docs, required by the SGI
+    /// Free Software License B the OpenGL reference pages are published under.
+    /// </summary>
+    private string EmitThirdPartyNotices(GlBindingModel model)
+    {
+        var documented = model.Commands.Count(command => command.Documentation is not null);
+        if (documented == 0)
+            return $"{config.Namespace} contains no third-party content." + Environment.NewLine;
+
+        var shortDocTag = docTag.Length >= 12 ? docTag[..12] : docTag;
+        return $"""
+            {config.Namespace} third-party notices
+            ===================================
+
+            The XML documentation comments on the {config.ApiClass} commands ({documented} of
+            {model.Commands.Count}) are derived from the Khronos OpenGL reference pages (the gl4
+            directory of the OpenGL-Refpages repository, commit {shortDocTag}).
+
+            The reference pages are copyright their respective authors and are made available by
+            The Khronos Group under the SGI Free Software License B, version 2.0. Portions are
+            copyright (c) 1991-2006 Silicon Graphics, Inc. and (c) 2010-2014 The Khronos Group Inc.
+
+            Source and license text:
+              https://github.com/KhronosGroup/OpenGL-Refpages
+              https://www.khronos.org/registry/OpenGL-Refpages/LICENSES/LicenseRef-FreeB.txt
+
+            """;
     }
 
     private string EmitBackend(GlBindingModel model)

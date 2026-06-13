@@ -52,4 +52,11 @@ public class BindgenConfig
     // The OpenGL ES api whose introduction version is recorded alongside the desktop version in
     // each member's docs ("gles2" spans ES 2.0-3.2). Empty to omit the ES annotation.
     public string GlEsApi { get; set; } = "gles2";
+
+    // The OpenGL reference pages (DocBook), pinned by the DOC_TAG file, supplying the command and
+    // parameter doc comments. DocUrl is a repository tarball; DocSubdir is the directory within it
+    // to read ("gl4"). Leave DocUrl null to generate without reference-page docs.
+    public string? DocUrl { get; set; }
+    public string DocDir { get; set; } = "";
+    public string DocSubdir { get; set; } = "";
 }

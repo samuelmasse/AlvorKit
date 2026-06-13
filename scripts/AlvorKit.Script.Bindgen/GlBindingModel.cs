@@ -34,7 +34,8 @@ public record GlCommand(
     string ReturnType,
     string ReturnInteropType,
     List<GlParameter> Parameters,
-    GlAvailability Availability);
+    GlAvailability Availability,
+    XmlDocComment? Documentation);
 
 /// <summary>A token too wide for the uint-backed enums (GL_TIMEOUT_IGNORED), emitted as a constant.</summary>
 public record GlConstant(string ManagedName, string NativeName, ulong Value, GlAvailability Availability);

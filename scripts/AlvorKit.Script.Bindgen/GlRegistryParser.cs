@@ -38,7 +38,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
     private readonly List<string> ungroupedEnumUses = [];
     private string CatchAllName => config.ApiClass + "Enum";
 
-    public GlBindingModel Parse(string registryPath)
+    public GlBindingModel Parse(string registryPath, IReadOnlyDictionary<string, XmlDocComment> docs)
     {
         var registry = XDocument.Load(registryPath).Root
             ?? throw new InvalidOperationException($"{registryPath} has no root element.");
@@ -49,7 +49,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
         var tokens = CollectTokens(registry, tokenNames, Availability);
         var groups = BuildGroups(tokens);
         var skipped = new List<string>();
-        var commands = BuildCommands(registry, commandNames, Availability, skipped);
+        var commands = BuildCommands(registry, commandNames, Availability, docs, skipped);
 
         var narrow = tokens.Where(token => token.Value <= uint.MaxValue);
         var allTokens = new GlEnumGroup("GLenum", CatchAllName, IsFlags: false, SortMembers(narrow));
@@ -226,7 +226,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
         .Select(token => new GlEnumMember(token.ManagedName, token.NativeName, token.Value, token.Availability))
         .ToList();
 
-    private List<GlCommand> BuildCommands(XElement registry, HashSet<string> names, Func<string, GlAvailability> availability, List<string> skipped)
+    private List<GlCommand> BuildCommands(XElement registry, HashSet<string> names, Func<string, GlAvailability> availability, IReadOnlyDictionary<string, XmlDocComment> docs, List<string> skipped)
     {
         var elementByName = registry.Elements("commands").Elements("command")
             .ToDictionary(element => element.Element("proto")!.Element("name")!.Value);
@@ -250,7 +250,8 @@ public sealed class GlRegistryParser(BindgenConfig config)
                 returnType,
                 returnInteropType,
                 parameters,
-                availability(name)));
+                availability(name),
+                docs.GetValueOrDefault(name)));
         }
 
         AssertUniqueManagedNames(commands.Select(command => (command.ManagedName, command.NativeName)), "command");

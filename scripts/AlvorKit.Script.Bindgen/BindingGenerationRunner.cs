@@ -53,18 +53,23 @@ public sealed class BindingGenerationRunner(RepositoryLayout repository, Bindgen
     private async Task GenerateGlRegistryLibraryAsync(NativeLibraryBinding library)
     {
         await sourceResolver.EnsureSourceAsync(library);
+        await sourceResolver.EnsureDocSourceAsync(library);
         var config = library.Config;
         Console.WriteLine($"Parsing {config.Header} ({config.GlApi} {config.GlVersion} {config.GlProfile}, registry {library.Tag[..Math.Min(12, library.Tag.Length)]})");
 
-        var model = new GlRegistryParser(config).Parse(library.HeaderPath);
+        var docs = library.DocReadDirectory is { } docDirectory && Directory.Exists(docDirectory)
+            ? new GlDocParser().Parse(docDirectory)
+            : [];
+        var model = new GlRegistryParser(config).Parse(library.HeaderPath, docs);
         Console.WriteLine($"Model: {model.Commands.Count} commands, {model.Groups.Count} enum groups " +
             $"({model.Groups.Sum(group => group.Members.Count)} members), {model.AllTokens.Members.Count} tokens, " +
             $"{model.WideConstants.Count} wide constants, {model.SkippedCommands.Count} skipped");
         if (model.UngroupedEnumUses.Count > 0)
             Console.WriteLine($"Ungrouped enum uses (typed as {config.ApiClass}Enum): {model.UngroupedEnumUses.Count} - " +
                 string.Join(", ", model.UngroupedEnumUses.Take(8)) + (model.UngroupedEnumUses.Count > 8 ? ", ..." : ""));
+        Console.WriteLine($"Docs: {docs.Count} reference pages indexed, {model.Commands.Count(command => command.Documentation is not null)} of {model.Commands.Count} commands documented");
 
-        new GlCodeEmitter(config, library.Tag).Emit(model, library.RepositoryRoot, library.Version);
+        new GlCodeEmitter(config, library.Tag, library.DocTag).Emit(model, library.RepositoryRoot, library.Version);
         Console.WriteLine($"Emitted {config.ApiProject} and {config.BackendProject} ({library.Version})");
         PrintSkippedFunctions(model.SkippedCommands);
         Console.WriteLine();
