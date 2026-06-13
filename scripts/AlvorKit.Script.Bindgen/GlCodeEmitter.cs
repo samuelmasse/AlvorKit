@@ -21,6 +21,8 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         File.WriteAllText(Path.Combine(apiDirectory, model.AllTokens.ManagedName + ".cs"), EmitEnum(model.AllTokens, catchAll: true));
 
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + ".cs"), EmitApiContract(model));
+        File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Wrapper.cs"), EmitWrapper(model));
+        File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Noop.cs"), EmitNoop(model));
         if (model.WideConstants.Count > 0)
             File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Constants.cs"), EmitConstants(model));
         if (new GlExtensionsEmitter(config).Emit(model, SourceHeader()) is { } extensions)
@@ -213,6 +215,53 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
             """;
     }
 
+    /// <summary>
+    /// A forwarding wrapper base: every command delegates to an inner instance. A hand-written
+    /// interception layer (validation, tracing, resource tracking) inherits this and overrides only
+    /// the calls it cares about, letting the rest pass through.
+    /// </summary>
+    private string EmitWrapper(GlBindingModel model)
+    {
+        var output = SourceHeader();
+        output.AppendLine($"namespace {config.Namespace};");
+        output.AppendLine();
+        output.AppendLine("/// <summary>");
+        output.AppendLine($"/// A <see cref=\"{config.ApiClass}\"/> that forwards every call to an inner instance. Subclass it and");
+        output.AppendLine("/// override only the calls you want to intercept (to validate, trace or track resources); the");
+        output.AppendLine("/// rest pass straight through. This is the base for a layer that wraps a backend.");
+        output.AppendLine("/// </summary>");
+        output.AppendLine($"public class {config.ApiClass}Wrapper({config.ApiClass} inner) : {config.ApiClass}");
+        output.AppendLine("{");
+        output.AppendLine("    /// <summary>The instance each call is forwarded to.</summary>");
+        output.AppendLine($"    protected {config.ApiClass} Inner {{ get; }} = inner ?? throw new ArgumentNullException(nameof(inner));");
+        foreach (var command in model.Commands)
+        {
+            output.AppendLine();
+            var arguments = string.Join(", ", command.Parameters.Select(parameter => parameter.ManagedName));
+            output.AppendLine("    /// <inheritdoc/>");
+            output.AppendLine($"    public override {command.ReturnType} {command.ManagedName}({Signature(command)}) => Inner.{command.ManagedName}({arguments});");
+        }
+        output.AppendLine("}");
+        return output.ToString();
+    }
+
+    /// <summary>A do-nothing implementation that returns default values - a null object for tests or headless use.</summary>
+    private string EmitNoop(GlBindingModel model)
+    {
+        var output = SourceHeader();
+        output.AppendLine($"namespace {config.Namespace};");
+        output.AppendLine();
+        output.AppendLine($"/// <summary>A <see cref=\"{config.ApiClass}\"/> that ignores every call and returns default values - a null object for tests or headless use.</summary>");
+        output.AppendLine($"public class {config.ApiClass}Noop : {config.ApiClass}");
+        output.AppendLine("{");
+        foreach (var command in model.Commands)
+            output.AppendLine(command.ReturnType == "void"
+                ? $"    public override void {command.ManagedName}({Signature(command)}) {{ }}"
+                : $"    public override {command.ReturnType} {command.ManagedName}({Signature(command)}) => default;");
+        output.AppendLine("}");
+        return output.ToString();
+    }
+
     private string EmitBackend(GlBindingModel model)
     {
         var output = SourceHeader();
@@ -252,7 +301,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
 
         output.AppendLine();
         output.AppendLine("    private static EntryPointNotFoundException NotLoaded(string entryPoint) =>");
-        output.AppendLine("        new($\"OpenGL entry point not loaded: {entryPoint} (Load not called, or not provided by the current context).\");");
+        output.AppendLine("        new($\"OpenGL entry point not available in the current context: {entryPoint} (the proc loader did not provide it - the function is not in the active GL version or driver).\");");
         output.AppendLine("}");
         return output.ToString();
     }

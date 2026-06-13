@@ -9,4 +9,6 @@
         <Project Path="scripts/AlvorKit.Script.Bindgen/AlvorKit.Script.Bindgen.csproj" />
     </Folder>
 
+    <Project Path="src/AlvorKit.OpenGL.Layer/AlvorKit.OpenGL.Layer.csproj" />
+
 </Solution>

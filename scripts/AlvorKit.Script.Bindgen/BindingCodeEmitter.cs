@@ -26,6 +26,8 @@ public sealed class BindingCodeEmitter(BindgenConfig config, string tag)
             File.WriteAllText(Path.Combine(apiDirectory, structType.ManagedName + ".cs"), EmitStruct(structType));
 
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + ".cs"), EmitApiContract(model));
+        File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Wrapper.cs"), EmitWrapper(model));
+        File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Noop.cs"), EmitNoop(model));
         if (config.SpanExtensions && EmitSpanExtensions(model) is { } spanExtensions)
             File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Extensions.cs"), spanExtensions);
         File.WriteAllText(Path.Combine(backendDirectory, config.NativeClass + ".cs"), EmitNativeImports(model));
@@ -366,6 +368,67 @@ public sealed class BindingCodeEmitter(BindgenConfig config, string tag)
         }
         output.AppendLine("}");
         return output.ToString();
+    }
+
+    /// <summary>
+    /// A forwarding wrapper base: every call delegates to an inner instance. A hand-written
+    /// interception layer inherits this and overrides only the calls it cares about.
+    /// </summary>
+    private string EmitWrapper(BindingModel model)
+    {
+        var output = SourceHeader();
+        output.AppendLine($"namespace {config.Namespace};");
+        output.AppendLine();
+        output.AppendLine("/// <summary>");
+        output.AppendLine($"/// A <see cref=\"{config.ApiClass}\"/> that forwards every call to an inner instance. Subclass it and");
+        output.AppendLine("/// override only the calls you want to intercept; the rest pass straight through.");
+        output.AppendLine("/// </summary>");
+        output.AppendLine($"public class {config.ApiClass}Wrapper({config.ApiClass} inner) : {config.ApiClass}");
+        output.AppendLine("{");
+        output.AppendLine("    /// <summary>The instance each call is forwarded to.</summary>");
+        output.AppendLine($"    protected {config.ApiClass} Inner {{ get; }} = inner ?? throw new ArgumentNullException(nameof(inner));");
+        foreach (var function in model.Functions)
+        {
+            output.AppendLine();
+            var arguments = string.Join(", ", function.Parameters.Select(Argument));
+            output.AppendLine("    /// <inheritdoc/>");
+            output.AppendLine($"    public override {function.ReturnType} {function.ManagedName}({Signature(function)}) => Inner.{function.ManagedName}({arguments});");
+        }
+        output.AppendLine("}");
+        return output.ToString();
+    }
+
+    /// <summary>A do-nothing implementation that returns default values - a null object for tests or headless use.</summary>
+    private string EmitNoop(BindingModel model)
+    {
+        var output = SourceHeader();
+        output.AppendLine($"namespace {config.Namespace};");
+        output.AppendLine();
+        output.AppendLine($"/// <summary>A <see cref=\"{config.ApiClass}\"/> that ignores every call and returns default values - a null object for tests or headless use.</summary>");
+        output.AppendLine($"public class {config.ApiClass}Noop : {config.ApiClass}");
+        output.AppendLine("{");
+        foreach (var function in model.Functions)
+            EmitNoopMethod(output, function);
+        output.AppendLine("}");
+        return output.ToString();
+    }
+
+    private static void EmitNoopMethod(StringBuilder output, BindingFunction function)
+    {
+        var header = $"    public override {function.ReturnType} {function.ManagedName}({Signature(function)})";
+        var outParameters = function.Parameters.Where(parameter => parameter.Modifier == "out").ToList();
+        if (outParameters.Count == 0)
+        {
+            output.AppendLine(function.ReturnType == "void" ? header + " { }" : header + " => default;");
+            return;
+        }
+        output.AppendLine(header);
+        output.AppendLine("    {");
+        foreach (var parameter in outParameters)
+            output.AppendLine($"        {parameter.ManagedName} = default;");
+        if (function.ReturnType != "void")
+            output.AppendLine("        return default;");
+        output.AppendLine("    }");
     }
 
     private string EmitInlineBuffer(InlineBufferDefinition buffer)
