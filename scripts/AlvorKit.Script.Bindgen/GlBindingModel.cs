@@ -1,6 +1,13 @@
 namespace AlvorKit.Script.Bindgen;
 
-public record GlEnumMember(string ManagedName, string NativeName, ulong Value, string Since);
+/// <summary>
+/// Where an item was introduced. <see cref="Gl"/> is a desktop GL version ("4.6") or, for an
+/// extension-sourced item, the extension name. <see cref="GlEs"/> is the OpenGL ES version, or
+/// null when the item is desktop-only.
+/// </summary>
+public record GlAvailability(string Gl, string? GlEs);
+
+public record GlEnumMember(string ManagedName, string NativeName, ulong Value, GlAvailability Availability);
 
 public record GlEnumGroup(string NativeName, string ManagedName, bool IsFlags, List<GlEnumMember> Members);
 
@@ -27,10 +34,10 @@ public record GlCommand(
     string ReturnType,
     string ReturnInteropType,
     List<GlParameter> Parameters,
-    string Since);
+    GlAvailability Availability);
 
 /// <summary>A token too wide for the uint-backed enums (GL_TIMEOUT_IGNORED), emitted as a constant.</summary>
-public record GlConstant(string ManagedName, string NativeName, ulong Value, string Since);
+public record GlConstant(string ManagedName, string NativeName, ulong Value, GlAvailability Availability);
 
 public record GlBindingModel(
     List<GlEnumGroup> Groups,

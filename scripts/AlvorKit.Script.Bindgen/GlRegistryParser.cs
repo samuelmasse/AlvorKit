@@ -44,23 +44,25 @@ public sealed class GlRegistryParser(BindgenConfig config)
             ?? throw new InvalidOperationException($"{registryPath} has no root element.");
 
         var (commandNames, tokenNames, since) = SelectFeatureSet(registry);
-        var tokens = CollectTokens(registry, tokenNames, since);
+        var esSince = config.GlEsApi.Length > 0 ? ScanApiAvailability(registry, config.GlEsApi) : [];
+        GlAvailability Availability(string name) => new(since[name], esSince.GetValueOrDefault(name));
+        var tokens = CollectTokens(registry, tokenNames, Availability);
         var groups = BuildGroups(tokens);
         var skipped = new List<string>();
-        var commands = BuildCommands(registry, commandNames, since, skipped);
+        var commands = BuildCommands(registry, commandNames, Availability, skipped);
 
         var narrow = tokens.Where(token => token.Value <= uint.MaxValue);
         var allTokens = new GlEnumGroup("GLenum", CatchAllName, IsFlags: false, SortMembers(narrow));
         var wideConstants = tokens.Where(token => token.Value > uint.MaxValue)
             .OrderBy(token => token.ManagedName, StringComparer.Ordinal)
-            .Select(token => new GlConstant(token.ManagedName, token.NativeName, token.Value, token.Since))
+            .Select(token => new GlConstant(token.ManagedName, token.NativeName, token.Value, token.Availability))
             .ToList();
 
         return new(groups, allTokens, commands, wideConstants, ungroupedEnumUses, skipped);
     }
 
     private sealed record RegistryToken(
-        string NativeName, string ManagedName, ulong Value, string[] Groups, bool IsBitmask, string Since);
+        string NativeName, string ManagedName, ulong Value, string[] Groups, bool IsBitmask, GlAvailability Availability);
 
     /// <summary>
     /// Walks the &lt;feature&gt; blocks up to the configured version in order, applying requires
@@ -123,7 +125,25 @@ public sealed class GlRegistryParser(BindgenConfig config)
     private bool MatchesApi(XElement element) =>
         element.Attribute("api") is not { } api || api.Value == config.GlApi;
 
-    private List<RegistryToken> CollectTokens(XElement registry, HashSet<string> names, Dictionary<string, string> since)
+    /// <summary>
+    /// The earliest version in which each command or token is required by an <paramref name="api"/>
+    /// feature block, ignoring profiles and removes - i.e. when it first appeared in that API.
+    /// </summary>
+    private static Dictionary<string, string> ScanApiAvailability(XElement registry, string api)
+    {
+        var since = new Dictionary<string, string>();
+        var features = registry.Elements("feature")
+            .Where(feature => feature.Attribute("api")?.Value == api)
+            .Select(feature => (Element: feature, Number: Version.Parse(feature.Attribute("number")!.Value)))
+            .OrderBy(feature => feature.Number);
+        foreach (var (feature, number) in features)
+            foreach (var elementName in new[] { "command", "enum" })
+                foreach (var name in feature.Elements("require").Elements(elementName).Select(element => element.Attribute("name")!.Value))
+                    since.TryAdd(name, number.ToString(2));
+        return since;
+    }
+
+    private List<RegistryToken> CollectTokens(XElement registry, HashSet<string> names, Func<string, GlAvailability> availability)
     {
         var byName = new Dictionary<string, RegistryToken>();
         foreach (var block in registry.Elements("enums"))
@@ -143,7 +163,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
                     ParseTokenValue(element.Attribute("value")!.Value),
                     element.Attribute("group")?.Value.Split(',') ?? [],
                     isBitmask,
-                    since[name]);
+                    availability(name));
                 if (!byName.TryAdd(name, token) && byName[name].Value != token.Value)
                     throw new InvalidOperationException($"{name} is defined twice with different values.");
             }
@@ -203,10 +223,10 @@ public sealed class GlRegistryParser(BindgenConfig config)
     private static List<GlEnumMember> SortMembers(IEnumerable<RegistryToken> tokens) => tokens
         .OrderBy(token => token.Value)
         .ThenBy(token => token.ManagedName, StringComparer.Ordinal)
-        .Select(token => new GlEnumMember(token.ManagedName, token.NativeName, token.Value, token.Since))
+        .Select(token => new GlEnumMember(token.ManagedName, token.NativeName, token.Value, token.Availability))
         .ToList();
 
-    private List<GlCommand> BuildCommands(XElement registry, HashSet<string> names, Dictionary<string, string> since, List<string> skipped)
+    private List<GlCommand> BuildCommands(XElement registry, HashSet<string> names, Func<string, GlAvailability> availability, List<string> skipped)
     {
         var elementByName = registry.Elements("commands").Elements("command")
             .ToDictionary(element => element.Element("proto")!.Element("name")!.Value);
@@ -230,7 +250,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
                 returnType,
                 returnInteropType,
                 parameters,
-                since[name]));
+                availability(name)));
         }
 
         AssertUniqueManagedNames(commands.Select(command => (command.ManagedName, command.NativeName)), "command");

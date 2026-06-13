@@ -48,4 +48,8 @@ public class BindgenConfig
     public string GlProfile { get; set; } = "core";
     public string? GlVersion { get; set; }
     public string[] GlExtensions { get; set; } = [];
+
+    // The OpenGL ES api whose introduction version is recorded alongside the desktop version in
+    // each member's docs ("gles2" spans ES 2.0-3.2). Empty to omit the ES annotation.
+    public string GlEsApi { get; set; } = "gles2";
 }
