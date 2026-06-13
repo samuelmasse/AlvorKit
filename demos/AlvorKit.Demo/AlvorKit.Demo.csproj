@@ -12,4 +12,8 @@
         <PackageReference Include="BigGustave" Version="1.0.6" />
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
+    </ItemGroup>
+
 </Project>

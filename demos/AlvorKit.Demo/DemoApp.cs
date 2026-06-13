@@ -1,6 +1,7 @@
 using AlvorKit.FreeType;
 using AlvorKit.MiniAudio;
 using AlvorKit.OpenGL;
+using AlvorKit.OpenGL.Layer;
 using AlvorKit.RGFW;
 
 namespace AlvorKit.Demo;
@@ -31,7 +32,7 @@ public static class DemoApp
             return 1;
         }
 
-        var gl = new GlBackend(rgfw.GetProcAddressOpenGL);
+        using var gl = new GlLayer(new GlBackend(rgfw.GetProcAddressOpenGL));
         window.GetSize(out var width, out var height);
         Console.WriteLine($"Window created: {width}x{height} - press Escape or close it to exit.");
 
@@ -40,6 +41,8 @@ public static class DemoApp
         Console.WriteLine(melody.Playing ? "Playing Ode to Joy." : "Audio unavailable - running silent.");
 
         RunFrameLoop(rgfw, window, renderer);
+        Console.WriteLine($"Closing - disposing {gl.Textures.Count} texture(s), {gl.Buffers.Count} buffer(s), " +
+            $"{gl.VertexArrays.Count} VAO(s), {gl.Shaders.Count} shader(s), {gl.Programs.Count} program(s).");
         return 0;
     }
 
