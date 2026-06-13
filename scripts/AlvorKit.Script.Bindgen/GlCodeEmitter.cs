@@ -156,17 +156,23 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
     }
 
     /// <summary>
-    /// The reference-page purpose as the summary (with the availability and GL entry point), then a
-    /// param tag for each parameter the page documents. Falls back to just naming the entry point
-    /// for the commands the reference pages do not cover.
+    /// The GL entry point, its availability and the reference-page purpose as the summary, then a
+    /// param tag for each parameter the page documents. Commands without a reference page get just
+    /// the entry point and availability.
     /// </summary>
     private void EmitCommandDocs(StringBuilder output, GlCommand command)
     {
         var availability = AvailabilityText(command.Availability);
-        if (command.Documentation?.Summary is { } purpose)
-            output.AppendLine($"    /// <summary>{Capitalize(purpose)} ({availability}). Maps {command.NativeName}.</summary>");
+        if (command.Documentation?.Summary is { } summary)
+        {
+            var purpose = Capitalize(summary);
+            var terminated = purpose.EndsWith('.') || purpose.EndsWith('!') || purpose.EndsWith('?');
+            output.AppendLine($"    /// <summary>{command.NativeName} ({availability}) - {purpose}{(terminated ? "" : ".")}</summary>");
+        }
         else
-            output.AppendLine($"    /// <summary>Maps {command.NativeName} ({availability}).</summary>");
+        {
+            output.AppendLine($"    /// <summary>{command.NativeName} ({availability})</summary>");
+        }
 
         if (command.Documentation is { } documentation)
             foreach (var parameter in command.Parameters)
