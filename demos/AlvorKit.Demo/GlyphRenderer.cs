@@ -28,70 +28,73 @@ public sealed class GlyphRenderer
         void main() { color = vec4(vec3(texture(glyph, vertexUv).r), 1.0); }
         """;
 
+    private readonly Gl gl;
     private readonly GlyphBitmap glyph;
     private readonly int scale;
     private readonly float[] vertices = new float[VertexFloatCount];
     private readonly uint vertexBuffer;
 
-    public GlyphRenderer(GlyphBitmap glyph, int windowWidth, int windowHeight, int scale)
+    public GlyphRenderer(Gl gl, GlyphBitmap glyph, int windowWidth, int windowHeight, int scale)
     {
+        this.gl = gl;
         this.glyph = glyph;
         this.scale = scale;
 
         UploadTexture(glyph);
 
         var program = CreateProgram();
-        Gl.UseProgram(program);
-        Gl.ActiveTexture(Gl.Texture0);
-        Gl.Uniform1i(Gl.GetUniformLocation(program, "glyph"), 0);
+        gl.UseProgram(program);
+        gl.ActiveTexture(TextureUnit.Texture0);
+        gl.Uniform1i(gl.GetUniformLocation(program, "glyph"), 0);
 
-        Gl.BindVertexArray(Gl.GenVertexArray());
-        vertexBuffer = Gl.GenBuffer();
-        Gl.BindBuffer(Gl.ArrayBuffer, vertexBuffer);
+        gl.BindVertexArray(gl.GenVertexArray());
+        vertexBuffer = gl.GenBuffer();
+        gl.BindBuffer(BufferTarget.ArrayBuffer, vertexBuffer);
         WriteQuad(windowWidth, windowHeight);
-        Gl.BufferData(Gl.ArrayBuffer, vertices, Gl.StaticDraw);
+        gl.BufferData<float>(BufferTarget.ArrayBuffer, vertices, BufferUsage.StaticDraw);
 
-        Gl.VertexAttribPointer(0, 2, Gl.Float, false, VertexStrideBytes, PositionOffsetBytes);
-        Gl.EnableVertexAttribArray(0);
-        Gl.VertexAttribPointer(1, 2, Gl.Float, false, VertexStrideBytes, UvOffsetBytes);
-        Gl.EnableVertexAttribArray(1);
+        gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, VertexStrideBytes, PositionOffsetBytes);
+        gl.EnableVertexAttribArray(0);
+        gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, VertexStrideBytes, UvOffsetBytes);
+        gl.EnableVertexAttribArray(1);
 
-        Gl.ClearColor(0.09f, 0.09f, 0.11f, 1);
-        Gl.Viewport(0, 0, windowWidth, windowHeight);
+        gl.ClearColor(0.09f, 0.09f, 0.11f, 1);
+        gl.Viewport(0, 0, windowWidth, windowHeight);
     }
 
     public void Draw()
     {
-        Gl.Clear(Gl.ColorBufferBit);
-        Gl.DrawArrays(Gl.TriangleStrip, 0, VertexCount);
+        gl.Clear(ClearBufferMask.ColorBufferBit);
+        gl.DrawArrays(PrimitiveType.TriangleStrip, 0, VertexCount);
     }
 
     public void Resize(int width, int height)
     {
-        Gl.Viewport(0, 0, width, height);
-        Gl.BindBuffer(Gl.ArrayBuffer, vertexBuffer);
+        gl.Viewport(0, 0, width, height);
+        gl.BindBuffer(BufferTarget.ArrayBuffer, vertexBuffer);
         WriteQuad(width, height);
-        Gl.BufferData(Gl.ArrayBuffer, vertices, Gl.StaticDraw);
+        gl.BufferData<float>(BufferTarget.ArrayBuffer, vertices, BufferUsage.StaticDraw);
     }
 
-    private static void UploadTexture(GlyphBitmap glyph)
+    private void UploadTexture(GlyphBitmap glyph)
     {
-        Gl.BindTexture(Gl.Texture2D, Gl.GenTexture());
-        Gl.PixelStorei(Gl.UnpackAlignment, 1);
-        Gl.TexImage2D(Gl.Texture2D, 0, Gl.R8, glyph.Width, glyph.Height, Gl.Red, Gl.UnsignedByte, glyph.Pixels);
-        Gl.TexParameteri(Gl.Texture2D, Gl.TextureMinFilter, (int)Gl.Linear);
-        Gl.TexParameteri(Gl.Texture2D, Gl.TextureMagFilter, (int)Gl.Linear);
+        gl.BindTexture(TextureTarget.Texture2D, gl.GenTexture());
+        gl.PixelStorei(PixelStoreParameter.UnpackAlignment, 1);
+        gl.TexImage2D<byte>(TextureTarget.Texture2D, 0, InternalFormat.R8, glyph.Width, glyph.Height, 0, PixelFormat.Red, PixelType.UnsignedByte, glyph.Pixels);
+        gl.TexParameteri(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+        gl.TexParameteri(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
     }
 
-    private static uint CreateProgram()
+    private uint CreateProgram()
     {
-        var program = Gl.CreateProgram();
-        Gl.AttachShader(program, Compile(Gl.VertexShader, VertexSource));
-        Gl.AttachShader(program, Compile(Gl.FragmentShader, FragmentSource));
-        Gl.LinkProgram(program);
+        var program = gl.CreateProgram();
+        gl.AttachShader(program, Compile(ShaderType.VertexShader, VertexSource));
+        gl.AttachShader(program, Compile(ShaderType.FragmentShader, FragmentSource));
+        gl.LinkProgram(program);
 
-        if (Gl.GetProgram(program, Gl.LinkStatus) == 0)
-            throw new InvalidOperationException($"Program link failed: {Gl.GetProgramInfoLog(program)}");
+        gl.GetProgramiv(program, ProgramProperty.LinkStatus, out var linkStatus);
+        if (linkStatus == 0)
+            throw new InvalidOperationException($"Program link failed: {gl.GetProgramInfoLog(program)}");
 
         return program;
     }
@@ -122,14 +125,15 @@ public sealed class GlyphRenderer
         vertices[15] = 1;
     }
 
-    private static uint Compile(uint type, string source)
+    private uint Compile(ShaderType type, string source)
     {
-        var shader = Gl.CreateShader(type);
-        Gl.ShaderSource(shader, source);
-        Gl.CompileShader(shader);
+        var shader = gl.CreateShader(type);
+        gl.ShaderSource(shader, source);
+        gl.CompileShader(shader);
 
-        if (Gl.GetShader(shader, Gl.CompileStatus) == 0)
-            throw new InvalidOperationException($"Shader compilation failed: {Gl.GetShaderInfoLog(shader)}");
+        gl.GetShaderiv(shader, ShaderParameterName.CompileStatus, out var compileStatus);
+        if (compileStatus == 0)
+            throw new InvalidOperationException($"Shader compilation failed: {gl.GetShaderInfoLog(shader)}");
 
         return shader;
     }

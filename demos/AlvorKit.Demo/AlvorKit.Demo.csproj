@@ -11,8 +11,9 @@
         <PackageReference Include="BigGustave" Version="1.0.6" />
     </ItemGroup>
 
+    <!-- Temporary project reference into the generated output until AlvorKit.OpenGL.Backend is published to NuGet. -->
     <ItemGroup>
-        <ProjectReference Include="..\..\src\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj" />
+        <ProjectReference Include="..\..\out\bindgen\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj" />
     </ItemGroup>
 
 </Project>

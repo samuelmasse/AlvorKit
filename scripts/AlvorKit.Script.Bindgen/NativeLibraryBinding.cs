@@ -18,7 +18,10 @@ public sealed class NativeLibraryBinding
         Config = config;
         Tag = tag;
         Revision = revision;
-        Version = revision.Length > 0 ? $"{tag}.{revision}" : tag;
+
+        // gl-registry tags pin a registry commit; the package version is the bound GL version instead.
+        var versionBase = config.GlVersion ?? tag;
+        Version = revision.Length > 0 ? $"{versionBase}.{revision}" : versionBase;
 
         var sourceDirectoryName = ReplaceVersionTokens(config.SourceDir);
         SourceDirectory = Path.Combine(
@@ -47,6 +50,12 @@ public sealed class NativeLibraryBinding
             File.ReadAllText(Path.Combine(directory, "bindgen.json")),
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
             ?? throw new InvalidOperationException($"Could not read bindgen config for {name}.");
+        if (config.Kind is not (BindgenConfig.CHeaderKind or BindgenConfig.GlRegistryKind))
+            throw new InvalidOperationException($"{name}: unknown bindgen kind '{config.Kind}'.");
+        if (config.Kind == BindgenConfig.CHeaderKind && (config.NativeClass.Length == 0 || config.NativeLibrary.Length == 0))
+            throw new InvalidOperationException($"{name}: c-header bindings require nativeClass and nativeLibrary.");
+        if (config.Kind == BindgenConfig.GlRegistryKind && config.GlVersion is null)
+            throw new InvalidOperationException($"{name}: gl-registry bindings require glVersion.");
         var tag = File.ReadAllText(Path.Combine(directory, "TAG")).Trim();
         var revisionPath = Path.Combine(directory, "REVISION");
         var revision = File.Exists(revisionPath) ? File.ReadAllText(revisionPath).Trim() : "";

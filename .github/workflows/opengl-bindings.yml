@@ -1,0 +1,62 @@
+name: opengl bindings package
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      [
+        "native/opengl/TAG",
+        "native/opengl/bindgen.json",
+        "native/opengl/REVISION",
+        "scripts/Directory.Build.props",
+        "scripts/AlvorKit.Script.Bindgen/**",
+      ]
+
+permissions:
+  contents: read
+
+jobs:
+  # No native build matrix: OpenGL ships with the platform's graphics driver, so there is
+  # nothing to compile - the generator turns gl.xml into the API and proc-loading backend.
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Fail if the version is already on NuGet.org
+        run: |
+          VERSION=$(jq -r .glVersion native/opengl/bindgen.json)
+          REVISION=$(tr -d '[:space:]' < native/opengl/REVISION 2>/dev/null || true)
+          [ -n "$REVISION" ] && VERSION="$VERSION.$REVISION"
+          if curl -fsSL "https://api.nuget.org/v3-flatcontainer/alvorkit.opengl/index.json" | grep -q "\"$VERSION\""; then
+            echo "::error::AlvorKit.OpenGL $VERSION is already published — bump native/opengl/REVISION."
+            exit 1
+          fi
+
+      # The registry parser is strict by default: a missing command, unmapped C type or name
+      # collision fails generation outright, so there is no separate --strict pass to run.
+      - name: Generate bindings
+        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- opengl
+
+      - name: Pack bindings
+        run: |
+          dotnet build -c Release out/bindgen/AlvorKit.OpenGL/AlvorKit.OpenGL.csproj
+          dotnet build -c Release out/bindgen/AlvorKit.OpenGL.Backend/AlvorKit.OpenGL.Backend.csproj
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nupkg
+          path: |
+            bin/AlvorKit.OpenGL/Release/*.nupkg
+            bin/AlvorKit.OpenGL.Backend/Release/*.nupkg
+          if-no-files-found: error
+
+      - name: Publish to NuGet.org (push events only)
+        if: github.event_name == 'push'
+        run: |
+          dotnet nuget push bin/AlvorKit.OpenGL/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/AlvorKit.OpenGL.Backend/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

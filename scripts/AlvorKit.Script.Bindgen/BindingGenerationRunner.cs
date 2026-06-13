@@ -21,6 +21,12 @@ public sealed class BindingGenerationRunner(RepositoryLayout repository, Bindgen
 
     private async Task GenerateLibraryAsync(NativeLibraryBinding library)
     {
+        if (library.Config.Kind == BindgenConfig.GlRegistryKind)
+        {
+            await GenerateGlRegistryLibraryAsync(library);
+            return;
+        }
+
         await sourceResolver.EnsureSourceAsync(library);
         var translationUnitPath = translationUnitWriter.Write(library);
         EnsureShimFileExists(library);
@@ -36,7 +42,31 @@ public sealed class BindingGenerationRunner(RepositoryLayout repository, Bindgen
         Console.WriteLine($"Emitted {library.Config.ApiProject} and {library.Config.BackendProject} ({library.Version})");
 
         VerifyExports(library, model);
-        PrintSkippedFunctions(model);
+        PrintSkippedFunctions(model.SkippedFunctions);
+        Console.WriteLine();
+    }
+
+    /// <summary>
+    /// The gl-registry pipeline: no native build exists (the platform's GL driver is the
+    /// library), so the clang, shim, layout and export stages do not apply.
+    /// </summary>
+    private async Task GenerateGlRegistryLibraryAsync(NativeLibraryBinding library)
+    {
+        await sourceResolver.EnsureSourceAsync(library);
+        var config = library.Config;
+        Console.WriteLine($"Parsing {config.Header} ({config.GlApi} {config.GlVersion} {config.GlProfile}, registry {library.Tag[..Math.Min(12, library.Tag.Length)]})");
+
+        var model = new GlRegistryParser(config).Parse(library.HeaderPath);
+        Console.WriteLine($"Model: {model.Commands.Count} commands, {model.Groups.Count} enum groups " +
+            $"({model.Groups.Sum(group => group.Members.Count)} members), {model.AllTokens.Members.Count} tokens, " +
+            $"{model.WideConstants.Count} wide constants, {model.SkippedCommands.Count} skipped");
+        if (model.UngroupedEnumUses.Count > 0)
+            Console.WriteLine($"Ungrouped enum uses (typed as {config.ApiClass}Enum): {model.UngroupedEnumUses.Count} - " +
+                string.Join(", ", model.UngroupedEnumUses.Take(8)) + (model.UngroupedEnumUses.Count > 8 ? ", ..." : ""));
+
+        new GlCodeEmitter(config, library.Tag).Emit(model, library.RepositoryRoot, library.Version);
+        Console.WriteLine($"Emitted {config.ApiProject} and {config.BackendProject} ({library.Version})");
+        PrintSkippedFunctions(model.SkippedCommands);
         Console.WriteLine();
     }
 
@@ -110,13 +140,13 @@ public sealed class BindingGenerationRunner(RepositoryLayout repository, Bindgen
     private static string MissingFunctionList(NativeExportVerification verification) =>
         string.Join(", ", verification.MissingFunctions.Select(function => function.NativeName).Take(10));
 
-    private static void PrintSkippedFunctions(BindingModel model)
+    private static void PrintSkippedFunctions(List<string> skippedFunctions)
     {
-        if (model.SkippedFunctions.Count == 0)
+        if (skippedFunctions.Count == 0)
             return;
 
         Console.WriteLine("Skipped functions:");
-        foreach (var skipped in model.SkippedFunctions)
+        foreach (var skipped in skippedFunctions)
             Console.WriteLine($"  {skipped}");
     }
 }

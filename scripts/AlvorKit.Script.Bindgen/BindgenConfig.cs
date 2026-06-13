@@ -3,12 +3,17 @@ namespace AlvorKit.Script.Bindgen;
 /// <summary>Per-library generator configuration, loaded from native/&lt;lib&gt;/bindgen.json.</summary>
 public class BindgenConfig
 {
+    public const string CHeaderKind = "c-header";
+    public const string GlRegistryKind = "gl-registry";
+
+    /// <summary>The generator pipeline: libclang over a C header, or the Khronos gl.xml registry.</summary>
+    public string Kind { get; set; } = CHeaderKind;
     public required string Namespace { get; set; }
     public required string ApiClass { get; set; }
     public required string ApiSummary { get; set; }
     public required string BackendClass { get; set; }
-    public required string NativeClass { get; set; }
-    public required string NativeLibrary { get; set; }
+    public string NativeClass { get; set; } = "";
+    public string NativeLibrary { get; set; } = "";
     public required string Prefix { get; set; }
     public string DigitNamePrefix { get; set; } = "Num";
     public required string WorkDir { get; set; }
@@ -36,4 +41,11 @@ public class BindgenConfig
     public bool SpanExtensions { get; set; }
     public Dictionary<string, string> SpanSkip { get; set; } = [];
     public Dictionary<string, string[]> SpanParams { get; set; } = [];
+
+    // gl-registry options: the feature walk selects everything in <feature api="glApi"> blocks
+    // up to glVersion for glProfile, plus the opted-in extensions.
+    public string GlApi { get; set; } = "gl";
+    public string GlProfile { get; set; } = "core";
+    public string? GlVersion { get; set; }
+    public string[] GlExtensions { get; set; } = [];
 }

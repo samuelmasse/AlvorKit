@@ -14,9 +14,10 @@ public static class CSharpName
     /// Converts RGFW_window_setName to WindowSetName. Digit-leading names get
     /// <paramref name="digitNamePrefix"/> (XXH32 to Xxh32 with prefix Xxh) and digit-digit
     /// segment boundaries keep the underscore (XXH3_64bits to Xxh3_64bits), since merging
-    /// the digit runs would garble the name.
+    /// the digit runs would garble the name. With <paramref name="dimensionSegments"/>,
+    /// digits-then-capital segments stay verbatim (GL_TEXTURE_2D to Texture2D, not Texture2d).
     /// </summary>
-    public static string FromNativeIdentifier(string nativeName, string nativePrefix, string digitNamePrefix = "Num")
+    public static string FromNativeIdentifier(string nativeName, string nativePrefix, string digitNamePrefix = "Num", bool dimensionSegments = false)
     {
         nativeName = nativeName.TrimStart('_');
         var unprefixed = nativeName.StartsWith(nativePrefix, StringComparison.OrdinalIgnoreCase)
@@ -26,11 +27,17 @@ public static class CSharpName
         var managedName = new StringBuilder();
         foreach (var segment in unprefixed.Split('_', StringSplitOptions.RemoveEmptyEntries))
         {
+            if (managedName.Length > 0 && char.IsAsciiDigit(managedName[^1]) && char.IsAsciiDigit(segment[0]))
+                managedName.Append('_');
+            if (dimensionSegments && segment.Length >= 2
+                && char.IsAsciiLetterUpper(segment[^1]) && segment[..^1].All(char.IsAsciiDigit))
+            {
+                managedName.Append(segment);
+                continue;
+            }
             var tail = segment.Skip(1).All(c => !char.IsAsciiLetterLower(c))
                 ? segment[1..].ToLowerInvariant()
                 : segment[1..];
-            if (managedName.Length > 0 && char.IsAsciiDigit(managedName[^1]) && char.IsAsciiDigit(segment[0]))
-                managedName.Append('_');
             managedName.Append(char.ToUpperInvariant(segment[0])).Append(tail);
         }
 

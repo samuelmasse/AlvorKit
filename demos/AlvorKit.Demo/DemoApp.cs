@@ -31,11 +31,12 @@ public static class DemoApp
             return 1;
         }
 
-        Gl.Load(rgfw.GetProcAddressOpenGL);
+        var gl = new GlBackend();
+        gl.Load(rgfw.GetProcAddressOpenGL);
         window.GetSize(out var width, out var height);
         Console.WriteLine($"Window created: {width}x{height} - press Escape or close it to exit.");
 
-        var renderer = new GlyphRenderer(glyph, width, height, GlyphScale);
+        var renderer = new GlyphRenderer(gl, glyph, width, height, GlyphScale);
         using var melody = new MelodyPlayer(ma);
         Console.WriteLine(melody.Playing ? "Playing Ode to Joy." : "Audio unavailable - running silent.");
 
