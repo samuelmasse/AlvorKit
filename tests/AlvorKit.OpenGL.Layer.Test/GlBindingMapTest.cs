@@ -1,12 +1,12 @@
 namespace AlvorKit.OpenGL.Layer.Test;
 
 [TestClass]
-public class BindingMapTest
+public class GlBindingMapTest
 {
     [TestMethod]
     public void Bind_NewKey_Succeeds()
     {
-        var map = new BindingMap<int>();
+        var map = new GlBindingMap<int>();
         map.Bind("Fn", 1, 5);
         Assert.IsTrue(map.TryGet(1, out var value));
         Assert.AreEqual(5u, value);
@@ -15,31 +15,31 @@ public class BindingMapTest
     [TestMethod]
     public void Bind_OccupiedKey_Throws()
     {
-        var map = new BindingMap<int>();
+        var map = new GlBindingMap<int>();
         map.Bind("Fn", 1, 5);
         Assert.Throws<GlAlreadyBoundException>(() => map.Bind("Fn", 1, 6));
     }
 
     [TestMethod]
-    public void BindZero_BoundKey_Removes()
+    public void Unbind_BoundKey_Removes()
     {
-        var map = new BindingMap<int>();
+        var map = new GlBindingMap<int>();
         map.Bind("Fn", 1, 5);
-        map.Bind("Fn", 1, 0);
+        map.Unbind("Fn", 1);
         Assert.IsFalse(map.TryGet(1, out _));
     }
 
     [TestMethod]
-    public void BindZero_UnboundKey_Throws()
+    public void Unbind_UnboundKey_Throws()
     {
-        var map = new BindingMap<int>();
-        Assert.Throws<GlNotBoundException>(() => map.Bind("Fn", 1, 0));
+        var map = new GlBindingMap<int>();
+        Assert.Throws<GlNotBoundException>(() => map.Unbind("Fn", 1));
     }
 
     [TestMethod]
     public void DifferentKeys_DoNotConflict()
     {
-        var map = new BindingMap<int>();
+        var map = new GlBindingMap<int>();
         map.Bind("Fn", 1, 5);
         map.Bind("Fn", 2, 6);
         map.TryGet(1, out var first);
@@ -49,17 +49,13 @@ public class BindingMapTest
     }
 
     [TestMethod]
-    public void Begin_OccupiedKey_Throws()
+    public void Rebind_AfterUnbind_Succeeds()
     {
-        var map = new BindingMap<int>();
-        map.Begin("Fn", 1, 5);
-        Assert.Throws<GlAlreadyBoundException>(() => map.Begin("Fn", 1, 6));
-    }
-
-    [TestMethod]
-    public void End_UnboundKey_Throws()
-    {
-        var map = new BindingMap<int>();
-        Assert.Throws<GlNotBoundException>(() => map.End("Fn", 1));
+        var map = new GlBindingMap<int>();
+        map.Bind("Fn", 1, 5);
+        map.Unbind("Fn", 1);
+        map.Bind("Fn", 1, 6);
+        Assert.IsTrue(map.TryGet(1, out var value));
+        Assert.AreEqual(6u, value);
     }
 }

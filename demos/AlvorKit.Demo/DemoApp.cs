@@ -36,11 +36,12 @@ public static class DemoApp
         window.GetSize(out var width, out var height);
         Console.WriteLine($"Window created: {width}x{height} - press Escape or close it to exit.");
 
-        var renderer = new GlyphRenderer(gl, glyph, width, height, GlyphScale);
+        var renderer = new GlyphRenderer(gl, glyph, GlyphScale);
         using var melody = new MelodyPlayer(ma);
         Console.WriteLine(melody.Playing ? "Playing Ode to Joy." : "Audio unavailable - running silent.");
 
         RunFrameLoop(rgfw, window, renderer);
+        Console.WriteLine($"GPU memory tracked: {gl.BufferUsage} buffer byte(s), {gl.TextureUsage} texture byte(s).");
         Console.WriteLine($"Closing - disposing {gl.Textures.Count} texture(s), {gl.Buffers.Count} buffer(s), " +
             $"{gl.VertexArrays.Count} VAO(s), {gl.Shaders.Count} shader(s), {gl.Programs.Count} program(s).");
         return 0;
@@ -58,31 +59,20 @@ public static class DemoApp
         while (!rgfw.WindowShouldClose(window.Handle))
         {
             rgfw.WaitForEvent(FrameWaitMs);
-            DrainEvents(rgfw, window, renderer);
+            DrainEvents(rgfw, window);
 
-            renderer.Draw();
+            window.GetSize(out var width, out var height);
+            renderer.Draw(width, height);
             rgfw.WindowSwapBuffersOpenGL(window.Handle);
         }
     }
 
-    private static void DrainEvents(Rgfw rgfw, DemoWindow window, GlyphRenderer renderer)
+    private static void DrainEvents(Rgfw rgfw, DemoWindow window)
     {
         while (rgfw.WindowCheckEvent(window.Handle, out var ev))
-            HandleEvent(window, renderer, in ev);
-    }
-
-    private static void HandleEvent(DemoWindow window, GlyphRenderer renderer, in RgfwEvent ev)
-    {
-        switch (ev.Type)
         {
-            case RgfwEventType.WindowResized:
-                window.GetSize(out var width, out var height);
-                renderer.Resize(width, height);
-                break;
-
-            case RgfwEventType.Quit:
+            if (ev.Type == RgfwEventType.Quit)
                 Console.WriteLine("Window closed.");
-                break;
         }
     }
 }

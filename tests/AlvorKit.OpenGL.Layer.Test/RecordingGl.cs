@@ -1,6 +1,6 @@
 namespace AlvorKit.OpenGL.Layer.Test;
 
-internal sealed unsafe class RecordingGl : Gl
+internal sealed unsafe class RecordingGl : GlNoop
 {
     private uint next = 1;
 

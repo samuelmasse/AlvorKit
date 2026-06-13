@@ -12,7 +12,7 @@ public class GlLayerBindsTest
     public void BindBuffer_ThenUnbind_Succeeds()
     {
         gl.BindBuffer(BufferTarget.ArrayBuffer, 1);
-        gl.BindBuffer(BufferTarget.ArrayBuffer, 0);
+        gl.UnbindBuffer(BufferTarget.ArrayBuffer);
     }
 
     [TestMethod]
@@ -23,9 +23,16 @@ public class GlLayerBindsTest
     }
 
     [TestMethod]
+    public void BindZero_OverLiveBinding_Throws()
+    {
+        gl.BindBuffer(BufferTarget.ArrayBuffer, 1);
+        Assert.Throws<GlAlreadyBoundException>(() => gl.BindBuffer(BufferTarget.ArrayBuffer, 0));
+    }
+
+    [TestMethod]
     public void UnbindBuffer_WhenNothingBound_Throws()
     {
-        Assert.Throws<GlNotBoundException>(() => gl.BindBuffer(BufferTarget.ArrayBuffer, 0));
+        Assert.Throws<GlNotBoundException>(() => gl.UnbindBuffer(BufferTarget.ArrayBuffer));
     }
 
     [TestMethod]
@@ -43,17 +50,17 @@ public class GlLayerBindsTest
     }
 
     [TestMethod]
-    public void BindVertexArray_WhenNoBuffersBound_Succeeds()
+    public void BindVertexArray_ThenUnbind_Succeeds()
     {
         gl.BindVertexArray(1);
-        gl.BindVertexArray(0);
+        gl.UnbindVertexArray();
     }
 
     [TestMethod]
     public void UseProgram_ThenUnuse_Succeeds()
     {
         gl.UseProgram(1);
-        gl.UseProgram(0);
+        gl.UnuseProgram();
     }
 
     [TestMethod]
@@ -64,39 +71,65 @@ public class GlLayerBindsTest
     }
 
     [TestMethod]
-    public void BindFramebuffer_DefaultRepeatedly_Allowed()
+    public void UnuseProgram_WhenNothingUsed_Throws()
     {
-        gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-        gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        Assert.Throws<GlNotBoundException>(() => gl.UnuseProgram());
     }
 
     [TestMethod]
-    public void BindFramebuffer_SwitchWithoutReturningToDefault_Throws()
+    public void BindFramebuffer_OverLive_Throws()
     {
         gl.BindFramebuffer(FramebufferTarget.Framebuffer, 1);
         Assert.Throws<GlAlreadyBoundException>(() => gl.BindFramebuffer(FramebufferTarget.Framebuffer, 2));
     }
 
     [TestMethod]
-    public void BindFramebuffer_SwitchViaDefault_Succeeds()
+    public void BindFramebuffer_UnbindThenRebind_Succeeds()
     {
         gl.BindFramebuffer(FramebufferTarget.Framebuffer, 1);
-        gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        gl.UnbindFramebuffer(FramebufferTarget.Framebuffer);
         gl.BindFramebuffer(FramebufferTarget.Framebuffer, 2);
     }
 
     [TestMethod]
-    public void BindTexture_DefaultActiveUnit_Succeeds()
+    public void UnbindFramebuffer_WhenNothingBound_Throws()
     {
+        Assert.Throws<GlNotBoundException>(() => gl.UnbindFramebuffer(FramebufferTarget.Framebuffer));
+    }
+
+    [TestMethod]
+    public void BindTexture_ThenUnbind_Succeeds()
+    {
+        gl.ActiveTexture(TextureUnit.Texture0);
         gl.BindTexture(TextureTarget.Texture2D, 1);
-        gl.BindTexture(TextureTarget.Texture2D, 0);
+        gl.UnbindTexture(TextureTarget.Texture2D);
+    }
+
+    [TestMethod]
+    public void BindTexture_WithoutActiveTexture_Throws()
+    {
+        Assert.Throws<GlMissingPrerequisiteException>(() => gl.BindTexture(TextureTarget.Texture2D, 1));
+    }
+
+    [TestMethod]
+    public void ActiveTexture_SetTwiceWithoutReset_Throws()
+    {
+        gl.ActiveTexture(TextureUnit.Texture0);
+        Assert.Throws<GlAlreadySetException>(() => gl.ActiveTexture(TextureUnit.Texture1));
+    }
+
+    [TestMethod]
+    public void ResetActiveTexture_WhenNotSet_Throws()
+    {
+        Assert.Throws<GlAlreadyUnsetException>(() => gl.ResetActiveTexture());
     }
 
     [TestMethod]
     public void BindTexture_SameTextureDifferentTarget_Throws()
     {
+        gl.ActiveTexture(TextureUnit.Texture0);
         gl.BindTexture(TextureTarget.Texture2D, 1);
-        gl.BindTexture(TextureTarget.Texture2D, 0);
+        gl.UnbindTexture(TextureTarget.Texture2D);
         Assert.Throws<GlBindConflictException>(() => gl.BindTexture(TextureTarget.Texture3D, 1));
     }
 
@@ -105,6 +138,8 @@ public class GlLayerBindsTest
     {
         gl.ActiveTexture(TextureUnit.Texture0);
         gl.BindTexture(TextureTarget.Texture2D, 1);
+        gl.UnbindTexture(TextureTarget.Texture2D);
+        gl.ResetActiveTexture();
         gl.ActiveTexture(TextureUnit.Texture1);
         gl.BindTexture(TextureTarget.Texture2D, 2);
     }
@@ -113,7 +148,7 @@ public class GlLayerBindsTest
     public void BindSampler_ThenUnbind_Succeeds()
     {
         gl.BindSampler(0, 1);
-        gl.BindSampler(0, 0);
+        gl.UnbindSampler(0);
     }
 
     [TestMethod]
@@ -147,5 +182,73 @@ public class GlLayerBindsTest
     public void ConditionalRender_EndWithoutBegin_Throws()
     {
         Assert.Throws<GlNotBoundException>(() => gl.EndConditionalRender());
+    }
+
+    [TestMethod]
+    public void BindSamplers_ThenUnbind_Succeeds()
+    {
+        gl.BindSamplers(0, [1, 2, 3]);
+        gl.UnbindSamplers(0, 3);
+    }
+
+    [TestMethod]
+    public void BindSamplers_OverLiveSingularBind_Throws()
+    {
+        gl.BindSampler(1, 7);
+        Assert.Throws<GlAlreadyBoundException>(() => gl.BindSamplers(0, [4, 5, 6]));
+    }
+
+    [TestMethod]
+    public void UnbindSamplers_WhenNothingBound_Throws()
+    {
+        Assert.Throws<GlNotBoundException>(() => gl.UnbindSamplers(0, 2));
+    }
+
+    [TestMethod]
+    public void BindTextures_ThenUnbind_Succeeds()
+    {
+        gl.BindTextures(0, [1, 2]);
+        gl.UnbindTextures(0, 2);
+    }
+
+    [TestMethod]
+    public void BindBuffersBase_ThenUnbind_Succeeds()
+    {
+        gl.BindBuffersBase(BufferTarget.UniformBuffer, 0, [1, 2]);
+        gl.UnbindBuffersBase(BufferTarget.UniformBuffer, 0, 2);
+    }
+
+    [TestMethod]
+    public void BindBuffersBase_OverLiveSingularBind_Throws()
+    {
+        gl.BindBufferBase(BufferTarget.UniformBuffer, 0, 9);
+        Assert.Throws<GlAlreadyBoundException>(() => gl.BindBuffersBase(BufferTarget.UniformBuffer, 0, [1, 2]));
+    }
+
+    [TestMethod]
+    public void DrawBuffer_ThenReset_Succeeds()
+    {
+        gl.DrawBuffer(DrawBufferMode.ColorAttachment0);
+        gl.ResetDrawBuffers();
+    }
+
+    [TestMethod]
+    public void DrawBuffers_ThenReset_Succeeds()
+    {
+        gl.DrawBuffers([DrawBufferMode.ColorAttachment0, DrawBufferMode.ColorAttachment1]);
+        gl.ResetDrawBuffers();
+    }
+
+    [TestMethod]
+    public void DrawBuffer_SetTwiceWithoutReset_Throws()
+    {
+        gl.DrawBuffer(DrawBufferMode.ColorAttachment0);
+        Assert.Throws<GlAlreadySetException>(() => gl.DrawBuffer(DrawBufferMode.ColorAttachment1));
+    }
+
+    [TestMethod]
+    public void ResetDrawBuffers_WhenNotSet_Throws()
+    {
+        Assert.Throws<GlAlreadyUnsetException>(() => gl.ResetDrawBuffers());
     }
 }
