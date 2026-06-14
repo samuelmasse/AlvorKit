@@ -1,6 +1,6 @@
 namespace AlvorKit.Script.NativeBuild;
 
-/// <summary>Build manifest loaded from native/&lt;library&gt;/native-build.json.</summary>
+/// <summary>Build manifest loaded from native/&lt;library&gt;/conf/native-build.json.</summary>
 internal sealed class NativeBuildConfig
 {
     /// <summary>Build strategy name, currently single-c or cmake.</summary>

@@ -1,10 +1,10 @@
 <Project>
     <PropertyGroup>
-        <!-- Version = upstream TAG, plus REVISION as a 4th segment when non-empty:
+        <!-- Version = upstream version/TAG, plus version/REVISION as a 4th segment when non-empty:
              a packaging revision of the same upstream because NuGet versions are immutable. -->
-        <Version>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/TAG').Trim())</Version>
-        <NativeRevision Condition="Exists('$(MSBuildProjectDirectory)/REVISION')">
-            $([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/REVISION').Trim())</NativeRevision>
+        <Version>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/version/TAG').Trim())</Version>
+        <NativeRevision Condition="Exists('$(MSBuildProjectDirectory)/version/REVISION')">
+            $([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/version/REVISION').Trim())</NativeRevision>
         <Version Condition="'$(NativeRevision)' != ''">$(Version).$(NativeRevision)</Version>
         <TargetFramework>netstandard2.0</TargetFramework>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>

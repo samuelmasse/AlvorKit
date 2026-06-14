@@ -1,8 +1,8 @@
 # Builds and publishes the managed packages generated from C headers.
 #
 # Release rule:
-# - automatic standalone binding releases only run when BINDING_REVISION changes.
-# - native TAG/REVISION changes are handled by native-packages.yml, which publishes
+# - automatic standalone binding releases only run when version/BINDING_REVISION changes.
+# - native version/TAG or version/REVISION changes are handled by native-packages.yml, which publishes
 #   the native package first and then publishes the matching bindings.
 # - this workflow is therefore for binding-only revisions: generator output,
 #   shape changes, docs/fixes, or managed packaging changes that do not require a
@@ -34,10 +34,10 @@ on:
     branches: [main]
     paths:
       [
-        "native/freetype/BINDING_REVISION",
-        "native/glfw/BINDING_REVISION",
-        "native/miniaudio/BINDING_REVISION",
-        "native/xxhash/BINDING_REVISION",
+        "native/freetype/version/BINDING_REVISION",
+        "native/glfw/version/BINDING_REVISION",
+        "native/miniaudio/version/BINDING_REVISION",
+        "native/xxhash/version/BINDING_REVISION",
       ]
 
 # The workflow only needs repository reads. NuGet publishing is authenticated
@@ -58,7 +58,7 @@ env:
 
 jobs:
   # Builds a dynamic matrix of binding packages to process. This keeps a freetype
-  # BINDING_REVISION bump from generating all bindings.
+  # version/BINDING_REVISION bump from generating all bindings.
   detect:
     runs-on: ubuntu-24.04
     outputs:
@@ -70,8 +70,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Selects libraries by manual input or changed BINDING_REVISION files.
-      # If TAG/REVISION changed in the same push, native-packages.yml owns that
+      # Selects libraries by manual input or changed version/BINDING_REVISION files.
+      # If version/TAG or version/REVISION changed in the same push, native-packages.yml owns that
       # library's binding publish after the native package is available.
       - name: Detect binding packages to release
         id: detect
@@ -80,7 +80,7 @@ jobs:
           set -euo pipefail
 
           # Manual runs use the explicit input. Push runs derive selection from
-          # changed BINDING_REVISION marker files.
+          # changed version/BINDING_REVISION marker files.
           selected=()
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             selection="${{ inputs.library }}"
@@ -98,12 +98,12 @@ jobs:
               mapfile -t changed < <(git diff --name-only "$base" "$head")
             fi
 
-            # BINDING_REVISION means "publish a new managed binding version".
-            # If native TAG/REVISION also changed, the native workflow handles it
+            # version/BINDING_REVISION means "publish a new managed binding version".
+            # If native version/TAG or version/REVISION also changed, the native workflow handles it
             # so the backend can reference a package that has just been published.
             for library in freetype glfw miniaudio xxhash; do
-              if printf '%s\n' "${changed[@]}" | grep -qx "native/${library}/BINDING_REVISION"; then
-                if printf '%s\n' "${changed[@]}" | grep -Eq "^native/${library}/(TAG|REVISION)$"; then
+              if printf '%s\n' "${changed[@]}" | grep -qx "native/${library}/version/BINDING_REVISION"; then
+                if printf '%s\n' "${changed[@]}" | grep -Eq "^native/${library}/version/(TAG|REVISION)$"; then
                   echo "Skipping ${library}: native package version changed in the same push, so native-packages will publish its bindings after the native package."
                 else
                   selected+=("$library")
@@ -149,7 +149,7 @@ jobs:
 
             objects+=("$(jq -cn \
               --arg selection "$library" \
-              --arg dir "native/$library" \
+              --arg dir "native/$library/version" \
               --arg id "$id" \
               --arg native_id "$native_id" \
               --arg api_project "$api_project" \

@@ -17,7 +17,7 @@ public sealed class NativeLibraryBindingTest
         var config = TestConfig(workspace);
         config.SourceDir = "src-{tag}-{tagDashes}";
         config.IncludeSubdir = "include";
-        config.SizeofShim = "shim.c";
+        config.SizeofShim = "src/shim.c";
         WriteConfig(repository, "fixture", config);
 
         var binding = NativeLibraryBinding.Load(repository, "fixture");
@@ -33,7 +33,7 @@ public sealed class NativeLibraryBindingTest
         Assert.AreEqual(Path.Combine(config.WorkDir, "src-1.2.3-1-2-3"), binding.SourceDirectory);
         Assert.AreEqual(Path.Combine(binding.SourceDirectory, "include"), binding.IncludeDirectory);
         Assert.AreEqual(Path.Combine(binding.SourceDirectory, "fixture.h"), binding.HeaderPath);
-        Assert.AreEqual(Path.Combine(binding.Directory, "shim.c"), binding.SizeofShimPath);
+        Assert.AreEqual(Path.Combine(binding.Directory, "src", "shim.c"), binding.SizeofShimPath);
         Assert.AreEqual("Fixture.Native", binding.NativePackageId);
     }
 
@@ -43,12 +43,15 @@ public sealed class NativeLibraryBindingTest
     {
         using var workspace = TempWorkspace.Create();
         var repository = CreateRepository(workspace);
-        CreateLibrary(repository, "opengl", tag: "abc123", revision: "7", docTag: "doc.1");
+        CreateLibrary(repository, "opengl", bindingRevision: "7", writeTag: false);
         var config = TestConfig(workspace);
         config.Kind = BindgenConfig.GlRegistryKind;
         config.NativeClass = "";
         config.NativeLibrary = "";
         config.GlVersion = "4.6";
+        config.SourceTag = "abc123";
+        config.SourceDir = "registry-{tag}";
+        config.DocTag = "doc.1";
         config.DocUrl = "https://example.test/docs-{docTag}.tar.gz";
         config.DocDir = "docs-{docTag}";
         config.DocSubdir = "gl4";
@@ -57,6 +60,10 @@ public sealed class NativeLibraryBindingTest
         var binding = NativeLibraryBinding.Load(repository, "opengl");
 
         Assert.AreEqual("4.6.7", binding.Version);
+        Assert.AreEqual("4.6", binding.NativeVersion);
+        Assert.AreEqual("", binding.NativeRevision);
+        Assert.AreEqual("7", binding.BindingRevision);
+        Assert.AreEqual(Path.Combine(config.WorkDir, "registry-abc123"), binding.SourceDirectory);
         Assert.AreEqual(Path.Combine(config.WorkDir, "docs-doc.1"), binding.DocDirectory);
         Assert.AreEqual(Path.Combine(config.WorkDir, "docs-doc.1", "gl4"), binding.DocReadDirectory);
         Assert.AreEqual("abc123", binding.ReplaceVersionTokens("{tag}"));
@@ -102,7 +109,7 @@ public sealed class NativeLibraryBindingTest
             config.NativeLibrary = "";
             config.GlVersion = "4.6";
             config.DocUrl = "https://example.test/docs.tar.gz";
-        }, "DOC_TAG is missing");
+        }, "docTag is missing");
     }
 
     /// <summary>Creates a minimal repository layout that RepositoryLayout can discover.</summary>
@@ -120,23 +127,25 @@ public sealed class NativeLibraryBindingTest
         string tag = "1.0.0",
         string revision = "",
         string bindingRevision = "",
-        string docTag = "")
+        bool writeTag = true)
     {
         var directory = Path.Combine(repository.NativeDirectory, name);
-        Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(directory, "TAG"), tag);
+        var conf = Path.Combine(directory, "conf");
+        var version = Path.Combine(directory, "version");
+        Directory.CreateDirectory(conf);
+        Directory.CreateDirectory(version);
+        if (writeTag)
+            File.WriteAllText(Path.Combine(version, "TAG"), tag);
         if (revision.Length > 0)
-            File.WriteAllText(Path.Combine(directory, "REVISION"), revision);
+            File.WriteAllText(Path.Combine(version, "REVISION"), revision);
         if (bindingRevision.Length > 0)
-            File.WriteAllText(Path.Combine(directory, "BINDING_REVISION"), bindingRevision);
-        if (docTag.Length > 0)
-            File.WriteAllText(Path.Combine(directory, "DOC_TAG"), docTag);
+            File.WriteAllText(Path.Combine(version, "BINDING_REVISION"), bindingRevision);
     }
 
     /// <summary>Writes a bindgen config fixture for a native library.</summary>
     private static void WriteConfig(RepositoryLayout repository, string name, BindgenConfig config) =>
         File.WriteAllText(
-            Path.Combine(repository.NativeDirectory, name, "bindgen.json"),
+            Path.Combine(repository.NativeDirectory, name, "conf", "bindgen.json"),
             JsonSerializer.Serialize(config));
 
     /// <summary>Creates a valid C-header config with test-local work directories.</summary>

@@ -28,8 +28,9 @@ public sealed class RepositoryLayoutTest
         using var workspace = TempWorkspace.Create();
         File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
         var native = Path.Combine(workspace.Root, "native", "glfw");
-        Directory.CreateDirectory(native);
-        File.WriteAllText(Path.Combine(native, "bindgen.json"), "{}");
+        var conf = Path.Combine(native, "conf");
+        Directory.CreateDirectory(conf);
+        File.WriteAllText(Path.Combine(conf, "bindgen.json"), "{}");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
 
         CollectionAssert.AreEqual(new[] { "glfw" }, layout.SelectedLibraries("GLFW").ToArray());
@@ -42,8 +43,9 @@ public sealed class RepositoryLayoutTest
         using var workspace = TempWorkspace.Create();
         File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
         var native = Path.Combine(workspace.Root, "native", "alpha");
-        Directory.CreateDirectory(native);
-        File.WriteAllText(Path.Combine(native, "bindgen.json"), "{}");
+        var conf = Path.Combine(native, "conf");
+        Directory.CreateDirectory(conf);
+        File.WriteAllText(Path.Combine(conf, "bindgen.json"), "{}");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
 
         var exception = Assert.ThrowsException<InvalidOperationException>(() => layout.SelectedLibraries("glfw").ToArray());
@@ -59,11 +61,11 @@ public sealed class RepositoryLayoutTest
         using var workspace = TempWorkspace.Create();
         File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
         var native = Path.Combine(workspace.Root, "native");
-        Directory.CreateDirectory(Path.Combine(native, "zeta"));
-        Directory.CreateDirectory(Path.Combine(native, "alpha"));
+        Directory.CreateDirectory(Path.Combine(native, "zeta", "conf"));
+        Directory.CreateDirectory(Path.Combine(native, "alpha", "conf"));
         Directory.CreateDirectory(Path.Combine(native, "ignored"));
-        File.WriteAllText(Path.Combine(native, "zeta", "bindgen.json"), "{}");
-        File.WriteAllText(Path.Combine(native, "alpha", "bindgen.json"), "{}");
+        File.WriteAllText(Path.Combine(native, "zeta", "conf", "bindgen.json"), "{}");
+        File.WriteAllText(Path.Combine(native, "alpha", "conf", "bindgen.json"), "{}");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
 
         CollectionAssert.AreEqual(new[] { "alpha", "zeta" }, layout.SelectedLibraries("all").ToArray());

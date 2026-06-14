@@ -5,9 +5,9 @@
 # workflow only generates managed bindings from the Khronos registry metadata.
 #
 # Release rule:
-# - automatic publishing only runs when native/opengl/BINDING_REVISION changes.
-# - TAG, DOC_TAG, bindgen.json, and generator changes can affect generated code,
-#   but they should not publish unless the package version marker is bumped.
+# - automatic publishing only runs when native/opengl/version/BINDING_REVISION changes.
+# - conf/bindgen.json and generator changes can affect generated code, but they should
+#   not publish unless the package version marker is bumped.
 # - manual runs build artifacts without publishing.
 name: opengl bindings package
 
@@ -20,7 +20,7 @@ on:
     branches: [main]
     paths:
       [
-        "native/opengl/BINDING_REVISION",
+        "native/opengl/version/BINDING_REVISION",
       ]
 
 # This workflow only reads the repository. NuGet publishing uses NUGET_API_KEY.
@@ -60,10 +60,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          # OpenGL packages version from bindgen.json's glVersion plus the
-          # BINDING_REVISION marker, for example 4.6.3.
-          version="$(jq -r .glVersion native/opengl/bindgen.json)"
-          revision="$(tr -d '[:space:]' < native/opengl/BINDING_REVISION 2>/dev/null || true)"
+          # OpenGL packages version from conf/bindgen.json's glVersion plus the
+          # version/BINDING_REVISION marker, for example 4.6.3.
+          version="$(jq -r .glVersion native/opengl/conf/bindgen.json)"
+          revision="$(tr -d '[:space:]' < native/opengl/version/BINDING_REVISION 2>/dev/null || true)"
           [[ -n "$revision" ]] && version="${version}.${revision}"
 
           # The API and backend packages are versioned together, so both must be
@@ -71,7 +71,7 @@ jobs:
           for package_id in alvorkit.opengl alvorkit.opengl.backend; do
             versions="$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/${package_id}/index.json" || echo '{"versions":[]}')"
             if jq -e --arg version "$version" '.versions | index($version)' <<< "$versions" > /dev/null; then
-              echo "::error::${package_id} ${version} is already published - bump native/opengl/BINDING_REVISION."
+              echo "::error::${package_id} ${version} is already published - bump native/opengl/version/BINDING_REVISION."
               exit 1
             fi
           done

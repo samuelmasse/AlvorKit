@@ -13,7 +13,7 @@
     "workDir": "xxhash-build",
     "sourceDir": "xxHash-{tag}",
     "header": "xxhash.h",
-    "implFile": "xxhash.c",
+    "implFile": "src/xxhash.c",
     "apiProject": "out/bindgen/AlvorKit.XxHash",
     "backendProject": "out/bindgen/AlvorKit.XxHash.Backend",
     "typeRenames": {

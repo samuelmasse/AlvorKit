@@ -31,7 +31,7 @@ public sealed partial class NativeLibraryBinding
         Version = BindingVersion;
 
         WorkRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), config.WorkDir);
-        SourceDirectory = Path.Combine(WorkRoot, ReplaceVersionTokens(config.SourceDir));
+        SourceDirectory = ResolvePath(WorkRoot, ReplaceVersionTokens(config.SourceDir));
     }
 
     /// <summary>Repository root that contains the native library directory.</summary>
@@ -46,16 +46,16 @@ public sealed partial class NativeLibraryBinding
     /// <summary>Loaded bindgen configuration for this native library.</summary>
     public BindgenConfig Config { get; }
 
-    /// <summary>Upstream source tag or version read from native metadata.</summary>
+    /// <summary>Upstream source tag or version read from bindgen config or native metadata.</summary>
     public string Tag { get; }
 
-    /// <summary>Native package revision suffix read from native metadata.</summary>
+    /// <summary>Native package revision suffix read from version metadata.</summary>
     public string NativeRevision { get; }
 
-    /// <summary>Binding package revision suffix read from native metadata.</summary>
+    /// <summary>Binding package revision suffix read from version metadata.</summary>
     public string BindingRevision { get; }
 
-    /// <summary>Documentation archive tag read from native metadata.</summary>
+    /// <summary>Documentation archive tag read from bindgen config.</summary>
     public string DocTag { get; }
 
     /// <summary>Generated binding package version.</summary>
@@ -72,14 +72,17 @@ public sealed partial class NativeLibraryBinding
     {
         var directory = Path.Combine(repository.NativeDirectory, name);
         var config = BindgenConfig.Load(directory, name);
-        ValidateConfig(name, directory, config);
-
-        var tag = ReadRequiredVersion(directory, "TAG");
-        var nativeRevision = ReadOptionalVersion(directory, "REVISION");
-        var bindingRevision = ReadOptionalVersion(directory, "BINDING_REVISION");
+        var versionDirectory = Path.Combine(directory, "version");
+        var tag = config.SourceTag ?? ReadOptionalVersion(versionDirectory, "TAG");
+        var nativeRevision = config.Kind == BindgenConfig.GlRegistryKind
+            ? ""
+            : ReadOptionalVersion(versionDirectory, "REVISION");
+        var bindingRevision = ReadOptionalVersion(versionDirectory, "BINDING_REVISION");
         if (bindingRevision.Length == 0)
             bindingRevision = nativeRevision;
-        var docTag = ReadOptionalVersion(directory, "DOC_TAG");
+        var docTag = config.DocTag ?? "";
+
+        ValidateConfig(name, config, tag, docTag);
         return new(repository.Root, name, directory, config, tag, nativeRevision, bindingRevision, docTag);
     }
 
@@ -90,21 +93,21 @@ public sealed partial class NativeLibraryBinding
             .Replace("{docTag}", DocTag);
 
     /// <summary>Rejects bindgen configs that cannot be generated safely.</summary>
-    private static void ValidateConfig(string name, string directory, BindgenConfig config)
+    private static void ValidateConfig(string name, BindgenConfig config, string tag, string docTag)
     {
         if (config.Kind is not (BindgenConfig.CHeaderKind or BindgenConfig.GlRegistryKind))
             throw new InvalidOperationException($"{name}: unknown bindgen kind '{config.Kind}'.");
+        if (config.Kind == BindgenConfig.CHeaderKind && tag.Length == 0)
+            throw new InvalidOperationException($"{name}: TAG is missing.");
         if (config.Kind == BindgenConfig.CHeaderKind && (config.NativeClass.Length == 0 || config.NativeLibrary.Length == 0))
             throw new InvalidOperationException($"{name}: c-header bindings require nativeClass and nativeLibrary.");
         if (config.Kind == BindgenConfig.GlRegistryKind && config.GlVersion is null)
             throw new InvalidOperationException($"{name}: gl-registry bindings require glVersion.");
-        if (config.Kind == BindgenConfig.GlRegistryKind && config.DocUrl is not null && !File.Exists(Path.Combine(directory, "DOC_TAG")))
-            throw new InvalidOperationException($"{name}: docUrl is set but native/{name}/DOC_TAG is missing.");
+        if (config.Kind == BindgenConfig.GlRegistryKind && tag.Length == 0)
+            throw new InvalidOperationException($"{name}: gl-registry bindings require sourceTag.");
+        if (config.Kind == BindgenConfig.GlRegistryKind && config.DocUrl is not null && docTag.Length == 0)
+            throw new InvalidOperationException($"{name}: docUrl is set but docTag is missing.");
     }
-
-    /// <summary>Reads a required version marker file.</summary>
-    private static string ReadRequiredVersion(string directory, string fileName) =>
-        File.ReadAllText(Path.Combine(directory, fileName)).Trim();
 
     /// <summary>Reads an optional version marker file, returning an empty string when absent.</summary>
     private static string ReadOptionalVersion(string directory, string fileName)
@@ -116,4 +119,8 @@ public sealed partial class NativeLibraryBinding
     /// <summary>Appends the AlvorKit package revision segment when present.</summary>
     private static string VersionWithRevision(string versionBase, string revision) =>
         revision.Length > 0 ? $"{versionBase}.{revision}" : versionBase;
+
+    /// <summary>Combines repo/config paths and normalizes separators for the host platform.</summary>
+    private static string ResolvePath(string root, string relative) =>
+        Path.GetFullPath(Path.Combine(root, relative));
 }

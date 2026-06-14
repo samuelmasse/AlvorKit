@@ -23,7 +23,7 @@ internal sealed class RepositoryLayout(string root)
     /// <summary>Returns all native libraries that have build manifests.</summary>
     public IEnumerable<string> NativeBuildLibraries() =>
         Directory.GetDirectories(NativeDirectory)
-            .Where(directory => File.Exists(Path.Combine(directory, "native-build.json")))
+            .Where(directory => File.Exists(Path.Combine(directory, "conf", "native-build.json")))
             .Select(Path.GetFileName)
             .OfType<string>()
             .Order(StringComparer.OrdinalIgnoreCase);

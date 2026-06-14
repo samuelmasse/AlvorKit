@@ -4,10 +4,10 @@ namespace AlvorKit.Script.NativeBuild;
 /// <param name="RepositoryRoot">Absolute repository root path.</param>
 /// <param name="Name">Native library directory name under native/.</param>
 /// <param name="LibraryDirectory">Absolute path to native/&lt;library&gt;.</param>
-/// <param name="Metadata">Build-relevant values loaded from bindgen.json.</param>
+/// <param name="Metadata">Build-relevant values loaded from conf/bindgen.json.</param>
 /// <param name="Build">Native build manifest values.</param>
-/// <param name="Tag">Upstream version tag read from TAG.</param>
-/// <param name="NativeRevision">AlvorKit package revision read from REVISION.</param>
+/// <param name="Tag">Upstream version tag read from version/TAG.</param>
+/// <param name="NativeRevision">AlvorKit package revision read from version/REVISION.</param>
 internal sealed record LibraryBuildContext(
     string RepositoryRoot,
     string Name,
@@ -17,7 +17,7 @@ internal sealed record LibraryBuildContext(
     string Tag,
     string NativeRevision)
 {
-    /// <summary>Package version formed from TAG and REVISION.</summary>
+    /// <summary>Package version formed from version/TAG and version/REVISION.</summary>
     public string NativeVersion => NativeRevision.Length > 0 ? $"{Tag}.{NativeRevision}" : Tag;
 
     /// <summary>User-profile work root for cached source and build directories.</summary>
@@ -33,10 +33,12 @@ internal sealed record LibraryBuildContext(
         if (!Directory.Exists(directory))
             throw new DirectoryNotFoundException($"native/{name} does not exist.");
 
-        var metadata = JsonFile.Read<BindgenMetadata>(Path.Combine(directory, "bindgen.json"));
-        var build = JsonFile.Read<NativeBuildConfig>(Path.Combine(directory, "native-build.json"));
-        var tag = File.ReadAllText(Path.Combine(directory, "TAG")).Trim();
-        var revisionPath = Path.Combine(directory, "REVISION");
+        var confDirectory = Path.Combine(directory, "conf");
+        var versionDirectory = Path.Combine(directory, "version");
+        var metadata = JsonFile.Read<BindgenMetadata>(Path.Combine(confDirectory, "bindgen.json"));
+        var build = JsonFile.Read<NativeBuildConfig>(Path.Combine(confDirectory, "native-build.json"));
+        var tag = File.ReadAllText(Path.Combine(versionDirectory, "TAG")).Trim();
+        var revisionPath = Path.Combine(versionDirectory, "REVISION");
         var revision = File.Exists(revisionPath) ? File.ReadAllText(revisionPath).Trim() : "";
         return new(repository.Root, name, directory, metadata, build, tag, revision);
     }

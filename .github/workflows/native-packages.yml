@@ -2,7 +2,7 @@
 #
 # Release rule:
 # - automatic pushes only run when a native package version marker changes.
-# - each push release builds only the libraries whose TAG or REVISION changed.
+# - each push release builds only the libraries whose version/TAG or version/REVISION changed.
 # - after a native package is published, the matching managed C-header binding
 #   package is generated and published from the same changed-library set.
 #
@@ -33,14 +33,14 @@ on:
     branches: [main]
     paths:
       [
-        "native/freetype/TAG",
-        "native/freetype/REVISION",
-        "native/glfw/TAG",
-        "native/glfw/REVISION",
-        "native/miniaudio/TAG",
-        "native/miniaudio/REVISION",
-        "native/xxhash/TAG",
-        "native/xxhash/REVISION",
+        "native/freetype/version/TAG",
+        "native/freetype/version/REVISION",
+        "native/glfw/version/TAG",
+        "native/glfw/version/REVISION",
+        "native/miniaudio/version/TAG",
+        "native/miniaudio/version/REVISION",
+        "native/xxhash/version/TAG",
+        "native/xxhash/version/REVISION",
       ]
 
 # The workflow only reads repository contents. Publishing uses the NuGet API key,
@@ -85,7 +85,7 @@ jobs:
           set -euo pipefail
 
           # Manual runs trust the selected input; push runs derive the selection
-          # from changed TAG/REVISION files.
+          # from changed version/TAG or version/REVISION files.
           selected=()
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             selection="${{ inputs.library }}"
@@ -103,9 +103,9 @@ jobs:
               mapfile -t changed < <(git diff --name-only "$base" "$head")
             fi
 
-            # Only TAG and REVISION are native-package release signals.
+            # Only version/TAG and version/REVISION are native-package release signals.
             for library in freetype glfw miniaudio xxhash; do
-              if printf '%s\n' "${changed[@]}" | grep -Eq "^native/${library}/(TAG|REVISION)$"; then
+              if printf '%s\n' "${changed[@]}" | grep -Eq "^native/${library}/version/(TAG|REVISION)$"; then
                 selected+=("$library")
               fi
             done
@@ -158,12 +158,12 @@ jobs:
             # NuGet versions are immutable. Fail before starting the large build
             # matrix if the requested push release already exists.
             if [[ "${{ github.event_name }}" == "push" ]]; then
-              version="$(tr -d '[:space:]' < "native/${library}/TAG")"
-              revision="$(tr -d '[:space:]' < "native/${library}/REVISION" 2>/dev/null || true)"
+              version="$(tr -d '[:space:]' < "native/${library}/version/TAG")"
+              revision="$(tr -d '[:space:]' < "native/${library}/version/REVISION" 2>/dev/null || true)"
               [[ -n "$revision" ]] && version="${version}.${revision}"
               versions="$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/${package_id}/index.json" || echo '{"versions":[]}')"
               if jq -e --arg version "$version" '.versions | index($version)' <<< "$versions" > /dev/null; then
-                echo "::error::${package_name} ${version} is already published - bump native/${library}/TAG or REVISION."
+                echo "::error::${package_name} ${version} is already published - bump native/${library}/version/TAG or version/REVISION."
                 exit 1
               fi
             fi
@@ -275,7 +275,7 @@ jobs:
         run: dotnet nuget push bin/${{ matrix.package.package_name }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
 
   # Publishes the managed C-header bindings that correspond to native packages
-  # just released by this workflow. This keeps native TAG/REVISION bumps from
+  # just released by this workflow. This keeps native version/TAG or version/REVISION bumps from
   # relying on a separate workflow_run trigger.
   bindings:
     needs: [detect, pack]
@@ -294,13 +294,13 @@ jobs:
           dotnet-version: "10.0.x"
 
       # Derive both package versions from marker files. Binding version uses
-      # BINDING_REVISION when present, otherwise it follows REVISION.
+      # version/BINDING_REVISION when present, otherwise it follows version/REVISION.
       - name: Compute binding package versions
         id: versions
         shell: bash
         run: |
           set -euo pipefail
-          dir="native/${{ matrix.package.library }}"
+          dir="native/${{ matrix.package.library }}/version"
           tag="$(tr -d '[:space:]' < "$dir/TAG")"
           native_revision="$(tr -d '[:space:]' < "$dir/REVISION" 2>/dev/null || true)"
           binding_revision="$(tr -d '[:space:]' < "$dir/BINDING_REVISION" 2>/dev/null || true)"

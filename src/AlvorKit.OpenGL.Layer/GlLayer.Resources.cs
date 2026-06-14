@@ -160,13 +160,7 @@ public unsafe partial class GlLayer
     public override void DeleteTransformFeedbacks(int n, nint ids) { transformFeedbacks.Untrack(nameof(DeleteTransformFeedbacks), n, ids); base.DeleteTransformFeedbacks(n, ids); }
     /// <inheritdoc/>
     /// <remarks>Layer: stops tracking the deleted shader.</remarks>
-    public void DeleteShader(uint shader) => DeleteShader((GlShaderHandle)shader);
-    /// <inheritdoc/>
-    /// <remarks>Layer: stops tracking the deleted shader.</remarks>
     public override void DeleteShader(GlShaderHandle shader) { shaders.Untrack(nameof(DeleteShader), shader); base.DeleteShader(shader); }
-    /// <inheritdoc/>
-    /// <remarks>Layer: stops tracking the deleted program.</remarks>
-    public void DeleteProgram(uint program) => DeleteProgram((GlProgramHandle)program);
     /// <inheritdoc/>
     /// <remarks>Layer: stops tracking the deleted program.</remarks>
     public override void DeleteProgram(GlProgramHandle program) { programs.Untrack(nameof(DeleteProgram), program); base.DeleteProgram(program); }

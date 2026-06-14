@@ -30,13 +30,7 @@ public unsafe partial class GlLayer
     public override void BufferStorage(GlBufferStorageTarget target, nint size, nint data, GlBufferStorageMask flags) { TrackBoundBufferSize(nameof(BufferStorage), (GlBufferTarget)(uint)target, (long)size); base.BufferStorage(target, size, data, flags); }
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the memory usage of buffer <paramref name="buffer"/>.</remarks>
-    public void NamedBufferData(uint buffer, nint size, nint data, GlBufferUsage usage) => NamedBufferData((GlBufferHandle)buffer, size, data, usage);
-    /// <inheritdoc/>
-    /// <remarks>Layer: tracks the memory usage of buffer <paramref name="buffer"/>.</remarks>
     public override void NamedBufferData(GlBufferHandle buffer, nint size, nint data, GlBufferUsage usage) { TrackBufferSize(nameof(NamedBufferData), buffer, (long)size); base.NamedBufferData(buffer, size, data, usage); }
-    /// <inheritdoc/>
-    /// <remarks>Layer: tracks the memory usage of buffer <paramref name="buffer"/>.</remarks>
-    public void NamedBufferStorage(uint buffer, nint size, nint data, GlBufferStorageMask flags) => NamedBufferStorage((GlBufferHandle)buffer, size, data, flags);
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the memory usage of buffer <paramref name="buffer"/>.</remarks>
     public override void NamedBufferStorage(GlBufferHandle buffer, nint size, nint data, GlBufferStorageMask flags) { TrackBufferSize(nameof(NamedBufferStorage), buffer, (long)size); base.NamedBufferStorage(buffer, size, data, flags); }
@@ -89,31 +83,16 @@ public unsafe partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the memory usage of texture <paramref name="texture"/>.</remarks>
-    public void TextureStorage1D(uint texture, int levels, GlSizedInternalFormat internalformat, int width) => TextureStorage1D((GlTextureHandle)texture, levels, internalformat, width);
-    /// <inheritdoc/>
-    /// <remarks>Layer: tracks the memory usage of texture <paramref name="texture"/>.</remarks>
     public override void TextureStorage1D(GlTextureHandle texture, int levels, GlSizedInternalFormat internalformat, int width) { TrackTextureSize(nameof(TextureStorage1D), texture, new((GlInternalFormat)(uint)internalformat, (width, 1, 1), default, default)); base.TextureStorage1D(texture, levels, internalformat, width); }
-    /// <inheritdoc/>
-    /// <remarks>Layer: tracks the memory usage of texture <paramref name="texture"/>.</remarks>
-    public void TextureStorage2D(uint texture, int levels, GlSizedInternalFormat internalformat, int width, int height) => TextureStorage2D((GlTextureHandle)texture, levels, internalformat, width, height);
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the memory usage of texture <paramref name="texture"/>.</remarks>
     public override void TextureStorage2D(GlTextureHandle texture, int levels, GlSizedInternalFormat internalformat, int width, int height) { TrackTextureSize(nameof(TextureStorage2D), texture, new((GlInternalFormat)(uint)internalformat, (width, height, 1), default, default)); base.TextureStorage2D(texture, levels, internalformat, width, height); }
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the memory usage of texture <paramref name="texture"/>.</remarks>
-    public void TextureStorage3D(uint texture, int levels, GlSizedInternalFormat internalformat, int width, int height, int depth) => TextureStorage3D((GlTextureHandle)texture, levels, internalformat, width, height, depth);
-    /// <inheritdoc/>
-    /// <remarks>Layer: tracks the memory usage of texture <paramref name="texture"/>.</remarks>
     public override void TextureStorage3D(GlTextureHandle texture, int levels, GlSizedInternalFormat internalformat, int width, int height, int depth) { TrackTextureSize(nameof(TextureStorage3D), texture, new((GlInternalFormat)(uint)internalformat, (width, height, depth), default, default)); base.TextureStorage3D(texture, levels, internalformat, width, height, depth); }
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the memory usage of texture <paramref name="texture"/>.</remarks>
-    public void TextureStorage2DMultisample(uint texture, int samples, GlSizedInternalFormat internalformat, int width, int height, bool fixedsamplelocations) => TextureStorage2DMultisample((GlTextureHandle)texture, samples, internalformat, width, height, fixedsamplelocations);
-    /// <inheritdoc/>
-    /// <remarks>Layer: tracks the memory usage of texture <paramref name="texture"/>.</remarks>
     public override void TextureStorage2DMultisample(GlTextureHandle texture, int samples, GlSizedInternalFormat internalformat, int width, int height, bool fixedsamplelocations) { TrackTextureSize(nameof(TextureStorage2DMultisample), texture, new((GlInternalFormat)(uint)internalformat, (width, height, 1), default, default, samples)); base.TextureStorage2DMultisample(texture, samples, internalformat, width, height, fixedsamplelocations); }
-    /// <inheritdoc/>
-    /// <remarks>Layer: tracks the memory usage of texture <paramref name="texture"/>.</remarks>
-    public void TextureStorage3DMultisample(uint texture, int samples, GlSizedInternalFormat internalformat, int width, int height, int depth, bool fixedsamplelocations) => TextureStorage3DMultisample((GlTextureHandle)texture, samples, internalformat, width, height, depth, fixedsamplelocations);
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the memory usage of texture <paramref name="texture"/>.</remarks>
     public override void TextureStorage3DMultisample(GlTextureHandle texture, int samples, GlSizedInternalFormat internalformat, int width, int height, int depth, bool fixedsamplelocations) { TrackTextureSize(nameof(TextureStorage3DMultisample), texture, new((GlInternalFormat)(uint)internalformat, (width, height, depth), default, default, samples)); base.TextureStorage3DMultisample(texture, samples, internalformat, width, height, depth, fixedsamplelocations); }
@@ -126,13 +105,7 @@ public unsafe partial class GlLayer
     public override void RenderbufferStorageMultisample(GlRenderbufferTarget target, int samples, GlInternalFormat internalformat, int width, int height) { TrackBoundRenderbufferSize(nameof(RenderbufferStorageMultisample), new(internalformat, width, height, samples)); base.RenderbufferStorageMultisample(target, samples, internalformat, width, height); }
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the memory usage of renderbuffer <paramref name="renderbuffer"/>.</remarks>
-    public void NamedRenderbufferStorage(uint renderbuffer, GlInternalFormat internalformat, int width, int height) => NamedRenderbufferStorage((GlRenderbufferHandle)renderbuffer, internalformat, width, height);
-    /// <inheritdoc/>
-    /// <remarks>Layer: tracks the memory usage of renderbuffer <paramref name="renderbuffer"/>.</remarks>
     public override void NamedRenderbufferStorage(GlRenderbufferHandle renderbuffer, GlInternalFormat internalformat, int width, int height) { TrackRenderbufferSize(nameof(NamedRenderbufferStorage), renderbuffer, new(internalformat, width, height, 1)); base.NamedRenderbufferStorage(renderbuffer, internalformat, width, height); }
-    /// <inheritdoc/>
-    /// <remarks>Layer: tracks the memory usage of renderbuffer <paramref name="renderbuffer"/>.</remarks>
-    public void NamedRenderbufferStorageMultisample(uint renderbuffer, int samples, GlInternalFormat internalformat, int width, int height) => NamedRenderbufferStorageMultisample((GlRenderbufferHandle)renderbuffer, samples, internalformat, width, height);
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the memory usage of renderbuffer <paramref name="renderbuffer"/>.</remarks>
     public override void NamedRenderbufferStorageMultisample(GlRenderbufferHandle renderbuffer, int samples, GlInternalFormat internalformat, int width, int height) { TrackRenderbufferSize(nameof(NamedRenderbufferStorageMultisample), renderbuffer, new(internalformat, width, height, samples)); base.NamedRenderbufferStorageMultisample(renderbuffer, samples, internalformat, width, height); }

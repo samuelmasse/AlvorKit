@@ -1,6 +1,6 @@
 namespace AlvorKit.Script.NativeBuild;
 
-/// <summary>Subset of bindgen.json needed to build and package native binaries.</summary>
+/// <summary>Subset of conf/bindgen.json needed to build and package native binaries.</summary>
 internal sealed class BindgenMetadata
 {
     /// <summary>Native library base name used by .NET runtime probing.</summary>

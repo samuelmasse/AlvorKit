@@ -68,12 +68,15 @@ public sealed class NativeSourceResolverTest
     {
         File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
         var native = Path.Combine(workspace.Root, "native", "fixture");
-        Directory.CreateDirectory(native);
-        File.WriteAllText(Path.Combine(native, "TAG"), "1.0.0");
+        var conf = Path.Combine(native, "conf");
+        var version = Path.Combine(native, "version");
+        Directory.CreateDirectory(conf);
+        Directory.CreateDirectory(version);
+        File.WriteAllText(Path.Combine(version, "TAG"), "1.0.0");
         var repository = RepositoryLayout.FindFrom(workspace.Root);
         var config = TestConfig(workspace);
         configure?.Invoke(config);
-        File.WriteAllText(Path.Combine(native, "bindgen.json"), JsonSerializer.Serialize(config));
+        File.WriteAllText(Path.Combine(conf, "bindgen.json"), JsonSerializer.Serialize(config));
         return NativeLibraryBinding.Load(repository, "fixture");
     }
 

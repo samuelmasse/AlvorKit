@@ -12,7 +12,7 @@
     "workDir": "miniaudio-build",
     "sourceDir": "miniaudio-{tag}",
     "header": "miniaudio.h",
-    "implFile": "miniaudio.c",
+    "implFile": "src/miniaudio.c",
     "apiProject": "out/bindgen/AlvorKit.MiniAudio",
     "backendProject": "out/bindgen/AlvorKit.MiniAudio.Backend",
     "extraDefines": [
@@ -21,7 +21,7 @@
     "typeRenames": {
         "ma_backend": "MaBackendKind"
     },
-    "sizeofShim": "alvorkit.c",
+    "sizeofShim": "src/alvorkit.c",
     "shimExport": "MA_API",
     "transparentStructs": [
         "ma_waveform_config"

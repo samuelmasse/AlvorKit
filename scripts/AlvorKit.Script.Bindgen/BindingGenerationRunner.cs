@@ -99,10 +99,10 @@ public sealed class BindingGenerationRunner(RepositoryLayout repository, Bindgen
             return model;
 
         if (options.Strict)
-            throw new InvalidOperationException($"{library.Config.SizeofShim} is out of date - regenerate locally, rebuild the native library and bump REVISION.");
+            throw new InvalidOperationException($"{library.Config.SizeofShim} is out of date - regenerate locally, rebuild the native library and bump version/REVISION.");
 
         File.WriteAllText(library.SizeofShimPath, shim);
-        Console.WriteLine($"Shim: {library.Config.SizeofShim} updated with {model.SizeofTypes.Count} sizeof exports - rebuild the native library and bump REVISION");
+        Console.WriteLine($"Shim: {library.Config.SizeofShim} updated with {model.SizeofTypes.Count} sizeof exports - rebuild the native library and bump version/REVISION");
         return ParsePrimaryModel(library, translationUnitPath);
     }
 

@@ -21,6 +21,9 @@ public sealed partial class BindgenConfig
     /// <summary>Optional Khronos reference-page archive URL used for generated documentation.</summary>
     public string? DocUrl { get; set; }
 
+    /// <summary>Optional Khronos reference-page tag or commit used for documentation URL replacement.</summary>
+    public string? DocTag { get; set; }
+
     /// <summary>Documentation archive extraction directory under <see cref="WorkDir"/>.</summary>
     public string DocDir { get; set; } = "";
 

@@ -11,7 +11,9 @@ public sealed class BindgenConfigLoadTest
     public void Load_LoadsConfigCaseInsensitively()
     {
         using var workspace = TempWorkspace.Create();
-        File.WriteAllText(Path.Combine(workspace.Root, "bindgen.json"), """
+        var conf = Path.Combine(workspace.Root, "conf");
+        Directory.CreateDirectory(conf);
+        File.WriteAllText(Path.Combine(conf, "bindgen.json"), """
             {
               "namespace": "Fixture.Native",
               "apiClass": "FixtureApi",
@@ -41,7 +43,9 @@ public sealed class BindgenConfigLoadTest
     public void Load_LoadsNestedBindingHints()
     {
         using var workspace = TempWorkspace.Create();
-        File.WriteAllText(Path.Combine(workspace.Root, "bindgen.json"), """
+        var conf = Path.Combine(workspace.Root, "conf");
+        Directory.CreateDirectory(conf);
+        File.WriteAllText(Path.Combine(conf, "bindgen.json"), """
             {
               "namespace": "Fixture.Native",
               "apiClass": "FixtureApi",

@@ -3,13 +3,16 @@
     <Folder Name="/Demos/">
         <Project Path="demos/AlvorKit.Demo/AlvorKit.Demo.csproj" />
         <Project Path="demos/AlvorKit.Demo.XxHashBench/AlvorKit.Demo.XxHashBench.csproj" />
-        <Project Path="demos/AlvorKit.OpenGL.Demo.HelloTriangle/AlvorKit.OpenGL.Demo.HelloTriangle.csproj" />
+        <Project
+            Path="demos/AlvorKit.OpenGL.Demo.HelloTriangle/AlvorKit.OpenGL.Demo.HelloTriangle.csproj" />
     </Folder>
 
     <Folder Name="/Script/">
         <Project Path="scripts/AlvorKit.Script.Bindgen.Core/AlvorKit.Script.Bindgen.Core.csproj" />
-        <Project Path="scripts/AlvorKit.Script.Bindgen.CHeaders/AlvorKit.Script.Bindgen.CHeaders.csproj" />
-        <Project Path="scripts/AlvorKit.Script.Bindgen.OpenGLRegistry/AlvorKit.Script.Bindgen.OpenGLRegistry.csproj" />
+        <Project
+            Path="scripts/AlvorKit.Script.Bindgen.CHeaders/AlvorKit.Script.Bindgen.CHeaders.csproj" />
+        <Project
+            Path="scripts/AlvorKit.Script.Bindgen.OpenGLRegistry/AlvorKit.Script.Bindgen.OpenGLRegistry.csproj" />
         <Project Path="scripts/AlvorKit.Script.Bindgen/AlvorKit.Script.Bindgen.csproj" />
         <Project Path="scripts/AlvorKit.Script.NativeBuild/AlvorKit.Script.NativeBuild.csproj" />
     </Folder>
@@ -18,10 +21,14 @@
 
     <Folder Name="/Tests/">
         <Project Path="tests/AlvorKit.OpenGL.Layer.Test/AlvorKit.OpenGL.Layer.Test.csproj" />
-        <Project Path="tests/AlvorKit.Script.Bindgen.Core.Test/AlvorKit.Script.Bindgen.Core.Test.csproj" />
-        <Project Path="tests/AlvorKit.Script.Bindgen.CHeaders.Test/AlvorKit.Script.Bindgen.CHeaders.Test.csproj" />
-        <Project Path="tests/AlvorKit.Script.Bindgen.OpenGLRegistry.Test/AlvorKit.Script.Bindgen.OpenGLRegistry.Test.csproj" />
-        <Project Path="tests/AlvorKit.Script.NativeBuild.Test/AlvorKit.Script.NativeBuild.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Script.Bindgen.Core.Test/AlvorKit.Script.Bindgen.Core.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Script.Bindgen.CHeaders.Test/AlvorKit.Script.Bindgen.CHeaders.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Script.Bindgen.OpenGLRegistry.Test/AlvorKit.Script.Bindgen.OpenGLRegistry.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Script.NativeBuild.Test/AlvorKit.Script.NativeBuild.Test.csproj" />
     </Folder>
 
 </Solution>

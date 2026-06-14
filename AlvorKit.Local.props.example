@@ -1,7 +1,5 @@
 <Project>
     <PropertyGroup>
         <UseLocalBindings>true</UseLocalBindings>
-        <!-- Optional: override when generated projects live outside this repo. -->
-        <!-- <BindingsRoot>C:\path\to\AlvorKit\out\bindgen</BindingsRoot> -->
     </PropertyGroup>
 </Project>

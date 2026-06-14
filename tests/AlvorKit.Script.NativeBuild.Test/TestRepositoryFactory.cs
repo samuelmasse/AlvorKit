@@ -8,21 +8,26 @@ internal static class TestRepositoryFactory
     {
         var root = CreateRoot();
         var library = Path.Combine(root, "native", name);
-        Directory.CreateDirectory(library);
+        var conf = Path.Combine(library, "conf");
+        var version = Path.Combine(library, "version");
+        var src = Path.Combine(library, "src");
+        Directory.CreateDirectory(conf);
+        Directory.CreateDirectory(version);
+        Directory.CreateDirectory(src);
         File.WriteAllText(Path.Combine(root, "AlvorKit.slnx"), "<Solution />");
-        File.WriteAllText(Path.Combine(library, "TAG"), "1.2.3");
-        File.WriteAllText(Path.Combine(library, "REVISION"), revision);
-        File.WriteAllText(Path.Combine(library, "shim.c"), "int test(void) { return 0; }");
-        File.WriteAllText(Path.Combine(library, "bindgen.json"), $$"""
+        File.WriteAllText(Path.Combine(version, "TAG"), "1.2.3");
+        File.WriteAllText(Path.Combine(version, "REVISION"), revision);
+        File.WriteAllText(Path.Combine(src, "shim.c"), "int test(void) { return 0; }");
+        File.WriteAllText(Path.Combine(conf, "bindgen.json"), $$"""
             {
                 "nativeLibrary": "{{name}}",
                 "workDir": "{{workDir}}",
                 "sourceDir": "src-{tag}",
                 "sourceUrl": "https://example.invalid/{{name}}.tar.gz",
-                "implFile": "shim.c"
+                "implFile": "src/shim.c"
             }
             """);
-        File.WriteAllText(Path.Combine(library, "native-build.json"), """
+        File.WriteAllText(Path.Combine(conf, "native-build.json"), """
             {
                 "kind": "single-c",
                 "linux": {
@@ -39,8 +44,8 @@ internal static class TestRepositoryFactory
     public static string CreateCMakeLibrary(string name, string workDir)
     {
         var root = CreateSingleCLibrary(name, workDir, revision: "");
-        var library = Path.Combine(root, "native", name);
-        File.WriteAllText(Path.Combine(library, "native-build.json"), """
+        var conf = Path.Combine(root, "native", name, "conf");
+        File.WriteAllText(Path.Combine(conf, "native-build.json"), """
             {
                 "kind": "cmake",
                 "linux": {
