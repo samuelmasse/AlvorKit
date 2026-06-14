@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(AlvorKitGlfwVersion)" />
+        <PackageReference Include="AlvorKit.GLFW.Native" Version="$(AlvorKitGlfwVersion)" />
         <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(AlvorKitOpenGlVersion)" />
     </ItemGroup>
 

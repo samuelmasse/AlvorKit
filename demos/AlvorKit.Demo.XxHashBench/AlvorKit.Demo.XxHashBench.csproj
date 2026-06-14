@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="AlvorKit.XxHash.Backend" Version="$(AlvorKitXxHashVersion)" />
+        <PackageReference Include="AlvorKit.XxHash.Native" Version="$(AlvorKitXxHashVersion)" />
     </ItemGroup>
 
 </Project>

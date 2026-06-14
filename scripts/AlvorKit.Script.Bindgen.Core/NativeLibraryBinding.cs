@@ -43,7 +43,22 @@ public sealed class NativeLibraryBinding
     public string IncludeDirectory => Path.Combine(SourceDirectory, Config.IncludeSubdir);
     public string HeaderPath => Path.Combine(SourceDirectory, Config.Header);
     public string? SizeofShimPath => Config.SizeofShim is null ? null : Path.Combine(Directory, Config.SizeofShim);
-    public string HostNativeLibraryPath => Path.Combine(Directory, "runtimes", HostRid, "native", HostNativeLibraryFileName);
+    public string NativePackageId => Config.Namespace + ".Native";
+    public string HostRuntimeIdentifier => CurrentHostRuntimeIdentifier;
+    public string HostNativeLibraryFileName
+    {
+        get
+        {
+            if (OperatingSystem.IsWindows())
+                return Config.NativeLibrary + ".dll";
+            if (OperatingSystem.IsLinux())
+                return "lib" + Config.NativeLibrary + ".so";
+            if (OperatingSystem.IsMacOS())
+                return "lib" + Config.NativeLibrary + ".dylib";
+
+            throw new PlatformNotSupportedException("Native export verification is not configured for this operating system.");
+        }
+    }
 
     /// <summary>Extracted reference-page tree, when documentation import is configured.</summary>
     public string? DocDirectory => Config.DocUrl is null ? null : Path.Combine(WorkRoot, ReplaceVersionTokens(Config.DocDir));
@@ -74,22 +89,7 @@ public sealed class NativeLibraryBinding
     public string ReplaceVersionTokens(string text) =>
         text.Replace("{tag}", Tag).Replace("{tagDashes}", Tag.Replace('.', '-')).Replace("{docTag}", DocTag);
 
-    private string HostNativeLibraryFileName
-    {
-        get
-        {
-            if (OperatingSystem.IsWindows())
-                return Config.NativeLibrary + ".dll";
-            if (OperatingSystem.IsLinux())
-                return "lib" + Config.NativeLibrary + ".so";
-            if (OperatingSystem.IsMacOS())
-                return "lib" + Config.NativeLibrary + ".dylib";
-
-            throw new PlatformNotSupportedException("Native export verification is not configured for this operating system.");
-        }
-    }
-
-    private static string HostRid
+    private static string CurrentHostRuntimeIdentifier
     {
         get
         {

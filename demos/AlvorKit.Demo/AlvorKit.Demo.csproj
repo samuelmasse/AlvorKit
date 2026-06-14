@@ -8,8 +8,11 @@
 
     <ItemGroup>
         <PackageReference Include="AlvorKit.FreeType.Backend" Version="$(AlvorKitFreeTypeVersion)" />
+        <PackageReference Include="AlvorKit.FreeType.Native" Version="$(AlvorKitFreeTypeVersion)" />
         <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(AlvorKitGlfwVersion)" />
+        <PackageReference Include="AlvorKit.GLFW.Native" Version="$(AlvorKitGlfwVersion)" />
         <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="$(AlvorKitMiniAudioVersion)" />
+        <PackageReference Include="AlvorKit.MiniAudio.Native" Version="$(AlvorKitMiniAudioVersion)" />
         <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(AlvorKitOpenGlVersion)" />
         <PackageReference Include="BigGustave" Version="1.0.6" />
     </ItemGroup>

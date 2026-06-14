@@ -54,7 +54,7 @@ public sealed class BindingGenerationRunner(
         new BindingCodeEmitter(library.Config, library.Tag).Emit(model, library.RepositoryRoot, library.Version);
         Console.WriteLine($"Emitted {library.Config.ApiProject} and {library.Config.BackendProject} ({library.Version})");
 
-        VerifyExports(library, model);
+        await VerifyExportsAsync(library, model);
         PrintSkippedFunctions(model.SkippedFunctions);
         Console.WriteLine();
     }
@@ -136,22 +136,23 @@ public sealed class BindingGenerationRunner(
         Console.WriteLine($"Layout: natural on all {AdditionalLayoutTargets.Length + 1} validated targets");
     }
 
-    private void VerifyExports(NativeLibraryBinding library, BindingModel model)
+    private async Task VerifyExportsAsync(NativeLibraryBinding library, BindingModel model)
     {
-        var verification = NativeExportVerifier.Verify(library.HostNativeLibraryPath, model);
-        if (!verification.LibraryExists)
+        var nativePackage = await NativePackageResolver.ResolveHostLibraryAsync(library);
+        if (!nativePackage.LibraryExists)
         {
             if (options.Strict)
-                throw new FileNotFoundException($"strict mode requires the native library for export verification: {verification.LibraryPath}");
-            Console.WriteLine($"Exports: skipped ({verification.LibraryPath} not built locally)");
+                throw new FileNotFoundException($"strict mode requires {nativePackage.PackageId} {nativePackage.Version} for export verification: {nativePackage.LibraryPath}");
+            Console.WriteLine($"Exports: skipped ({nativePackage.PackageId} {nativePackage.Version} not restored: {nativePackage.Failure})");
             return;
         }
 
+        var verification = NativeExportVerifier.Verify(nativePackage.LibraryPath, model);
         if (verification.MissingFunctions.Count > 0 && options.Strict)
             throw new InvalidOperationException($"{verification.MissingFunctions.Count} entry points missing from {Path.GetFileName(verification.LibraryPath)}: {MissingFunctionList(verification)}");
 
         Console.WriteLine(verification.MissingFunctions.Count == 0
-            ? $"Exports: all {model.Functions.Count} entry points found in {Path.GetFileName(verification.LibraryPath)}"
+            ? $"Exports: all {model.Functions.Count} entry points found in {nativePackage.PackageId} {nativePackage.Version} ({Path.GetFileName(verification.LibraryPath)})"
             : $"WARNING: {verification.MissingFunctions.Count} entry points missing from {Path.GetFileName(verification.LibraryPath)}: {MissingFunctionList(verification)}");
     }
 
