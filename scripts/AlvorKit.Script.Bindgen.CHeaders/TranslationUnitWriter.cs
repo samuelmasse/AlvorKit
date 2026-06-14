@@ -8,7 +8,9 @@ public sealed class TranslationUnitWriter
             ? ImplementationFileWithoutHeaderOnlySwitch(library)
             : string.Join('\n', library.Config.TuLines);
 
-        var path = Path.Combine(Path.GetTempPath(), $"{library.Name}-bindgen.c");
+        var directory = Path.Combine(Path.GetTempPath(), "AlvorKit.Bindgen", $"{library.Name}-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "bindgen.c");
         File.WriteAllText(path, content);
         return path;
     }

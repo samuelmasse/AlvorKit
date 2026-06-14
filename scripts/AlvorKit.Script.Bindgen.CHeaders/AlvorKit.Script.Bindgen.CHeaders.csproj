@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Script.Bindgen.Core\AlvorKit.Script.Bindgen.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="ClangSharp" Version="21.1.8.3" />
+        <PackageReference Include="libclang.runtime.win-x64" Version="21.1.8" />
+        <PackageReference Include="libClangSharp.runtime.win-x64" Version="21.1.8.2" />
+        <PackageReference Include="libclang.runtime.linux-x64" Version="21.1.8" />
+        <PackageReference Include="libClangSharp.runtime.linux-x64" Version="21.1.8.2" />
+    </ItemGroup>
+
+</Project>

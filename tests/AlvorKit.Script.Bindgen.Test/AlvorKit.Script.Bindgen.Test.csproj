@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\scripts\AlvorKit.Script.Bindgen\AlvorKit.Script.Bindgen.csproj" />
+    </ItemGroup>
+
+</Project>

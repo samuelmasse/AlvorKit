@@ -7,12 +7,12 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
     {
         var apiDirectory = Path.Combine(repoRoot, config.ApiProject);
         var backendDirectory = Path.Combine(repoRoot, config.BackendProject);
-        BindingCodeEmitter.RecreateDirectory(apiDirectory);
-        BindingCodeEmitter.RecreateDirectory(backendDirectory);
+        GeneratedOutput.RecreateDirectory(apiDirectory);
+        GeneratedOutput.RecreateDirectory(backendDirectory);
 
         var apiProjectName = Path.GetFileName(config.ApiProject);
         var backendProjectName = Path.GetFileName(config.BackendProject);
-        File.WriteAllText(Path.Combine(Path.GetDirectoryName(apiDirectory)!, "Directory.Build.props"), BindingCodeEmitter.EmitSharedProps());
+        File.WriteAllText(Path.Combine(Path.GetDirectoryName(apiDirectory)!, "Directory.Build.props"), GeneratedOutput.EmitSharedProps());
         File.WriteAllText(Path.Combine(apiDirectory, apiProjectName + ".csproj"), EmitApiProject(version));
         File.WriteAllText(Path.Combine(backendDirectory, backendProjectName + ".csproj"), EmitBackendProject(version, apiProjectName));
 
@@ -181,7 +181,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         output.AppendLine($"namespace {config.Namespace};");
         output.AppendLine();
         output.AppendLine($"/// <summary>An OpenGL callback (<c>{callback.NativeName}</c>); install it through the matching setter, which roots it on the instance.</summary>");
-        output.AppendLine("[UnmanagedFunctionPointer(CallingConvention.Cdecl)]");
+        output.AppendLine("[UnmanagedFunctionPointer(CallingConvention.Winapi)]");
         var signature = string.Join(", ", callback.Parameters.Select(parameter => $"{parameter.ManagedType} {parameter.ManagedName}"));
         output.AppendLine($"public delegate {callback.ReturnType} {callback.ManagedName}({signature});");
         return output.ToString();

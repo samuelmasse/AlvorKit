@@ -1,6 +1,9 @@
 namespace AlvorKit.Script.Bindgen;
 
-public sealed class BindingGenerationRunner(RepositoryLayout repository, BindgenOptions options)
+public sealed class BindingGenerationRunner(
+    RepositoryLayout repository,
+    BindgenOptions options,
+    IEnumerable<INativeLibrarySpec> librarySpecs)
 {
     private static readonly string PrimaryTarget = "x86_64-pc-windows-msvc";
     private static readonly string[] AdditionalLayoutTargets =
@@ -15,8 +18,18 @@ public sealed class BindingGenerationRunner(RepositoryLayout repository, Bindgen
 
     public async Task RunAsync()
     {
-        foreach (var libraryName in repository.SelectedLibraries(options.Selection))
-            await GenerateLibraryAsync(NativeLibraryBinding.Load(repository, libraryName));
+        foreach (var spec in SelectedSpecs())
+            await GenerateLibraryAsync(NativeLibraryBinding.Load(repository, spec));
+    }
+
+    private IEnumerable<INativeLibrarySpec> SelectedSpecs()
+    {
+        var specsByName = librarySpecs.ToDictionary(spec => spec.Name, StringComparer.OrdinalIgnoreCase);
+        if (options.Selection == "all")
+            return specsByName.Values.OrderBy(spec => spec.Name, StringComparer.OrdinalIgnoreCase);
+        if (specsByName.TryGetValue(options.Selection, out var selected))
+            return [selected];
+        throw new InvalidOperationException($"Unknown bindgen library '{options.Selection}'. Known libraries: {string.Join(", ", specsByName.Keys.Order(StringComparer.OrdinalIgnoreCase))}");
     }
 
     private async Task GenerateLibraryAsync(NativeLibraryBinding library)

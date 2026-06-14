@@ -7,6 +7,14 @@
     </Folder>
 
     <Folder Name="/Script/">
+        <Project Path="scripts/AlvorKit.Script.Bindgen.Core/AlvorKit.Script.Bindgen.Core.csproj" />
+        <Project Path="scripts/AlvorKit.Script.Bindgen.CHeaders/AlvorKit.Script.Bindgen.CHeaders.csproj" />
+        <Project Path="scripts/AlvorKit.Script.Bindgen.FreeType/AlvorKit.Script.Bindgen.FreeType.csproj" />
+        <Project Path="scripts/AlvorKit.Script.Bindgen.GLFW/AlvorKit.Script.Bindgen.GLFW.csproj" />
+        <Project Path="scripts/AlvorKit.Script.Bindgen.MiniAudio/AlvorKit.Script.Bindgen.MiniAudio.csproj" />
+        <Project Path="scripts/AlvorKit.Script.Bindgen.OpenGL/AlvorKit.Script.Bindgen.OpenGL.csproj" />
+        <Project Path="scripts/AlvorKit.Script.Bindgen.OpenGLRegistry/AlvorKit.Script.Bindgen.OpenGLRegistry.csproj" />
+        <Project Path="scripts/AlvorKit.Script.Bindgen.XxHash/AlvorKit.Script.Bindgen.XxHash.csproj" />
         <Project Path="scripts/AlvorKit.Script.Bindgen/AlvorKit.Script.Bindgen.csproj" />
     </Folder>
 
@@ -14,6 +22,7 @@
 
     <Folder Name="/Tests/">
         <Project Path="tests/AlvorKit.OpenGL.Layer.Test/AlvorKit.OpenGL.Layer.Test.csproj" />
+        <Project Path="tests/AlvorKit.Script.Bindgen.Test/AlvorKit.Script.Bindgen.Test.csproj" />
     </Folder>
 
 </Solution>

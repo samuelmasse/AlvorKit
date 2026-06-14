@@ -25,7 +25,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
     private TranslationUnit? translationUnit;
     private string sourceRoot = "";
     private string shimRoot = "";
-    private string translationUnitFileName = "";
+    private string translationUnitFullPath = "";
 
     public BindingModel Parse(string translationUnitPath, string includeDirectory, string filterRoot, string libraryDirectory, string targetTriple)
     {
@@ -104,9 +104,9 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         ThrowIfClangReportedErrors();
 
         translationUnit = TranslationUnit.GetOrCreate(translationUnitHandle);
-        sourceRoot = Path.GetFullPath(filterRoot);
-        shimRoot = Path.GetFullPath(libraryDirectory);
-        translationUnitFileName = Path.GetFileName(translationUnitPath);
+        sourceRoot = NormalizeDirectory(filterRoot);
+        shimRoot = NormalizeDirectory(libraryDirectory);
+        translationUnitFullPath = Path.GetFullPath(translationUnitPath);
         return translationUnit.TranslationUnitDecl.Decls.Where(declaration => IsInScope(declaration.Location)).ToList();
     }
 
@@ -135,10 +135,20 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             return false;
 
         var path = Path.GetFullPath(fileName);
-        return path.StartsWith(sourceRoot, StringComparison.OrdinalIgnoreCase)
-            || path.StartsWith(shimRoot, StringComparison.OrdinalIgnoreCase)
-            || Path.GetFileName(path) == translationUnitFileName;
+        return IsUnder(path, sourceRoot)
+            || IsUnder(path, shimRoot)
+            || string.Equals(path, translationUnitFullPath, PathComparison);
     }
+
+    private static StringComparison PathComparison =>
+        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+    private static string NormalizeDirectory(string directory) =>
+        Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+        + Path.DirectorySeparatorChar;
+
+    private static bool IsUnder(string path, string normalizedDirectory) =>
+        path.StartsWith(normalizedDirectory, PathComparison);
 
     private void DiscoverEnums(List<Decl> declarations)
     {

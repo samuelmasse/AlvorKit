@@ -49,13 +49,11 @@ public sealed class NativeLibraryBinding
     /// <summary>The subdirectory of <see cref="DocDirectory"/> the doc parser reads (gl4), or null.</summary>
     public string? DocReadDirectory => DocDirectory is null ? null : Path.Combine(DocDirectory, Config.DocSubdir);
 
-    public static NativeLibraryBinding Load(RepositoryLayout repository, string name)
+    public static NativeLibraryBinding Load(RepositoryLayout repository, INativeLibrarySpec spec)
     {
+        var name = spec.Name;
         var directory = Path.Combine(repository.NativeDirectory, name);
-        var config = JsonSerializer.Deserialize<BindgenConfig>(
-            File.ReadAllText(Path.Combine(directory, "bindgen.json")),
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-            ?? throw new InvalidOperationException($"Could not read bindgen config for {name}.");
+        var config = spec.LoadConfig(directory);
         if (config.Kind is not (BindgenConfig.CHeaderKind or BindgenConfig.GlRegistryKind))
             throw new InvalidOperationException($"{name}: unknown bindgen kind '{config.Kind}'.");
         if (config.Kind == BindgenConfig.CHeaderKind && (config.NativeClass.Length == 0 || config.NativeLibrary.Length == 0))
