@@ -33,7 +33,7 @@ public sealed class BindingCodeEmitterTest
             SkippedFunctions: [],
             SizeofTypes: []);
 
-        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0");
+        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
 
         var nativeSource = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "TestNative.cs"));
         StringAssert.Contains(nativeSource, "[LibraryImport(Lib, EntryPoint = \"test_add\")]");
@@ -47,9 +47,10 @@ public sealed class BindingCodeEmitterTest
         var config = TestConfig();
         var model = new BindingModel([], [], [], [], [], [], [], []);
 
-        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0");
+        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "2.0.0", "1.0.0");
 
         var backendProject = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "Fixture.Backend.csproj"));
+        StringAssert.Contains(backendProject, "<Version>2.0.0</Version>");
         StringAssert.Contains(backendProject, "<PackageReference Include=\"AlvorKit.Bindgen.Fixture.Native\" Version=\"1.0.0\" />");
         Assert.IsFalse(backendProject.Contains("AlvorKitSkipNativePackageReference", StringComparison.Ordinal));
     }
@@ -79,7 +80,7 @@ public sealed class BindingCodeEmitterTest
             SkippedFunctions: [],
             SizeofTypes: []);
 
-        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0");
+        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
 
         var apiSource = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Test.cs"));
         StringAssert.Contains(apiSource, "var pointer = Description();");

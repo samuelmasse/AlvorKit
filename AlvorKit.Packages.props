@@ -1,0 +1,30 @@
+<Project>
+    <PropertyGroup>
+        <UseLocalBindings Condition="'$(UseLocalBindings)' == ''">false</UseLocalBindings>
+        <BindingsRoot Condition="'$(BindingsRoot)' == ''">$(MSBuildThisFileDirectory)out\bindgen</BindingsRoot>
+
+        <FtBindVer>2.14.3.4</FtBindVer>
+        <FtNativeVer>2.14.3.4</FtNativeVer>
+
+        <GlfwBindVer>3.4.1</GlfwBindVer>
+        <GlfwNativeVer>3.4.1</GlfwNativeVer>
+
+        <MaBindVer>0.11.25.6</MaBindVer>
+        <MaNativeVer>0.11.25.6</MaNativeVer>
+
+        <GlBindVer>4.6.3</GlBindVer>
+
+        <XxhBindVer>0.8.3.2</XxhBindVer>
+        <XxhNativeVer>0.8.3.2</XxhNativeVer>
+    </PropertyGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)AlvorKit.Local.props"
+        Condition="Exists('$(MSBuildThisFileDirectory)AlvorKit.Local.props')" />
+
+    <Target Name="EnsureGeneratedBindings"
+        BeforeTargets="ResolveProjectReferences"
+        Condition="'$(UseLocalBindings)' == 'true'">
+        <Error Condition="!Exists('$(BindingsRoot)')"
+            Text="UseLocalBindings=true but '$(BindingsRoot)' does not exist. Run bindgen or set BindingsRoot in AlvorKit.Local.props." />
+    </Target>
+</Project>

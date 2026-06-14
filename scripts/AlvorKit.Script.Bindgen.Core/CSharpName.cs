@@ -28,6 +28,9 @@ public static class CSharpName
     /// </summary>
     public static string FromNativeIdentifier(string nativeName, string nativePrefix, string digitNamePrefix = "Num", bool dimensionSegments = false)
     {
+        if (string.IsNullOrWhiteSpace(nativeName))
+            throw new ArgumentException("Native names must contain at least one identifier character.", nameof(nativeName));
+
         nativeName = nativeName.TrimStart('_');
         var unprefixed = nativeName.StartsWith(nativePrefix, StringComparison.OrdinalIgnoreCase)
             ? nativeName[nativePrefix.Length..]
@@ -41,6 +44,8 @@ public static class CSharpName
             if (dimensionSegments && segment.Length >= 2
                 && char.IsAsciiLetterUpper(segment[^1]) && segment[..^1].All(char.IsAsciiDigit))
             {
+                // Khronos dimension suffixes are identifiers in practice: Texture2D reads better
+                // than Texture2d and matches the rest of the generated OpenGL API surface.
                 managedName.Append(segment);
                 continue;
             }
@@ -50,6 +55,8 @@ public static class CSharpName
             managedName.Append(char.ToUpperInvariant(segment[0])).Append(tail);
         }
 
+        if (managedName.Length == 0)
+            throw new ArgumentException($"Native name '{nativeName}' did not produce a managed identifier.", nameof(nativeName));
         if (char.IsAsciiDigit(managedName[0]))
             managedName.Insert(0, digitNamePrefix);
         return managedName.ToString();

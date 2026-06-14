@@ -1,0 +1,134 @@
+name: C header bindings packages
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      [
+        "FreeType native package",
+        "GLFW native package",
+        "miniaudio native package",
+        "xxhash native package",
+      ]
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      [
+        "native/freetype/TAG",
+        "native/freetype/REVISION",
+        "native/freetype/BINDING_REVISION",
+        "native/freetype/bindgen.json",
+        "native/glfw/TAG",
+        "native/glfw/REVISION",
+        "native/glfw/BINDING_REVISION",
+        "native/glfw/bindgen.json",
+        "native/miniaudio/TAG",
+        "native/miniaudio/REVISION",
+        "native/miniaudio/BINDING_REVISION",
+        "native/miniaudio/alvorkit.c",
+        "native/miniaudio/miniaudio.c",
+        "native/miniaudio/bindgen.json",
+        "native/xxhash/TAG",
+        "native/xxhash/REVISION",
+        "native/xxhash/BINDING_REVISION",
+        "native/xxhash/xxhash.c",
+        "native/xxhash/bindgen.json",
+        "scripts/Directory.Build.props",
+        "scripts/AlvorKit.Script.Bindgen/**",
+      ]
+
+permissions:
+  contents: read
+
+jobs:
+  pack:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - selection: freetype
+            dir: native/freetype
+            id: alvorkit.freetype
+            native_id: alvorkit.freetype.native
+            api_project: AlvorKit.FreeType
+            backend_project: AlvorKit.FreeType.Backend
+          - selection: glfw
+            dir: native/glfw
+            id: alvorkit.glfw
+            native_id: alvorkit.glfw.native
+            api_project: AlvorKit.GLFW
+            backend_project: AlvorKit.GLFW.Backend
+          - selection: miniaudio
+            dir: native/miniaudio
+            id: alvorkit.miniaudio
+            native_id: alvorkit.miniaudio.native
+            api_project: AlvorKit.MiniAudio
+            backend_project: AlvorKit.MiniAudio.Backend
+          - selection: xxhash
+            dir: native/xxhash
+            id: alvorkit.xxhash
+            native_id: alvorkit.xxhash.native
+            api_project: AlvorKit.XxHash
+            backend_project: AlvorKit.XxHash.Backend
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Compute package versions
+        id: versions
+        run: |
+          TAG=$(tr -d '[:space:]' < "${{ matrix.dir }}/TAG")
+          NATIVE_REVISION=$(tr -d '[:space:]' < "${{ matrix.dir }}/REVISION" 2>/dev/null || true)
+          BINDING_REVISION=$(tr -d '[:space:]' < "${{ matrix.dir }}/BINDING_REVISION" 2>/dev/null || true)
+          [ -z "$BINDING_REVISION" ] && BINDING_REVISION="$NATIVE_REVISION"
+          NATIVE_VERSION="$TAG"
+          BINDING_VERSION="$TAG"
+          [ -n "$NATIVE_REVISION" ] && NATIVE_VERSION="$NATIVE_VERSION.$NATIVE_REVISION"
+          [ -n "$BINDING_REVISION" ] && BINDING_VERSION="$BINDING_VERSION.$BINDING_REVISION"
+          echo "native=$NATIVE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "binding=$BINDING_VERSION" >> "$GITHUB_OUTPUT"
+          if curl -fsSL "https://api.nuget.org/v3-flatcontainer/${{ matrix.id }}/index.json" | grep -qi "\"$BINDING_VERSION\""; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "${{ matrix.id }} $BINDING_VERSION is already published; skipping."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify native package is published
+        if: steps.versions.outputs.skip != 'true'
+        run: |
+          if ! curl -fsSL "https://api.nuget.org/v3-flatcontainer/${{ matrix.native_id }}/index.json" | grep -qi "\"${{ steps.versions.outputs.native }}\""; then
+            echo "::error::${{ matrix.native_id }} ${{ steps.versions.outputs.native }} is not on NuGet.org yet."
+            exit 1
+          fi
+
+      - name: Generate bindings
+        if: steps.versions.outputs.skip != 'true'
+        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- ${{ matrix.selection }} --strict
+
+      - name: Pack bindings
+        if: steps.versions.outputs.skip != 'true'
+        run: |
+          dotnet pack -c Release out/bindgen/${{ matrix.api_project }}/${{ matrix.api_project }}.csproj
+          dotnet pack -c Release out/bindgen/${{ matrix.backend_project }}/${{ matrix.backend_project }}.csproj
+
+      - uses: actions/upload-artifact@v7
+        if: steps.versions.outputs.skip != 'true'
+        with:
+          name: ${{ matrix.selection }}-bindings-nupkg
+          path: |
+            bin/${{ matrix.api_project }}/Release/*.nupkg
+            bin/${{ matrix.backend_project }}/Release/*.nupkg
+          if-no-files-found: error
+
+      - name: Publish to NuGet.org
+        if: steps.versions.outputs.skip != 'true' && (github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push'))
+        run: |
+          dotnet nuget push bin/${{ matrix.api_project }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/${{ matrix.backend_project }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

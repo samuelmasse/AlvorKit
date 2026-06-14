@@ -1,9 +1,0 @@
-<Project>
-    <PropertyGroup>
-        <AlvorKitFreeTypeVersion>2.14.3.4</AlvorKitFreeTypeVersion>
-        <AlvorKitGlfwVersion>3.4.1</AlvorKitGlfwVersion>
-        <AlvorKitMiniAudioVersion>0.11.25.6</AlvorKitMiniAudioVersion>
-        <AlvorKitOpenGlVersion>4.6.3</AlvorKitOpenGlVersion>
-        <AlvorKitXxHashVersion>0.8.3.2</AlvorKitXxHashVersion>
-    </PropertyGroup>
-</Project>

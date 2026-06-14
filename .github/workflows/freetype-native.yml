@@ -7,12 +7,9 @@ on:
     paths:
       [
         "native/freetype/TAG",
-        "native/freetype/bindgen.json",
         "native/freetype/REVISION",
         "native/freetype/*.csproj",
         "native/freetype/scripts/**",
-        "scripts/Directory.Build.props",
-        "scripts/AlvorKit.Script.Bindgen/**",
       ]
 
 permissions:
@@ -95,26 +92,12 @@ jobs:
 
       - run: dotnet build -c Release native/freetype/AlvorKit.FreeType.Native.csproj
 
-      - name: Generate bindings
-        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- freetype --strict
-
-      - name: Pack bindings
-        run: |
-          dotnet build -c Release out/bindgen/AlvorKit.FreeType/AlvorKit.FreeType.csproj
-          dotnet build -c Release out/bindgen/AlvorKit.FreeType.Backend/AlvorKit.FreeType.Backend.csproj -p:RestoreAdditionalProjectSources=${{ github.workspace }}/bin/AlvorKit.FreeType.Native/Release
-
       - uses: actions/upload-artifact@v7
         with:
           name: nupkg
-          path: |
-            bin/AlvorKit.FreeType.Native/Release/*.nupkg
-            bin/AlvorKit.FreeType/Release/*.nupkg
-            bin/AlvorKit.FreeType.Backend/Release/*.nupkg
+          path: bin/AlvorKit.FreeType.Native/Release/*.nupkg
           if-no-files-found: error
 
       - name: Publish to NuGet.org (push events only)
         if: github.event_name == 'push'
-        run: |
-          dotnet nuget push bin/AlvorKit.FreeType.Native/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push bin/AlvorKit.FreeType/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push bin/AlvorKit.FreeType.Backend/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push bin/AlvorKit.FreeType.Native/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

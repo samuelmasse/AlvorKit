@@ -7,13 +7,11 @@ on:
     paths:
       [
         "native/miniaudio/TAG",
-        "native/miniaudio/bindgen.json",
         "native/miniaudio/REVISION",
+        "native/miniaudio/alvorkit.c",
         "native/miniaudio/miniaudio.c",
         "native/miniaudio/*.csproj",
         "native/miniaudio/scripts/**",
-        "scripts/Directory.Build.props",
-        "scripts/AlvorKit.Script.Bindgen/**",
       ]
 
 permissions:
@@ -96,26 +94,12 @@ jobs:
 
       - run: dotnet build -c Release native/miniaudio/AlvorKit.MiniAudio.Native.csproj
 
-      - name: Generate bindings
-        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- miniaudio --strict
-
-      - name: Pack bindings
-        run: |
-          dotnet build -c Release out/bindgen/AlvorKit.MiniAudio/AlvorKit.MiniAudio.csproj
-          dotnet build -c Release out/bindgen/AlvorKit.MiniAudio.Backend/AlvorKit.MiniAudio.Backend.csproj -p:RestoreAdditionalProjectSources=${{ github.workspace }}/bin/AlvorKit.MiniAudio.Native/Release
-
       - uses: actions/upload-artifact@v7
         with:
           name: nupkg
-          path: |
-            bin/AlvorKit.MiniAudio.Native/Release/*.nupkg
-            bin/AlvorKit.MiniAudio/Release/*.nupkg
-            bin/AlvorKit.MiniAudio.Backend/Release/*.nupkg
+          path: bin/AlvorKit.MiniAudio.Native/Release/*.nupkg
           if-no-files-found: error
 
       - name: Publish to NuGet.org (push events only)
         if: github.event_name == 'push'
-        run: |
-          dotnet nuget push bin/AlvorKit.MiniAudio.Native/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push bin/AlvorKit.MiniAudio/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push bin/AlvorKit.MiniAudio.Backend/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push bin/AlvorKit.MiniAudio.Native/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

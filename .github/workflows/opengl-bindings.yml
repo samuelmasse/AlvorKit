@@ -9,7 +9,7 @@ on:
         "native/opengl/TAG",
         "native/opengl/DOC_TAG",
         "native/opengl/bindgen.json",
-        "native/opengl/REVISION",
+        "native/opengl/BINDING_REVISION",
         "scripts/Directory.Build.props",
         "scripts/AlvorKit.Script.Bindgen/**",
       ]
@@ -31,10 +31,10 @@ jobs:
       - name: Fail if the version is already on NuGet.org
         run: |
           VERSION=$(jq -r .glVersion native/opengl/bindgen.json)
-          REVISION=$(tr -d '[:space:]' < native/opengl/REVISION 2>/dev/null || true)
+          REVISION=$(tr -d '[:space:]' < native/opengl/BINDING_REVISION 2>/dev/null || true)
           [ -n "$REVISION" ] && VERSION="$VERSION.$REVISION"
           if curl -fsSL "https://api.nuget.org/v3-flatcontainer/alvorkit.opengl/index.json" | grep -q "\"$VERSION\""; then
-            echo "::error::AlvorKit.OpenGL $VERSION is already published — bump native/opengl/REVISION."
+            echo "::error::AlvorKit.OpenGL $VERSION is already published - bump native/opengl/BINDING_REVISION."
             exit 1
           fi
 
@@ -45,8 +45,8 @@ jobs:
 
       - name: Pack bindings
         run: |
-          dotnet build -c Release out/bindgen/AlvorKit.OpenGL/AlvorKit.OpenGL.csproj
-          dotnet build -c Release out/bindgen/AlvorKit.OpenGL.Backend/AlvorKit.OpenGL.Backend.csproj
+          dotnet pack -c Release out/bindgen/AlvorKit.OpenGL/AlvorKit.OpenGL.csproj
+          dotnet pack -c Release out/bindgen/AlvorKit.OpenGL.Backend/AlvorKit.OpenGL.Backend.csproj
 
       - uses: actions/upload-artifact@v7
         with:

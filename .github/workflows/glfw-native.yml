@@ -7,12 +7,9 @@ on:
     paths:
       [
         "native/glfw/TAG",
-        "native/glfw/bindgen.json",
         "native/glfw/REVISION",
         "native/glfw/*.csproj",
         "native/glfw/scripts/**",
-        "scripts/Directory.Build.props",
-        "scripts/AlvorKit.Script.Bindgen/**",
       ]
 
 permissions:
@@ -95,26 +92,12 @@ jobs:
 
       - run: dotnet build -c Release native/glfw/AlvorKit.GLFW.Native.csproj
 
-      - name: Generate bindings
-        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- glfw --strict
-
-      - name: Pack bindings
-        run: |
-          dotnet build -c Release out/bindgen/AlvorKit.GLFW/AlvorKit.GLFW.csproj
-          dotnet build -c Release out/bindgen/AlvorKit.GLFW.Backend/AlvorKit.GLFW.Backend.csproj -p:RestoreAdditionalProjectSources=${{ github.workspace }}/bin/AlvorKit.GLFW.Native/Release
-
       - uses: actions/upload-artifact@v7
         with:
           name: nupkg
-          path: |
-            bin/AlvorKit.GLFW.Native/Release/*.nupkg
-            bin/AlvorKit.GLFW/Release/*.nupkg
-            bin/AlvorKit.GLFW.Backend/Release/*.nupkg
+          path: bin/AlvorKit.GLFW.Native/Release/*.nupkg
           if-no-files-found: error
 
       - name: Publish to NuGet.org (push events only)
         if: github.event_name == 'push'
-        run: |
-          dotnet nuget push bin/AlvorKit.GLFW.Native/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push bin/AlvorKit.GLFW/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push bin/AlvorKit.GLFW.Backend/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push bin/AlvorKit.GLFW.Native/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

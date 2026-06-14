@@ -3,8 +3,10 @@ using System.IO.Compression;
 
 namespace AlvorKit.Script.Bindgen;
 
+/// <summary>Downloads and extracts native source material required by a binding run.</summary>
 public sealed class NativeSourceResolver
 {
+    /// <summary>Ensures the configured primary header or registry source exists locally.</summary>
     public async Task EnsureSourceAsync(NativeLibraryBinding library)
     {
         if (File.Exists(library.HeaderPath))
@@ -40,6 +42,7 @@ public sealed class NativeSourceResolver
         await ExtractTarballAsync(url, library.WorkRoot);
     }
 
+    /// <summary>Downloads a gzip-compressed tarball and extracts it into a destination directory.</summary>
     private static async Task ExtractTarballAsync(string url, string destination)
     {
         Directory.CreateDirectory(destination);

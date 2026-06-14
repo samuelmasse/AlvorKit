@@ -1,5 +1,5 @@
 <Project>
-    <Import Project="..\AlvorKit.BindingVersions.props" />
+    <Import Project="..\AlvorKit.Packages.props" />
 
     <PropertyGroup>
         <Version>0.1.0</Version>

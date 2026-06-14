@@ -6,10 +6,15 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(AlvorKitGlfwVersion)" />
-        <PackageReference Include="AlvorKit.GLFW.Native" Version="$(AlvorKitGlfwVersion)" />
-        <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(AlvorKitOpenGlVersion)" />
+    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+        <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(GlfwBindVer)" />
+        <PackageReference Include="AlvorKit.GLFW.Native" Version="$(GlfwNativeVer)" />
+        <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(GlBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj" />
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj" />
     </ItemGroup>
 
 </Project>

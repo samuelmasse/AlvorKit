@@ -6,14 +6,22 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="AlvorKit.FreeType.Backend" Version="$(AlvorKitFreeTypeVersion)" />
-        <PackageReference Include="AlvorKit.FreeType.Native" Version="$(AlvorKitFreeTypeVersion)" />
-        <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(AlvorKitGlfwVersion)" />
-        <PackageReference Include="AlvorKit.GLFW.Native" Version="$(AlvorKitGlfwVersion)" />
-        <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="$(AlvorKitMiniAudioVersion)" />
-        <PackageReference Include="AlvorKit.MiniAudio.Native" Version="$(AlvorKitMiniAudioVersion)" />
-        <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(AlvorKitOpenGlVersion)" />
+    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+        <PackageReference Include="AlvorKit.FreeType.Backend" Version="$(FtBindVer)" />
+        <PackageReference Include="AlvorKit.FreeType.Native" Version="$(FtNativeVer)" />
+        <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(GlfwBindVer)" />
+        <PackageReference Include="AlvorKit.GLFW.Native" Version="$(GlfwNativeVer)" />
+        <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="$(MaBindVer)" />
+        <PackageReference Include="AlvorKit.MiniAudio.Native" Version="$(MaNativeVer)" />
+        <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(GlBindVer)" />
+        <PackageReference Include="BigGustave" Version="1.0.6" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj" />
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj" />
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj" />
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj" />
         <PackageReference Include="BigGustave" Version="1.0.6" />
     </ItemGroup>
 

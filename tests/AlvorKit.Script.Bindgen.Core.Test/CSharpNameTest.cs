@@ -2,9 +2,11 @@ using AlvorKit.Script.Bindgen;
 
 namespace AlvorKit.Script.Bindgen.Core.Test;
 
+/// <summary>Covers native-to-managed C# naming rules.</summary>
 [TestClass]
 public sealed class CSharpNameTest
 {
+    /// <summary>Prefix stripping and digit segments produce readable PascalCase names.</summary>
     [TestMethod]
     public void FromNativeIdentifier_StripsPrefixesAndKeepsReadableDigitSegments()
     {
@@ -14,6 +16,22 @@ public sealed class CSharpNameTest
         Assert.AreEqual("D0", CSharpName.FromNativeIdentifier("GLFW_KEY_0", "GLFW_KEY_", "D"));
     }
 
+    /// <summary>Native type names add the configured managed type prefix after normal conversion.</summary>
+    [TestMethod]
+    public void FromNativeTypeName_AddsManagedTypePrefix()
+    {
+        Assert.AreEqual("FtFace", CSharpName.FromNativeTypeName("FT_Face", "FT_", "Ft"));
+    }
+
+    /// <summary>Empty native identifiers are rejected before the converter can index into missing text.</summary>
+    [TestMethod]
+    public void FromNativeIdentifier_RejectsEmptyNativeNames()
+    {
+        Assert.ThrowsException<ArgumentException>(() => CSharpName.FromNativeIdentifier("", "GL_"));
+        Assert.ThrowsException<ArgumentException>(() => CSharpName.FromNativeIdentifier("___", "GL_"));
+    }
+
+    /// <summary>Keyword escaping only changes names that would collide with C# syntax.</summary>
     [TestMethod]
     public void Parameter_EscapesEveryCSharpKeyword()
     {
@@ -24,5 +42,6 @@ public sealed class CSharpNameTest
         Assert.AreEqual("@await", CSharpName.Parameter("await"));
         Assert.AreEqual("@where", CSharpName.Parameter("where"));
         Assert.AreEqual("@value", CSharpName.Parameter("value"));
+        Assert.AreEqual("ordinary", CSharpName.Parameter("ordinary"));
     }
 }

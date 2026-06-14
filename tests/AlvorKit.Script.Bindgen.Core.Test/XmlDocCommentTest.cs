@@ -2,9 +2,19 @@ using AlvorKit.Script.Bindgen;
 
 namespace AlvorKit.Script.Bindgen.Core.Test;
 
+/// <summary>Covers native comment normalization for generated XML docs.</summary>
 [TestClass]
 public sealed class XmlDocCommentTest
 {
+    /// <summary>Blank native comments do not produce documentation objects.</summary>
+    [TestMethod]
+    public void Parse_ReturnsNullForBlankComments()
+    {
+        Assert.IsNull(XmlDocComment.Parse(null));
+        Assert.IsNull(XmlDocComment.Parse("   "));
+    }
+
+    /// <summary>Doxygen brief, parameter, and return directives become XML-doc-ready text.</summary>
     [TestMethod]
     public void Parse_NormalizesDoxygenSummaryParametersAndReturns()
     {
@@ -26,6 +36,62 @@ public sealed class XmlDocCommentTest
         Assert.IsNull(doc.Remarks);
     }
 
+    /// <summary>Plain paragraphs before and after a blank line map to summary and remarks.</summary>
+    [TestMethod]
+    public void Parse_SplitsSummaryAndRemarksAtBlankLine()
+    {
+        var doc = XmlDocComment.Parse("""
+            /**
+             * Opens the handle.
+             *
+             * More details with <xml> & text.
+             */
+            """);
+
+        Assert.IsNotNull(doc);
+        Assert.AreEqual("Opens the handle.", doc.Summary);
+        Assert.AreEqual("More details with &lt;xml&gt; &amp; text.", doc.Remarks);
+    }
+
+    /// <summary>Multiline parameters are joined and escaped for XML documentation.</summary>
+    [TestMethod]
+    public void Parse_JoinsAndEscapesMultilineParameters()
+    {
+        var doc = XmlDocComment.Parse("""
+            /**
+             * @brief Sets a value.
+             * @param value First <value>
+             *   and more & data.
+             */
+            """);
+
+        Assert.IsNotNull(doc);
+        Assert.AreEqual("First &lt;value&gt; and more &amp; data.", doc.Parameters["value"]);
+    }
+
+    /// <summary>Group and metadata-only tags are ignored instead of leaking into IntelliSense.</summary>
+    [TestMethod]
+    public void Parse_IgnoresGroupsAndNoiseSections()
+    {
+        var doc = XmlDocComment.Parse("""
+            /**
+             * @defgroup fixtures Fixtures
+             * @{
+             * @brief Runs the fixture.
+             * @sa fixture_init
+             * This line should be discarded.
+             * @return Zero on success.
+             * @}
+             */
+            """);
+
+        Assert.IsNotNull(doc);
+        Assert.AreEqual("Runs the fixture.", doc.Summary);
+        Assert.AreEqual("Zero on success.", doc.Returns);
+        Assert.IsNull(doc.Remarks);
+    }
+
+    /// <summary>FreeType section headers map to the same XML-doc fields as Doxygen directives.</summary>
     [TestMethod]
     public void Parse_HandlesFreeTypeSectionedComments()
     {
@@ -50,9 +116,44 @@ public sealed class XmlDocCommentTest
         Assert.AreEqual("Zero on success.", doc.Returns);
     }
 
+    /// <summary>FreeType notes become remarks and inout parameters are collected like inputs.</summary>
+    [TestMethod]
+    public void Parse_HandlesFreeTypeNotesAndInOutParameters()
+    {
+        var doc = XmlDocComment.Parse("""
+            /**************************************************************************
+             *
+             * @description:
+             *   Updates @FT_Face.
+             *
+             * @inout:
+             *   face ::
+             *     A face handle.
+             *
+             * @note:
+             *   Uses ~library storage.
+             */
+            """);
+
+        Assert.IsNotNull(doc);
+        Assert.AreEqual("Updates FT_Face.", doc.Summary);
+        Assert.AreEqual("A face handle.", doc.Parameters["face"]);
+        Assert.AreEqual("Uses library storage.", doc.Remarks);
+    }
+
+    /// <summary>Comment delimiters and leading decoration are removed from raw native lines.</summary>
+    [TestMethod]
+    public void CleanLine_StripsNativeCommentDecoration()
+    {
+        Assert.AreEqual("value", XmlDocComment.CleanLine("/*!< value */"));
+        Assert.AreEqual("value", XmlDocComment.CleanLine(" * -- value"));
+    }
+
+    /// <summary>Member comments are reduced to single-line XML-doc-safe prose.</summary>
     [TestMethod]
     public void Member_StripsTrailingCommentMarkup()
     {
         Assert.AreEqual("left mouse button", XmlDocComment.Member("/*!< [left mouse button](@ref buttons) */"));
+        Assert.IsNull(XmlDocComment.Member("   "));
     }
 }

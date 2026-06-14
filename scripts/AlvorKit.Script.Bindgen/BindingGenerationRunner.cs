@@ -51,8 +51,8 @@ public sealed class BindingGenerationRunner(
         Console.WriteLine($"Model: {model.Functions.Count} functions, {model.Enums.Count} enums, {model.Structs.Count} structs, {model.SkippedFunctions.Count} skipped");
         ValidateLayouts(library, translationUnitPath, model);
 
-        new BindingCodeEmitter(library.Config, library.Tag).Emit(model, library.RepositoryRoot, library.Version);
-        Console.WriteLine($"Emitted {library.Config.ApiProject} and {library.Config.BackendProject} ({library.Version})");
+        new BindingCodeEmitter(library.Config, library.Tag).Emit(model, library.RepositoryRoot, library.BindingVersion, library.NativeVersion);
+        Console.WriteLine($"Emitted {library.Config.ApiProject} and {library.Config.BackendProject} ({library.BindingVersion}, native {library.NativeVersion})");
 
         await VerifyExportsAsync(library, model);
         PrintSkippedFunctions(model.SkippedFunctions);
@@ -82,8 +82,8 @@ public sealed class BindingGenerationRunner(
                 string.Join(", ", model.UngroupedEnumUses.Take(8)) + (model.UngroupedEnumUses.Count > 8 ? ", ..." : ""));
         Console.WriteLine($"Docs: {docs.Count} reference pages indexed, {model.Commands.Count(command => command.Documentation is not null)} of {model.Commands.Count} commands documented");
 
-        new GlCodeEmitter(config, library.Tag, library.DocTag).Emit(model, library.RepositoryRoot, library.Version);
-        Console.WriteLine($"Emitted {config.ApiProject} and {config.BackendProject} ({library.Version})");
+        new GlCodeEmitter(config, library.Tag, library.DocTag).Emit(model, library.RepositoryRoot, library.BindingVersion);
+        Console.WriteLine($"Emitted {config.ApiProject} and {config.BackendProject} ({library.BindingVersion})");
         PrintSkippedFunctions(model.SkippedCommands);
         Console.WriteLine();
     }

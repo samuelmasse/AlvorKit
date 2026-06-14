@@ -26,10 +26,10 @@ public static class NativePackageResolver
     }
 
     private static NativePackageLibraryResolution Found(NativeLibraryBinding library, string libraryPath) =>
-        new(library.NativePackageId, library.Version, libraryPath, LibraryExists: true, Failure: null);
+        new(library.NativePackageId, library.NativeVersion, libraryPath, LibraryExists: true, Failure: null);
 
     private static NativePackageLibraryResolution Missing(NativeLibraryBinding library, string failure) =>
-        new(library.NativePackageId, library.Version, ExpectedHostLibraryPath(library), LibraryExists: false, failure);
+        new(library.NativePackageId, library.NativeVersion, ExpectedHostLibraryPath(library), LibraryExists: false, failure);
 
     private static string? TryFindHostLibrary(NativeLibraryBinding library)
     {
@@ -50,7 +50,7 @@ public static class NativePackageResolver
         Path.Combine(
             packageRoot,
             library.NativePackageId.ToLowerInvariant(),
-            library.Version.ToLowerInvariant(),
+            library.NativeVersion.ToLowerInvariant(),
             "runtimes",
             library.HostRuntimeIdentifier,
             "native",

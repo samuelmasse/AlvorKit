@@ -10,8 +10,12 @@
         <InternalsVisibleTo Include="AlvorKit.OpenGL.Layer.Test" />
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="AlvorKit.OpenGL" Version="$(AlvorKitOpenGlVersion)" />
+    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+        <PackageReference Include="AlvorKit.OpenGL" Version="$(GlBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj" />
     </ItemGroup>
 
 </Project>
