@@ -11,6 +11,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
     private readonly Dictionary<string, BindingStruct> structByNativeName = [];
     private readonly Dictionary<string, string> handlesByNativeName = [];
     private readonly Dictionary<string, BindingDelegate> delegatesByNativeName = [];
+    private readonly HashSet<string> usedCallbackTypedefs = [];   // typedefs a bound function references as a parameter
     private readonly HashSet<string> failedStructs = [];
     private readonly Dictionary<string, RecordDecl> recordByNativeName = [];
     private readonly List<BindingFunction> functions = [];
@@ -31,9 +32,9 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         var declarations = ParseTranslationUnit(translationUnitPath, includeDirectory, filterRoot, libraryDirectory, targetTriple);
         DiscoverEnums(declarations);
         IndexRecords(declarations);
+        DiscoverCallbackTypedefs(declarations);   // before structs, so a struct's function-pointer fields can reference the delegates
         foreach (var nativeName in config.TransparentStructs)
             ResolveStruct(nativeName);
-        DiscoverCallbackTypedefs(declarations);
         DiscoverFunctions(declarations);
         DiscoverMacroConstants();
         SynthesizeEnumGroups();
@@ -42,7 +43,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             [.. enumByNativeName.Values.DistinctBy(e => e.NativeName)],
             [.. structByNativeName.Values],
             [.. handlesByNativeName.Select(handle => new BindingHandle(handle.Key, handle.Value))],
-            [.. delegatesByNativeName.Values],
+            [.. delegatesByNativeName.Where(entry => usedCallbackTypedefs.Contains(entry.Key)).Select(entry => entry.Value)],
             functions,
             constants,
             skippedFunctions,
@@ -353,6 +354,10 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             return MapInlineArray(canonical, fieldManagedName, owner);
         if (canonical.kind == CXTypeKind.CXType_Record)
             return MapRecordField(field, owner.NativeName);
+        // A function-pointer-typedef field (the GLFWallocator callbacks) stays raw nint, but record the
+        // typedef as used so the typed delegate is emitted - it is how a caller populates the field.
+        if (delegatesByNativeName.ContainsKey(CleanTypeSpelling(field.Type.Handle)))
+            usedCallbackTypedefs.Add(CleanTypeSpelling(field.Type.Handle));
         return MapNativeType(field.Type.Handle);
     }
 
@@ -498,6 +503,12 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
                 is CXTypeKind.CXType_Void
                 or CXTypeKind.CXType_Char_S or CXTypeKind.CXType_Char_U
                 or CXTypeKind.CXType_SChar or CXTypeKind.CXType_UChar;
+        // A function-pointer-typedef parameter gets a typed callback setter; record the typedef as used so
+        // only referenced delegates are emitted (the proc-address and allocator typedefs go unused).
+        var callbackTypedef = CleanTypeSpelling(parameter.Type.Handle);
+        var callbackType = delegatesByNativeName.GetValueOrDefault(callbackTypedef)?.ManagedName;
+        if (callbackType is not null)
+            usedCallbackTypedefs.Add(callbackTypedef);
         return new(
             CSharpName.Parameter(nativeName),
             managedType,
@@ -507,7 +518,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             IsUntypedPointer: isUntypedPointer,
             IsConstPointee: isUntypedPointer && canonical.PointeeType.IsConstQualified,
             IsSizeT: modifier.Length == 0 && CleanTypeSpelling(parameter.Type.Handle) == "size_t",
-            CallbackType: delegatesByNativeName.GetValueOrDefault(CleanTypeSpelling(parameter.Type.Handle))?.ManagedName);
+            CallbackType: callbackType);
     }
 
     private string ParameterModifier(string functionName, string parameterName)

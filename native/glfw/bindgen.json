@@ -26,6 +26,7 @@
         "GLFWgammaramp": "GlfwGammaRamp",
         "GLFWimage": "GlfwImage",
         "GLFWgamepadstate": "GlfwGamepadState",
+        "GLFWallocator": "GlfwAllocator",
         "GLFWwindow": "GlfwWindow",
         "GLFWmonitor": "GlfwMonitor",
         "GLFWcursor": "GlfwCursor"
@@ -34,7 +35,8 @@
         "GLFWvidmode",
         "GLFWgammaramp",
         "GLFWimage",
-        "GLFWgamepadstate"
+        "GLFWgamepadstate",
+        "GLFWallocator"
     ],
     "enumGroups": {
         "GlfwKey": { "prefix": "GLFW_KEY_", "digitPrefix": "D" },
