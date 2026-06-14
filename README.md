@@ -21,5 +21,26 @@ Generate the local projects with:
 dotnet run --project scripts\AlvorKit.Script.Bindgen -- all
 ```
 
+## Native package builds
+
+Native packages are built by the shared native build runner. To see the configured native packages:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.NativeBuild -- list
+```
+
+Build one RID with:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.NativeBuild -- build xxhash --rid win-x64
+```
+
+Then pack the native project:
+
+```powershell
+dotnet build -c Release native\xxhash\AlvorKit.XxHash.Native.csproj
+```
+
 Native package revisions live in `native/<lib>/REVISION`; generated binding package revisions live
-in `native/<lib>/BINDING_REVISION`.
+in `native/<lib>/BINDING_REVISION`. Native build settings live in
+`native/<lib>/native-build.json`.

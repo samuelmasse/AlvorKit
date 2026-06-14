@@ -5,10 +5,7 @@ on:
   workflow_run:
     workflows:
       [
-        "FreeType native package",
-        "GLFW native package",
-        "miniaudio native package",
-        "xxhash native package",
+        "native packages",
       ]
     types: [completed]
   push:

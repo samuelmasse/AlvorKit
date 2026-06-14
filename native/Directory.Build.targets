@@ -1,0 +1,12 @@
+<Project>
+    <ItemGroup>
+        <None Include="$(MSBuildProjectDirectory)\README.md" Pack="true" PackagePath="\" />
+        <Content Include="$(MSBuildProjectDirectory)\runtimes\**"
+            PackagePath="runtimes\%(RecursiveDir)" Visible="false" />
+    </ItemGroup>
+
+    <Target Name="EnsureNativeBinaries" BeforeTargets="GenerateNuspec">
+        <Error Condition="'@(Content)' == ''"
+            Text="runtimes/ is empty - build the native binaries first (scripts/AlvorKit.Script.NativeBuild)." />
+    </Target>
+</Project>

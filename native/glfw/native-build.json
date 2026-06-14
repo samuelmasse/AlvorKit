@@ -1,0 +1,68 @@
+{
+    "kind": "cmake",
+    "windows": {
+        "cmakeOutput": "src/glfw3.dll",
+        "cmakeOptions": [
+            "-DBUILD_SHARED_LIBS=ON",
+            "-DGLFW_BUILD_EXAMPLES=OFF",
+            "-DGLFW_BUILD_TESTS=OFF",
+            "-DGLFW_BUILD_DOCS=OFF"
+        ]
+    },
+    "linux": {
+        "packages": [
+            "build-essential",
+            "cmake"
+        ],
+        "nativePackages": [
+            "libx11-dev",
+            "libxrandr-dev",
+            "libxinerama-dev",
+            "libxcursor-dev",
+            "libxi-dev"
+        ],
+        "armArchitecture": "armhf",
+        "armPackages": [
+            "gcc-arm-linux-gnueabihf",
+            "libx11-dev:armhf",
+            "libxrandr-dev:armhf",
+            "libxinerama-dev:armhf",
+            "libxcursor-dev:armhf",
+            "libxi-dev:armhf"
+        ],
+        "cmakeOutput": "src/libglfw.so",
+        "cmakeOptions": [
+            "-DBUILD_SHARED_LIBS=ON",
+            "-DGLFW_BUILD_EXAMPLES=OFF",
+            "-DGLFW_BUILD_TESTS=OFF",
+            "-DGLFW_BUILD_DOCS=OFF",
+            "-DGLFW_BUILD_WAYLAND=OFF",
+            "-DGLFW_BUILD_X11=ON"
+        ],
+        "allowedDependencies": [
+            "libc.so.6",
+            "libm.so.6",
+            "libpthread.so.0",
+            "libdl.so.2",
+            "librt.so.1",
+            "libX11.so.6",
+            "libXrandr.so.2",
+            "libXinerama.so.1",
+            "libXcursor.so.1",
+            "libXi.so.6",
+            "libXext.so.6",
+            "libxcb.so.1",
+            "libXau.so.6",
+            "libXdmcp.so.6"
+        ]
+    },
+    "macos": {
+        "cmakeOutput": "src/libglfw.dylib",
+        "cmakeOptions": [
+            "-DBUILD_SHARED_LIBS=ON",
+            "-DGLFW_BUILD_EXAMPLES=OFF",
+            "-DGLFW_BUILD_TESTS=OFF",
+            "-DGLFW_BUILD_DOCS=OFF"
+        ]
+    }
+}

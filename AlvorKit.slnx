@@ -9,13 +9,9 @@
     <Folder Name="/Script/">
         <Project Path="scripts/AlvorKit.Script.Bindgen.Core/AlvorKit.Script.Bindgen.Core.csproj" />
         <Project Path="scripts/AlvorKit.Script.Bindgen.CHeaders/AlvorKit.Script.Bindgen.CHeaders.csproj" />
-        <Project Path="scripts/AlvorKit.Script.Bindgen.FreeType/AlvorKit.Script.Bindgen.FreeType.csproj" />
-        <Project Path="scripts/AlvorKit.Script.Bindgen.GLFW/AlvorKit.Script.Bindgen.GLFW.csproj" />
-        <Project Path="scripts/AlvorKit.Script.Bindgen.MiniAudio/AlvorKit.Script.Bindgen.MiniAudio.csproj" />
-        <Project Path="scripts/AlvorKit.Script.Bindgen.OpenGL/AlvorKit.Script.Bindgen.OpenGL.csproj" />
         <Project Path="scripts/AlvorKit.Script.Bindgen.OpenGLRegistry/AlvorKit.Script.Bindgen.OpenGLRegistry.csproj" />
-        <Project Path="scripts/AlvorKit.Script.Bindgen.XxHash/AlvorKit.Script.Bindgen.XxHash.csproj" />
         <Project Path="scripts/AlvorKit.Script.Bindgen/AlvorKit.Script.Bindgen.csproj" />
+        <Project Path="scripts/AlvorKit.Script.NativeBuild/AlvorKit.Script.NativeBuild.csproj" />
     </Folder>
 
     <Project Path="src/AlvorKit.OpenGL.Layer/AlvorKit.OpenGL.Layer.csproj" />
@@ -25,6 +21,7 @@
         <Project Path="tests/AlvorKit.Script.Bindgen.Core.Test/AlvorKit.Script.Bindgen.Core.Test.csproj" />
         <Project Path="tests/AlvorKit.Script.Bindgen.CHeaders.Test/AlvorKit.Script.Bindgen.CHeaders.Test.csproj" />
         <Project Path="tests/AlvorKit.Script.Bindgen.OpenGLRegistry.Test/AlvorKit.Script.Bindgen.OpenGLRegistry.Test.csproj" />
+        <Project Path="tests/AlvorKit.Script.NativeBuild.Test/AlvorKit.Script.NativeBuild.Test.csproj" />
     </Folder>
 
 </Solution>

@@ -49,17 +49,14 @@ internal static class NativeHost
         };
 
     /// <summary>Detects the operating system for the current process.</summary>
-    private static NativeOperatingSystem CurrentOperatingSystem()
-    {
-        if (OperatingSystem.IsWindows())
-            return NativeOperatingSystem.Windows;
-        if (OperatingSystem.IsLinux())
-            return NativeOperatingSystem.Linux;
-        if (OperatingSystem.IsMacOS())
-            return NativeOperatingSystem.MacOS;
-
-        throw UnsupportedOperatingSystem();
-    }
+    private static NativeOperatingSystem CurrentOperatingSystem() =>
+        OperatingSystem.IsWindows()
+            ? NativeOperatingSystem.Windows
+            : OperatingSystem.IsLinux()
+                ? NativeOperatingSystem.Linux
+                : OperatingSystem.IsMacOS()
+                    ? NativeOperatingSystem.MacOS
+                    : throw UnsupportedOperatingSystem();
 
     /// <summary>Creates the shared exception for unsupported host platforms.</summary>
     private static PlatformNotSupportedException UnsupportedOperatingSystem() =>

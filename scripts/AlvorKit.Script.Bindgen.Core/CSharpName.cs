@@ -3,6 +3,7 @@ namespace AlvorKit.Script.Bindgen;
 /// <summary>Centralizes the native-to-managed naming rules shared by every generator pipeline.</summary>
 public static class CSharpName
 {
+    /// <summary>C# reserved identifiers that require parameter escaping.</summary>
     private static readonly HashSet<string> Keywords =
     [
         "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked",

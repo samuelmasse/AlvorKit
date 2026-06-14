@@ -1,7 +1,11 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Native documentation after it has been reduced to XML-doc-friendly prose.</summary>
-public record XmlDocComment(
+/// <param name="Summary">Summary prose for the documented member.</param>
+/// <param name="Parameters">Parameter prose keyed by native parameter name.</param>
+/// <param name="Returns">Return value prose for the documented member.</param>
+/// <param name="Remarks">Additional remarks for the documented member.</param>
+public sealed record XmlDocComment(
     string? Summary,
     Dictionary<string, string> Parameters,
     string? Returns,

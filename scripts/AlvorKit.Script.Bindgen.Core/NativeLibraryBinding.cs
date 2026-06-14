@@ -1,7 +1,7 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Resolved bindgen inputs, source paths, and package identity for one native library.</summary>
-public sealed class NativeLibraryBinding
+public sealed partial class NativeLibraryBinding
 {
     /// <summary>Creates a binding after config validation and version file loading are complete.</summary>
     private NativeLibraryBinding(
@@ -34,39 +34,44 @@ public sealed class NativeLibraryBinding
         SourceDirectory = Path.Combine(WorkRoot, ReplaceVersionTokens(config.SourceDir));
     }
 
+    /// <summary>Repository root that contains the native library directory.</summary>
     public string RepositoryRoot { get; }
+
+    /// <summary>Native library directory name under the repository's native folder.</summary>
     public string Name { get; }
+
+    /// <summary>Absolute native library metadata directory.</summary>
     public string Directory { get; }
+
+    /// <summary>Loaded bindgen configuration for this native library.</summary>
     public BindgenConfig Config { get; }
+
+    /// <summary>Upstream source tag or version read from native metadata.</summary>
     public string Tag { get; }
+
+    /// <summary>Native package revision suffix read from native metadata.</summary>
     public string NativeRevision { get; }
+
+    /// <summary>Binding package revision suffix read from native metadata.</summary>
     public string BindingRevision { get; }
+
+    /// <summary>Documentation archive tag read from native metadata.</summary>
     public string DocTag { get; }
+
+    /// <summary>Generated binding package version.</summary>
     public string BindingVersion { get; }
+
+    /// <summary>Generated native package version.</summary>
     public string NativeVersion { get; }
+
     /// <summary>Backward-compatible alias for the generated binding package version.</summary>
     public string Version { get; }
-    public string WorkRoot { get; }
-    public string SourceDirectory { get; }
-    public string IncludeDirectory => Path.Combine(SourceDirectory, Config.IncludeSubdir);
-    public string HeaderPath => Path.Combine(SourceDirectory, Config.Header);
-    public string? SizeofShimPath => Config.SizeofShim is null ? null : Path.Combine(Directory, Config.SizeofShim);
-    public string NativePackageId => Config.Namespace + ".Native";
-    public string HostRuntimeIdentifier => NativeHost.CurrentRuntimeIdentifier;
-    public string HostNativeLibraryFileName => NativeHost.CurrentLibraryFileName(Config.NativeLibrary);
-
-    /// <summary>Extracted reference-page tree, when documentation import is configured.</summary>
-    public string? DocDirectory => Config.DocUrl is null ? null : Path.Combine(WorkRoot, ReplaceVersionTokens(Config.DocDir));
-
-    /// <summary>Specific documentation subdirectory read by the doc parser.</summary>
-    public string? DocReadDirectory => DocDirectory is null ? null : Path.Combine(DocDirectory, Config.DocSubdir);
 
     /// <summary>Loads and validates a native library binding from repository metadata.</summary>
-    public static NativeLibraryBinding Load(RepositoryLayout repository, INativeLibrarySpec spec)
+    public static NativeLibraryBinding Load(RepositoryLayout repository, string name)
     {
-        var name = spec.Name;
         var directory = Path.Combine(repository.NativeDirectory, name);
-        var config = spec.LoadConfig(directory);
+        var config = BindgenConfig.Load(directory, name);
         ValidateConfig(name, directory, config);
 
         var tag = ReadRequiredVersion(directory, "TAG");

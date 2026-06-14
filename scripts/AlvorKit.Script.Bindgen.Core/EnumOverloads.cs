@@ -1,7 +1,7 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Type hints for overloads that turn raw integer parameters into enums.</summary>
-public class EnumOverloads
+public sealed class EnumOverloads
 {
     /// <summary>Parameter names that always map to a given enum, across all functions.</summary>
     public Dictionary<string, string> ByParamName { get; set; } = [];

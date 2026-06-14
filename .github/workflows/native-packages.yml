@@ -1,0 +1,105 @@
+name: native packages
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      [
+        ".github/workflows/native-packages.yml",
+        "native/Directory.Build.props",
+        "native/Directory.Build.targets",
+        "native/freetype/**",
+        "native/glfw/**",
+        "native/miniaudio/**",
+        "native/xxhash/**",
+        "scripts/AlvorKit.Script.NativeBuild/**",
+      ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        library: [freetype, glfw, miniaudio, xxhash]
+        target:
+          - { runner: windows-latest, rid: win-x64 }
+          - { runner: windows-latest, rid: win-x86 }
+          - { runner: windows-11-arm, rid: win-arm64 }
+          - { runner: ubuntu-24.04, rid: linux-x64 }
+          - { runner: ubuntu-24.04-arm, rid: linux-arm64 }
+          - { runner: ubuntu-24.04-arm, rid: linux-arm }
+          - { runner: macos-26, rid: osx-arm64 }
+          - { runner: macos-26-intel, rid: osx-x64 }
+    runs-on: ${{ matrix.target.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - run: dotnet run --project scripts/AlvorKit.Script.NativeBuild -- build ${{ matrix.library }} --rid ${{ matrix.target.rid }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.library }}-${{ matrix.target.rid }}
+          path: native/${{ matrix.library }}/runtimes
+          if-no-files-found: error
+
+  pack:
+    needs: [build]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - library: freetype
+            package_id: alvorkit.freetype.native
+            project: AlvorKit.FreeType.Native.csproj
+            package_name: AlvorKit.FreeType.Native
+          - library: glfw
+            package_id: alvorkit.glfw.native
+            project: AlvorKit.GLFW.Native.csproj
+            package_name: AlvorKit.GLFW.Native
+          - library: miniaudio
+            package_id: alvorkit.miniaudio.native
+            project: AlvorKit.MiniAudio.Native.csproj
+            package_name: AlvorKit.MiniAudio.Native
+          - library: xxhash
+            package_id: alvorkit.xxhash.native
+            project: AlvorKit.XxHash.Native.csproj
+            package_name: AlvorKit.XxHash.Native
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: ${{ matrix.library }}-*
+          path: native/${{ matrix.library }}/runtimes
+          merge-multiple: true
+
+      - name: Fail if the version is already on NuGet.org
+        run: |
+          VERSION=$(dotnet run --project scripts/AlvorKit.Script.NativeBuild -- version ${{ matrix.library }})
+          if curl -fsSL "https://api.nuget.org/v3-flatcontainer/${{ matrix.package_id }}/index.json" | grep -qi "\"$VERSION\""; then
+            echo "::error::${{ matrix.package_name }} $VERSION is already published - bump native/${{ matrix.library }}/TAG or REVISION."
+            exit 1
+          fi
+
+      - run: dotnet build -c Release native/${{ matrix.library }}/${{ matrix.project }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.library }}-nupkg
+          path: bin/${{ matrix.package_name }}/Release/*.nupkg
+          if-no-files-found: error
+
+      - name: Publish to NuGet.org (push events only)
+        if: github.event_name == 'push'
+        run: dotnet nuget push bin/${{ matrix.package_name }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

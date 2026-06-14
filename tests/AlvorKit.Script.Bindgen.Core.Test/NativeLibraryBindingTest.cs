@@ -1,4 +1,5 @@
 using AlvorKit.Script.Bindgen;
+using System.Text.Json;
 
 namespace AlvorKit.Script.Bindgen.Core.Test;
 
@@ -17,8 +18,9 @@ public sealed class NativeLibraryBindingTest
         config.SourceDir = "src-{tag}-{tagDashes}";
         config.IncludeSubdir = "include";
         config.SizeofShim = "shim.c";
+        WriteConfig(repository, "fixture", config);
 
-        var binding = NativeLibraryBinding.Load(repository, new MemoryNativeLibrarySpec("fixture", config));
+        var binding = NativeLibraryBinding.Load(repository, "fixture");
 
         Assert.AreEqual(repository.Root, binding.RepositoryRoot);
         Assert.AreEqual("fixture", binding.Name);
@@ -50,8 +52,9 @@ public sealed class NativeLibraryBindingTest
         config.DocUrl = "https://example.test/docs-{docTag}.tar.gz";
         config.DocDir = "docs-{docTag}";
         config.DocSubdir = "gl4";
+        WriteConfig(repository, "opengl", config);
 
-        var binding = NativeLibraryBinding.Load(repository, new MemoryNativeLibrarySpec("opengl", config));
+        var binding = NativeLibraryBinding.Load(repository, "opengl");
 
         Assert.AreEqual("4.6.7", binding.Version);
         Assert.AreEqual(Path.Combine(config.WorkDir, "docs-doc.1"), binding.DocDirectory);
@@ -69,8 +72,9 @@ public sealed class NativeLibraryBindingTest
         var repository = CreateRepository(workspace);
         CreateLibrary(repository, "fixture", tag: "1.2.3", revision: "4", bindingRevision: "9");
         var config = TestConfig(workspace);
+        WriteConfig(repository, "fixture", config);
 
-        var binding = NativeLibraryBinding.Load(repository, new MemoryNativeLibrarySpec("fixture", config));
+        var binding = NativeLibraryBinding.Load(repository, "fixture");
 
         Assert.AreEqual("1.2.3.4", binding.NativeVersion);
         Assert.AreEqual("1.2.3.9", binding.BindingVersion);
@@ -129,6 +133,12 @@ public sealed class NativeLibraryBindingTest
             File.WriteAllText(Path.Combine(directory, "DOC_TAG"), docTag);
     }
 
+    /// <summary>Writes a bindgen config fixture for a native library.</summary>
+    private static void WriteConfig(RepositoryLayout repository, string name, BindgenConfig config) =>
+        File.WriteAllText(
+            Path.Combine(repository.NativeDirectory, name, "bindgen.json"),
+            JsonSerializer.Serialize(config));
+
     /// <summary>Creates a valid C-header config with test-local work directories.</summary>
     private static BindgenConfig TestConfig(TempWorkspace workspace) => new()
     {
@@ -154,9 +164,10 @@ public sealed class NativeLibraryBindingTest
         CreateLibrary(repository, name);
         var config = TestConfig(workspace);
         mutate(config);
+        WriteConfig(repository, name, config);
 
         var exception = Assert.ThrowsException<InvalidOperationException>(
-            () => NativeLibraryBinding.Load(repository, new MemoryNativeLibrarySpec(name, config)));
+            () => NativeLibraryBinding.Load(repository, name));
         StringAssert.Contains(exception.Message, expectedMessage);
     }
 }

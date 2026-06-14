@@ -1,7 +1,7 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Enum typing rules for one native function.</summary>
-public class FunctionEnums
+public sealed class FunctionEnums
 {
     /// <summary>Enum represented by the raw integer return value, when any.</summary>
     public string? Return { get; set; }

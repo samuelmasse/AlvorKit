@@ -1,7 +1,7 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Rules for building a managed enum from macro constants.</summary>
-public class EnumGroup
+public sealed class EnumGroup
 {
     /// <summary>Shared native prefix to collect and strip, unless <see cref="Members"/> is explicit.</summary>
     public string Prefix { get; set; } = "";

@@ -1,4 +1,5 @@
 using AlvorKit.Script.Bindgen;
+using System.Text.Json;
 
 namespace AlvorKit.Script.Bindgen.Core.Test;
 
@@ -72,7 +73,8 @@ public sealed class NativeSourceResolverTest
         var repository = RepositoryLayout.FindFrom(workspace.Root);
         var config = TestConfig(workspace);
         configure?.Invoke(config);
-        return NativeLibraryBinding.Load(repository, new MemoryNativeLibrarySpec("fixture", config));
+        File.WriteAllText(Path.Combine(native, "bindgen.json"), JsonSerializer.Serialize(config));
+        return NativeLibraryBinding.Load(repository, "fixture");
     }
 
     /// <summary>Creates a valid C-header config for resolver tests.</summary>

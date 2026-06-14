@@ -4,11 +4,6 @@
         <ProjectReference Include="..\AlvorKit.Script.Bindgen.Core\AlvorKit.Script.Bindgen.Core.csproj" />
         <ProjectReference Include="..\AlvorKit.Script.Bindgen.CHeaders\AlvorKit.Script.Bindgen.CHeaders.csproj" />
         <ProjectReference Include="..\AlvorKit.Script.Bindgen.OpenGLRegistry\AlvorKit.Script.Bindgen.OpenGLRegistry.csproj" />
-        <ProjectReference Include="..\AlvorKit.Script.Bindgen.FreeType\AlvorKit.Script.Bindgen.FreeType.csproj" />
-        <ProjectReference Include="..\AlvorKit.Script.Bindgen.GLFW\AlvorKit.Script.Bindgen.GLFW.csproj" />
-        <ProjectReference Include="..\AlvorKit.Script.Bindgen.MiniAudio\AlvorKit.Script.Bindgen.MiniAudio.csproj" />
-        <ProjectReference Include="..\AlvorKit.Script.Bindgen.OpenGL\AlvorKit.Script.Bindgen.OpenGL.csproj" />
-        <ProjectReference Include="..\AlvorKit.Script.Bindgen.XxHash\AlvorKit.Script.Bindgen.XxHash.csproj" />
     </ItemGroup>
 
 </Project>

@@ -21,15 +21,35 @@ public sealed class RepositoryLayoutTest
         Assert.AreEqual(Path.Combine(workspace.Root, "native"), layout.NativeDirectory);
     }
 
-    /// <summary>Explicit library names are returned directly without scanning native directories.</summary>
+    /// <summary>Explicit library names are returned when they have bindgen metadata.</summary>
     [TestMethod]
     public void SelectedLibraries_ReturnsExplicitSelection()
     {
         using var workspace = TempWorkspace.Create();
         File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        var native = Path.Combine(workspace.Root, "native", "glfw");
+        Directory.CreateDirectory(native);
+        File.WriteAllText(Path.Combine(native, "bindgen.json"), "{}");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
 
-        CollectionAssert.AreEqual(new[] { "glfw" }, layout.SelectedLibraries("glfw").ToArray());
+        CollectionAssert.AreEqual(new[] { "glfw" }, layout.SelectedLibraries("GLFW").ToArray());
+    }
+
+    /// <summary>Unknown explicit library names fail with the discovered bindgen library list.</summary>
+    [TestMethod]
+    public void SelectedLibraries_RejectsUnknownSelection()
+    {
+        using var workspace = TempWorkspace.Create();
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        var native = Path.Combine(workspace.Root, "native", "alpha");
+        Directory.CreateDirectory(native);
+        File.WriteAllText(Path.Combine(native, "bindgen.json"), "{}");
+        var layout = RepositoryLayout.FindFrom(workspace.Root);
+
+        var exception = Assert.ThrowsException<InvalidOperationException>(() => layout.SelectedLibraries("glfw").ToArray());
+
+        StringAssert.Contains(exception.Message, "Unknown bindgen library 'glfw'");
+        StringAssert.Contains(exception.Message, "alpha");
     }
 
     /// <summary>The all selection returns only bindgen-enabled native libraries in sorted order.</summary>

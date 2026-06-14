@@ -1,30 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <!-- Version = upstream TAG, plus REVISION as a 4th segment when non-empty:
-             a packaging revision of the same upstream because NuGet versions are immutable. -->
-        <Version>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/TAG').Trim())</Version>
-        <NativeRevision Condition="Exists('$(MSBuildProjectDirectory)/REVISION')">
-            $([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/REVISION').Trim())</NativeRevision>
-        <Version Condition="'$(NativeRevision)' != ''">$(Version).$(NativeRevision)</Version>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT-0</PackageLicenseExpression>
         <Description>miniaudio $(Version) binaries for win (x64, x86, arm64), linux (x64, arm,
             arm64) and osx (x64, arm64)</Description>
-        <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/mackron/miniaudio</RepositoryUrl>
     </PropertyGroup>
-
-    <ItemGroup>
-        <None Include="README.md" Pack="true" PackagePath="\" />
-        <Content Include="runtimes\**" PackagePath="runtimes" Visible="false" />
-    </ItemGroup>
-
-    <Target Name="EnsureNativeBinaries" BeforeTargets="GenerateNuspec">
-        <Error Condition="'@(Content)' == ''"
-            Text="runtimes/ is empty - build the native binaries first (native/miniaudio/scripts/)." />
-    </Target>
 
 </Project>

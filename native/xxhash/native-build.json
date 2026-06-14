@@ -1,0 +1,16 @@
+{
+    "kind": "single-c",
+    "windows": {},
+    "linux": {
+        "packages": [
+            "build-essential"
+        ],
+        "armPackages": [
+            "gcc-arm-linux-gnueabihf"
+        ],
+        "allowedDependencies": [
+            "libc.so.6"
+        ]
+    },
+    "macos": {}
+}
