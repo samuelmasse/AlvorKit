@@ -11,7 +11,7 @@ on:
         "native/opengl/bindgen.json",
         "native/opengl/BINDING_REVISION",
         "scripts/Directory.Build.props",
-        "scripts/AlvorKit.Script.Bindgen/**",
+        "scripts/AlvorKit.Script.Bindgen*/**",
       ]
 
 permissions:

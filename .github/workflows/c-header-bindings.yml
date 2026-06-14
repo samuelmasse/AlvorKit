@@ -35,7 +35,7 @@ on:
         "native/xxhash/xxhash.c",
         "native/xxhash/bindgen.json",
         "scripts/Directory.Build.props",
-        "scripts/AlvorKit.Script.Bindgen/**",
+        "scripts/AlvorKit.Script.Bindgen*/**",
       ]
 
 permissions:
