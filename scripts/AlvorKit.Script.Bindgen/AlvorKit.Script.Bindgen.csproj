@@ -11,8 +11,4 @@
         <ProjectReference Include="..\AlvorKit.Script.Bindgen.XxHash\AlvorKit.Script.Bindgen.XxHash.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <None Include="include\**" CopyToOutputDirectory="PreserveNewest" />
-    </ItemGroup>
-
 </Project>

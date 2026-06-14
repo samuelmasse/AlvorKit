@@ -4,10 +4,9 @@ using System.Xml.Linq;
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>
-/// Parses the Khronos OpenGL reference pages (DocBook XML, the gl4 directory) into doc comments,
-/// keyed by GL function name. One page documents a whole family - glVertexAttribPointer.xml covers
-/// the I and L variants, glUniform.xml covers every glUniform* - so its purpose and parameter
-/// descriptions are attached to each function in its synopsis.
+/// Imports Khronos DocBook reference pages into XML-doc comments keyed by GL command name. A single
+/// page can document a family of commands, so every synopsis entry on the page receives the same
+/// purpose and parameter prose.
 /// </summary>
 public sealed class GlDocParser
 {
@@ -44,10 +43,7 @@ public sealed class GlDocParser
         return byFunction;
     }
 
-    /// <summary>
-    /// Reads a refpage, dropping the DOCTYPE (it pulls in an external MathML entity file) and any
-    /// remaining non-standard named entities, which only appear inside the equation markup we skip.
-    /// </summary>
+    /// <summary>Loads a refpage while removing external-entity hooks that are irrelevant to prose import.</summary>
     private static XElement? LoadRefentry(string path)
     {
         var text = File.ReadAllText(path);
@@ -64,10 +60,7 @@ public sealed class GlDocParser
         }
     }
 
-    /// <summary>
-    /// The parameter descriptions from the Parameters section(s): each varlistentry maps every
-    /// parameter named in its terms to the shared listitem text.
-    /// </summary>
+    /// <summary>Reads the Parameters section, including entries that document several parameter names at once.</summary>
     private static Dictionary<string, string> ParseParameters(XElement root)
     {
         var sections = root.Descendants(Db + "refsect1").Where(section =>
@@ -90,7 +83,7 @@ public sealed class GlDocParser
         return parameters;
     }
 
-    /// <summary>Concatenates the descendant text, skipping equation markup and man-volume numbers.</summary>
+    /// <summary>Concatenates prose while skipping equation markup and man-page volume numbers.</summary>
     private static string Flatten(XElement? element)
     {
         if (element is null)

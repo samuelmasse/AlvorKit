@@ -22,7 +22,9 @@
 
     <Folder Name="/Tests/">
         <Project Path="tests/AlvorKit.OpenGL.Layer.Test/AlvorKit.OpenGL.Layer.Test.csproj" />
-        <Project Path="tests/AlvorKit.Script.Bindgen.Test/AlvorKit.Script.Bindgen.Test.csproj" />
+        <Project Path="tests/AlvorKit.Script.Bindgen.Core.Test/AlvorKit.Script.Bindgen.Core.Test.csproj" />
+        <Project Path="tests/AlvorKit.Script.Bindgen.CHeaders.Test/AlvorKit.Script.Bindgen.CHeaders.Test.csproj" />
+        <Project Path="tests/AlvorKit.Script.Bindgen.OpenGLRegistry.Test/AlvorKit.Script.Bindgen.OpenGLRegistry.Test.csproj" />
     </Folder>
 
 </Solution>

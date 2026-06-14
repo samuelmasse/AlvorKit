@@ -1,6 +1,6 @@
 using AlvorKit.Script.Bindgen;
 
-namespace AlvorKit.Script.Bindgen.Test;
+namespace AlvorKit.Script.Bindgen.CHeaders.Test;
 
 [TestClass]
 public sealed class BindingCodeEmitterTest
@@ -52,6 +52,39 @@ public sealed class BindingCodeEmitterTest
         var backendProject = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "Fixture.Backend.csproj"));
         StringAssert.Contains(backendProject, "Condition=\"'$(AlvorKitSkipNativePackageReference)' != 'true'\"");
         StringAssert.Contains(backendProject, "<PackageReference Include=\"AlvorKit.Bindgen.Fixture.Native\" Version=\"1.0.0\" />");
+    }
+
+    [TestMethod]
+    public void EmitStringReturn_SpanOverloadHandlesNullNativePointer()
+    {
+        using var workspace = TempWorkspace.Create();
+        var config = TestConfig();
+        var model = new BindingModel(
+            Enums: [],
+            Structs: [],
+            Handles: [],
+            Delegates: [],
+            Functions:
+            [
+                new(
+                    NativeName: "test_description",
+                    ManagedName: "Description",
+                    ReturnType: "nint",
+                    ReturnInteropType: "nint",
+                    Parameters: [],
+                    Documentation: null,
+                    ReturnsCString: true)
+            ],
+            Constants: [],
+            SkippedFunctions: [],
+            SizeofTypes: []);
+
+        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0");
+
+        var apiSource = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Test.cs"));
+        StringAssert.Contains(apiSource, "var pointer = Description();");
+        StringAssert.Contains(apiSource, "if (pointer == 0) { result = default; return; }");
+        StringAssert.Contains(apiSource, "MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)pointer)");
     }
 
     private static BindgenConfig TestConfig() => new()

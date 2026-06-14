@@ -1,9 +1,9 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>
-/// Evaluates integer expressions from object-like C macros. Supported syntax is
-/// intentionally small: literals, previously evaluated identifiers, parentheses,
-/// unary +/-/~, and the common arithmetic/bitwise binary operators.
+/// Evaluates the macro expressions bindgen accepts as constants. The grammar is intentionally small:
+/// integer literals, known identifiers, parentheses, unary signs/bitwise-not, and common arithmetic
+/// or bitwise operators.
 /// </summary>
 public static class ConstantExpressionEvaluator
 {

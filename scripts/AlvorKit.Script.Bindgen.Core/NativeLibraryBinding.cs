@@ -21,7 +21,8 @@ public sealed class NativeLibraryBinding
         Revision = revision;
         DocTag = docTag;
 
-        // gl-registry tags pin a registry commit; the package version is the bound GL version instead.
+        // Registry bindings pin gl.xml by commit but package by API version, so GL 4.6 stays stable
+        // even when the source tag is a hash.
         var versionBase = config.GlVersion ?? tag;
         Version = revision.Length > 0 ? $"{versionBase}.{revision}" : versionBase;
 
@@ -44,9 +45,9 @@ public sealed class NativeLibraryBinding
     public string? SizeofShimPath => Config.SizeofShim is null ? null : Path.Combine(Directory, Config.SizeofShim);
     public string HostNativeLibraryPath => Path.Combine(Directory, "runtimes", HostRid, "native", HostNativeLibraryFileName);
 
-    /// <summary>The extracted reference-page tree, or null when no DocUrl is configured.</summary>
+    /// <summary>Extracted reference-page tree, when documentation import is configured.</summary>
     public string? DocDirectory => Config.DocUrl is null ? null : Path.Combine(WorkRoot, ReplaceVersionTokens(Config.DocDir));
-    /// <summary>The subdirectory of <see cref="DocDirectory"/> the doc parser reads (gl4), or null.</summary>
+    /// <summary>Specific documentation subdirectory read by the doc parser.</summary>
     public string? DocReadDirectory => DocDirectory is null ? null : Path.Combine(DocDirectory, Config.DocSubdir);
 
     public static NativeLibraryBinding Load(RepositoryLayout repository, INativeLibrarySpec spec)

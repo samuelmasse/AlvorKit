@@ -60,8 +60,8 @@ public sealed class BindingGenerationRunner(
     }
 
     /// <summary>
-    /// The gl-registry pipeline: no native build exists (the platform's GL driver is the
-    /// library), so the clang, shim, layout and export stages do not apply.
+    /// Generates registry-backed bindings. OpenGL loads from the platform driver at runtime, so this
+    /// path has no C compilation, shim, layout validation, or native export verification stage.
     /// </summary>
     private async Task GenerateGlRegistryLibraryAsync(NativeLibraryBinding library)
     {

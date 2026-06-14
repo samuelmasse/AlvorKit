@@ -1,16 +1,13 @@
 namespace AlvorKit.Script.Bindgen;
 
-/// <summary>A Doxygen-style native comment normalized for XML documentation.</summary>
+/// <summary>Native documentation after it has been reduced to XML-doc-friendly prose.</summary>
 public record XmlDocComment(
     string? Summary,
     Dictionary<string, string> Parameters,
     string? Returns,
     string? Remarks)
 {
-    /// <summary>
-    /// Parses inline Doxygen tags and FreeType-style sectioned tags such as
-    /// @description:, @input:, @output:, and @return:.
-    /// </summary>
+    /// <summary>Parses common Doxygen comments plus FreeType's sectioned comment format.</summary>
     public static XmlDocComment? Parse(string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
@@ -48,7 +45,7 @@ public record XmlDocComment(
             }
             else if (line.StartsWith("@param"))
             {
-                // Doxygen @param, optionally carrying a direction such as @param[in] or @param[out].
+                // Doxygen direction markers describe ownership, not the managed parameter name.
                 var match = Regex.Match(line, @"^@param(?:\s*\[[^\]]*\])?\s+(\S+)\s*(.*)$");
                 if (match.Success)
                 {
@@ -65,8 +62,8 @@ public record XmlDocComment(
             }
             else if (IsNoiseTag(line))
             {
-                // Trailing metadata (@thread_safety, @errors, @sa, @since, platform @remark ...):
-                // drop it, and stop the open @return or description from swallowing what follows.
+                // Metadata-only sections are noisy in IntelliSense, and they must not be appended to
+                // the previous return or description section.
                 currentText = discard;
                 currentParameter = null;
                 continue;
@@ -88,26 +85,20 @@ public record XmlDocComment(
             CleanText(remarks));
     }
 
-    /// <summary>
-    /// Trailing Doxygen metadata that reads as noise in a C# tooltip. Such a tag is dropped, and it
-    /// also ends the current section so an open &lt;returns&gt; or description stops capturing.
-    /// </summary>
+    /// <summary>Tags that should terminate the current prose section without producing XML docs.</summary>
     private static bool IsNoiseTag(string line) => Regex.IsMatch(line,
         @"^@(sa|see|since|thread_safety|errors?|remarks?|note|warning|attention|deprecated|pointer_lifetime|reentrancy|analysis|par|glfw3|code|endcode|verbatim|endverbatim|internal|pre|post|invariant|win32|macos|linux|x11|wayland|egl|wgl|glx|osmesa|nsgl|posix|unix)\b");
 
-    /// <summary>
-    /// Strips inline Doxygen and Markdown residue — cross-references, links, platform markers and
-    /// emphasis — so the surviving prose reads as plain text.
-    /// </summary>
+    /// <summary>Removes inline markup that is useful in Doxygen but noisy in generated C# docs.</summary>
     private static string StripInlineMarkup(string text)
     {
-        text = Regex.Replace(text, @"\[([^\]]+)\]\([^)]*\)", "$1");   // [label](@ref x) or [label](url) -> label
-        text = Regex.Replace(text, @"\[([^\]]+)\]\[[^\]]*\]", "$1");  // [label][anchor] -> label
-        text = Regex.Replace(text, @"@(?:ref|p|c|a)\s+(\S+)", "$1");  // @ref Name / @p Name -> Name
-        text = Regex.Replace(text,                                    // stray inline tags -> removed
+        text = Regex.Replace(text, @"\[([^\]]+)\]\([^)]*\)", "$1");
+        text = Regex.Replace(text, @"\[([^\]]+)\]\[[^\]]*\]", "$1");
+        text = Regex.Replace(text, @"@(?:ref|p|c|a)\s+(\S+)", "$1");
+        text = Regex.Replace(text,
             @"@(?:win32|macos|linux|x11|wayland|egl|wgl|glx|osmesa|nsgl|posix|unix|note|remarks?|warning|attention|thread_safety|errors?|sa|see|since|pointer_lifetime|reentrancy|analysis|par|glfw3|link|endlink)\b\s*", "");
-        text = text.Replace("__", "").Replace("`", "");              // markdown emphasis and code spans
-        return Regex.Replace(text, @"\s{2,}", " ").Trim();           // collapse whitespace left behind
+        text = text.Replace("__", "").Replace("`", "");
+        return Regex.Replace(text, @"\s{2,}", " ").Trim();
     }
 
     private static string? CleanText(StringBuilder value)
@@ -118,7 +109,7 @@ public record XmlDocComment(
         return cleaned.Length == 0 ? null : Escape(cleaned);
     }
 
-    /// <summary>Cleans one comment line: strips comment markers and Doxygen noise.</summary>
+    /// <summary>Strips native comment delimiters and leading decoration from one raw line.</summary>
     public static string CleanLine(string line)
     {
         line = line.Trim();
@@ -137,13 +128,13 @@ public record XmlDocComment(
     public static string Escape(string text) =>
         text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
 
-    /// <summary>Parses a trailing member comment like "/*!&lt; left mouse button */".</summary>
+    /// <summary>Parses trailing enum/field comments such as <c>/*!&lt; left mouse button */</c>.</summary>
     public static string? Member(string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
             return null;
         var text = string.Join(' ', raw.Split('\n').Select(CleanLine).Where(l => l.Length > 0)).Trim();
-        text = StripInlineMarkup(text);   // strip Doxygen/Markdown residue, as the section parser does for functions
+        text = StripInlineMarkup(text);
         return text.Length == 0 ? null : Escape(text);
     }
 

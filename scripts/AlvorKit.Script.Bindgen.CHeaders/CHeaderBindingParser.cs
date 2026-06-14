@@ -4,14 +4,14 @@ using ClangType = ClangSharp.Type;
 
 namespace AlvorKit.Script.Bindgen;
 
-/// <summary>Parses a native C header with libclang and builds a managed binding model.</summary>
+/// <summary>Builds a managed binding model from C declarations and configured library-specific hints.</summary>
 public sealed class CHeaderBindingParser(BindgenConfig config, string managedTypePrefix)
 {
     private readonly Dictionary<string, BindingEnum> enumByNativeName = [];
     private readonly Dictionary<string, BindingStruct> structByNativeName = [];
     private readonly Dictionary<string, string> handlesByNativeName = [];
     private readonly Dictionary<string, BindingDelegate> delegatesByNativeName = [];
-    private readonly HashSet<string> usedCallbackTypedefs = [];   // typedefs a bound function references as a parameter
+    private readonly HashSet<string> usedCallbackTypedefs = [];   // callback typedefs that appear in emitted APIs
     private readonly HashSet<string> failedStructs = [];
     private readonly Dictionary<string, RecordDecl> recordByNativeName = [];
     private readonly List<BindingFunction> functions = [];
@@ -32,7 +32,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         var declarations = ParseTranslationUnit(translationUnitPath, includeDirectory, filterRoot, libraryDirectory, targetTriple);
         DiscoverEnums(declarations);
         IndexRecords(declarations);
-        DiscoverCallbackTypedefs(declarations);   // before structs, so a struct's function-pointer fields can reference the delegates
+        DiscoverCallbackTypedefs(declarations);   // structs can contain callback-typed fields
         foreach (var nativeName in config.TransparentStructs)
             ResolveStruct(nativeName);
         DiscoverFunctions(declarations);
@@ -52,10 +52,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         return model;
     }
 
-    /// <summary>
-    /// Re-parses for another target and verifies every emitted struct still has
-    /// natural layout for that ABI.
-    /// </summary>
+    /// <summary>Re-parses for another ABI and rejects structs whose natural layout would differ.</summary>
     public static void ValidateNaturalLayout(
         BindgenConfig config,
         string translationUnitPath,
@@ -245,8 +242,8 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         }
     }
 
-    // Finds the function-pointer typedefs (GLFWkeyfun and friends) and models each as a delegate so the
-    // emitter can produce a typed callback type and an instance-rooted setter.
+    // Function-pointer typedefs are only emitted when a selected API surface references them; recording
+    // all candidates first lets structs and functions share the same delegate model.
     private void DiscoverCallbackTypedefs(List<Decl> declarations)
     {
         foreach (var declaration in declarations)
@@ -270,8 +267,8 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             var ok = true;
             for (uint i = 0; i < (uint)proto.NumArgTypes; i++)
             {
-                // Not isParam: a const char* in a callback (GLFW hands us UTF-8) cannot auto-marshal to
-                // string here (the runtime would decode it as ANSI), so it stays nint for the caller to decode.
+                // Callback strings stay raw: delegate marshalling would decode const char* with the
+                // runtime's ANSI path, while these libraries pass UTF-8.
                 if (MapNativeType(proto.GetArgType(i)) is not { } managed)
                 {
                     ok = false;
@@ -364,8 +361,8 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             return MapInlineArray(canonical, fieldManagedName, owner);
         if (canonical.kind == CXTypeKind.CXType_Record)
             return MapRecordField(field, owner.NativeName);
-        // A function-pointer-typedef field (the GLFWallocator callbacks) stays raw nint, but record the
-        // typedef as used so the typed delegate is emitted - it is how a caller populates the field.
+        // Struct fields keep function pointers as nint, but the matching delegate is still useful when
+        // callers populate allocator/callback structs.
         if (delegatesByNativeName.ContainsKey(CleanTypeSpelling(field.Type.Handle)))
             usedCallbackTypedefs.Add(CleanTypeSpelling(field.Type.Handle));
         return MapNativeType(field.Type.Handle);
@@ -388,8 +385,8 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         return BuildStruct(definition, synthesizedName)?.ManagedName;
     }
 
-    // A fixed-size array field becomes an [InlineArray] buffer struct nested in the owning struct and
-    // named after the field (buttons -> ButtonsBuffer), rather than a shared top-level type.
+    // Inline arrays are generated as nested buffers so repeated native field names do not collide across
+    // different structs.
     private string? MapInlineArray(CXType arrayType, string fieldManagedName, BindingStruct owner)
     {
         var count = (int)arrayType.ArraySize;
@@ -460,8 +457,8 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             parameters.Add(parameterBinding);
         }
 
-        // A bool return travels as its underlying integer at the native boundary (the backend converts);
-        // a header that types booleans as plain int names the bool-returning functions in config.
+        // Public bools stay explicit: the backend converts raw integer returns for headers that do not
+        // have a dedicated boolean type.
         var isBoolReturn = returnType == "bool" || config.BoolReturns.Contains(function.Name);
         var returnInteropType = isBoolReturn ? MapNativeType(function.ReturnType.Handle, isReturn: true, boolAsRaw: true)! : returnType;
         return new(
@@ -474,8 +471,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             ReturnsCString: returnType == "nint" && ReturnsCString(function.ReturnType.Handle));
     }
 
-    /// <summary>True when the return is a <c>const char*</c> (a NUL-terminated C string), kept as the raw
-    /// nint with a string-decoding overload derived from it.</summary>
+    /// <summary>Whether the raw pointer return can safely drive C-string convenience overloads.</summary>
     private static bool ReturnsCString(CXType returnType)
     {
         var canonical = returnType.CanonicalType;
@@ -496,8 +492,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             return null;
         }
 
-        // No P/Invoke marshalling on the native class: a const char* is raw nint with a string convenience
-        // overload, and a bool travels as its underlying integer with the backend converting.
+        // The native import layer remains blittable. Friendly bool/string shapes are added above it.
         var isString = niceType == "string";
         var isBool = niceType == "bool" || (modifier.Length == 0 && config.BoolParams.GetValueOrDefault(function.Name, []).Contains(parameter.Name));
         var managedType = isString ? "nint" : isBool ? "bool" : niceType;
@@ -513,8 +508,8 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
                 is CXTypeKind.CXType_Void
                 or CXTypeKind.CXType_Char_S or CXTypeKind.CXType_Char_U
                 or CXTypeKind.CXType_SChar or CXTypeKind.CXType_UChar;
-        // A function-pointer-typedef parameter gets a typed callback setter; record the typedef as used so
-        // only referenced delegates are emitted (the proc-address and allocator typedefs go unused).
+        // Only callback typedefs that reach the public API are emitted; unreferenced proc-address helper
+        // typedefs stay out of the generated surface.
         var callbackTypedef = CleanTypeSpelling(parameter.Type.Handle);
         var callbackType = delegatesByNativeName.GetValueOrDefault(callbackTypedef)?.ManagedName;
         if (callbackType is not null)
@@ -602,9 +597,8 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         constants.Sort((a, b) => string.Compare(a.ManagedName, b.ManagedName, StringComparison.Ordinal));
     }
 
-    // Builds the typed enums declared in config.EnumGroups out of the discovered macro constants:
-    // collect each group's constants (by shared prefix, or an explicit list), then name the members by
-    // stripping that prefix. Aliases (LEFT == BUTTON_1) come along for free as same-valued members.
+    // Configured enum groups recover type information lost when a C library publishes enum-like values
+    // as macros. Same-valued aliases remain as aliases in the generated enum.
     private void SynthesizeEnumGroups()
     {
         foreach (var (enumName, group) in config.EnumGroups)
@@ -629,9 +623,8 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         config.TypeRenames.GetValueOrDefault(nativeName)
         ?? CSharpName.FromNativeTypeName(nativeName, config.Prefix, managedTypePrefix, config.DigitNamePrefix);
 
-    // A pointer to an opaque record (a forward-declared struct with no definition) becomes a typed
-    // handle, but only when the type is named in typeRenames: that keeps it opt-in per library and
-    // gives the handle a clean name instead of the mangled auto-name.
+    // Opaque handles are opt-in through TypeRenames. That avoids treating every unknown record pointer
+    // as a handle and gives the public type an intentional name.
     private string? OpaqueHandle(string nativeName)
     {
         if (recordByNativeName.ContainsKey(nativeName) || !config.TypeRenames.TryGetValue(nativeName, out var managed))

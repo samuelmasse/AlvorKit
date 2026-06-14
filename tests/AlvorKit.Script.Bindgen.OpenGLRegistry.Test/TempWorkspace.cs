@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.Test;
+namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
 
 internal sealed class TempWorkspace : IDisposable
 {
@@ -11,12 +11,12 @@ internal sealed class TempWorkspace : IDisposable
     public string Root { get; }
 
     public static TempWorkspace Create() =>
-        new(Path.Combine(Path.GetTempPath(), "AlvorKit.Script.Bindgen.Test", Guid.NewGuid().ToString("N")));
+        new(Path.Combine(Path.GetTempPath(), "AlvorKit.Script.Bindgen.OpenGLRegistry.Test", Guid.NewGuid().ToString("N")));
 
-    public string CreateDirectory(string name)
+    public string WriteFile(string name, string contents)
     {
         var path = Path.Combine(Root, name);
-        Directory.CreateDirectory(path);
+        File.WriteAllText(path, contents);
         return path;
     }
 

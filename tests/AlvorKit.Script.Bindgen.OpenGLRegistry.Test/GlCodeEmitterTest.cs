@@ -1,6 +1,6 @@
 using AlvorKit.Script.Bindgen;
 
-namespace AlvorKit.Script.Bindgen.Test;
+namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
 
 [TestClass]
 public sealed class GlCodeEmitterTest
@@ -34,6 +34,40 @@ public sealed class GlCodeEmitterTest
 
         var delegateSource = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "GlDebugProc.cs"));
         StringAssert.Contains(delegateSource, "[UnmanagedFunctionPointer(CallingConvention.Winapi)]");
+    }
+
+    [TestMethod]
+    public void EmitStringGetter_SpanOverloadHandlesNullNativePointer()
+    {
+        using var workspace = TempWorkspace.Create();
+        var config = TestConfig();
+        var model = new GlBindingModel(
+            Groups: [],
+            AllTokens: new("GLenum", "GlEnum", IsFlags: false, Members: []),
+            Commands:
+            [
+                new(
+                    NativeName: "glGetString",
+                    ManagedName: "GetString",
+                    ReturnType: "nint",
+                    ReturnInteropType: "nint",
+                    Parameters: [],
+                    Availability: new("1.0", null),
+                    Documentation: null,
+                    ReturnsCString: true)
+            ],
+            WideConstants: [],
+            UngroupedEnumUses: [],
+            SkippedCommands: [],
+            HandleTypes: [],
+            Delegates: []);
+
+        new GlCodeEmitter(config, "registry-tag", "doc-tag").Emit(model, workspace.Root, "4.6.2");
+
+        var extensionsSource = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "GlExtensions.cs"));
+        StringAssert.Contains(extensionsSource, "var pointer = this.GetString();");
+        StringAssert.Contains(extensionsSource, "if (pointer == 0) { result = default; return; }");
+        StringAssert.Contains(extensionsSource, "MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)pointer)");
     }
 
     private static BindgenConfig TestConfig() => new()

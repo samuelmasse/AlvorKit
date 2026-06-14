@@ -3,10 +3,10 @@ using System.Xml.Linq;
 
 namespace AlvorKit.Script.Bindgen;
 
-/// <summary>Parses the Khronos OpenGL registry (gl.xml) and builds a managed binding model.</summary>
+/// <summary>Builds the OpenGL binding model from gl.xml plus configuration hints.</summary>
 public sealed class GlRegistryParser(BindgenConfig config)
 {
-    /// <summary>Registry value types by C name. Pointers to any of these become nint.</summary>
+    /// <summary>Registry scalar aliases by C name; pointer forms are modeled separately as raw nint.</summary>
     private static readonly Dictionary<string, string> ValueTypes = new()
     {
         ["void"] = "void",
@@ -37,11 +37,11 @@ public sealed class GlRegistryParser(BindgenConfig config)
     private readonly Dictionary<string, string> managedNameByGroup = [];
     private readonly List<string> ungroupedEnumUses = [];
     private readonly SortedSet<string> handleTypes = [];
-    private readonly Dictionary<string, string> callbackManagedNames = [];   // native typedef -> managed delegate name
-    private readonly HashSet<string> usedCallbacks = [];                      // typedefs a selected command references
+    private readonly Dictionary<string, string> callbackManagedNames = [];   // native callback typedef to managed delegate
+    private readonly HashSet<string> usedCallbacks = [];                      // callback typedefs referenced by selected commands
     private string CatchAllName => config.ApiClass + "Enum";
 
-    /// <summary>Registry handle classes (the <c>class</c> attribute) mapped to strongly-typed handle structs.</summary>
+    /// <summary>Registry object classes that can become strongly typed handle structs.</summary>
     private static readonly Dictionary<string, string> HandleClasses = new()
     {
         ["buffer"] = "GlBufferHandle",
@@ -57,7 +57,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
         ["program pipeline"] = "GlProgramPipelineHandle",
     };
 
-    /// <summary>The handle struct for a param/return <c>class</c> (recorded for emission), or null.</summary>
+    /// <summary>Returns the configured handle type and records it for emission.</summary>
     private string? HandleType(string? handleClass)
     {
         if (handleClass is not null && HandleClasses.TryGetValue(handleClass, out var type))
@@ -99,9 +99,8 @@ public sealed class GlRegistryParser(BindgenConfig config)
         string NativeName, string ManagedName, ulong Value, string[] Groups, bool IsBitmask, GlAvailability Availability);
 
     /// <summary>
-    /// Walks the &lt;feature&gt; blocks up to the configured version in order, applying requires
-    /// and profile removes, then the opted-in extensions. Yields the selected command and token
-    /// names with the version (or extension) that introduced each.
+    /// Applies registry feature blocks in version order, including profile removals, then layers the
+    /// opted-in extensions on top. The result also records where each selected name came from.
     /// </summary>
     private (HashSet<string> Commands, HashSet<string> Tokens, Dictionary<string, string> Since) SelectFeatureSet(XElement registry)
     {
@@ -151,18 +150,15 @@ public sealed class GlRegistryParser(BindgenConfig config)
         }
     }
 
-    /// <summary>A require/remove with no profile applies to all; otherwise it must match.</summary>
+    /// <summary>Profile-less registry blocks apply to all profiles; profiled blocks must match config.</summary>
     private bool MatchesProfile(XElement element) =>
         element.Attribute("profile") is not { } profile || profile.Value == config.GlProfile;
 
-    /// <summary>An extension require with no api applies to all; otherwise it must match.</summary>
+    /// <summary>API-less extension requirements apply to all APIs; API-specific ones must match config.</summary>
     private bool MatchesApi(XElement element) =>
         element.Attribute("api") is not { } api || api.Value == config.GlApi;
 
-    /// <summary>
-    /// The earliest version in which each command or token is required by an <paramref name="api"/>
-    /// feature block, ignoring profiles and removes - i.e. when it first appeared in that API.
-    /// </summary>
+    /// <summary>Finds the first feature version that introduced each name for an optional companion API.</summary>
     private static Dictionary<string, string> ScanApiAvailability(XElement registry, string api)
     {
         var since = new Dictionary<string, string>();
@@ -195,7 +191,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
                     name,
                     CSharpName.FromNativeIdentifier(name, config.Prefix, config.DigitNamePrefix, dimensionSegments: true),
                     ParseTokenValue(element.Attribute("value")!.Value),
-                    element.Attribute("group")?.Value.Split(',') ?? [],
+                    element.Attribute("group")?.Value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? [],
                     isBitmask,
                     availability(name));
                 if (!byName.TryAdd(name, token) && byName[name].Value != token.Value)
@@ -217,11 +213,8 @@ public sealed class GlRegistryParser(BindgenConfig config)
             : unchecked((ulong)long.Parse(text));
 
     /// <summary>
-    /// Builds the typed enum groups from the group attributes of the selected tokens and resolves
-    /// their managed names: typeRenames first, then a vestigial ARB suffix is dropped when that
-    /// does not collide with another group, and finally the api-class prefix is applied so every
-    /// enum type is namespaced (BufferTarget becomes GlBufferTarget) and cannot collide with
-    /// unrelated framework types.
+    /// Builds typed enum groups from token group attributes. Renames win first, obsolete ARB suffixes
+    /// are trimmed only when unambiguous, and the API class prefix prevents framework-type collisions.
     /// </summary>
     private List<GlEnumGroup> BuildGroups(List<RegistryToken> tokens)
     {
@@ -263,7 +256,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
         .Select(token => new GlEnumMember(token.ManagedName, token.NativeName, token.Value, token.Availability, GroupNames(token)))
         .ToList();
 
-    /// <summary>The managed names of the typed enum groups a token belongs to, sorted for stable output.</summary>
+    /// <summary>Managed enum group names for a token, sorted for deterministic output.</summary>
     private List<string> GroupNames(RegistryToken token) => token.Groups
         .Where(managedNameByGroup.ContainsKey)
         .Select(group => managedNameByGroup[group])
@@ -287,10 +280,9 @@ public sealed class GlRegistryParser(BindgenConfig config)
                 throw new InvalidOperationException($"{name} is required by a feature but not defined in <commands>.");
 
             var proto = MapDeclaration(element.Element("proto")!, name);
-            // A const char/byte pointer return is a NUL-terminated C string; the raw nint return is
-            // kept and string/span convenience overloads are derived from this flag.
+            // Raw C-string returns stay as nint; overload generation uses this flag to add decoded forms.
             var returnsCString = proto is { PointerDepth: 1, PointeeType: "byte", PointeeIsConst: true };
-            // An unclassed GLuint in a command with an ObjectIdentifier enum is a polymorphic handle.
+            // ObjectIdentifier commands accept handles from several object classes through GLuint.
             var objectCommand = element.Elements("param").Any(param => param.Attribute("group")?.Value == "ObjectIdentifier");
             var parameters = element.Elements("param").Select(param => MapParameter(param, name, objectCommand)).ToList();
             commands.Add(new(
@@ -325,10 +317,9 @@ public sealed class GlRegistryParser(BindgenConfig config)
     }
 
     /// <summary>
-    /// Maps a &lt;proto&gt; or &lt;param&gt; declaration: the C type is reconstructed from the
-    /// text around the ptype and name elements, pointers become nint with the pointee recorded
-    /// (group-typed for GLenum pointees), GLenum/GLbitfield and grouped GLint resolve their group
-    /// attribute to a typed enum (catch-all when absent) and GLboolean becomes bool over a byte.
+    /// Maps a registry declaration into the managed/raw pair used by commands. Pointer metadata is
+    /// preserved for overload generation; scalar GLenum/GLbitfield/GLint use registry groups when
+    /// present, and GLboolean becomes public bool over raw byte.
     /// </summary>
     private (string Name, (string Managed, string Interop) Type, int PointerDepth, string? PointeeType, bool PointeeIsConst, bool PointeeIsChar, string? CallbackType)
         MapDeclaration(XElement declaration, string commandName, bool objectCommand = false)
@@ -348,18 +339,19 @@ public sealed class GlRegistryParser(BindgenConfig config)
         var cType = type.ToString();
         var pointerDepth = cType.Count(character => character == '*');
         var baseType = cType.Replace("const", "").Replace("struct", "").Replace("*", "").Trim();
-        if (!ValueTypes.TryGetValue(baseType, out var valueType))
-            throw new InvalidOperationException($"{commandName}: unmapped C type '{cType.Trim()}'.");
         var group = declaration.Attribute("group")?.Value;
         var handleClass = declaration.Attribute("class")?.Value;
 
-        // A function-pointer typedef parameter (GLDEBUGPROC): the raw entry point keeps the nint;
-        // its typed setter overload is derived separately. Record it so the delegate gets emitted.
+        // Configured callback typedefs do not have to be hard-coded scalar types. The core command
+        // keeps nint, while a rooted typed-setter overload and delegate are emitted separately.
         if (pointerDepth == 0 && callbackManagedNames.TryGetValue(baseType, out var callbackManaged))
         {
             usedCallbacks.Add(baseType);
             return (name, ("nint", "nint"), 0, null, false, false, callbackManaged);
         }
+
+        if (!ValueTypes.TryGetValue(baseType, out var valueType))
+            throw new InvalidOperationException($"{commandName}: unmapped C type '{cType.Trim()}'.");
 
         if (pointerDepth > 0)
         {
@@ -375,11 +367,13 @@ public sealed class GlRegistryParser(BindgenConfig config)
             if (group is not null && managedNameByGroup.TryGetValue(group, out var managedGroup))
                 return (name, (managedGroup, "uint"), 0, null, false, false, null);
             ungroupedEnumUses.Add($"{commandName}({(name.Length > 0 ? name : "return")}: {group ?? "no group"})");
-            // An ungrouped GLenum still holds tokens; an ungrouped GLbitfield is arbitrary bits.
+            // Ungrouped GLenum can still be represented by the catch-all token enum; GLbitfield is
+            // arbitrary bits and stays uint.
             return (name, (baseType == "GLenum" ? CatchAllName : "uint", "uint"), 0, null, false, false, null);
         }
 
-        // The glTexImage family types its internalformat as GLint for historical reasons.
+        // glTexImage-style internalformat parameters are typed as GLint in the registry but still use
+        // enum groups.
         if (baseType == "GLint" && group is not null && managedNameByGroup.TryGetValue(group, out var intGroup))
             return (name, (intGroup, "int"), 0, null, false, false, null);
 
@@ -397,10 +391,9 @@ public sealed class GlRegistryParser(BindgenConfig config)
     }
 
     /// <summary>
-    /// Parses the configured function-pointer typedefs (GLDEBUGPROC) from the registry &lt;types&gt;
-    /// block into a return type and parameter list, recording each managed delegate name. The typedef
-    /// body is raw C text - "typedef void (APIENTRY *NAME)(GLenum source, ...)" - so the return is
-    /// read between "typedef" and the first parenthesis and the parameters from the last group.
+    /// Parses configured callback typedefs from raw registry type text into delegate signatures.
+    /// Registry callback type bodies are C snippets, so this intentionally extracts only the return
+    /// type, typedef name, and final parameter list.
     /// </summary>
     private Dictionary<string, (string Return, List<(string CType, string Name)> Parameters)> DiscoverCallbackTypedefs(XElement registry)
     {
@@ -446,11 +439,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
         return (returnType, parameters);
     }
 
-    /// <summary>
-    /// Builds the managed delegates for the callback typedefs a selected command actually uses,
-    /// mapping each parameter as the commands are (pointers to nint, GLenum to its configured group
-    /// or the catch-all enum). A configured typedef that no selected command references is omitted.
-    /// </summary>
+    /// <summary>Builds delegates only for callback typedefs that selected commands reference.</summary>
     private List<GlDelegate> BuildDelegates(Dictionary<string, (string Return, List<(string CType, string Name)> Parameters)> signatures)
     {
         var delegates = new List<GlDelegate>();
@@ -477,9 +466,8 @@ public sealed class GlRegistryParser(BindgenConfig config)
     }
 
     /// <summary>
-    /// Maps a callback parameter's C type. Like <see cref="MapDeclaration"/>, but the enum typing
-    /// comes from the callback config rather than registry group attributes (the typedef carries
-    /// none), and GLboolean travels as a blittable byte since native code invokes the delegate.
+    /// Maps callback parameters using config-supplied enum groups. Native code invokes these delegates,
+    /// so GLboolean remains byte rather than the public bool shape used by commands.
     /// </summary>
     private GlParameter MapCallbackParameter(string cType, string name, CallbackConfig callback)
     {

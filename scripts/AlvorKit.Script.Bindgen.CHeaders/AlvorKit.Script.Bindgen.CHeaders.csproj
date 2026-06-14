@@ -16,4 +16,8 @@
         <PackageReference Include="libClangSharp.runtime.linux-x64" Version="21.1.8.2" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="include\**" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
 </Project>

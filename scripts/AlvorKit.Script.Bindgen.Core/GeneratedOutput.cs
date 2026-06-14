@@ -20,8 +20,8 @@ public static class GeneratedOutput
                 <PackageReadmeFile>README.md</PackageReadmeFile>
                 <PackageLicenseExpression>MIT</PackageLicenseExpression>
                 <GenerateDocumentationFile>true</GenerateDocumentationFile>
-                <!-- CS1573: upstream docs occasionally omit a param tag. CS1591: macro constants
-                     are emitted without doc comments, so don't warn on each one. -->
+                <!-- Upstream docs can miss individual parameter tags, and macro constants rarely
+                     have useful comments. Keep warnings focused on generator failures. -->
                 <NoWarn>$(NoWarn);CS1573;CS1591</NoWarn>
             </PropertyGroup>
 

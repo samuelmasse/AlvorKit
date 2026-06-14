@@ -1,21 +1,30 @@
 namespace AlvorKit.Script.Bindgen;
 
-/// <summary>Converts native C identifiers into public C# identifiers.</summary>
+/// <summary>Centralizes the native-to-managed naming rules shared by every generator pipeline.</summary>
 public static class CSharpName
 {
     private static readonly HashSet<string> Keywords =
     [
-        "base", "bool", "byte", "char", "class", "decimal", "double", "event", "fixed", "float",
-        "in", "int", "lock", "long", "object", "out", "params", "ref", "sbyte", "short",
-        "string", "this", "uint", "ulong", "ushort"
+        "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked",
+        "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else",
+        "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for",
+        "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock",
+        "long", "namespace", "new", "null", "object", "operator", "out", "override", "params",
+        "private", "protected", "public", "readonly", "record", "ref", "return", "sbyte",
+        "sealed", "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this",
+        "throw", "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort",
+        "using", "virtual", "void", "volatile", "while",
+        "add", "alias", "and", "args", "async", "await", "by", "descending", "dynamic",
+        "equals", "file", "from", "get", "global", "group", "init", "into", "join", "let",
+        "managed", "nameof", "nint", "not", "notnull", "nuint", "on", "or", "orderby",
+        "partial", "remove", "required", "scoped", "select", "set", "unmanaged", "value",
+        "var", "when", "where", "with", "yield"
     ];
 
     /// <summary>
-    /// Converts glfwGetWindowSize to GetWindowSize. Digit-leading names get
-    /// <paramref name="digitNamePrefix"/> (XXH32 to Xxh32 with prefix Xxh) and digit-digit
-    /// segment boundaries keep the underscore (XXH3_64bits to Xxh3_64bits), since merging
-    /// the digit runs would garble the name. With <paramref name="dimensionSegments"/>,
-    /// digits-then-capital segments stay verbatim (GL_TEXTURE_2D to Texture2D, not Texture2d).
+    /// Turns a native identifier into PascalCase after stripping the native prefix. Numeric edge cases
+    /// stay readable: digit-leading identifiers receive <paramref name="digitNamePrefix"/>, adjacent
+    /// digit runs keep a separator, and OpenGL dimension tokens can preserve forms like 2D.
     /// </summary>
     public static string FromNativeIdentifier(string nativeName, string nativePrefix, string digitNamePrefix = "Num", bool dimensionSegments = false)
     {
@@ -46,9 +55,10 @@ public static class CSharpName
         return managedName.ToString();
     }
 
-    /// <summary>Converts FT_Glyph_Format to FtGlyphFormat.</summary>
+    /// <summary>Adds the library type prefix after applying the normal identifier conversion.</summary>
     public static string FromNativeTypeName(string nativeName, string nativePrefix, string managedTypePrefix, string digitNamePrefix = "Num") =>
         managedTypePrefix + FromNativeIdentifier(nativeName, nativePrefix, digitNamePrefix);
 
+    /// <summary>Escapes C# keywords that are valid C parameter names.</summary>
     public static string Parameter(string name) => Keywords.Contains(name) ? "@" + name : name;
 }

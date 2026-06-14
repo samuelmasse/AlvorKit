@@ -1,6 +1,6 @@
 namespace AlvorKit.Script.Bindgen;
 
-/// <summary>Writes the generated OpenGL API contract and proc-loading backend projects.</summary>
+/// <summary>Writes the generated OpenGL API, proc-loading backend, and convenience surface.</summary>
 public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTag)
 {
     public void Emit(GlBindingModel model, string repoRoot, string version)
@@ -46,10 +46,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         .AppendLine("#nullable enable")
         .AppendLine();
 
-    /// <summary>
-    /// "GL 4.2, GL ES 3.1" for items in both APIs, just the desktop part when ES has it not.
-    /// A non-numeric desktop value is an extension name and is shown verbatim.
-    /// </summary>
+    /// <summary>Formats availability text for docs, preserving extension names verbatim.</summary>
     private static string AvailabilityText(GlAvailability availability)
     {
         var desktop = char.IsAsciiDigit(availability.Gl[0]) ? $"GL {availability.Gl}" : availability.Gl;
@@ -73,7 +70,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
 
         """;
 
-    /// <summary>No .Native package: the platform's GL driver is the native library.</summary>
+    /// <summary>OpenGL backends load the platform driver directly, so no generated native package exists.</summary>
     private string EmitBackendProject(string version, string apiProjectName) => $"""
         {XmlBanner()}
         <Project Sdk="Microsoft.NET.Sdk">
@@ -114,11 +111,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         return output.ToString();
     }
 
-    /// <summary>
-    /// The strongly-typed handle structs: a <c>readonly record struct</c> over the raw object name
-    /// per registry handle class, each widening implicitly to the generic handle, with explicit
-    /// conversions to and from <c>uint</c>.
-    /// </summary>
+    /// <summary>Emits typed wrappers around GL object names plus a generic handle for polymorphic APIs.</summary>
     private string EmitHandles(GlBindingModel model)
     {
         var output = SourceHeader();
@@ -170,11 +163,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         return output.ToString();
     }
 
-    /// <summary>
-    /// A native callback delegate (GLDEBUGPROC as GlDebugProc). Its parameters are typed like the
-    /// commands - enums where the config groups them, raw nint pointers otherwise - and it is
-    /// blittable, so the typed setter can hand its function pointer straight to the driver.
-    /// </summary>
+    /// <summary>Emits a blittable callback delegate used by a rooted typed-setter overload.</summary>
     private string EmitDelegate(GlDelegate callback)
     {
         var output = SourceHeader();
@@ -187,9 +176,8 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         return output.ToString();
     }
 
-    // Instance-rooted typed callback setters: each callback-taking entry point (glDebugMessageCallback)
-    // gets an overload taking the typed delegate, rooting it on this instance so the driver's raw
-    // function pointer never dangles, and forwarding the function pointer to the raw method.
+    // Callback setter overloads root delegates on this API instance so the driver never keeps a
+    // function pointer to a collected delegate.
     private void EmitCallbackSetters(StringBuilder output, GlBindingModel model)
     {
         var setters = model.Commands.Where(command => command.Parameters.Any(parameter => parameter.CallbackType is not null)).ToList();
@@ -197,11 +185,11 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
             return;
 
         output.AppendLine();
-        output.AppendLine("    // Allocated on first use, so an instance that never installs a callback stays allocation-free.");
+        output.AppendLine("    // Lazily allocated so instances that never install callbacks stay allocation-free.");
         output.AppendLine("    private Dictionary<int, Delegate>? rootedCallbacks;");
         output.AppendLine();
-        output.AppendLine("    // Roots a callback on this instance and returns the function pointer to install; null clears");
-        output.AppendLine("    // it, and replacing a slot drops the previous delegate (which then becomes collectable).");
+        output.AppendLine("    // Each native callback slot owns at most one delegate; replacing or clearing the slot");
+        output.AppendLine("    // releases the previous delegate for collection.");
         output.AppendLine("    private nint RootCallback(int slot, Delegate? handler)");
         output.AppendLine("    {");
         output.AppendLine("        if (handler is null) { rootedCallbacks?.Remove(slot); return 0; }");
@@ -226,10 +214,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         }
     }
 
-    /// <summary>
-    /// The tokens whose values overflow the uint-backed enums (GL_TIMEOUT_IGNORED): genuine 64-bit
-    /// sentinel numbers rather than GLenum members, so they are plain constants in their own class.
-    /// </summary>
+    /// <summary>Emits 64-bit sentinel tokens that cannot fit in the uint-backed enum types.</summary>
     private string EmitConstants(GlBindingModel model)
     {
         var output = SourceHeader();
@@ -251,11 +236,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         return output.ToString();
     }
 
-    /// <summary>
-    /// The GL entry point, its availability and the reference-page purpose as the summary, then a
-    /// param tag for each parameter the page documents. Commands without a reference page get just
-    /// the entry point and availability.
-    /// </summary>
+    /// <summary>Emits searchable command docs from registry availability and optional refpage prose.</summary>
     private void EmitCommandDocs(StringBuilder output, GlCommand command)
     {
         var availability = AvailabilityText(command.Availability);
@@ -279,10 +260,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
     private static string Capitalize(string text) =>
         text.Length > 0 && char.IsAsciiLetterLower(text[0]) ? char.ToUpperInvariant(text[0]) + text[1..] : text;
 
-    /// <summary>
-    /// Attribution for the reference-page prose imported into the XML docs, required by the SGI
-    /// Free Software License B the OpenGL reference pages are published under.
-    /// </summary>
+    /// <summary>Emits required attribution for XML documentation derived from Khronos refpages.</summary>
     private string EmitThirdPartyNotices(GlBindingModel model)
     {
         var documented = model.Commands.Count(command => command.Documentation is not null);
@@ -309,11 +287,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
             """;
     }
 
-    /// <summary>
-    /// A forwarding wrapper base: every command delegates to an inner instance. A hand-written
-    /// interception layer (validation, tracing, resource tracking) inherits this and overrides only
-    /// the calls it cares about, letting the rest pass through.
-    /// </summary>
+    /// <summary>Emits the forwarding base used by validation, tracing, or resource-tracking layers.</summary>
     private string EmitWrapper(GlBindingModel model)
     {
         var output = SourceHeader();
@@ -339,7 +313,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         return output.ToString();
     }
 
-    /// <summary>A do-nothing implementation that returns default values - a null object for tests or headless use.</summary>
+    /// <summary>Emits a null-object GL implementation for tests and headless paths.</summary>
     private string EmitNoop(GlBindingModel model)
     {
         var output = SourceHeader();
@@ -403,7 +377,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
     private static string Signature(GlCommand command) =>
         string.Join(", ", command.Parameters.Select(parameter => $"{parameter.ManagedType} {parameter.ManagedName}"));
 
-    /// <summary>The function pointer type at the interop boundary: enums travel as uint, bool as byte.</summary>
+    /// <summary>Formats the raw GL function pointer type; typed enums and bools are converted by callers.</summary>
     private static string DelegateType(GlCommand command) =>
         $"delegate* unmanaged<{string.Join(", ", command.Parameters.Select(parameter => parameter.InteropType).Append(command.ReturnInteropType))}>";
 

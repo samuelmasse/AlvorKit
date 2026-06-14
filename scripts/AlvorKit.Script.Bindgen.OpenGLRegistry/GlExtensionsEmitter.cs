@@ -1,16 +1,15 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>
-/// Emits the convenience overloads for the generated GL contract, derived from the registry len
-/// attributes: spans over counted arrays (count inferred), generic spans over sized or configured
-/// void buffers, UTF-8 strings over GLchar pointers, singular forms of the Gen/Create/Delete
-/// commands, out scalars for the single-value getters and string returns for the info-log shape.
+/// Derives the ergonomic GL overloads from registry metadata: spans for buffer pointers, UTF-8
+/// strings for GLchar pointers, singular create/delete helpers, scalar out getters, and info-log
+/// string helpers.
 /// </summary>
 public sealed class GlExtensionsEmitter(BindgenConfig config)
 {
     private enum LenKind { None, Literal, ParamRef, CompSize, Unknown }
 
-    /// <summary>A parsed len attribute: "n" or "count*3" (ParamRef), "4" (Literal), "COMPSIZE(pname)".</summary>
+    /// <summary>Normalized form of a registry len attribute such as n, count*3, 4, or COMPSIZE(pname).</summary>
     private readonly record struct LenInfo(LenKind Kind, int ParamIndex, int Divisor, string[] CompSizeArgs)
     {
         public static readonly LenInfo None = new(LenKind.None, -1, 1, []);
@@ -125,11 +124,8 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
     private enum Plan { Keep, SpanTyped, SpanGenericSized, SpanGenericUnsized, StringIn, StringArray, Dropped }
 
     /// <summary>
-    /// The single combined overload: every applicable parameter transform applied at once.
-    /// Typed counted pointers become spans and their count parameter is dropped when every
-    /// referrer is spanned; sized void buffers become generic spans dropping the byte size;
-    /// const GLchar pointers become strings, dropping a paired length parameter when the
-    /// registry names one.
+    /// Emits the combined overload where every safe transform is applied at once. Counts are dropped
+    /// only when all parameters that depend on them are represented by managed spans or strings.
     /// </summary>
     private void AppendCombined(StringBuilder output, GlCommand command)
     {
@@ -138,7 +134,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         var argument = new string?[parameters.Count];
         var configured = config.SpanParams.GetValueOrDefault(command.NativeName, []);
 
-        // Strings first: a paired length parameter named by COMPSIZE is replaced by the UTF-8 byte count.
+        // String lengths must be planned before buffer spans, because COMPSIZE can name the same count.
         for (var i = 0; i < parameters.Count; i++)
         {
             var parameter = parameters[i];
@@ -156,7 +152,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             }
         }
 
-        // Typed spans, collecting the counted references to decide which count parameters drop.
+        // Count parameters drop only after every parameter that references them has a managed substitute.
         var referencesByCount = new Dictionary<int, List<(int Pointer, int Divisor)>>();
         var spannedPointers = new HashSet<int>();
         for (var i = 0; i < parameters.Count; i++)
@@ -170,7 +166,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             {
                 if (len.Kind is not (LenKind.ParamRef or LenKind.Literal or LenKind.CompSize))
                     continue;
-                // A writable single-value pointer is the out overload's territory, not a span's.
+                // Writable single-value pointers are clearer as out parameters than one-element spans.
                 if (len is { Kind: LenKind.Literal, Divisor: 1 } && !parameter.PointeeIsConst)
                     continue;
                 plans[i] = Plan.SpanTyped;
@@ -185,7 +181,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             }
             else if (parameter is { PointerDepth: 1, PointeeType: null, PointeeIsChar: false })
             {
-                // A sized void buffer (len references a GLsizeiptr) or a configured length-less one.
+                // Void buffers need either an explicit byte-size parameter or a per-command opt-in.
                 if (len.Kind == LenKind.ParamRef && parameters[len.ParamIndex].ManagedType == "nint")
                 {
                     plans[i] = Plan.SpanGenericSized;
@@ -201,9 +197,8 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             }
             else if (parameter is { PointerDepth: 2, PointeeIsChar: true, PointeeIsConst: true })
             {
-                // An array of strings (const GLchar* const*): marshalled to a UTF-8 char** below.
-                // Its count is the element count - a plain len reference, or a single-argument COMPSIZE
-                // (one string per count), so it can be inferred from the span length.
+                // String arrays marshal to a temporary UTF-8 char**. Their count can be inferred only
+                // when len directly describes one string per element.
                 var countIndex = len.Kind == LenKind.ParamRef ? len.ParamIndex
                     : len.Kind == LenKind.CompSize && len.CompSizeArgs.Length == 1
                         ? parameters.FindIndex(candidate => candidate.NativeName == len.CompSizeArgs[0] && candidate is { PointerDepth: 0, ManagedType: "int" or "uint" })
@@ -216,7 +211,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
                     if (!referencesByCount.TryGetValue(countIndex, out var references))
                         referencesByCount[countIndex] = references = [];
                     references.Add((i, 1));
-                    // A paired const length array (glShaderSource) is dropped; the strings are NUL-terminated.
+                    // A paired length array is optional once each string is NUL-terminated.
                     for (var j = 0; j < parameters.Count; j++)
                         if (parameters[j] is { PointerDepth: 1, PointeeType: "int", PointeeIsConst: true }
                             && ParseLen(command, parameters[j]) is { Kind: LenKind.ParamRef } lengthsLen && lengthsLen.ParamIndex == countIndex)
@@ -228,8 +223,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             }
         }
 
-        // A count drops only when everything referencing it is a span in this overload; otherwise
-        // the spans tied to it revert, since a span alongside its own count parameter helps nobody.
+        // If a count cannot be inferred completely, keep the raw signature shape for that cluster.
         foreach (var (count, references) in referencesByCount)
         {
             var referrers = parameters
@@ -255,7 +249,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         if (!plans.Any(plan => plan != Plan.Keep && plan != Plan.Dropped))
             return;
 
-        // Signature, generic type parameters and their constraints.
+        // Build the public overload signature after the transform plan is stable.
         var typeParameters = new List<string>();
         var signature = new List<string>();
         for (var i = 0; i < parameters.Count; i++)
@@ -338,7 +332,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         output.AppendLine();
     }
 
-    /// <summary>GenBuffers(1, &amp;value) style singular forms when a lone trailing counted pointer remains.</summary>
+    /// <summary>Emits singular Gen/Create/Delete-style helpers for one trailing counted pointer.</summary>
     private void AppendSingular(StringBuilder output, GlCommand command)
     {
         var parameters = command.Parameters;
@@ -385,7 +379,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         output.AppendLine();
     }
 
-    /// <summary>An out overload for the Get* commands whose trailing pointer holds a single value.</summary>
+    /// <summary>Emits out-parameter overloads for Get* commands whose trailing pointer holds one value.</summary>
     private void AppendOutScalar(StringBuilder output, GlCommand command)
     {
         var parameters = command.Parameters;
@@ -418,10 +412,8 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
     }
 
     /// <summary>
-    /// The trailing (bufSize, length, buffer) shape of the info-log and name family: a string return
-    /// and a <c>Span&lt;char&gt;</c> overload. The string form probe-and-grows a UTF-8 work buffer
-    /// (stack then native) so any length fits and only the returned string allocates; the span form
-    /// decodes into the caller's buffer (truncating to fit) with no GC allocation.
+    /// Emits helpers for the trailing (bufSize, length, buffer) pattern used by info logs and names.
+    /// The string form grows a UTF-8 work buffer as needed; the span form writes into caller memory.
     /// </summary>
     private void AppendInfoLog(StringBuilder output, GlCommand command)
     {
@@ -473,11 +465,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         }
     }
 
-    /// <summary>
-    /// The probe-and-grow body for the string overload: a stack buffer that doubles into native
-    /// memory until the GL call writes fewer characters than it offered (so the text is complete),
-    /// running <paramref name="onComplete"/> at that point. Native memory is freed even if a call throws.
-    /// </summary>
+    /// <summary>Emits the shared probe-and-grow body used by string-returning info-log helpers.</summary>
     private void EmitInfoLogProbe(StringBuilder output, GlCommand command, string coreArgs, params string[] onComplete)
     {
         output.AppendLine("    {");
@@ -509,10 +497,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         output.AppendLine();
     }
 
-    /// <summary>
-    /// A single-string overload for the (count, GLchar* const*, GLint*) source-array shape
-    /// (glShaderSource).
-    /// </summary>
+    /// <summary>Emits the single-string helper for the shader-source array shape.</summary>
     private void AppendSingleSource(StringBuilder output, GlCommand command)
     {
         var parameters = command.Parameters;
@@ -550,12 +535,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         output.AppendLine();
     }
 
-    /// <summary>
-    /// For a command that returns a C string pointer (glGetString/glGetStringi), overloads that keep
-    /// the raw pointer method intact: an <c>out string</c> form that decodes it, and a span form that
-    /// decodes into the caller's buffer and outs the written slice. The extra parameters make these
-    /// distinct from the pointer-returning core method.
-    /// </summary>
+    /// <summary>Emits decoded string overloads for commands whose raw return is a C string pointer.</summary>
     private void AppendStringGetter(StringBuilder output, GlCommand command)
     {
         if (!command.ReturnsCString)
@@ -580,7 +560,9 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             EmitOverloadDocs(output, command, "Decodes the returned C string into <paramref name=\"destination\"/> (truncated to fit) and sets <paramref name=\"result\"/> to the slice written. No allocation.");
             output.AppendLine($"    public virtual void {command.ManagedName}({spanSignature})");
             output.AppendLine("    {");
-            output.AppendLine($"        var bytes = MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)this.{command.ManagedName}({callArgs}));");
+            output.AppendLine($"        var pointer = this.{command.ManagedName}({callArgs});");
+            output.AppendLine("        if (pointer == 0) { result = default; return; }");
+            output.AppendLine("        var bytes = MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)pointer);");
             output.AppendLine("        System.Text.Unicode.Utf8.ToUtf16(bytes, destination, out _, out var written);");
             output.AppendLine("        result = destination[..written];");
             output.AppendLine("    }");
@@ -588,31 +570,25 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         }
     }
 
-    /// <summary>The pinnable local name for a parameter, without the keyword escape.</summary>
+    /// <summary>Local variable name for generated unsafe code, without keyword escaping.</summary>
     private static string Local(GlParameter parameter) => parameter.ManagedName.TrimStart('@');
 
-    /// <summary>
-    /// A cref to the core command, qualified by its parameter types. The overloads now live on the
-    /// same class as the command they wrap, so a bare name would be an ambiguous reference.
-    /// </summary>
+    /// <summary>Fully qualified cref for the raw command, avoiding ambiguity with overloads.</summary>
     private string CoreCref(GlCommand command) =>
         $"{config.ApiClass}.{command.ManagedName}({string.Join(", ", command.Parameters.Select(parameter => parameter.ManagedType))})";
 
-    /// <summary>
-    /// Emits the inherited summary and a convenience-overload remark whose <paramref name="detail"/>
-    /// spells out the marshalling this overload performs (which arguments it pins, marshals or fills in).
-    /// </summary>
+    /// <summary>Emits inherited docs plus a remark that names the marshalling performed by the overload.</summary>
     private void EmitOverloadDocs(StringBuilder output, GlCommand command, string detail)
     {
         output.AppendLine($"    /// <inheritdoc cref=\"{CoreCref(command)}\"/>");
         output.AppendLine($"    /// <remarks>Convenience overload. Calls <see cref=\"{CoreCref(command)}\"/>. {detail}</remarks>");
     }
 
-    /// <summary>Renders parameter names as <c>paramref</c> references (these name parameters of the overload).</summary>
+    /// <summary>Renders overload parameter names as <c>paramref</c> references.</summary>
     private static string ParamRefs(IEnumerable<string> names) =>
         string.Join(", ", names.Select(name => $"<paramref name=\"{name.TrimStart('@')}\"/>"));
 
-    /// <summary>Renders dropped argument names in code font (they are not parameters of the overload).</summary>
+    /// <summary>Renders inferred raw argument names in code font because they are not overload parameters.</summary>
     private static string CodeNames(IEnumerable<string> names) =>
         string.Join(", ", names.Select(name => $"<c>{name.TrimStart('@')}</c>"));
 
@@ -630,7 +606,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         return "T" + char.ToUpperInvariant(name[0]) + name[1..];
     }
 
-    /// <summary>Wraps a count expression in a cast when the count parameter is not int-typed.</summary>
+    /// <summary>Casts inferred count expressions to the native count parameter type when needed.</summary>
     private static string CountExpression(GlParameter count, string expression) =>
         count.ManagedType == "int" ? expression : $"({count.ManagedType})({expression})";
 

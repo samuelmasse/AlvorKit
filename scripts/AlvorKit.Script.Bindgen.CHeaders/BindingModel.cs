@@ -24,11 +24,9 @@ public record BindingStruct(
     string? Documentation);
 
 /// <summary>
-/// A function parameter. <see cref="ManagedType"/> is the type on the public contract; <see cref="InteropType"/>
-/// is the blittable type at the native P/Invoke boundary (they differ for a bool, whose interop form is the
-/// underlying int). <see cref="HasStringConvenience"/> marks a <c>const char*</c> parameter: its raw form is
-/// <c>nint</c> and a <c>string</c> convenience overload is derived. No P/Invoke marshalling: the native class
-/// stays raw and conversions happen in the backend (bool) or convenience overloads (string).
+/// Parameter shape after C has been reduced to a safe public type and a raw interop type. The two
+/// differ when the public API is nicer than the P/Invoke boundary, such as bool-over-int or a string
+/// convenience overload over a raw <c>const char*</c>.
 /// </summary>
 public record BindingParameter(
     string ManagedName,

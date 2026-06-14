@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\scripts\AlvorKit.Script.Bindgen.OpenGLRegistry\AlvorKit.Script.Bindgen.OpenGLRegistry.csproj" />
+    </ItemGroup>
+
+</Project>
