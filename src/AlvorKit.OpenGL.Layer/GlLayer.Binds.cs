@@ -10,117 +10,160 @@ public partial class GlLayer
     private GlBinding drawFramebuffer;
     private GlBinding transformFeedbackObject;
     private GlBinding conditionalRender;
-    private GlStateSlot<TextureUnit> activeTexture;
+    private GlStateSlot<GlTextureUnit> activeTexture;
     private GlStateSlot<int> drawBuffersCount;
-    private readonly GlBindingMap<BufferTarget> bufferBinds = new();
-    private readonly GlBindingMap<(BufferTarget, uint)> indexedBufferBinds = new();
+    private readonly GlBindingMap<GlBufferTarget> bufferBinds = new();
+    private readonly GlBindingMap<(GlBufferTarget, uint)> indexedBufferBinds = new();
     private readonly GlBindingMap<uint> vertexBufferBinds = new();
     private readonly GlBindingMap<uint> samplerBinds = new();
     private readonly GlBindingMap<uint> imageTextureBinds = new();
-    private readonly GlBindingMap<(uint, TextureTarget)> textureBinds = new();
+    private readonly GlBindingMap<(uint, GlTextureTarget)> textureBinds = new();
     private readonly GlBindingMap<uint> textureUnitBinds = new();
-    private readonly GlBindingMap<QueryTarget> queryBinds = new();
-    private readonly GlBindingMap<(QueryTarget, uint)> queryIndexedBinds = new();
-    private readonly Dictionary<uint, TextureTarget> textureTargets = [];
+    private readonly GlBindingMap<GlQueryTarget> queryBinds = new();
+    private readonly GlBindingMap<(GlQueryTarget, uint)> queryIndexedBinds = new();
+    private readonly Dictionary<uint, GlTextureTarget> textureTargets = [];
 
     private uint GetActiveTextureIndex(string function) =>
         activeTexture.Value is { } unit
-            ? (uint)((int)unit - (int)TextureUnit.Texture0)
+            ? (uint)((int)unit - (int)GlTextureUnit.Texture0)
             : throw new GlMissingPrerequisiteException(function, "no active texture unit is set; call glActiveTexture first.");
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindBuffer"/> for the same target.</remarks>
-    public override void BindBuffer(BufferTarget target, uint buffer)
+    public void BindBuffer(GlBufferTarget target, uint buffer) => BindBuffer(target, (GlBufferHandle)buffer);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindBuffer"/> for the same target.</remarks>
+    public override void BindBuffer(GlBufferTarget target, GlBufferHandle buffer)
     {
-        bufferBinds.Bind(nameof(BindBuffer), target, buffer);
+        var id = (uint)buffer;
+        bufferBinds.Bind(nameof(BindBuffer), target, id);
         base.BindBuffer(target, buffer);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindBufferBase"/> for the same target and index.</remarks>
-    public override void BindBufferBase(BufferTarget target, uint index, uint buffer)
+    public void BindBufferBase(GlBufferTarget target, uint index, uint buffer) => BindBufferBase(target, index, (GlBufferHandle)buffer);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindBufferBase"/> for the same target and index.</remarks>
+    public override void BindBufferBase(GlBufferTarget target, uint index, GlBufferHandle buffer)
     {
-        indexedBufferBinds.Bind(nameof(BindBufferBase), (target, index), buffer);
+        indexedBufferBinds.Bind(nameof(BindBufferBase), (target, index), (uint)buffer);
         base.BindBufferBase(target, index, buffer);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindBufferRange"/> for the same target and index.</remarks>
-    public override void BindBufferRange(BufferTarget target, uint index, uint buffer, nint offset, nint size)
+    public void BindBufferRange(GlBufferTarget target, uint index, uint buffer, nint offset, nint size) => BindBufferRange(target, index, (GlBufferHandle)buffer, offset, size);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindBufferRange"/> for the same target and index.</remarks>
+    public override void BindBufferRange(GlBufferTarget target, uint index, GlBufferHandle buffer, nint offset, nint size)
     {
-        indexedBufferBinds.Bind(nameof(BindBufferRange), (target, index), buffer);
+        indexedBufferBinds.Bind(nameof(BindBufferRange), (target, index), (uint)buffer);
         base.BindBufferRange(target, index, buffer, offset, size);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindVertexBuffer"/> for the same binding index.</remarks>
-    public override void BindVertexBuffer(uint bindingindex, uint buffer, nint offset, int stride)
+    public void BindVertexBuffer(uint bindingindex, uint buffer, nint offset, int stride) => BindVertexBuffer(bindingindex, (GlBufferHandle)buffer, offset, stride);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindVertexBuffer"/> for the same binding index.</remarks>
+    public override void BindVertexBuffer(uint bindingindex, GlBufferHandle buffer, nint offset, int stride)
     {
-        vertexBufferBinds.Bind(nameof(BindVertexBuffer), bindingindex, buffer);
+        vertexBufferBinds.Bind(nameof(BindVertexBuffer), bindingindex, (uint)buffer);
         base.BindVertexBuffer(bindingindex, buffer, offset, stride);
     }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindVertexArray"/>. Cannot bind a VAO while a buffer is bound to <see cref="BufferTarget.ArrayBuffer"/> or <see cref="BufferTarget.ElementArrayBuffer"/>.</remarks>
-    public override void BindVertexArray(uint array)
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindVertexArray"/>. Cannot bind a VAO while a buffer is bound to <see cref="GlBufferTarget.ArrayBuffer"/> or <see cref="GlBufferTarget.ElementArrayBuffer"/>.</remarks>
+    public void BindVertexArray(uint array) => BindVertexArray((GlVertexArrayHandle)array);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindVertexArray"/>. Cannot bind a VAO while a buffer is bound to <see cref="GlBufferTarget.ArrayBuffer"/> or <see cref="GlBufferTarget.ElementArrayBuffer"/>.</remarks>
+    public override void BindVertexArray(GlVertexArrayHandle array)
     {
-        if (array != 0)
+        var id = (uint)array;
+        if (id != 0)
         {
-            if (bufferBinds.TryGet(BufferTarget.ArrayBuffer, out var vbo) && vbo != 0)
-                throw new GlBindConflictException(nameof(BindVertexArray), $"attempted to bind VAO {array}, but buffer {vbo} is still bound to ArrayBuffer.");
-            if (bufferBinds.TryGet(BufferTarget.ElementArrayBuffer, out var ebo) && ebo != 0)
-                throw new GlBindConflictException(nameof(BindVertexArray), $"attempted to bind VAO {array}, but buffer {ebo} is still bound to ElementArrayBuffer.");
+            if (bufferBinds.TryGet(GlBufferTarget.ArrayBuffer, out var vbo) && vbo != 0)
+                throw new GlBindConflictException(nameof(BindVertexArray), $"attempted to bind VAO {id}, but buffer {vbo} is still bound to ArrayBuffer.");
+            if (bufferBinds.TryGet(GlBufferTarget.ElementArrayBuffer, out var ebo) && ebo != 0)
+                throw new GlBindConflictException(nameof(BindVertexArray), $"attempted to bind VAO {id}, but buffer {ebo} is still bound to ElementArrayBuffer.");
         }
-        vertexArray.Bind(nameof(BindVertexArray), array);
+        vertexArray.Bind(nameof(BindVertexArray), id);
         base.BindVertexArray(array);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnuseProgram"/>.</remarks>
-    public override void UseProgram(uint program)
+    public void UseProgram(uint program) => UseProgram((GlProgramHandle)program);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnuseProgram"/>.</remarks>
+    public override void UseProgram(GlProgramHandle program)
     {
-        this.program.Bind(nameof(UseProgram), program);
+        this.program.Bind(nameof(UseProgram), (uint)program);
         base.UseProgram(program);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindProgramPipeline"/>.</remarks>
-    public override void BindProgramPipeline(uint pipeline)
+    public void BindProgramPipeline(uint pipeline) => BindProgramPipeline((GlProgramPipelineHandle)pipeline);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindProgramPipeline"/>.</remarks>
+    public override void BindProgramPipeline(GlProgramPipelineHandle pipeline)
     {
-        programPipeline.Bind(nameof(BindProgramPipeline), pipeline);
+        programPipeline.Bind(nameof(BindProgramPipeline), (uint)pipeline);
         base.BindProgramPipeline(pipeline);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindRenderbuffer"/>.</remarks>
-    public override void BindRenderbuffer(RenderbufferTarget target, uint renderbuffer)
+    public void BindRenderbuffer(GlRenderbufferTarget target, uint renderbuffer) => BindRenderbuffer(target, (GlRenderbufferHandle)renderbuffer);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindRenderbuffer"/>.</remarks>
+    public override void BindRenderbuffer(GlRenderbufferTarget target, GlRenderbufferHandle renderbuffer)
     {
-        this.renderbuffer.Bind(nameof(BindRenderbuffer), renderbuffer);
+        this.renderbuffer.Bind(nameof(BindRenderbuffer), (uint)renderbuffer);
         base.BindRenderbuffer(target, renderbuffer);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindFramebuffer"/> for the same target.</remarks>
-    public override void BindFramebuffer(FramebufferTarget target, uint framebuffer)
+    public void BindFramebuffer(GlFramebufferTarget target, uint framebuffer) => BindFramebuffer(target, (GlFramebufferHandle)framebuffer);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindFramebuffer"/> for the same target.</remarks>
+    public override void BindFramebuffer(GlFramebufferTarget target, GlFramebufferHandle framebuffer)
     {
-        if (target is FramebufferTarget.Framebuffer or FramebufferTarget.ReadFramebuffer)
-            readFramebuffer.Bind(nameof(BindFramebuffer), framebuffer);
-        if (target is FramebufferTarget.Framebuffer or FramebufferTarget.DrawFramebuffer)
-            drawFramebuffer.Bind(nameof(BindFramebuffer), framebuffer);
+        var id = (uint)framebuffer;
+        if (target is GlFramebufferTarget.Framebuffer or GlFramebufferTarget.ReadFramebuffer)
+            readFramebuffer.Bind(nameof(BindFramebuffer), id);
+        if (target is GlFramebufferTarget.Framebuffer or GlFramebufferTarget.DrawFramebuffer)
+            drawFramebuffer.Bind(nameof(BindFramebuffer), id);
         base.BindFramebuffer(target, framebuffer);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindTransformFeedback"/> for the same target.</remarks>
-    public override void BindTransformFeedback(BindTransformFeedbackTarget target, uint id)
+    public void BindTransformFeedback(GlBindTransformFeedbackTarget target, uint id) => BindTransformFeedback(target, (GlTransformFeedbackHandle)id);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindTransformFeedback"/> for the same target.</remarks>
+    public override void BindTransformFeedback(GlBindTransformFeedbackTarget target, GlTransformFeedbackHandle id)
     {
-        transformFeedbackObject.Bind(nameof(BindTransformFeedback), id);
+        transformFeedbackObject.Bind(nameof(BindTransformFeedback), (uint)id);
         base.BindTransformFeedback(target, id);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetActiveTexture"/>. Set-once: switching to another unit requires resetting first. <see cref="BindTexture"/>, <see cref="UnbindTexture"/>, and bound-texture allocations all require an active unit to be set.</remarks>
-    public override void ActiveTexture(TextureUnit texture)
+    public override void ActiveTexture(GlTextureUnit texture)
     {
         activeTexture.Set(nameof(ActiveTexture), texture);
         base.ActiveTexture(texture);
@@ -128,49 +171,70 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindTexture"/> for the same target on the active unit. A texture cannot be used as more than one target.</remarks>
-    public override void BindTexture(TextureTarget target, uint texture)
+    public void BindTexture(GlTextureTarget target, uint texture) => BindTexture(target, (GlTextureHandle)texture);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindTexture"/> for the same target on the active unit. A texture cannot be used as more than one target.</remarks>
+    public override void BindTexture(GlTextureTarget target, GlTextureHandle texture)
     {
-        if (texture != 0)
-            TrackTextureTarget(nameof(BindTexture), texture, target);
-        textureBinds.Bind(nameof(BindTexture), (GetActiveTextureIndex(nameof(BindTexture)), target), texture);
+        var id = (uint)texture;
+        if (id != 0)
+            TrackTextureTarget(nameof(BindTexture), id, target);
+        textureBinds.Bind(nameof(BindTexture), (GetActiveTextureIndex(nameof(BindTexture)), target), id);
         base.BindTexture(target, texture);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindTextureUnit"/> for the same unit.</remarks>
-    public override void BindTextureUnit(uint unit, uint texture)
+    public void BindTextureUnit(uint unit, uint texture) => BindTextureUnit(unit, (GlTextureHandle)texture);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindTextureUnit"/> for the same unit.</remarks>
+    public override void BindTextureUnit(uint unit, GlTextureHandle texture)
     {
-        textureUnitBinds.Bind(nameof(BindTextureUnit), unit, texture);
+        textureUnitBinds.Bind(nameof(BindTextureUnit), unit, (uint)texture);
         base.BindTextureUnit(unit, texture);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindSampler"/> for the same unit.</remarks>
-    public override void BindSampler(uint unit, uint sampler)
+    public void BindSampler(uint unit, uint sampler) => BindSampler(unit, (GlSamplerHandle)sampler);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindSampler"/> for the same unit.</remarks>
+    public override void BindSampler(uint unit, GlSamplerHandle sampler)
     {
-        samplerBinds.Bind(nameof(BindSampler), unit, sampler);
+        samplerBinds.Bind(nameof(BindSampler), unit, (uint)sampler);
         base.BindSampler(unit, sampler);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindImageTexture"/> for the same unit.</remarks>
-    public override void BindImageTexture(uint unit, uint texture, int level, bool layered, int layer, BufferAccess access, InternalFormat format)
+    public void BindImageTexture(uint unit, uint texture, int level, bool layered, int layer, GlBufferAccess access, GlInternalFormat format) => BindImageTexture(unit, (GlTextureHandle)texture, level, layered, layer, access, format);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindImageTexture"/> for the same unit.</remarks>
+    public override void BindImageTexture(uint unit, GlTextureHandle texture, int level, bool layered, int layer, GlBufferAccess access, GlInternalFormat format)
     {
-        imageTextureBinds.Bind(nameof(BindImageTexture), unit, texture);
+        imageTextureBinds.Bind(nameof(BindImageTexture), unit, (uint)texture);
         base.BindImageTexture(unit, texture, level, layered, layer, access, format);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <c>glEndQuery</c> for the same target.</remarks>
-    public override void BeginQuery(QueryTarget target, uint id)
+    public void BeginQuery(GlQueryTarget target, uint id) => BeginQuery(target, (GlQueryHandle)id);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <c>glEndQuery</c> for the same target.</remarks>
+    public override void BeginQuery(GlQueryTarget target, GlQueryHandle id)
     {
-        queryBinds.Bind(nameof(BeginQuery), target, id);
+        queryBinds.Bind(nameof(BeginQuery), target, (uint)id);
         base.BeginQuery(target, id);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one earlier call to <c>glBeginQuery</c> for the same target.</remarks>
-    public override void EndQuery(QueryTarget target)
+    public override void EndQuery(GlQueryTarget target)
     {
         queryBinds.Unbind(nameof(EndQuery), target);
         base.EndQuery(target);
@@ -178,15 +242,19 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <c>glEndQueryIndexed</c> for the same target and index.</remarks>
-    public override void BeginQueryIndexed(QueryTarget target, uint index, uint id)
+    public void BeginQueryIndexed(GlQueryTarget target, uint index, uint id) => BeginQueryIndexed(target, index, (GlQueryHandle)id);
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Must be paired with exactly one later call to <c>glEndQueryIndexed</c> for the same target and index.</remarks>
+    public override void BeginQueryIndexed(GlQueryTarget target, uint index, GlQueryHandle id)
     {
-        queryIndexedBinds.Bind(nameof(BeginQueryIndexed), (target, index), id);
+        queryIndexedBinds.Bind(nameof(BeginQueryIndexed), (target, index), (uint)id);
         base.BeginQueryIndexed(target, index, id);
     }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one earlier call to <c>glBeginQueryIndexed</c> for the same target and index.</remarks>
-    public override void EndQueryIndexed(QueryTarget target, uint index)
+    public override void EndQueryIndexed(GlQueryTarget target, uint index)
     {
         queryIndexedBinds.Unbind(nameof(EndQueryIndexed), (target, index));
         base.EndQueryIndexed(target, index);
@@ -194,7 +262,7 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <c>glEndConditionalRender</c>.</remarks>
-    public override void BeginConditionalRender(uint id, ConditionalRenderMode mode)
+    public override void BeginConditionalRender(uint id, GlConditionalRenderMode mode)
     {
         conditionalRender.Bind(nameof(BeginConditionalRender), id);
         base.BeginConditionalRender(id, mode);
@@ -210,7 +278,15 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Binds each buffer in <c>[first, first + count)</c>. Must be paired with exactly one later call to <see cref="UnbindBuffersBase"/> for the same target and range.</remarks>
-    public override unsafe void BindBuffersBase(BufferTarget target, uint first, int count, nint buffers)
+    public unsafe void BindBuffersBase(GlBufferTarget target, uint first, ReadOnlySpan<uint> buffers)
+    {
+        fixed (uint* p = buffers)
+            BindBuffersBase(target, first, buffers.Length, (nint)p);
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Binds each buffer in <c>[first, first + count)</c>. Must be paired with exactly one later call to <see cref="UnbindBuffersBase"/> for the same target and range.</remarks>
+    public override unsafe void BindBuffersBase(GlBufferTarget target, uint first, int count, nint buffers)
     {
         var ids = (uint*)buffers;
         for (var i = 0; i < count; i++)
@@ -220,12 +296,32 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Binds each buffer in <c>[first, first + count)</c>. Must be paired with exactly one later call to <see cref="UnbindBuffersRange"/> for the same target and range.</remarks>
-    public override unsafe void BindBuffersRange(BufferTarget target, uint first, int count, nint buffers, nint offsets, nint sizes)
+    public unsafe void BindBuffersRange(GlBufferTarget target, uint first, ReadOnlySpan<uint> buffers, ReadOnlySpan<nint> offsets, ReadOnlySpan<nint> sizes)
+    {
+        fixed (uint* buffersPtr = buffers)
+        fixed (nint* offsetsPtr = offsets)
+        fixed (nint* sizesPtr = sizes)
+            BindBuffersRange(target, first, buffers.Length, (nint)buffersPtr, (nint)offsetsPtr, (nint)sizesPtr);
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Binds each buffer in <c>[first, first + count)</c>. Must be paired with exactly one later call to <see cref="UnbindBuffersRange"/> for the same target and range.</remarks>
+    public override unsafe void BindBuffersRange(GlBufferTarget target, uint first, int count, nint buffers, nint offsets, nint sizes)
     {
         var ids = (uint*)buffers;
         for (var i = 0; i < count; i++)
             indexedBufferBinds.Bind(nameof(BindBuffersRange), (target, first + (uint)i), buffers == 0 ? 0u : ids[i]);
         base.BindBuffersRange(target, first, count, buffers, offsets, sizes);
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Binds each buffer to vertex binding points <c>[first, first + count)</c>. Must be paired with exactly one later call to <see cref="UnbindVertexBuffers"/> for the same range.</remarks>
+    public unsafe void BindVertexBuffers(uint first, ReadOnlySpan<uint> buffers, ReadOnlySpan<nint> offsets, ReadOnlySpan<int> strides)
+    {
+        fixed (uint* buffersPtr = buffers)
+        fixed (nint* offsetsPtr = offsets)
+        fixed (int* stridesPtr = strides)
+            BindVertexBuffers(first, buffers.Length, (nint)buffersPtr, (nint)offsetsPtr, (nint)stridesPtr);
     }
 
     /// <inheritdoc/>
@@ -240,12 +336,28 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Binds each sampler to texture units <c>[first, first + count)</c>. Must be paired with exactly one later call to <see cref="UnbindSamplers"/> for the same range.</remarks>
+    public unsafe void BindSamplers(uint first, ReadOnlySpan<uint> samplers)
+    {
+        fixed (uint* p = samplers)
+            BindSamplers(first, samplers.Length, (nint)p);
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Binds each sampler to texture units <c>[first, first + count)</c>. Must be paired with exactly one later call to <see cref="UnbindSamplers"/> for the same range.</remarks>
     public override unsafe void BindSamplers(uint first, int count, nint samplers)
     {
         var ids = (uint*)samplers;
         for (var i = 0; i < count; i++)
             samplerBinds.Bind(nameof(BindSamplers), first + (uint)i, samplers == 0 ? 0u : ids[i]);
         base.BindSamplers(first, count, samplers);
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Binds each texture to image units <c>[first, first + count)</c>. Must be paired with exactly one later call to <see cref="UnbindImageTextures"/> for the same range.</remarks>
+    public unsafe void BindImageTextures(uint first, ReadOnlySpan<uint> textures)
+    {
+        fixed (uint* p = textures)
+            BindImageTextures(first, textures.Length, (nint)p);
     }
 
     /// <inheritdoc/>
@@ -260,6 +372,14 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Binds each texture to units <c>[first, first + count)</c>. Must be paired with exactly one later call to <see cref="UnbindTextures"/> for the same range.</remarks>
+    public unsafe void BindTextures(uint first, ReadOnlySpan<uint> textures)
+    {
+        fixed (uint* p = textures)
+            BindTextures(first, textures.Length, (nint)p);
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>Layer: Binds each texture to units <c>[first, first + count)</c>. Must be paired with exactly one later call to <see cref="UnbindTextures"/> for the same range.</remarks>
     public override unsafe void BindTextures(uint first, int count, nint textures)
     {
         var ids = (uint*)textures;
@@ -270,7 +390,7 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetDrawBuffers"/>. Set-once; cannot be combined with <see cref="DrawBuffers"/>.</remarks>
-    public override void DrawBuffer(DrawBufferMode buf)
+    public override void DrawBuffer(GlDrawBufferMode buf)
     {
         drawBuffersCount.Set(nameof(DrawBuffer), 1);
         base.DrawBuffer(buf);
@@ -284,7 +404,7 @@ public partial class GlLayer
         base.DrawBuffers(n, bufs);
     }
 
-    private void TrackTextureTarget(string function, uint texture, TextureTarget target)
+    private void TrackTextureTarget(string function, uint texture, GlTextureTarget target)
     {
         if (textureTargets.TryGetValue(texture, out var existing) && existing != target)
             throw new GlBindConflictException(function, $"texture {texture} is already used as {existing}, cannot use it as {target}.");
@@ -292,43 +412,43 @@ public partial class GlLayer
     }
 
     /// <summary>Layer: Unbinds <c>glBindBuffer</c> for <paramref name="target"/>. Must be paired with exactly one earlier call to <c>glBindBuffer</c> for the same target.</summary>
-    public void UnbindBuffer(BufferTarget target) { bufferBinds.Unbind(nameof(BindBuffer), target); base.BindBuffer(target, 0); }
+    public void UnbindBuffer(GlBufferTarget target) { bufferBinds.Unbind(nameof(BindBuffer), target); base.BindBuffer(target, (GlBufferHandle)0u); }
     /// <summary>Layer: Unbinds <c>glBindBufferBase</c> for <paramref name="target"/> at <paramref name="index"/>. Must be paired with exactly one earlier call to <c>glBindBufferBase</c>.</summary>
-    public void UnbindBufferBase(BufferTarget target, uint index) { indexedBufferBinds.Unbind(nameof(BindBufferBase), (target, index)); base.BindBufferBase(target, index, 0); }
+    public void UnbindBufferBase(GlBufferTarget target, uint index) { indexedBufferBinds.Unbind(nameof(BindBufferBase), (target, index)); base.BindBufferBase(target, index, (GlBufferHandle)0u); }
     /// <summary>Layer: Unbinds <c>glBindBufferRange</c> for <paramref name="target"/> at <paramref name="index"/>. Must be paired with exactly one earlier call to <c>glBindBufferRange</c>.</summary>
-    public void UnbindBufferRange(BufferTarget target, uint index) { indexedBufferBinds.Unbind(nameof(BindBufferRange), (target, index)); base.BindBufferRange(target, index, 0, 0, 0); }
+    public void UnbindBufferRange(GlBufferTarget target, uint index) { indexedBufferBinds.Unbind(nameof(BindBufferRange), (target, index)); base.BindBufferRange(target, index, (GlBufferHandle)0u, 0, 0); }
     /// <summary>Layer: Unbinds <c>glBindVertexBuffer</c> for binding <paramref name="bindingindex"/>. Must be paired with exactly one earlier call to <c>glBindVertexBuffer</c>.</summary>
-    public void UnbindVertexBuffer(uint bindingindex) { vertexBufferBinds.Unbind(nameof(BindVertexBuffer), bindingindex); base.BindVertexBuffer(bindingindex, 0, 0, 0); }
-    /// <summary>Layer: Unbinds thevertex array. Must be paired with exactly one earlier call to <c>glBindVertexArray</c>.</summary>
-    public void UnbindVertexArray() { vertexArray.Unbind(nameof(BindVertexArray)); base.BindVertexArray(0); }
+    public void UnbindVertexBuffer(uint bindingindex) { vertexBufferBinds.Unbind(nameof(BindVertexBuffer), bindingindex); base.BindVertexBuffer(bindingindex, (GlBufferHandle)0u, 0, 0); }
+    /// <summary>Layer: Unbinds the vertex array. Must be paired with exactly one earlier call to <c>glBindVertexArray</c>.</summary>
+    public void UnbindVertexArray() { vertexArray.Unbind(nameof(BindVertexArray)); base.BindVertexArray((GlVertexArrayHandle)0u); }
     /// <summary>Layer: Stops using the current program. Must be paired with exactly one earlier call to <c>glUseProgram</c>.</summary>
-    public void UnuseProgram() { program.Unbind(nameof(UseProgram)); base.UseProgram(0); }
-    /// <summary>Layer: Unbinds theprogram pipeline. Must be paired with exactly one earlier call to <c>glBindProgramPipeline</c>.</summary>
-    public void UnbindProgramPipeline() { programPipeline.Unbind(nameof(BindProgramPipeline)); base.BindProgramPipeline(0); }
+    public void UnuseProgram() { program.Unbind(nameof(UseProgram)); base.UseProgram((GlProgramHandle)0u); }
+    /// <summary>Layer: Unbinds the program pipeline. Must be paired with exactly one earlier call to <c>glBindProgramPipeline</c>.</summary>
+    public void UnbindProgramPipeline() { programPipeline.Unbind(nameof(BindProgramPipeline)); base.BindProgramPipeline((GlProgramPipelineHandle)0u); }
     /// <summary>Layer: Unbinds <c>glBindRenderbuffer</c> for <paramref name="target"/>. Must be paired with exactly one earlier call to <c>glBindRenderbuffer</c>.</summary>
-    public void UnbindRenderbuffer(RenderbufferTarget target) { renderbuffer.Unbind(nameof(BindRenderbuffer)); base.BindRenderbuffer(target, 0); }
-    /// <summary>Layer: Unbinds thesampler at unit <paramref name="unit"/>. Must be paired with exactly one earlier call to <c>glBindSampler</c> for the same unit.</summary>
-    public void UnbindSampler(uint unit) { samplerBinds.Unbind(nameof(BindSampler), unit); base.BindSampler(unit, 0); }
+    public void UnbindRenderbuffer(GlRenderbufferTarget target) { renderbuffer.Unbind(nameof(BindRenderbuffer)); base.BindRenderbuffer(target, (GlRenderbufferHandle)0u); }
+    /// <summary>Layer: Unbinds the sampler at unit <paramref name="unit"/>. Must be paired with exactly one earlier call to <c>glBindSampler</c> for the same unit.</summary>
+    public void UnbindSampler(uint unit) { samplerBinds.Unbind(nameof(BindSampler), unit); base.BindSampler(unit, (GlSamplerHandle)0u); }
     /// <summary>Layer: Unbinds <c>glBindTexture</c> for <paramref name="target"/> on the active unit. Must be paired with exactly one earlier call to <c>glBindTexture</c> for the same target.</summary>
-    public void UnbindTexture(TextureTarget target) { textureBinds.Unbind(nameof(BindTexture), (GetActiveTextureIndex(nameof(BindTexture)), target)); base.BindTexture(target, 0); }
-    /// <summary>Layer: Unbinds thetexture at unit <paramref name="unit"/>. Must be paired with exactly one earlier call to <c>glBindTextureUnit</c> for the same unit.</summary>
-    public void UnbindTextureUnit(uint unit) { textureUnitBinds.Unbind(nameof(BindTextureUnit), unit); base.BindTextureUnit(unit, 0); }
-    /// <summary>Layer: Unbinds theimage texture at unit <paramref name="unit"/>. Must be paired with exactly one earlier call to <c>glBindImageTexture</c> for the same unit.</summary>
-    public void UnbindImageTexture(uint unit) { imageTextureBinds.Unbind(nameof(BindImageTexture), unit); base.BindImageTexture(unit, 0, 0, false, 0, default, default); }
+    public void UnbindTexture(GlTextureTarget target) { textureBinds.Unbind(nameof(BindTexture), (GetActiveTextureIndex(nameof(BindTexture)), target)); base.BindTexture(target, (GlTextureHandle)0u); }
+    /// <summary>Layer: Unbinds the texture at unit <paramref name="unit"/>. Must be paired with exactly one earlier call to <c>glBindTextureUnit</c> for the same unit.</summary>
+    public void UnbindTextureUnit(uint unit) { textureUnitBinds.Unbind(nameof(BindTextureUnit), unit); base.BindTextureUnit(unit, (GlTextureHandle)0u); }
+    /// <summary>Layer: Unbinds the image texture at unit <paramref name="unit"/>. Must be paired with exactly one earlier call to <c>glBindImageTexture</c> for the same unit.</summary>
+    public void UnbindImageTexture(uint unit) { imageTextureBinds.Unbind(nameof(BindImageTexture), unit); base.BindImageTexture(unit, (GlTextureHandle)0u, 0, false, 0, default, default); }
     /// <summary>Layer: Returns <paramref name="target"/> to the default framebuffer. Must be paired with exactly one earlier call to <c>glBindFramebuffer</c> for the same target.</summary>
-    public void UnbindFramebuffer(FramebufferTarget target)
+    public void UnbindFramebuffer(GlFramebufferTarget target)
     {
-        if (target is FramebufferTarget.Framebuffer or FramebufferTarget.ReadFramebuffer)
+        if (target is GlFramebufferTarget.Framebuffer or GlFramebufferTarget.ReadFramebuffer)
             readFramebuffer.Unbind(nameof(BindFramebuffer));
-        if (target is FramebufferTarget.Framebuffer or FramebufferTarget.DrawFramebuffer)
+        if (target is GlFramebufferTarget.Framebuffer or GlFramebufferTarget.DrawFramebuffer)
             drawFramebuffer.Unbind(nameof(BindFramebuffer));
-        base.BindFramebuffer(target, 0);
+        base.BindFramebuffer(target, (GlFramebufferHandle)0u);
     }
     /// <summary>Layer: Returns <paramref name="target"/> to the default transform-feedback object. Must be paired with exactly one earlier call to <c>glBindTransformFeedback</c>.</summary>
-    public void UnbindTransformFeedback(BindTransformFeedbackTarget target) { transformFeedbackObject.Unbind(nameof(BindTransformFeedback)); base.BindTransformFeedback(target, 0); }
+    public void UnbindTransformFeedback(GlBindTransformFeedbackTarget target) { transformFeedbackObject.Unbind(nameof(BindTransformFeedback)); base.BindTransformFeedback(target, (GlTransformFeedbackHandle)0u); }
 
     /// <summary>Layer: Unbinds the range of indexed buffers bound by <see cref="BindBuffersBase"/>. Must be paired with exactly one earlier call to <see cref="BindBuffersBase"/> for the same target and range.</summary>
-    public unsafe void UnbindBuffersBase(BufferTarget target, uint first, int count)
+    public unsafe void UnbindBuffersBase(GlBufferTarget target, uint first, int count)
     {
         for (var i = 0; i < count; i++)
             indexedBufferBinds.Unbind(nameof(BindBuffersBase), (target, first + (uint)i));
@@ -336,7 +456,7 @@ public partial class GlLayer
         base.BindBuffersBase(target, first, count, (nint)buffers);
     }
     /// <summary>Layer: Unbinds the range of indexed buffers bound by <see cref="BindBuffersRange"/>. Must be paired with exactly one earlier call to <see cref="BindBuffersRange"/> for the same target and range.</summary>
-    public unsafe void UnbindBuffersRange(BufferTarget target, uint first, int count)
+    public unsafe void UnbindBuffersRange(GlBufferTarget target, uint first, int count)
     {
         for (var i = 0; i < count; i++)
             indexedBufferBinds.Unbind(nameof(BindBuffersRange), (target, first + (uint)i));
@@ -380,5 +500,5 @@ public partial class GlLayer
         base.BindImageTextures(first, count, (nint)textures);
     }
     /// <summary>Layer: Restores the default draw buffer (<c>glDrawBuffer(ColorAttachment0)</c>). Must be paired with exactly one earlier call to <see cref="DrawBuffer"/> or <see cref="DrawBuffers"/>.</summary>
-    public void ResetDrawBuffers() { drawBuffersCount.Reset(nameof(DrawBuffer)); base.DrawBuffer(DrawBufferMode.ColorAttachment0); }
+    public void ResetDrawBuffers() { drawBuffersCount.Reset(nameof(DrawBuffer)); base.DrawBuffer(GlDrawBufferMode.ColorAttachment0); }
 }

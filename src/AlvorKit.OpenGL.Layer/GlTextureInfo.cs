@@ -5,7 +5,7 @@ namespace AlvorKit.OpenGL.Layer;
 /// samples times an estimated bytes-per-pixel derived from the sized internal format, or from the
 /// transfer format and type when the internal format is unsized.
 /// </summary>
-public readonly record struct GlTextureInfo(InternalFormat InternalFormat, (int Width, int Height, int Depth) Size, PixelFormat PixelFormat, PixelType PixelType, int Samples = 1)
+public readonly record struct GlTextureInfo(GlInternalFormat InternalFormat, (int Width, int Height, int Depth) Size, GlPixelFormat PixelFormat, GlPixelType PixelType, int Samples = 1)
 {
     /// <summary>The estimated byte size of one mip level with this shape.</summary>
     public long MemoryUsage
@@ -23,70 +23,70 @@ public readonly record struct GlTextureInfo(InternalFormat InternalFormat, (int 
         return sized > 0 ? sized : EstimateFromFormatAndType(PixelFormat, PixelType);
     }
 
-    private static int EstimateFromSizedFormat(InternalFormat format) => format switch
+    private static int EstimateFromSizedFormat(GlInternalFormat format) => format switch
     {
-        InternalFormat.R8 or InternalFormat.R8i or InternalFormat.R8ui or InternalFormat.R8Snorm => 1,
-        InternalFormat.Rg8 or InternalFormat.Rg8i or InternalFormat.Rg8ui or InternalFormat.Rg8Snorm => 2,
-        InternalFormat.Rgb8 or InternalFormat.Rgb8i or InternalFormat.Rgb8ui or InternalFormat.Rgb8Snorm or InternalFormat.Srgb8 => 3,
-        InternalFormat.Rgba8 or InternalFormat.Rgba8i or InternalFormat.Rgba8ui or InternalFormat.Rgba8Snorm or InternalFormat.Srgb8Alpha8 => 4,
+        GlInternalFormat.R8 or GlInternalFormat.R8i or GlInternalFormat.R8ui or GlInternalFormat.R8Snorm => 1,
+        GlInternalFormat.Rg8 or GlInternalFormat.Rg8i or GlInternalFormat.Rg8ui or GlInternalFormat.Rg8Snorm => 2,
+        GlInternalFormat.Rgb8 or GlInternalFormat.Rgb8i or GlInternalFormat.Rgb8ui or GlInternalFormat.Rgb8Snorm or GlInternalFormat.Srgb8 => 3,
+        GlInternalFormat.Rgba8 or GlInternalFormat.Rgba8i or GlInternalFormat.Rgba8ui or GlInternalFormat.Rgba8Snorm or GlInternalFormat.Srgb8Alpha8 => 4,
 
-        InternalFormat.R16 or InternalFormat.R16f or InternalFormat.R16i or InternalFormat.R16ui or InternalFormat.R16Snorm => 2,
-        InternalFormat.Rg16 or InternalFormat.Rg16f or InternalFormat.Rg16i or InternalFormat.Rg16ui or InternalFormat.Rg16Snorm => 4,
-        InternalFormat.Rgb16 or InternalFormat.Rgb16f or InternalFormat.Rgb16i or InternalFormat.Rgb16ui or InternalFormat.Rgb16Snorm => 6,
-        InternalFormat.Rgba16 or InternalFormat.Rgba16f or InternalFormat.Rgba16i or InternalFormat.Rgba16ui or InternalFormat.Rgba16Snorm => 8,
+        GlInternalFormat.R16 or GlInternalFormat.R16f or GlInternalFormat.R16i or GlInternalFormat.R16ui or GlInternalFormat.R16Snorm => 2,
+        GlInternalFormat.Rg16 or GlInternalFormat.Rg16f or GlInternalFormat.Rg16i or GlInternalFormat.Rg16ui or GlInternalFormat.Rg16Snorm => 4,
+        GlInternalFormat.Rgb16 or GlInternalFormat.Rgb16f or GlInternalFormat.Rgb16i or GlInternalFormat.Rgb16ui or GlInternalFormat.Rgb16Snorm => 6,
+        GlInternalFormat.Rgba16 or GlInternalFormat.Rgba16f or GlInternalFormat.Rgba16i or GlInternalFormat.Rgba16ui or GlInternalFormat.Rgba16Snorm => 8,
 
-        InternalFormat.R32f or InternalFormat.R32i or InternalFormat.R32ui => 4,
-        InternalFormat.Rg32f or InternalFormat.Rg32i or InternalFormat.Rg32ui => 8,
-        InternalFormat.Rgb32f or InternalFormat.Rgb32i or InternalFormat.Rgb32ui => 12,
-        InternalFormat.Rgba32f or InternalFormat.Rgba32i or InternalFormat.Rgba32ui => 16,
+        GlInternalFormat.R32f or GlInternalFormat.R32i or GlInternalFormat.R32ui => 4,
+        GlInternalFormat.Rg32f or GlInternalFormat.Rg32i or GlInternalFormat.Rg32ui => 8,
+        GlInternalFormat.Rgb32f or GlInternalFormat.Rgb32i or GlInternalFormat.Rgb32ui => 12,
+        GlInternalFormat.Rgba32f or GlInternalFormat.Rgba32i or GlInternalFormat.Rgba32ui => 16,
 
-        InternalFormat.R3G3B2 or InternalFormat.Rgba2 => 1,
-        InternalFormat.Rgb4 or InternalFormat.Rgb5 or InternalFormat.Rgb565 or InternalFormat.Rgba4 or InternalFormat.Rgb5A1 => 2,
-        InternalFormat.Rgb10 or InternalFormat.Rgb10A2 or InternalFormat.Rgb10A2ui or InternalFormat.R11fG11fB10f or InternalFormat.Rgb9E5 => 4,
-        InternalFormat.Rgb12 or InternalFormat.Rgba12 => 6,
+        GlInternalFormat.R3G3B2 or GlInternalFormat.Rgba2 => 1,
+        GlInternalFormat.Rgb4 or GlInternalFormat.Rgb5 or GlInternalFormat.Rgb565 or GlInternalFormat.Rgba4 or GlInternalFormat.Rgb5A1 => 2,
+        GlInternalFormat.Rgb10 or GlInternalFormat.Rgb10A2 or GlInternalFormat.Rgb10A2ui or GlInternalFormat.R11fG11fB10f or GlInternalFormat.Rgb9E5 => 4,
+        GlInternalFormat.Rgb12 or GlInternalFormat.Rgba12 => 6,
 
-        InternalFormat.DepthComponent16 => 2,
-        InternalFormat.DepthComponent24 or InternalFormat.DepthComponent32 or InternalFormat.DepthComponent32f or InternalFormat.Depth24Stencil8 => 4,
-        InternalFormat.Depth32fStencil8 => 8,
+        GlInternalFormat.DepthComponent16 => 2,
+        GlInternalFormat.DepthComponent24 or GlInternalFormat.DepthComponent32 or GlInternalFormat.DepthComponent32f or GlInternalFormat.Depth24Stencil8 => 4,
+        GlInternalFormat.Depth32fStencil8 => 8,
 
-        InternalFormat.StencilIndex1 or InternalFormat.StencilIndex4 or InternalFormat.StencilIndex8 => 1,
-        InternalFormat.StencilIndex16 => 2,
+        GlInternalFormat.StencilIndex1 or GlInternalFormat.StencilIndex4 or GlInternalFormat.StencilIndex8 => 1,
+        GlInternalFormat.StencilIndex16 => 2,
 
-        InternalFormat.CompressedRedRgtc1 or InternalFormat.CompressedSignedRedRgtc1 or InternalFormat.CompressedRgRgtc2 or InternalFormat.CompressedSignedRgRgtc2 => 1,
-        InternalFormat.CompressedRgbaBptcUnorm or InternalFormat.CompressedSrgbAlphaBptcUnorm or InternalFormat.CompressedRgbBptcSignedFloat or InternalFormat.CompressedRgbBptcUnsignedFloat => 1,
+        GlInternalFormat.CompressedRedRgtc1 or GlInternalFormat.CompressedSignedRedRgtc1 or GlInternalFormat.CompressedRgRgtc2 or GlInternalFormat.CompressedSignedRgRgtc2 => 1,
+        GlInternalFormat.CompressedRgbaBptcUnorm or GlInternalFormat.CompressedSrgbAlphaBptcUnorm or GlInternalFormat.CompressedRgbBptcSignedFloat or GlInternalFormat.CompressedRgbBptcUnsignedFloat => 1,
 
         _ => 0,
     };
 
-    private static int EstimateFromFormatAndType(PixelFormat format, PixelType type)
+    private static int EstimateFromFormatAndType(GlPixelFormat format, GlPixelType type)
     {
         int packed = GetPackedTypeBytes(type);
         return packed > 0 ? packed : GetComponentCount(format) * GetComponentSize(type);
     }
 
-    private static int GetPackedTypeBytes(PixelType type) => type switch
+    private static int GetPackedTypeBytes(GlPixelType type) => type switch
     {
-        PixelType.UnsignedByte3_3_2 or PixelType.UnsignedByte2_3_3Rev => 1,
-        PixelType.UnsignedShort5_6_5 or PixelType.UnsignedShort5_6_5Rev or PixelType.UnsignedShort4_4_4_4 or PixelType.UnsignedShort4_4_4_4Rev or PixelType.UnsignedShort5_5_5_1 or PixelType.UnsignedShort1_5_5_5Rev => 2,
-        PixelType.UnsignedInt8_8_8_8 or PixelType.UnsignedInt8_8_8_8Rev or PixelType.UnsignedInt10_10_10_2 or PixelType.UnsignedInt2_10_10_10Rev or PixelType.UnsignedInt24_8 or PixelType.UnsignedInt10F11F11FRev or PixelType.UnsignedInt5_9_9_9Rev => 4,
-        PixelType.Float32UnsignedInt24_8Rev => 8,
+        GlPixelType.UnsignedByte3_3_2 or GlPixelType.UnsignedByte2_3_3Rev => 1,
+        GlPixelType.UnsignedShort5_6_5 or GlPixelType.UnsignedShort5_6_5Rev or GlPixelType.UnsignedShort4_4_4_4 or GlPixelType.UnsignedShort4_4_4_4Rev or GlPixelType.UnsignedShort5_5_5_1 or GlPixelType.UnsignedShort1_5_5_5Rev => 2,
+        GlPixelType.UnsignedInt8_8_8_8 or GlPixelType.UnsignedInt8_8_8_8Rev or GlPixelType.UnsignedInt10_10_10_2 or GlPixelType.UnsignedInt2_10_10_10Rev or GlPixelType.UnsignedInt24_8 or GlPixelType.UnsignedInt10F11F11FRev or GlPixelType.UnsignedInt5_9_9_9Rev => 4,
+        GlPixelType.Float32UnsignedInt24_8Rev => 8,
         _ => 0,
     };
 
-    private static int GetComponentCount(PixelFormat format) => format switch
+    private static int GetComponentCount(GlPixelFormat format) => format switch
     {
-        PixelFormat.Red or PixelFormat.Green or PixelFormat.Blue or PixelFormat.RedInteger or PixelFormat.GreenInteger or PixelFormat.BlueInteger or PixelFormat.StencilIndex or PixelFormat.DepthComponent => 1,
-        PixelFormat.Rg or PixelFormat.RgInteger or PixelFormat.DepthStencil => 2,
-        PixelFormat.Rgb or PixelFormat.Bgr or PixelFormat.RgbInteger or PixelFormat.BgrInteger => 3,
-        PixelFormat.Rgba or PixelFormat.Bgra or PixelFormat.RgbaInteger or PixelFormat.BgraInteger => 4,
+        GlPixelFormat.Red or GlPixelFormat.Green or GlPixelFormat.Blue or GlPixelFormat.RedInteger or GlPixelFormat.GreenInteger or GlPixelFormat.BlueInteger or GlPixelFormat.StencilIndex or GlPixelFormat.DepthComponent => 1,
+        GlPixelFormat.Rg or GlPixelFormat.RgInteger or GlPixelFormat.DepthStencil => 2,
+        GlPixelFormat.Rgb or GlPixelFormat.Bgr or GlPixelFormat.RgbInteger or GlPixelFormat.BgrInteger => 3,
+        GlPixelFormat.Rgba or GlPixelFormat.Bgra or GlPixelFormat.RgbaInteger or GlPixelFormat.BgraInteger => 4,
         _ => 4,
     };
 
-    private static int GetComponentSize(PixelType type) => type switch
+    private static int GetComponentSize(GlPixelType type) => type switch
     {
-        PixelType.UnsignedByte or PixelType.Byte => 1,
-        PixelType.UnsignedShort or PixelType.Short or PixelType.HalfFloat => 2,
-        PixelType.UnsignedInt or PixelType.Int or PixelType.Float => 4,
+        GlPixelType.UnsignedByte or GlPixelType.Byte => 1,
+        GlPixelType.UnsignedShort or GlPixelType.Short or GlPixelType.HalfFloat => 2,
+        GlPixelType.UnsignedInt or GlPixelType.Int or GlPixelType.Float => 4,
         _ => 1,
     };
 }

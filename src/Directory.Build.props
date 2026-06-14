@@ -1,4 +1,6 @@
 <Project>
+    <Import Project="..\AlvorKit.BindingVersions.props" />
+
     <PropertyGroup>
         <Version>0.1.0</Version>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>

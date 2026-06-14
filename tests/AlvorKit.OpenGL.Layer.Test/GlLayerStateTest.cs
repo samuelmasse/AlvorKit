@@ -11,37 +11,37 @@ public class GlLayerStateTest
     [TestMethod]
     public void Enable_ThenDisable_Succeeds()
     {
-        gl.Enable(EnableCap.Blend);
-        gl.Disable(EnableCap.Blend);
+        gl.Enable(GlEnableCap.Blend);
+        gl.Disable(GlEnableCap.Blend);
     }
 
     [TestMethod]
     public void Enable_WhenAlreadyEnabled_Throws()
     {
-        gl.Enable(EnableCap.Blend);
-        Assert.Throws<GlAlreadySetException>(() => gl.Enable(EnableCap.Blend));
+        gl.Enable(GlEnableCap.Blend);
+        Assert.Throws<GlAlreadySetException>(() => gl.Enable(GlEnableCap.Blend));
     }
 
     [TestMethod]
     public void Disable_WhenNotEnabled_Throws()
     {
-        Assert.Throws<GlAlreadyUnsetException>(() => gl.Disable(EnableCap.Blend));
+        Assert.Throws<GlAlreadyUnsetException>(() => gl.Disable(GlEnableCap.Blend));
     }
 
     [TestMethod]
     public void Enable_DifferentCaps_DoNotConflict()
     {
-        gl.Enable(EnableCap.Blend);
-        gl.Enable(EnableCap.DepthTest);
+        gl.Enable(GlEnableCap.Blend);
+        gl.Enable(GlEnableCap.DepthTest);
     }
 
     [TestMethod]
     public void IndexedEnable_PairsIndependently()
     {
-        gl.Enablei(EnableCap.Blend, 0);
-        gl.Enablei(EnableCap.Blend, 1);
-        gl.Disablei(EnableCap.Blend, 0);
-        Assert.Throws<GlAlreadyUnsetException>(() => gl.Disablei(EnableCap.Blend, 0));
+        gl.Enablei(GlEnableCap.Blend, 0);
+        gl.Enablei(GlEnableCap.Blend, 1);
+        gl.Disablei(GlEnableCap.Blend, 0);
+        Assert.Throws<GlAlreadyUnsetException>(() => gl.Disablei(GlEnableCap.Blend, 0));
     }
 
     [TestMethod]
@@ -91,31 +91,31 @@ public class GlLayerStateTest
     [TestMethod]
     public void BlendFunc_ThenBlendFuncSeparate_Conflicts()
     {
-        gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+        gl.BlendFunc(GlBlendingFactor.SrcAlpha, GlBlendingFactor.OneMinusSrcAlpha);
         Assert.Throws<GlConflictException>(() =>
-            gl.BlendFuncSeparate(BlendingFactor.One, BlendingFactor.Zero, BlendingFactor.One, BlendingFactor.Zero));
+            gl.BlendFuncSeparate(GlBlendingFactor.One, GlBlendingFactor.Zero, GlBlendingFactor.One, GlBlendingFactor.Zero));
     }
 
     [TestMethod]
     public void BlendFunc_ThenBlendFunci_Conflicts()
     {
-        gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-        Assert.Throws<GlConflictException>(() => gl.BlendFunci(0, BlendingFactor.One, BlendingFactor.Zero));
+        gl.BlendFunc(GlBlendingFactor.SrcAlpha, GlBlendingFactor.OneMinusSrcAlpha);
+        Assert.Throws<GlConflictException>(() => gl.BlendFunci(0, GlBlendingFactor.One, GlBlendingFactor.Zero));
     }
 
     [TestMethod]
     public void BlendFunc_AfterResettingSeparate_Succeeds()
     {
-        gl.BlendFuncSeparate(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha, BlendingFactor.One, BlendingFactor.Zero);
+        gl.BlendFuncSeparate(GlBlendingFactor.SrcAlpha, GlBlendingFactor.OneMinusSrcAlpha, GlBlendingFactor.One, GlBlendingFactor.Zero);
         gl.ResetBlendFuncSeparate();
-        gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+        gl.BlendFunc(GlBlendingFactor.SrcAlpha, GlBlendingFactor.OneMinusSrcAlpha);
     }
 
     [TestMethod]
     public void BlendFunci_PerBuffer_ThenReset()
     {
-        gl.BlendFunci(0, BlendingFactor.One, BlendingFactor.Zero);
-        gl.BlendFunci(1, BlendingFactor.One, BlendingFactor.Zero);
+        gl.BlendFunci(0, GlBlendingFactor.One, GlBlendingFactor.Zero);
+        gl.BlendFunci(1, GlBlendingFactor.One, GlBlendingFactor.Zero);
         gl.ResetBlendFunc(0);
         Assert.Throws<GlAlreadyUnsetException>(() => gl.ResetBlendFunc(0));
     }
@@ -137,8 +137,8 @@ public class GlLayerStateTest
     [TestMethod]
     public void StencilFunc_ThenStencilFuncSeparate_Conflicts()
     {
-        gl.StencilFunc(StencilFunction.Always, 1, 0xFF);
-        Assert.Throws<GlConflictException>(() => gl.StencilFuncSeparate(TriangleFace.Front, StencilFunction.Always, 1, 0xFF));
+        gl.StencilFunc(GlStencilFunction.Always, 1, 0xFF);
+        Assert.Throws<GlConflictException>(() => gl.StencilFuncSeparate(GlTriangleFace.Front, GlStencilFunction.Always, 1, 0xFF));
     }
 
     [TestMethod]
@@ -151,18 +151,18 @@ public class GlLayerStateTest
     [TestMethod]
     public void Hint_PerTarget_SetThenReset()
     {
-        gl.Hint(HintTarget.LineSmoothHint, HintMode.Nicest);
-        gl.ResetHint(HintTarget.LineSmoothHint);
-        Assert.Throws<GlAlreadyUnsetException>(() => gl.ResetHint(HintTarget.LineSmoothHint));
+        gl.Hint(GlHintTarget.LineSmoothHint, GlHintMode.Nicest);
+        gl.ResetHint(GlHintTarget.LineSmoothHint);
+        Assert.Throws<GlAlreadyUnsetException>(() => gl.ResetHint(GlHintTarget.LineSmoothHint));
     }
 
     [TestMethod]
     public void PixelStore_SetThenReset()
     {
-        gl.PixelStorei(PixelStoreParameter.UnpackAlignment, 1);
-        Assert.Throws<GlAlreadySetException>(() => gl.PixelStorei(PixelStoreParameter.UnpackAlignment, 2));
-        gl.ResetPixelStore(PixelStoreParameter.UnpackAlignment);
-        gl.PixelStorei(PixelStoreParameter.UnpackAlignment, 4);
+        gl.PixelStorei(GlPixelStoreParameter.UnpackAlignment, 1);
+        Assert.Throws<GlAlreadySetException>(() => gl.PixelStorei(GlPixelStoreParameter.UnpackAlignment, 2));
+        gl.ResetPixelStore(GlPixelStoreParameter.UnpackAlignment);
+        gl.PixelStorei(GlPixelStoreParameter.UnpackAlignment, 4);
     }
 
     [TestMethod]

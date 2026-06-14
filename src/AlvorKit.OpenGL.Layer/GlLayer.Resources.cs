@@ -15,23 +15,23 @@ public unsafe partial class GlLayer
     private readonly HashSet<uint> programs = [];
     private readonly HashSet<nint> syncs = [];
 
-    /// <summary>Layer: the textures gened or created and not yet deleted.</summary>
+    /// <summary>Layer: the textures generated or created and not yet deleted.</summary>
     public IReadOnlySet<uint> Textures => textures;
-    /// <summary>Layer: the buffers gened or created and not yet deleted.</summary>
+    /// <summary>Layer: the buffers generated or created and not yet deleted.</summary>
     public IReadOnlySet<uint> Buffers => buffers;
-    /// <summary>Layer: the vertex arrays gened or created and not yet deleted.</summary>
+    /// <summary>Layer: the vertex arrays generated or created and not yet deleted.</summary>
     public IReadOnlySet<uint> VertexArrays => vertexArrays;
-    /// <summary>Layer: the framebuffers gened or created and not yet deleted.</summary>
+    /// <summary>Layer: the framebuffers generated or created and not yet deleted.</summary>
     public IReadOnlySet<uint> Framebuffers => framebuffers;
-    /// <summary>Layer: the renderbuffers gened or created and not yet deleted.</summary>
+    /// <summary>Layer: the renderbuffers generated or created and not yet deleted.</summary>
     public IReadOnlySet<uint> Renderbuffers => renderbuffers;
-    /// <summary>Layer: the samplers gened or created and not yet deleted.</summary>
+    /// <summary>Layer: the samplers generated or created and not yet deleted.</summary>
     public IReadOnlySet<uint> Samplers => samplers;
-    /// <summary>Layer: the queries gened or created and not yet deleted.</summary>
+    /// <summary>Layer: the queries generated or created and not yet deleted.</summary>
     public IReadOnlySet<uint> Queries => queries;
-    /// <summary>Layer: the program pipelines gened or created and not yet deleted.</summary>
+    /// <summary>Layer: the program pipelines generated or created and not yet deleted.</summary>
     public IReadOnlySet<uint> ProgramPipelines => programPipelines;
-    /// <summary>Layer: the transform feedback objects gened or created and not yet deleted.</summary>
+    /// <summary>Layer: the transform feedback objects generated or created and not yet deleted.</summary>
     public IReadOnlySet<uint> TransformFeedbacks => transformFeedbacks;
     /// <summary>Layer: the shaders created and not yet deleted.</summary>
     public IReadOnlySet<uint> Shaders => shaders;
@@ -70,7 +70,7 @@ public unsafe partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the created textures, deleted when the layer is disposed.</remarks>
-    public override void CreateTextures(TextureTarget target, int n, nint textures) { base.CreateTextures(target, n, textures); Track(this.textures, n, textures); }
+    public override void CreateTextures(GlTextureTarget target, int n, nint textures) { base.CreateTextures(target, n, textures); Track(this.textures, n, textures); }
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the created buffers, deleted when the layer is disposed.</remarks>
     public override void CreateBuffers(int n, nint buffers) { base.CreateBuffers(n, buffers); Track(this.buffers, n, buffers); }
@@ -88,7 +88,7 @@ public unsafe partial class GlLayer
     public override void CreateSamplers(int n, nint samplers) { base.CreateSamplers(n, samplers); Track(this.samplers, n, samplers); }
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the created queries, deleted when the layer is disposed.</remarks>
-    public override void CreateQueries(QueryTarget target, int n, nint ids) { base.CreateQueries(target, n, ids); Track(queries, n, ids); }
+    public override void CreateQueries(GlQueryTarget target, int n, nint ids) { base.CreateQueries(target, n, ids); Track(queries, n, ids); }
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the created program pipelines, deleted when the layer is disposed.</remarks>
     public override void CreateProgramPipelines(int n, nint pipelines) { base.CreateProgramPipelines(n, pipelines); Track(programPipelines, n, pipelines); }
@@ -98,16 +98,16 @@ public unsafe partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the created shader, deleted when the layer is disposed.</remarks>
-    public override uint CreateShader(ShaderType type) { var id = base.CreateShader(type); shaders.Add(id); return id; }
+    public override GlShaderHandle CreateShader(GlShaderType type) { var id = base.CreateShader(type); shaders.Add((uint)id); return id; }
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the created program, deleted when the layer is disposed.</remarks>
-    public override uint CreateProgram() { var id = base.CreateProgram(); programs.Add(id); return id; }
+    public override GlProgramHandle CreateProgram() { var id = base.CreateProgram(); programs.Add((uint)id); return id; }
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the created program, deleted when the layer is disposed.</remarks>
-    public override uint CreateShaderProgramv(ShaderType type, int count, nint strings) { var id = base.CreateShaderProgramv(type, count, strings); programs.Add(id); return id; }
+    public override GlProgramHandle CreateShaderProgramv(GlShaderType type, int count, nint strings) { var id = base.CreateShaderProgramv(type, count, strings); programs.Add((uint)id); return id; }
     /// <inheritdoc/>
     /// <remarks>Layer: tracks the created sync object, deleted when the layer is disposed.</remarks>
-    public override nint FenceSync(SyncCondition condition, SyncBehaviorFlags flags) { var sync = base.FenceSync(condition, flags); syncs.Add(sync); return sync; }
+    public override nint FenceSync(GlSyncCondition condition, GlSyncBehaviorFlags flags) { var sync = base.FenceSync(condition, flags); syncs.Add(sync); return sync; }
 
     /// <inheritdoc/>
     /// <remarks>Layer: stops tracking the deleted textures and releases their tracked memory.</remarks>
@@ -153,10 +153,16 @@ public unsafe partial class GlLayer
     public override void DeleteTransformFeedbacks(int n, nint ids) { Untrack(transformFeedbacks, n, ids); base.DeleteTransformFeedbacks(n, ids); }
     /// <inheritdoc/>
     /// <remarks>Layer: stops tracking the deleted shader.</remarks>
-    public override void DeleteShader(uint shader) { shaders.Remove(shader); base.DeleteShader(shader); }
+    public void DeleteShader(uint shader) => DeleteShader((GlShaderHandle)shader);
+    /// <inheritdoc/>
+    /// <remarks>Layer: stops tracking the deleted shader.</remarks>
+    public override void DeleteShader(GlShaderHandle shader) { shaders.Remove((uint)shader); base.DeleteShader(shader); }
     /// <inheritdoc/>
     /// <remarks>Layer: stops tracking the deleted program.</remarks>
-    public override void DeleteProgram(uint program) { programs.Remove(program); base.DeleteProgram(program); }
+    public void DeleteProgram(uint program) => DeleteProgram((GlProgramHandle)program);
+    /// <inheritdoc/>
+    /// <remarks>Layer: stops tracking the deleted program.</remarks>
+    public override void DeleteProgram(GlProgramHandle program) { programs.Remove((uint)program); base.DeleteProgram(program); }
     /// <inheritdoc/>
     /// <remarks>Layer: stops tracking the deleted sync object.</remarks>
     public override void DeleteSync(nint sync) { syncs.Remove(sync); base.DeleteSync(sync); }
@@ -174,8 +180,8 @@ public unsafe partial class GlLayer
         DeleteAll(samplers, base.DeleteSamplers);
         DeleteAll(textures, base.DeleteTextures);
         DeleteAll(buffers, base.DeleteBuffers);
-        foreach (var shader in Drain(shaders)) base.DeleteShader(shader);
-        foreach (var program in Drain(programs)) base.DeleteProgram(program);
+        foreach (var shader in Drain(shaders)) base.DeleteShader((GlShaderHandle)shader);
+        foreach (var program in Drain(programs)) base.DeleteProgram((GlProgramHandle)program);
     }
 
     private static void Track(HashSet<uint> set, int n, nint ids)

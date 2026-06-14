@@ -34,7 +34,7 @@ if (-not (Test-Path $SrcDir)) {
 # Build. Internal zlib, optional deps off, static CRT so the DLL needs no
 # VC++ Redistributable. Only the DLL ships.
 # NMake generator: nmake ships with the VC++ toolset itself, so this works on
-# any Visual Studio version — no VS-generator version coupling.
+# any Visual Studio version - no VS-generator version coupling.
 cmake --fresh -S $SrcDir -B "$WorkDir\build-win-$Arch" -G 'NMake Makefiles' `
     -DCMAKE_BUILD_TYPE=Release `
     -DCMAKE_POLICY_DEFAULT_CMP0091=NEW `
@@ -50,5 +50,5 @@ Copy-Item "$WorkDir\build-win-$Arch\freetype.dll" "$OutDir\freetype.dll" -Force
 # Verify: imports must be Windows system DLLs only.
 $Deps = & dumpbin /nologo /dependents "$OutDir\freetype.dll" | Select-String '\.dll'
 $Deps | ForEach-Object { Write-Host $_.Line.Trim() }
-if ($Deps -match 'VCRUNTIME|MSVCP') { throw 'DLL depends on the VC++ runtime — static CRT did not take.' }
+if ($Deps -match 'VCRUNTIME|MSVCP') { throw 'DLL depends on the VC++ runtime - static CRT did not take.' }
 Write-Host "OK $OutDir\freetype.dll"

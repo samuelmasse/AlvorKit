@@ -40,5 +40,5 @@ Copy-Item xxhash.dll "$OutDir\xxhash.dll" -Force
 # Verify: imports must be Windows system DLLs only.
 $Deps = & dumpbin /nologo /dependents "$OutDir\xxhash.dll" | Select-String '\.dll'
 $Deps | ForEach-Object { Write-Host $_.Line.Trim() }
-if ($Deps -match 'VCRUNTIME|MSVCP') { throw 'DLL depends on the VC++ runtime — /MT did not take.' }
+if ($Deps -match 'VCRUNTIME|MSVCP') { throw 'DLL depends on the VC++ runtime - /MT did not take.' }
 Write-Host "OK $OutDir\xxhash.dll"

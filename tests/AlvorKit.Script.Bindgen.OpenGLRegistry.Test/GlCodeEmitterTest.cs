@@ -30,7 +30,7 @@ public sealed class GlCodeEmitterTest
                     ])
             ]);
 
-        new GlCodeEmitter(config, "registry-tag", "doc-tag").Emit(model, workspace.Root, "4.6.2");
+        new GlCodeEmitter(config, "registry-tag", "doc-tag").Emit(model, workspace.Root, "4.6.3");
 
         var delegateSource = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "GlDebugProc.cs"));
         StringAssert.Contains(delegateSource, "[UnmanagedFunctionPointer(CallingConvention.Winapi)]");
@@ -62,7 +62,7 @@ public sealed class GlCodeEmitterTest
             HandleTypes: [],
             Delegates: []);
 
-        new GlCodeEmitter(config, "registry-tag", "doc-tag").Emit(model, workspace.Root, "4.6.2");
+        new GlCodeEmitter(config, "registry-tag", "doc-tag").Emit(model, workspace.Root, "4.6.3");
 
         var extensionsSource = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "GlExtensions.cs"));
         StringAssert.Contains(extensionsSource, "var pointer = this.GetString();");

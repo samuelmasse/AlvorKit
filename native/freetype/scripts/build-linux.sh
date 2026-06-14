@@ -58,7 +58,7 @@ mkdir -p "$WORK_DIR" "$OUT_DIR"
 cd "$WORK_DIR"
 [[ -d "$SRC_DIR" ]] || curl -fsSL "https://gitlab.freedesktop.org/freetype/freetype/-/archive/$UPSTREAM_TAG/freetype-$UPSTREAM_TAG.tar.gz" | tar xz
 
-# Build. Internal zlib, optional deps off — zero library dependencies.
+# Build. Internal zlib, optional deps off - zero library dependencies.
 cmake --fresh -S "$SRC_DIR" -B "$WORK_DIR/build-$RID" \
     -DCMAKE_C_COMPILER="$CC" \
     -DCMAKE_BUILD_TYPE=Release \

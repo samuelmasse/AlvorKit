@@ -1,7 +1,3 @@
-using GlLogicOp = AlvorKit.OpenGL.LogicOp;
-using GlPolygonMode = AlvorKit.OpenGL.PolygonMode;
-using GlStencilOp = AlvorKit.OpenGL.StencilOp;
-
 namespace AlvorKit.OpenGL.Layer;
 
 public partial class GlLayer
@@ -12,68 +8,68 @@ public partial class GlLayer
     private GlStateSlot<(float, float, float, float)> blendColor;
     private GlStateSlot<double> clearDepth;
     private GlStateSlot<int> clearStencil;
-    private GlStateSlot<DepthFunction> depthFunc;
+    private GlStateSlot<GlDepthFunction> depthFunc;
     private GlStateSlot<bool> depthMask;
-    private GlStateSlot<TriangleFace> cullFace;
-    private GlStateSlot<FrontFaceDirection> frontFace;
-    private GlStateSlot<(TriangleFace, GlPolygonMode)> polygonMode;
+    private GlStateSlot<GlTriangleFace> cullFace;
+    private GlStateSlot<GlFrontFaceDirection> frontFace;
+    private GlStateSlot<(GlTriangleFace, GlPolygonMode)> polygonMode;
     private GlStateSlot<(float, float)> polygonOffset;
     private GlStateSlot<(float, float, float)> polygonOffsetClamp;
     private GlStateSlot<float> lineWidth;
     private GlStateSlot<float> pointSize;
-    private GlStateSlot<VertexProvokingMode> provokingVertex;
+    private GlStateSlot<GlVertexProvokingMode> provokingVertex;
     private GlStateSlot<uint> primitiveRestartIndex;
     private GlStateSlot<GlLogicOp> logicOp;
-    private GlStateSlot<(ClipControlOrigin, ClipControlDepth)> clipControl;
+    private GlStateSlot<(GlClipControlOrigin, GlClipControlDepth)> clipControl;
     private GlStateSlot<float> minSampleShading;
     private GlStateSlot<(float, bool)> sampleCoverage;
-    private GlStateSlot<ReadBufferMode> readBuffer;
-    private GlStateSlot<ClampColorMode> clampColor;
-    private GlStateSlot<(BlendingFactor, BlendingFactor)> blendFunc;
-    private GlStateSlot<(BlendingFactor, BlendingFactor, BlendingFactor, BlendingFactor)> blendFuncSeparate;
-    private GlStateSlot<BlendEquationModeEXT> blendEquation;
-    private GlStateSlot<(BlendEquationModeEXT, BlendEquationModeEXT)> blendEquationSeparate;
+    private GlStateSlot<GlReadBufferMode> readBuffer;
+    private GlStateSlot<GlClampColorMode> clampColor;
+    private GlStateSlot<(GlBlendingFactor, GlBlendingFactor)> blendFunc;
+    private GlStateSlot<(GlBlendingFactor, GlBlendingFactor, GlBlendingFactor, GlBlendingFactor)> blendFuncSeparate;
+    private GlStateSlot<GlBlendEquationModeEXT> blendEquation;
+    private GlStateSlot<(GlBlendEquationModeEXT, GlBlendEquationModeEXT)> blendEquationSeparate;
     private GlStateSlot<(bool, bool, bool, bool)> colorMask;
     private GlStateSlot<(double, double)> depthRange;
-    private GlStateSlot<(StencilFunction, int, uint)> stencilFunc;
+    private GlStateSlot<(GlStencilFunction, int, uint)> stencilFunc;
     private GlStateSlot<uint> stencilMask;
     private GlStateSlot<(GlStencilOp, GlStencilOp, GlStencilOp)> stencilOp;
-    private GlStateSlot<PrimitiveType> transformFeedbackActive;
+    private GlStateSlot<GlPrimitiveType> transformFeedbackActive;
 
-    private readonly GlStateMap<EnableCap, bool> enableMap = new();
-    private readonly GlStateMap<(EnableCap, uint), bool> indexedEnableMap = new();
-    private readonly GlStateMap<uint, (BlendingFactor, BlendingFactor)> blendFuncMap = new();
-    private readonly GlStateMap<uint, (BlendingFactor, BlendingFactor, BlendingFactor, BlendingFactor)> blendFuncSeparateMap = new();
-    private readonly GlStateMap<uint, (BlendEquationModeEXT, BlendEquationModeEXT)> blendEquationSeparateMap = new();
+    private readonly GlStateMap<GlEnableCap, bool> enableMap = new();
+    private readonly GlStateMap<(GlEnableCap, uint), bool> indexedEnableMap = new();
+    private readonly GlStateMap<uint, (GlBlendingFactor, GlBlendingFactor)> blendFuncMap = new();
+    private readonly GlStateMap<uint, (GlBlendingFactor, GlBlendingFactor, GlBlendingFactor, GlBlendingFactor)> blendFuncSeparateMap = new();
+    private readonly GlStateMap<uint, (GlBlendEquationModeEXT, GlBlendEquationModeEXT)> blendEquationSeparateMap = new();
     private readonly GlStateMap<uint, (bool, bool, bool, bool)> colorMaskMap = new();
     private readonly GlStateMap<uint, (double, double)> depthRangeMap = new();
-    private readonly GlStateMap<TriangleFace, (StencilFunction, int, uint)> stencilFuncSeparateMap = new();
-    private readonly GlStateMap<TriangleFace, uint> stencilMaskSeparateMap = new();
-    private readonly GlStateMap<TriangleFace, (GlStencilOp, GlStencilOp, GlStencilOp)> stencilOpSeparateMap = new();
+    private readonly GlStateMap<GlTriangleFace, (GlStencilFunction, int, uint)> stencilFuncSeparateMap = new();
+    private readonly GlStateMap<GlTriangleFace, uint> stencilMaskSeparateMap = new();
+    private readonly GlStateMap<GlTriangleFace, (GlStencilOp, GlStencilOp, GlStencilOp)> stencilOpSeparateMap = new();
     private readonly GlStateMap<uint, (int, int, int, int)> scissorMap = new();
     private readonly GlStateMap<uint, (float, float, float, float)> viewportMap = new();
-    private readonly GlStateMap<HintTarget, HintMode> hintMap = new();
+    private readonly GlStateMap<GlHintTarget, GlHintMode> hintMap = new();
     private readonly GlStateMap<uint, uint> sampleMaskMap = new();
-    private readonly GlStateMap<PatchParameterName, int> patchParameterMap = new();
-    private readonly GlStateMap<PointParameterName, float> pointParameterMap = new();
-    private readonly GlStateMap<PixelStoreParameter, double> pixelStoreMap = new();
+    private readonly GlStateMap<GlPatchParameterName, int> patchParameterMap = new();
+    private readonly GlStateMap<GlPointParameterName, float> pointParameterMap = new();
+    private readonly GlStateMap<GlPixelStoreParameter, double> pixelStoreMap = new();
 
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="Disable(EnableCap)"/> for the same capability.</remarks>
-    public override void Enable(EnableCap cap) { enableMap.Set(nameof(Enable), cap, true); base.Enable(cap); }
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="Disable(GlEnableCap)"/> for the same capability.</remarks>
+    public override void Enable(GlEnableCap cap) { enableMap.Set(nameof(Enable), cap, true); base.Enable(cap); }
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one earlier call to <see cref="Enable(EnableCap)"/> for the same capability.</remarks>
-    public override void Disable(EnableCap cap) { enableMap.Reset(nameof(Disable), cap); base.Disable(cap); }
+    /// <remarks>Layer: Must be paired with exactly one earlier call to <see cref="Enable(GlEnableCap)"/> for the same capability.</remarks>
+    public override void Disable(GlEnableCap cap) { enableMap.Reset(nameof(Disable), cap); base.Disable(cap); }
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="Disablei(EnableCap, uint)"/> for the same capability and index.</remarks>
-    public override void Enablei(EnableCap target, uint index) { indexedEnableMap.Set(nameof(Enablei), (target, index), true); base.Enablei(target, index); }
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="Disablei(GlEnableCap, uint)"/> for the same capability and index.</remarks>
+    public override void Enablei(GlEnableCap target, uint index) { indexedEnableMap.Set(nameof(Enablei), (target, index), true); base.Enablei(target, index); }
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one earlier call to <see cref="Enablei(EnableCap, uint)"/> for the same capability and index.</remarks>
-    public override void Disablei(EnableCap target, uint index) { indexedEnableMap.Reset(nameof(Disablei), (target, index)); base.Disablei(target, index); }
+    /// <remarks>Layer: Must be paired with exactly one earlier call to <see cref="Enablei(GlEnableCap, uint)"/> for the same capability and index.</remarks>
+    public override void Disablei(GlEnableCap target, uint index) { indexedEnableMap.Reset(nameof(Disablei), (target, index)); base.Disablei(target, index); }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetBlendFunc()"/>. Cannot be combined with <c>glBlendFunci</c>, <c>glBlendFuncSeparate</c>, or <c>glBlendFuncSeparatei</c>.</remarks>
-    public override void BlendFunc(BlendingFactor sfactor, BlendingFactor dfactor)
+    public override void BlendFunc(GlBlendingFactor sfactor, GlBlendingFactor dfactor)
     {
         if (blendFuncSeparate.IsSet) throw new GlConflictException(nameof(BlendFunc), nameof(BlendFuncSeparate));
         if (blendFuncMap.HasAny) throw new GlConflictException(nameof(BlendFunc), nameof(BlendFunci));
@@ -84,7 +80,7 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetBlendFunc(uint)"/> for the same buffer. Cannot be combined with <c>glBlendFunc</c>, <c>glBlendFuncSeparate</c>, or <c>glBlendFuncSeparatei</c>.</remarks>
-    public override void BlendFunci(uint buf, BlendingFactor src, BlendingFactor dst)
+    public override void BlendFunci(uint buf, GlBlendingFactor src, GlBlendingFactor dst)
     {
         if (blendFunc.IsSet) throw new GlConflictException(nameof(BlendFunci), nameof(BlendFunc));
         if (blendFuncSeparate.IsSet) throw new GlConflictException(nameof(BlendFunci), nameof(BlendFuncSeparate));
@@ -95,7 +91,7 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetBlendFuncSeparate()"/>. Cannot be combined with <c>glBlendFunc</c>, <c>glBlendFunci</c>, or <c>glBlendFuncSeparatei</c>.</remarks>
-    public override void BlendFuncSeparate(BlendingFactor sfactorRGB, BlendingFactor dfactorRGB, BlendingFactor sfactorAlpha, BlendingFactor dfactorAlpha)
+    public override void BlendFuncSeparate(GlBlendingFactor sfactorRGB, GlBlendingFactor dfactorRGB, GlBlendingFactor sfactorAlpha, GlBlendingFactor dfactorAlpha)
     {
         if (blendFunc.IsSet) throw new GlConflictException(nameof(BlendFuncSeparate), nameof(BlendFunc));
         if (blendFuncMap.HasAny) throw new GlConflictException(nameof(BlendFuncSeparate), nameof(BlendFunci));
@@ -106,7 +102,7 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetBlendFuncSeparate(uint)"/> for the same buffer. Cannot be combined with <c>glBlendFunc</c>, <c>glBlendFunci</c>, or <c>glBlendFuncSeparate</c>.</remarks>
-    public override void BlendFuncSeparatei(uint buf, BlendingFactor srcRGB, BlendingFactor dstRGB, BlendingFactor srcAlpha, BlendingFactor dstAlpha)
+    public override void BlendFuncSeparatei(uint buf, GlBlendingFactor srcRGB, GlBlendingFactor dstRGB, GlBlendingFactor srcAlpha, GlBlendingFactor dstAlpha)
     {
         if (blendFunc.IsSet) throw new GlConflictException(nameof(BlendFuncSeparatei), nameof(BlendFunc));
         if (blendFuncSeparate.IsSet) throw new GlConflictException(nameof(BlendFuncSeparatei), nameof(BlendFuncSeparate));
@@ -117,7 +113,7 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetBlendEquation()"/>. Cannot be combined with <c>glBlendEquationSeparate</c> or <c>glBlendEquationSeparatei</c>.</remarks>
-    public override void BlendEquation(BlendEquationModeEXT mode)
+    public override void BlendEquation(GlBlendEquationModeEXT mode)
     {
         if (blendEquationSeparate.IsSet) throw new GlConflictException(nameof(BlendEquation), nameof(BlendEquationSeparate));
         if (blendEquationSeparateMap.HasAny) throw new GlConflictException(nameof(BlendEquation), nameof(BlendEquationSeparatei));
@@ -127,7 +123,7 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetBlendEquationSeparate()"/>. Cannot be combined with <c>glBlendEquation</c> or <c>glBlendEquationSeparatei</c>.</remarks>
-    public override void BlendEquationSeparate(BlendEquationModeEXT modeRGB, BlendEquationModeEXT modeAlpha)
+    public override void BlendEquationSeparate(GlBlendEquationModeEXT modeRGB, GlBlendEquationModeEXT modeAlpha)
     {
         if (blendEquation.IsSet) throw new GlConflictException(nameof(BlendEquationSeparate), nameof(BlendEquation));
         if (blendEquationSeparateMap.HasAny) throw new GlConflictException(nameof(BlendEquationSeparate), nameof(BlendEquationSeparatei));
@@ -137,7 +133,7 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetBlendEquationSeparate(uint)"/> for the same buffer. Cannot be combined with <c>glBlendEquation</c> or <c>glBlendEquationSeparate</c>.</remarks>
-    public override void BlendEquationSeparatei(uint buf, BlendEquationModeEXT modeRGB, BlendEquationModeEXT modeAlpha)
+    public override void BlendEquationSeparatei(uint buf, GlBlendEquationModeEXT modeRGB, GlBlendEquationModeEXT modeAlpha)
     {
         if (blendEquation.IsSet) throw new GlConflictException(nameof(BlendEquationSeparatei), nameof(BlendEquation));
         if (blendEquationSeparate.IsSet) throw new GlConflictException(nameof(BlendEquationSeparatei), nameof(BlendEquationSeparate));
@@ -153,7 +149,7 @@ public partial class GlLayer
     public override void ClearColor(float red, float green, float blue, float alpha) { clearColor.Set(nameof(ClearColor), (red, green, blue, alpha)); base.ClearColor(red, green, blue, alpha); }
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetClampColor()"/>.</remarks>
-    public override void ClampColor(ClampColorTarget target, ClampColorMode clamp) { clampColor.Set(nameof(ClampColor), clamp); base.ClampColor(target, clamp); }
+    public override void ClampColor(GlClampColorTarget target, GlClampColorMode clamp) { clampColor.Set(nameof(ClampColor), clamp); base.ClampColor(target, clamp); }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetColorMask()"/>. Cannot be combined with <c>glColorMaski</c>.</remarks>
@@ -175,7 +171,7 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetDepthFunc()"/>.</remarks>
-    public override void DepthFunc(DepthFunction func) { depthFunc.Set(nameof(DepthFunc), func); base.DepthFunc(func); }
+    public override void DepthFunc(GlDepthFunction func) { depthFunc.Set(nameof(DepthFunc), func); base.DepthFunc(func); }
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetDepthMask()"/>.</remarks>
     public override void DepthMask(bool flag) { depthMask.Set(nameof(DepthMask), flag); base.DepthMask(flag); }
@@ -229,7 +225,7 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetStencilFunc()"/>. Cannot be combined with <c>glStencilFuncSeparate</c>.</remarks>
-    public override void StencilFunc(StencilFunction func, int @ref, uint mask)
+    public override void StencilFunc(GlStencilFunction func, int @ref, uint mask)
     {
         if (stencilFuncSeparateMap.HasAny) throw new GlConflictException(nameof(StencilFunc), nameof(StencilFuncSeparate));
         stencilFunc.Set(nameof(StencilFunc), (func, @ref, mask));
@@ -237,8 +233,8 @@ public partial class GlLayer
     }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetStencilFuncSeparate(TriangleFace)"/> for the same face. Cannot be combined with <c>glStencilFunc</c>.</remarks>
-    public override void StencilFuncSeparate(TriangleFace face, StencilFunction func, int @ref, uint mask)
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetStencilFuncSeparate(GlTriangleFace)"/> for the same face. Cannot be combined with <c>glStencilFunc</c>.</remarks>
+    public override void StencilFuncSeparate(GlTriangleFace face, GlStencilFunction func, int @ref, uint mask)
     {
         if (stencilFunc.IsSet) throw new GlConflictException(nameof(StencilFuncSeparate), nameof(StencilFunc));
         stencilFuncSeparateMap.Set(nameof(StencilFuncSeparate), face, (func, @ref, mask));
@@ -255,8 +251,8 @@ public partial class GlLayer
     }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetStencilMaskSeparate(TriangleFace)"/> for the same face. Cannot be combined with <c>glStencilMask</c>.</remarks>
-    public override void StencilMaskSeparate(TriangleFace face, uint mask)
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetStencilMaskSeparate(GlTriangleFace)"/> for the same face. Cannot be combined with <c>glStencilMask</c>.</remarks>
+    public override void StencilMaskSeparate(GlTriangleFace face, uint mask)
     {
         if (stencilMask.IsSet) throw new GlConflictException(nameof(StencilMaskSeparate), nameof(StencilMask));
         stencilMaskSeparateMap.Set(nameof(StencilMaskSeparate), face, mask);
@@ -273,8 +269,8 @@ public partial class GlLayer
     }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetStencilOpSeparate(TriangleFace)"/> for the same face. Cannot be combined with <c>glStencilOp</c>.</remarks>
-    public override void StencilOpSeparate(TriangleFace face, GlStencilOp sfail, GlStencilOp dpfail, GlStencilOp dppass)
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetStencilOpSeparate(GlTriangleFace)"/> for the same face. Cannot be combined with <c>glStencilOp</c>.</remarks>
+    public override void StencilOpSeparate(GlTriangleFace face, GlStencilOp sfail, GlStencilOp dpfail, GlStencilOp dppass)
     {
         if (stencilOp.IsSet) throw new GlConflictException(nameof(StencilOpSeparate), nameof(StencilOp));
         stencilOpSeparateMap.Set(nameof(StencilOpSeparate), face, (sfail, dpfail, dppass));
@@ -283,13 +279,13 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetCullFace()"/>.</remarks>
-    public override void CullFace(TriangleFace mode) { cullFace.Set(nameof(CullFace), mode); base.CullFace(mode); }
+    public override void CullFace(GlTriangleFace mode) { cullFace.Set(nameof(CullFace), mode); base.CullFace(mode); }
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetFrontFace()"/>.</remarks>
-    public override void FrontFace(FrontFaceDirection mode) { frontFace.Set(nameof(FrontFace), mode); base.FrontFace(mode); }
+    public override void FrontFace(GlFrontFaceDirection mode) { frontFace.Set(nameof(FrontFace), mode); base.FrontFace(mode); }
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPolygonMode()"/>.</remarks>
-    public override void PolygonMode(TriangleFace face, GlPolygonMode mode) { polygonMode.Set(nameof(PolygonMode), (face, mode)); base.PolygonMode(face, mode); }
+    public override void PolygonMode(GlTriangleFace face, GlPolygonMode mode) { polygonMode.Set(nameof(PolygonMode), (face, mode)); base.PolygonMode(face, mode); }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPolygonOffset()"/>. Cannot be combined with <c>glPolygonOffsetClamp</c>.</remarks>
@@ -317,7 +313,7 @@ public partial class GlLayer
     public override void PointSize(float size) { pointSize.Set(nameof(PointSize), size); base.PointSize(size); }
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetProvokingVertex()"/>.</remarks>
-    public override void ProvokingVertex(VertexProvokingMode mode) { provokingVertex.Set(nameof(ProvokingVertex), mode); base.ProvokingVertex(mode); }
+    public override void ProvokingVertex(GlVertexProvokingMode mode) { provokingVertex.Set(nameof(ProvokingVertex), mode); base.ProvokingVertex(mode); }
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPrimitiveRestartIndex()"/>.</remarks>
     public override void PrimitiveRestartIndex(uint index) { primitiveRestartIndex.Set(nameof(PrimitiveRestartIndex), index); base.PrimitiveRestartIndex(index); }
@@ -385,10 +381,10 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetClipControl()"/>.</remarks>
-    public override void ClipControl(ClipControlOrigin origin, ClipControlDepth depth) { clipControl.Set(nameof(ClipControl), (origin, depth)); base.ClipControl(origin, depth); }
+    public override void ClipControl(GlClipControlOrigin origin, GlClipControlDepth depth) { clipControl.Set(nameof(ClipControl), (origin, depth)); base.ClipControl(origin, depth); }
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetHint(HintTarget)"/> for the same target.</remarks>
-    public override void Hint(HintTarget target, HintMode mode) { hintMap.Set(nameof(Hint), target, mode); base.Hint(target, mode); }
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetHint(GlHintTarget)"/> for the same target.</remarks>
+    public override void Hint(GlHintTarget target, GlHintMode mode) { hintMap.Set(nameof(Hint), target, mode); base.Hint(target, mode); }
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetMinSampleShading()"/>.</remarks>
     public override void MinSampleShading(float value) { minSampleShading.Set(nameof(MinSampleShading), value); base.MinSampleShading(value); }
@@ -399,48 +395,48 @@ public partial class GlLayer
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetSampleMask(uint)"/> for the same word.</remarks>
     public override void SampleMaski(uint maskNumber, uint mask) { sampleMaskMap.Set(nameof(SampleMaski), maskNumber, mask); base.SampleMaski(maskNumber, mask); }
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPatchParameter(PatchParameterName)"/> for the same parameter.</remarks>
-    public override void PatchParameteri(PatchParameterName pname, int value) { patchParameterMap.Set(nameof(PatchParameteri), pname, value); base.PatchParameteri(pname, value); }
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPatchParameter(GlPatchParameterName)"/> for the same parameter.</remarks>
+    public override void PatchParameteri(GlPatchParameterName pname, int value) { patchParameterMap.Set(nameof(PatchParameteri), pname, value); base.PatchParameteri(pname, value); }
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPointParameter(PointParameterName)"/> for the same parameter.</remarks>
-    public override void PointParameterf(PointParameterName pname, float param) { pointParameterMap.Set(nameof(PointParameterf), pname, param); base.PointParameterf(pname, param); }
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPointParameter(GlPointParameterName)"/> for the same parameter.</remarks>
+    public override void PointParameterf(GlPointParameterName pname, float param) { pointParameterMap.Set(nameof(PointParameterf), pname, param); base.PointParameterf(pname, param); }
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPointParameter(PointParameterName)"/> for the same parameter.</remarks>
-    public override void PointParameteri(PointParameterName pname, int param) { pointParameterMap.Set(nameof(PointParameteri), pname, param); base.PointParameteri(pname, param); }
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPointParameter(GlPointParameterName)"/> for the same parameter.</remarks>
+    public override void PointParameteri(GlPointParameterName pname, int param) { pointParameterMap.Set(nameof(PointParameteri), pname, param); base.PointParameteri(pname, param); }
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPixelStore(PixelStoreParameter)"/> for the same parameter.</remarks>
-    public override void PixelStorei(PixelStoreParameter pname, int param) { pixelStoreMap.Set(nameof(PixelStorei), pname, param); base.PixelStorei(pname, param); }
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPixelStore(GlPixelStoreParameter)"/> for the same parameter.</remarks>
+    public override void PixelStorei(GlPixelStoreParameter pname, int param) { pixelStoreMap.Set(nameof(PixelStorei), pname, param); base.PixelStorei(pname, param); }
     /// <inheritdoc/>
-    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPixelStore(PixelStoreParameter)"/> for the same parameter.</remarks>
-    public override void PixelStoref(PixelStoreParameter pname, float param) { pixelStoreMap.Set(nameof(PixelStoref), pname, param); base.PixelStoref(pname, param); }
+    /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPixelStore(GlPixelStoreParameter)"/> for the same parameter.</remarks>
+    public override void PixelStoref(GlPixelStoreParameter pname, float param) { pixelStoreMap.Set(nameof(PixelStoref), pname, param); base.PixelStoref(pname, param); }
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetReadBuffer()"/>.</remarks>
-    public override void ReadBuffer(ReadBufferMode src) { readBuffer.Set(nameof(ReadBuffer), src); base.ReadBuffer(src); }
+    public override void ReadBuffer(GlReadBufferMode src) { readBuffer.Set(nameof(ReadBuffer), src); base.ReadBuffer(src); }
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <c>glEndTransformFeedback</c>.</remarks>
-    public override void BeginTransformFeedback(PrimitiveType primitiveMode) { transformFeedbackActive.Set(nameof(BeginTransformFeedback), primitiveMode); base.BeginTransformFeedback(primitiveMode); }
+    public override void BeginTransformFeedback(GlPrimitiveType primitiveMode) { transformFeedbackActive.Set(nameof(BeginTransformFeedback), primitiveMode); base.BeginTransformFeedback(primitiveMode); }
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one earlier call to <c>glBeginTransformFeedback</c>.</remarks>
     public override void EndTransformFeedback() { transformFeedbackActive.Reset(nameof(EndTransformFeedback)); base.EndTransformFeedback(); }
 
     /// <summary>Layer: The default value <see cref="ResetBlendFunc()"/> restores.</summary>
-    public virtual (BlendingFactor Source, BlendingFactor Destination) DefaultBlendFunc => (BlendingFactor.One, BlendingFactor.Zero);
+    public virtual (GlBlendingFactor Source, GlBlendingFactor Destination) DefaultBlendFunc => (GlBlendingFactor.One, GlBlendingFactor.Zero);
     /// <summary>Layer: The default value <see cref="ResetBlendFuncSeparate()"/> restores.</summary>
-    public virtual (BlendingFactor SourceRgb, BlendingFactor DestinationRgb, BlendingFactor SourceAlpha, BlendingFactor DestinationAlpha) DefaultBlendFuncSeparate => (BlendingFactor.One, BlendingFactor.Zero, BlendingFactor.One, BlendingFactor.Zero);
+    public virtual (GlBlendingFactor SourceRgb, GlBlendingFactor DestinationRgb, GlBlendingFactor SourceAlpha, GlBlendingFactor DestinationAlpha) DefaultBlendFuncSeparate => (GlBlendingFactor.One, GlBlendingFactor.Zero, GlBlendingFactor.One, GlBlendingFactor.Zero);
     /// <summary>Layer: The default value <see cref="ResetBlendEquation()"/> restores.</summary>
-    public virtual BlendEquationModeEXT DefaultBlendEquation => BlendEquationModeEXT.FuncAdd;
+    public virtual GlBlendEquationModeEXT DefaultBlendEquation => GlBlendEquationModeEXT.FuncAdd;
     /// <summary>Layer: The default value <see cref="ResetBlendEquationSeparate()"/> restores.</summary>
-    public virtual (BlendEquationModeEXT Rgb, BlendEquationModeEXT Alpha) DefaultBlendEquationSeparate => (BlendEquationModeEXT.FuncAdd, BlendEquationModeEXT.FuncAdd);
+    public virtual (GlBlendEquationModeEXT Rgb, GlBlendEquationModeEXT Alpha) DefaultBlendEquationSeparate => (GlBlendEquationModeEXT.FuncAdd, GlBlendEquationModeEXT.FuncAdd);
     /// <summary>Layer: The default value <see cref="ResetBlendColor()"/> restores.</summary>
     public virtual (float Red, float Green, float Blue, float Alpha) DefaultBlendColor => (0f, 0f, 0f, 0f);
     /// <summary>Layer: The default value <see cref="ResetClearColor()"/> restores.</summary>
     public virtual (float Red, float Green, float Blue, float Alpha) DefaultClearColor => (0f, 0f, 0f, 0f);
     /// <summary>Layer: The default value <see cref="ResetClampColor()"/> restores.</summary>
-    public virtual (ClampColorTarget Target, ClampColorMode Clamp) DefaultClampColor => (ClampColorTarget.ClampReadColor, ClampColorMode.FixedOnly);
+    public virtual (GlClampColorTarget Target, GlClampColorMode Clamp) DefaultClampColor => (GlClampColorTarget.ClampReadColor, GlClampColorMode.FixedOnly);
     /// <summary>Layer: The default value <see cref="ResetColorMask()"/> restores.</summary>
     public virtual (bool Red, bool Green, bool Blue, bool Alpha) DefaultColorMask => (true, true, true, true);
     /// <summary>Layer: The default value <see cref="ResetDepthFunc()"/> restores.</summary>
-    public virtual DepthFunction DefaultDepthFunc => DepthFunction.Less;
+    public virtual GlDepthFunction DefaultDepthFunc => GlDepthFunction.Less;
     /// <summary>Layer: The default value <see cref="ResetDepthMask()"/> restores.</summary>
     public virtual bool DefaultDepthMask => true;
     /// <summary>Layer: The default value <see cref="ResetClearDepth()"/> restores.</summary>
@@ -450,17 +446,17 @@ public partial class GlLayer
     /// <summary>Layer: The default value <see cref="ResetClearStencil()"/> restores.</summary>
     public virtual int DefaultClearStencil => 0;
     /// <summary>Layer: The default value <see cref="ResetStencilFunc()"/> restores.</summary>
-    public virtual (StencilFunction Func, int Ref, uint Mask) DefaultStencilFunc => (StencilFunction.Always, 0, uint.MaxValue);
+    public virtual (GlStencilFunction Func, int Ref, uint Mask) DefaultStencilFunc => (GlStencilFunction.Always, 0, uint.MaxValue);
     /// <summary>Layer: The default value <see cref="ResetStencilMask()"/> restores.</summary>
     public virtual uint DefaultStencilMask => uint.MaxValue;
     /// <summary>Layer: The default value <see cref="ResetStencilOp()"/> restores.</summary>
     public virtual (GlStencilOp Fail, GlStencilOp ZFail, GlStencilOp ZPass) DefaultStencilOp => (GlStencilOp.Keep, GlStencilOp.Keep, GlStencilOp.Keep);
     /// <summary>Layer: The default value <see cref="ResetCullFace()"/> restores.</summary>
-    public virtual TriangleFace DefaultCullFace => TriangleFace.Back;
+    public virtual GlTriangleFace DefaultCullFace => GlTriangleFace.Back;
     /// <summary>Layer: The default value <see cref="ResetFrontFace()"/> restores.</summary>
-    public virtual FrontFaceDirection DefaultFrontFace => FrontFaceDirection.Ccw;
+    public virtual GlFrontFaceDirection DefaultFrontFace => GlFrontFaceDirection.Ccw;
     /// <summary>Layer: The default value <see cref="ResetPolygonMode()"/> restores.</summary>
-    public virtual (TriangleFace Face, GlPolygonMode Mode) DefaultPolygonMode => (TriangleFace.FrontAndBack, GlPolygonMode.Fill);
+    public virtual (GlTriangleFace Face, GlPolygonMode Mode) DefaultPolygonMode => (GlTriangleFace.FrontAndBack, GlPolygonMode.Fill);
     /// <summary>Layer: The default value <see cref="ResetPolygonOffset()"/> restores.</summary>
     public virtual (float Factor, float Units) DefaultPolygonOffset => (0f, 0f);
     /// <summary>Layer: The default value <see cref="ResetPolygonOffsetClamp()"/> restores.</summary>
@@ -470,7 +466,7 @@ public partial class GlLayer
     /// <summary>Layer: The default value <see cref="ResetPointSize()"/> restores.</summary>
     public virtual float DefaultPointSize => 1f;
     /// <summary>Layer: The default value <see cref="ResetProvokingVertex()"/> restores.</summary>
-    public virtual VertexProvokingMode DefaultProvokingVertex => VertexProvokingMode.LastVertexConvention;
+    public virtual GlVertexProvokingMode DefaultProvokingVertex => GlVertexProvokingMode.LastVertexConvention;
     /// <summary>Layer: The default value <see cref="ResetPrimitiveRestartIndex()"/> restores.</summary>
     public virtual uint DefaultPrimitiveRestartIndex => 0u;
     /// <summary>Layer: The default value <see cref="ResetLogicOp()"/> restores.</summary>
@@ -480,11 +476,11 @@ public partial class GlLayer
     /// <summary>Layer: The default value <see cref="ResetScissor()"/> restores.</summary>
     public virtual (int X, int Y, int Width, int Height) DefaultScissor => (0, 0, 0, 0);
     /// <summary>Layer: The default value <see cref="ResetActiveTexture()"/> restores.</summary>
-    public virtual TextureUnit DefaultActiveTexture => TextureUnit.Texture0;
+    public virtual GlTextureUnit DefaultActiveTexture => GlTextureUnit.Texture0;
     /// <summary>Layer: The default value <see cref="ResetClipControl()"/> restores.</summary>
-    public virtual (ClipControlOrigin Origin, ClipControlDepth Depth) DefaultClipControl => (ClipControlOrigin.LowerLeft, ClipControlDepth.NegativeOneToOne);
-    /// <summary>Layer: The default value <see cref="ResetHint(HintTarget)"/> restores.</summary>
-    public virtual HintMode DefaultHint => HintMode.DontCare;
+    public virtual (GlClipControlOrigin Origin, GlClipControlDepth Depth) DefaultClipControl => (GlClipControlOrigin.LowerLeft, GlClipControlDepth.NegativeOneToOne);
+    /// <summary>Layer: The default value <see cref="ResetHint(GlHintTarget)"/> restores.</summary>
+    public virtual GlHintMode DefaultHint => GlHintMode.DontCare;
     /// <summary>Layer: The default value <see cref="ResetMinSampleShading()"/> restores.</summary>
     public virtual float DefaultMinSampleShading => 0f;
     /// <summary>Layer: The default value <see cref="ResetSampleCoverage()"/> restores.</summary>
@@ -492,14 +488,14 @@ public partial class GlLayer
     /// <summary>Layer: The default value <see cref="ResetSampleMask(uint)"/> restores.</summary>
     public virtual uint DefaultSampleMask => uint.MaxValue;
     /// <summary>Layer: The default value <see cref="ResetReadBuffer()"/> restores.</summary>
-    public virtual ReadBufferMode DefaultReadBuffer => ReadBufferMode.ColorAttachment0;
+    public virtual GlReadBufferMode DefaultReadBuffer => GlReadBufferMode.ColorAttachment0;
 
-    /// <summary>Layer: The default value <see cref="ResetPixelStore(PixelStoreParameter)"/> restores for <paramref name="pname"/>.</summary>
-    public virtual int DefaultPixelStore(PixelStoreParameter pname) => pname is PixelStoreParameter.PackAlignment or PixelStoreParameter.UnpackAlignment ? 4 : 0;
-    /// <summary>Layer: The default value <see cref="ResetPatchParameter(PatchParameterName)"/> restores for <paramref name="pname"/>.</summary>
-    public virtual int DefaultPatchParameter(PatchParameterName pname) => pname == PatchParameterName.PatchVertices ? 3 : 0;
-    /// <summary>Layer: The default value <see cref="ResetPointParameter(PointParameterName)"/> restores for <paramref name="pname"/>.</summary>
-    public virtual float DefaultPointParameter(PointParameterName pname) => pname == PointParameterName.PointFadeThresholdSize ? 1f : 0f;
+    /// <summary>Layer: The default value <see cref="ResetPixelStore(GlPixelStoreParameter)"/> restores for <paramref name="pname"/>.</summary>
+    public virtual int DefaultPixelStore(GlPixelStoreParameter pname) => pname is GlPixelStoreParameter.PackAlignment or GlPixelStoreParameter.UnpackAlignment ? 4 : 0;
+    /// <summary>Layer: The default value <see cref="ResetPatchParameter(GlPatchParameterName)"/> restores for <paramref name="pname"/>.</summary>
+    public virtual int DefaultPatchParameter(GlPatchParameterName pname) => pname == GlPatchParameterName.PatchVertices ? 3 : 0;
+    /// <summary>Layer: The default value <see cref="ResetPointParameter(GlPointParameterName)"/> restores for <paramref name="pname"/>.</summary>
+    public virtual float DefaultPointParameter(GlPointParameterName pname) => pname == GlPointParameterName.PointFadeThresholdSize ? 1f : 0f;
 
     /// <summary>Layer: Restores <c>glBlendFunc</c> to <see cref="DefaultBlendFunc"/>. Must be paired with exactly one earlier call to <c>glBlendFunc</c>.</summary>
     public void ResetBlendFunc() { blendFunc.Reset(nameof(BlendFunc)); base.BlendFunc(DefaultBlendFunc.Source, DefaultBlendFunc.Destination); }
@@ -550,15 +546,15 @@ public partial class GlLayer
     /// <summary>Layer: Restores <c>glStencilFunc</c> to <see cref="DefaultStencilFunc"/>. Must be paired with exactly one earlier call to <c>glStencilFunc</c>.</summary>
     public void ResetStencilFunc() { stencilFunc.Reset(nameof(StencilFunc)); base.StencilFunc(DefaultStencilFunc.Func, DefaultStencilFunc.Ref, DefaultStencilFunc.Mask); }
     /// <summary>Layer: Restores <c>glStencilFuncSeparate</c> for <paramref name="face"/>. Must be paired with exactly one earlier call to <c>glStencilFuncSeparate</c> for the same face.</summary>
-    public void ResetStencilFuncSeparate(TriangleFace face) { stencilFuncSeparateMap.Reset(nameof(StencilFuncSeparate), face); base.StencilFuncSeparate(face, DefaultStencilFunc.Func, DefaultStencilFunc.Ref, DefaultStencilFunc.Mask); }
+    public void ResetStencilFuncSeparate(GlTriangleFace face) { stencilFuncSeparateMap.Reset(nameof(StencilFuncSeparate), face); base.StencilFuncSeparate(face, DefaultStencilFunc.Func, DefaultStencilFunc.Ref, DefaultStencilFunc.Mask); }
     /// <summary>Layer: Restores <c>glStencilMask</c> to <see cref="DefaultStencilMask"/>. Must be paired with exactly one earlier call to <c>glStencilMask</c>.</summary>
     public void ResetStencilMask() { stencilMask.Reset(nameof(StencilMask)); base.StencilMask(DefaultStencilMask); }
     /// <summary>Layer: Restores <c>glStencilMaskSeparate</c> for <paramref name="face"/>. Must be paired with exactly one earlier call to <c>glStencilMaskSeparate</c> for the same face.</summary>
-    public void ResetStencilMaskSeparate(TriangleFace face) { stencilMaskSeparateMap.Reset(nameof(StencilMaskSeparate), face); base.StencilMaskSeparate(face, DefaultStencilMask); }
+    public void ResetStencilMaskSeparate(GlTriangleFace face) { stencilMaskSeparateMap.Reset(nameof(StencilMaskSeparate), face); base.StencilMaskSeparate(face, DefaultStencilMask); }
     /// <summary>Layer: Restores <c>glStencilOp</c> to <see cref="DefaultStencilOp"/>. Must be paired with exactly one earlier call to <c>glStencilOp</c>.</summary>
     public void ResetStencilOp() { stencilOp.Reset(nameof(StencilOp)); base.StencilOp(DefaultStencilOp.Fail, DefaultStencilOp.ZFail, DefaultStencilOp.ZPass); }
     /// <summary>Layer: Restores <c>glStencilOpSeparate</c> for <paramref name="face"/>. Must be paired with exactly one earlier call to <c>glStencilOpSeparate</c> for the same face.</summary>
-    public void ResetStencilOpSeparate(TriangleFace face) { stencilOpSeparateMap.Reset(nameof(StencilOpSeparate), face); base.StencilOpSeparate(face, DefaultStencilOp.Fail, DefaultStencilOp.ZFail, DefaultStencilOp.ZPass); }
+    public void ResetStencilOpSeparate(GlTriangleFace face) { stencilOpSeparateMap.Reset(nameof(StencilOpSeparate), face); base.StencilOpSeparate(face, DefaultStencilOp.Fail, DefaultStencilOp.ZFail, DefaultStencilOp.ZPass); }
     /// <summary>Layer: Restores <c>glCullFace</c> to <see cref="DefaultCullFace"/>. Must be paired with exactly one earlier call to <c>glCullFace</c>.</summary>
     public void ResetCullFace() { cullFace.Reset(nameof(CullFace)); base.CullFace(DefaultCullFace); }
     /// <summary>Layer: Restores <c>glFrontFace</c> to <see cref="DefaultFrontFace"/>. Must be paired with exactly one earlier call to <c>glFrontFace</c>.</summary>
@@ -612,7 +608,7 @@ public partial class GlLayer
     /// <summary>Layer: Restores <c>glClipControl</c> to <see cref="DefaultClipControl"/>. Must be paired with exactly one earlier call to <c>glClipControl</c>.</summary>
     public void ResetClipControl() { clipControl.Reset(nameof(ClipControl)); base.ClipControl(DefaultClipControl.Origin, DefaultClipControl.Depth); }
     /// <summary>Layer: Restores <c>glHint</c> for <paramref name="target"/>. Must be paired with exactly one earlier call to <c>glHint</c> for the same target.</summary>
-    public void ResetHint(HintTarget target) { hintMap.Reset(nameof(Hint), target); base.Hint(target, DefaultHint); }
+    public void ResetHint(GlHintTarget target) { hintMap.Reset(nameof(Hint), target); base.Hint(target, DefaultHint); }
     /// <summary>Layer: Restores <c>glMinSampleShading</c> to <see cref="DefaultMinSampleShading"/>. Must be paired with exactly one earlier call to <c>glMinSampleShading</c>.</summary>
     public void ResetMinSampleShading() { minSampleShading.Reset(nameof(MinSampleShading)); base.MinSampleShading(DefaultMinSampleShading); }
     /// <summary>Layer: Restores <c>glSampleCoverage</c> to <see cref="DefaultSampleCoverage"/>. Must be paired with exactly one earlier call to <c>glSampleCoverage</c>.</summary>
@@ -620,11 +616,11 @@ public partial class GlLayer
     /// <summary>Layer: Restores <c>glSampleMaski</c> for word <paramref name="maskNumber"/>. Must be paired with exactly one earlier call to <c>glSampleMaski</c> for the same word.</summary>
     public void ResetSampleMask(uint maskNumber) { sampleMaskMap.Reset(nameof(SampleMaski), maskNumber); base.SampleMaski(maskNumber, DefaultSampleMask); }
     /// <summary>Layer: Restores <c>glPatchParameteri</c> for <paramref name="pname"/>. Must be paired with exactly one earlier call to <c>glPatchParameteri</c> for the same parameter.</summary>
-    public void ResetPatchParameter(PatchParameterName pname) { patchParameterMap.Reset(nameof(PatchParameteri), pname); base.PatchParameteri(pname, DefaultPatchParameter(pname)); }
+    public void ResetPatchParameter(GlPatchParameterName pname) { patchParameterMap.Reset(nameof(PatchParameteri), pname); base.PatchParameteri(pname, DefaultPatchParameter(pname)); }
     /// <summary>Layer: Restores <c>glPointParameterf</c> for <paramref name="pname"/>. Must be paired with exactly one earlier call to <c>glPointParameterf</c> or <c>glPointParameteri</c> for the same parameter.</summary>
-    public void ResetPointParameter(PointParameterName pname) { pointParameterMap.Reset(nameof(PointParameterf), pname); base.PointParameterf(pname, DefaultPointParameter(pname)); }
+    public void ResetPointParameter(GlPointParameterName pname) { pointParameterMap.Reset(nameof(PointParameterf), pname); base.PointParameterf(pname, DefaultPointParameter(pname)); }
     /// <summary>Layer: Restores <c>glPixelStorei</c> for <paramref name="pname"/>. Must be paired with exactly one earlier call to <c>glPixelStorei</c> or <c>glPixelStoref</c> for the same parameter.</summary>
-    public void ResetPixelStore(PixelStoreParameter pname) { pixelStoreMap.Reset(nameof(PixelStorei), pname); base.PixelStorei(pname, DefaultPixelStore(pname)); }
+    public void ResetPixelStore(GlPixelStoreParameter pname) { pixelStoreMap.Reset(nameof(PixelStorei), pname); base.PixelStorei(pname, DefaultPixelStore(pname)); }
     /// <summary>Layer: Restores <c>glReadBuffer</c> to <see cref="DefaultReadBuffer"/>. Must be paired with exactly one earlier call to <c>glReadBuffer</c>.</summary>
     public void ResetReadBuffer() { readBuffer.Reset(nameof(ReadBuffer)); base.ReadBuffer(DefaultReadBuffer); }
 }

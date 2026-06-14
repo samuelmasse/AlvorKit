@@ -12,12 +12,12 @@ public class GlLayerResourceTest
         var buffer = gl.GenBuffer();
         var texture = gl.GenTexture();
         var vao = gl.GenVertexArray();
-        var shader = gl.CreateShader(ShaderType.VertexShader);
+        var shader = gl.CreateShader(GlShaderType.VertexShader);
         var program = gl.CreateProgram();
 
         gl.Dispose();
 
-        CollectionAssert.AreEquivalent(new[] { buffer, texture, vao, shader, program }, inner.Deleted);
+        CollectionAssert.AreEquivalent(new[] { (uint)buffer, (uint)texture, (uint)vao, (uint)shader, (uint)program }, inner.Deleted);
     }
 
     [TestMethod]
@@ -30,7 +30,7 @@ public class GlLayerResourceTest
         gl.DeleteBuffer(buffer);
         gl.Dispose();
 
-        Assert.AreEqual(1, inner.Deleted.Count(id => id == buffer));
+        Assert.AreEqual(1, inner.Deleted.Count(id => id == (uint)buffer));
     }
 
     [TestMethod]
@@ -39,10 +39,10 @@ public class GlLayerResourceTest
         var gl = new GlLayer(new RecordingGl());
 
         var buffer = gl.GenBuffer();
-        Assert.IsTrue(gl.Buffers.Contains(buffer));
+        Assert.IsTrue(gl.Buffers.Contains((uint)buffer));
 
         gl.DeleteBuffer(buffer);
-        Assert.IsFalse(gl.Buffers.Contains(buffer));
+        Assert.IsFalse(gl.Buffers.Contains((uint)buffer));
     }
 
     [TestMethod]

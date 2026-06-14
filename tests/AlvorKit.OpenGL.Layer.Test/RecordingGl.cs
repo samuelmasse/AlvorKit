@@ -15,8 +15,8 @@ internal sealed unsafe class RecordingGl : GlNoop
     public override void GenQueries(int n, nint p) => Fill(n, p);
     public override void GenProgramPipelines(int n, nint p) => Fill(n, p);
     public override void GenTransformFeedbacks(int n, nint p) => Fill(n, p);
-    public override uint CreateShader(ShaderType type) => next++;
-    public override uint CreateProgram() => next++;
+    public override GlShaderHandle CreateShader(GlShaderType type) => (GlShaderHandle)next++;
+    public override GlProgramHandle CreateProgram() => (GlProgramHandle)next++;
 
     public override void DeleteTextures(int n, nint p) => Record(n, p);
     public override void DeleteBuffers(int n, nint p) => Record(n, p);
@@ -27,8 +27,8 @@ internal sealed unsafe class RecordingGl : GlNoop
     public override void DeleteQueries(int n, nint p) => Record(n, p);
     public override void DeleteProgramPipelines(int n, nint p) => Record(n, p);
     public override void DeleteTransformFeedbacks(int n, nint p) => Record(n, p);
-    public override void DeleteShader(uint shader) => Deleted.Add(shader);
-    public override void DeleteProgram(uint program) => Deleted.Add(program);
+    public override void DeleteShader(GlShaderHandle shader) => Deleted.Add((uint)shader);
+    public override void DeleteProgram(GlProgramHandle program) => Deleted.Add((uint)program);
 
     private void Fill(int n, nint p)
     {

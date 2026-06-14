@@ -31,8 +31,8 @@ if (-not (Test-Path $SrcDir)) {
 
 # Build. Shared library, no examples/tests/docs, static CRT so the DLL needs no
 # VC++ Redistributable. NMake generator: nmake ships with the VC++ toolset
-# itself, so this works on any Visual Studio version — no VS-generator version
-# coupling. Only the DLL ships — the import .lib/.exp stay in the build dir.
+# itself, so this works on any Visual Studio version - no VS-generator version
+# coupling. Only the DLL ships - the import .lib/.exp stay in the build dir.
 cmake --fresh -S $SrcDir -B "$WorkDir\build-win-$Arch" -G 'NMake Makefiles' `
     -DCMAKE_BUILD_TYPE=Release `
     -DCMAKE_POLICY_DEFAULT_CMP0091=NEW `
@@ -47,5 +47,5 @@ Copy-Item "$WorkDir\build-win-$Arch\src\glfw3.dll" "$OutDir\glfw3.dll" -Force
 # Verify: imports must be Windows system DLLs only.
 $Deps = & dumpbin /nologo /dependents "$OutDir\glfw3.dll" | Select-String '\.dll'
 $Deps | ForEach-Object { Write-Host $_.Line.Trim() }
-if ($Deps -match 'VCRUNTIME|MSVCP') { throw 'DLL depends on the VC++ runtime — static CRT did not take.' }
+if ($Deps -match 'VCRUNTIME|MSVCP') { throw 'DLL depends on the VC++ runtime - static CRT did not take.' }
 Write-Host "OK $OutDir\glfw3.dll"

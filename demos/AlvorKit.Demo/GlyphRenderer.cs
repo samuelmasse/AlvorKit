@@ -44,10 +44,10 @@ public sealed class GlyphRenderer
     private readonly GlLayer gl;
     private readonly GlyphBitmap glyph;
     private readonly int scale;
-    private readonly uint texture;
-    private readonly uint program;
-    private readonly uint vertexArray;
-    private readonly uint vertexBuffer;
+    private readonly GlTextureHandle texture;
+    private readonly GlProgramHandle program;
+    private readonly GlVertexArrayHandle vertexArray;
+    private readonly GlBufferHandle vertexBuffer;
     private readonly int scaleLocation;
 
     public GlyphRenderer(GlLayer gl, GlyphBitmap glyph, int scale)
@@ -68,44 +68,44 @@ public sealed class GlyphRenderer
         gl.ClearColor(0.09f, 0.09f, 0.11f, 1f);
         gl.UseProgram(program);
         gl.Uniform2f(scaleLocation, (float)glyph.Width * scale / width, (float)glyph.Height * scale / height);
-        gl.ActiveTexture(TextureUnit.Texture0);
-        gl.BindTexture(TextureTarget.Texture2D, texture);
+        gl.ActiveTexture(GlTextureUnit.Texture0);
+        gl.BindTexture(GlTextureTarget.Texture2D, texture);
         gl.BindVertexArray(vertexArray);
 
-        gl.Clear(ClearBufferMask.ColorBufferBit);
-        gl.DrawArrays(PrimitiveType.TriangleStrip, 0, VertexCount);
+        gl.Clear(GlClearBufferMask.ColorBufferBit);
+        gl.DrawArrays(GlPrimitiveType.TriangleStrip, 0, VertexCount);
 
         gl.UnbindVertexArray();
-        gl.UnbindTexture(TextureTarget.Texture2D);
+        gl.UnbindTexture(GlTextureTarget.Texture2D);
         gl.ResetActiveTexture();
         gl.UnuseProgram();
         gl.ResetClearColor();
         gl.ResetViewport();
     }
 
-    private uint CreateTexture(GlyphBitmap glyph)
+    private GlTextureHandle CreateTexture(GlyphBitmap glyph)
     {
         var texture = gl.GenTexture();
-        gl.ActiveTexture(TextureUnit.Texture0);
-        gl.BindTexture(TextureTarget.Texture2D, texture);
-        gl.PixelStorei(PixelStoreParameter.UnpackAlignment, 1);
-        gl.TexImage2D<byte>(TextureTarget.Texture2D, 0, InternalFormat.R8, glyph.Width, glyph.Height, 0, PixelFormat.Red, PixelType.UnsignedByte, glyph.Pixels);
-        gl.TexParameteri(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-        gl.TexParameteri(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-        gl.ResetPixelStore(PixelStoreParameter.UnpackAlignment);
-        gl.UnbindTexture(TextureTarget.Texture2D);
+        gl.ActiveTexture(GlTextureUnit.Texture0);
+        gl.BindTexture(GlTextureTarget.Texture2D, texture);
+        gl.PixelStorei(GlPixelStoreParameter.UnpackAlignment, 1);
+        gl.TexImage2D<byte>(GlTextureTarget.Texture2D, 0, GlInternalFormat.R8, glyph.Width, glyph.Height, 0, GlPixelFormat.Red, GlPixelType.UnsignedByte, glyph.Pixels);
+        gl.TexParameteri(GlTextureTarget.Texture2D, GlTextureParameterName.TextureMinFilter, (int)GlTextureMinFilter.Linear);
+        gl.TexParameteri(GlTextureTarget.Texture2D, GlTextureParameterName.TextureMagFilter, (int)GlTextureMagFilter.Linear);
+        gl.ResetPixelStore(GlPixelStoreParameter.UnpackAlignment);
+        gl.UnbindTexture(GlTextureTarget.Texture2D);
         gl.ResetActiveTexture();
         return texture;
     }
 
-    private uint CreateProgram()
+    private GlProgramHandle CreateProgram()
     {
         var program = gl.CreateProgram();
-        gl.AttachShader(program, Compile(ShaderType.VertexShader, VertexSource));
-        gl.AttachShader(program, Compile(ShaderType.FragmentShader, FragmentSource));
+        gl.AttachShader(program, Compile(GlShaderType.VertexShader, VertexSource));
+        gl.AttachShader(program, Compile(GlShaderType.FragmentShader, FragmentSource));
         gl.LinkProgram(program);
 
-        gl.GetProgramiv(program, ProgramProperty.LinkStatus, out var linkStatus);
+        gl.GetProgramiv(program, GlProgramProperty.LinkStatus, out var linkStatus);
         if (linkStatus == 0)
             throw new InvalidOperationException($"Program link failed: {gl.GetProgramInfoLog(program)}");
 
@@ -115,30 +115,30 @@ public sealed class GlyphRenderer
         return program;
     }
 
-    private (uint VertexArray, uint VertexBuffer) CreateGeometry()
+    private (GlVertexArrayHandle VertexArray, GlBufferHandle VertexBuffer) CreateGeometry()
     {
         var vertexArray = gl.GenVertexArray();
         var vertexBuffer = gl.GenBuffer();
 
         gl.BindVertexArray(vertexArray);
-        gl.BindBuffer(BufferTarget.ArrayBuffer, vertexBuffer);
-        gl.BufferData<float>(BufferTarget.ArrayBuffer, UnitQuad, BufferUsage.StaticDraw);
-        gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, VertexStrideBytes, PositionOffsetBytes);
+        gl.BindBuffer(GlBufferTarget.ArrayBuffer, vertexBuffer);
+        gl.BufferData<float>(GlBufferTarget.ArrayBuffer, UnitQuad, GlBufferUsage.StaticDraw);
+        gl.VertexAttribPointer(0, 2, GlVertexAttribPointerType.Float, false, VertexStrideBytes, PositionOffsetBytes);
         gl.EnableVertexAttribArray(0);
-        gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, VertexStrideBytes, UvOffsetBytes);
+        gl.VertexAttribPointer(1, 2, GlVertexAttribPointerType.Float, false, VertexStrideBytes, UvOffsetBytes);
         gl.EnableVertexAttribArray(1);
-        gl.UnbindBuffer(BufferTarget.ArrayBuffer);
+        gl.UnbindBuffer(GlBufferTarget.ArrayBuffer);
         gl.UnbindVertexArray();
         return (vertexArray, vertexBuffer);
     }
 
-    private uint Compile(ShaderType type, string source)
+    private GlShaderHandle Compile(GlShaderType type, string source)
     {
         var shader = gl.CreateShader(type);
         gl.ShaderSource(shader, source);
         gl.CompileShader(shader);
 
-        gl.GetShaderiv(shader, ShaderParameterName.CompileStatus, out var compileStatus);
+        gl.GetShaderiv(shader, GlShaderParameterName.CompileStatus, out var compileStatus);
         if (compileStatus == 0)
             throw new InvalidOperationException($"Shader compilation failed: {gl.GetShaderInfoLog(shader)}");
 

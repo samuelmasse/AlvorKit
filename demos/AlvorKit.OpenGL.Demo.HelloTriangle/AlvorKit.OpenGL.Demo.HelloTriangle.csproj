@@ -6,22 +6,9 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
-    <!-- Hack: reference the freshly generated 4.6.2 OpenGL + GLFW bindings directly instead of
-         published packages, so this demo exercises the new code as a smoke test. -->
     <ItemGroup>
-        <ProjectReference Include="..\..\out\bindgen\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj" />
-        <ProjectReference Include="..\..\out\bindgen\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj" />
-        <ProjectReference Include="..\..\out\bindgen\AlvorKit.GLFW\AlvorKit.GLFW.csproj" />
-    </ItemGroup>
-
-    <!-- The generated AlvorKit.GLFW.Backend project depends on an unpublished "AlvorKit.GLFW.Native"
-         package, so rather than reference that (unrestorable) project we compile its P/Invoke source
-         here and supply the matching glfw3.dll from OpenTK's redist (also GLFW 3.4). Swap this for the
-         real native package once it's published. -->
-    <ItemGroup>
-        <PackageReference Include="OpenTK.redist.glfw" Version="3.4.0.44" />
-        <Compile Include="..\..\out\bindgen\AlvorKit.GLFW.Backend\GlfwBackend.cs" />
-        <Compile Include="..\..\out\bindgen\AlvorKit.GLFW.Backend\GlfwNative.cs" />
+        <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(AlvorKitGlfwVersion)" />
+        <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(AlvorKitOpenGlVersion)" />
     </ItemGroup>
 
 </Project>
