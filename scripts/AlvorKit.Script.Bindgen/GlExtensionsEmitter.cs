@@ -68,6 +68,38 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         output.AppendLine();
         output.AppendLine("        public void Dispose() => NativeMemory.Free(native);");
         output.AppendLine("    }");
+        output.AppendLine();
+        output.AppendLine("    /// <summary>An array of NUL-terminated UTF-8 strings plus the char** of pointers for interop: stack-backed when small, otherwise native memory freed on Dispose - never on the GC heap.</summary>");
+        output.AppendLine("    private readonly ref struct Utf8Array");
+        output.AppendLine("    {");
+        output.AppendLine("        private readonly void* native;");
+        output.AppendLine("        /// <summary>Pointer to the array of string pointers (a char**).</summary>");
+        output.AppendLine("        public readonly nint Pointers;");
+        output.AppendLine();
+        output.AppendLine("        public Utf8Array(ReadOnlySpan<string> strings, Span<byte> stack)");
+        output.AppendLine("        {");
+        output.AppendLine("            var total = 0;");
+        output.AppendLine("            for (var i = 0; i < strings.Length; i++)");
+        output.AppendLine("                total += Encoding.UTF8.GetByteCount(strings[i]) + 1;");
+        output.AppendLine("            var size = strings.Length * sizeof(nint) + total;");
+        output.AppendLine("            native = size <= stack.Length ? null : NativeMemory.Alloc((nuint)size);");
+        output.AppendLine("            var basePtr = native != null ? (byte*)native : (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(stack));");
+        output.AppendLine("            var pointers = (byte**)basePtr;");
+        output.AppendLine("            var data = basePtr + strings.Length * sizeof(nint);");
+        output.AppendLine("            var remaining = total;");
+        output.AppendLine("            for (var i = 0; i < strings.Length; i++)");
+        output.AppendLine("            {");
+        output.AppendLine("                pointers[i] = data;");
+        output.AppendLine("                var written = Encoding.UTF8.GetBytes(strings[i], new Span<byte>(data, remaining));");
+        output.AppendLine("                data[written] = 0;");
+        output.AppendLine("                data += written + 1;");
+        output.AppendLine("                remaining -= written + 1;");
+        output.AppendLine("            }");
+        output.AppendLine("            Pointers = (nint)basePtr;");
+        output.AppendLine("        }");
+        output.AppendLine();
+        output.AppendLine("        public void Dispose() => NativeMemory.Free(native);");
+        output.AppendLine("    }");
         output.AppendLine("}");
         return output.ToString();
     }
@@ -90,7 +122,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         return new(LenKind.ParamRef, index, match.Groups[2].Success ? int.Parse(match.Groups[2].Value) : 1, []);
     }
 
-    private enum Plan { Keep, SpanTyped, SpanGenericSized, SpanGenericUnsized, StringIn, Dropped }
+    private enum Plan { Keep, SpanTyped, SpanGenericSized, SpanGenericUnsized, StringIn, StringArray, Dropped }
 
     /// <summary>
     /// The single combined overload: every applicable parameter transform applied at once.
@@ -167,6 +199,33 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
                     argument[i] = $"(nint){Local(parameter)}Ptr";
                 }
             }
+            else if (parameter is { PointerDepth: 2, PointeeIsChar: true, PointeeIsConst: true })
+            {
+                // An array of strings (const GLchar* const*): marshalled to a UTF-8 char** below.
+                // Its count is the element count - a plain len reference, or a single-argument COMPSIZE
+                // (one string per count), so it can be inferred from the span length.
+                var countIndex = len.Kind == LenKind.ParamRef ? len.ParamIndex
+                    : len.Kind == LenKind.CompSize && len.CompSizeArgs.Length == 1
+                        ? parameters.FindIndex(candidate => candidate.NativeName == len.CompSizeArgs[0] && candidate is { PointerDepth: 0, ManagedType: "int" or "uint" })
+                        : -1;
+                if (countIndex >= 0)
+                {
+                    plans[i] = Plan.StringArray;
+                    argument[i] = $"{Local(parameter)}Array.Pointers";
+                    spannedPointers.Add(i);
+                    if (!referencesByCount.TryGetValue(countIndex, out var references))
+                        referencesByCount[countIndex] = references = [];
+                    references.Add((i, 1));
+                    // A paired const length array (glShaderSource) is dropped; the strings are NUL-terminated.
+                    for (var j = 0; j < parameters.Count; j++)
+                        if (parameters[j] is { PointerDepth: 1, PointeeType: "int", PointeeIsConst: true }
+                            && ParseLen(command, parameters[j]) is { Kind: LenKind.ParamRef } lengthsLen && lengthsLen.ParamIndex == countIndex)
+                        {
+                            plans[j] = Plan.Dropped;
+                            argument[j] = "0";
+                        }
+                }
+            }
         }
 
         // A count drops only when everything referencing it is a span in this overload; otherwise
@@ -176,7 +235,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             var referrers = parameters
                 .Select((parameter, index) => (parameter, index))
                 .Where(candidate => ParseLen(command, candidate.parameter) is { Kind: LenKind.ParamRef } len && len.ParamIndex == count);
-            if (plans[count] != Plan.Keep || !referrers.All(referrer => spannedPointers.Contains(referrer.index)))
+            if (plans[count] != Plan.Keep || !referrers.All(referrer => spannedPointers.Contains(referrer.index) || plans[referrer.index] == Plan.Dropped))
             {
                 foreach (var (pointer, _) in references)
                 {
@@ -219,6 +278,9 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
                 case Plan.StringIn:
                     signature.Add($"string {parameter.ManagedName}");
                     break;
+                case Plan.StringArray:
+                    signature.Add($"ReadOnlySpan<string> {parameter.ManagedName}");
+                    break;
             }
         }
 
@@ -229,6 +291,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
 
         var pinnedSpans = new List<string>();
         var pinnedStrings = new List<string>();
+        var stringArrays = new List<string>();
         var dropped = new List<string>();
         for (var i = 0; i < parameters.Count; i++)
         {
@@ -236,6 +299,8 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
                 pinnedSpans.Add(parameters[i].ManagedName);
             else if (plans[i] == Plan.StringIn)
                 pinnedStrings.Add(parameters[i].ManagedName);
+            else if (plans[i] == Plan.StringArray)
+                stringArrays.Add(parameters[i].ManagedName);
             else if (plans[i] == Plan.Dropped)
                 dropped.Add(parameters[i].ManagedName);
         }
@@ -244,6 +309,8 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             detailParts.Add($"Pins {ParamRefs(pinnedSpans)} for the duration of the call.");
         if (pinnedStrings.Count > 0)
             detailParts.Add($"Marshals {ParamRefs(pinnedStrings)} to NUL-terminated UTF-8 on the stack, or native memory for long strings - never the GC heap.");
+        if (stringArrays.Count > 0)
+            detailParts.Add($"Marshals {ParamRefs(stringArrays)} into a NUL-terminated UTF-8 string array (stack or native; never the GC heap).");
         if (dropped.Count > 0)
             detailParts.Add($"Supplies {CodeNames(dropped)} automatically from the span length{(dropped.Count > 1 ? "s" : "")}.");
         EmitOverloadDocs(output, command, string.Join(" ", detailParts));
@@ -252,6 +319,8 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         for (var i = 0; i < parameters.Count; i++)
             if (plans[i] == Plan.StringIn)
                 output.AppendLine($"        using var {Local(parameters[i])}Utf8 = new Utf8({parameters[i].ManagedName}, stackalloc byte[256]);");
+            else if (plans[i] == Plan.StringArray)
+                output.AppendLine($"        using var {Local(parameters[i])}Array = new Utf8Array({parameters[i].ManagedName}, stackalloc byte[1024]);");
         var fixedCount = 0;
         for (var i = 0; i < parameters.Count; i++)
         {
