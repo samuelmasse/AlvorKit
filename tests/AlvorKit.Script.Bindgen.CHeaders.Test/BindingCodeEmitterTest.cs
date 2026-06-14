@@ -41,7 +41,7 @@ public sealed class BindingCodeEmitterTest
     }
 
     [TestMethod]
-    public void EmitBackendProject_CanSkipNativePackageReferenceForCompileTests()
+    public void EmitBackendProject_AlwaysReferencesNativePackage()
     {
         using var workspace = TempWorkspace.Create();
         var config = TestConfig();
@@ -50,8 +50,8 @@ public sealed class BindingCodeEmitterTest
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0");
 
         var backendProject = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "Fixture.Backend.csproj"));
-        StringAssert.Contains(backendProject, "Condition=\"'$(AlvorKitSkipNativePackageReference)' != 'true'\"");
         StringAssert.Contains(backendProject, "<PackageReference Include=\"AlvorKit.Bindgen.Fixture.Native\" Version=\"1.0.0\" />");
+        Assert.IsFalse(backendProject.Contains("AlvorKitSkipNativePackageReference", StringComparison.Ordinal));
     }
 
     [TestMethod]

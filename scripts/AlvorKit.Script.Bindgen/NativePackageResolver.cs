@@ -99,7 +99,6 @@ public static class NativePackageResolver
         };
         startInfo.ArgumentList.Add("restore");
         startInfo.ArgumentList.Add(projectPath);
-        startInfo.ArgumentList.Add("-p:AlvorKitSkipNativePackageReference=false");
         startInfo.ArgumentList.Add("-v:quiet");
 
         using var process = Process.Start(startInfo);

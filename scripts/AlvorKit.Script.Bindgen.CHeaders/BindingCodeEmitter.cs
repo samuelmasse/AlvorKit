@@ -80,7 +80,7 @@ public sealed class BindingCodeEmitter(BindgenConfig config, string tag)
                 <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
             </PropertyGroup>
 
-            <ItemGroup Condition="'$(AlvorKitSkipNativePackageReference)' != 'true'">
+            <ItemGroup>
                 <PackageReference Include="{config.Namespace}.Native" Version="{version}" />
             </ItemGroup>
 
