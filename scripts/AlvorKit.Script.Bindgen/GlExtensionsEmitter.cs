@@ -30,6 +30,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             AppendOutScalar(body, command);
             AppendInfoLog(body, command);
             AppendSingleSource(body, command);
+            AppendStringGetter(body, command);
         }
         if (body.Length == 0)
             return null;
@@ -39,22 +40,34 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         output.AppendLine();
         output.AppendLine($"namespace {config.Namespace};");
         output.AppendLine();
-        output.AppendLine("/// <summary>");
-        output.AppendLine($"/// Convenience overloads for the <see cref=\"{config.ApiClass}\"/> commands, derived from the registry buffer");
-        output.AppendLine("/// metadata: counted pointers become spans with the count inferred, sized void buffers become");
-        output.AppendLine("/// generic spans, GLchar pointers become UTF-8 marshalled strings, the Gen/Create/Delete");
-        output.AppendLine("/// families gain singular forms, single-value getters gain out overloads and the info-log");
-        output.AppendLine("/// shape returns a string. Spans are pinned for the duration of the call.");
-        output.AppendLine("/// </summary>");
-        output.AppendLine($"public static unsafe class {config.ApiClass}Extensions");
+        output.AppendLine($"public unsafe partial class {config.ApiClass}");
         output.AppendLine("{");
         output.Append(body);
-        output.AppendLine("    // A span holds at most int.MaxValue elements, so the product fits 64-bit nuint for any unmanaged T;");
-        output.AppendLine("    // checked() covers 32-bit processes, where a span describing more memory than the address space");
-        output.AppendLine("    // would otherwise wrap into a silently wrong length.");
         output.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining)]");
         output.AppendLine("    private static nint ByteLength<T>(ReadOnlySpan<T> span) where T : unmanaged =>");
         output.AppendLine("        checked((nint)((nuint)span.Length * (nuint)sizeof(T)));");
+        output.AppendLine();
+        output.AppendLine("    /// <summary>A NUL-terminated UTF-8 copy of a string for interop: stack-backed when short, otherwise native memory freed on Dispose - never on the GC heap.</summary>");
+        output.AppendLine("    private readonly ref struct Utf8");
+        output.AppendLine("    {");
+        output.AppendLine("        private readonly void* native;");
+        output.AppendLine("        /// <summary>Pointer to the NUL-terminated UTF-8 bytes.</summary>");
+        output.AppendLine("        public readonly nint Pointer;");
+        output.AppendLine("        /// <summary>Byte length excluding the NUL terminator.</summary>");
+        output.AppendLine("        public readonly int Length;");
+        output.AppendLine();
+        output.AppendLine("        public Utf8(string text, Span<byte> stack)");
+        output.AppendLine("        {");
+        output.AppendLine("            Length = Encoding.UTF8.GetByteCount(text);");
+        output.AppendLine("            native = Length < stack.Length ? null : NativeMemory.Alloc((nuint)(Length + 1));");
+        output.AppendLine("            var buffer = native != null ? new Span<byte>(native, Length + 1) : stack;");
+        output.AppendLine("            Encoding.UTF8.GetBytes(text, buffer);");
+        output.AppendLine("            buffer[Length] = 0;");
+        output.AppendLine("            Pointer = (nint)Unsafe.AsPointer(ref MemoryMarshal.GetReference(buffer));");
+        output.AppendLine("        }");
+        output.AppendLine();
+        output.AppendLine("        public void Dispose() => NativeMemory.Free(native);");
+        output.AppendLine("    }");
         output.AppendLine("}");
         return output.ToString();
     }
@@ -91,7 +104,6 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         var parameters = command.Parameters;
         var plans = new Plan[parameters.Count];
         var argument = new string?[parameters.Count];
-        var checks = new List<(string Name, string Against)>();
         var configured = config.SpanParams.GetValueOrDefault(command.NativeName, []);
 
         // Strings first: a paired length parameter named by COMPSIZE is replaced by the UTF-8 byte count.
@@ -101,14 +113,14 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             if (parameter is not { PointerDepth: 1, PointeeIsChar: true, PointeeIsConst: true })
                 continue;
             plans[i] = Plan.StringIn;
-            argument[i] = $"(nint){Local(parameter)}Ptr";
+            argument[i] = $"{Local(parameter)}Utf8.Pointer";
             foreach (var lengthArg in ParseLen(command, parameter) is { Kind: LenKind.CompSize } len ? len.CompSizeArgs : [])
             {
                 var paired = parameters.FindIndex(candidate => candidate.NativeName == lengthArg && candidate is { PointerDepth: 0, ManagedType: "int" or "uint" });
                 if (paired < 0)
                     continue;
                 plans[paired] = Plan.Dropped;
-                argument[paired] = CountExpression(parameters[paired], $"{Local(parameter)}Utf8.Length - 1");
+                argument[paired] = CountExpression(parameters[paired], $"{Local(parameter)}Utf8.Length");
             }
         }
 
@@ -179,8 +191,6 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             plans[count] = Plan.Dropped;
             argument[count] = CountExpression(parameters[count],
                 firstDivisor == 1 ? $"{first.ManagedName}.Length" : $"{first.ManagedName}.Length / {firstDivisor}");
-            foreach (var (pointer, divisor) in references.Skip(1).Where(reference => reference.Divisor == firstDivisor))
-                checks.Add((parameters[pointer].ManagedName, first.ManagedName));
         }
 
         if (!plans.Any(plan => plan != Plan.Keep && plan != Plan.Dropped))
@@ -188,7 +198,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
 
         // Signature, generic type parameters and their constraints.
         var typeParameters = new List<string>();
-        var signature = new List<string> { $"this {config.ApiClass} gl" };
+        var signature = new List<string>();
         for (var i = 0; i < parameters.Count; i++)
         {
             var parameter = parameters[i];
@@ -217,28 +227,44 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         if (!signatures.Add($"{command.ManagedName}{generics}({string.Join(", ", signature)})"))
             return;
 
-        output.AppendLine($"    /// <inheritdoc cref=\"{config.ApiClass}.{command.ManagedName}\"/>");
-        output.AppendLine($"    public static {command.ReturnType} {command.ManagedName}{generics}({string.Join(", ", signature)}){constraints}");
-        output.AppendLine("    {");
-        foreach (var (name, against) in checks)
+        var pinnedSpans = new List<string>();
+        var pinnedStrings = new List<string>();
+        var dropped = new List<string>();
+        for (var i = 0; i < parameters.Count; i++)
         {
-            output.AppendLine($"        if ({name}.Length != {against}.Length)");
-            output.AppendLine($"            throw new ArgumentException(\"Must have the same length as {against}.\", nameof({name}));");
+            if (plans[i] is Plan.SpanTyped or Plan.SpanGenericSized or Plan.SpanGenericUnsized)
+                pinnedSpans.Add(parameters[i].ManagedName);
+            else if (plans[i] == Plan.StringIn)
+                pinnedStrings.Add(parameters[i].ManagedName);
+            else if (plans[i] == Plan.Dropped)
+                dropped.Add(parameters[i].ManagedName);
         }
+        var detailParts = new List<string>();
+        if (pinnedSpans.Count > 0)
+            detailParts.Add($"Pins {ParamRefs(pinnedSpans)} for the duration of the call.");
+        if (pinnedStrings.Count > 0)
+            detailParts.Add($"Marshals {ParamRefs(pinnedStrings)} to NUL-terminated UTF-8 on the stack, or native memory for long strings - never the GC heap.");
+        if (dropped.Count > 0)
+            detailParts.Add($"Supplies {CodeNames(dropped)} automatically from the span length{(dropped.Count > 1 ? "s" : "")}.");
+        EmitOverloadDocs(output, command, string.Join(" ", detailParts));
+        output.AppendLine($"    public virtual {command.ReturnType} {command.ManagedName}{generics}({string.Join(", ", signature)}){constraints}");
+        output.AppendLine("    {");
         for (var i = 0; i < parameters.Count; i++)
             if (plans[i] == Plan.StringIn)
-                output.AppendLine($"        var {Local(parameters[i])}Utf8 = Encoding.UTF8.GetBytes({parameters[i].ManagedName} + '\\0');");
+                output.AppendLine($"        using var {Local(parameters[i])}Utf8 = new Utf8({parameters[i].ManagedName}, stackalloc byte[256]);");
+        var fixedCount = 0;
         for (var i = 0; i < parameters.Count; i++)
         {
-            if (plans[i] == Plan.StringIn)
-                output.AppendLine($"        fixed (byte* {Local(parameters[i])}Ptr = {Local(parameters[i])}Utf8)");
-            else if (plans[i] == Plan.SpanTyped)
+            if (plans[i] == Plan.SpanTyped)
                 output.AppendLine($"        fixed ({parameters[i].PointeeType}* {Local(parameters[i])}Ptr = {parameters[i].ManagedName})");
             else if (plans[i] is Plan.SpanGenericSized or Plan.SpanGenericUnsized)
                 output.AppendLine($"        fixed ({TypeParameter(command, i)}* {Local(parameters[i])}Ptr = {parameters[i].ManagedName})");
+            else
+                continue;
+            fixedCount++;
         }
-        var call = $"gl.{command.ManagedName}({string.Join(", ", argument.Where(value => value is not null))})";
-        output.AppendLine($"            {(command.ReturnType == "void" ? call : "return " + call)};");
+        var call = $"this.{command.ManagedName}({string.Join(", ", argument.Where(value => value is not null))})";
+        output.AppendLine($"        {(fixedCount > 0 ? "    " : "")}{(command.ReturnType == "void" ? call : "return " + call)};");
         output.AppendLine("    }");
         output.AppendLine();
     }
@@ -260,7 +286,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             return;
 
         var passthrough = parameters.Take(parameters.Count - 2).ToList();
-        var signature = new List<string> { $"this {config.ApiClass} gl" };
+        var signature = new List<string>();
         signature.AddRange(passthrough.Select(parameter => $"{parameter.ManagedType} {parameter.ManagedName}"));
         if (pointer.PointeeIsConst)
             signature.Add($"{pointer.PointeeType} {singular}");
@@ -269,19 +295,21 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
 
         var count = CountExpression(parameters[^2], "1");
         var arguments = passthrough.Select(parameter => parameter.ManagedName).Append(count);
-        output.AppendLine($"    /// <inheritdoc cref=\"{config.ApiClass}.{command.ManagedName}\"/>");
+        EmitOverloadDocs(output, command, pointer.PointeeIsConst
+            ? $"Passes the single <paramref name=\"{singular}\"/> with a count of 1, taking its address for the call."
+            : $"Returns the single value written, calling with a count of 1 and a stack address for the out pointer.");
         if (pointer.PointeeIsConst)
         {
-            output.AppendLine($"    public static void {name}({string.Join(", ", signature)})");
+            output.AppendLine($"    public virtual void {name}({string.Join(", ", signature)})");
             output.AppendLine("    {");
-            output.AppendLine($"        gl.{command.ManagedName}({string.Join(", ", arguments.Append($"(nint)(&{singular})"))});");
+            output.AppendLine($"        this.{command.ManagedName}({string.Join(", ", arguments.Append($"(nint)(&{singular})"))});");
         }
         else
         {
-            output.AppendLine($"    public static {pointer.PointeeType} {name}({string.Join(", ", signature)})");
+            output.AppendLine($"    public virtual {pointer.PointeeType} {name}({string.Join(", ", signature)})");
             output.AppendLine("    {");
             output.AppendLine($"        {pointer.PointeeType} {singular};");
-            output.AppendLine($"        gl.{command.ManagedName}({string.Join(", ", arguments.Append($"(nint)(&{singular})"))});");
+            output.AppendLine($"        this.{command.ManagedName}({string.Join(", ", arguments.Append($"(nint)(&{singular})"))});");
             output.AppendLine($"        return {singular};");
         }
         output.AppendLine("    }");
@@ -303,26 +331,28 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             return;
 
         var passthrough = parameters.Take(parameters.Count - 1).ToList();
-        var signature = new List<string> { $"this {config.ApiClass} gl" };
+        var signature = new List<string>();
         signature.AddRange(passthrough.Select(parameter => $"{parameter.ManagedType} {parameter.ManagedName}"));
         signature.Add($"out {pointer.PointeeType} {pointer.ManagedName}");
         if (!signatures.Add($"{command.ManagedName}({string.Join(", ", signature)})"))
             return;
 
         var arguments = passthrough.Select(parameter => parameter.ManagedName).Append("(nint)(&value)");
-        output.AppendLine($"    /// <inheritdoc cref=\"{config.ApiClass}.{command.ManagedName}\"/>");
-        output.AppendLine($"    public static void {command.ManagedName}({string.Join(", ", signature)})");
+        EmitOverloadDocs(output, command, $"Reads a single value, returned through the <paramref name=\"{Local(pointer)}\"/> out parameter via a stack address.");
+        output.AppendLine($"    public virtual void {command.ManagedName}({string.Join(", ", signature)})");
         output.AppendLine("    {");
         output.AppendLine($"        {pointer.PointeeType} value;");
-        output.AppendLine($"        gl.{command.ManagedName}({string.Join(", ", arguments)});");
+        output.AppendLine($"        this.{command.ManagedName}({string.Join(", ", arguments)});");
         output.AppendLine($"        {pointer.ManagedName} = value;");
         output.AppendLine("    }");
         output.AppendLine();
     }
 
     /// <summary>
-    /// A string return for the trailing (bufSize, length, buffer) shape of the info-log family,
-    /// with a stack buffer.
+    /// The trailing (bufSize, length, buffer) shape of the info-log and name family: a string return
+    /// and a <c>Span&lt;char&gt;</c> overload. The string form probe-and-grows a UTF-8 work buffer
+    /// (stack then native) so any length fits and only the returned string allocates; the span form
+    /// decodes into the caller's buffer (truncating to fit) with no GC allocation.
     /// </summary>
     private void AppendInfoLog(StringBuilder output, GlCommand command)
     {
@@ -339,22 +369,73 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         if (ParseLen(command, buffer) is not { Kind: LenKind.ParamRef } bufferLen || bufferLen.ParamIndex != parameters.Count - 3)
             return;
 
-        var passthrough = parameters.Take(parameters.Count - 3).ToList();
-        var signature = new List<string> { $"this {config.ApiClass} gl" };
-        signature.AddRange(passthrough.Select(parameter => $"{parameter.ManagedType} {parameter.ManagedName}"));
-        if (!signatures.Add($"{command.ManagedName}({string.Join(", ", signature)})"))
-            return;
+        var leading = parameters.Take(parameters.Count - 3).Select(parameter => $"{parameter.ManagedType} {parameter.ManagedName}").ToList();
+        var coreArgs = string.Join(", ", parameters.Take(parameters.Count - 3).Select(parameter => parameter.ManagedName)
+            .Append("buffer.Length").Append("(nint)(&written)").Append("(nint)bufferPtr"));
 
-        var arguments = passthrough.Select(parameter => parameter.ManagedName)
-            .Append("buffer.Length").Append("(nint)(&length)").Append("(nint)bufferPtr");
-        output.AppendLine($"    /// <inheritdoc cref=\"{config.ApiClass}.{command.ManagedName}\"/>");
-        output.AppendLine($"    public static string {command.ManagedName}({string.Join(", ", signature)})");
+        if (signatures.Add($"{command.ManagedName}({string.Join(", ", leading)})"))
+        {
+            EmitOverloadDocs(output, command, "Returns the full text, growing the work buffer as needed (stack first, then native memory); the only allocation is the returned string.");
+            output.AppendLine($"    public virtual string {command.ManagedName}({string.Join(", ", leading)})");
+            EmitInfoLogProbe(output, command, coreArgs, "                    return Encoding.UTF8.GetString(buffer[..written]);");
+        }
+
+        var spanSignature = string.Join(", ", leading.Append("Span<char> destination"));
+        if (signatures.Add($"{command.ManagedName}({spanSignature})"))
+        {
+            EmitOverloadDocs(output, command, "Decodes the UTF-8 text into <paramref name=\"destination\"/> (truncated if it does not fit) and returns the characters written. The UTF-8 staging buffer is on the stack, or native memory for a large destination; no GC allocation.");
+            output.AppendLine($"    public virtual ReadOnlySpan<char> {command.ManagedName}({spanSignature})");
+            output.AppendLine("    {");
+            output.AppendLine("        void* native = destination.Length <= 1024 ? null : NativeMemory.Alloc((nuint)destination.Length);");
+            output.AppendLine("        try");
+            output.AppendLine("        {");
+            output.AppendLine("            Span<byte> buffer = native != null ? new Span<byte>(native, destination.Length) : stackalloc byte[destination.Length];");
+            output.AppendLine("            int written;");
+            output.AppendLine("            fixed (byte* bufferPtr = buffer)");
+            output.AppendLine($"                this.{command.ManagedName}({coreArgs});");
+            output.AppendLine("            return destination[..Encoding.UTF8.GetChars(buffer[..written], destination)];");
+            output.AppendLine("        }");
+            output.AppendLine("        finally");
+            output.AppendLine("        {");
+            output.AppendLine("            NativeMemory.Free(native);");
+            output.AppendLine("        }");
+            output.AppendLine("    }");
+            output.AppendLine();
+        }
+    }
+
+    /// <summary>
+    /// The probe-and-grow body for the string overload: a stack buffer that doubles into native
+    /// memory until the GL call writes fewer characters than it offered (so the text is complete),
+    /// running <paramref name="onComplete"/> at that point. Native memory is freed even if a call throws.
+    /// </summary>
+    private void EmitInfoLogProbe(StringBuilder output, GlCommand command, string coreArgs, params string[] onComplete)
+    {
         output.AppendLine("    {");
-        output.AppendLine("        Span<byte> buffer = stackalloc byte[4096];");
-        output.AppendLine("        int length;");
-        output.AppendLine("        fixed (byte* bufferPtr = buffer)");
-        output.AppendLine($"            gl.{command.ManagedName}({string.Join(", ", arguments)});");
-        output.AppendLine("        return Encoding.UTF8.GetString(buffer[..length]);");
+        output.AppendLine("        Span<byte> buffer = stackalloc byte[1024];");
+        output.AppendLine("        void* native = null;");
+        output.AppendLine("        try");
+        output.AppendLine("        {");
+        output.AppendLine("            while (true)");
+        output.AppendLine("            {");
+        output.AppendLine("                int written;");
+        output.AppendLine("                fixed (byte* bufferPtr = buffer)");
+        output.AppendLine($"                    this.{command.ManagedName}({coreArgs});");
+        output.AppendLine("                if (written < buffer.Length - 1)");
+        output.AppendLine("                {");
+        foreach (var line in onComplete)
+            output.AppendLine(line);
+        output.AppendLine("                }");
+        output.AppendLine("                var size = buffer.Length * 2;");
+        output.AppendLine("                NativeMemory.Free(native);");
+        output.AppendLine("                native = NativeMemory.Alloc((nuint)size);");
+        output.AppendLine("                buffer = new Span<byte>(native, size);");
+        output.AppendLine("            }");
+        output.AppendLine("        }");
+        output.AppendLine("        finally");
+        output.AppendLine("        {");
+        output.AppendLine("            NativeMemory.Free(native);");
+        output.AppendLine("        }");
         output.AppendLine("    }");
         output.AppendLine();
     }
@@ -381,7 +462,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             return;
 
         var passthrough = parameters.Take(parameters.Count - 3).ToList();
-        var signature = new List<string> { $"this {config.ApiClass} gl" };
+        var signature = new List<string>();
         signature.AddRange(passthrough.Select(parameter => $"{parameter.ManagedType} {parameter.ManagedName}"));
         signature.Add("string source");
         if (!signatures.Add($"{command.ManagedName}({string.Join(", ", signature)})"))
@@ -389,22 +470,82 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
 
         var arguments = passthrough.Select(parameter => parameter.ManagedName)
             .Append("1").Append("(nint)(&sourcePointer)").Append("(nint)(&length)");
-        output.AppendLine($"    /// <inheritdoc cref=\"{config.ApiClass}.{command.ManagedName}\"/>");
-        output.AppendLine($"    public static void {command.ManagedName}({string.Join(", ", signature)})");
+        EmitOverloadDocs(output, command, "Marshals <paramref name=\"source\"/> to UTF-8 on the stack, or native memory for long strings (never the GC heap), and passes it with its byte length.");
+        output.AppendLine($"    public virtual void {command.ManagedName}({string.Join(", ", signature)})");
         output.AppendLine("    {");
-        output.AppendLine("        var sourceUtf8 = Encoding.UTF8.GetBytes(source);");
-        output.AppendLine("        fixed (byte* sourcePtr = sourceUtf8)");
-        output.AppendLine("        {");
-        output.AppendLine("            var sourcePointer = (nint)sourcePtr;");
-        output.AppendLine("            var length = sourceUtf8.Length;");
-        output.AppendLine($"            gl.{command.ManagedName}({string.Join(", ", arguments)});");
-        output.AppendLine("        }");
+        output.AppendLine("        using var sourceUtf8 = new Utf8(source, stackalloc byte[256]);");
+        output.AppendLine("        var sourcePointer = sourceUtf8.Pointer;");
+        output.AppendLine("        var length = sourceUtf8.Length;");
+        output.AppendLine($"        this.{command.ManagedName}({string.Join(", ", arguments)});");
         output.AppendLine("    }");
         output.AppendLine();
     }
 
+    /// <summary>
+    /// For a command that returns a C string pointer (glGetString/glGetStringi), overloads that keep
+    /// the raw pointer method intact: an <c>out string</c> form that decodes it, and a span form that
+    /// decodes into the caller's buffer and outs the written slice. The extra parameters make these
+    /// distinct from the pointer-returning core method.
+    /// </summary>
+    private void AppendStringGetter(StringBuilder output, GlCommand command)
+    {
+        if (!command.ReturnsCString)
+            return;
+        var leading = command.Parameters.Select(parameter => $"{parameter.ManagedType} {parameter.ManagedName}").ToList();
+        var callArgs = string.Join(", ", command.Parameters.Select(parameter => parameter.ManagedName));
+
+        var outStringSignature = string.Join(", ", leading.Append("out string? value"));
+        if (signatures.Add($"{command.ManagedName}({outStringSignature})"))
+        {
+            EmitOverloadDocs(output, command, "Decodes the returned C string into <paramref name=\"value\"/>, or null when GL returns no string.");
+            output.AppendLine($"    public virtual void {command.ManagedName}({outStringSignature})");
+            output.AppendLine("    {");
+            output.AppendLine($"        value = Marshal.PtrToStringUTF8(this.{command.ManagedName}({callArgs}));");
+            output.AppendLine("    }");
+            output.AppendLine();
+        }
+
+        var spanSignature = string.Join(", ", leading.Append("Span<char> destination").Append("out ReadOnlySpan<char> result"));
+        if (signatures.Add($"{command.ManagedName}({spanSignature})"))
+        {
+            EmitOverloadDocs(output, command, "Decodes the returned C string into <paramref name=\"destination\"/> (truncated to fit) and sets <paramref name=\"result\"/> to the slice written. No allocation.");
+            output.AppendLine($"    public virtual void {command.ManagedName}({spanSignature})");
+            output.AppendLine("    {");
+            output.AppendLine($"        var bytes = MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)this.{command.ManagedName}({callArgs}));");
+            output.AppendLine("        System.Text.Unicode.Utf8.ToUtf16(bytes, destination, out _, out var written);");
+            output.AppendLine("        result = destination[..written];");
+            output.AppendLine("    }");
+            output.AppendLine();
+        }
+    }
+
     /// <summary>The pinnable local name for a parameter, without the keyword escape.</summary>
     private static string Local(GlParameter parameter) => parameter.ManagedName.TrimStart('@');
+
+    /// <summary>
+    /// A cref to the core command, qualified by its parameter types. The overloads now live on the
+    /// same class as the command they wrap, so a bare name would be an ambiguous reference.
+    /// </summary>
+    private string CoreCref(GlCommand command) =>
+        $"{config.ApiClass}.{command.ManagedName}({string.Join(", ", command.Parameters.Select(parameter => parameter.ManagedType))})";
+
+    /// <summary>
+    /// Emits the inherited summary and a convenience-overload remark whose <paramref name="detail"/>
+    /// spells out the marshalling this overload performs (which arguments it pins, marshals or fills in).
+    /// </summary>
+    private void EmitOverloadDocs(StringBuilder output, GlCommand command, string detail)
+    {
+        output.AppendLine($"    /// <inheritdoc cref=\"{CoreCref(command)}\"/>");
+        output.AppendLine($"    /// <remarks>Convenience overload. Calls <see cref=\"{CoreCref(command)}\"/>. {detail}</remarks>");
+    }
+
+    /// <summary>Renders parameter names as <c>paramref</c> references (these name parameters of the overload).</summary>
+    private static string ParamRefs(IEnumerable<string> names) =>
+        string.Join(", ", names.Select(name => $"<paramref name=\"{name.TrimStart('@')}\"/>"));
+
+    /// <summary>Renders dropped argument names in code font (they are not parameters of the overload).</summary>
+    private static string CodeNames(IEnumerable<string> names) =>
+        string.Join(", ", names.Select(name => $"<c>{name.TrimStart('@')}</c>"));
 
     private static string SpanType(GlParameter parameter, string elementType) =>
         $"{(parameter.PointeeIsConst ? "ReadOnlySpan" : "Span")}<{elementType}>";

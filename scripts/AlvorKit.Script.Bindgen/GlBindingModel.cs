@@ -7,7 +7,12 @@ namespace AlvorKit.Script.Bindgen;
 /// </summary>
 public record GlAvailability(string Gl, string? GlEs);
 
-public record GlEnumMember(string ManagedName, string NativeName, ulong Value, GlAvailability Availability);
+/// <summary>
+/// A token in an enum group. <see cref="Groups"/> lists the managed names of every typed enum the
+/// token also belongs to; the catch-all enum emits it so a token found by its C name points to the
+/// typed enums to prefer.
+/// </summary>
+public record GlEnumMember(string ManagedName, string NativeName, ulong Value, GlAvailability Availability, IReadOnlyList<string> Groups);
 
 public record GlEnumGroup(string NativeName, string ManagedName, bool IsFlags, List<GlEnumMember> Members);
 
@@ -35,7 +40,8 @@ public record GlCommand(
     string ReturnInteropType,
     List<GlParameter> Parameters,
     GlAvailability Availability,
-    XmlDocComment? Documentation);
+    XmlDocComment? Documentation,
+    bool ReturnsCString);
 
 /// <summary>A token too wide for the uint-backed enums (GL_TIMEOUT_IGNORED), emitted as a constant.</summary>
 public record GlConstant(string ManagedName, string NativeName, ulong Value, GlAvailability Availability);

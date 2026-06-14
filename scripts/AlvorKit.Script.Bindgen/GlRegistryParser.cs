@@ -185,7 +185,9 @@ public sealed class GlRegistryParser(BindgenConfig config)
     /// <summary>
     /// Builds the typed enum groups from the group attributes of the selected tokens and resolves
     /// their managed names: typeRenames first, then a vestigial ARB suffix is dropped when that
-    /// does not collide with another group.
+    /// does not collide with another group, and finally the api-class prefix is applied so every
+    /// enum type is namespaced (BufferTarget becomes GlBufferTarget) and cannot collide with
+    /// unrelated framework types.
     /// </summary>
     private List<GlEnumGroup> BuildGroups(List<RegistryToken> tokens)
     {
@@ -204,6 +206,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
                 managedName = nativeName.EndsWith("ARB") && nativeName.Length > 3 && !membersByGroup.ContainsKey(nativeName[..^3])
                     ? nativeName[..^3]
                     : nativeName;
+            managedName = config.ApiClass + managedName;
             if (managedName == CatchAllName)
                 throw new InvalidOperationException($"Group {nativeName} collides with the {CatchAllName} catch-all.");
             managedNameByGroup.Add(nativeName, managedName);
@@ -220,10 +223,17 @@ public sealed class GlRegistryParser(BindgenConfig config)
             .ToList();
     }
 
-    private static List<GlEnumMember> SortMembers(IEnumerable<RegistryToken> tokens) => tokens
+    private List<GlEnumMember> SortMembers(IEnumerable<RegistryToken> tokens) => tokens
         .OrderBy(token => token.Value)
         .ThenBy(token => token.ManagedName, StringComparer.Ordinal)
-        .Select(token => new GlEnumMember(token.ManagedName, token.NativeName, token.Value, token.Availability))
+        .Select(token => new GlEnumMember(token.ManagedName, token.NativeName, token.Value, token.Availability, GroupNames(token)))
+        .ToList();
+
+    /// <summary>The managed names of the typed enum groups a token belongs to, sorted for stable output.</summary>
+    private List<string> GroupNames(RegistryToken token) => token.Groups
+        .Where(managedNameByGroup.ContainsKey)
+        .Select(group => managedNameByGroup[group])
+        .OrderBy(name => name, StringComparer.Ordinal)
         .ToList();
 
     private List<GlCommand> BuildCommands(XElement registry, HashSet<string> names, Func<string, GlAvailability> availability, IReadOnlyDictionary<string, XmlDocComment> docs, List<string> skipped)
@@ -242,16 +252,20 @@ public sealed class GlRegistryParser(BindgenConfig config)
             if (!elementByName.TryGetValue(name, out var element))
                 throw new InvalidOperationException($"{name} is required by a feature but not defined in <commands>.");
 
-            var (returnType, returnInteropType) = MapDeclaration(element.Element("proto")!, name).Type;
+            var proto = MapDeclaration(element.Element("proto")!, name);
+            // A const char/byte pointer return is a NUL-terminated C string; the raw nint return is
+            // kept and string/span convenience overloads are derived from this flag.
+            var returnsCString = proto is { PointerDepth: 1, PointeeType: "byte", PointeeIsConst: true };
             var parameters = element.Elements("param").Select(param => MapParameter(param, name)).ToList();
             commands.Add(new(
                 name,
                 CSharpName.FromNativeIdentifier(name, "gl", config.DigitNamePrefix),
-                returnType,
-                returnInteropType,
+                proto.Type.Managed,
+                proto.Type.Interop,
                 parameters,
                 availability(name),
-                docs.GetValueOrDefault(name)));
+                docs.GetValueOrDefault(name),
+                returnsCString));
         }
 
         AssertUniqueManagedNames(commands.Select(command => (command.ManagedName, command.NativeName)), "command");
