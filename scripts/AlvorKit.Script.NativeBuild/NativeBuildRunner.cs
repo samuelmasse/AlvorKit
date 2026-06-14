@@ -1,46 +1,20 @@
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Executes native build plans for one library and target RID.</summary>
-internal sealed class NativeBuildRunner
+/// <param name="library">Resolved library metadata and paths.</param>
+/// <param name="target">Target runtime identifier to build.</param>
+/// <param name="processRunner">External process runner.</param>
+/// <param name="host">Host values used for compatibility checks.</param>
+internal sealed class NativeBuildRunner(
+    LibraryBuildContext library,
+    TargetRid target,
+    IProcessRunner processRunner,
+    HostInfo host)
 {
-    /// <summary>Resolved library metadata and paths.</summary>
-    private readonly LibraryBuildContext library;
-
-    /// <summary>Target runtime identifier to build.</summary>
-    private readonly TargetRid target;
-
-    /// <summary>External process runner.</summary>
-    private readonly IProcessRunner processRunner;
-
-    /// <summary>PowerShell script runner for Windows build fragments.</summary>
-    private readonly WindowsScriptRunner windows;
-
-    /// <summary>Source archive fetcher.</summary>
-    private readonly SourceArchiveFetcher sources;
-
-    /// <summary>Host values used for compatibility checks.</summary>
-    private readonly HostInfo host;
-
     /// <summary>Creates a runner with default side-effect services.</summary>
     public NativeBuildRunner(LibraryBuildContext library, TargetRid target)
-        : this(library, target, new ProcessRunner(), new SourceArchiveFetcher(), HostInfo.Current())
+        : this(library, target, new ProcessRunner(), HostInfo.Current())
     {
-    }
-
-    /// <summary>Creates a runner with injected side-effect services for tests.</summary>
-    public NativeBuildRunner(
-        LibraryBuildContext library,
-        TargetRid target,
-        IProcessRunner processRunner,
-        SourceArchiveFetcher sources,
-        HostInfo host)
-    {
-        this.library = library;
-        this.target = target;
-        this.processRunner = processRunner;
-        this.sources = sources;
-        this.host = host;
-        windows = new(processRunner);
     }
 
     /// <summary>Builds the target binary and verifies its platform dependencies.</summary>
@@ -49,10 +23,10 @@ internal sealed class NativeBuildRunner
         HostCompatibility.EnsureCanBuild(target, host);
         var platform = library.Build.Platform(target.OperatingSystem);
         Console.WriteLine($"Building {library.Name} {target.Value} ({library.NativeVersion})");
-        await sources.EnsureSourceAsync(library);
+        await SourceArchiveFetcher.EnsureSourceAsync(library);
         Directory.CreateDirectory(library.OutputDirectory(target));
         await BuildAsync(platform);
-        await new NativeBuildVerifier(library, target, processRunner, windows).VerifyAsync(platform);
+        await NativeBuildVerifier.VerifyAsync(library, target, processRunner, platform);
         Console.WriteLine($"OK {library.OutputFile(target)}");
     }
 
@@ -60,8 +34,8 @@ internal sealed class NativeBuildRunner
     private Task BuildAsync(PlatformBuildConfig platform) =>
         library.Build.Kind switch
         {
-            NativeBuildKinds.SingleC => BuildSingleCAsync(platform),
-            NativeBuildKinds.CMake => BuildCMakeAsync(platform),
+            "single-c" => BuildSingleCAsync(platform),
+            "cmake" => BuildCMakeAsync(platform),
             _ => throw new InvalidOperationException($"{library.Name}: unknown native build kind '{library.Build.Kind}'.")
         };
 
@@ -70,7 +44,7 @@ internal sealed class NativeBuildRunner
     {
         if (target.OperatingSystem == TargetOperatingSystem.Windows)
         {
-            await windows.RunAsync(WindowsBuildScripts.SingleC(library, target, platform));
+            await WindowsScriptRunner.RunAsync(processRunner, WindowsBuildScripts.SingleC(library, target, platform));
             return;
         }
 
@@ -86,7 +60,7 @@ internal sealed class NativeBuildRunner
     {
         if (target.OperatingSystem == TargetOperatingSystem.Windows)
         {
-            await windows.RunAsync(WindowsBuildScripts.CMake(library, target, platform));
+            await WindowsScriptRunner.RunAsync(processRunner, WindowsBuildScripts.CMake(library, target, platform));
             return;
         }
 
@@ -106,6 +80,13 @@ internal sealed class NativeBuildRunner
     private void CopyCMakeOutput(PlatformBuildConfig platform)
     {
         var cmakeOutput = NativeBuildPlanner.RequiredCMakeOutput(library, platform);
-        File.Copy(FileLinkResolver.ResolveFile(library.BuildFile(target, cmakeOutput)), library.OutputFile(target), overwrite: true);
+        File.Copy(ResolveFile(library.BuildFile(target, cmakeOutput)), library.OutputFile(target), overwrite: true);
+    }
+
+    /// <summary>Returns the final linked target when the file is a link, otherwise the original path.</summary>
+    private static string ResolveFile(string path)
+    {
+        var info = new FileInfo(path);
+        return info.ResolveLinkTarget(returnFinalTarget: true)?.FullName ?? path;
     }
 }

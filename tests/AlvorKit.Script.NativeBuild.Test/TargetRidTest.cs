@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using AlvorKit.Script.NativeBuild;
 
 namespace AlvorKit.Script.NativeBuild.Test;
@@ -22,7 +21,7 @@ public sealed class TargetRidTest
     [TestMethod]
     public void Parse_UnknownRid_Throws()
     {
-        Assert.ThrowsException<ArgumentException>(() => TargetRid.Parse("linux-riscv64"));
+        Assert.ThrowsExactly<ArgumentException>(() => TargetRid.Parse("linux-riscv64"));
     }
 
     /// <summary>Native library file names follow .NET runtime probing conventions.</summary>
@@ -34,12 +33,4 @@ public sealed class TargetRidTest
         Assert.AreEqual("libglfw3.dylib", TargetRid.Parse("osx-arm64").LibraryFileName("glfw3"));
     }
 
-    /// <summary>Current RID detection can be tested from supplied host data.</summary>
-    [TestMethod]
-    public void Current_WithLinuxArm64Host_ReturnsLinuxArm64()
-    {
-        var target = TargetRid.Current(new HostInfo(false, true, false, Architecture.Arm64));
-
-        Assert.AreEqual("linux-arm64", target.Value);
-    }
 }

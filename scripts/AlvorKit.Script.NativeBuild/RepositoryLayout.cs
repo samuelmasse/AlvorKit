@@ -1,16 +1,11 @@
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Repository paths needed by the native build runner.</summary>
-internal sealed class RepositoryLayout
+/// <param name="root">Absolute path to the repository root.</param>
+internal sealed class RepositoryLayout(string root)
 {
-    /// <summary>Creates a layout rooted at the detected repository directory.</summary>
-    public RepositoryLayout(string root)
-    {
-        Root = root;
-    }
-
     /// <summary>Absolute path to the repository root.</summary>
-    public string Root { get; }
+    public string Root { get; } = root;
 
     /// <summary>Absolute path to the native package metadata directory.</summary>
     public string NativeDirectory => Path.Combine(Root, "native");

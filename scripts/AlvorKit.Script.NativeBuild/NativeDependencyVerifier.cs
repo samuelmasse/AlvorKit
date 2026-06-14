@@ -5,10 +5,11 @@ internal static class NativeDependencyVerifier
 {
     /// <summary>Extracts ELF shared library names from readelf -d output.</summary>
     public static IReadOnlyList<string> ElfDependencies(string readElfOutput) =>
-        readElfOutput.Split('\n')
+        [
+            .. readElfOutput.Split('\n')
             .Select(TryElfDependency)
             .OfType<string>()
-            .ToArray();
+        ];
 
     /// <summary>Throws when an ELF dependency is outside the platform allow-list.</summary>
     public static void EnsureElfDependenciesAllowed(IEnumerable<string> dependencies, IEnumerable<string> allowedDependencies)

@@ -11,7 +11,7 @@ public sealed class NativeBuildConfigTest
     public void Platform_ReturnsRequestedConfig()
     {
         var linux = new PlatformBuildConfig { Packages = ["linux"] };
-        var config = new NativeBuildConfig { Kind = NativeBuildKinds.SingleC, Linux = linux };
+        var config = new NativeBuildConfig { Kind = "single-c", Linux = linux };
 
         Assert.AreSame(linux, config.Platform(TargetOperatingSystem.Linux));
     }

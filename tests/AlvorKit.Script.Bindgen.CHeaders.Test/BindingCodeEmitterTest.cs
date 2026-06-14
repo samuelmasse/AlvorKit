@@ -9,7 +9,7 @@ public sealed class BindingCodeEmitterTest
     public void EmitNativeImports_UsesExplicitCdeclCallingConvention()
     {
         using var workspace = TempWorkspace.Create();
-        var config = TestConfig();
+        var config = CHeaderTestConfig.Create();
         var model = new BindingModel(
             Enums: [],
             Structs: [],
@@ -44,7 +44,7 @@ public sealed class BindingCodeEmitterTest
     public void EmitBackendProject_AlwaysReferencesNativePackage()
     {
         using var workspace = TempWorkspace.Create();
-        var config = TestConfig();
+        var config = CHeaderTestConfig.Create();
         var model = new BindingModel([], [], [], [], [], [], [], []);
 
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "2.0.0", "1.0.0");
@@ -59,7 +59,7 @@ public sealed class BindingCodeEmitterTest
     public void EmitStringReturn_SpanOverloadHandlesNullNativePointer()
     {
         using var workspace = TempWorkspace.Create();
-        var config = TestConfig();
+        var config = CHeaderTestConfig.Create();
         var model = new BindingModel(
             Enums: [],
             Structs: [],
@@ -88,19 +88,4 @@ public sealed class BindingCodeEmitterTest
         StringAssert.Contains(apiSource, "MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)pointer)");
     }
 
-    private static BindgenConfig TestConfig() => new()
-    {
-        Namespace = "AlvorKit.Bindgen.Fixture",
-        ApiClass = "Test",
-        ApiSummary = "Fixture API.",
-        BackendClass = "TestBackend",
-        NativeClass = "TestNative",
-        NativeLibrary = "fixture",
-        Prefix = "test_",
-        WorkDir = "fixture-work",
-        SourceDir = "fixture-source",
-        Header = "fixture.h",
-        ApiProject = "generated/Fixture",
-        BackendProject = "generated/Fixture.Backend"
-    };
 }

@@ -1,46 +1,25 @@
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Runs platform-specific checks against a built native binary.</summary>
-internal sealed class NativeBuildVerifier
+internal static class NativeBuildVerifier
 {
-    /// <summary>Resolved library metadata and paths.</summary>
-    private readonly LibraryBuildContext library;
-
-    /// <summary>Target runtime identifier being verified.</summary>
-    private readonly TargetRid target;
-
-    /// <summary>External process runner used for inspection tools.</summary>
-    private readonly IProcessRunner processRunner;
-
-    /// <summary>PowerShell runner used for Windows dumpbin checks.</summary>
-    private readonly WindowsScriptRunner windows;
-
-    /// <summary>Creates a verifier for one library and target.</summary>
-    public NativeBuildVerifier(
+    /// <summary>Runs dependency verification for the target platform.</summary>
+    public static async Task VerifyAsync(
         LibraryBuildContext library,
         TargetRid target,
         IProcessRunner processRunner,
-        WindowsScriptRunner windows)
-    {
-        this.library = library;
-        this.target = target;
-        this.processRunner = processRunner;
-        this.windows = windows;
-    }
-
-    /// <summary>Runs dependency verification for the target platform.</summary>
-    public async Task VerifyAsync(PlatformBuildConfig platform)
+        PlatformBuildConfig platform)
     {
         if (target.OperatingSystem == TargetOperatingSystem.Windows)
-            await windows.RunAsync(WindowsVerifyScript());
+            await WindowsScriptRunner.RunAsync(processRunner, WindowsVerifyScript(library, target));
         else if (target.OperatingSystem == TargetOperatingSystem.Linux)
-            await VerifyLinuxAsync(platform);
+            await VerifyLinuxAsync(library, target, processRunner, platform);
         else
-            await VerifyMacAsync();
+            await VerifyMacAsync(library, target, processRunner);
     }
 
     /// <summary>Generates Windows import-library verification script.</summary>
-    private string WindowsVerifyScript() =>
+    private static string WindowsVerifyScript(LibraryBuildContext library, TargetRid target) =>
         $$"""
         $Deps = & dumpbin /nologo /dependents {{CommandText.PowerShellQuote(library.OutputFile(target))}} | Select-String '\.dll'
         $Deps | ForEach-Object { Write-Host $_.Line.Trim() }
@@ -48,7 +27,11 @@ internal sealed class NativeBuildVerifier
         """;
 
     /// <summary>Verifies Linux ELF dependencies against the manifest allow-list.</summary>
-    private async Task VerifyLinuxAsync(PlatformBuildConfig platform)
+    private static async Task VerifyLinuxAsync(
+        LibraryBuildContext library,
+        TargetRid target,
+        IProcessRunner processRunner,
+        PlatformBuildConfig platform)
     {
         var output = await processRunner.CaptureAsync(new(target.LinuxReadElf, ["-d", library.OutputFile(target)]));
         var dependencies = NativeDependencyVerifier.ElfDependencies(output);
@@ -59,7 +42,7 @@ internal sealed class NativeBuildVerifier
     }
 
     /// <summary>Verifies the macOS binary architecture and prints linked libraries.</summary>
-    private async Task VerifyMacAsync()
+    private static async Task VerifyMacAsync(LibraryBuildContext library, TargetRid target, IProcessRunner processRunner)
     {
         var fileOutput = await processRunner.CaptureAsync(new("file", [library.OutputFile(target)]));
         Console.Write(fileOutput);

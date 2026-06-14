@@ -15,7 +15,7 @@ public sealed class NativeBuildPlannerTest
         var commands = NativeBuildPlanner.LinuxInstallCommands(TargetRid.Parse("linux-arm"), platform);
 
         Assert.AreEqual("dpkg", commands[0].Arguments[0]);
-        CollectionAssert.AreEqual(new[] { "apt-get", "install", "-y", "-qq", "base", "cross" }, commands[2].Arguments.ToArray());
+        Assert.AreEqual("apt-get,install,-y,-qq,base,cross", string.Join(",", commands[2].Arguments));
     }
 
     /// <summary>Linux single-C planning selects the target compiler and link libraries.</summary>

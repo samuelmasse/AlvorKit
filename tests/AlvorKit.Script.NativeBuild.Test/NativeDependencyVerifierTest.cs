@@ -15,7 +15,7 @@ public sealed class NativeDependencyVerifierTest
             0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]
             """;
 
-        CollectionAssert.AreEqual(new[] { "libc.so.6", "libm.so.6" }, NativeDependencyVerifier.ElfDependencies(output).ToArray());
+        Assert.AreEqual("libc.so.6,libm.so.6", string.Join(",", NativeDependencyVerifier.ElfDependencies(output)));
     }
 
     /// <summary>Loader dependencies are allowed even when absent from the manifest list.</summary>
@@ -29,7 +29,7 @@ public sealed class NativeDependencyVerifierTest
     [TestMethod]
     public void EnsureElfDependenciesAllowed_UnexpectedDependency_Throws()
     {
-        Assert.ThrowsException<InvalidOperationException>(
+        Assert.ThrowsExactly<InvalidOperationException>(
             () => NativeDependencyVerifier.EnsureElfDependenciesAllowed(["libbad.so.1"], ["libc.so.6"]));
     }
 }

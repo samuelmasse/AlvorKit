@@ -3,25 +3,11 @@ using System.Runtime.InteropServices;
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Parsed .NET runtime identifier with helper values for native toolchains.</summary>
-internal sealed class TargetRid
+/// <param name="Value">Runtime identifier string, for example linux-x64.</param>
+/// <param name="OperatingSystem">Operating system represented by the runtime identifier.</param>
+/// <param name="Architecture">CPU architecture represented by the runtime identifier.</param>
+internal sealed record TargetRid(string Value, TargetOperatingSystem OperatingSystem, TargetArchitecture Architecture)
 {
-    /// <summary>Creates a parsed runtime identifier.</summary>
-    public TargetRid(string value, TargetOperatingSystem operatingSystem, TargetArchitecture architecture)
-    {
-        Value = value;
-        OperatingSystem = operatingSystem;
-        Architecture = architecture;
-    }
-
-    /// <summary>Runtime identifier string, for example linux-x64.</summary>
-    public string Value { get; }
-
-    /// <summary>Operating system represented by the runtime identifier.</summary>
-    public TargetOperatingSystem OperatingSystem { get; }
-
-    /// <summary>CPU architecture represented by the runtime identifier.</summary>
-    public TargetArchitecture Architecture { get; }
-
     /// <summary>MSVC architecture argument used by Launch-VsDevShell.</summary>
     public string VisualStudioArchitecture => Architecture switch
     {
@@ -73,8 +59,18 @@ internal sealed class TargetRid
         };
 
     /// <summary>Detects the current process runtime identifier.</summary>
-    public static TargetRid Current() =>
-        Current(HostInfo.Current());
+    public static TargetRid Current()
+    {
+        var host = HostInfo.Current();
+        var architecture = FromRuntimeArchitecture(host.Architecture);
+        if (host.IsWindows)
+            return new("win-" + ArchSuffix(architecture), TargetOperatingSystem.Windows, architecture);
+        if (host.IsLinux)
+            return new("linux-" + ArchSuffix(architecture), TargetOperatingSystem.Linux, architecture);
+        if (host.IsMacOS)
+            return new("osx-" + ArchSuffix(architecture), TargetOperatingSystem.MacOS, architecture);
+        throw new PlatformNotSupportedException("Unsupported operating system.");
+    }
 
     /// <summary>Formats the native library file name for this runtime identifier.</summary>
     public string LibraryFileName(string libraryName) =>
@@ -85,19 +81,6 @@ internal sealed class TargetRid
             TargetOperatingSystem.MacOS => "lib" + libraryName + ".dylib",
             _ => throw new PlatformNotSupportedException()
         };
-
-    /// <summary>Detects the current runtime identifier from supplied host data.</summary>
-    internal static TargetRid Current(HostInfo host)
-    {
-        var architecture = FromRuntimeArchitecture(host.Architecture);
-        if (host.IsWindows)
-            return new("win-" + ArchSuffix(architecture), TargetOperatingSystem.Windows, architecture);
-        if (host.IsLinux)
-            return new("linux-" + ArchSuffix(architecture), TargetOperatingSystem.Linux, architecture);
-        if (host.IsMacOS)
-            return new("osx-" + ArchSuffix(architecture), TargetOperatingSystem.MacOS, architecture);
-        throw new PlatformNotSupportedException("Unsupported operating system.");
-    }
 
     /// <summary>Maps runtime architecture values to package architecture values.</summary>
     private static TargetArchitecture FromRuntimeArchitecture(Architecture architecture) =>

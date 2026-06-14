@@ -18,10 +18,9 @@ public partial class GlLayer
     private readonly GlBindingMap<uint> samplerBinds = new();
     private readonly GlBindingMap<uint> imageTextureBinds = new();
     private readonly GlBindingMap<(uint, GlTextureTarget)> textureBinds = new();
-    private readonly GlBindingMap<uint> textureUnitBinds = new();
     private readonly GlBindingMap<GlQueryTarget> queryBinds = new();
     private readonly GlBindingMap<(GlQueryTarget, uint)> queryIndexedBinds = new();
-    private readonly Dictionary<uint, GlTextureTarget> textureTargets = [];
+    private readonly Dictionary<GlTextureHandle, GlTextureTarget> textureTargets = [];
 
     private uint GetActiveTextureIndex(string function) =>
         activeTexture.Value is { } unit
@@ -49,6 +48,7 @@ public partial class GlLayer
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindBufferBase"/> for the same target and index.</remarks>
     public override void BindBufferBase(GlBufferTarget target, uint index, GlBufferHandle buffer)
     {
+        bufferBinds.Bind(nameof(BindBufferBase), target, (uint)buffer);
         indexedBufferBinds.Bind(nameof(BindBufferBase), (target, index), (uint)buffer);
         base.BindBufferBase(target, index, buffer);
     }
@@ -61,6 +61,7 @@ public partial class GlLayer
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindBufferRange"/> for the same target and index.</remarks>
     public override void BindBufferRange(GlBufferTarget target, uint index, GlBufferHandle buffer, nint offset, nint size)
     {
+        bufferBinds.Bind(nameof(BindBufferRange), target, (uint)buffer);
         indexedBufferBinds.Bind(nameof(BindBufferRange), (target, index), (uint)buffer);
         base.BindBufferRange(target, index, buffer, offset, size);
     }
@@ -92,6 +93,8 @@ public partial class GlLayer
                 throw new GlBindConflictException(nameof(BindVertexArray), $"attempted to bind VAO {id}, but buffer {vbo} is still bound to ArrayBuffer.");
             if (bufferBinds.TryGet(GlBufferTarget.ElementArrayBuffer, out var ebo) && ebo != 0)
                 throw new GlBindConflictException(nameof(BindVertexArray), $"attempted to bind VAO {id}, but buffer {ebo} is still bound to ElementArrayBuffer.");
+            if (vertexBufferBinds.HasAny)
+                throw new GlBindConflictException(nameof(BindVertexArray), $"attempted to bind VAO {id}, but vertex buffer bindings are still set.");
         }
         vertexArray.Bind(nameof(BindVertexArray), id);
         base.BindVertexArray(array);
@@ -142,6 +145,7 @@ public partial class GlLayer
     public override void BindFramebuffer(GlFramebufferTarget target, GlFramebufferHandle framebuffer)
     {
         var id = (uint)framebuffer;
+        ValidateFramebufferChange(nameof(BindFramebuffer), target, id, false);
         if (target is GlFramebufferTarget.Framebuffer or GlFramebufferTarget.ReadFramebuffer)
             readFramebuffer.Bind(nameof(BindFramebuffer), id);
         if (target is GlFramebufferTarget.Framebuffer or GlFramebufferTarget.DrawFramebuffer)
@@ -179,7 +183,7 @@ public partial class GlLayer
     {
         var id = (uint)texture;
         if (id != 0)
-            TrackTextureTarget(nameof(BindTexture), id, target);
+            TrackTextureTarget(nameof(BindTexture), texture, target);
         textureBinds.Bind(nameof(BindTexture), (GetActiveTextureIndex(nameof(BindTexture)), target), id);
         base.BindTexture(target, texture);
     }
@@ -192,7 +196,8 @@ public partial class GlLayer
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindTextureUnit"/> for the same unit.</remarks>
     public override void BindTextureUnit(uint unit, GlTextureHandle texture)
     {
-        textureUnitBinds.Bind(nameof(BindTextureUnit), unit, (uint)texture);
+        var target = GetTextureTarget(nameof(BindTextureUnit), texture);
+        textureBinds.Bind(nameof(BindTextureUnit), (unit, target), (uint)texture);
         base.BindTextureUnit(unit, texture);
     }
 
@@ -289,6 +294,8 @@ public partial class GlLayer
     public override unsafe void BindBuffersBase(GlBufferTarget target, uint first, int count, nint buffers)
     {
         var ids = (uint*)buffers;
+        if (count > 0)
+            bufferBinds.Bind(nameof(BindBuffersBase), target, buffers == 0 ? 0u : ids[count - 1]);
         for (var i = 0; i < count; i++)
             indexedBufferBinds.Bind(nameof(BindBuffersBase), (target, first + (uint)i), buffers == 0 ? 0u : ids[i]);
         base.BindBuffersBase(target, first, count, buffers);
@@ -309,6 +316,8 @@ public partial class GlLayer
     public override unsafe void BindBuffersRange(GlBufferTarget target, uint first, int count, nint buffers, nint offsets, nint sizes)
     {
         var ids = (uint*)buffers;
+        if (count > 0)
+            bufferBinds.Bind(nameof(BindBuffersRange), target, buffers == 0 ? 0u : ids[count - 1]);
         for (var i = 0; i < count; i++)
             indexedBufferBinds.Bind(nameof(BindBuffersRange), (target, first + (uint)i), buffers == 0 ? 0u : ids[i]);
         base.BindBuffersRange(target, first, count, buffers, offsets, sizes);
@@ -384,7 +393,11 @@ public partial class GlLayer
     {
         var ids = (uint*)textures;
         for (var i = 0; i < count; i++)
-            textureUnitBinds.Bind(nameof(BindTextures), first + (uint)i, textures == 0 ? 0u : ids[i]);
+        {
+            var texture = textures == 0 ? (GlTextureHandle)0u : (GlTextureHandle)ids[i];
+            var target = GetTextureTarget(nameof(BindTextures), texture);
+            textureBinds.Bind(nameof(BindTextures), (first + (uint)i, target), (uint)texture);
+        }
         base.BindTextures(first, count, textures);
     }
 
@@ -404,23 +417,57 @@ public partial class GlLayer
         base.DrawBuffers(n, bufs);
     }
 
-    private void TrackTextureTarget(string function, uint texture, GlTextureTarget target)
+    /// <inheritdoc/>
+    /// <remarks>Layer: validates the clear prerequisites set by this layer before forwarding to <c>glClear</c>.</remarks>
+    public override void Clear(GlClearBufferMask mask)
     {
+        ValidateClear(mask);
+        base.Clear(mask);
+    }
+
+    private void TrackTextureTarget(string function, GlTextureHandle texture, GlTextureTarget target)
+    {
+        if ((uint)texture == 0)
+            return;
         if (textureTargets.TryGetValue(texture, out var existing) && existing != target)
             throw new GlBindConflictException(function, $"texture {texture} is already used as {existing}, cannot use it as {target}.");
         textureTargets[texture] = target;
     }
 
+    private GlTextureTarget GetTextureTarget(string function, GlTextureHandle texture)
+    {
+        if ((uint)texture == 0)
+            throw new GlException(function, "cannot bind texture 0 through strict bind APIs; use the matching Unbind* method.");
+        if (textureTargets.TryGetValue(texture, out var target))
+            return target;
+        throw new GlException(function, $"texture {texture} has no known target; bind it with glBindTexture or create it with glCreateTextures first.");
+    }
+
     /// <summary>Layer: Unbinds <c>glBindBuffer</c> for <paramref name="target"/>. Must be paired with exactly one earlier call to <c>glBindBuffer</c> for the same target.</summary>
-    public void UnbindBuffer(GlBufferTarget target) { bufferBinds.Unbind(nameof(BindBuffer), target); base.BindBuffer(target, (GlBufferHandle)0u); }
+    public void UnbindBuffer(GlBufferTarget target)
+    {
+        if (target == GlBufferTarget.ElementArrayBuffer && vertexArray.Current != 0)
+            throw new GlBindConflictException(nameof(BindBuffer), "attempted to unbind ElementArrayBuffer while a VAO is still bound.");
+        bufferBinds.Unbind(nameof(BindBuffer), target);
+        base.BindBuffer(target, (GlBufferHandle)0u);
+    }
     /// <summary>Layer: Unbinds <c>glBindBufferBase</c> for <paramref name="target"/> at <paramref name="index"/>. Must be paired with exactly one earlier call to <c>glBindBufferBase</c>.</summary>
-    public void UnbindBufferBase(GlBufferTarget target, uint index) { indexedBufferBinds.Unbind(nameof(BindBufferBase), (target, index)); base.BindBufferBase(target, index, (GlBufferHandle)0u); }
+    public void UnbindBufferBase(GlBufferTarget target, uint index) { bufferBinds.Bind(nameof(BindBufferBase), target, 0); indexedBufferBinds.Unbind(nameof(BindBufferBase), (target, index)); base.BindBufferBase(target, index, (GlBufferHandle)0u); }
     /// <summary>Layer: Unbinds <c>glBindBufferRange</c> for <paramref name="target"/> at <paramref name="index"/>. Must be paired with exactly one earlier call to <c>glBindBufferRange</c>.</summary>
-    public void UnbindBufferRange(GlBufferTarget target, uint index) { indexedBufferBinds.Unbind(nameof(BindBufferRange), (target, index)); base.BindBufferRange(target, index, (GlBufferHandle)0u, 0, 0); }
+    public void UnbindBufferRange(GlBufferTarget target, uint index) { bufferBinds.Bind(nameof(BindBufferRange), target, 0); indexedBufferBinds.Unbind(nameof(BindBufferRange), (target, index)); base.BindBufferRange(target, index, (GlBufferHandle)0u, 0, 0); }
     /// <summary>Layer: Unbinds <c>glBindVertexBuffer</c> for binding <paramref name="bindingindex"/>. Must be paired with exactly one earlier call to <c>glBindVertexBuffer</c>.</summary>
     public void UnbindVertexBuffer(uint bindingindex) { vertexBufferBinds.Unbind(nameof(BindVertexBuffer), bindingindex); base.BindVertexBuffer(bindingindex, (GlBufferHandle)0u, 0, 0); }
     /// <summary>Layer: Unbinds the vertex array. Must be paired with exactly one earlier call to <c>glBindVertexArray</c>.</summary>
-    public void UnbindVertexArray() { vertexArray.Unbind(nameof(BindVertexArray)); base.BindVertexArray((GlVertexArrayHandle)0u); }
+    public void UnbindVertexArray()
+    {
+        if (bufferBinds.TryGet(GlBufferTarget.ArrayBuffer, out var vbo) && vbo != 0)
+            throw new GlBindConflictException(nameof(BindVertexArray), $"attempted to unbind VAO, but buffer {vbo} is still bound to ArrayBuffer.");
+        vertexArray.Unbind(nameof(BindVertexArray));
+        if (bufferBinds.TryGet(GlBufferTarget.ElementArrayBuffer, out _))
+            bufferBinds.Unbind(nameof(BindVertexArray), GlBufferTarget.ElementArrayBuffer);
+        vertexBufferBinds.Clear();
+        base.BindVertexArray((GlVertexArrayHandle)0u);
+    }
     /// <summary>Layer: Stops using the current program. Must be paired with exactly one earlier call to <c>glUseProgram</c>.</summary>
     public void UnuseProgram() { program.Unbind(nameof(UseProgram)); base.UseProgram((GlProgramHandle)0u); }
     /// <summary>Layer: Unbinds the program pipeline. Must be paired with exactly one earlier call to <c>glBindProgramPipeline</c>.</summary>
@@ -432,12 +479,13 @@ public partial class GlLayer
     /// <summary>Layer: Unbinds <c>glBindTexture</c> for <paramref name="target"/> on the active unit. Must be paired with exactly one earlier call to <c>glBindTexture</c> for the same target.</summary>
     public void UnbindTexture(GlTextureTarget target) { textureBinds.Unbind(nameof(BindTexture), (GetActiveTextureIndex(nameof(BindTexture)), target)); base.BindTexture(target, (GlTextureHandle)0u); }
     /// <summary>Layer: Unbinds the texture at unit <paramref name="unit"/>. Must be paired with exactly one earlier call to <c>glBindTextureUnit</c> for the same unit.</summary>
-    public void UnbindTextureUnit(uint unit) { textureUnitBinds.Unbind(nameof(BindTextureUnit), unit); base.BindTextureUnit(unit, (GlTextureHandle)0u); }
+    public void UnbindTextureUnit(uint unit) { ResetTextureUnitBindings(nameof(BindTextureUnit), unit); base.BindTextureUnit(unit, (GlTextureHandle)0u); }
     /// <summary>Layer: Unbinds the image texture at unit <paramref name="unit"/>. Must be paired with exactly one earlier call to <c>glBindImageTexture</c> for the same unit.</summary>
     public void UnbindImageTexture(uint unit) { imageTextureBinds.Unbind(nameof(BindImageTexture), unit); base.BindImageTexture(unit, (GlTextureHandle)0u, 0, false, 0, default, default); }
     /// <summary>Layer: Returns <paramref name="target"/> to the default framebuffer. Must be paired with exactly one earlier call to <c>glBindFramebuffer</c> for the same target.</summary>
     public void UnbindFramebuffer(GlFramebufferTarget target)
     {
+        ValidateFramebufferChange(nameof(BindFramebuffer), target, 0, true);
         if (target is GlFramebufferTarget.Framebuffer or GlFramebufferTarget.ReadFramebuffer)
             readFramebuffer.Unbind(nameof(BindFramebuffer));
         if (target is GlFramebufferTarget.Framebuffer or GlFramebufferTarget.DrawFramebuffer)
@@ -450,6 +498,8 @@ public partial class GlLayer
     /// <summary>Layer: Unbinds the range of indexed buffers bound by <see cref="BindBuffersBase"/>. Must be paired with exactly one earlier call to <see cref="BindBuffersBase"/> for the same target and range.</summary>
     public unsafe void UnbindBuffersBase(GlBufferTarget target, uint first, int count)
     {
+        if (count > 0)
+            bufferBinds.Bind(nameof(BindBuffersBase), target, 0);
         for (var i = 0; i < count; i++)
             indexedBufferBinds.Unbind(nameof(BindBuffersBase), (target, first + (uint)i));
         uint* buffers = stackalloc uint[count];
@@ -458,6 +508,8 @@ public partial class GlLayer
     /// <summary>Layer: Unbinds the range of indexed buffers bound by <see cref="BindBuffersRange"/>. Must be paired with exactly one earlier call to <see cref="BindBuffersRange"/> for the same target and range.</summary>
     public unsafe void UnbindBuffersRange(GlBufferTarget target, uint first, int count)
     {
+        if (count > 0)
+            bufferBinds.Bind(nameof(BindBuffersRange), target, 0);
         for (var i = 0; i < count; i++)
             indexedBufferBinds.Unbind(nameof(BindBuffersRange), (target, first + (uint)i));
         uint* buffers = stackalloc uint[count];
@@ -487,7 +539,7 @@ public partial class GlLayer
     public unsafe void UnbindTextures(uint first, int count)
     {
         for (var i = 0; i < count; i++)
-            textureUnitBinds.Unbind(nameof(BindTextures), first + (uint)i);
+            ResetTextureUnitBindings(nameof(BindTextures), first + (uint)i);
         uint* textures = stackalloc uint[count];
         base.BindTextures(first, count, (nint)textures);
     }
@@ -501,4 +553,41 @@ public partial class GlLayer
     }
     /// <summary>Layer: Restores the default draw buffer (<c>glDrawBuffer(ColorAttachment0)</c>). Must be paired with exactly one earlier call to <see cref="DrawBuffer"/> or <see cref="DrawBuffers"/>.</summary>
     public void ResetDrawBuffers() { drawBuffersCount.Reset(nameof(DrawBuffer)); base.DrawBuffer(GlDrawBufferMode.ColorAttachment0); }
+
+    private void ResetTextureUnitBindings(string function, uint unit) =>
+        textureBinds.UnbindWhere(function, key => key.Item1 == unit);
+
+    private void ValidateFramebufferChange(string function, GlFramebufferTarget target, uint framebuffer, bool unbind)
+    {
+        if (target != GlFramebufferTarget.ReadFramebuffer && drawBuffersCount.IsSet)
+            throw new GlBindConflictException(function, $"attempted to {FramebufferActionName(framebuffer, unbind)}, but draw buffers are still set.");
+        if (target != GlFramebufferTarget.ReadFramebuffer && viewport.IsSet)
+            throw new GlBindConflictException(function, $"attempted to {FramebufferActionName(framebuffer, unbind)}, but viewport is still set.");
+        if (target != GlFramebufferTarget.DrawFramebuffer && readBuffer.IsSet)
+            throw new GlBindConflictException(function, $"attempted to {FramebufferActionName(framebuffer, unbind)}, but read buffer is still set.");
+    }
+
+    private void ValidateClear(GlClearBufferMask mask)
+    {
+        if ((mask & GlClearBufferMask.ColorBufferBit) != 0)
+            ValidateClearColorBuffer();
+        if ((mask & GlClearBufferMask.DepthBufferBit) != 0 && !clearDepth.IsSet)
+            throw new GlMissingPrerequisiteException(nameof(Clear), "cannot clear depth buffer because clear depth is not set.");
+        if ((mask & GlClearBufferMask.StencilBufferBit) != 0 && !clearStencil.IsSet)
+            throw new GlMissingPrerequisiteException(nameof(Clear), "cannot clear stencil buffer because clear stencil is not set.");
+        if (enableMap.IsSet(GlEnableCap.ScissorTest) && !scissor.IsSet)
+            throw new GlMissingPrerequisiteException(nameof(Clear), "cannot clear while scissor test is enabled because no scissor box is set.");
+        if (indexedEnableMap.IsSet((GlEnableCap.ScissorTest, 0)) && !scissorMap.HasAny)
+            throw new GlMissingPrerequisiteException(nameof(Clear), "cannot clear while indexed scissor test is enabled because no indexed scissor box is set.");
+    }
+
+    private void ValidateClearColorBuffer()
+    {
+        if (!clearColor.IsSet)
+            throw new GlMissingPrerequisiteException(nameof(Clear), "cannot clear color buffer because clear color is not set.");
+        if (drawFramebuffer.Current != 0 && !drawBuffersCount.IsSet)
+            throw new GlMissingPrerequisiteException(nameof(Clear), "cannot clear color buffer with a draw framebuffer bound because draw buffers are not set.");
+    }
+
+    private static string FramebufferActionName(uint framebuffer, bool unbind) => unbind ? "unbind framebuffer" : $"bind framebuffer {framebuffer}";
 }

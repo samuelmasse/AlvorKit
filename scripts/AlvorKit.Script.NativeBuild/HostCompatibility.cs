@@ -5,10 +5,6 @@ namespace AlvorKit.Script.NativeBuild;
 /// <summary>Validates that a target can be built on a given host.</summary>
 internal static class HostCompatibility
 {
-    /// <summary>Throws when the requested target cannot be built by the current host.</summary>
-    public static void EnsureCanBuild(TargetRid target) =>
-        EnsureCanBuild(target, HostInfo.Current());
-
     /// <summary>Throws when the requested target cannot be built by the supplied host.</summary>
     public static void EnsureCanBuild(TargetRid target, HostInfo host)
     {

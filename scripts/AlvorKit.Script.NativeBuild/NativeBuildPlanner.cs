@@ -35,7 +35,7 @@ internal static class NativeBuildPlanner
                 "-o", library.OutputFile(target),
                 implFile,
                 .. platform.LinkLibraries.Select(link => "-l" + link)
-            ], library.BuildDirectory(target), createWorkingDirectory: true),
+            ], library.BuildDirectory(target), CreateWorkingDirectory: true),
             new(target.LinuxStrip, [library.OutputFile(target)])
         ];
     }
@@ -56,7 +56,7 @@ internal static class NativeBuildPlanner
                 "-o", outputFile,
                 RequiredImplFile(library),
                 .. platform.LinkLibraries.Select(link => "-l" + link)
-            ], library.BuildDirectory(target), createWorkingDirectory: true),
+            ], library.BuildDirectory(target), CreateWorkingDirectory: true),
             new("strip", ["-x", outputFile])
         ];
     }

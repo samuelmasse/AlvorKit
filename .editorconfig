@@ -15,6 +15,9 @@ indent_size = 2
 
 [*.cs]
 csharp_style_namespace_declarations=file_scoped:warning
+csharp_style_prefer_primary_constructors=true:warning
+dotnet_style_collection_initializer=true:warning
+dotnet_style_prefer_collection_expression=true:warning
 dotnet_diagnostic.CA1822.severity = none
 dotnet_style_namespace_match_folder = false
 dotnet_diagnostic.CA1816.severity = none

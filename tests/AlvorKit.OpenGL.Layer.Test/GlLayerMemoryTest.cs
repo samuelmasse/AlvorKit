@@ -15,7 +15,7 @@ public class GlLayerMemoryTest
         gl.BindBuffer(GlBufferTarget.ArrayBuffer, buffer);
         gl.BufferData(GlBufferTarget.ArrayBuffer, 1024, 0, GlBufferUsage.StaticDraw);
         Assert.AreEqual(1024L, gl.BufferUsage);
-        Assert.AreEqual(1024L, gl.BufferSizes[(uint)buffer]);
+        Assert.AreEqual(1024L, gl.BufferSizes[buffer]);
     }
 
     [TestMethod]
@@ -43,6 +43,15 @@ public class GlLayerMemoryTest
     }
 
     [TestMethod]
+    public void BufferData_AfterBindBufferBase_TracksGenericBinding()
+    {
+        var buffer = gl.GenBuffer();
+        gl.BindBufferBase(GlBufferTarget.UniformBuffer, 0, buffer);
+        gl.BufferData(GlBufferTarget.UniformBuffer, 1024, 0, GlBufferUsage.StaticDraw);
+        Assert.AreEqual(1024L, gl.BufferSizes[buffer]);
+    }
+
+    [TestMethod]
     public void DeleteBuffer_ReleasesMemory()
     {
         var buffer = gl.GenBuffer();
@@ -61,7 +70,7 @@ public class GlLayerMemoryTest
         gl.BindTexture(GlTextureTarget.Texture2D, texture);
         gl.TexImage2D(GlTextureTarget.Texture2D, 0, GlInternalFormat.Rgba8, 16, 16, 0, GlPixelFormat.Rgba, GlPixelType.UnsignedByte, 0);
         Assert.AreEqual(16L * 16 * 4, gl.TextureUsage);
-        Assert.AreEqual(16L * 16 * 4, gl.TextureSizes[(uint)texture].MemoryUsage);
+        Assert.AreEqual(16L * 16 * 4, gl.TextureSizes[texture].MemoryUsage);
     }
 
     [TestMethod]
@@ -72,7 +81,7 @@ public class GlLayerMemoryTest
         gl.BindTexture(GlTextureTarget.Texture2D, texture);
         gl.CopyTexImage2D(GlTextureTarget.Texture2D, 0, GlInternalFormat.Rgba8, 0, 0, 8, 8, 0);
         Assert.AreEqual(8L * 8 * 4, gl.TextureUsage);
-        Assert.AreEqual(8L * 8 * 4, gl.TextureSizes[(uint)texture].MemoryUsage);
+        Assert.AreEqual(8L * 8 * 4, gl.TextureSizes[texture].MemoryUsage);
     }
 
     [TestMethod]
@@ -118,4 +127,5 @@ public class GlLayerMemoryTest
         gl.TextureStorage2D(texture, 1, GlSizedInternalFormat.Rgba8, 8, 8);
         Assert.AreEqual(8L * 8 * 4, gl.TextureUsage);
     }
+
 }

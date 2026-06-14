@@ -35,7 +35,7 @@ internal static class WindowsBuildScripts
     }
 
     /// <summary>Generates the Visual Studio developer shell setup fragment.</summary>
-    public static string VisualStudioDevShell(TargetRid target)
+    private static string VisualStudioDevShell(TargetRid target)
     {
         var toolset = target.Architecture == TargetArchitecture.Arm64
             ? "Microsoft.VisualStudio.Component.VC.Tools.ARM64"

@@ -39,10 +39,24 @@ public class GlLayerResourceTest
         var gl = new GlLayer(new RecordingGl());
 
         var buffer = gl.GenBuffer();
-        Assert.IsTrue(gl.Buffers.Contains((uint)buffer));
+        Assert.IsTrue(gl.Buffers.Contains(buffer));
 
         gl.DeleteBuffer(buffer);
-        Assert.IsFalse(gl.Buffers.Contains((uint)buffer));
+        Assert.IsFalse(gl.Buffers.Contains(buffer));
+    }
+
+    [TestMethod]
+    public void DeleteUntrackedBuffer_Throws()
+    {
+        var gl = new GlLayer(new RecordingGl());
+        Assert.Throws<GlResourceNotTrackedException<GlBufferHandle>>(() => gl.DeleteBuffer((GlBufferHandle)123u));
+    }
+
+    [TestMethod]
+    public void DeleteUntrackedTexture_Throws()
+    {
+        var gl = new GlLayer(new RecordingGl());
+        Assert.Throws<GlResourceNotTrackedException<GlTextureHandle>>(() => gl.DeleteTexture((GlTextureHandle)123u));
     }
 
     [TestMethod]

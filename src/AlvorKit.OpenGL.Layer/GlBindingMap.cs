@@ -6,6 +6,8 @@ internal readonly struct GlBindingMap<TKey>() where TKey : notnull
 
     internal IReadOnlyDictionary<TKey, uint> Bound => bound;
 
+    internal bool HasAny => bound.Count > 0;
+
     internal void Bind(string function, TKey key, uint value)
     {
         if (bound.TryGetValue(key, out var current))
@@ -20,4 +22,24 @@ internal readonly struct GlBindingMap<TKey>() where TKey : notnull
     }
 
     internal bool TryGet(TKey key, out uint value) => bound.TryGetValue(key, out value);
+
+    internal void Clear() => bound.Clear();
+
+    internal void UnbindWhere(string function, Func<TKey, bool> predicate)
+    {
+        List<TKey>? keys = null;
+        foreach (var key in bound.Keys)
+        {
+            if (!predicate(key))
+                continue;
+            keys ??= [];
+            keys.Add(key);
+        }
+
+        if (keys is null)
+            throw new GlNotBoundException(function, "attempted to unbind, but nothing is bound.");
+
+        foreach (var key in keys)
+            bound.Remove(key);
+    }
 }

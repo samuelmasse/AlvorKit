@@ -1,131 +1,264 @@
+# Builds and publishes the managed packages generated from C headers.
+#
+# Release rule:
+# - automatic standalone binding releases only run when BINDING_REVISION changes.
+# - native TAG/REVISION changes are handled by native-packages.yml, which publishes
+#   the native package first and then publishes the matching bindings.
+# - this workflow is therefore for binding-only revisions: generator output,
+#   shape changes, docs/fixes, or managed packaging changes that do not require a
+#   new native runtime package.
+#
+# Manual runs are artifact-oriented and do not publish to NuGet.org.
 name: C header bindings packages
 
 on:
+  # Manual dispatch can build one binding package or all C-header bindings.
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      [
-        "native packages",
-      ]
-    types: [completed]
+    inputs:
+      library:
+        description: Binding library to build
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - freetype
+          - glfw
+          - miniaudio
+          - xxhash
+
+  # Push releases are intentionally limited to binding revision files.
+  # Changes to bindgen code/config alone should not publish unless a binding
+  # version marker is bumped.
   push:
     branches: [main]
     paths:
       [
-        "native/freetype/TAG",
-        "native/freetype/REVISION",
         "native/freetype/BINDING_REVISION",
-        "native/freetype/bindgen.json",
-        "native/glfw/TAG",
-        "native/glfw/REVISION",
         "native/glfw/BINDING_REVISION",
-        "native/glfw/bindgen.json",
-        "native/miniaudio/TAG",
-        "native/miniaudio/REVISION",
         "native/miniaudio/BINDING_REVISION",
-        "native/miniaudio/alvorkit.c",
-        "native/miniaudio/miniaudio.c",
-        "native/miniaudio/bindgen.json",
-        "native/xxhash/TAG",
-        "native/xxhash/REVISION",
         "native/xxhash/BINDING_REVISION",
-        "native/xxhash/xxhash.c",
-        "native/xxhash/bindgen.json",
-        "scripts/Directory.Build.props",
-        "scripts/AlvorKit.Script.Bindgen*/**",
       ]
 
+# The workflow only needs repository reads. NuGet publishing is authenticated
+# through NUGET_API_KEY rather than GitHub write permissions.
 permissions:
   contents: read
 
+# Package versions are immutable; serialize releases per ref instead of canceling
+# older runs mid-publish.
+concurrency:
+  group: c-header-bindings-${{ github.ref }}
+  cancel-in-progress: false
+
+# Keep .NET command noise down in every job.
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
 jobs:
+  # Builds a dynamic matrix of binding packages to process. This keeps a freetype
+  # BINDING_REVISION bump from generating all bindings.
+  detect:
+    runs-on: ubuntu-24.04
+    outputs:
+      packages: ${{ steps.detect.outputs.packages }}
+      has_packages: ${{ steps.detect.outputs.has_packages }}
+    steps:
+      # Fetch full history so push runs can inspect exactly which files changed.
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # Selects libraries by manual input or changed BINDING_REVISION files.
+      # If TAG/REVISION changed in the same push, native-packages.yml owns that
+      # library's binding publish after the native package is available.
+      - name: Detect binding packages to release
+        id: detect
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Manual runs use the explicit input. Push runs derive selection from
+          # changed BINDING_REVISION marker files.
+          selected=()
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            selection="${{ inputs.library }}"
+            if [[ "$selection" == "all" ]]; then
+              selected=(freetype glfw miniaudio xxhash)
+            else
+              selected=("$selection")
+            fi
+          else
+            base="${{ github.event.before }}"
+            head="${{ github.sha }}"
+            if [[ -z "$base" || "$base" == "0000000000000000000000000000000000000000" ]]; then
+              mapfile -t changed < <(git diff-tree --no-commit-id --name-only -r "$head")
+            else
+              mapfile -t changed < <(git diff --name-only "$base" "$head")
+            fi
+
+            # BINDING_REVISION means "publish a new managed binding version".
+            # If native TAG/REVISION also changed, the native workflow handles it
+            # so the backend can reference a package that has just been published.
+            for library in freetype glfw miniaudio xxhash; do
+              if printf '%s\n' "${changed[@]}" | grep -qx "native/${library}/BINDING_REVISION"; then
+                if printf '%s\n' "${changed[@]}" | grep -Eq "^native/${library}/(TAG|REVISION)$"; then
+                  echo "Skipping ${library}: native package version changed in the same push, so native-packages will publish its bindings after the native package."
+                else
+                  selected+=("$library")
+                fi
+              fi
+            done
+          fi
+
+          # Map each selected library to its package IDs and generated project
+          # names. The pack job uses this JSON as its matrix.
+          objects=()
+          for library in "${selected[@]}"; do
+            case "$library" in
+              freetype)
+                id="alvorkit.freetype"
+                native_id="alvorkit.freetype.native"
+                api_project="AlvorKit.FreeType"
+                backend_project="AlvorKit.FreeType.Backend"
+                ;;
+              glfw)
+                id="alvorkit.glfw"
+                native_id="alvorkit.glfw.native"
+                api_project="AlvorKit.GLFW"
+                backend_project="AlvorKit.GLFW.Backend"
+                ;;
+              miniaudio)
+                id="alvorkit.miniaudio"
+                native_id="alvorkit.miniaudio.native"
+                api_project="AlvorKit.MiniAudio"
+                backend_project="AlvorKit.MiniAudio.Backend"
+                ;;
+              xxhash)
+                id="alvorkit.xxhash"
+                native_id="alvorkit.xxhash.native"
+                api_project="AlvorKit.XxHash"
+                backend_project="AlvorKit.XxHash.Backend"
+                ;;
+              *)
+                echo "::error::Unknown binding library '$library'."
+                exit 1
+                ;;
+            esac
+
+            objects+=("$(jq -cn \
+              --arg selection "$library" \
+              --arg dir "native/$library" \
+              --arg id "$id" \
+              --arg native_id "$native_id" \
+              --arg api_project "$api_project" \
+              --arg backend_project "$backend_project" \
+              '{selection:$selection,dir:$dir,id:$id,native_id:$native_id,api_project:$api_project,backend_project:$backend_project}')")
+          done
+
+          # Emit compact JSON for fromJson(...) and a simple boolean for job
+          # conditions.
+          packages="$(printf '%s\n' "${objects[@]}" | jq -s -c '.')"
+          echo "packages=$packages" >> "$GITHUB_OUTPUT"
+          if [[ "$packages" == "[]" ]]; then
+            echo "has_packages=false" >> "$GITHUB_OUTPUT"
+            echo "No standalone binding package version files changed."
+          else
+            echo "has_packages=true" >> "$GITHUB_OUTPUT"
+            echo "Selected packages: $(jq -r 'map(.selection) | join(", ")' <<< "$packages")"
+          fi
+
+  # Generates, packs, artifacts, and optionally publishes the selected bindings.
   pack:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
+    needs: [detect]
+    if: needs.detect.outputs.has_packages == 'true'
+    timeout-minutes: 30
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - selection: freetype
-            dir: native/freetype
-            id: alvorkit.freetype
-            native_id: alvorkit.freetype.native
-            api_project: AlvorKit.FreeType
-            backend_project: AlvorKit.FreeType.Backend
-          - selection: glfw
-            dir: native/glfw
-            id: alvorkit.glfw
-            native_id: alvorkit.glfw.native
-            api_project: AlvorKit.GLFW
-            backend_project: AlvorKit.GLFW.Backend
-          - selection: miniaudio
-            dir: native/miniaudio
-            id: alvorkit.miniaudio
-            native_id: alvorkit.miniaudio.native
-            api_project: AlvorKit.MiniAudio
-            backend_project: AlvorKit.MiniAudio.Backend
-          - selection: xxhash
-            dir: native/xxhash
-            id: alvorkit.xxhash
-            native_id: alvorkit.xxhash.native
-            api_project: AlvorKit.XxHash
-            backend_project: AlvorKit.XxHash.Backend
+        package: ${{ fromJson(needs.detect.outputs.packages) }}
 
     steps:
+      # Check out metadata/source and install the SDK used by the bindgen tool.
       - uses: actions/checkout@v6
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "10.0.x"
 
+      # Compute the native package version and binding package version from
+      # marker files. Push runs fail if the binding version is already published;
+      # manual runs simply skip that package.
       - name: Compute package versions
         id: versions
+        shell: bash
         run: |
-          TAG=$(tr -d '[:space:]' < "${{ matrix.dir }}/TAG")
-          NATIVE_REVISION=$(tr -d '[:space:]' < "${{ matrix.dir }}/REVISION" 2>/dev/null || true)
-          BINDING_REVISION=$(tr -d '[:space:]' < "${{ matrix.dir }}/BINDING_REVISION" 2>/dev/null || true)
-          [ -z "$BINDING_REVISION" ] && BINDING_REVISION="$NATIVE_REVISION"
-          NATIVE_VERSION="$TAG"
-          BINDING_VERSION="$TAG"
-          [ -n "$NATIVE_REVISION" ] && NATIVE_VERSION="$NATIVE_VERSION.$NATIVE_REVISION"
-          [ -n "$BINDING_REVISION" ] && BINDING_VERSION="$BINDING_VERSION.$BINDING_REVISION"
-          echo "native=$NATIVE_VERSION" >> "$GITHUB_OUTPUT"
-          echo "binding=$BINDING_VERSION" >> "$GITHUB_OUTPUT"
-          if curl -fsSL "https://api.nuget.org/v3-flatcontainer/${{ matrix.id }}/index.json" | grep -qi "\"$BINDING_VERSION\""; then
+          set -euo pipefail
+          tag="$(tr -d '[:space:]' < "${{ matrix.package.dir }}/TAG")"
+          native_revision="$(tr -d '[:space:]' < "${{ matrix.package.dir }}/REVISION" 2>/dev/null || true)"
+          binding_revision="$(tr -d '[:space:]' < "${{ matrix.package.dir }}/BINDING_REVISION" 2>/dev/null || true)"
+          [[ -z "$binding_revision" ]] && binding_revision="$native_revision"
+          native_version="$tag"
+          binding_version="$tag"
+          [[ -n "$native_revision" ]] && native_version="${native_version}.${native_revision}"
+          [[ -n "$binding_revision" ]] && binding_version="${binding_version}.${binding_revision}"
+          echo "native=$native_version" >> "$GITHUB_OUTPUT"
+          echo "binding=$binding_version" >> "$GITHUB_OUTPUT"
+
+          # NuGet versions are immutable. Push releases must use a new binding
+          # version; manual runs can still act as dry runs for unpublished ones.
+          versions="$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/${{ matrix.package.id }}/index.json" || echo '{"versions":[]}')"
+          if jq -e --arg version "$binding_version" '.versions | index($version)' <<< "$versions" > /dev/null; then
+            if [[ "${{ github.event_name }}" == "push" ]]; then
+              echo "::error::${{ matrix.package.id }} ${binding_version} is already published - bump ${{ matrix.package.dir }}/BINDING_REVISION."
+              exit 1
+            fi
             echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "${{ matrix.id }} $BINDING_VERSION is already published; skipping."
+            echo "${{ matrix.package.id }} ${binding_version} is already published; skipping."
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # The generated backend references the native runtime package, so verify
+      # that the required native package version already exists before generation.
       - name: Verify native package is published
         if: steps.versions.outputs.skip != 'true'
+        shell: bash
         run: |
-          if ! curl -fsSL "https://api.nuget.org/v3-flatcontainer/${{ matrix.native_id }}/index.json" | grep -qi "\"${{ steps.versions.outputs.native }}\""; then
-            echo "::error::${{ matrix.native_id }} ${{ steps.versions.outputs.native }} is not on NuGet.org yet."
+          set -euo pipefail
+          versions="$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/${{ matrix.package.native_id }}/index.json" || echo '{"versions":[]}')"
+          if ! jq -e --arg version "${{ steps.versions.outputs.native }}" '.versions | index($version)' <<< "$versions" > /dev/null; then
+            echo "::error::${{ matrix.package.native_id }} ${{ steps.versions.outputs.native }} is not on NuGet.org yet."
             exit 1
           fi
 
+      # Run bindgen in strict mode so missing exports, stale shims, layout issues,
+      # and parser problems fail the release.
       - name: Generate bindings
         if: steps.versions.outputs.skip != 'true'
-        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- ${{ matrix.selection }} --strict
+        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- ${{ matrix.package.selection }} --strict
 
+      # Pack both generated projects for this library.
       - name: Pack bindings
         if: steps.versions.outputs.skip != 'true'
         run: |
-          dotnet pack -c Release out/bindgen/${{ matrix.api_project }}/${{ matrix.api_project }}.csproj
-          dotnet pack -c Release out/bindgen/${{ matrix.backend_project }}/${{ matrix.backend_project }}.csproj
+          dotnet pack -c Release out/bindgen/${{ matrix.package.api_project }}/${{ matrix.package.api_project }}.csproj
+          dotnet pack -c Release out/bindgen/${{ matrix.package.backend_project }}/${{ matrix.package.backend_project }}.csproj
 
+      # Upload .nupkg files for visibility and manual review.
       - uses: actions/upload-artifact@v7
         if: steps.versions.outputs.skip != 'true'
         with:
-          name: ${{ matrix.selection }}-bindings-nupkg
+          name: ${{ matrix.package.selection }}-bindings-nupkg
           path: |
-            bin/${{ matrix.api_project }}/Release/*.nupkg
-            bin/${{ matrix.backend_project }}/Release/*.nupkg
+            bin/${{ matrix.package.api_project }}/Release/*.nupkg
+            bin/${{ matrix.package.backend_project }}/Release/*.nupkg
           if-no-files-found: error
 
+      # Push-triggered runs publish; manual runs stop after artifact upload.
       - name: Publish to NuGet.org
-        if: steps.versions.outputs.skip != 'true' && (github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push'))
+        if: steps.versions.outputs.skip != 'true' && github.event_name == 'push'
         run: |
-          dotnet nuget push bin/${{ matrix.api_project }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push bin/${{ matrix.backend_project }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/${{ matrix.package.api_project }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/${{ matrix.package.backend_project }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

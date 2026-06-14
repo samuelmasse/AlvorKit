@@ -12,7 +12,7 @@ public sealed class PlatformBuildConfigTest
     {
         var config = new PlatformBuildConfig { Packages = ["base"], NativePackages = ["native"], ArmPackages = ["arm"] };
 
-        CollectionAssert.AreEqual(new[] { "base", "native" }, config.LinuxPackages(TargetRid.Parse("linux-x64")).ToArray());
+        Assert.AreEqual("base,native", string.Join(",", config.LinuxPackages(TargetRid.Parse("linux-x64"))));
     }
 
     /// <summary>linux-arm builds combine base packages with arm cross packages.</summary>
@@ -21,6 +21,6 @@ public sealed class PlatformBuildConfigTest
     {
         var config = new PlatformBuildConfig { Packages = ["base"], NativePackages = ["native"], ArmPackages = ["arm"] };
 
-        CollectionAssert.AreEqual(new[] { "base", "arm" }, config.LinuxPackages(TargetRid.Parse("linux-arm")).ToArray());
+        Assert.AreEqual("base,arm", string.Join(",", config.LinuxPackages(TargetRid.Parse("linux-arm"))));
     }
 }

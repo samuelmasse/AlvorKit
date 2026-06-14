@@ -1,0 +1,18 @@
+namespace AlvorKit.Script.Bindgen;
+
+/// <summary>Describes a managed function emitted from a native exported function.</summary>
+/// <param name="NativeName">Native exported function name.</param>
+/// <param name="ManagedName">Managed C# method name.</param>
+/// <param name="ReturnType">Public managed return type.</param>
+/// <param name="ReturnInteropType">Raw native interop return type.</param>
+/// <param name="Parameters">Managed function parameters.</param>
+/// <param name="Documentation">Parsed upstream XML or Doxygen documentation.</param>
+/// <param name="ReturnsCString">Whether the native return is a const C string pointer.</param>
+public record BindingFunction(
+    string NativeName,
+    string ManagedName,
+    string ReturnType,
+    string ReturnInteropType,
+    List<BindingParameter> Parameters,
+    XmlDocComment? Documentation,
+    bool ReturnsCString = false);

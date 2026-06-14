@@ -26,6 +26,7 @@ public sealed class ConstantExpressionEvaluatorTest
     {
         Assert.AreEqual(16, ConstantExpressionEvaluator.Evaluate(["1", "<<", "4"], []));
         Assert.AreEqual(~0x10L, ConstantExpressionEvaluator.Evaluate(["~", "0x10UL"], []));
+        Assert.AreEqual(-12, ConstantExpressionEvaluator.Evaluate(["-", "12L"], []));
     }
 
     [TestMethod]
@@ -34,5 +35,7 @@ public sealed class ConstantExpressionEvaluatorTest
         Assert.IsNull(ConstantExpressionEvaluator.Evaluate(["1", "/", "0"], []));
         Assert.IsNull(ConstantExpressionEvaluator.Evaluate(["UNKNOWN"], []));
         Assert.IsNull(ConstantExpressionEvaluator.Evaluate(["1", "+"], []));
+        Assert.IsNull(ConstantExpressionEvaluator.Evaluate(["(", "1", "+", "2"], []));
+        Assert.IsNull(ConstantExpressionEvaluator.Evaluate(["1", "2"], []));
     }
 }

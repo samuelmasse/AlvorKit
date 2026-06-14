@@ -4,10 +4,10 @@ using System.IO.Compression;
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Downloads and extracts upstream source archives when not already cached.</summary>
-internal sealed class SourceArchiveFetcher
+internal static class SourceArchiveFetcher
 {
     /// <summary>Ensures the source directory exists for a library.</summary>
-    public async Task EnsureSourceAsync(LibraryBuildContext library)
+    public static async Task EnsureSourceAsync(LibraryBuildContext library)
     {
         if (Directory.Exists(library.SourceDirectory))
             return;

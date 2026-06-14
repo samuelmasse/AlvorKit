@@ -1,48 +1,22 @@
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Resolved metadata and paths for one native library build.</summary>
-internal sealed class LibraryBuildContext
+/// <param name="RepositoryRoot">Absolute repository root path.</param>
+/// <param name="Name">Native library directory name under native/.</param>
+/// <param name="LibraryDirectory">Absolute path to native/&lt;library&gt;.</param>
+/// <param name="Metadata">Build-relevant values loaded from bindgen.json.</param>
+/// <param name="Build">Native build manifest values.</param>
+/// <param name="Tag">Upstream version tag read from TAG.</param>
+/// <param name="NativeRevision">AlvorKit package revision read from REVISION.</param>
+internal sealed record LibraryBuildContext(
+    string RepositoryRoot,
+    string Name,
+    string LibraryDirectory,
+    BindgenMetadata Metadata,
+    NativeBuildConfig Build,
+    string Tag,
+    string NativeRevision)
 {
-    /// <summary>Creates a resolved build context.</summary>
-    public LibraryBuildContext(
-        string repositoryRoot,
-        string name,
-        string libraryDirectory,
-        BindgenMetadata metadata,
-        NativeBuildConfig build,
-        string tag,
-        string nativeRevision)
-    {
-        RepositoryRoot = repositoryRoot;
-        Name = name;
-        LibraryDirectory = libraryDirectory;
-        Metadata = metadata;
-        Build = build;
-        Tag = tag;
-        NativeRevision = nativeRevision;
-    }
-
-    /// <summary>Absolute repository root path.</summary>
-    public string RepositoryRoot { get; }
-
-    /// <summary>Native library directory name under native/.</summary>
-    public string Name { get; }
-
-    /// <summary>Absolute path to native/&lt;library&gt;.</summary>
-    public string LibraryDirectory { get; }
-
-    /// <summary>Build-relevant values loaded from bindgen.json.</summary>
-    public BindgenMetadata Metadata { get; }
-
-    /// <summary>Native build manifest values.</summary>
-    public NativeBuildConfig Build { get; }
-
-    /// <summary>Upstream version tag read from TAG.</summary>
-    public string Tag { get; }
-
-    /// <summary>AlvorKit package revision read from REVISION.</summary>
-    public string NativeRevision { get; }
-
     /// <summary>Package version formed from TAG and REVISION.</summary>
     public string NativeVersion => NativeRevision.Length > 0 ? $"{Tag}.{NativeRevision}" : Tag;
 

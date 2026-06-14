@@ -40,6 +40,6 @@ public sealed class CliParserTest
     [TestMethod]
     public void Parse_VersionWithoutLibrary_Throws()
     {
-        Assert.ThrowsException<ArgumentException>(() => CliParser.Parse(["version"]));
+        Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["version"]));
     }
 }

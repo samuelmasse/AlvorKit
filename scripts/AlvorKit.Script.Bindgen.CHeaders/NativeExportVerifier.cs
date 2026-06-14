@@ -3,13 +3,10 @@ using System.Runtime.InteropServices;
 
 namespace AlvorKit.Script.Bindgen;
 
-public sealed record NativeExportVerification(string LibraryPath, bool LibraryExists, List<BindingFunction> MissingFunctions)
-{
-    public bool AllExportsFound => LibraryExists && MissingFunctions.Count == 0;
-}
-
+/// <summary>Checks that generated binding functions are present in a native library.</summary>
 public static class NativeExportVerifier
 {
+    /// <summary>Verifies generated function exports against a native library path.</summary>
     public static NativeExportVerification Verify(string libraryPath, BindingModel model)
     {
         if (!File.Exists(libraryPath))
@@ -30,16 +27,19 @@ public static class NativeExportVerifier
         }
     }
 
+    /// <summary>Returns functions missing from a read export set.</summary>
     private static List<BindingFunction> MissingFrom(HashSet<string> exports, BindingModel model) =>
         model.Functions
             .Where(function => !exports.Contains(function.NativeName))
             .ToList();
 
+    /// <summary>Returns functions missing from a loaded native library handle.</summary>
     private static List<BindingFunction> MissingFrom(nint nativeLibrary, BindingModel model) =>
         model.Functions
             .Where(function => !NativeLibrary.TryGetExport(nativeLibrary, function.NativeName, out _))
             .ToList();
 
+    /// <summary>Reads ELF exports with readelf when the library is an ELF shared object.</summary>
     private static HashSet<string>? TryReadElfExports(string libraryPath)
     {
         if (!IsElf(libraryPath))
@@ -72,6 +72,7 @@ public static class NativeExportVerifier
         }
     }
 
+    /// <summary>Parses function symbols from readelf output.</summary>
     private static HashSet<string> ParseReadElfSymbols(string output)
     {
         var symbols = new HashSet<string>(StringComparer.Ordinal);
@@ -95,6 +96,7 @@ public static class NativeExportVerifier
         return symbols;
     }
 
+    /// <summary>Returns true when a file starts with the ELF magic bytes.</summary>
     private static bool IsElf(string libraryPath)
     {
         Span<byte> magic = stackalloc byte[4];

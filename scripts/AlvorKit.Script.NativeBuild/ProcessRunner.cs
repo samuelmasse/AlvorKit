@@ -10,7 +10,7 @@ internal sealed class ProcessRunner : IProcessRunner
             Directory.CreateDirectory(command.WorkingDirectory);
 
         Console.WriteLine("> " + CommandText.Display(command));
-        var process = ProcessLauncher.Start(command, redirect: false);
+        var process = Start(command, redirect: false);
         await process.WaitForExitAsync();
         if (process.ExitCode != 0)
             throw new InvalidOperationException($"{command.FileName} failed with exit code {process.ExitCode}.");
@@ -19,12 +19,29 @@ internal sealed class ProcessRunner : IProcessRunner
     /// <summary>Runs a process and captures standard output for parser-based checks.</summary>
     public async Task<string> CaptureAsync(CommandSpec command)
     {
-        var process = ProcessLauncher.Start(command, redirect: true);
+        var process = Start(command, redirect: true);
         var output = await process.StandardOutput.ReadToEndAsync();
         var error = await process.StandardError.ReadToEndAsync();
         await process.WaitForExitAsync();
         if (process.ExitCode != 0)
             throw new InvalidOperationException($"{command.FileName} failed with exit code {process.ExitCode}: {error}");
         return output;
+    }
+
+    /// <summary>Starts a process with shell expansion disabled.</summary>
+    private static Process Start(CommandSpec command, bool redirect)
+    {
+        var startInfo = new ProcessStartInfo(command.FileName)
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = redirect,
+            RedirectStandardError = redirect
+        };
+        if (command.WorkingDirectory is not null)
+            startInfo.WorkingDirectory = command.WorkingDirectory;
+        foreach (var arg in command.Arguments)
+            startInfo.ArgumentList.Add(arg);
+        return Process.Start(startInfo)
+            ?? throw new InvalidOperationException($"Could not start {command.FileName}.");
     }
 }

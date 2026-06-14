@@ -6,13 +6,13 @@ internal static class CliParser
     /// <summary>Parses arguments into a request or throws a user-facing argument error.</summary>
     public static CliRequest Parse(IReadOnlyList<string> args)
     {
-        var command = args.FirstOrDefault();
+        var command = args.Count > 0 ? args[0] : null;
         if (command is null or "-h" or "--help" or "help")
-            return new(CliCommand.List, selection: null, rid: null, showHelp: true);
+            return new(CliCommand.List, Selection: null, Rid: null, ShowHelp: true);
 
         return command switch
         {
-            "list" => new(CliCommand.List, selection: null, rid: null, showHelp: false),
+            "list" => new(CliCommand.List, Selection: null, Rid: null, ShowHelp: false),
             "version" => new(CliCommand.Version, Required(args, 1, "version requires a library name."), null, false),
             "build" => new(CliCommand.Build, Required(args, 1, "build requires a library name or 'all'."), Option(args, "--rid"), false),
             _ => throw new ArgumentException($"Unknown command '{command}'.")

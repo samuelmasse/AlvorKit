@@ -25,12 +25,11 @@ public sealed class NativeBuildRunnerTest
                 context,
                 TargetRid.Parse("linux-x64"),
                 processRunner,
-                new SourceArchiveFetcher(),
                 new HostInfo(false, true, false, Architecture.X64));
 
             await runner.BuildAsync();
 
-            CollectionAssert.AreEqual(new[] { "sudo", "sudo", "gcc", "strip" }, processRunner.RunCommands.Select(command => command.FileName).ToArray());
+            Assert.AreEqual("sudo,sudo,gcc,strip", string.Join(",", processRunner.RunCommands.Select(command => command.FileName)));
             Assert.AreEqual("readelf", processRunner.CaptureCommands.Single().FileName);
         }
         finally

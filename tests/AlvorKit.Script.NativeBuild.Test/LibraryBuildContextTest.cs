@@ -33,7 +33,7 @@ public sealed class LibraryBuildContextTest
         var root = TestRepositoryFactory.CreateSingleCLibrary("sample", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
         try
         {
-            CollectionAssert.AreEqual(new[] { "sample" }, new RepositoryLayout(root).NativeBuildLibraries().ToArray());
+            Assert.AreEqual("sample", string.Join(",", new RepositoryLayout(root).NativeBuildLibraries()));
         }
         finally
         {

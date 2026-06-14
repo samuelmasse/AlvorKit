@@ -18,7 +18,7 @@ public sealed class HostCompatibilityTest
     [TestMethod]
     public void EnsureCanBuild_WindowsTargetOnLinux_Throws()
     {
-        Assert.ThrowsException<PlatformNotSupportedException>(
+        Assert.ThrowsExactly<PlatformNotSupportedException>(
             () => HostCompatibility.EnsureCanBuild(TargetRid.Parse("win-x64"), new(false, true, false, Architecture.X64)));
     }
 

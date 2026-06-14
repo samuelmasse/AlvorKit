@@ -27,3 +27,7 @@ public sealed class GlAlreadyUnsetException(string function, string message) : G
 
 /// <summary>A setter from one family was used while a mutually-exclusive family is active (e.g. glBlendFunc vs glBlendFuncSeparate).</summary>
 public sealed class GlConflictException(string function, string conflict) : GlException(function, $"cannot be used while gl{conflict} is active.");
+
+/// <summary>A resource delete or size-tracking call referenced an object the layer does not own.</summary>
+public sealed class GlResourceNotTrackedException<THandle>(string function, string resourceName, THandle handle)
+    : GlException(function, $"{resourceName} {handle} is not tracked.");

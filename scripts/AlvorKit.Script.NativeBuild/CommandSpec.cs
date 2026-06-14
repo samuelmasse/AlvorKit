@@ -1,30 +1,12 @@
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Process invocation planned by the native build runner.</summary>
-internal sealed class CommandSpec
-{
-    /// <summary>Creates a process invocation.</summary>
-    public CommandSpec(
-        string fileName,
-        IReadOnlyList<string> arguments,
-        string? workingDirectory = null,
-        bool createWorkingDirectory = false)
-    {
-        FileName = fileName;
-        Arguments = arguments;
-        WorkingDirectory = workingDirectory;
-        CreateWorkingDirectory = createWorkingDirectory;
-    }
-
-    /// <summary>Executable file name or path.</summary>
-    public string FileName { get; }
-
-    /// <summary>Arguments passed without shell expansion.</summary>
-    public IReadOnlyList<string> Arguments { get; }
-
-    /// <summary>Optional working directory for the process.</summary>
-    public string? WorkingDirectory { get; }
-
-    /// <summary>True when the working directory should be created before running.</summary>
-    public bool CreateWorkingDirectory { get; }
-}
+/// <param name="FileName">Executable file name or path.</param>
+/// <param name="Arguments">Arguments passed without shell expansion.</param>
+/// <param name="WorkingDirectory">Optional working directory for the process.</param>
+/// <param name="CreateWorkingDirectory">True when the working directory should be created before running.</param>
+internal sealed record CommandSpec(
+    string FileName,
+    IReadOnlyList<string> Arguments,
+    string? WorkingDirectory = null,
+    bool CreateWorkingDirectory = false);

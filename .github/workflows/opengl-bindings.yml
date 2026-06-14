@@ -1,62 +1,104 @@
+# Builds and publishes the generated OpenGL API and backend packages.
+#
+# OpenGL is different from the C-header libraries: there is no native runtime
+# package because OpenGL is provided by the platform graphics driver. This
+# workflow only generates managed bindings from the Khronos registry metadata.
+#
+# Release rule:
+# - automatic publishing only runs when native/opengl/BINDING_REVISION changes.
+# - TAG, DOC_TAG, bindgen.json, and generator changes can affect generated code,
+#   but they should not publish unless the package version marker is bumped.
+# - manual runs build artifacts without publishing.
 name: opengl bindings package
 
 on:
+  # Manual dispatch is an artifact-producing build/check path.
   workflow_dispatch:
+
+  # Push releases are intentionally tied only to the OpenGL binding version file.
   push:
     branches: [main]
     paths:
       [
-        "native/opengl/TAG",
-        "native/opengl/DOC_TAG",
-        "native/opengl/bindgen.json",
         "native/opengl/BINDING_REVISION",
-        "scripts/Directory.Build.props",
-        "scripts/AlvorKit.Script.Bindgen*/**",
       ]
 
+# This workflow only reads the repository. NuGet publishing uses NUGET_API_KEY.
 permissions:
   contents: read
 
+# Serialize OpenGL releases per ref so immutable NuGet versions are not raced by
+# overlapping pushes.
+concurrency:
+  group: opengl-bindings-${{ github.ref }}
+  cancel-in-progress: false
+
+# Keep .NET command output consistent and quiet.
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
 jobs:
-  # No native build matrix: OpenGL ships with the platform's graphics driver, so there is
-  # nothing to compile - the generator turns gl.xml into the API and proc-loading backend.
+  # No native build matrix: OpenGL ships with the platform's graphics driver, so
+  # there is nothing to compile. The generator turns gl.xml into the API package
+  # and a proc-loading backend package.
   pack:
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    runs-on: ubuntu-24.04
     steps:
+      # Check out registry metadata/config and install the SDK used by bindgen.
       - uses: actions/checkout@v6
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "10.0.x"
 
-      - name: Fail if the version is already on NuGet.org
+      # Push releases must be new NuGet versions. Manual runs skip this guard so
+      # you can rebuild artifacts for an already-published version.
+      - name: Ensure push releases use a new version
+        if: github.event_name == 'push'
+        shell: bash
         run: |
-          VERSION=$(jq -r .glVersion native/opengl/bindgen.json)
-          REVISION=$(tr -d '[:space:]' < native/opengl/BINDING_REVISION 2>/dev/null || true)
-          [ -n "$REVISION" ] && VERSION="$VERSION.$REVISION"
-          if curl -fsSL "https://api.nuget.org/v3-flatcontainer/alvorkit.opengl/index.json" | grep -q "\"$VERSION\""; then
-            echo "::error::AlvorKit.OpenGL $VERSION is already published - bump native/opengl/BINDING_REVISION."
-            exit 1
-          fi
+          set -euo pipefail
 
-      # The registry parser is strict by default: a missing command, unmapped C type or name
-      # collision fails generation outright, so there is no separate --strict pass to run.
+          # OpenGL packages version from bindgen.json's glVersion plus the
+          # BINDING_REVISION marker, for example 4.6.3.
+          version="$(jq -r .glVersion native/opengl/bindgen.json)"
+          revision="$(tr -d '[:space:]' < native/opengl/BINDING_REVISION 2>/dev/null || true)"
+          [[ -n "$revision" ]] && version="${version}.${revision}"
+
+          # The API and backend packages are versioned together, so both must be
+          # absent before a push release proceeds.
+          for package_id in alvorkit.opengl alvorkit.opengl.backend; do
+            versions="$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/${package_id}/index.json" || echo '{"versions":[]}')"
+            if jq -e --arg version "$version" '.versions | index($version)' <<< "$versions" > /dev/null; then
+              echo "::error::${package_id} ${version} is already published - bump native/opengl/BINDING_REVISION."
+              exit 1
+            fi
+          done
+
+      # The registry parser is strict by default: a missing command, unmapped C
+      # type, or name collision fails generation outright.
       - name: Generate bindings
         run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- opengl
 
+      # Pack both generated projects: the public OpenGL API and the backend that
+      # resolves function pointers through a platform proc loader.
       - name: Pack bindings
         run: |
           dotnet pack -c Release out/bindgen/AlvorKit.OpenGL/AlvorKit.OpenGL.csproj
           dotnet pack -c Release out/bindgen/AlvorKit.OpenGL.Backend/AlvorKit.OpenGL.Backend.csproj
 
+      # Upload packages for review/debugging on both manual and push runs.
       - uses: actions/upload-artifact@v7
         with:
-          name: nupkg
+          name: opengl-bindings-nupkg
           path: |
             bin/AlvorKit.OpenGL/Release/*.nupkg
             bin/AlvorKit.OpenGL.Backend/Release/*.nupkg
           if-no-files-found: error
 
-      - name: Publish to NuGet.org (push events only)
+      # Only push-triggered version-file changes publish to NuGet.org.
+      - name: Publish to NuGet.org
         if: github.event_name == 'push'
         run: |
           dotnet nuget push bin/AlvorKit.OpenGL/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
