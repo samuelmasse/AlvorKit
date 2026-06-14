@@ -2,11 +2,9 @@
 #
 # Release rule:
 # - automatic standalone binding releases only run when version/BINDING_REVISION changes.
-# - native version/TAG or version/REVISION changes are handled by native-packages.yml, which publishes
-#   the native package first and then publishes the matching bindings.
-# - this workflow is therefore for binding-only revisions: generator output,
-#   shape changes, docs/fixes, or managed packaging changes that do not require a
-#   new native runtime package.
+# - native package releases are standalone in native-packages.yml and never
+#   publish managed bindings.
+# - publish bindings after the referenced native package version exists on NuGet.
 #
 # Manual runs are artifact-oriented and do not publish to NuGet.org.
 name: C header bindings packages
@@ -71,8 +69,6 @@ jobs:
           fetch-depth: 0
 
       # Selects libraries by manual input or changed version/BINDING_REVISION files.
-      # If version/TAG or version/REVISION changed in the same push, native-packages.yml owns that
-      # library's binding publish after the native package is available.
       - name: Detect binding packages to release
         id: detect
         shell: bash
@@ -99,15 +95,9 @@ jobs:
             fi
 
             # version/BINDING_REVISION means "publish a new managed binding version".
-            # If native version/TAG or version/REVISION also changed, the native workflow handles it
-            # so the backend can reference a package that has just been published.
             for library in freetype glfw miniaudio xxhash; do
               if printf '%s\n' "${changed[@]}" | grep -qx "native/${library}/version/BINDING_REVISION"; then
-                if printf '%s\n' "${changed[@]}" | grep -Eq "^native/${library}/version/(TAG|REVISION)$"; then
-                  echo "Skipping ${library}: native package version changed in the same push, so native-packages will publish its bindings after the native package."
-                else
-                  selected+=("$library")
-                fi
+                selected+=("$library")
               fi
             done
           fi

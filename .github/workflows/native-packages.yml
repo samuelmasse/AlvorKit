@@ -3,8 +3,6 @@
 # Release rule:
 # - automatic pushes only run when a native package version marker changes.
 # - each push release builds only the libraries whose version/TAG or version/REVISION changed.
-# - after a native package is published, the matching managed C-header binding
-#   package is generated and published from the same changed-library set.
 #
 # Manual runs are useful for producing artifacts and validating the native build,
 # but they do not publish packages.
@@ -75,7 +73,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Builds the package metadata matrix used by build, pack, and bindings.
+      # Builds the package metadata matrix used by build and pack jobs.
       # On push, it also fails early if the requested native package version is
       # already on NuGet.org.
       - name: Detect native packages to release
@@ -112,8 +110,7 @@ jobs:
           fi
 
           # Convert each selected library into a JSON object with all names the
-          # downstream jobs need: native package ID, native project, and binding
-          # package/project IDs.
+          # downstream native build and pack jobs need.
           objects=()
           for library in "${selected[@]}"; do
             case "$library" in
@@ -121,33 +118,21 @@ jobs:
                 package_id="alvorkit.freetype.native"
                 project="AlvorKit.FreeType.Native.csproj"
                 package_name="AlvorKit.FreeType.Native"
-                binding_id="alvorkit.freetype"
-                api_project="AlvorKit.FreeType"
-                backend_project="AlvorKit.FreeType.Backend"
                 ;;
               glfw)
                 package_id="alvorkit.glfw.native"
                 project="AlvorKit.GLFW.Native.csproj"
                 package_name="AlvorKit.GLFW.Native"
-                binding_id="alvorkit.glfw"
-                api_project="AlvorKit.GLFW"
-                backend_project="AlvorKit.GLFW.Backend"
                 ;;
               miniaudio)
                 package_id="alvorkit.miniaudio.native"
                 project="AlvorKit.MiniAudio.Native.csproj"
                 package_name="AlvorKit.MiniAudio.Native"
-                binding_id="alvorkit.miniaudio"
-                api_project="AlvorKit.MiniAudio"
-                backend_project="AlvorKit.MiniAudio.Backend"
                 ;;
               xxhash)
                 package_id="alvorkit.xxhash.native"
                 project="AlvorKit.XxHash.Native.csproj"
                 package_name="AlvorKit.XxHash.Native"
-                binding_id="alvorkit.xxhash"
-                api_project="AlvorKit.XxHash"
-                backend_project="AlvorKit.XxHash.Backend"
                 ;;
               *)
                 echo "::error::Unknown native library '$library'."
@@ -173,10 +158,7 @@ jobs:
               --arg package_id "$package_id" \
               --arg project "$project" \
               --arg package_name "$package_name" \
-              --arg binding_id "$binding_id" \
-              --arg api_project "$api_project" \
-              --arg backend_project "$backend_project" \
-              '{library:$library,package_id:$package_id,project:$project,package_name:$package_name,binding_id:$binding_id,api_project:$api_project,backend_project:$backend_project}')")
+              '{library:$library,package_id:$package_id,project:$project,package_name:$package_name}')")
           done
 
           # Write compact JSON to GITHUB_OUTPUT so fromJson(...) can build the
@@ -273,101 +255,3 @@ jobs:
       - name: Publish native package to NuGet.org
         if: github.event_name == 'push'
         run: dotnet nuget push bin/${{ matrix.package.package_name }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-
-  # Publishes the managed C-header bindings that correspond to native packages
-  # just released by this workflow. This keeps native version/TAG or version/REVISION bumps from
-  # relying on a separate workflow_run trigger.
-  bindings:
-    needs: [detect, pack]
-    if: needs.detect.outputs.has_packages == 'true' && github.event_name == 'push'
-    timeout-minutes: 30
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        package: ${{ fromJson(needs.detect.outputs.packages) }}
-    steps:
-      # Check out source metadata and install the SDK used by the bindgen tool.
-      - uses: actions/checkout@v6
-      - uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: "10.0.x"
-
-      # Derive both package versions from marker files. Binding version uses
-      # version/BINDING_REVISION when present, otherwise it follows version/REVISION.
-      - name: Compute binding package versions
-        id: versions
-        shell: bash
-        run: |
-          set -euo pipefail
-          dir="native/${{ matrix.package.library }}/version"
-          tag="$(tr -d '[:space:]' < "$dir/TAG")"
-          native_revision="$(tr -d '[:space:]' < "$dir/REVISION" 2>/dev/null || true)"
-          binding_revision="$(tr -d '[:space:]' < "$dir/BINDING_REVISION" 2>/dev/null || true)"
-          [[ -z "$binding_revision" ]] && binding_revision="$native_revision"
-          native_version="$tag"
-          binding_version="$tag"
-          [[ -n "$native_revision" ]] && native_version="${native_version}.${native_revision}"
-          [[ -n "$binding_revision" ]] && binding_version="${binding_version}.${binding_revision}"
-          echo "native=$native_version" >> "$GITHUB_OUTPUT"
-          echo "binding=$binding_version" >> "$GITHUB_OUTPUT"
-
-          # If the matching binding package version is already published, skip
-          # bindgen/pack/publish. This matters when a native packaging revision
-          # changes but binding version intentionally stays put.
-          versions="$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/${{ matrix.package.binding_id }}/index.json" || echo '{"versions":[]}')"
-          if jq -e --arg version "$binding_version" '.versions | index($version)' <<< "$versions" > /dev/null; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "${{ matrix.package.binding_id }} ${binding_version} is already published; skipping."
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      # NuGet indexing can lag immediately after native publish, so wait briefly
-      # for the native package that the generated backend references.
-      - name: Wait for native package on NuGet.org
-        if: steps.versions.outputs.skip != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          for attempt in {1..12}; do
-            versions="$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/${{ matrix.package.package_id }}/index.json" || echo '{"versions":[]}')"
-            if jq -e --arg version "${{ steps.versions.outputs.native }}" '.versions | index($version)' <<< "$versions" > /dev/null; then
-              exit 0
-            fi
-            echo "Waiting for ${{ matrix.package.package_id }} ${{ steps.versions.outputs.native }} on NuGet.org ($attempt/12)..."
-            sleep 10
-          done
-          echo "::error::${{ matrix.package.package_id }} ${{ steps.versions.outputs.native }} is not on NuGet.org yet."
-          exit 1
-
-      # Generate strict bindings against the native package version that was
-      # just published, including export verification.
-      - name: Generate bindings
-        if: steps.versions.outputs.skip != 'true'
-        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- ${{ matrix.package.library }} --strict
-
-      # Pack both generated projects: the public API package and the backend
-      # package that references the native runtime package.
-      - name: Pack bindings
-        if: steps.versions.outputs.skip != 'true'
-        run: |
-          dotnet pack -c Release out/bindgen/${{ matrix.package.api_project }}/${{ matrix.package.api_project }}.csproj
-          dotnet pack -c Release out/bindgen/${{ matrix.package.backend_project }}/${{ matrix.package.backend_project }}.csproj
-
-      # Save generated binding packages as artifacts for audit/debugging.
-      - uses: actions/upload-artifact@v7
-        if: steps.versions.outputs.skip != 'true'
-        with:
-          name: ${{ matrix.package.library }}-bindings-nupkg
-          path: |
-            bin/${{ matrix.package.api_project }}/Release/*.nupkg
-            bin/${{ matrix.package.backend_project }}/Release/*.nupkg
-          if-no-files-found: error
-
-      # Publish both binding packages after the native package is visible.
-      - name: Publish bindings to NuGet.org
-        if: steps.versions.outputs.skip != 'true' && github.event_name == 'push'
-        run: |
-          dotnet nuget push bin/${{ matrix.package.api_project }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push bin/${{ matrix.package.backend_project }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
