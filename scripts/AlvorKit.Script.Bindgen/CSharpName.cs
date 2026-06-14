@@ -11,7 +11,7 @@ public static class CSharpName
     ];
 
     /// <summary>
-    /// Converts RGFW_window_setName to WindowSetName. Digit-leading names get
+    /// Converts glfwGetWindowSize to GetWindowSize. Digit-leading names get
     /// <paramref name="digitNamePrefix"/> (XXH32 to Xxh32 with prefix Xxh) and digit-digit
     /// segment boundaries keep the underscore (XXH3_64bits to Xxh3_64bits), since merging
     /// the digit runs would garble the name. With <paramref name="dimensionSegments"/>,
@@ -46,7 +46,7 @@ public static class CSharpName
         return managedName.ToString();
     }
 
-    /// <summary>Converts RGFW_eventType to RgfwEventType.</summary>
+    /// <summary>Converts FT_Glyph_Format to FtGlyphFormat.</summary>
     public static string FromNativeTypeName(string nativeName, string nativePrefix, string managedTypePrefix, string digitNamePrefix = "Num") =>
         managedTypePrefix + FromNativeIdentifier(nativeName, nativePrefix, digitNamePrefix);
 

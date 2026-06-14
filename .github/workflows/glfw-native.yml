@@ -1,4 +1,4 @@
-name: RGFW native package
+name: GLFW native package
 
 on:
   workflow_dispatch:
@@ -6,12 +6,11 @@ on:
     branches: [main]
     paths:
       [
-        "native/rgfw/TAG",
-        "native/rgfw/bindgen.json",
-        "native/rgfw/REVISION",
-        "native/rgfw/rgfw.c",
-        "native/rgfw/*.csproj",
-        "native/rgfw/scripts/**",
+        "native/glfw/TAG",
+        "native/glfw/bindgen.json",
+        "native/glfw/REVISION",
+        "native/glfw/*.csproj",
+        "native/glfw/scripts/**",
         "scripts/Directory.Build.props",
         "scripts/AlvorKit.Script.Bindgen/**",
       ]
@@ -30,11 +29,11 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
-      - run: pwsh native/rgfw/scripts/build-win.ps1 -Arch ${{ matrix.arch }}
+      - run: pwsh native/glfw/scripts/build-win.ps1 -Arch ${{ matrix.arch }}
       - uses: actions/upload-artifact@v7
         with:
           name: win-${{ matrix.arch }}
-          path: native/rgfw/runtimes/win-${{ matrix.arch }}
+          path: native/glfw/runtimes/win-${{ matrix.arch }}
           if-no-files-found: error
 
   build-linux:
@@ -47,11 +46,11 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
-      - run: bash native/rgfw/scripts/build-linux.sh ${{ matrix.args }}
+      - run: bash native/glfw/scripts/build-linux.sh ${{ matrix.args }}
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.rid }}
-          path: native/rgfw/runtimes/${{ matrix.rid }}
+          path: native/glfw/runtimes/${{ matrix.rid }}
           if-no-files-found: error
 
   build-macos:
@@ -63,11 +62,11 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
-      - run: bash native/rgfw/scripts/build-osx.sh ${{ matrix.arch }}
+      - run: bash native/glfw/scripts/build-osx.sh ${{ matrix.arch }}
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.rid }}
-          path: native/rgfw/runtimes/${{ matrix.rid }}
+          path: native/glfw/runtimes/${{ matrix.rid }}
           if-no-files-found: error
 
   pack:
@@ -82,40 +81,40 @@ jobs:
       # Each artifact lands in its own runtimes/<rid>/ subdirectory.
       - uses: actions/download-artifact@v8
         with:
-          path: native/rgfw/runtimes
+          path: native/glfw/runtimes
 
       - name: Fail if the TAG version is already on NuGet.org
         run: |
-          VERSION=$(tr -d '[:space:]' < native/rgfw/TAG)
-          REVISION=$(tr -d '[:space:]' < native/rgfw/REVISION 2>/dev/null || true)
+          VERSION=$(tr -d '[:space:]' < native/glfw/TAG)
+          REVISION=$(tr -d '[:space:]' < native/glfw/REVISION 2>/dev/null || true)
           [ -n "$REVISION" ] && VERSION="$VERSION.$REVISION"
-          if curl -fsSL "https://api.nuget.org/v3-flatcontainer/alvorkit.rgfw.native/index.json" | grep -q "\"$VERSION\""; then
-            echo "::error::AlvorKit.RGFW.Native $VERSION is already published — bump native/rgfw/TAG or REVISION."
+          if curl -fsSL "https://api.nuget.org/v3-flatcontainer/alvorkit.glfw.native/index.json" | grep -q "\"$VERSION\""; then
+            echo "::error::AlvorKit.GLFW.Native $VERSION is already published — bump native/glfw/TAG or REVISION."
             exit 1
           fi
 
-      - run: dotnet build -c Release native/rgfw/AlvorKit.RGFW.Native.csproj
+      - run: dotnet build -c Release native/glfw/AlvorKit.GLFW.Native.csproj
 
       - name: Generate bindings
-        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- rgfw --strict
+        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- glfw --strict
 
       - name: Pack bindings
         run: |
-          dotnet build -c Release out/bindgen/AlvorKit.RGFW/AlvorKit.RGFW.csproj
-          dotnet build -c Release out/bindgen/AlvorKit.RGFW.Backend/AlvorKit.RGFW.Backend.csproj -p:RestoreAdditionalProjectSources=${{ github.workspace }}/bin/AlvorKit.RGFW.Native/Release
+          dotnet build -c Release out/bindgen/AlvorKit.GLFW/AlvorKit.GLFW.csproj
+          dotnet build -c Release out/bindgen/AlvorKit.GLFW.Backend/AlvorKit.GLFW.Backend.csproj -p:RestoreAdditionalProjectSources=${{ github.workspace }}/bin/AlvorKit.GLFW.Native/Release
 
       - uses: actions/upload-artifact@v7
         with:
           name: nupkg
           path: |
-            bin/AlvorKit.RGFW.Native/Release/*.nupkg
-            bin/AlvorKit.RGFW/Release/*.nupkg
-            bin/AlvorKit.RGFW.Backend/Release/*.nupkg
+            bin/AlvorKit.GLFW.Native/Release/*.nupkg
+            bin/AlvorKit.GLFW/Release/*.nupkg
+            bin/AlvorKit.GLFW.Backend/Release/*.nupkg
           if-no-files-found: error
 
       - name: Publish to NuGet.org (push events only)
         if: github.event_name == 'push'
         run: |
-          dotnet nuget push bin/AlvorKit.RGFW.Native/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push bin/AlvorKit.RGFW/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push bin/AlvorKit.RGFW.Backend/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/AlvorKit.GLFW.Native/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/AlvorKit.GLFW/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/AlvorKit.GLFW.Backend/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

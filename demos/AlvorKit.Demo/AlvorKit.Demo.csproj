@@ -2,18 +2,30 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
+        <!-- Required by the [LibraryImport] source generator in the GLFW backend source compiled below. -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="AlvorKit.FreeType.Backend" Version="2.14.3.3" />
         <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="0.11.25.5" />
         <PackageReference Include="AlvorKit.OpenGL.Backend" Version="4.6.1" />
-        <PackageReference Include="AlvorKit.RGFW.Backend" Version="1.8.1.4" />
         <PackageReference Include="BigGustave" Version="1.0.6" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
+    </ItemGroup>
+
+    <!-- Windowing via GLFW. The generated AlvorKit.GLFW.Backend depends on an unpublished
+         "AlvorKit.GLFW.Native" package, so (mirroring the HelloTriangle demo) we reference the
+         generated binding, compile the backend's P/Invoke source here, and supply glfw3.dll from
+         OpenTK's redist (also GLFW 3.4). Swap this for the real native package once it's published. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\out\bindgen\AlvorKit.GLFW\AlvorKit.GLFW.csproj" />
+        <PackageReference Include="OpenTK.redist.glfw" Version="3.4.0.44" />
+        <Compile Include="..\..\out\bindgen\AlvorKit.GLFW.Backend\GlfwBackend.cs" />
+        <Compile Include="..\..\out\bindgen\AlvorKit.GLFW.Backend\GlfwNative.cs" />
     </ItemGroup>
 
 </Project>

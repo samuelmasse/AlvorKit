@@ -9,11 +9,14 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
 {
     private readonly Dictionary<string, BindingEnum> enumByNativeName = [];
     private readonly Dictionary<string, BindingStruct> structByNativeName = [];
+    private readonly Dictionary<string, string> handlesByNativeName = [];
+    private readonly Dictionary<string, BindingDelegate> delegatesByNativeName = [];
     private readonly HashSet<string> failedStructs = [];
     private readonly Dictionary<string, RecordDecl> recordByNativeName = [];
     private readonly List<BindingFunction> functions = [];
     private readonly List<BindingConstant> constants = [];
-    private readonly Dictionary<(string ElementType, int Count), InlineBufferDefinition> inlineBuffers = [];
+    private readonly Dictionary<string, long> valuesByNativeName = [];
+    private readonly List<string> nativeNamesInOrder = [];
     private readonly List<string> skippedFunctions = [];
     private readonly SortedSet<string> sizeofTypes = [];
     private CXIndex clangIndex;
@@ -30,15 +33,18 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         IndexRecords(declarations);
         foreach (var nativeName in config.TransparentStructs)
             ResolveStruct(nativeName);
+        DiscoverCallbackTypedefs(declarations);
         DiscoverFunctions(declarations);
         DiscoverMacroConstants();
+        SynthesizeEnumGroups();
 
         var model = new BindingModel(
             [.. enumByNativeName.Values.DistinctBy(e => e.NativeName)],
             [.. structByNativeName.Values],
+            [.. handlesByNativeName.Select(handle => new BindingHandle(handle.Key, handle.Value))],
+            [.. delegatesByNativeName.Values],
             functions,
             constants,
-            [.. inlineBuffers.Values],
             skippedFunctions,
             [.. sizeofTypes]);
         DisposeClang();
@@ -228,6 +234,56 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         }
     }
 
+    // Finds the function-pointer typedefs (GLFWkeyfun and friends) and models each as a delegate so the
+    // emitter can produce a typed callback type and an instance-rooted setter.
+    private void DiscoverCallbackTypedefs(List<Decl> declarations)
+    {
+        foreach (var declaration in declarations)
+        {
+            if (declaration is not TypedefDecl typedef)
+                continue;
+            var canonical = typedef.UnderlyingType.Handle.CanonicalType;
+            if (canonical.kind != CXTypeKind.CXType_Pointer || canonical.PointeeType.kind != CXTypeKind.CXType_FunctionProto)
+                continue;
+
+            var proto = canonical.PointeeType;
+            if (MapNativeType(proto.ResultType, isReturn: true) is not { } returnType)
+                continue;
+
+            var names = new List<string>();
+            foreach (var child in typedef.CursorChildren)
+                if (child is ParmVarDecl childParameter)
+                    names.Add(childParameter.Name);
+
+            var parameters = new List<BindingParameter>();
+            var ok = true;
+            for (uint i = 0; i < (uint)proto.NumArgTypes; i++)
+            {
+                // Not isParam: a const char* in a callback (GLFW hands us UTF-8) cannot auto-marshal to
+                // string here (the runtime would decode it as ANSI), so it stays nint for the caller to decode.
+                if (MapNativeType(proto.GetArgType(i)) is not { } managed)
+                {
+                    ok = false;
+                    break;
+                }
+                var name = i < names.Count && names[(int)i].Length > 0 ? names[(int)i] : $"arg{i}";
+                var typed = config.EnumOverloads?.ByParamName.GetValueOrDefault(name) ?? managed;
+                parameters.Add(new(CSharpName.Parameter(name), typed, typed, "", HasStringConvenience: false));
+            }
+            if (ok)
+                delegatesByNativeName[typedef.Name] = new BindingDelegate(DelegateName(typedef.Name), returnType, parameters);
+        }
+    }
+
+    private string DelegateName(string nativeName)
+    {
+        if (config.TypeRenames.TryGetValue(nativeName, out var renamed))
+            return renamed;
+        var bare = config.Prefix.TrimEnd('_');
+        var rest = nativeName.StartsWith(bare, StringComparison.OrdinalIgnoreCase) ? nativeName[bare.Length..] : nativeName;
+        return managedTypePrefix + char.ToUpperInvariant(rest[0]) + rest[1..];
+    }
+
     private void IndexRecords(List<Decl> declarations)
     {
         foreach (var declaration in declarations)
@@ -259,12 +315,16 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             isUnion,
             (int)record.TypeForDecl.Handle.SizeOf,
             [],
+            [],
             XmlDocComment.Parse(record.Handle.RawCommentText.ToString())?.Summary);
         structByNativeName[nativeName] = built;
 
         foreach (var field in record.Fields)
         {
-            var managedType = field.Name.Length == 0 ? null : MapStructFieldType(field, nativeName);
+            var fieldManagedName = field.Name.Length == 0
+                ? ""
+                : CSharpName.FromNativeIdentifier(field.Name, config.Prefix, config.DigitNamePrefix);
+            var managedType = field.Name.Length == 0 ? null : MapStructFieldType(field, fieldManagedName, built);
             if (managedType is null)
             {
                 if (isUnion)
@@ -276,7 +336,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             }
 
             built.Fields.Add(new(
-                CSharpName.FromNativeIdentifier(field.Name, config.Prefix, config.DigitNamePrefix),
+                fieldManagedName,
                 managedType,
                 (int)(field.Handle.OffsetOfField / 8),
                 XmlDocComment.Member(field.Handle.RawCommentText.ToString())));
@@ -286,13 +346,13 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         return built;
     }
 
-    private string? MapStructFieldType(FieldDecl field, string parentNativeName)
+    private string? MapStructFieldType(FieldDecl field, string fieldManagedName, BindingStruct owner)
     {
         var canonical = field.Type.Handle.CanonicalType;
         if (canonical.kind == CXTypeKind.CXType_ConstantArray)
-            return MapInlineArray(canonical, parentNativeName);
+            return MapInlineArray(canonical, fieldManagedName, owner);
         if (canonical.kind == CXTypeKind.CXType_Record)
-            return MapRecordField(field, parentNativeName);
+            return MapRecordField(field, owner.NativeName);
         return MapNativeType(field.Type.Handle);
     }
 
@@ -313,13 +373,15 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         return BuildStruct(definition, synthesizedName)?.ManagedName;
     }
 
-    private string? MapInlineArray(CXType arrayType, string parentNativeName)
+    // A fixed-size array field becomes an [InlineArray] buffer struct nested in the owning struct and
+    // named after the field (buttons -> ButtonsBuffer), rather than a shared top-level type.
+    private string? MapInlineArray(CXType arrayType, string fieldManagedName, BindingStruct owner)
     {
         var count = (int)arrayType.ArraySize;
         var element = arrayType.ElementType;
         string? elementType;
         if (element.CanonicalType.kind == CXTypeKind.CXType_ConstantArray)
-            elementType = MapInlineArray(element.CanonicalType, parentNativeName);
+            elementType = MapInlineArray(element.CanonicalType, fieldManagedName + "Row", owner);
         else if (element.CanonicalType.kind == CXTypeKind.CXType_Record)
             elementType = ResolveStruct(CleanTypeSpelling(element))?.ManagedName;
         else
@@ -327,14 +389,9 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         if (elementType is null)
             return null;
 
-        var key = (elementType, count);
-        if (!inlineBuffers.TryGetValue(key, out var buffer))
-        {
-            var elementName = char.ToUpperInvariant(elementType[0]) + elementType[1..];
-            buffer = new($"{elementName}Buffer{count}", elementType, count);
-            inlineBuffers[key] = buffer;
-        }
-        return buffer.ManagedName;
+        var bufferName = fieldManagedName + "Buffer";
+        owner.NestedBuffers.Add(new(bufferName, elementType, count));
+        return bufferName;
     }
 
     private void DiscoverFunctions(List<Decl> declarations)
@@ -388,30 +445,53 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             parameters.Add(parameterBinding);
         }
 
+        // A bool return travels as its underlying integer at the native boundary (the backend converts);
+        // a header that types booleans as plain int names the bool-returning functions in config.
+        var isBoolReturn = returnType == "bool" || config.BoolReturns.Contains(function.Name);
+        var returnInteropType = isBoolReturn ? MapNativeType(function.ReturnType.Handle, isReturn: true, boolAsRaw: true)! : returnType;
         return new(
             function.Name,
             CSharpName.FromNativeIdentifier(function.Name, matchingPrefix, config.DigitNamePrefix),
-            returnType,
-            returnType == "bool" ? BoolMarshaller(function.ReturnType.Handle) : null,
+            isBoolReturn ? "bool" : returnType,
+            returnInteropType,
             parameters,
-            XmlDocComment.Parse(function.Handle.RawCommentText.ToString()));
+            XmlDocComment.Parse(function.Handle.RawCommentText.ToString()),
+            ReturnsCString: returnType == "nint" && ReturnsCString(function.ReturnType.Handle));
+    }
+
+    /// <summary>True when the return is a <c>const char*</c> (a NUL-terminated C string), kept as the raw
+    /// nint with a string-decoding overload derived from it.</summary>
+    private static bool ReturnsCString(CXType returnType)
+    {
+        var canonical = returnType.CanonicalType;
+        if (canonical.kind != CXTypeKind.CXType_Pointer)
+            return false;
+        var pointee = canonical.PointeeType;
+        return pointee.kind is CXTypeKind.CXType_Char_S or CXTypeKind.CXType_Char_U && pointee.IsConstQualified;
     }
 
     private BindingParameter? TryBindParameter(FunctionDecl function, ParmVarDecl parameter, int index)
     {
         var modifier = ParameterModifier(function.Name, parameter.Name);
-        var managedType = modifier.Length > 0
-            ? MapNativeType(parameter.Type.Handle.PointeeType)
-            : MapNativeType(parameter.Type.Handle, isParam: true);
-        if (managedType is null)
+        var typeHandle = modifier.Length > 0 ? parameter.Type.Handle.PointeeType : parameter.Type.Handle;
+        var niceType = MapNativeType(typeHandle, isParam: modifier.Length == 0);
+        if (niceType is null)
         {
             skippedFunctions.Add($"{function.Name} (param {parameter.Name}: {parameter.Type.AsString})");
             return null;
         }
 
+        // No P/Invoke marshalling on the native class: a const char* is raw nint with a string convenience
+        // overload, and a bool travels as its underlying integer with the backend converting.
+        var isString = niceType == "string";
+        var isBool = niceType == "bool" || (modifier.Length == 0 && config.BoolParams.GetValueOrDefault(function.Name, []).Contains(parameter.Name));
+        var managedType = isString ? "nint" : isBool ? "bool" : niceType;
+        var interopType = isString ? "nint" : isBool ? MapNativeType(typeHandle, isParam: modifier.Length == 0, boolAsRaw: true)! : niceType;
+
         var nativeName = parameter.Name.Length > 0 ? parameter.Name : $"arg{index}";
         var canonical = parameter.Type.Handle.CanonicalType;
         var isUntypedPointer = modifier.Length == 0
+            && !isString
             && managedType == "nint"
             && canonical.kind == CXTypeKind.CXType_Pointer
             && canonical.PointeeType.CanonicalType.kind
@@ -421,12 +501,13 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         return new(
             CSharpName.Parameter(nativeName),
             managedType,
+            interopType,
             modifier,
-            RequiresUtf8StringMarshalling: modifier.Length == 0 && managedType == "string",
-            BoolMarshaller: managedType == "bool" && modifier.Length == 0 ? BoolMarshaller(parameter.Type.Handle) : null,
+            HasStringConvenience: isString,
             IsUntypedPointer: isUntypedPointer,
             IsConstPointee: isUntypedPointer && canonical.PointeeType.IsConstQualified,
-            IsSizeT: modifier.Length == 0 && CleanTypeSpelling(parameter.Type.Handle) == "size_t");
+            IsSizeT: modifier.Length == 0 && CleanTypeSpelling(parameter.Type.Handle) == "size_t",
+            CallbackType: delegatesByNativeName.GetValueOrDefault(CleanTypeSpelling(parameter.Type.Handle))?.ManagedName);
     }
 
     private string ParameterModifier(string functionName, string parameterName)
@@ -437,8 +518,6 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
             return "in";
         return "";
     }
-
-    private static string BoolMarshaller(CXType type) => type.CanonicalType.SizeOf == 4 ? "I4" : "U1";
 
     private void TrackSizeofCandidate(FunctionDecl function)
     {
@@ -458,8 +537,6 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
     private void DiscoverMacroConstants()
     {
         string[] prefixes = [config.Prefix, .. config.ExtraPrefixes];
-        var valuesByNativeName = new Dictionary<string, long>();
-        var nativeNamesInOrder = new List<string>();
 
         foreach (var cursor in translationUnit!.TranslationUnitDecl.CursorChildren)
         {
@@ -504,15 +581,49 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         constants.Sort((a, b) => string.Compare(a.ManagedName, b.ManagedName, StringComparison.Ordinal));
     }
 
+    // Builds the typed enums declared in config.EnumGroups out of the discovered macro constants:
+    // collect each group's constants (by shared prefix, or an explicit list), then name the members by
+    // stripping that prefix. Aliases (LEFT == BUTTON_1) come along for free as same-valued members.
+    private void SynthesizeEnumGroups()
+    {
+        foreach (var (enumName, group) in config.EnumGroups)
+        {
+            var natives = group.Members
+                ?? nativeNamesInOrder.Where(name => name.StartsWith(group.Prefix) && !group.Exclude.Contains(name));
+            var members = new List<BindingEnumMember>();
+            foreach (var native in natives)
+            {
+                if (!valuesByNativeName.TryGetValue(native, out var value))
+                    continue;
+                var name = CSharpName.FromNativeIdentifier(native, group.Prefix, group.DigitPrefix);
+                if (group.Suffix.Length > 0 && name.Length > group.Suffix.Length && name.EndsWith(group.Suffix))
+                    name = name[..^group.Suffix.Length];
+                members.Add(new(name, value, null));
+            }
+            enumByNativeName[enumName] = new BindingEnum(enumName, enumName, "int", group.Flags, members, null);
+        }
+    }
+
     private string TypeName(string nativeName) =>
         config.TypeRenames.GetValueOrDefault(nativeName)
         ?? CSharpName.FromNativeTypeName(nativeName, config.Prefix, managedTypePrefix, config.DigitNamePrefix);
 
-    private string? MapNativeType(CXType type, bool isParam = false, bool isReturn = false)
+    // A pointer to an opaque record (a forward-declared struct with no definition) becomes a typed
+    // handle, but only when the type is named in typeRenames: that keeps it opt-in per library and
+    // gives the handle a clean name instead of the mangled auto-name.
+    private string? OpaqueHandle(string nativeName)
+    {
+        if (recordByNativeName.ContainsKey(nativeName) || !config.TypeRenames.TryGetValue(nativeName, out var managed))
+            return null;
+        handlesByNativeName[nativeName] = managed;
+        return managed;
+    }
+
+    private string? MapNativeType(CXType type, bool isParam = false, bool isReturn = false, bool boolAsRaw = false)
     {
         var spelling = CleanTypeSpelling(type);
 
-        if (spelling == $"{config.Prefix}bool" || ((isParam || isReturn) && config.BoolTypes.Contains(spelling)))
+        if (!boolAsRaw && (spelling == $"{config.Prefix}bool" || ((isParam || isReturn) && config.BoolTypes.Contains(spelling))))
             return "bool";
         if (enumByNativeName.TryGetValue(spelling, out var enumType))
             return enumType.ManagedName;
@@ -545,6 +656,8 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
                 return "nint";
             if (isParam && pointee.kind is CXTypeKind.CXType_Char_S or CXTypeKind.CXType_Char_U && pointee.IsConstQualified)
                 return "string";
+            if (pointee.CanonicalType.kind == CXTypeKind.CXType_Record && OpaqueHandle(CleanTypeSpelling(pointee)) is { } handle)
+                return handle;
             return "nint";
         }
 

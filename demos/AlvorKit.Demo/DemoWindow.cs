@@ -1,49 +1,36 @@
-using AlvorKit.RGFW;
+using AlvorKit.GLFW;
 
 namespace AlvorKit.Demo;
 
 public sealed class DemoWindow : IDisposable
 {
-    private readonly Rgfw rgfw;
-    private nint handle;
+    private readonly Glfw glfw;
+    private GlfwWindow handle;
 
-    private DemoWindow(Rgfw rgfw, nint handle)
+    private DemoWindow(Glfw glfw, GlfwWindow handle)
     {
-        this.rgfw = rgfw;
+        this.glfw = glfw;
         this.handle = handle;
     }
 
-    public nint Handle => handle;
+    public GlfwWindow Handle => handle;
 
-    public static DemoWindow? TryCreate(Rgfw rgfw, string title, int width, int height)
+    public static DemoWindow? TryCreate(Glfw glfw, string title, int width, int height)
     {
-        var handle = rgfw.CreateWindow(
-            title,
-            0,
-            0,
-            width,
-            height,
-            RgfwWindowFlags.WindowCenter | RgfwWindowFlags.WindowOpenGL);
-
-        if (handle == 0)
+        var handle = glfw.CreateWindow(width, height, title, default, default);
+        if (handle == default)
             return null;
 
-        rgfw.WindowSetExitKey(handle, RgfwKey.Escape);
-        rgfw.WindowMakeCurrentContextOpenGL(handle);
-        return new DemoWindow(rgfw, handle);
-    }
-
-    public void GetSize(out int width, out int height)
-    {
-        rgfw.WindowGetSize(handle, out width, out height);
+        glfw.MakeContextCurrent(handle);
+        return new DemoWindow(glfw, handle);
     }
 
     public void Dispose()
     {
-        if (handle == 0)
+        if (handle == default)
             return;
 
-        rgfw.WindowClose(handle);
-        handle = 0;
+        glfw.DestroyWindow(handle);
+        handle = default;
     }
 }

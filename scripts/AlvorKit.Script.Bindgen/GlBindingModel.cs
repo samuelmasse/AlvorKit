@@ -21,6 +21,8 @@ public record GlEnumGroup(string NativeName, string ManagedName, bool IsFlags, L
 /// cast sits between the typed surface and the GL entry point (enum groups over GLenum/GLbitfield
 /// and grouped GLint, bool over GLboolean). Pointers are <c>nint</c> with the depth-one pointee
 /// recorded for overload generation; <see cref="PointeeIsChar"/> marks GLchar at any depth.
+/// <see cref="CallbackType"/>, when set, is the managed delegate a function-pointer parameter
+/// accepts: the raw method keeps the <c>nint</c>, and a typed setter overload is derived from it.
 /// </summary>
 public record GlParameter(
     string NativeName,
@@ -31,7 +33,14 @@ public record GlParameter(
     int PointerDepth,
     string? PointeeType,
     bool PointeeIsConst,
-    bool PointeeIsChar);
+    bool PointeeIsChar,
+    string? CallbackType = null);
+
+/// <summary>
+/// A function-pointer typedef (GLDEBUGPROC) surfaced as a managed delegate. The raw entry point
+/// keeps the callback parameter as <c>nint</c>; an instance-rooted setter overload takes this.
+/// </summary>
+public record GlDelegate(string NativeName, string ManagedName, string ReturnType, List<GlParameter> Parameters);
 
 public record GlCommand(
     string NativeName,
@@ -53,4 +62,5 @@ public record GlBindingModel(
     List<GlConstant> WideConstants,
     List<string> UngroupedEnumUses,
     List<string> SkippedCommands,
-    List<string> HandleTypes);
+    List<string> HandleTypes,
+    List<GlDelegate> Delegates);

@@ -11,10 +11,10 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>Zlib</PackageLicenseExpression>
-        <Description>RGFW $(Version) binaries for win (x64, x86, arm64), linux (x64, arm, arm64) and
+        <Description>GLFW $(Version) binaries for win (x64, x86, arm64), linux (x64, arm, arm64) and
             osx (x64, arm64)</Description>
         <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>https://github.com/ColleagueRiley/RGFW</RepositoryUrl>
+        <RepositoryUrl>https://github.com/glfw/glfw</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,7 +24,7 @@
 
     <Target Name="EnsureNativeBinaries" BeforeTargets="GenerateNuspec">
         <Error Condition="'@(Content)' == ''"
-            Text="runtimes/ is empty — build the native binaries first (native/rgfw/scripts/)." />
+            Text="runtimes/ is empty — build the native binaries first (native/glfw/scripts/)." />
     </Target>
 
 </Project>

@@ -1,0 +1,182 @@
+{
+    "namespace": "AlvorKit.GLFW",
+    "apiClass": "Glfw",
+    "apiSummary": "The GLFW windowing library: windows, OpenGL and Vulkan contexts, monitors, keyboard, mouse and joystick input, events, clipboard and timing.",
+    "backendClass": "GlfwBackend",
+    "nativeClass": "GlfwNative",
+    "nativeLibrary": "glfw3",
+    "prefix": "GLFW_",
+    "extraPrefixes": [
+        "glfw"
+    ],
+    "workDir": "glfw-build",
+    "sourceDir": "glfw-{tag}",
+    "header": "include/GLFW/glfw3.h",
+    "includeSubdir": "include",
+    "tuLines": [
+        "#include <GLFW/glfw3.h>"
+    ],
+    "apiProject": "out/bindgen/AlvorKit.GLFW",
+    "backendProject": "out/bindgen/AlvorKit.GLFW.Backend",
+    "extraDefines": [
+        "GLFW_INCLUDE_NONE"
+    ],
+    "typeRenames": {
+        "GLFWvidmode": "GlfwVidMode",
+        "GLFWgammaramp": "GlfwGammaRamp",
+        "GLFWimage": "GlfwImage",
+        "GLFWgamepadstate": "GlfwGamepadState",
+        "GLFWwindow": "GlfwWindow",
+        "GLFWmonitor": "GlfwMonitor",
+        "GLFWcursor": "GlfwCursor"
+    },
+    "transparentStructs": [
+        "GLFWvidmode",
+        "GLFWgammaramp",
+        "GLFWimage",
+        "GLFWgamepadstate"
+    ],
+    "enumGroups": {
+        "GlfwKey": { "prefix": "GLFW_KEY_", "digitPrefix": "D" },
+        "GlfwMouseButton": { "prefix": "GLFW_MOUSE_BUTTON_", "digitPrefix": "Button" },
+        "GlfwGamepadButton": { "prefix": "GLFW_GAMEPAD_BUTTON_" },
+        "GlfwGamepadAxis": { "prefix": "GLFW_GAMEPAD_AXIS_" },
+        "GlfwJoystick": { "prefix": "GLFW_JOYSTICK_", "digitPrefix": "Joystick", "exclude": ["GLFW_JOYSTICK_HAT_BUTTONS"] },
+        "GlfwJoystickHat": { "prefix": "GLFW_HAT_", "flags": true },
+        "GlfwKeyModifier": { "prefix": "GLFW_MOD_", "flags": true },
+        "GlfwInputAction": { "prefix": "GLFW_", "members": ["GLFW_RELEASE", "GLFW_PRESS", "GLFW_REPEAT"] },
+        "GlfwErrorCode": { "prefix": "GLFW_", "members": ["GLFW_NO_ERROR", "GLFW_NOT_INITIALIZED", "GLFW_NO_CURRENT_CONTEXT", "GLFW_INVALID_ENUM", "GLFW_INVALID_VALUE", "GLFW_OUT_OF_MEMORY", "GLFW_API_UNAVAILABLE", "GLFW_VERSION_UNAVAILABLE", "GLFW_PLATFORM_ERROR", "GLFW_FORMAT_UNAVAILABLE", "GLFW_NO_WINDOW_CONTEXT", "GLFW_CURSOR_UNAVAILABLE", "GLFW_FEATURE_UNAVAILABLE", "GLFW_FEATURE_UNIMPLEMENTED", "GLFW_PLATFORM_UNAVAILABLE"] },
+        "GlfwConnectionEvent": { "prefix": "GLFW_", "members": ["GLFW_CONNECTED", "GLFW_DISCONNECTED"] },
+        "GlfwCursorShape": { "prefix": "GLFW_", "suffix": "Cursor", "members": ["GLFW_ARROW_CURSOR", "GLFW_IBEAM_CURSOR", "GLFW_CROSSHAIR_CURSOR", "GLFW_POINTING_HAND_CURSOR", "GLFW_RESIZE_EW_CURSOR", "GLFW_RESIZE_NS_CURSOR", "GLFW_RESIZE_NWSE_CURSOR", "GLFW_RESIZE_NESW_CURSOR", "GLFW_RESIZE_ALL_CURSOR", "GLFW_NOT_ALLOWED_CURSOR"] },
+        "GlfwInputMode": { "prefix": "GLFW_", "members": ["GLFW_CURSOR", "GLFW_STICKY_KEYS", "GLFW_STICKY_MOUSE_BUTTONS", "GLFW_LOCK_KEY_MODS", "GLFW_RAW_MOUSE_MOTION"] },
+        "GlfwCursorMode": { "prefix": "GLFW_CURSOR_", "exclude": ["GLFW_CURSOR_UNAVAILABLE"] },
+        "GlfwWindowHint": { "prefix": "GLFW_", "members": ["GLFW_FOCUSED", "GLFW_ICONIFIED", "GLFW_RESIZABLE", "GLFW_VISIBLE", "GLFW_DECORATED", "GLFW_AUTO_ICONIFY", "GLFW_FLOATING", "GLFW_MAXIMIZED", "GLFW_CENTER_CURSOR", "GLFW_TRANSPARENT_FRAMEBUFFER", "GLFW_HOVERED", "GLFW_FOCUS_ON_SHOW", "GLFW_MOUSE_PASSTHROUGH", "GLFW_POSITION_X", "GLFW_POSITION_Y", "GLFW_RED_BITS", "GLFW_GREEN_BITS", "GLFW_BLUE_BITS", "GLFW_ALPHA_BITS", "GLFW_DEPTH_BITS", "GLFW_STENCIL_BITS", "GLFW_ACCUM_RED_BITS", "GLFW_ACCUM_GREEN_BITS", "GLFW_ACCUM_BLUE_BITS", "GLFW_ACCUM_ALPHA_BITS", "GLFW_AUX_BUFFERS", "GLFW_STEREO", "GLFW_SAMPLES", "GLFW_SRGB_CAPABLE", "GLFW_REFRESH_RATE", "GLFW_DOUBLEBUFFER", "GLFW_CLIENT_API", "GLFW_CONTEXT_VERSION_MAJOR", "GLFW_CONTEXT_VERSION_MINOR", "GLFW_CONTEXT_REVISION", "GLFW_CONTEXT_ROBUSTNESS", "GLFW_OPENGL_FORWARD_COMPAT", "GLFW_CONTEXT_DEBUG", "GLFW_OPENGL_DEBUG_CONTEXT", "GLFW_OPENGL_PROFILE", "GLFW_CONTEXT_RELEASE_BEHAVIOR", "GLFW_CONTEXT_NO_ERROR", "GLFW_CONTEXT_CREATION_API", "GLFW_SCALE_TO_MONITOR", "GLFW_SCALE_FRAMEBUFFER", "GLFW_COCOA_RETINA_FRAMEBUFFER", "GLFW_COCOA_FRAME_NAME", "GLFW_COCOA_GRAPHICS_SWITCHING", "GLFW_X11_CLASS_NAME", "GLFW_X11_INSTANCE_NAME", "GLFW_WIN32_KEYBOARD_MENU", "GLFW_WIN32_SHOWDEFAULT", "GLFW_WAYLAND_APP_ID"] },
+        "GlfwClientApi": { "prefix": "GLFW_", "members": ["GLFW_NO_API", "GLFW_OPENGL_API", "GLFW_OPENGL_ES_API"] },
+        "GlfwContextApi": { "prefix": "GLFW_", "members": ["GLFW_NATIVE_CONTEXT_API", "GLFW_EGL_CONTEXT_API", "GLFW_OSMESA_CONTEXT_API"] },
+        "GlfwOpenGLProfile": { "prefix": "GLFW_OPENGL_", "members": ["GLFW_OPENGL_ANY_PROFILE", "GLFW_OPENGL_CORE_PROFILE", "GLFW_OPENGL_COMPAT_PROFILE"] },
+        "GlfwRobustness": { "prefix": "GLFW_", "members": ["GLFW_NO_ROBUSTNESS", "GLFW_NO_RESET_NOTIFICATION", "GLFW_LOSE_CONTEXT_ON_RESET"] },
+        "GlfwReleaseBehavior": { "prefix": "GLFW_", "members": ["GLFW_ANY_RELEASE_BEHAVIOR", "GLFW_RELEASE_BEHAVIOR_FLUSH", "GLFW_RELEASE_BEHAVIOR_NONE"] },
+        "GlfwAnglePlatformType": { "prefix": "GLFW_ANGLE_PLATFORM_TYPE_" },
+        "GlfwWaylandLibdecor": { "prefix": "GLFW_WAYLAND_", "members": ["GLFW_WAYLAND_PREFER_LIBDECOR", "GLFW_WAYLAND_DISABLE_LIBDECOR"] },
+        "GlfwInitHint": { "prefix": "GLFW_", "members": ["GLFW_JOYSTICK_HAT_BUTTONS", "GLFW_ANGLE_PLATFORM_TYPE", "GLFW_PLATFORM", "GLFW_COCOA_CHDIR_RESOURCES", "GLFW_COCOA_MENUBAR", "GLFW_X11_XCB_VULKAN_SURFACE", "GLFW_WAYLAND_LIBDECOR"] },
+        "GlfwPlatform": { "prefix": "GLFW_", "members": ["GLFW_ANY_PLATFORM", "GLFW_PLATFORM_WIN32", "GLFW_PLATFORM_COCOA", "GLFW_PLATFORM_WAYLAND", "GLFW_PLATFORM_X11", "GLFW_PLATFORM_NULL"] }
+    },
+    "enumOverloads": {
+        "byParamName": {
+            "key": "GlfwKey",
+            "button": "GlfwMouseButton",
+            "mods": "GlfwKeyModifier",
+            "action": "GlfwInputAction",
+            "jid": "GlfwJoystick",
+            "shape": "GlfwCursorShape",
+            "platform": "GlfwPlatform"
+        },
+        "functions": {
+            "glfwGetKey": { "return": "GlfwInputAction" },
+            "glfwGetMouseButton": { "return": "GlfwInputAction" },
+            "glfwGetInputMode": { "params": { "mode": ["GlfwInputMode"] } },
+            "glfwSetInputMode": { "params": { "mode": ["GlfwInputMode"], "value": ["int", "bool", "GlfwCursorMode"] } },
+            "glfwWindowHint": { "params": { "hint": ["GlfwWindowHint"], "value": ["int", "bool", "GlfwClientApi", "GlfwContextApi", "GlfwOpenGLProfile", "GlfwRobustness", "GlfwReleaseBehavior"] } },
+            "glfwWindowHintString": { "params": { "hint": ["GlfwWindowHint"] } },
+            "glfwInitHint": { "params": { "hint": ["GlfwInitHint"], "value": ["int", "bool"] } },
+            "glfwGetWindowAttrib": { "params": { "attrib": ["GlfwWindowHint"] } },
+            "glfwSetWindowAttrib": { "params": { "attrib": ["GlfwWindowHint"], "value": ["int", "bool"] } }
+        }
+    },
+    "outParams": {
+        "glfwGetVersion": [
+            "major",
+            "minor",
+            "rev"
+        ],
+        "glfwGetError": [
+            "description"
+        ],
+        "glfwGetMonitors": [
+            "count"
+        ],
+        "glfwGetVideoModes": [
+            "count"
+        ],
+        "glfwGetJoystickAxes": [
+            "count"
+        ],
+        "glfwGetJoystickButtons": [
+            "count"
+        ],
+        "glfwGetJoystickHats": [
+            "count"
+        ],
+        "glfwGetRequiredInstanceExtensions": [
+            "count"
+        ],
+        "glfwGetWindowPos": [
+            "xpos",
+            "ypos"
+        ],
+        "glfwGetWindowSize": [
+            "width",
+            "height"
+        ],
+        "glfwGetFramebufferSize": [
+            "width",
+            "height"
+        ],
+        "glfwGetWindowFrameSize": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+        ],
+        "glfwGetWindowContentScale": [
+            "xscale",
+            "yscale"
+        ],
+        "glfwGetCursorPos": [
+            "xpos",
+            "ypos"
+        ],
+        "glfwGetMonitorPos": [
+            "xpos",
+            "ypos"
+        ],
+        "glfwGetMonitorWorkarea": [
+            "xpos",
+            "ypos",
+            "width",
+            "height"
+        ],
+        "glfwGetMonitorPhysicalSize": [
+            "widthMM",
+            "heightMM"
+        ],
+        "glfwGetMonitorContentScale": [
+            "xscale",
+            "yscale"
+        ]
+    },
+    "boolReturns": [
+        "glfwInit",
+        "glfwWindowShouldClose",
+        "glfwRawMouseMotionSupported",
+        "glfwJoystickPresent",
+        "glfwJoystickIsGamepad",
+        "glfwUpdateGamepadMappings",
+        "glfwGetGamepadState",
+        "glfwPlatformSupported",
+        "glfwExtensionSupported",
+        "glfwVulkanSupported"
+    ],
+    "boolParams": {
+        "glfwSetWindowShouldClose": ["value"]
+    },
+    "spanReturns": {
+        "glfwGetMonitors": "GlfwMonitor",
+        "glfwGetVideoModes": "GlfwVidMode",
+        "glfwGetJoystickAxes": "float",
+        "glfwGetJoystickButtons": "byte",
+        "glfwGetJoystickHats": "byte"
+    },
+    "skip": {},
+    "sourceUrl": "https://github.com/glfw/glfw/archive/refs/tags/{tag}.tar.gz"
+}

@@ -37,6 +37,8 @@ public sealed class GlRegistryParser(BindgenConfig config)
     private readonly Dictionary<string, string> managedNameByGroup = [];
     private readonly List<string> ungroupedEnumUses = [];
     private readonly SortedSet<string> handleTypes = [];
+    private readonly Dictionary<string, string> callbackManagedNames = [];   // native typedef -> managed delegate name
+    private readonly HashSet<string> usedCallbacks = [];                      // typedefs a selected command references
     private string CatchAllName => config.ApiClass + "Enum";
 
     /// <summary>Registry handle classes (the <c>class</c> attribute) mapped to strongly-typed handle structs.</summary>
@@ -76,8 +78,10 @@ public sealed class GlRegistryParser(BindgenConfig config)
         GlAvailability Availability(string name) => new(since[name], esSince.GetValueOrDefault(name));
         var tokens = CollectTokens(registry, tokenNames, Availability);
         var groups = BuildGroups(tokens);
+        var callbackSignatures = DiscoverCallbackTypedefs(registry);
         var skipped = new List<string>();
         var commands = BuildCommands(registry, commandNames, Availability, docs, skipped);
+        var delegates = BuildDelegates(callbackSignatures);
 
         var narrow = tokens.Where(token => token.Value <= uint.MaxValue);
         var allTokens = new GlEnumGroup("GLenum", CatchAllName, IsFlags: false, SortMembers(narrow));
@@ -88,7 +92,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
 
         if (handleTypes.Count > 0)
             handleTypes.Add("GlHandle");
-        return new(groups, allTokens, commands, wideConstants, ungroupedEnumUses, skipped, [.. handleTypes]);
+        return new(groups, allTokens, commands, wideConstants, ungroupedEnumUses, skipped, [.. handleTypes], delegates);
     }
 
     private sealed record RegistryToken(
@@ -316,7 +320,8 @@ public sealed class GlRegistryParser(BindgenConfig config)
             declaration.PointerDepth,
             declaration.PointeeType,
             declaration.PointeeIsConst,
-            declaration.PointeeIsChar);
+            declaration.PointeeIsChar,
+            declaration.CallbackType);
     }
 
     /// <summary>
@@ -325,7 +330,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
     /// (group-typed for GLenum pointees), GLenum/GLbitfield and grouped GLint resolve their group
     /// attribute to a typed enum (catch-all when absent) and GLboolean becomes bool over a byte.
     /// </summary>
-    private (string Name, (string Managed, string Interop) Type, int PointerDepth, string? PointeeType, bool PointeeIsConst, bool PointeeIsChar)
+    private (string Name, (string Managed, string Interop) Type, int PointerDepth, string? PointeeType, bool PointeeIsConst, bool PointeeIsChar, string? CallbackType)
         MapDeclaration(XElement declaration, string commandName, bool objectCommand = false)
     {
         var type = new StringBuilder();
@@ -348,39 +353,154 @@ public sealed class GlRegistryParser(BindgenConfig config)
         var group = declaration.Attribute("group")?.Value;
         var handleClass = declaration.Attribute("class")?.Value;
 
+        // A function-pointer typedef parameter (GLDEBUGPROC): the raw entry point keeps the nint;
+        // its typed setter overload is derived separately. Record it so the delegate gets emitted.
+        if (pointerDepth == 0 && callbackManagedNames.TryGetValue(baseType, out var callbackManaged))
+        {
+            usedCallbacks.Add(baseType);
+            return (name, ("nint", "nint"), 0, null, false, false, callbackManaged);
+        }
+
         if (pointerDepth > 0)
         {
             var pointeeType = pointerDepth != 1 || valueType == "void" ? null
                 : baseType == "GLenum" && group is not null && managedNameByGroup.TryGetValue(group, out var pointeeGroup) ? pointeeGroup
                 : baseType == "GLuint" && HandleType(handleClass) is { } pointeeHandle ? pointeeHandle
                 : valueType;
-            return (name, ("nint", "nint"), pointerDepth, pointeeType, cType.TrimStart().StartsWith("const "), baseType == "GLchar");
+            return (name, ("nint", "nint"), pointerDepth, pointeeType, cType.TrimStart().StartsWith("const "), baseType == "GLchar", null);
         }
 
         if (baseType is "GLenum" or "GLbitfield")
         {
             if (group is not null && managedNameByGroup.TryGetValue(group, out var managedGroup))
-                return (name, (managedGroup, "uint"), 0, null, false, false);
+                return (name, (managedGroup, "uint"), 0, null, false, false, null);
             ungroupedEnumUses.Add($"{commandName}({(name.Length > 0 ? name : "return")}: {group ?? "no group"})");
             // An ungrouped GLenum still holds tokens; an ungrouped GLbitfield is arbitrary bits.
-            return (name, (baseType == "GLenum" ? CatchAllName : "uint", "uint"), 0, null, false, false);
+            return (name, (baseType == "GLenum" ? CatchAllName : "uint", "uint"), 0, null, false, false, null);
         }
 
         // The glTexImage family types its internalformat as GLint for historical reasons.
         if (baseType == "GLint" && group is not null && managedNameByGroup.TryGetValue(group, out var intGroup))
-            return (name, (intGroup, "int"), 0, null, false, false);
+            return (name, (intGroup, "int"), 0, null, false, false, null);
 
         if (baseType == "GLuint" && HandleType(handleClass) is { } handle)
-            return (name, (handle, "uint"), 0, null, false, false);
+            return (name, (handle, "uint"), 0, null, false, false, null);
         if (baseType == "GLuint" && objectCommand)
         {
             handleTypes.Add("GlHandle");
-            return (name, ("GlHandle", "uint"), 0, null, false, false);
+            return (name, ("GlHandle", "uint"), 0, null, false, false, null);
         }
 
         if (baseType == "GLboolean")
-            return (name, ("bool", "byte"), 0, null, false, false);
-        return (name, (valueType, valueType), 0, null, false, false);
+            return (name, ("bool", "byte"), 0, null, false, false, null);
+        return (name, (valueType, valueType), 0, null, false, false, null);
+    }
+
+    /// <summary>
+    /// Parses the configured function-pointer typedefs (GLDEBUGPROC) from the registry &lt;types&gt;
+    /// block into a return type and parameter list, recording each managed delegate name. The typedef
+    /// body is raw C text - "typedef void (APIENTRY *NAME)(GLenum source, ...)" - so the return is
+    /// read between "typedef" and the first parenthesis and the parameters from the last group.
+    /// </summary>
+    private Dictionary<string, (string Return, List<(string CType, string Name)> Parameters)> DiscoverCallbackTypedefs(XElement registry)
+    {
+        var result = new Dictionary<string, (string, List<(string, string)>)>();
+        if (config.Callbacks.Count == 0)
+            return result;
+
+        var typeElements = registry.Elements("types").Elements("type")
+            .Where(type => type.Element("name") is not null)
+            .GroupBy(type => type.Element("name")!.Value)
+            .ToDictionary(group => group.Key, group => group.First());
+
+        foreach (var (nativeName, callback) in config.Callbacks)
+        {
+            if (!typeElements.TryGetValue(nativeName, out var element))
+                throw new InvalidOperationException($"Callback typedef {nativeName} is not a <type> in the registry.");
+            callbackManagedNames[nativeName] = callback.ManagedName;
+            result[nativeName] = ParseFunctionPointerTypedef(element.Value, nativeName);
+        }
+        return result;
+    }
+
+    private static (string Return, List<(string CType, string Name)> Parameters) ParseFunctionPointerTypedef(string text, string nativeName)
+    {
+        const string keyword = "typedef";
+        var firstParen = text.IndexOf('(');
+        var open = text.LastIndexOf('(');
+        var close = text.LastIndexOf(')');
+        if (firstParen < 0 || open <= firstParen || close <= open || !text.Contains(keyword))
+            throw new InvalidOperationException($"{nativeName} is not a function-pointer typedef: '{text.Trim()}'.");
+
+        var returnType = text[(text.IndexOf(keyword) + keyword.Length)..firstParen].Trim();
+        var parameters = new List<(string, string)>();
+        foreach (var part in text[(open + 1)..close].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (part == "void")
+                continue;
+            var split = part.Length;
+            while (split > 0 && (char.IsLetterOrDigit(part[split - 1]) || part[split - 1] == '_'))
+                split--;
+            parameters.Add((part[..split].Trim(), part[split..]));
+        }
+        return (returnType, parameters);
+    }
+
+    /// <summary>
+    /// Builds the managed delegates for the callback typedefs a selected command actually uses,
+    /// mapping each parameter as the commands are (pointers to nint, GLenum to its configured group
+    /// or the catch-all enum). A configured typedef that no selected command references is omitted.
+    /// </summary>
+    private List<GlDelegate> BuildDelegates(Dictionary<string, (string Return, List<(string CType, string Name)> Parameters)> signatures)
+    {
+        var delegates = new List<GlDelegate>();
+        foreach (var nativeName in usedCallbacks)
+        {
+            var callback = config.Callbacks[nativeName];
+            var (returnType, parameters) = signatures[nativeName];
+            delegates.Add(new(
+                nativeName,
+                callback.ManagedName,
+                MapCallbackReturn(returnType, nativeName),
+                parameters.Select(parameter => MapCallbackParameter(parameter.CType, parameter.Name, callback)).ToList()));
+        }
+        return delegates.OrderBy(item => item.ManagedName, StringComparer.Ordinal).ToList();
+    }
+
+    private static string MapCallbackReturn(string cType, string nativeName)
+    {
+        if (cType.Contains('*'))
+            return "nint";
+        if (!ValueTypes.TryGetValue(cType.Replace("const", "").Trim(), out var valueType))
+            throw new InvalidOperationException($"{nativeName}: unmapped callback return type '{cType}'.");
+        return valueType;
+    }
+
+    /// <summary>
+    /// Maps a callback parameter's C type. Like <see cref="MapDeclaration"/>, but the enum typing
+    /// comes from the callback config rather than registry group attributes (the typedef carries
+    /// none), and GLboolean travels as a blittable byte since native code invokes the delegate.
+    /// </summary>
+    private GlParameter MapCallbackParameter(string cType, string name, CallbackConfig callback)
+    {
+        var pointerDepth = cType.Count(character => character == '*');
+        var baseType = cType.Replace("const", "").Replace("struct", "").Replace("*", "").Trim();
+        if (!ValueTypes.TryGetValue(baseType, out var valueType))
+            throw new InvalidOperationException($"Unmapped callback parameter type '{cType.Trim()}' on {name}.");
+        var managedName = CSharpName.Parameter(name);
+
+        if (pointerDepth > 0)
+            return new(name, managedName, "nint", "nint", null, pointerDepth, null, cType.TrimStart().StartsWith("const "), baseType == "GLchar");
+        if (baseType is "GLenum" or "GLbitfield")
+        {
+            var managedType = callback.ParamGroups.TryGetValue(name, out var groupNative) && managedNameByGroup.TryGetValue(groupNative, out var managedGroup)
+                ? managedGroup
+                : CatchAllName;
+            return new(name, managedName, managedType, "uint", null, 0, null, false, false);
+        }
+        if (baseType == "GLboolean")
+            return new(name, managedName, "byte", "byte", null, 0, null, false, false);
+        return new(name, managedName, valueType, valueType, null, 0, null, false, false);
     }
 
     private static void AssertUniqueManagedNames(IEnumerable<(string Managed, string Native)> names, string what)

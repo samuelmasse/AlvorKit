@@ -21,6 +21,8 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         File.WriteAllText(Path.Combine(apiDirectory, model.AllTokens.ManagedName + ".cs"), EmitEnum(model.AllTokens, catchAll: true));
         if (model.HandleTypes.Count > 0)
             File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Handles.cs"), EmitHandles(model));
+        foreach (var callback in model.Delegates)
+            File.WriteAllText(Path.Combine(apiDirectory, callback.ManagedName + ".cs"), EmitDelegate(callback));
 
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + ".cs"), EmitApiContract(model));
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Wrapper.cs"), EmitWrapper(model));
@@ -163,8 +165,65 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
             EmitCommandDocs(output, command);
             output.AppendLine($"    public virtual {command.ReturnType} {command.ManagedName}({Signature(command)}) => throw new NotImplementedException();");
         }
+        EmitCallbackSetters(output, model);
         output.AppendLine("}");
         return output.ToString();
+    }
+
+    /// <summary>
+    /// A native callback delegate (GLDEBUGPROC as GlDebugProc). Its parameters are typed like the
+    /// commands - enums where the config groups them, raw nint pointers otherwise - and it is
+    /// blittable, so the typed setter can hand its function pointer straight to the driver.
+    /// </summary>
+    private string EmitDelegate(GlDelegate callback)
+    {
+        var output = SourceHeader();
+        output.AppendLine($"namespace {config.Namespace};");
+        output.AppendLine();
+        output.AppendLine($"/// <summary>An OpenGL callback (<c>{callback.NativeName}</c>); install it through the matching setter, which roots it on the instance.</summary>");
+        output.AppendLine("[UnmanagedFunctionPointer(CallingConvention.Cdecl)]");
+        var signature = string.Join(", ", callback.Parameters.Select(parameter => $"{parameter.ManagedType} {parameter.ManagedName}"));
+        output.AppendLine($"public delegate {callback.ReturnType} {callback.ManagedName}({signature});");
+        return output.ToString();
+    }
+
+    // Instance-rooted typed callback setters: each callback-taking entry point (glDebugMessageCallback)
+    // gets an overload taking the typed delegate, rooting it on this instance so the driver's raw
+    // function pointer never dangles, and forwarding the function pointer to the raw method.
+    private void EmitCallbackSetters(StringBuilder output, GlBindingModel model)
+    {
+        var setters = model.Commands.Where(command => command.Parameters.Any(parameter => parameter.CallbackType is not null)).ToList();
+        if (setters.Count == 0)
+            return;
+
+        output.AppendLine();
+        output.AppendLine("    // Allocated on first use, so an instance that never installs a callback stays allocation-free.");
+        output.AppendLine("    private Dictionary<int, Delegate>? rootedCallbacks;");
+        output.AppendLine();
+        output.AppendLine("    // Roots a callback on this instance and returns the function pointer to install; null clears");
+        output.AppendLine("    // it, and replacing a slot drops the previous delegate (which then becomes collectable).");
+        output.AppendLine("    private nint RootCallback(int slot, Delegate? handler)");
+        output.AppendLine("    {");
+        output.AppendLine("        if (handler is null) { rootedCallbacks?.Remove(slot); return 0; }");
+        output.AppendLine("        (rootedCallbacks ??= [])[slot] = handler;");
+        output.AppendLine("        return Marshal.GetFunctionPointerForDelegate(handler);");
+        output.AppendLine("    }");
+
+        var slot = 0;
+        foreach (var command in setters)
+        {
+            var callbackParameter = command.Parameters.First(parameter => parameter.CallbackType is not null);
+            var signature = string.Join(", ", command.Parameters.Select(parameter =>
+                parameter == callbackParameter ? $"{parameter.CallbackType}? {parameter.ManagedName}" : $"{parameter.ManagedType} {parameter.ManagedName}"));
+            var arguments = string.Join(", ", command.Parameters.Select(parameter =>
+                parameter == callbackParameter ? $"RootCallback({slot}, {parameter.ManagedName})" : parameter.ManagedName));
+            var cref = string.Join(", ", command.Parameters.Select(parameter => parameter.ManagedType));
+            output.AppendLine();
+            output.AppendLine($"    /// <inheritdoc cref=\"{command.ManagedName}({cref})\"/>");
+            output.AppendLine("    /// <remarks>Convenience overload. Roots the delegate on this instance and installs its function pointer; pass null to clear it.</remarks>");
+            output.AppendLine($"    public void {command.ManagedName}({signature}) => {command.ManagedName}({arguments});");
+            slot++;
+        }
     }
 
     /// <summary>
@@ -314,7 +373,7 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         output.AppendLine();
         output.AppendLine("    /// <summary>");
         output.AppendLine("    /// Resolves every entry point through <paramref name=\"getProcAddress\"/> (such as");
-        output.AppendLine("    /// Rgfw.GetProcAddressOpenGL), which must be called with the OpenGL context current.");
+        output.AppendLine("    /// Glfw.GetProcAddress), which must be called with the OpenGL context current.");
         output.AppendLine("    /// Entry points the context does not provide stay unresolved: calling one throws");
         output.AppendLine("    /// <see cref=\"EntryPointNotFoundException\"/> naming the function.");
         output.AppendLine("    /// </summary>");

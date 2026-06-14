@@ -76,13 +76,13 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         output.AppendLine("        /// <summary>Pointer to the array of string pointers (a char**).</summary>");
         output.AppendLine("        public readonly nint Pointers;");
         output.AppendLine();
-        output.AppendLine("        public Utf8Array(ReadOnlySpan<string> strings, Span<byte> stack)");
+        output.AppendLine("        public Utf8Array(ReadOnlySpan<string> strings, Span<nint> stack)");
         output.AppendLine("        {");
         output.AppendLine("            var total = 0;");
         output.AppendLine("            for (var i = 0; i < strings.Length; i++)");
         output.AppendLine("                total += Encoding.UTF8.GetByteCount(strings[i]) + 1;");
         output.AppendLine("            var size = strings.Length * sizeof(nint) + total;");
-        output.AppendLine("            native = size <= stack.Length ? null : NativeMemory.Alloc((nuint)size);");
+        output.AppendLine("            native = size <= stack.Length * sizeof(nint) ? null : NativeMemory.Alloc((nuint)size);");
         output.AppendLine("            var basePtr = native != null ? (byte*)native : (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(stack));");
         output.AppendLine("            var pointers = (byte**)basePtr;");
         output.AppendLine("            var data = basePtr + strings.Length * sizeof(nint);");
@@ -320,7 +320,7 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
             if (plans[i] == Plan.StringIn)
                 output.AppendLine($"        using var {Local(parameters[i])}Utf8 = new Utf8({parameters[i].ManagedName}, stackalloc byte[256]);");
             else if (plans[i] == Plan.StringArray)
-                output.AppendLine($"        using var {Local(parameters[i])}Array = new Utf8Array({parameters[i].ManagedName}, stackalloc byte[1024]);");
+                output.AppendLine($"        using var {Local(parameters[i])}Array = new Utf8Array({parameters[i].ManagedName}, stackalloc nint[128]);");
         var fixedCount = 0;
         for (var i = 0; i < parameters.Count; i++)
         {

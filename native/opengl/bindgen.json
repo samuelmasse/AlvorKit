@@ -2,7 +2,7 @@
     "kind": "gl-registry",
     "namespace": "AlvorKit.OpenGL",
     "apiClass": "Gl",
-    "apiSummary": "Modern OpenGL (core profile): the full command surface with typed enum groups, resolved at runtime through a platform proc loader such as Rgfw.GetProcAddressOpenGL.",
+    "apiSummary": "Modern OpenGL (core profile): the full command surface with typed enum groups, resolved at runtime through a platform proc loader such as Glfw.GetProcAddress.",
     "backendClass": "GlBackend",
     "prefix": "GL_",
     "digitNamePrefix": "Gl",
@@ -19,6 +19,16 @@
     "apiProject": "out/bindgen/AlvorKit.OpenGL",
     "backendProject": "out/bindgen/AlvorKit.OpenGL.Backend",
     "typeRenames": {},
+    "callbacks": {
+        "GLDEBUGPROC": {
+            "managedName": "GlDebugProc",
+            "paramGroups": {
+                "source": "DebugSource",
+                "type": "DebugType",
+                "severity": "DebugSeverity"
+            }
+        }
+    },
     "skip": {},
     "skipConstants": {},
     "spanParams": {
