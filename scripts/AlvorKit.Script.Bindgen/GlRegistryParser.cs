@@ -36,7 +36,35 @@ public sealed class GlRegistryParser(BindgenConfig config)
 
     private readonly Dictionary<string, string> managedNameByGroup = [];
     private readonly List<string> ungroupedEnumUses = [];
+    private readonly SortedSet<string> handleTypes = [];
     private string CatchAllName => config.ApiClass + "Enum";
+
+    /// <summary>Registry handle classes (the <c>class</c> attribute) mapped to strongly-typed handle structs.</summary>
+    private static readonly Dictionary<string, string> HandleClasses = new()
+    {
+        ["buffer"] = "GlBufferHandle",
+        ["texture"] = "GlTextureHandle",
+        ["program"] = "GlProgramHandle",
+        ["shader"] = "GlShaderHandle",
+        ["framebuffer"] = "GlFramebufferHandle",
+        ["renderbuffer"] = "GlRenderbufferHandle",
+        ["sampler"] = "GlSamplerHandle",
+        ["vertex array"] = "GlVertexArrayHandle",
+        ["query"] = "GlQueryHandle",
+        ["transform feedback"] = "GlTransformFeedbackHandle",
+        ["program pipeline"] = "GlProgramPipelineHandle",
+    };
+
+    /// <summary>The handle struct for a param/return <c>class</c> (recorded for emission), or null.</summary>
+    private string? HandleType(string? handleClass)
+    {
+        if (handleClass is not null && HandleClasses.TryGetValue(handleClass, out var type))
+        {
+            handleTypes.Add(type);
+            return type;
+        }
+        return null;
+    }
 
     public GlBindingModel Parse(string registryPath, IReadOnlyDictionary<string, XmlDocComment> docs)
     {
@@ -58,7 +86,9 @@ public sealed class GlRegistryParser(BindgenConfig config)
             .Select(token => new GlConstant(token.ManagedName, token.NativeName, token.Value, token.Availability))
             .ToList();
 
-        return new(groups, allTokens, commands, wideConstants, ungroupedEnumUses, skipped);
+        if (handleTypes.Count > 0)
+            handleTypes.Add("GlHandle");
+        return new(groups, allTokens, commands, wideConstants, ungroupedEnumUses, skipped, [.. handleTypes]);
     }
 
     private sealed record RegistryToken(
@@ -256,7 +286,9 @@ public sealed class GlRegistryParser(BindgenConfig config)
             // A const char/byte pointer return is a NUL-terminated C string; the raw nint return is
             // kept and string/span convenience overloads are derived from this flag.
             var returnsCString = proto is { PointerDepth: 1, PointeeType: "byte", PointeeIsConst: true };
-            var parameters = element.Elements("param").Select(param => MapParameter(param, name)).ToList();
+            // An unclassed GLuint in a command with an ObjectIdentifier enum is a polymorphic handle.
+            var objectCommand = element.Elements("param").Any(param => param.Attribute("group")?.Value == "ObjectIdentifier");
+            var parameters = element.Elements("param").Select(param => MapParameter(param, name, objectCommand)).ToList();
             commands.Add(new(
                 name,
                 CSharpName.FromNativeIdentifier(name, "gl", config.DigitNamePrefix),
@@ -272,9 +304,9 @@ public sealed class GlRegistryParser(BindgenConfig config)
         return commands.OrderBy(command => command.ManagedName, StringComparer.Ordinal).ToList();
     }
 
-    private GlParameter MapParameter(XElement param, string commandName)
+    private GlParameter MapParameter(XElement param, string commandName, bool objectCommand)
     {
-        var declaration = MapDeclaration(param, commandName);
+        var declaration = MapDeclaration(param, commandName, objectCommand);
         return new(
             declaration.Name,
             CSharpName.Parameter(declaration.Name),
@@ -294,7 +326,7 @@ public sealed class GlRegistryParser(BindgenConfig config)
     /// attribute to a typed enum (catch-all when absent) and GLboolean becomes bool over a byte.
     /// </summary>
     private (string Name, (string Managed, string Interop) Type, int PointerDepth, string? PointeeType, bool PointeeIsConst, bool PointeeIsChar)
-        MapDeclaration(XElement declaration, string commandName)
+        MapDeclaration(XElement declaration, string commandName, bool objectCommand = false)
     {
         var type = new StringBuilder();
         var name = "";
@@ -314,11 +346,13 @@ public sealed class GlRegistryParser(BindgenConfig config)
         if (!ValueTypes.TryGetValue(baseType, out var valueType))
             throw new InvalidOperationException($"{commandName}: unmapped C type '{cType.Trim()}'.");
         var group = declaration.Attribute("group")?.Value;
+        var handleClass = declaration.Attribute("class")?.Value;
 
         if (pointerDepth > 0)
         {
             var pointeeType = pointerDepth != 1 || valueType == "void" ? null
                 : baseType == "GLenum" && group is not null && managedNameByGroup.TryGetValue(group, out var pointeeGroup) ? pointeeGroup
+                : baseType == "GLuint" && HandleType(handleClass) is { } pointeeHandle ? pointeeHandle
                 : valueType;
             return (name, ("nint", "nint"), pointerDepth, pointeeType, cType.TrimStart().StartsWith("const "), baseType == "GLchar");
         }
@@ -335,6 +369,14 @@ public sealed class GlRegistryParser(BindgenConfig config)
         // The glTexImage family types its internalformat as GLint for historical reasons.
         if (baseType == "GLint" && group is not null && managedNameByGroup.TryGetValue(group, out var intGroup))
             return (name, (intGroup, "int"), 0, null, false, false);
+
+        if (baseType == "GLuint" && HandleType(handleClass) is { } handle)
+            return (name, (handle, "uint"), 0, null, false, false);
+        if (baseType == "GLuint" && objectCommand)
+        {
+            handleTypes.Add("GlHandle");
+            return (name, ("GlHandle", "uint"), 0, null, false, false);
+        }
 
         if (baseType == "GLboolean")
             return (name, ("bool", "byte"), 0, null, false, false);

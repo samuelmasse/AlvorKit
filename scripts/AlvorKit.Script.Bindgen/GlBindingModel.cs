@@ -52,4 +52,5 @@ public record GlBindingModel(
     List<GlCommand> Commands,
     List<GlConstant> WideConstants,
     List<string> UngroupedEnumUses,
-    List<string> SkippedCommands);
+    List<string> SkippedCommands,
+    List<string> HandleTypes);

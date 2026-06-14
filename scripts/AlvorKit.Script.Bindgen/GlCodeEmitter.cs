@@ -19,6 +19,8 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         foreach (var group in model.Groups)
             File.WriteAllText(Path.Combine(apiDirectory, group.ManagedName + ".cs"), EmitEnum(group, catchAll: false));
         File.WriteAllText(Path.Combine(apiDirectory, model.AllTokens.ManagedName + ".cs"), EmitEnum(model.AllTokens, catchAll: true));
+        if (model.HandleTypes.Count > 0)
+            File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Handles.cs"), EmitHandles(model));
 
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + ".cs"), EmitApiContract(model));
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Wrapper.cs"), EmitWrapper(model));
@@ -107,6 +109,37 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
             output.AppendLine($"    {member.ManagedName} = 0x{member.Value:X4},");
         }
         output.AppendLine("}");
+        return output.ToString();
+    }
+
+    /// <summary>
+    /// The strongly-typed handle structs: a <c>readonly record struct</c> over the raw object name
+    /// per registry handle class, each widening implicitly to the generic handle, with explicit
+    /// conversions to and from <c>uint</c>.
+    /// </summary>
+    private string EmitHandles(GlBindingModel model)
+    {
+        var output = SourceHeader();
+        output.AppendLine($"namespace {config.Namespace};");
+        foreach (var handle in model.HandleTypes)
+        {
+            output.AppendLine();
+            output.AppendLine(handle == "GlHandle"
+                ? "/// <summary>A strongly-typed handle to any OpenGL object; every specific handle widens to it.</summary>"
+                : "/// <summary>A strongly-typed OpenGL object handle.</summary>");
+            output.AppendLine($"public readonly record struct {handle}(uint Handle)");
+            output.AppendLine("{");
+            if (handle != "GlHandle")
+            {
+                output.AppendLine("    /// <summary>Widens to the generic <see cref=\"GlHandle\"/> handle.</summary>");
+                output.AppendLine($"    public static implicit operator GlHandle({handle} handle) => new(handle.Handle);");
+            }
+            output.AppendLine("    /// <summary>The raw object name. Explicit: a handle never implicitly becomes an integer.</summary>");
+            output.AppendLine($"    public static explicit operator uint({handle} handle) => handle.Handle;");
+            output.AppendLine("    /// <summary>Wraps a raw object name. Explicit: an integer is never implicitly a handle.</summary>");
+            output.AppendLine($"    public static explicit operator {handle}(uint handle) => new(handle);");
+            output.AppendLine("}");
+        }
         return output.ToString();
     }
 
