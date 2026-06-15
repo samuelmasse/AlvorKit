@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace AlvorKit.Script.Bindgen.CHeaders.Test;
 
 /// <summary>Tests for generated binding XML documentation text.</summary>

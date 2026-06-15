@@ -12,4 +12,8 @@
         <ProjectReference Include="..\AlvorKit.Script.Bindgen.Core\AlvorKit.Script.Bindgen.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="System.Xml" />
+    </ItemGroup>
+
 </Project>

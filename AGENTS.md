@@ -86,6 +86,14 @@ dotnet run --project scripts\AlvorKit.Script.BindgenReview -- start <library> --
 dotnet run --project scripts\AlvorKit.Script.BindgenReview -- finish <review-root-printed-by-start>
 ```
 
+When adding or changing generated source, project files, scripts, or other
+multi-line output, never embed that emitted code directly inside C# string
+literals. Put the emitted text in a template under `res/templates/` and render
+it with the repository template helper, passing only the dynamic values needed
+by the template. Short identifiers, resource paths, and single-expression
+replacement values are fine; full methods, declarations, XML/project fragments,
+or script bodies belong in templates.
+
 If you capture snapshots manually, use an ignored directory under `out/` and
 append a random five-character suffix to the case directory:
 

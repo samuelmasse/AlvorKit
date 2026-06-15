@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Selects OpenGL registry symbols from features and configured extensions.</summary>

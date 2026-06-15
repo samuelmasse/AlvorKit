@@ -1,6 +1,3 @@
-using ClangSharp;
-using ClangSharp.Interop;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Binds native function parameters into managed and interop parameter shapes.</summary>

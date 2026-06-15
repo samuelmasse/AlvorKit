@@ -1,6 +1,3 @@
-using System.Globalization;
-using System.Text.Json.Nodes;
-
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Aggregates raw Coverlet JSON files into repository-level coverage counts.</summary>

@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Discovers source and test projects that participate in coverage measurement.</summary>

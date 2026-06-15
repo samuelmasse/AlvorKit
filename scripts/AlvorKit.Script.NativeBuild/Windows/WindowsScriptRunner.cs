@@ -1,5 +1,3 @@
-using System.ComponentModel;
-
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Writes generated PowerShell to a temporary file and executes it.</summary>

@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Parses OpenGL registry token values.</summary>

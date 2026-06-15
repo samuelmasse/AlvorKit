@@ -1,6 +1,3 @@
-using ClangSharp;
-using ClangSharp.Interop;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Owns a Clang translation unit and the declarations selected from it.</summary>

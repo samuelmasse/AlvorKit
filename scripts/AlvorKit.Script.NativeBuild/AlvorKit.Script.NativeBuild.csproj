@@ -8,4 +8,9 @@
         <ProjectReference Include="..\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="AlvorKit.Script.Workspace" />
+        <Using Include="System.ComponentModel" />
+    </ItemGroup>
+
 </Project>

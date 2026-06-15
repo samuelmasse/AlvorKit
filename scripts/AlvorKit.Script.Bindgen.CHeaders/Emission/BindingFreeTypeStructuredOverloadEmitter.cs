@@ -23,9 +23,10 @@ internal static partial class BindingFreeTypeOverloadEmitter
             output,
             $"{apiClass}.RequestSize({BindingSignature.Cref(function.Parameters)})",
             "Passes a caller-owned FT_Size_RequestRec by readonly reference.");
-        output.AppendLine($"    public int RequestSize({function.Parameters[0].ManagedType} face, in FtSizeRequestRec req) =>");
-        output.AppendLine("        RequestSize(face, (FtSizeRequestRec*)Unsafe.AsPointer(ref Unsafe.AsRef(in req)));");
-        output.AppendLine();
+        AppendFreeTypeFragment(
+            output,
+            "freetype-request-size-overload.csfrag.tmpl",
+            ("FaceType", function.Parameters[0].ManagedType));
     }
 
     /// <summary>Emits a caller-owned transform overload for FT_Set_Transform.</summary>
@@ -35,13 +36,10 @@ internal static partial class BindingFreeTypeOverloadEmitter
             output,
             $"{apiClass}.SetTransform({BindingSignature.Cref(function.Parameters)})",
             "Passes caller-owned matrix and delta values by readonly reference.");
-        output.AppendLine($"    public void SetTransform({function.Parameters[0].ManagedType} face, in FtMatrix matrix, in FtVector delta)");
-        output.AppendLine("    {");
-        output.AppendLine("        var matrixPointer = (FtMatrix*)Unsafe.AsPointer(ref Unsafe.AsRef(in matrix));");
-        output.AppendLine("        var deltaPointer = (FtVector*)Unsafe.AsPointer(ref Unsafe.AsRef(in delta));");
-        output.AppendLine("        SetTransform(face, matrixPointer, deltaPointer);");
-        output.AppendLine("    }");
-        output.AppendLine();
+        AppendFreeTypeFragment(
+            output,
+            "freetype-set-transform-overload.csfrag.tmpl",
+            ("FaceType", function.Parameters[0].ManagedType));
     }
 
     /// <summary>Emits a span overload for FT_Face_Properties.</summary>
@@ -51,12 +49,10 @@ internal static partial class BindingFreeTypeOverloadEmitter
             output,
             $"{apiClass}.FaceProperties({BindingSignature.Cref(function.Parameters)})",
             "Pins a caller-owned FT_Parameter span and supplies the property count.");
-        output.AppendLine($"    public int FaceProperties({function.Parameters[0].ManagedType} face, ReadOnlySpan<FtParameter> properties)");
-        output.AppendLine("    {");
-        output.AppendLine("        fixed (FtParameter* propertiesPointer = properties)");
-        output.AppendLine("            return FaceProperties(face, (uint)properties.Length, propertiesPointer);");
-        output.AppendLine("    }");
-        output.AppendLine();
+        AppendFreeTypeFragment(
+            output,
+            "freetype-face-properties-overload.csfrag.tmpl",
+            ("FaceType", function.Parameters[0].ManagedType));
     }
 
     /// <summary>Emits a caller-owned byte buffer overload for FT_Get_Glyph_Name.</summary>
@@ -66,19 +62,9 @@ internal static partial class BindingFreeTypeOverloadEmitter
             output,
             $"{apiClass}.GetGlyphName({BindingSignature.Cref(function.Parameters)})",
             "Writes the glyph name into a caller-owned byte buffer and returns the NUL-terminated slice.");
-        output.AppendLine("    public unsafe int GetGlyphName(");
-        output.AppendLine($"        {function.Parameters[0].ManagedType} face,");
-        output.AppendLine("        uint glyph_index,");
-        output.AppendLine("        Span<byte> buffer,");
-        output.AppendLine("        out ReadOnlySpan<byte> value)");
-        output.AppendLine("    {");
-        output.AppendLine("        fixed (byte* pointer = buffer)");
-        output.AppendLine("        {");
-        output.AppendLine("            var error = GetGlyphName(face, glyph_index, (nint)pointer, (uint)buffer.Length);");
-        output.AppendLine("            value = error == 0 && pointer != null ? MemoryMarshal.CreateReadOnlySpanFromNullTerminated(pointer) : default;");
-        output.AppendLine("            return error;");
-        output.AppendLine("        }");
-        output.AppendLine("    }");
-        output.AppendLine();
+        AppendFreeTypeFragment(
+            output,
+            "freetype-glyph-name-buffer-overload.csfrag.tmpl",
+            ("FaceType", function.Parameters[0].ManagedType));
     }
 }

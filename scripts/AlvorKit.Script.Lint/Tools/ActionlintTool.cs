@@ -1,6 +1,3 @@
-using System.Formats.Tar;
-using System.IO.Compression;
-
 namespace AlvorKit.Script.Lint;
 
 /// <summary>Downloads and resolves the pinned actionlint executable used by the lint coordinator.</summary>

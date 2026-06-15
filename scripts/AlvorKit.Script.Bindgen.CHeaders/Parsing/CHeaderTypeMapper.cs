@@ -1,5 +1,3 @@
-using ClangSharp.Interop;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Maps Clang types into public managed and raw interop type spellings.</summary>

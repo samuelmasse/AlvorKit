@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace AlvorKit.Script.Bindgen.Core.Test;
 
 /// <summary>Covers native source resolver paths that do not require network access.</summary>

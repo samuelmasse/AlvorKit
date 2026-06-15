@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace AlvorKit.Script.TestCoverage.Test;
 
 /// <summary>Tests for aggregating raw Coverlet JSON into agent-readable summaries.</summary>

@@ -1,0 +1,2 @@
+    public int RequestSize({{FaceType}} face, in FtSizeRequestRec req) =>
+        RequestSize(face, (FtSizeRequestRec*)Unsafe.AsPointer(ref Unsafe.AsRef(in req)));

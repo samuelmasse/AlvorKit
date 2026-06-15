@@ -1,0 +1,10 @@
+    public unsafe int GetGlyphName({{FaceType}} face, uint glyph_index, out string? value)
+    {
+        Span<byte> buffer = stackalloc byte[256];
+        fixed (byte* pointer = buffer)
+        {
+            var error = GetGlyphName(face, glyph_index, (nint)pointer, (uint)buffer.Length);
+            value = error == 0 ? Marshal.PtrToStringUTF8((nint)pointer) : null;
+            return error;
+        }
+    }

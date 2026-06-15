@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Command-line options controlling coverage collection.</summary>
@@ -123,7 +121,7 @@ internal sealed record CoverageOptions(
         if (outputRoot is { Length: 0 })
             throw new ArgumentException("Output root must not be empty.", nameof(args));
         if (runId is not null)
-            ValidateRunId(runId);
+            CoverageRunIdValidator.Validate(runId);
 
         return new(
             configuration,
@@ -137,15 +135,6 @@ internal sealed record CoverageOptions(
             generateLcovReport,
             outputRoot,
             runId);
-    }
-
-    /// <summary>Rejects run IDs that cannot safely be used as one directory name.</summary>
-    private static void ValidateRunId(string value)
-    {
-        if (value.Length == 0)
-            throw new ArgumentException("Run ID must not be empty.");
-        if (value.Contains('/') || value.Contains('\\') || value.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-            throw new ArgumentException("Run ID must be a single valid directory name.");
     }
 
     /// <summary>Reads the value following an option name.</summary>

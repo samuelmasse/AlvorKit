@@ -1,5 +1,3 @@
-using AlvorKit.Script.Workspace;
-
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Finds repository-relative paths used by the coverage tool.</summary>

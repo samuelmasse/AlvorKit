@@ -8,4 +8,8 @@
         <ProjectReference Include="..\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="AlvorKit.Script.Workspace" />
+    </ItemGroup>
+
 </Project>

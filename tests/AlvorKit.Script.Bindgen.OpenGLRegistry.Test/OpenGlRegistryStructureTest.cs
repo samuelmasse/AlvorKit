@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
 
 /// <summary>Structural tests for the OpenGL registry bindgen source project.</summary>

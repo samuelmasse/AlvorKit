@@ -1,6 +1,3 @@
-using ClangSharp;
-using ClangSharp.Interop;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Validates that generated structs can use natural CLR layout for the target ABI.</summary>

@@ -1,5 +1,3 @@
-using ClangSharp;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Indexes native record definitions by direct and typedef names.</summary>

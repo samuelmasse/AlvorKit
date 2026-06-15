@@ -1,7 +1,3 @@
-using AlvorKit.GLFW;
-using AlvorKit.OpenGL;
-using AlvorKit.OpenGL.Demo.HelloTriangle;
-
 var glfw = new GlfwBackend();
 if (!glfw.Init())
     throw new InvalidOperationException("Failed to initialize GLFW.");

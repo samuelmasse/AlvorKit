@@ -1,6 +1,3 @@
-using System.Formats.Tar;
-using System.IO.Compression;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Downloads and extracts native source material required by a binding run.</summary>

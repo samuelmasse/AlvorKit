@@ -15,4 +15,10 @@
         <PackageReference Include="BigGustave" Version="1.0.6" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="AlvorKit.FreeType" />
+        <Using Include="AlvorKit.FreeType.Demo" />
+        <Using Include="BigGustave" />
+    </ItemGroup>
+
 </Project>

@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace AlvorKit.Script.Bindgen.Core.Test;
 
 /// <summary>Covers resolved native library binding paths and validation.</summary>

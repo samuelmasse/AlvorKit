@@ -1,5 +1,3 @@
-using ClangSharp.Interop;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Determines whether Clang declarations belong to the requested source or shim roots.</summary>

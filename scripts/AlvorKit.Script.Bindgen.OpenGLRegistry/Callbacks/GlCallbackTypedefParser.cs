@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Parses configured OpenGL callback function-pointer typedefs from registry type text.</summary>

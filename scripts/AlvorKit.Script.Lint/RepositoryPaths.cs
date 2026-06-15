@@ -1,5 +1,3 @@
-using AlvorKit.Script.Workspace;
-
 namespace AlvorKit.Script.Lint;
 
 /// <summary>Locates repository-level paths used by the lint coordinator.</summary>

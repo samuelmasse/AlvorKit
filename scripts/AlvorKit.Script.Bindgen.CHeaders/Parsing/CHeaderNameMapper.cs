@@ -1,5 +1,3 @@
-using ClangSharp.Interop;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Maps native names and type spellings into managed binding names.</summary>

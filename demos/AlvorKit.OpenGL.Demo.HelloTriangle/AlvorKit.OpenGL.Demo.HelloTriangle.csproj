@@ -16,4 +16,10 @@
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="AlvorKit.GLFW" />
+        <Using Include="AlvorKit.OpenGL" />
+        <Using Include="AlvorKit.OpenGL.Demo.HelloTriangle" />
+    </ItemGroup>
+
 </Project>

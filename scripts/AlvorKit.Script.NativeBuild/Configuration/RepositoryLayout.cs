@@ -1,5 +1,3 @@
-using AlvorKit.Script.Workspace;
-
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Repository paths needed by the native build runner.</summary>

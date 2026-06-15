@@ -1,5 +1,3 @@
-using System.Text.Json.Nodes;
-
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Creates branch coverage values from Coverlet branch JSON nodes.</summary>

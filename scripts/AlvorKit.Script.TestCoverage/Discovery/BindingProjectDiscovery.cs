@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Discovers generated binding modules and tests that reference them.</summary>
@@ -87,7 +85,7 @@ internal static class BindingProjectDiscovery
         foreach (var include in document.Descendants("ProjectReference").Select(reference => reference.Attribute("Include")?.Value))
         {
             if (!string.IsNullOrWhiteSpace(include))
-                yield return Path.GetFileNameWithoutExtension(include.Replace('/', Path.DirectorySeparatorChar));
+                yield return Path.GetFileNameWithoutExtension(include.Replace('\\', '/'));
         }
     }
 }

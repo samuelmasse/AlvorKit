@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace AlvorKit.Script.Lint.Test;
 
 /// <summary>Tests platform-specific actionlint release asset selection.</summary>

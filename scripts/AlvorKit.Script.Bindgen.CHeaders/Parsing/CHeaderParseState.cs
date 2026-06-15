@@ -1,5 +1,3 @@
-using ClangSharp;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Mutable parse state shared by C-header discovery passes.</summary>

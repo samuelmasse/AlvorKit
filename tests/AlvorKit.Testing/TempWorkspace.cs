@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace AlvorKit.Testing;
 
 /// <summary>Creates an isolated temporary directory for filesystem-oriented tests.</summary>

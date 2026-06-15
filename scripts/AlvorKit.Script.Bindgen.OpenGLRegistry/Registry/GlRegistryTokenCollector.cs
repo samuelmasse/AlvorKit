@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Collects selected OpenGL tokens from registry enum blocks.</summary>

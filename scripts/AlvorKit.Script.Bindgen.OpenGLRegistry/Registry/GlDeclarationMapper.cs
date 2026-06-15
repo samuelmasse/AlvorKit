@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Maps OpenGL registry declarations into managed and raw interop shapes.</summary>

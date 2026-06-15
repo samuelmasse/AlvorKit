@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Builds selected OpenGL commands from registry command declarations.</summary>

@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Creates stable, filesystem-safe identifiers for coverage runs.</summary>

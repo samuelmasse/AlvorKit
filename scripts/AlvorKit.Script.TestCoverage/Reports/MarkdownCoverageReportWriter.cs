@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Writes the human-readable Markdown coverage summary.</summary>

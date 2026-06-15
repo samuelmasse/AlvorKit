@@ -4,4 +4,8 @@
         <ProjectReference Include="..\..\scripts\AlvorKit.Script.Bindgen.OpenGLRegistry\AlvorKit.Script.Bindgen.OpenGLRegistry.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="System.Text.RegularExpressions" />
+    </ItemGroup>
+
 </Project>

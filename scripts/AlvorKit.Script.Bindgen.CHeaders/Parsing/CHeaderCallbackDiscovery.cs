@@ -1,6 +1,3 @@
-using ClangSharp;
-using ClangSharp.Interop;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Discovers function-pointer typedefs used by generated callback APIs.</summary>

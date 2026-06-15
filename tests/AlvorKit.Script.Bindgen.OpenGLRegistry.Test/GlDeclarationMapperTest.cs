@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
 
 /// <summary>Tests for mapping OpenGL registry declarations into generated type shapes.</summary>

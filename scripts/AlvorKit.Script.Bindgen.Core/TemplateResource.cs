@@ -1,5 +1,3 @@
-using AlvorKit.Script.Workspace;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Loads and renders text templates from the repository root <c>res/</c> directory.</summary>

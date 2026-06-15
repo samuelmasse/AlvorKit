@@ -14,4 +14,9 @@
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.XxHash.Backend\AlvorKit.XxHash.Backend.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="AlvorKit.Demo.XxHash.Bench" />
+        <Using Include="AlvorKit.XxHash" />
+    </ItemGroup>
+
 </Project>

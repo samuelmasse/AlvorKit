@@ -1,0 +1,6 @@
+    public void SetTransform({{FaceType}} face, in FtMatrix matrix, in FtVector delta)
+    {
+        var matrixPointer = (FtMatrix*)Unsafe.AsPointer(ref Unsafe.AsRef(in matrix));
+        var deltaPointer = (FtVector*)Unsafe.AsPointer(ref Unsafe.AsRef(in delta));
+        SetTransform(face, matrixPointer, deltaPointer);
+    }

@@ -13,6 +13,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="ClangSharp" />
+        <Using Include="ClangSharp.Interop" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="ClangSharp" Version="21.1.8.3" />
         <PackageReference Include="libclang.runtime.win-x64" Version="21.1.8" />
         <PackageReference Include="libClangSharp.runtime.win-x64" Version="21.1.8.2" />

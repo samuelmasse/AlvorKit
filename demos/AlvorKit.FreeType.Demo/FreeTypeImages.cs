@@ -1,5 +1,3 @@
-using BigGustave;
-
 namespace AlvorKit.FreeType.Demo;
 
 /// <summary>Small RGB color value used by generated demo images.</summary>

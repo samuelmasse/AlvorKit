@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Builds the OpenGL binding model from gl.xml plus configuration hints.</summary>

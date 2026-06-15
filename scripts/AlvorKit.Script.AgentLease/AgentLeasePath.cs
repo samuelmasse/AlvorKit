@@ -28,7 +28,7 @@ internal static class AgentLeasePath
     /// <param name="path">Path or glob supplied by an agent.</param>
     public static string Normalize(string path)
     {
-        var normalized = path.Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/').Trim();
+        var normalized = path.Replace('\\', '/').Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/').Trim();
         while (normalized.StartsWith("./", StringComparison.Ordinal))
             normalized = normalized[2..];
         return normalized.TrimStart('/');

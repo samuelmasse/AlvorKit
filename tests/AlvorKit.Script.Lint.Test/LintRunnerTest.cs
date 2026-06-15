@@ -4,24 +4,29 @@ namespace AlvorKit.Script.Lint.Test;
 [TestClass]
 public sealed class LintRunnerTest
 {
-    /// <summary>Starts every command before waiting for any command to finish.</summary>
+    /// <summary>Limits external command concurrency while still running every planned check.</summary>
     [TestMethod]
-    public async Task RunAsyncStartsCommandsConcurrently()
+    public async Task RunAsyncLimitsCommandConcurrency()
     {
         using var workspace = TempWorkspace.Create();
-        var processRunner = new BlockingProcessRunner(expectedStarts: 3);
+        var processRunner = new BlockingProcessRunner(expectedStarts: 2);
         var actionlintTool = new FakeActionlintTool("actionlint");
-        var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false, []), processRunner, actionlintTool);
+        var runner = new LintRunner(
+            new(workspace.Root, Fix: false, ShowHelp: false, []),
+            processRunner,
+            actionlintTool,
+            requestedMaxParallelCommands: 2);
 
         var runnerTask = runner.RunAsync();
         await processRunner.AllStarted.Task;
 
+        Assert.AreEqual(2, processRunner.Commands.Count);
         Assert.IsFalse(runnerTask.IsCompleted);
         processRunner.Release();
         var exitCode = await runnerTask;
         Assert.AreEqual(0, exitCode);
         Assert.IsTrue(actionlintTool.Called);
-        Assert.AreEqual(3, processRunner.Commands.Count);
+        Assert.AreEqual(5, processRunner.Commands.Count);
     }
 
     /// <summary>Returns a failing exit code only after all commands have had a chance to run.</summary>
@@ -29,7 +34,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncReturnsFailureAfterRunningAllCommands()
     {
         using var workspace = TempWorkspace.Create();
-        var processRunner = new FakeProcessRunner(new Queue<int>([0, 9, 0]));
+        var processRunner = new FakeProcessRunner(new Queue<int>([0, 9, 0, 0, 0]));
         var actionlintTool = new FakeActionlintTool("actionlint");
         var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false, []), processRunner, actionlintTool);
 
@@ -37,7 +42,7 @@ public sealed class LintRunnerTest
 
         Assert.AreEqual(9, exitCode);
         Assert.IsTrue(actionlintTool.Called);
-        Assert.AreEqual(3, processRunner.Commands.Count);
+        Assert.AreEqual(5, processRunner.Commands.Count);
     }
 
     /// <summary>Returns failure after pre-actionlint commands complete when actionlint setup fails.</summary>
@@ -45,14 +50,14 @@ public sealed class LintRunnerTest
     public async Task RunAsyncReturnsFailureWhenActionlintSetupFails()
     {
         using var workspace = TempWorkspace.Create();
-        var processRunner = new FakeProcessRunner(new Queue<int>([0, 0]));
+        var processRunner = new FakeProcessRunner(new Queue<int>([0, 0, 0, 0]));
         var actionlintTool = new FailingActionlintTool();
         var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false, []), processRunner, actionlintTool);
 
         var exitCode = await runner.RunAsync();
 
         Assert.AreEqual(1, exitCode);
-        Assert.AreEqual(2, processRunner.Commands.Count);
+        Assert.AreEqual(4, processRunner.Commands.Count);
     }
 
     /// <summary>Converts a process runner exception into a failing command result after other commands complete.</summary>
@@ -67,7 +72,7 @@ public sealed class LintRunnerTest
         var exitCode = await runner.RunAsync();
 
         Assert.AreEqual(1, exitCode);
-        Assert.AreEqual(3, processRunner.Commands.Count);
+        Assert.AreEqual(5, processRunner.Commands.Count);
     }
 
     /// <summary>Skips actionlint setup when scoped lint does not include workflow files.</summary>
@@ -108,6 +113,20 @@ public sealed class LintRunnerTest
         Assert.AreEqual(0, exitCode);
         Assert.IsFalse(actionlintTool.Called);
         Assert.AreEqual(0, processRunner.Commands.Count);
+    }
+
+    /// <summary>Rejects negative command parallelism overrides.</summary>
+    [TestMethod]
+    public void ConstructorRejectsNegativeParallelism()
+    {
+        using var workspace = TempWorkspace.Create();
+
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            () => new LintRunner(
+                new(workspace.Root, Fix: false, ShowHelp: false, []),
+                new FakeProcessRunner(new Queue<int>()),
+                new FakeActionlintTool("actionlint"),
+                requestedMaxParallelCommands: -1));
     }
 
     /// <summary>Fake process runner that returns predetermined exit codes.</summary>
@@ -153,9 +172,13 @@ public sealed class LintRunnerTest
         /// <summary>Records a command and waits until the test releases all commands.</summary>
         public async Task<CommandResult> RunAsync(CommandSpec command)
         {
-            Commands.Add(command);
-            if (Commands.Count == expectedStarts)
-                AllStarted.SetResult();
+            lock (Commands)
+            {
+                Commands.Add(command);
+                if (Commands.Count == expectedStarts)
+                    AllStarted.SetResult();
+            }
+
             await release.Task;
             return new(command, 0, "");
         }

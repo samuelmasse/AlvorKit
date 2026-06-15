@@ -4,4 +4,9 @@
         <ProjectReference Include="..\..\scripts\AlvorKit.Script.Bindgen.CHeaders\AlvorKit.Script.Bindgen.CHeaders.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="ClangSharp.Interop" />
+        <Using Include="System.Reflection" />
+    </ItemGroup>
+
 </Project>

@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Writes a compact console summary after report generation.</summary>

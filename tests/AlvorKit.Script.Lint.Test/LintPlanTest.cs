@@ -4,64 +4,40 @@ namespace AlvorKit.Script.Lint.Test;
 [TestClass]
 public sealed class LintPlanTest
 {
-    /// <summary>Discovers source, script, and test projects while ignoring other repo folders.</summary>
-    [TestMethod]
-    public void DiscoverProjectsUsesLintedProjectRootsOnly()
-    {
-        using var workspace = TempWorkspace.Create();
-        workspace.Write("src/App/App.csproj", "<Project />");
-        workspace.Write("scripts/Tool/Tool.csproj", "<Project />");
-        workspace.Write("tests/App.Test/App.Test.csproj", "<Project />");
-        workspace.Write("demos/Demo/Demo.csproj", "<Project />");
-
-        var projects = LintPlan.DiscoverProjects(workspace.Root);
-
-        CollectionAssert.AreEqual(
-            new[]
-            {
-                "scripts/Tool/Tool.csproj",
-                "src/App/App.csproj",
-                "tests/App.Test/App.Test.csproj",
-            },
-            projects.ToArray());
-    }
-
-    /// <summary>Plans dotnet format and info-level code style checks in verify mode by default.</summary>
+    /// <summary>Plans solution-wide dotnet format and info-level code style checks in verify mode by default.</summary>
     [TestMethod]
     public void DotNetFormatCommandsVerifyNoChanges()
     {
         using var workspace = TempWorkspace.Create();
-        workspace.Write("scripts/Tool/Tool.csproj", "<Project />");
 
         var commands = LintPlan.DotNetFormatCommands(workspace.Root, fix: false).ToArray();
 
         Assert.AreEqual(2, commands.Length);
         CollectionAssert.AreEqual(
-            new[] { "format", "scripts/Tool/Tool.csproj", "--verify-no-changes", "--verbosity", "minimal" },
+            new[] { "format", "AlvorKit.slnx", "--verify-no-changes", "--verbosity", "minimal" },
             commands[0].Arguments.ToArray());
         CollectionAssert.AreEqual(
-            new[] { "format", "style", "scripts/Tool/Tool.csproj", "--verify-no-changes", "--severity", "info", "--verbosity", "minimal" },
+            new[] { "format", "style", "AlvorKit.slnx", "--verify-no-changes", "--severity", "info", "--verbosity", "minimal" },
             commands[1].Arguments.ToArray());
         Assert.AreEqual(workspace.Root, commands[0].WorkingDirectory);
-        Assert.AreEqual("dotnet format scripts/Tool/Tool.csproj", commands[0].Label);
-        Assert.AreEqual("dotnet format style scripts/Tool/Tool.csproj", commands[1].Label);
+        Assert.AreEqual("dotnet format AlvorKit.slnx", commands[0].Label);
+        Assert.AreEqual("dotnet format style AlvorKit.slnx", commands[1].Label);
     }
 
-    /// <summary>Plans dotnet format and info-level code style checks in write mode when requested.</summary>
+    /// <summary>Plans solution-wide dotnet format and info-level code style checks in write mode when requested.</summary>
     [TestMethod]
     public void DotNetFormatCommandsCanWriteChanges()
     {
         using var workspace = TempWorkspace.Create();
-        workspace.Write("scripts/Tool/Tool.csproj", "<Project />");
 
         var commands = LintPlan.DotNetFormatCommands(workspace.Root, fix: true).ToArray();
 
         Assert.AreEqual(2, commands.Length);
         CollectionAssert.AreEqual(
-            new[] { "format", "scripts/Tool/Tool.csproj", "--verbosity", "minimal" },
+            new[] { "format", "AlvorKit.slnx", "--verbosity", "minimal" },
             commands[0].Arguments.ToArray());
         CollectionAssert.AreEqual(
-            new[] { "format", "style", "scripts/Tool/Tool.csproj", "--severity", "info", "--verbosity", "minimal" },
+            new[] { "format", "style", "AlvorKit.slnx", "--severity", "info", "--verbosity", "minimal" },
             commands[1].Arguments.ToArray());
     }
 
@@ -146,18 +122,18 @@ public sealed class LintPlanTest
         Assert.ThrowsException<InvalidOperationException>(() => LintPlan.DotNetFormatCommands(workspace.Root, fix: false, scope));
     }
 
-    /// <summary>Combines project formatting, Prettier, and EditorConfig into the pre-actionlint command plan.</summary>
+    /// <summary>Combines solution formatting, Prettier, and EditorConfig into the pre-actionlint command plan.</summary>
     [TestMethod]
     public void CommandsBeforeActionlintIncludeAllPreChecks()
     {
         using var workspace = TempWorkspace.Create();
-        workspace.Write("scripts/Tool/Tool.csproj", "<Project />");
 
         var commands = LintPlan.CommandsBeforeActionlint(workspace.Root, fix: false);
 
         Assert.AreEqual(4, commands.Count);
         Assert.AreEqual("dotnet", commands[0].FileName);
-        Assert.AreEqual("dotnet format style scripts/Tool/Tool.csproj", commands[1].Label);
+        Assert.AreEqual("dotnet format AlvorKit.slnx", commands[0].Label);
+        Assert.AreEqual("dotnet format style AlvorKit.slnx", commands[1].Label);
         CollectionAssert.Contains(commands[2].Arguments.ToArray(), "prettier@3");
         CollectionAssert.Contains(commands[3].Arguments.ToArray(), "editorconfig-checker@6.1.1");
     }

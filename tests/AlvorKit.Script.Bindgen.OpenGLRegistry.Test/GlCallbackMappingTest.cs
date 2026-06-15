@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
 
 /// <summary>Tests for OpenGL callback typedef parsing and managed delegate mapping.</summary>

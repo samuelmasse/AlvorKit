@@ -1,5 +1,3 @@
-using AlvorKit.Script.Workspace;
-
 namespace AlvorKit.Script.BindgenReview;
 
 /// <summary>Parses command-line arguments for the bindgen review helper.</summary>

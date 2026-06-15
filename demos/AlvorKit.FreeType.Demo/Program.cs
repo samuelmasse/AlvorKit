@@ -1,6 +1,3 @@
-using AlvorKit.FreeType;
-using AlvorKit.FreeType.Demo;
-
 unsafe
 {
     var fontPath = Path.Combine(ProjectRoot.ResDirectory(typeof(FreeTypeDemo)), "fonts", "Inter.ttf");

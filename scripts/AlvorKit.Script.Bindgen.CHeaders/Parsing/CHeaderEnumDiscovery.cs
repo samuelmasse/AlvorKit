@@ -1,4 +1,3 @@
-using ClangSharp;
 using ClangType = ClangSharp.Type;
 
 namespace AlvorKit.Script.Bindgen;

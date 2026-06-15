@@ -4,4 +4,8 @@
         <ProjectReference Include="..\..\scripts\AlvorKit.Script.AgentLease\AlvorKit.Script.AgentLease.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="AlvorKit.Script.Workspace" />
+    </ItemGroup>
+
 </Project>

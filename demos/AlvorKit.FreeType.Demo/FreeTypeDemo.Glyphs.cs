@@ -1,4 +1,3 @@
-
 namespace AlvorKit.FreeType.Demo;
 
 internal sealed unsafe partial class FreeTypeDemo
@@ -445,10 +444,8 @@ internal sealed unsafe partial class FreeTypeDemo
         var contours = ReadOutlineContours(outline);
         var canvas = new PngCanvas(760, 460, DemoColor.Background);
 
-        FtBBox controlBox;
-        FtBBox exactBox;
-        ft.OutlineGetCBox(&outline, out controlBox);
-        Require("FT_Outline_Get_BBox", ft.OutlineGetBBox(&outline, out exactBox));
+        ft.OutlineGetCBox(&outline, out FtBBox controlBox);
+        Require("FT_Outline_Get_BBox", ft.OutlineGetBBox(&outline, out FtBBox exactBox));
         var orientation = ft.OutlineGetOrientation(&outline);
         Console.WriteLine($"FT_Outline_Get_CBox: {FormatBox26Dot6(controlBox)}");
         Console.WriteLine($"FT_Outline_Get_BBox: {FormatBox26Dot6(exactBox)}");
@@ -479,8 +476,7 @@ internal sealed unsafe partial class FreeTypeDemo
         var library = this.library;
         Require("FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 116));
         var glyphIndex = ft.GetCharIndex(face, 'B');
-        CLong advance = default;
-        Require("FT_Get_Advance", ft.GetAdvance(face, glyphIndex, FtLoadFlags.Default, out advance));
+        Require("FT_Get_Advance", ft.GetAdvance(face, glyphIndex, FtLoadFlags.Default, out CLong advance));
         Console.WriteLine($"FT_Get_Advance 'B': {FreeTypeValues.Fixed16Dot16(advance):0.##} px");
         var fastAdvanceError = ft.GetAdvance(face, glyphIndex, (int)FtAdvanceFlags.FastOnly, out var fastAdvance);
         ReportOptional("FT_Get_Advance FAST_ONLY", fastAdvanceError);
@@ -637,9 +633,9 @@ internal sealed unsafe partial class FreeTypeDemo
             for (var i = start; i <= end; i++)
             {
                 var next = i == end ? start : i + 1;
-                var p0 = MapOutlinePoint(points[i], map);
+                var (X, Y) = MapOutlinePoint(points[i], map);
                 var p1 = MapOutlinePoint(points[next], map);
-                canvas.DrawLine(p0.X, p0.Y, p1.X, p1.Y, DemoColor.Guide);
+                canvas.DrawLine(X, Y, p1.X, p1.Y, DemoColor.Guide);
             }
 
             previousEnd = end;
@@ -647,8 +643,8 @@ internal sealed unsafe partial class FreeTypeDemo
 
         foreach (var point in points)
         {
-            var mapped = MapOutlinePoint(point, map);
-            canvas.DrawCircle(mapped.X, mapped.Y, 3, DemoColor.Gold);
+            var (X, Y) = MapOutlinePoint(point, map);
+            canvas.DrawCircle(X, Y, 3, DemoColor.Gold);
         }
     }
 
@@ -666,14 +662,14 @@ internal sealed unsafe partial class FreeTypeDemo
     /// <summary>Draws a FreeType bounding box in canvas space.</summary>
     private static void DrawOutlineBox(PngCanvas canvas, FtBBox box, (long MinX, long MaxY, double Scale) map, DemoColor color)
     {
-        var bottomLeft = MapOutlinePoint(FreeTypeValues.ToInt64(box.XMin), FreeTypeValues.ToInt64(box.YMin), map);
+        var (X, Y) = MapOutlinePoint(FreeTypeValues.ToInt64(box.XMin), FreeTypeValues.ToInt64(box.YMin), map);
         var bottomRight = MapOutlinePoint(FreeTypeValues.ToInt64(box.XMax), FreeTypeValues.ToInt64(box.YMin), map);
         var topRight = MapOutlinePoint(FreeTypeValues.ToInt64(box.XMax), FreeTypeValues.ToInt64(box.YMax), map);
         var topLeft = MapOutlinePoint(FreeTypeValues.ToInt64(box.XMin), FreeTypeValues.ToInt64(box.YMax), map);
-        canvas.DrawLine(bottomLeft.X, bottomLeft.Y, bottomRight.X, bottomRight.Y, color);
+        canvas.DrawLine(X, Y, bottomRight.X, bottomRight.Y, color);
         canvas.DrawLine(bottomRight.X, bottomRight.Y, topRight.X, topRight.Y, color);
         canvas.DrawLine(topRight.X, topRight.Y, topLeft.X, topLeft.Y, color);
-        canvas.DrawLine(topLeft.X, topLeft.Y, bottomLeft.X, bottomLeft.Y, color);
+        canvas.DrawLine(topLeft.X, topLeft.Y, X, Y, color);
     }
 
     /// <summary>Maps a FreeType vector into canvas coordinates.</summary>

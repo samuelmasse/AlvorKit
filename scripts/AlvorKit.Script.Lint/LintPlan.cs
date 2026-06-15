@@ -3,8 +3,8 @@ namespace AlvorKit.Script.Lint;
 /// <summary>Builds the external tool command plan for repository linting.</summary>
 internal static class LintPlan
 {
-    /// <summary>Repository project roots that participate in dotnet format checks.</summary>
-    private static readonly string[] ProjectRoots = ["src", "scripts", "tests"];
+    /// <summary>Repository solution used for full C# formatting checks.</summary>
+    private const string SolutionFile = "AlvorKit.slnx";
 
     /// <summary>Creates lint commands that can run before actionlint is available.</summary>
     public static IReadOnlyList<CommandSpec> CommandsBeforeActionlint(string repoRoot, bool fix) =>
@@ -31,11 +31,9 @@ internal static class LintPlan
         return commands;
     }
 
-    /// <summary>Creates dotnet format commands for source, script, and test projects.</summary>
+    /// <summary>Creates a solution-wide dotnet format command for full repository linting.</summary>
     public static IReadOnlyList<CommandSpec> DotNetFormatCommands(string repoRoot, bool fix) =>
-        DiscoverProjects(repoRoot)
-            .SelectMany(project => DotNetFormatCommands(project, repoRoot, fix))
-            .ToArray();
+        DotNetFormatCommands(SolutionFile, repoRoot, fix);
 
     /// <summary>Creates dotnet format commands for the scoped C# files grouped by owning project.</summary>
     public static IReadOnlyList<CommandSpec> DotNetFormatCommands(string repoRoot, bool fix, LintScope scope) =>
@@ -71,18 +69,6 @@ internal static class LintPlan
     public static bool RequiresActionlint(LintScope? scope) =>
         scope is null || scope.ActionlintFiles.Count > 0;
 
-    /// <summary>Discovers project files under the linted source roots.</summary>
-    public static IReadOnlyList<string> DiscoverProjects(string repoRoot) =>
-        ProjectRoots
-            .Select(root => Path.Combine(repoRoot, root))
-            .Where(Directory.Exists)
-            .SelectMany(root => Directory.GetFiles(root, "*.csproj", SearchOption.AllDirectories))
-            .Where(project => !project.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
-            .Where(project => !project.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
-            .Select(project => Normalize(Path.GetRelativePath(repoRoot, project)))
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-
     /// <summary>Creates the normal and info-level code style dotnet format commands for a single project.</summary>
     private static IReadOnlyList<CommandSpec> DotNetFormatCommands(
         string project,
@@ -94,10 +80,10 @@ internal static class LintPlan
         new("dotnet", DotNetStyleInfoArguments(project, fix, includedFiles), repoRoot, $"dotnet format style {project}"),
     ];
 
-    /// <summary>Creates normal dotnet format arguments for a single project.</summary>
-    private static IReadOnlyList<string> DotNetFormatArguments(string project, bool fix, IReadOnlyList<string>? includedFiles = null)
+    /// <summary>Creates normal dotnet format arguments for a project or solution.</summary>
+    private static IReadOnlyList<string> DotNetFormatArguments(string projectOrSolution, bool fix, IReadOnlyList<string>? includedFiles = null)
     {
-        var arguments = new List<string> { "format", project };
+        var arguments = new List<string> { "format", projectOrSolution };
         if (!fix)
             arguments.Add("--verify-no-changes");
         arguments.AddRange(["--verbosity", "minimal"]);

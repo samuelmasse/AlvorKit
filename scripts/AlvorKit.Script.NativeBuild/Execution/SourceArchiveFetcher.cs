@@ -1,6 +1,3 @@
-using System.Formats.Tar;
-using System.IO.Compression;
-
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Downloads and extracts upstream source archives when not already cached.</summary>

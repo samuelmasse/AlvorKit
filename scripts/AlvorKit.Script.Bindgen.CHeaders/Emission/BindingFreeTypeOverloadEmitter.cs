@@ -25,17 +25,19 @@ internal static partial class BindingFreeTypeOverloadEmitter
                 output,
                 $"{apiClass}.LoadChar({BindingSignature.Cref(loadChar.Parameters)})",
                 "Converts a UTF-16 code unit to an FT_ULong character code.");
-            output.AppendLine($"    public int LoadChar({loadChar.Parameters[0].ManagedType} face, char character, int load_flags) =>");
-            output.AppendLine("        LoadChar(face, new CULong((uint)character), load_flags);");
-            output.AppendLine();
+            AppendFreeTypeFragment(
+                output,
+                "freetype-load-char-code-unit-overload.csfrag.tmpl",
+                ("FaceType", loadChar.Parameters[0].ManagedType));
 
             BindingDocs.InheritedConvenience(
                 output,
                 $"{apiClass}.LoadChar({BindingSignature.Cref(loadChar.Parameters)})",
                 "Converts a Unicode scalar value to an FT_ULong character code.");
-            output.AppendLine($"    public int LoadChar({loadChar.Parameters[0].ManagedType} face, Rune character, int load_flags) =>");
-            output.AppendLine("        LoadChar(face, new CULong((uint)character.Value), load_flags);");
-            output.AppendLine();
+            AppendFreeTypeFragment(
+                output,
+                "freetype-load-char-rune-overload.csfrag.tmpl",
+                ("FaceType", loadChar.Parameters[0].ManagedType));
         }
 
         if (Function(model, "FT_Get_Char_Index") is not { } getCharIndex)
@@ -45,17 +47,19 @@ internal static partial class BindingFreeTypeOverloadEmitter
             output,
             $"{apiClass}.GetCharIndex({BindingSignature.Cref(getCharIndex.Parameters)})",
             "Converts a UTF-16 code unit to an FT_ULong character code.");
-        output.AppendLine($"    public uint GetCharIndex({getCharIndex.Parameters[0].ManagedType} face, char character) =>");
-        output.AppendLine("        GetCharIndex(face, new CULong((uint)character));");
-        output.AppendLine();
+        AppendFreeTypeFragment(
+            output,
+            "freetype-get-char-index-code-unit-overload.csfrag.tmpl",
+            ("FaceType", getCharIndex.Parameters[0].ManagedType));
 
         BindingDocs.InheritedConvenience(
             output,
             $"{apiClass}.GetCharIndex({BindingSignature.Cref(getCharIndex.Parameters)})",
             "Converts a Unicode scalar value to an FT_ULong character code.");
-        output.AppendLine($"    public uint GetCharIndex({getCharIndex.Parameters[0].ManagedType} face, Rune character) =>");
-        output.AppendLine("        GetCharIndex(face, new CULong((uint)character.Value));");
-        output.AppendLine();
+        AppendFreeTypeFragment(
+            output,
+            "freetype-get-char-index-rune-overload.csfrag.tmpl",
+            ("FaceType", getCharIndex.Parameters[0].ManagedType));
     }
 
     /// <summary>Emits an FT_Get_Glyph_Name overload that returns managed text while preserving FT_Error.</summary>
@@ -66,18 +70,18 @@ internal static partial class BindingFreeTypeOverloadEmitter
             output,
             $"{apiClass}.GetGlyphName({BindingSignature.Cref(function.Parameters)})",
             "Uses a stack buffer, decodes the returned UTF-8 glyph name, and preserves the FT_Error return value.");
-        output.AppendLine($"    public unsafe int GetGlyphName({function.Parameters[0].ManagedType} face, uint glyph_index, out string? value)");
-        output.AppendLine("    {");
-        output.AppendLine("        Span<byte> buffer = stackalloc byte[256];");
-        output.AppendLine("        fixed (byte* pointer = buffer)");
-        output.AppendLine("        {");
-        output.AppendLine("            var error = GetGlyphName(face, glyph_index, (nint)pointer, (uint)buffer.Length);");
-        output.AppendLine("            value = error == 0 ? Marshal.PtrToStringUTF8((nint)pointer) : null;");
-        output.AppendLine("            return error;");
-        output.AppendLine("        }");
-        output.AppendLine("    }");
-        output.AppendLine();
+        AppendFreeTypeFragment(
+            output,
+            "freetype-glyph-name-string-overload.csfrag.tmpl",
+            ("FaceType", function.Parameters[0].ManagedType));
     }
+
+    /// <summary>Renders a FreeType overload template fragment into the generated overload body.</summary>
+    private static void AppendFreeTypeFragment(StringBuilder output, string templateName, params (string Name, string Value)[] values) =>
+        output.Append(TemplateResource.RenderFragment(
+            typeof(BindingFreeTypeOverloadEmitter),
+            $"res/templates/bindgen/c-headers/csharp/{templateName}",
+            values));
 
     /// <summary>Returns true when a native function was generated.</summary>
     private static bool HasFunction(BindingModel model, string nativeName) =>

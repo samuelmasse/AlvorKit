@@ -1,5 +1,3 @@
-using AlvorKit.Script.Workspace;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Finds repository-level directories used by the bindgen scripts.</summary>

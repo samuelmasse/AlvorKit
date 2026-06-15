@@ -1,6 +1,3 @@
-using ClangSharp.Interop;
-using System.Reflection;
-
 namespace AlvorKit.Script.Bindgen.CHeaders.Test;
 
 /// <summary>Covers pointer-shaped public signatures for transparent native records.</summary>

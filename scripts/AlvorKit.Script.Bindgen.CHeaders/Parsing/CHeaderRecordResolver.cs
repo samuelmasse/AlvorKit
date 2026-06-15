@@ -1,6 +1,3 @@
-using ClangSharp;
-using ClangSharp.Interop;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Resolves native records into managed struct descriptions on demand.</summary>

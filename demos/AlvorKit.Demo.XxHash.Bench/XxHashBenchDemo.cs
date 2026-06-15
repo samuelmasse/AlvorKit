@@ -1,5 +1,3 @@
-using AlvorKit.XxHash;
-
 namespace AlvorKit.Demo.XxHash.Bench;
 
 /// <summary>Owns one xxHash benchmark demo run, including backend, sweep sizes, candidates, and printed reports.</summary>

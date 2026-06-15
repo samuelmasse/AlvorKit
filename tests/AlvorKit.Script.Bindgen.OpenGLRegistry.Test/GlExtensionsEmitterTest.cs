@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
 
 /// <summary>Tests for generated OpenGL convenience overload source.</summary>

@@ -1,6 +1,3 @@
-using System.Globalization;
-using AlvorKit.XxHash;
-
 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 
 // The same payload is used as one span and as two chunks so one-shot hashes can be compared with streaming hashes.

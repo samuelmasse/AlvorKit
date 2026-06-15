@@ -1,6 +1,3 @@
-using System.Globalization;
-using AlvorKit.Demo.XxHash.Bench;
-
 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 
 // Build the demo from the upstream-style sweep flags, generated xxHash backend,

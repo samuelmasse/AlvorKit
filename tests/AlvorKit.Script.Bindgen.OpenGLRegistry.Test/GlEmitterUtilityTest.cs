@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
 
 /// <summary>Tests for shared OpenGL registry source-emission helpers.</summary>

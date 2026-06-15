@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace AlvorKit.Script.TestCoverage.Test;
 
 /// <summary>Tests for writing all coverage summary formats together.</summary>

@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-
 namespace AlvorKit.Script.BindgenReview;
 
 /// <summary>Builds and validates paths used by disposable bindgen review snapshots.</summary>

@@ -1,6 +1,3 @@
-using System.Xml;
-using System.Xml.Linq;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>

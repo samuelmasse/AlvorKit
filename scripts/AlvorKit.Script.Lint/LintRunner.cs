@@ -1,18 +1,24 @@
-using System.Globalization;
-
 namespace AlvorKit.Script.Lint;
 
 /// <summary>Coordinates formatter, EditorConfig, and GitHub Actions lint checks.</summary>
 /// <param name="options">Validated lint options for the current run.</param>
 /// <param name="processRunner">Process runner used to execute external tools.</param>
 /// <param name="actionlintTool">Installer and resolver for the actionlint executable.</param>
+/// <param name="requestedMaxParallelCommands">Optional process concurrency override. Zero uses the repository default.</param>
 internal sealed class LintRunner(
     LintOptions options,
     IProcessRunner processRunner,
-    IActionlintTool actionlintTool)
+    IActionlintTool actionlintTool,
+    int requestedMaxParallelCommands = 0)
 {
+    /// <summary>Default maximum number of external lint commands to run at once.</summary>
+    private static int DefaultMaxParallelCommands => Math.Min(4, Math.Max(1, Environment.ProcessorCount));
+
     /// <summary>Synchronizes progress output from parallel lint tasks.</summary>
     private readonly Lock consoleLock = new();
+
+    /// <summary>Maximum number of external lint commands allowed to run concurrently.</summary>
+    private readonly int maxParallelCommands = ResolveMaxParallelCommands(requestedMaxParallelCommands);
 
     /// <summary>Runs every configured lint command concurrently and returns the first non-zero exit code.</summary>
     public async Task<int> RunAsync()
@@ -29,13 +35,14 @@ internal sealed class LintRunner(
         var preActionlintCommands = scope is null
             ? LintPlan.CommandsBeforeActionlint(repoRoot, options.Fix)
             : LintPlan.CommandsBeforeActionlint(repoRoot, options.Fix, scope);
+        using var commandGate = new SemaphoreSlim(maxParallelCommands);
         var commandTasks = preActionlintCommands
-            .Select(RunCommandAsync)
+            .Select(command => RunCommandAsync(command, commandGate))
             .ToList();
 
         var actionlintPath = actionlintTask is null ? null : await actionlintTask;
         if (actionlintPath is not null)
-            commandTasks.Add(RunCommandAsync(LintPlan.ActionlintCommand(repoRoot, actionlintPath, scope)));
+            commandTasks.Add(RunCommandAsync(LintPlan.ActionlintCommand(repoRoot, actionlintPath, scope), commandGate));
 
         var results = await Task.WhenAll(commandTasks);
         return results.FirstOrDefault(result => result.ExitCode != 0)?.ExitCode ?? (LintPlan.RequiresActionlint(scope) && actionlintPath is null ? 1 : 0);
@@ -61,6 +68,20 @@ internal sealed class LintRunner(
     }
 
     /// <summary>Runs one command with start, completion, and captured output logging.</summary>
+    private async Task<CommandResult> RunCommandAsync(CommandSpec command, SemaphoreSlim commandGate)
+    {
+        await commandGate.WaitAsync();
+        try
+        {
+            return await RunCommandAsync(command);
+        }
+        finally
+        {
+            commandGate.Release();
+        }
+    }
+
+    /// <summary>Runs one command after concurrency admission has been granted.</summary>
     private async Task<CommandResult> RunCommandAsync(CommandSpec command)
     {
         var started = DateTimeOffset.UtcNow;
@@ -103,4 +124,13 @@ internal sealed class LintRunner(
     /// <summary>Formats elapsed time for progress output.</summary>
     private static string ElapsedText(DateTimeOffset started) =>
         (DateTimeOffset.UtcNow - started).ToString(@"mm\:ss\.fff", CultureInfo.InvariantCulture);
+
+    /// <summary>Maps the optional caller override to a safe positive concurrency limit.</summary>
+    private static int ResolveMaxParallelCommands(int requested)
+    {
+        if (requested < 0)
+            throw new ArgumentOutOfRangeException(nameof(requested), "Lint command parallelism must be zero or greater.");
+
+        return requested == 0 ? DefaultMaxParallelCommands : requested;
+    }
 }

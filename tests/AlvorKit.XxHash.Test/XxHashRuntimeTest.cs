@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace AlvorKit.XxHash.Test;
 
 /// <summary>Covers generated xxHash APIs against the packaged native backend.</summary>

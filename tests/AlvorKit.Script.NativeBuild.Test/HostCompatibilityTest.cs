@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace AlvorKit.Script.NativeBuild.Test;
 
 /// <summary>Tests for host and target compatibility checks.</summary>

@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace AlvorKit.Script.NativeBuild.Test;
 
 /// <summary>Tests for native build runner orchestration without invoking real tools.</summary>

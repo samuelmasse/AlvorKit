@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Required coverage percentages for each metric.</summary>

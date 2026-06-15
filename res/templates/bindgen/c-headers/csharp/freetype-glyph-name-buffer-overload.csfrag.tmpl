@@ -1,0 +1,13 @@
+    public unsafe int GetGlyphName(
+        {{FaceType}} face,
+        uint glyph_index,
+        Span<byte> buffer,
+        out ReadOnlySpan<byte> value)
+    {
+        fixed (byte* pointer = buffer)
+        {
+            var error = GetGlyphName(face, glyph_index, (nint)pointer, (uint)buffer.Length);
+            value = error == 0 && pointer != null ? MemoryMarshal.CreateReadOnlySpanFromNullTerminated(pointer) : default;
+            return error;
+        }
+    }

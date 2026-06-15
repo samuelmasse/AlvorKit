@@ -1,5 +1,3 @@
-using System.Xml.Linq;
-
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Finds source modules reachable from selected test projects through project references.</summary>
@@ -62,6 +60,10 @@ internal static class ProjectReferenceDiscovery
         return document.Descendants("ProjectReference")
             .Select(reference => reference.Attribute("Include")?.Value)
             .Where(include => !string.IsNullOrWhiteSpace(include))
-            .Select(include => Path.GetFullPath(Path.Combine(directory, include!)));
+            .Select(include => Path.GetFullPath(Path.Combine(directory, NormalizeProjectPath(include!))));
     }
+
+    /// <summary>Normalizes MSBuild project reference separators before resolving them on the current host.</summary>
+    private static string NormalizeProjectPath(string path) =>
+        path.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 }
