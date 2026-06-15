@@ -28,14 +28,23 @@ output before and after the change whenever feasible. Use an ignored directory
 under `out/` so the snapshots are disposable:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library|all> --output-root out\bindgen-review\<case>\before
-dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library|all> --output-root out\bindgen-review\<case>\after
+dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library> --output-root out\bindgen-review\<case>\before
+dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library> --output-root out\bindgen-review\<case>\after
 git diff --no-index -- out\bindgen-review\<case>\before out\bindgen-review\<case>\after
 ```
 
-Review the generated source and project-file diff carefully. Use focused
-fixtures under `out/bindgen-review/` when a full binding output is too large,
-and summarize the meaningful generated-code changes before handing off.
+Regenerate only the binding library whose generator inputs, configuration, or
+source project changed. Use `all` only when the change intentionally affects
+every generated binding project, and say why in the handoff. Review the
+generated source and project-file diff carefully. Use focused fixtures under
+`out/bindgen-review/` when a full binding output is too large, and summarize the
+meaningful generated-code changes before handing off.
+
+Do not wire bindgen into normal restore or build targets. Local binding mode is
+explicit: create `AlvorKit.Local.props`, run bindgen for the changed library,
+then build. If `UseLocalBindings=true` fails because `out/bindgen` is missing,
+keep that failure and tell the user to run bindgen rather than making builds
+generate code.
 
 ## C# File Placement
 
