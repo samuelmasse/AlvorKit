@@ -8,6 +8,7 @@ namespace AlvorKit.Script.Bindgen;
 /// <param name="Parameters">Managed function parameters.</param>
 /// <param name="Documentation">Parsed upstream XML or Doxygen documentation.</param>
 /// <param name="ReturnsCString">Whether the native return is a const C string pointer.</param>
+/// <param name="IsAdvanced">Whether normal IntelliSense should de-emphasize the raw native-shaped method.</param>
 public record BindingFunction(
     string NativeName,
     string ManagedName,
@@ -15,4 +16,5 @@ public record BindingFunction(
     string ReturnInteropType,
     List<BindingParameter> Parameters,
     XmlDocComment? Documentation,
-    bool ReturnsCString = false);
+    bool ReturnsCString = false,
+    bool IsAdvanced = false);

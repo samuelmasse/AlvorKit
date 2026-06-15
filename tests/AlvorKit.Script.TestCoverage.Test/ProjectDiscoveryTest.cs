@@ -4,6 +4,15 @@ namespace AlvorKit.Script.TestCoverage.Test;
 [TestClass]
 public sealed class ProjectDiscoveryTest
 {
+    /// <summary>Repository root discovery works from the coverage test process output directory.</summary>
+    [TestMethod]
+    public void FindRoot_ReturnsRepositoryRootForTestRun()
+    {
+        var root = RepositoryPaths.FindRoot();
+
+        Assert.IsTrue(File.Exists(Path.Combine(root, "AlvorKit.slnx")));
+    }
+
     /// <summary>Test project filters match project names and repository-relative paths.</summary>
     [TestMethod]
     public void TestProjects_WithFilters_ReturnsMatchingProjects()

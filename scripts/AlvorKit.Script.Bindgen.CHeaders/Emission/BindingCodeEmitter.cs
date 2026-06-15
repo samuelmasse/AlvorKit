@@ -36,6 +36,8 @@ public sealed class BindingCodeEmitter(BindgenConfig config, string tag)
             File.WriteAllText(Path.Combine(apiDirectory, handle.ManagedName + ".cs"), typeEmitter.Handle(handle));
         foreach (var callback in model.Delegates)
             File.WriteAllText(Path.Combine(apiDirectory, callback.ManagedName + ".cs"), typeEmitter.Delegate(callback));
+        if (config.XxHashConvenience)
+            File.WriteAllText(Path.Combine(apiDirectory, "XxhSecret.cs"), typeEmitter.XxHashSecret());
 
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + ".cs"), new BindingApiEmitter(context).ApiContract(model));
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Wrapper.cs"), new BindingWrapperEmitter(context).Wrapper(model));

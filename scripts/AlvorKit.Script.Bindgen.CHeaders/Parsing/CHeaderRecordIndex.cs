@@ -11,11 +11,25 @@ internal static class CHeaderRecordIndex
         foreach (var declaration in declarations)
         {
             if (declaration is RecordDecl { Name.Length: > 0 } record && record.Definition is not null)
-                state.RecordByNativeName[record.Name] = (RecordDecl)record.Definition;
+                AddRecord(state, record.Name, (RecordDecl)record.Definition);
             else if (declaration is TypedefDecl typedef
                 && typedef.UnderlyingType.CanonicalType is RecordType recordType
                 && recordType.Decl is RecordDecl { Definition: not null } aliased)
-                state.RecordByNativeName.TryAdd(typedef.Name, (RecordDecl)aliased.Definition);
+                AddRecord(state, typedef.Name, (RecordDecl)aliased.Definition, preferPublicName: true);
         }
+    }
+
+    /// <summary>Adds one record spelling and tracks the public emission name once.</summary>
+    private static void AddRecord(
+        CHeaderParseState state,
+        string nativeName,
+        RecordDecl definition,
+        bool preferPublicName = false)
+    {
+        state.RecordByNativeName.TryAdd(nativeName, definition);
+        if (preferPublicName)
+            state.PublicRecordNames.RemoveAll(name => ReferenceEquals(state.RecordByNativeName[name], definition));
+        if (!state.PublicRecordNames.Any(name => ReferenceEquals(state.RecordByNativeName[name], definition)))
+            state.PublicRecordNames.Add(nativeName);
     }
 }

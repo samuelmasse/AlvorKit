@@ -23,8 +23,10 @@ internal sealed class BindingBackendEmitter(BindingEmitterContext context)
         TemplateResource.Render(
             typeof(BindingBackendEmitter),
             "res/templates/bindgen/c-headers/csharp/backend-method.csfrag.tmpl",
+            ("Attributes", BindingMethodAttributes.ForFunction(function)),
             ("ReturnType", function.ReturnType),
             ("ManagedName", function.ManagedName),
+            ("Unsafe", BindingSignature.UnsafeModifier(function)),
             ("Signature", BindingSignature.ForFunction(function)),
             ("Body", Body(function)));
 
@@ -35,6 +37,7 @@ internal sealed class BindingBackendEmitter(BindingEmitterContext context)
         var call = $"{context.Config.NativeClass}.{function.ManagedName}({arguments})";
         return function.ReturnType == function.ReturnInteropType ? call
             : function.ReturnType == "bool" ? $"{call} != 0"
+            : function.ReturnType == "UInt128" ? $"{call}.ToUInt128()"
             : $"({function.ReturnType}){call}";
     }
 }

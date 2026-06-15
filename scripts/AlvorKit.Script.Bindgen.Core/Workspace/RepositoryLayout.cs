@@ -1,3 +1,5 @@
+using AlvorKit.Script.Workspace;
+
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Finds repository-level directories used by the bindgen scripts.</summary>
@@ -32,10 +34,7 @@ public sealed class RepositoryLayout
 
     /// <summary>Walks upward from a start directory until the AlvorKit solution file is found.</summary>
     public static RepositoryLayout FindFrom(string startDirectory) =>
-        File.Exists(Path.Combine(startDirectory, "AlvorKit.slnx"))
-            ? new(startDirectory)
-            : FindFrom(Path.GetDirectoryName(startDirectory)
-                ?? throw new InvalidOperationException("AlvorKit.slnx not found above " + startDirectory));
+        new(ProjectRoot.FindFrom(startDirectory));
 
     /// <summary>Returns either a requested library name or every native library with bindgen metadata.</summary>
     public IEnumerable<string> SelectedLibraries(string selection)

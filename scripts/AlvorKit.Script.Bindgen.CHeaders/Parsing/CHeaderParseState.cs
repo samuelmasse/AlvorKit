@@ -26,6 +26,9 @@ internal sealed class CHeaderParseState
     /// <summary>Native records keyed by record or typedef spelling.</summary>
     public Dictionary<string, RecordDecl> RecordByNativeName { get; } = [];
 
+    /// <summary>Public record spellings preferred when a definition also has a private tag name.</summary>
+    public List<string> PublicRecordNames { get; } = [];
+
     /// <summary>Functions selected for the managed API.</summary>
     public List<BindingFunction> Functions { get; } = [];
 

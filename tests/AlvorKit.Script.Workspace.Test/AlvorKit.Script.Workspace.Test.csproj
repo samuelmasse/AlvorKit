@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\scripts\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
+    </ItemGroup>
+
+</Project>

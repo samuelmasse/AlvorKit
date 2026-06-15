@@ -23,6 +23,9 @@
   "typeAliases": {
     "XXH128_hash_t": "UInt128"
   },
+  "interopTypeAliases": {
+    "XXH128_hash_t": "Xxh128Hash"
+  },
   "opaqueTypes": {
     "XXH32_state_s": "Xxh32State",
     "XXH64_state_s": "Xxh64State",
@@ -89,8 +92,34 @@
     "XXH64_canonicalFromHash": ["dst"],
     "XXH128_canonicalFromHash": ["dst"]
   },
+  "boolReturns": ["XXH128_isEqual"],
+  "advancedFunctions": [
+    "XXH32",
+    "XXH32_update",
+    "XXH64",
+    "XXH64_update",
+    "XXH3_64bits",
+    "XXH3_64bits_withSeed",
+    "XXH3_64bits_withSecret",
+    "XXH3_64bits_update",
+    "XXH3_128bits",
+    "XXH3_128bits_withSeed",
+    "XXH3_128bits_withSecret",
+    "XXH3_128bits_update",
+    "XXH128_cmp",
+    "XXH128",
+    "XXH3_generateSecret",
+    "XXH3_generateSecret_fromSeed",
+    "XXH3_64bits_withSecretandSeed",
+    "XXH3_128bits_withSecretandSeed",
+    "XXH3_64bits_reset_withSecret",
+    "XXH3_64bits_reset_withSecretandSeed",
+    "XXH3_128bits_reset_withSecret",
+    "XXH3_128bits_reset_withSecretandSeed"
+  ],
   "skip": {},
   "spanOverloads": true,
+  "xxHashConvenience": true,
   "spanSkip": {
     "XXH3_64bits_reset_withSecret": "the secret is referenced until the streaming session ends, a span cannot outlive the call",
     "XXH3_64bits_reset_withSecretandSeed": "the secret is referenced until the streaming session ends, a span cannot outlive the call",

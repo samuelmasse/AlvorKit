@@ -42,6 +42,30 @@ public sealed class BindingCodeEmitterCommentsTest
         Assert.IsFalse(File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Test.cs")).Contains("public struct TestPoint", StringComparison.Ordinal));
     }
 
+    [TestMethod]
+    public void Emit_BoolReturnDocumentationMatchesManagedReturn()
+    {
+        using var workspace = TempWorkspace.Create();
+        var config = CHeaderTestConfig.Create();
+        var model = new BindingModel(
+            Enums: [],
+            Structs: [],
+            Handles: [],
+            Delegates: [],
+            Functions:
+            [
+                new("test_ready", "Ready", "bool", "int", [], Documentation: null)
+            ],
+            Constants: [],
+            SkippedFunctions: [],
+            SizeofTypes: []);
+
+        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
+
+        var api = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Test.cs"));
+        StringAssert.Contains(api, "/// <returns>true when the native function returns non-zero; otherwise, false.</returns>");
+    }
+
     private static BindingModel ModelWithTypes() => new(
         Enums: [new("test_value", "TestValue", "int", false, [new("A", 1, null)], null)],
         Structs: [new("test_point", "TestPoint", false, 16, [new("X", "int", 0, null)], [new("ValuesBuffer", "int", 4)], null)],

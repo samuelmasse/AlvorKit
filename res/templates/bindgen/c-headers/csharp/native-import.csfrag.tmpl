@@ -2,4 +2,4 @@
     /// <summary>Imports native <c>{{NativeName}}</c>.</summary>
     [LibraryImport(Lib, EntryPoint = "{{NativeName}}")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial {{ReturnInteropType}} {{ManagedName}}({{Signature}});
+    public static {{Unsafe}}partial {{ReturnInteropType}} {{ManagedName}}({{Signature}});

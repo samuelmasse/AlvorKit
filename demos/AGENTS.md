@@ -29,6 +29,10 @@ These instructions apply to C# code under `demos/`.
 - Let the main path explain the demo's intent through clear names, ordered
   sections, and purposeful comments where they help the reader understand the
   sequence.
+- Comment the main walkthrough path enough to explain intent, sequencing,
+  native/API relationships, and important lifetime or layout constraints. Keep
+  utility helpers, formatting functions, guards, and other incidental plumbing
+  uncommented unless a non-obvious constraint would otherwise be hidden there.
 - Keep setup, platform glue, resource wrappers, repetitive initialization,
   disposal plumbing, and other boilerplate out of the main narrative when it
   distracts from the concept being demonstrated.

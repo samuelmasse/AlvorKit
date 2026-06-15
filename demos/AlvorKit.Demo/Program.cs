@@ -11,16 +11,17 @@ const double frameWaitSeconds = 0.01;
 const int glyphScale = 4;
 const uint glyphPixelHeight = 64;
 const char demoCharacter = 'a';
-const string fontUrl = "https://github.com/google/fonts/raw/main/ofl/inter/Inter%5Bopsz,wght%5D.ttf";
 
-using var http = new HttpClient();
 var glfw = new GlfwBackend();
 glfw.Init();
 
 Ma audio = new MaBackend();
 Ft freeType = new FtBackend();
 
-var fontPath = GetFontPath(http, fontUrl);
+var fontPath = Path.GetFullPath(Path.Combine("res", "fonts", "Inter.ttf"));
+if (!File.Exists(fontPath))
+    throw new FileNotFoundException("Required demo font is missing.", fontPath);
+
 var glyph = GlyphBitmap.Render(freeType, fontPath, demoCharacter, glyphPixelHeight);
 ExportGlyphPreview(glyph);
 
@@ -42,21 +43,6 @@ gl.Dispose();
 glfw.DestroyWindow(window);
 glfw.Terminate();
 return 0;
-
-static string GetFontPath(HttpClient http, string fontUrl)
-{
-    var path = Path.Combine(Path.GetTempPath(), "Inter.ttf");
-    if (File.Exists(path))
-        return path;
-
-    using var request = new HttpRequestMessage(HttpMethod.Get, fontUrl);
-    using var response = http.Send(request, HttpCompletionOption.ResponseHeadersRead);
-    using var input = response.Content.ReadAsStream();
-    using var output = File.Create(path);
-    input.CopyTo(output);
-
-    return path;
-}
 
 static void ExportGlyphPreview(GlyphBitmap glyph)
 {

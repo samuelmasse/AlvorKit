@@ -48,6 +48,9 @@ public sealed partial class BindgenConfig
     /// <summary>Native types projected directly as existing managed types instead of generated structs.</summary>
     public Dictionary<string, string> TypeAliases { get; set; } = [];
 
+    /// <summary>Native types that keep a generated interop struct while the public API uses a type alias.</summary>
+    public Dictionary<string, string> InteropTypeAliases { get; set; } = [];
+
     /// <summary>Native pointer pointee types projected as opaque handles, even when record definitions are visible.</summary>
     public Dictionary<string, string> OpaqueTypes { get; set; } = [];
 
@@ -63,6 +66,9 @@ public sealed partial class BindgenConfig
     /// <summary>Native functions whose integer return values should be projected as public booleans.</summary>
     public string[] BoolReturns { get; set; } = [];
 
+    /// <summary>Native functions kept public but de-emphasized as advanced raw binding members.</summary>
+    public string[] AdvancedFunctions { get; set; } = [];
+
     /// <summary>Native function parameters projected as public booleans over raw integer values.</summary>
     public Dictionary<string, string[]> BoolParams { get; set; } = [];
 
@@ -74,4 +80,10 @@ public sealed partial class BindgenConfig
 
     /// <summary>Callback typedefs promoted into typed managed delegates and setter overloads.</summary>
     public Dictionary<string, CallbackConfig> Callbacks { get; set; } = [];
+
+    /// <summary>Whether to emit FreeType-specific convenience members over the raw freetype.h surface.</summary>
+    public bool FreeTypeConvenience { get; set; }
+
+    /// <summary>Whether to emit xxHash-specific convenience members over the raw xxhash.h surface.</summary>
+    public bool XxHashConvenience { get; set; }
 }

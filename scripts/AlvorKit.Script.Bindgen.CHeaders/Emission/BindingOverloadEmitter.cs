@@ -12,12 +12,17 @@ internal sealed class BindingOverloadEmitter(BindingEmitterContext context)
         BindingCallbackSetterEmitter.CallbackSetters(overloads, model, context.Config.ApiClass);
         foreach (var function in model.Functions)
             BindingStringReturnEmitter.StringReturn(overloads, function, context.Config.ApiClass);
+        if (context.Config.FreeTypeConvenience)
+            BindingFreeTypeOverloadEmitter.FreeTypeOverloads(overloads, model, context.Config.ApiClass);
+        if (context.Config.XxHashConvenience)
+            BindingXxHashOverloadEmitter.XxHashOverloads(overloads, model, context.Config.ApiClass);
         new BindingSpanReturnEmitter(context).SpanReturns(overloads, model);
         var hasSpanOverloads = context.Config.SpanOverloads && new BindingSpanOverloadEmitter(context).SpanOverloads(overloads, model);
         if (overloads.Length == 0)
             return null;
 
         var hasStringConvenience = model.Functions.Any(function => function.Parameters.Any(parameter => parameter.HasStringConvenience));
+        var needsText = hasStringConvenience || context.Config.FreeTypeConvenience;
         var helpers = new StringBuilder();
         if (hasSpanOverloads)
             BindingSpanOverloadEmitter.ByteLengthHelper(helpers);
@@ -27,7 +32,7 @@ internal sealed class BindingOverloadEmitter(BindingEmitterContext context)
             typeof(BindingOverloadEmitter),
             "res/templates/bindgen/c-headers/csharp/overloads.cs.tmpl",
             ("SourceHeader", context.SourceHeader().ToString()),
-            ("Usings", hasStringConvenience ? "using System.Text;" + Environment.NewLine + Environment.NewLine : ""),
+            ("Usings", needsText ? "using System.Text;" + Environment.NewLine + Environment.NewLine : ""),
             ("Namespace", context.Config.Namespace),
             ("ApiClass", context.Config.ApiClass),
             ("Unsafe", NeedsUnsafe(model) ? " unsafe" : ""),
@@ -39,5 +44,7 @@ internal sealed class BindingOverloadEmitter(BindingEmitterContext context)
     private bool NeedsUnsafe(BindingModel model) =>
         context.Config.SpanOverloads
         || context.Config.SpanReturns.Count > 0
+        || context.Config.FreeTypeConvenience
+        || context.Config.XxHashConvenience
         || model.Functions.Any(function => function.ReturnsCString || function.Parameters.Any(parameter => parameter.HasStringConvenience));
 }

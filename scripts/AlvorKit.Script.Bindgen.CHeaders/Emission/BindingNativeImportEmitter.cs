@@ -26,5 +26,6 @@ internal sealed class BindingNativeImportEmitter(BindingEmitterContext context)
             ("NativeName", function.NativeName),
             ("ReturnInteropType", function.ReturnInteropType),
             ("ManagedName", function.ManagedName),
+            ("Unsafe", BindingSignature.UnsafeModifier(function)),
             ("Signature", BindingSignature.ForFunction(function, native: true)));
 }

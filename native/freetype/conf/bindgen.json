@@ -1,7 +1,7 @@
 {
   "namespace": "AlvorKit.FreeType",
   "apiClass": "Ft",
-  "apiSummary": "The FreeType font rendering library: faces, glyph loading and rasterization. All handles are opaque; functions return FT_Error (0 = success).",
+  "apiSummary": "The FreeType font rendering library: faces, glyph loading and rasterization.",
   "backendClass": "FtBackend",
   "nativeClass": "FtNative",
   "nativeLibrary": "freetype",
@@ -13,7 +13,7 @@
   "includeSubdir": "include",
   "apiProject": "out/bindgen/AlvorKit.FreeType",
   "backendProject": "out/bindgen/AlvorKit.FreeType.Backend",
-  "transparentStructs": ["FT_FaceRec", "FT_GlyphSlotRec"],
+  "freeTypeConvenience": true,
   "outParams": {
     "FT_Init_FreeType": ["alibrary"],
     "FT_New_Face": ["aface"],

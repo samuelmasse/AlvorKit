@@ -81,4 +81,5 @@ public sealed class BindingCodeEmitterOverloadTest
         StringAssert.Contains(overloads, "ByteLength<TBuffer>(buffer)");
         StringAssert.Contains(overloads, "/// <summary>Returns the byte length of an unmanaged span.</summary>");
     }
+
 }

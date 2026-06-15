@@ -1,3 +1,5 @@
+using AlvorKit.Script.Workspace;
+
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Loads and renders text templates from the repository root <c>res/</c> directory.</summary>
@@ -27,7 +29,7 @@ internal static class TemplateResource
     /// <summary>Resolves a repository-root <c>res/</c> path to a concrete template file path.</summary>
     private static string ResolveResPath(string resourcePath)
     {
-        var root = FindRepositoryRoot();
+        var root = ProjectRoot.FindFromCurrentProcess(typeof(TemplateResource), requireResDirectory: true);
         var normalizedPath = resourcePath.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
         var templatePath = Path.GetFullPath(Path.Combine(root, normalizedPath));
         var resRoot = Path.GetFullPath(Path.Combine(root, "res")) + Path.DirectorySeparatorChar;
@@ -39,34 +41,5 @@ internal static class TemplateResource
             throw new FileNotFoundException($"Template file '{resourcePath}' was not found.", templatePath);
 
         return templatePath;
-    }
-
-    /// <summary>Finds the nearest repository root by walking upward from likely execution directories.</summary>
-    private static string FindRepositoryRoot()
-    {
-        foreach (var start in CandidateDirectories())
-        {
-            for (var current = start; current is not null; current = Directory.GetParent(current)?.FullName)
-            {
-                if (File.Exists(Path.Combine(current, "AlvorKit.slnx")) && Directory.Exists(Path.Combine(current, "res")))
-                    return current;
-            }
-        }
-
-        throw new InvalidOperationException("Could not find the AlvorKit repository root containing the res directory.");
-    }
-
-    /// <summary>Returns likely starting directories for repository root discovery.</summary>
-    private static IEnumerable<string> CandidateDirectories()
-    {
-        if (!string.IsNullOrWhiteSpace(Environment.CurrentDirectory))
-            yield return Environment.CurrentDirectory;
-
-        if (!string.IsNullOrWhiteSpace(AppContext.BaseDirectory))
-            yield return AppContext.BaseDirectory;
-
-        var assemblyDirectory = Path.GetDirectoryName(typeof(TemplateResource).Assembly.Location);
-        if (!string.IsNullOrWhiteSpace(assemblyDirectory))
-            yield return assemblyDirectory;
     }
 }

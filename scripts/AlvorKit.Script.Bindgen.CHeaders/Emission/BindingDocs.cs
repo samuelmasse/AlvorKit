@@ -24,7 +24,7 @@ internal static class BindingDocs
             output.AppendLine($"    /// <param name=\"{name}\">{text}</param>");
         }
         if (function.ReturnType != "void")
-            output.AppendLine($"    /// <returns>{function.Documentation?.Returns ?? "Native return value."}</returns>");
+            output.AppendLine($"    /// <returns>{ReturnText(function)}</returns>");
         if (function.Documentation?.Remarks is { } remarks)
             output.AppendLine($"    /// <remarks>{remarks}</remarks>");
     }
@@ -44,4 +44,10 @@ internal static class BindingDocs
     /// <summary>Capitalizes leading ASCII lowercase text for readable summaries.</summary>
     private static string Capitalize(string text) =>
         text.Length > 0 && char.IsAsciiLetterLower(text[0]) ? char.ToUpperInvariant(text[0]) + text[1..] : text;
+
+    /// <summary>Returns XML documentation text that matches the managed return projection.</summary>
+    private static string ReturnText(BindingFunction function) =>
+        function.ReturnType == "bool" && function.ReturnInteropType != "bool"
+            ? "true when the native function returns non-zero; otherwise, false."
+            : function.Documentation?.Returns ?? "Native return value.";
 }

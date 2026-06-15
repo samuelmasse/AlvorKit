@@ -24,8 +24,10 @@ internal sealed class BindingNoopEmitter(BindingEmitterContext context)
             return TemplateResource.Render(
                 typeof(BindingNoopEmitter),
                 "res/templates/bindgen/c-headers/csharp/noop-expression-method.csfrag.tmpl",
+                ("Attributes", BindingMethodAttributes.ForFunction(function)),
                 ("ReturnType", function.ReturnType),
                 ("ManagedName", function.ManagedName),
+                ("Unsafe", BindingSignature.UnsafeModifier(function)),
                 ("Signature", BindingSignature.ForFunction(function)),
                 ("Body", function.ReturnType == "void" ? "{ }" : "=> default;"));
 
@@ -33,8 +35,10 @@ internal sealed class BindingNoopEmitter(BindingEmitterContext context)
         return TemplateResource.Render(
             typeof(BindingNoopEmitter),
             "res/templates/bindgen/c-headers/csharp/noop-block-method.csfrag.tmpl",
+            ("Attributes", BindingMethodAttributes.ForFunction(function)),
             ("ReturnType", function.ReturnType),
             ("ManagedName", function.ManagedName),
+            ("Unsafe", BindingSignature.UnsafeModifier(function)),
             ("Signature", BindingSignature.ForFunction(function)),
             ("OutAssignments", outAssignments),
             ("ReturnDefault", function.ReturnType == "void" ? "" : $"        return default;{Environment.NewLine}"));

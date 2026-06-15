@@ -1,0 +1,11 @@
+
+    /// <summary>Converts this native-layout value into a managed <see cref="UInt128"/>.</summary>
+    /// <returns>The equivalent managed 128-bit integer.</returns>
+    public readonly UInt128 ToUInt128() =>
+        ((UInt128)High64 << 64) | Low64;
+
+    /// <summary>Converts a managed <see cref="UInt128"/> into this native-layout value.</summary>
+    /// <param name="value">The managed 128-bit integer to convert.</param>
+    /// <returns>The equivalent native-layout value.</returns>
+    public static {{ManagedName}} FromUInt128(UInt128 value) =>
+        new() { Low64 = (ulong)value, High64 = (ulong)(value >> 64) };

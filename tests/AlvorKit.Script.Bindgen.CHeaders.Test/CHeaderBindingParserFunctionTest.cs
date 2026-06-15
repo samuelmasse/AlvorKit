@@ -69,6 +69,24 @@ public sealed class CHeaderBindingParserFunctionTest
     }
 
     [TestMethod]
+    public void Parse_MarksConfiguredAdvancedFunctions()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            void test_raw(void* data);
+            void test_friendly(void);
+            """);
+        var config = CHeaderTestConfig.Create();
+        config.AdvancedFunctions = ["test_raw"];
+
+        var model = CHeaderParserHarness.Parse(translationUnit, source, config);
+
+        Assert.IsTrue(model.Functions.Single(function => function.NativeName == "test_raw").IsAdvanced);
+        Assert.IsFalse(model.Functions.Single(function => function.NativeName == "test_friendly").IsAdvanced);
+    }
+
+    [TestMethod]
     public void Parse_UsesConfiguredTypeAliasesWithoutEmittingStructs()
     {
         using var workspace = TempWorkspace.Create();

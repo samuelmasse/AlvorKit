@@ -57,6 +57,8 @@ public sealed class BindgenConfigLoadTest
               "header": "fixture.h",
               "apiProject": "generated/Fixture",
               "backendProject": "generated/Fixture.Backend",
+              "xxHashConvenience": true,
+              "advancedFunctions": [ "fixture_raw" ],
               "enumGroups": {
                 "FixtureMode": { "prefix": "FIXTURE_MODE_", "flags": true }
               },
@@ -78,6 +80,9 @@ public sealed class BindgenConfigLoadTest
               "typeAliases": {
                 "fixture_hash128": "UInt128"
               },
+              "interopTypeAliases": {
+                "fixture_hash128": "FixtureHash128"
+              },
               "opaqueTypes": {
                 "fixture_state": "FixtureState"
               },
@@ -96,7 +101,10 @@ public sealed class BindgenConfigLoadTest
         Assert.AreEqual("FixtureProc", config.Callbacks["FIXTUREPROC"].ManagedName);
         Assert.AreEqual("FixtureMode", config.Callbacks["FIXTUREPROC"].ParamGroups["mode"]);
         Assert.AreEqual("UInt128", config.TypeAliases["fixture_hash128"]);
+        Assert.AreEqual("FixtureHash128", config.InteropTypeAliases["fixture_hash128"]);
         Assert.AreEqual("FixtureState", config.OpaqueTypes["fixture_state"]);
         Assert.AreEqual("Hash", config.FunctionRenames["fixture_hash"]);
+        CollectionAssert.AreEqual(new[] { "fixture_raw" }, config.AdvancedFunctions);
+        Assert.IsTrue(config.XxHashConvenience);
     }
 }

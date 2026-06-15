@@ -8,6 +8,7 @@ internal sealed class BindingProjectEmitter(BindingEmitterContext context)
     {
         var unsafeBlocks = context.Config.SpanOverloads
             || context.Config.SpanReturns.Count > 0
+            || context.Config.XxHashConvenience
             || model.Functions.Any(function => function.ReturnsCString || function.Parameters.Any(parameter => parameter.HasStringConvenience));
         return TemplateResource.Render(
             typeof(BindingProjectEmitter),

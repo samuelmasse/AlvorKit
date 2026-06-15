@@ -31,28 +31,35 @@ public sealed class GlyphBitmap
     /// <param name="fontPath">The font file loaded for this demo run.</param>
     /// <param name="character">The character to render.</param>
     /// <param name="pixelHeight">The requested pixel height for the glyph.</param>
-    public static GlyphBitmap Render(Ft ft, string fontPath, char character, uint pixelHeight)
+    public static unsafe GlyphBitmap Render(Ft ft, string fontPath, char character, uint pixelHeight)
     {
-        ft.InitFreeType(out var freetype);
-        using var library = new FreeTypeLibrary(ft, freetype);
+        nint library = 0;
+        FtFaceRec* face = null;
 
-        ft.NewFace(library.Handle, fontPath, new(0), out var face);
-        using var faceOwner = new FreeTypeFace(ft, face);
+        try
+        {
+            ft.InitFreeType(out library);
+            ft.NewFace(library, fontPath, new(0), out face);
+            ft.SetPixelSizes(face, 0, pixelHeight);
+            ft.LoadChar(face, character, Ft.LoadRender);
 
-        ft.SetPixelSizes(faceOwner.Handle, 0, pixelHeight);
-        ft.LoadChar(faceOwner.Handle, new(character), Ft.LoadRender);
+            var bitmap = face->Glyph->Bitmap;
+            var width = (int)bitmap.Width;
+            var height = (int)bitmap.Rows;
+            var pixels = new byte[width * height];
 
-        var faceRec = Marshal.PtrToStructure<FtFaceRec>(faceOwner.Handle);
-        var glyphSlot = Marshal.PtrToStructure<FtGlyphSlotRec>(faceRec.Glyph);
-        var bitmap = glyphSlot.Bitmap;
-        var width = (int)bitmap.Width;
-        var height = (int)bitmap.Rows;
-        var pixels = new byte[width * height];
+            for (var y = 0; y < height; y++)
+                Marshal.Copy(bitmap.Buffer + y * bitmap.Pitch, pixels, y * width, width);
 
-        for (var y = 0; y < height; y++)
-            Marshal.Copy(bitmap.Buffer + y * bitmap.Pitch, pixels, y * width, width);
-
-        return new GlyphBitmap(width, height, pixels);
+            return new GlyphBitmap(width, height, pixels);
+        }
+        finally
+        {
+            if (face != null)
+                ft.DoneFace(face);
+            if (library != 0)
+                ft.DoneFreeType(library);
+        }
     }
 
     /// <summary>Exports the managed grayscale pixels as a PNG file for quick inspection.</summary>
@@ -73,29 +80,5 @@ public sealed class GlyphBitmap
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
         using var stream = File.Create(path);
         png.Save(stream);
-    }
-
-    /// <summary>Owns a FreeType library handle and releases it when rendering is complete.</summary>
-    /// <param name="ft">The FreeType API used to release the handle.</param>
-    /// <param name="handle">The native FreeType library handle.</param>
-    private readonly struct FreeTypeLibrary(Ft ft, nint handle) : IDisposable
-    {
-        /// <summary>The native FreeType library handle.</summary>
-        public nint Handle { get; } = handle;
-
-        /// <summary>Releases the FreeType library and its child resources.</summary>
-        public void Dispose() => ft.DoneFreeType(Handle);
-    }
-
-    /// <summary>Owns a FreeType face handle and releases it when the bitmap has been copied.</summary>
-    /// <param name="ft">The FreeType API used to release the handle.</param>
-    /// <param name="handle">The native FreeType face handle.</param>
-    private readonly struct FreeTypeFace(Ft ft, nint handle) : IDisposable
-    {
-        /// <summary>The native FreeType face handle.</summary>
-        public nint Handle { get; } = handle;
-
-        /// <summary>Releases the FreeType face.</summary>
-        public void Dispose() => ft.DoneFace(Handle);
     }
 }

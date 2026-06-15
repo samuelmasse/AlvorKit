@@ -33,6 +33,20 @@ internal sealed class CHeaderTypeMapper(
         return canonical.kind == CXTypeKind.CXType_Record ? resolveStruct(spelling)?.ManagedName : null;
     }
 
+    /// <summary>Maps a native type to the raw C# type used at the P/Invoke boundary.</summary>
+    public string? MapInteropType(CXType type, bool isParam = false, bool isReturn = false, bool boolAsRaw = false)
+    {
+        var spelling = CHeaderNameMapper.CleanTypeSpelling(type);
+        if (config.InteropTypeAliases.TryGetValue(spelling, out var alias))
+        {
+            if (type.CanonicalType.kind == CXTypeKind.CXType_Record && resolveStruct(spelling) is null)
+                return null;
+            return alias;
+        }
+
+        return MapNativeType(type, isParam, isReturn, boolAsRaw);
+    }
+
     /// <summary>Maps an enum underlying integer type into a C# integral type.</summary>
     public static string MapIntegerType(ClangType underlyingType) => underlyingType.CanonicalType.Handle.kind switch
     {
@@ -80,6 +94,8 @@ internal sealed class CHeaderTypeMapper(
         var pointeeName = CHeaderNameMapper.CleanTypeSpelling(pointee);
         if (ConfiguredOpaqueHandle(pointeeName) is { } configuredHandle)
             return configuredHandle;
+        if (pointee.CanonicalType.kind == CXTypeKind.CXType_Record && RecordPointer(pointeeName) is { } recordPointer)
+            return recordPointer;
         if (pointee.CanonicalType.kind == CXTypeKind.CXType_Record && RenamedOpaqueHandle(pointeeName) is { } renamedHandle)
             return renamedHandle;
         return "nint";
@@ -96,6 +112,29 @@ internal sealed class CHeaderTypeMapper(
             return null;
         state.HandlesByNativeName[nativeName] = managed;
         return managed;
+    }
+
+    /// <summary>Returns a raw pointer type for a visible native record.</summary>
+    private string? RecordPointer(string nativeName)
+    {
+        if (RecordName(nativeName) is not { } recordName)
+            return null;
+        return resolveStruct(recordName) is { } record ? record.ManagedName + "*" : null;
+    }
+
+    /// <summary>Returns the public name that should emit the visible record.</summary>
+    private string? RecordName(string nativeName)
+    {
+        if (!state.RecordByNativeName.TryGetValue(nativeName, out var record))
+            return null;
+        if (config.TransparentStructs.Contains(nativeName) || state.StructByNativeName.ContainsKey(nativeName))
+            return nativeName;
+
+        var spelling = record.Handle.Spelling.ToString();
+        var candidates = state.PublicRecordNames.Concat(config.TransparentStructs).Concat(state.StructByNativeName.Keys);
+        return candidates.FirstOrDefault(candidate =>
+            state.RecordByNativeName.TryGetValue(candidate, out var transparent)
+            && transparent.Handle.Spelling.ToString() == spelling) ?? nativeName;
     }
 
     /// <summary>Returns a legacy opaque handle for a renamed unknown record pointer.</summary>

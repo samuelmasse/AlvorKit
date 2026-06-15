@@ -38,6 +38,40 @@ public sealed class BindingCodeEmitterTest
         StringAssert.Contains(nativeSource, "[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]");
     }
 
+    /// <summary>Pointer-shaped public bindings emit unsafe members and pointer fields.</summary>
+    [TestMethod]
+    public void EmitPointerTypes_AddsUnsafeModifiers()
+    {
+        using var workspace = TempWorkspace.Create();
+        var config = CHeaderTestConfig.Create();
+        var model = new BindingModel(
+            Enums: [],
+            Structs: [new("test_face_rec", "TestFaceRec", false, 16, [new("Next", "TestFaceRec*", 0, null)], [], null)],
+            Handles: [],
+            Delegates: [],
+            Functions:
+            [
+                new(
+                    NativeName: "test_current",
+                    ManagedName: "Current",
+                    ReturnType: "TestFaceRec*",
+                    ReturnInteropType: "TestFaceRec*",
+                    Parameters: [new("face", "TestFaceRec*", "TestFaceRec*", "", HasStringConvenience: false)],
+                    Documentation: null)
+            ],
+            Constants: [],
+            SkippedFunctions: [],
+            SizeofTypes: []);
+
+        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
+
+        StringAssert.Contains(File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestFaceRec.cs")), "public unsafe struct TestFaceRec");
+        StringAssert.Contains(File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Test.cs")), "public unsafe virtual TestFaceRec* Current");
+        StringAssert.Contains(
+            File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "TestNative.cs")),
+            "public static unsafe partial TestFaceRec* Current");
+    }
+
     [TestMethod]
     public void EmitBackendProject_AlwaysReferencesNativePackage()
     {

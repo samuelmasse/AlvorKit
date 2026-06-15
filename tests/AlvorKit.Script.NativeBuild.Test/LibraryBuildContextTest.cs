@@ -38,4 +38,21 @@ public sealed class LibraryBuildContextTest
             Directory.Delete(root, recursive: true);
         }
     }
+
+    /// <summary>Repository layout discovery walks upward from nested native metadata directories.</summary>
+    [TestMethod]
+    public void FindFrom_WalksUpToSolutionRoot()
+    {
+        var root = TestRepositoryFactory.CreateSingleCLibrary("sample", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var nested = Path.Combine(root, "native", "sample", "conf");
+
+            Assert.AreEqual(root, RepositoryLayout.FindFrom(nested).Root);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
 }

@@ -5,6 +5,14 @@
 These instructions apply repo-wide. More specific `AGENTS.md` files under
 `src/`, `scripts/`, and `demos/` add area-specific rules.
 
+## Agent Complaints
+
+When an agent has a complaint about the tools it uses, or believes another
+agent is working at the same time in a way that disturbs its task, write a
+concise complaint under `out/complaints/`. Use a descriptive Markdown filename
+when possible. These complaints are later input for agent quality-of-life
+improvements.
+
 ## Line Length
 
 Keep hand-authored code and config lines at or below 170 characters.

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="..\..\AlvorKit.Packages.props" />
+
+    <PropertyGroup Condition="'$(UseLocalBindings)' == 'true'">
+        <DefineConstants>$(DefineConstants);LOCAL_BINDINGS</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+        <PackageReference Include="AlvorKit.XxHash.Backend" Version="$(XxhBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.XxHash.Backend\AlvorKit.XxHash.Backend.csproj" />
+    </ItemGroup>
+
+</Project>

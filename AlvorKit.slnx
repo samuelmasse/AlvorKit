@@ -10,6 +10,7 @@
     </Folder>
 
     <Folder Name="/Script/">
+        <Project Path="scripts/AlvorKit.Script.Workspace/AlvorKit.Script.Workspace.csproj" />
         <Project Path="scripts/AlvorKit.Script.Bindgen.Core/AlvorKit.Script.Bindgen.Core.csproj" />
         <Project
             Path="scripts/AlvorKit.Script.Bindgen.CHeaders/AlvorKit.Script.Bindgen.CHeaders.csproj" />
@@ -25,7 +26,9 @@
 
     <Folder Name="/Tests/">
         <Project Path="tests/AlvorKit.Testing/AlvorKit.Testing.csproj" />
+        <Project Path="tests/AlvorKit.XxHash.Test/AlvorKit.XxHash.Test.csproj" />
         <Project Path="tests/AlvorKit.OpenGL.Layer.Test/AlvorKit.OpenGL.Layer.Test.csproj" />
+        <Project Path="tests/AlvorKit.Script.Workspace.Test/AlvorKit.Script.Workspace.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.Bindgen.Core.Test/AlvorKit.Script.Bindgen.Core.Test.csproj" />
         <Project

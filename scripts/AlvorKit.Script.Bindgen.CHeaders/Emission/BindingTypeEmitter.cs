@@ -29,9 +29,11 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
             ("TypeHeader", TypeHeader()),
             ("Documentation", structType.Documentation ?? $"Maps <c>{structType.NativeName}</c>."),
             ("StructLayout", structType.IsUnion ? "[StructLayout(LayoutKind.Explicit)]" : "[StructLayout(LayoutKind.Sequential)]"),
+            ("Unsafe", structType.Fields.Any(field => field.ManagedType.Contains('*')) ? "unsafe " : ""),
             ("ManagedName", structType.ManagedName),
             ("Fields", fields),
-            ("NestedBuffers", nestedBuffers));
+            ("NestedBuffers", nestedBuffers),
+            ("ConversionMembers", UInt128ConversionMembers(structType)));
     }
 
     /// <summary>Emits an opaque native handle type.</summary>
@@ -42,6 +44,13 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
             ("TypeHeader", TypeHeader()),
             ("NativeName", handle.NativeName),
             ("ManagedName", handle.ManagedName));
+
+    /// <summary>Emits the xxHash streaming-secret helper type.</summary>
+    public string XxHashSecret() =>
+        TemplateResource.Render(
+            typeof(BindingTypeEmitter),
+            "res/templates/bindgen/c-headers/csharp/xxhash-secret.cs.tmpl",
+            ("TypeHeader", TypeHeader()));
 
     /// <summary>Emits a native callback delegate type.</summary>
     public string Delegate(BindingDelegate callback)
@@ -57,6 +66,7 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
             ("TypeHeader", TypeHeader()),
             ("Parameters", parameters),
             ("ReturnType", callback.ReturnType),
+            ("Unsafe", callback.ReturnType.Contains('*') || callback.Parameters.Any(parameter => parameter.ManagedType.Contains('*')) ? "unsafe " : ""),
             ("ManagedName", callback.ManagedName),
             ("Signature", signature));
     }
@@ -96,4 +106,18 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
             ("Count", buffer.Count.ToString()),
             ("ElementType", buffer.ElementType),
             ("ManagedName", buffer.ManagedName));
+
+    /// <summary>Renders helpers for native 128-bit structs publicly projected as <see cref="UInt128"/>.</summary>
+    private string UInt128ConversionMembers(BindingStruct structType)
+    {
+        var publicAlias = context.Config.TypeAliases.GetValueOrDefault(structType.NativeName);
+        var interopAlias = context.Config.InteropTypeAliases.GetValueOrDefault(structType.NativeName);
+        if (publicAlias != "UInt128" || interopAlias != structType.ManagedName)
+            return "";
+
+        return TemplateResource.Render(
+            typeof(BindingTypeEmitter),
+            "res/templates/bindgen/c-headers/csharp/uint128-conversions.csfrag.tmpl",
+            ("ManagedName", structType.ManagedName));
+    }
 }

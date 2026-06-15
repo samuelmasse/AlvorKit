@@ -17,11 +17,14 @@ public sealed class BindgenConfigTest
         Assert.AreEqual("gles2", config.GlEsApi);
         Assert.AreEqual(0, config.Constants.Count);
         Assert.AreEqual(0, config.BoolReturns.Length);
+        Assert.AreEqual(0, config.AdvancedFunctions.Length);
         Assert.AreEqual(0, config.TypeAliases.Count);
+        Assert.AreEqual(0, config.InteropTypeAliases.Count);
         Assert.AreEqual(0, config.OpaqueTypes.Count);
         Assert.AreEqual(0, config.FunctionRenames.Count);
         Assert.AreEqual(0, config.EnumGroups.Count);
         Assert.IsNull(config.EnumOverloads);
+        Assert.IsFalse(config.XxHashConvenience);
     }
 
     /// <summary>Creates the smallest valid C-header config used by defaults tests.</summary>

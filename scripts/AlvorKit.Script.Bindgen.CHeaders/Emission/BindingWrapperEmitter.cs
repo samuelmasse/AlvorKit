@@ -23,8 +23,10 @@ internal sealed class BindingWrapperEmitter(BindingEmitterContext context)
         return TemplateResource.Render(
             typeof(BindingWrapperEmitter),
             "res/templates/bindgen/c-headers/csharp/wrapper-method.csfrag.tmpl",
+            ("Attributes", BindingMethodAttributes.ForFunction(function)),
             ("ReturnType", function.ReturnType),
             ("ManagedName", function.ManagedName),
+            ("Unsafe", BindingSignature.UnsafeModifier(function)),
             ("Signature", BindingSignature.ForFunction(function)),
             ("Arguments", arguments));
     }

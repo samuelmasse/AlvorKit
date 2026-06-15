@@ -50,7 +50,9 @@ internal sealed class BindingApiEmitter(BindingEmitterContext context)
         TemplateResource.Render(
             typeof(BindingApiEmitter),
             "res/templates/bindgen/c-headers/csharp/api-method.csfrag.tmpl",
+            ("Attributes", BindingMethodAttributes.ForFunction(function)),
             ("ReturnType", function.ReturnType),
             ("ManagedName", function.ManagedName),
+            ("Unsafe", BindingSignature.UnsafeModifier(function)),
             ("Signature", BindingSignature.ForFunction(function)));
 }

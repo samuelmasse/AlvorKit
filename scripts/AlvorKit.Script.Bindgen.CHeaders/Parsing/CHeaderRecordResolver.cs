@@ -24,7 +24,8 @@ internal sealed class CHeaderRecordResolver(
     private BindingStruct? BuildStruct(RecordDecl record, string nativeName)
     {
         var isUnion = record.Handle.Kind == CXCursorKind.CXCursor_UnionDecl;
-        var built = new BindingStruct(nativeName, names.TypeName(nativeName), isUnion, (int)record.TypeForDecl.Handle.SizeOf, [], [],
+        var managedName = config.InteropTypeAliases.GetValueOrDefault(nativeName) ?? names.TypeName(nativeName);
+        var built = new BindingStruct(nativeName, managedName, isUnion, (int)record.TypeForDecl.Handle.SizeOf, [], [],
             XmlDocComment.Parse(record.Handle.RawCommentText.ToString())?.Summary);
         state.StructByNativeName[nativeName] = built;
 

@@ -1,3 +1,5 @@
+using AlvorKit.Script.Workspace;
+
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Repository paths needed by the native build runner.</summary>
@@ -11,14 +13,8 @@ internal sealed class RepositoryLayout(string root)
     public string NativeDirectory => Path.Combine(Root, "native");
 
     /// <summary>Walks upward from a directory until the AlvorKit solution file is found.</summary>
-    public static RepositoryLayout FindFrom(string startDirectory)
-    {
-        var current = startDirectory;
-        while (!File.Exists(Path.Combine(current, "AlvorKit.slnx")))
-            current = Path.GetDirectoryName(current)
-                ?? throw new InvalidOperationException("AlvorKit.slnx not found above " + startDirectory);
-        return new(current);
-    }
+    public static RepositoryLayout FindFrom(string startDirectory) =>
+        new(ProjectRoot.FindFrom(startDirectory));
 
     /// <summary>Returns all native libraries that have build manifests.</summary>
     public IEnumerable<string> NativeBuildLibraries() =>

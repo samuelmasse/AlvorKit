@@ -49,6 +49,59 @@ public sealed class CHeaderBindingParserStructTest
     }
 
     [TestMethod]
+    public void Parse_VisibleRecordPointersUsePublicRecordNames()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            typedef struct test_point_ {
+                int x;
+            } test_point;
+            typedef struct test_unused_ {
+                int z;
+            } test_unused;
+            struct test_named {
+                int y;
+            };
+            void test_take(test_point* point, struct test_named* named);
+            """);
+        var config = CHeaderTestConfig.Create();
+
+        var model = CHeaderParserHarness.Parse(translationUnit, source, config);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "test_point", "test_named" },
+            model.Structs.Select(type => type.NativeName).ToArray());
+        Assert.IsFalse(model.Structs.Any(type => type.NativeName == "test_point_"));
+        CollectionAssert.AreEqual(
+            new[] { "TestPoint*", "TestNamed*" },
+            model.Functions.Single().Parameters.Select(parameter => parameter.ManagedType).ToArray());
+    }
+
+    [TestMethod]
+    public void Parse_RecordPointerFieldsEmitPointedStructs()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            typedef struct test_child_ {
+                int x;
+            } test_child;
+            typedef struct test_parent_ {
+                test_child* child;
+            } test_parent;
+            """);
+        var config = CHeaderTestConfig.Create();
+        config.TransparentStructs = ["test_parent"];
+
+        var model = CHeaderParserHarness.Parse(translationUnit, source, config);
+        var parent = model.Structs.Single(type => type.NativeName == "test_parent");
+
+        Assert.IsTrue(model.Structs.Any(type => type.NativeName == "test_child"));
+        Assert.AreEqual("TestChild*", parent.Fields.Single(field => field.ManagedName == "Child").ManagedType);
+    }
+
+    [TestMethod]
     public void Parse_ThrowsForBitfieldLayout()
     {
         using var workspace = TempWorkspace.Create();

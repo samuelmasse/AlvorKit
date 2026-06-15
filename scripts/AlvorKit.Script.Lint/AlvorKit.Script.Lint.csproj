@@ -4,4 +4,8 @@
         <InternalsVisibleTo Include="AlvorKit.Script.Lint.Test" />
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
+    </ItemGroup>
+
 </Project>

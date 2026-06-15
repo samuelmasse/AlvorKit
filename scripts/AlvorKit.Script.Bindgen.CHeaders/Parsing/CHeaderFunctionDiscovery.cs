@@ -63,8 +63,14 @@ internal sealed class CHeaderFunctionDiscovery(
 
         var isBoolReturn = returnType == "bool" || config.BoolReturns.Contains(function.Name);
         var returnInteropType = isBoolReturn
-            ? types.MapNativeType(function.ReturnType.Handle, isReturn: true, boolAsRaw: true)!
-            : returnType;
+            ? types.MapInteropType(function.ReturnType.Handle, isReturn: true, boolAsRaw: true)!
+            : types.MapInteropType(function.ReturnType.Handle, isReturn: true)!;
+        if (returnInteropType is null)
+        {
+            state.SkippedFunctions.Add($"{function.Name} (return interop type: {function.ReturnType.AsString})");
+            return null;
+        }
+
         var managedName = config.FunctionRenames.GetValueOrDefault(function.Name)
             ?? CSharpName.FromNativeIdentifier(function.Name, matchingPrefix, config.DigitNamePrefix);
         return new(
@@ -74,7 +80,8 @@ internal sealed class CHeaderFunctionDiscovery(
             returnInteropType,
             [.. boundParameters.OfType<BindingParameter>()],
             XmlDocComment.Parse(function.Handle.RawCommentText.ToString()),
-            ReturnsCString: returnType == "nint" && ReturnsCString(function.ReturnType.Handle));
+            ReturnsCString: returnType == "nint" && ReturnsCString(function.ReturnType.Handle),
+            IsAdvanced: config.AdvancedFunctions.Contains(function.Name, StringComparer.Ordinal));
     }
 
     /// <summary>Returns true when the raw pointer return can drive C-string convenience overloads.</summary>

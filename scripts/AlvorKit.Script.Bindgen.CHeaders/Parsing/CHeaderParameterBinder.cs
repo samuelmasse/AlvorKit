@@ -21,7 +21,15 @@ internal sealed class CHeaderParameterBinder(BindgenConfig config, CHeaderParseS
         var isString = niceType == "string";
         var isBool = niceType == "bool" || (modifier.Length == 0 && config.BoolParams.GetValueOrDefault(function.Name, []).Contains(parameter.Name));
         var managedType = isString ? "nint" : isBool ? "bool" : niceType;
-        var interopType = isString ? "nint" : isBool ? types.MapNativeType(typeHandle, isParam: modifier.Length == 0, boolAsRaw: true)! : niceType;
+        var interopType = isString ? "nint" : isBool
+            ? types.MapInteropType(typeHandle, isParam: modifier.Length == 0, boolAsRaw: true)!
+            : types.MapInteropType(typeHandle, isParam: modifier.Length == 0);
+        if (interopType is null)
+        {
+            state.SkippedFunctions.Add($"{function.Name} (interop param {parameter.Name}: {parameter.Type.AsString})");
+            return null;
+        }
+
         var nativeName = parameter.Name.Length > 0 ? parameter.Name : $"arg{index}";
         var canonical = parameter.Type.Handle.CanonicalType;
         var callbackType = CallbackType(parameter);
