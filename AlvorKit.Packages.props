@@ -3,15 +3,15 @@
         <UseLocalBindings Condition="'$(UseLocalBindings)' == ''">false</UseLocalBindings>
         <BindingsRoot Condition="'$(BindingsRoot)' == ''">$(MSBuildThisFileDirectory)out\bindgen</BindingsRoot>
 
-        <FtBindVer>2.14.3.10</FtBindVer>
+        <FtBindVer>2.14.3.11</FtBindVer>
 
-        <GlfwBindVer>3.4.10</GlfwBindVer>
+        <GlfwBindVer>3.4.11</GlfwBindVer>
 
-        <MaBindVer>0.11.25.10</MaBindVer>
+        <MaBindVer>0.11.25.11</MaBindVer>
 
-        <XxhBindVer>0.8.3.10</XxhBindVer>
+        <XxhBindVer>0.8.3.11</XxhBindVer>
 
-        <GlBindVer>4.6.10</GlBindVer>
+        <GlBindVer>4.6.11</GlBindVer>
     </PropertyGroup>
 
     <Import Project="$(MSBuildThisFileDirectory)AlvorKit.Local.props"
