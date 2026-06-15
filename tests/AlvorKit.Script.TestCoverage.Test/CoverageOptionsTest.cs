@@ -13,6 +13,10 @@ public sealed class CoverageOptionsTest
         Assert.AreEqual("Debug", options.Configuration);
         Assert.AreEqual(100.0, options.Threshold);
         Assert.AreEqual(0, options.TestProjectFilters.Count);
+        Assert.AreEqual(CoverageOptions.DefaultMaxParallel, options.MaxParallel);
+        Assert.IsTrue(options.GenerateHtmlReport);
+        Assert.IsTrue(options.GenerateCoberturaReport);
+        Assert.IsTrue(options.GenerateLcovReport);
     }
 
     /// <summary>Short options override configuration and threshold.</summary>
@@ -34,6 +38,36 @@ public sealed class CoverageOptionsTest
         CollectionAssert.AreEqual(new[] { "One.Test", "tests/Two.Test/Two.Test.csproj" }, options.TestProjectFilters.ToArray());
     }
 
+    /// <summary>Max parallelism can be configured for hosts with different CPU and IO capacity.</summary>
+    [TestMethod]
+    public void Parse_MaxParallel_ReturnsValue()
+    {
+        var options = CoverageOptions.Parse(["--max-parallel", "2"]);
+
+        Assert.AreEqual(2, options.MaxParallel);
+    }
+
+    /// <summary>Agent mode keeps only the artifacts needed for automated coverage decisions.</summary>
+    [TestMethod]
+    public void Parse_AgentMode_UsesJsonOnlyReports()
+    {
+        var options = CoverageOptions.Parse(["--agent"]);
+
+        Assert.IsFalse(options.GenerateHtmlReport);
+        Assert.IsFalse(options.GenerateCoberturaReport);
+        Assert.IsFalse(options.GenerateLcovReport);
+        CollectionAssert.AreEqual(new[] { "json" }, options.CoverletOutputFormats().ToArray());
+    }
+
+    /// <summary>Full report mode includes every existing raw report format.</summary>
+    [TestMethod]
+    public void CoverletOutputFormats_Defaults_ReturnsAllFormats()
+    {
+        var options = CoverageOptions.Parse([]);
+
+        CollectionAssert.AreEqual(new[] { "json", "cobertura", "lcov" }, options.CoverletOutputFormats().ToArray());
+    }
+
     /// <summary>Unknown arguments are rejected so agents do not assume unsupported behavior.</summary>
     [TestMethod]
     public void Parse_UnknownArg_Throws()
@@ -53,5 +87,12 @@ public sealed class CoverageOptionsTest
     public void Parse_OutOfRangeThreshold_Throws()
     {
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => CoverageOptions.Parse(["--threshold", "101"]));
+    }
+
+    /// <summary>Parallelism must be positive so the scheduler cannot deadlock.</summary>
+    [TestMethod]
+    public void Parse_OutOfRangeMaxParallel_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => CoverageOptions.Parse(["--max-parallel", "0"]));
     }
 }

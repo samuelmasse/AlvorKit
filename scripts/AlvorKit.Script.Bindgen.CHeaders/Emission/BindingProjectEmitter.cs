@@ -6,7 +6,7 @@ internal sealed class BindingProjectEmitter(BindingEmitterContext context)
     /// <summary>Emits the generated API project file.</summary>
     public string ApiProject(BindingModel model, string version)
     {
-        var unsafeBlocks = context.Config.SpanExtensions
+        var unsafeBlocks = context.Config.SpanOverloads
             || context.Config.SpanReturns.Count > 0
             || model.Functions.Any(function => function.ReturnsCString || function.Parameters.Any(parameter => parameter.HasStringConvenience));
         return $"""

@@ -78,3 +78,8 @@ internal sealed record TestProjectResult(
     string CoverageJsonPath,
     string CoverageCoberturaPath,
     string CoverageLcovPath);
+
+/// <summary>Captured process output and report metadata for a build or test project process.</summary>
+/// <param name="Result">Execution metadata written to coverage reports when relevant.</param>
+/// <param name="Output">Combined standard output and error produced by the process.</param>
+internal sealed record TestProjectExecution(TestProjectResult Result, string Output);

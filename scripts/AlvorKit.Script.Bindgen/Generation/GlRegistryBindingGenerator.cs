@@ -7,7 +7,7 @@ internal sealed class GlRegistryBindingGenerator
     private readonly NativeSourceResolver sourceResolver = new();
 
     /// <summary>Generates bindings from an OpenGL registry configuration.</summary>
-    public async Task GenerateAsync(NativeLibraryBinding library)
+    public async Task GenerateAsync(NativeLibraryBinding library, string? outputRoot)
     {
         await sourceResolver.EnsureSourceAsync(library);
         await sourceResolver.EnsureDocSourceAsync(library);
@@ -39,6 +39,7 @@ internal sealed class GlRegistryBindingGenerator
         new GlCodeEmitter(config, library.Tag, library.DocTag).Emit(
             model,
             library.RepositoryRoot,
+            outputRoot,
             library.BindingVersion);
         Console.WriteLine($"Emitted {config.ApiProject} and {config.BackendProject} ({library.BindingVersion})");
         SkippedFunctionReporter.Print(model.SkippedCommands);

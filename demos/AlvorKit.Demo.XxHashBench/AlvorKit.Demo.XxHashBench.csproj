@@ -8,7 +8,6 @@
 
     <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
         <PackageReference Include="AlvorKit.XxHash.Backend" Version="$(XxhBindVer)" />
-        <PackageReference Include="AlvorKit.XxHash.Native" Version="$(XxhNativeVer)" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">

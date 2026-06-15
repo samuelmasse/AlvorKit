@@ -4,7 +4,7 @@ namespace AlvorKit.Script.Bindgen;
 internal static class BindingCallbackSetterEmitter
 {
     /// <summary>Emits callback rooting support and delegate-typed setter overloads.</summary>
-    public static void CallbackSetters(StringBuilder output, BindingModel model)
+    public static void CallbackSetters(StringBuilder output, BindingModel model, string apiClass)
     {
         var setters = model.Functions.Where(function => function.Parameters.Any(parameter => parameter.CallbackType is not null)).ToList();
         if (setters.Count == 0)
@@ -24,11 +24,11 @@ internal static class BindingCallbackSetterEmitter
 
         var slot = 0;
         foreach (var function in setters)
-            EmitSetter(output, model, function, slot++);
+            EmitSetter(output, model, function, apiClass, slot++);
     }
 
     /// <summary>Emits one delegate-typed callback setter overload.</summary>
-    private static void EmitSetter(StringBuilder output, BindingModel model, BindingFunction function, int slot)
+    private static void EmitSetter(StringBuilder output, BindingModel model, BindingFunction function, string apiClass, int slot)
     {
         var callbackParameter = function.Parameters.First(parameter => parameter.CallbackType is not null);
         var ownerParameter = function.Parameters.FirstOrDefault(parameter => model.Handles.Any(handle => handle.ManagedName == parameter.ManagedType));
@@ -39,8 +39,10 @@ internal static class BindingCallbackSetterEmitter
             parameter == callbackParameter ? $"RootCallback({owner}, {slot}, {parameter.ManagedName})" : parameter.ManagedName));
 
         output.AppendLine();
-        output.AppendLine($"    /// <inheritdoc cref=\"{function.ManagedName}({BindingSignature.Cref(function.Parameters)})\"/>");
-        output.AppendLine("    /// <remarks>Convenience overload. Roots the delegate and installs its function pointer; pass null to clear it.</remarks>");
+        BindingDocs.InheritedConvenience(
+            output,
+            $"{apiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
+            "Roots the delegate and installs its function pointer; pass null to clear it.");
         output.AppendLine($"    public void {function.ManagedName}({signature}) => {function.ManagedName}({arguments});");
     }
 }

@@ -17,7 +17,7 @@ internal sealed class CHeaderBindingGenerator(BindgenOptions options)
     private readonly BindingExportVerifier exportVerifier = new(options);
 
     /// <summary>Generates managed and backend projects from a C header bindgen configuration.</summary>
-    public async Task GenerateAsync(NativeLibraryBinding library)
+    public async Task GenerateAsync(NativeLibraryBinding library, string? outputRoot)
     {
         await sourceResolver.EnsureSourceAsync(library);
         var translationUnitPath = translationUnitWriter.Write(library);
@@ -37,6 +37,7 @@ internal sealed class CHeaderBindingGenerator(BindgenOptions options)
         new BindingCodeEmitter(library.Config, library.Tag).Emit(
             model,
             library.RepositoryRoot,
+            outputRoot,
             library.BindingVersion,
             library.NativeVersion);
         Console.WriteLine(

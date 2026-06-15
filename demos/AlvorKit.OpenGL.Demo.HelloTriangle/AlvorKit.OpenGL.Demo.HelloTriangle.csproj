@@ -8,7 +8,6 @@
 
     <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
         <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(GlfwBindVer)" />
-        <PackageReference Include="AlvorKit.GLFW.Native" Version="$(GlfwNativeVer)" />
         <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(GlBindVer)" />
     </ItemGroup>
 

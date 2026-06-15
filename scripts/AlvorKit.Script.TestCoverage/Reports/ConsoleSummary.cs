@@ -11,7 +11,8 @@ internal static class ConsoleSummary
         CoverageOutputPaths output,
         bool passed,
         CoverageSummary summary,
-        bool htmlReportGenerated)
+        bool htmlReportGenerated,
+        bool htmlReportRequested)
     {
         Console.WriteLine();
         Console.WriteLine($"Coverage status: {(passed ? "PASS" : "FAIL")}");
@@ -19,6 +20,13 @@ internal static class ConsoleSummary
             $"Line: {Percent(summary.Totals.Line.Percent)}; Branch: {Percent(summary.Totals.Branch.Percent)}; Method: {Percent(summary.Totals.Method.Percent)}");
         Console.WriteLine($"Agent report: {RepositoryPaths.Relative(repoRoot, output.AgentReport)}");
         Console.WriteLine($"Human report: {RepositoryPaths.Relative(repoRoot, output.HumanReport)}");
+
+        if (!htmlReportRequested)
+        {
+            Console.WriteLine("HTML report: skipped");
+            return;
+        }
+
         Console.WriteLine(
             htmlReportGenerated
                 ? $"HTML report: {ClickableFileUri(output.HtmlIndexReport)}"

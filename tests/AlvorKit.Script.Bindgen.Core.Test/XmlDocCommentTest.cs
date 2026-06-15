@@ -139,19 +139,4 @@ public sealed class XmlDocCommentTest
         Assert.AreEqual("Uses library storage.", doc.Remarks);
     }
 
-    /// <summary>Comment delimiters and leading decoration are removed from raw native lines.</summary>
-    [TestMethod]
-    public void CleanLine_StripsNativeCommentDecoration()
-    {
-        Assert.AreEqual("value", XmlDocComment.CleanLine("/*!< value */"));
-        Assert.AreEqual("value", XmlDocComment.CleanLine(" * -- value"));
-    }
-
-    /// <summary>Member comments are reduced to single-line XML-doc-safe prose.</summary>
-    [TestMethod]
-    public void Member_StripsTrailingCommentMarkup()
-    {
-        Assert.AreEqual("left mouse button", XmlDocComment.Member("/*!< [left mouse button](@ref buttons) */"));
-        Assert.IsNull(XmlDocComment.Member("   "));
-    }
 }

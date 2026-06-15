@@ -45,6 +45,15 @@ public sealed partial class BindgenConfig
     /// <summary>Explicit native-to-managed type rename overrides.</summary>
     public Dictionary<string, string> TypeRenames { get; set; } = [];
 
+    /// <summary>Native types projected directly as existing managed types instead of generated structs.</summary>
+    public Dictionary<string, string> TypeAliases { get; set; } = [];
+
+    /// <summary>Native pointer pointee types projected as opaque handles, even when record definitions are visible.</summary>
+    public Dictionary<string, string> OpaqueTypes { get; set; } = [];
+
+    /// <summary>Explicit native-to-managed function rename overrides.</summary>
+    public Dictionary<string, string> FunctionRenames { get; set; } = [];
+
     /// <summary>Optional size verification shim source file relative to the native directory.</summary>
     public string? SizeofShim { get; set; }
 

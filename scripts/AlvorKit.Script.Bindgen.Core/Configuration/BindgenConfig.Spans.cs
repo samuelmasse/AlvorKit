@@ -4,7 +4,7 @@ namespace AlvorKit.Script.Bindgen;
 public sealed partial class BindgenConfig
 {
     /// <summary>Whether span convenience overloads should be generated.</summary>
-    public bool SpanExtensions { get; set; }
+    public bool SpanOverloads { get; set; }
 
     /// <summary>Native functions skipped when generating span overloads.</summary>
     public Dictionary<string, string> SpanSkip { get; set; } = [];

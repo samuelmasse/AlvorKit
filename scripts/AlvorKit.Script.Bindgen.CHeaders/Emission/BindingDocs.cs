@@ -29,6 +29,18 @@ internal static class BindingDocs
             output.AppendLine($"    /// <remarks>{remarks}</remarks>");
     }
 
+    /// <summary>Emits inherited documentation and standard convenience-overload remarks.</summary>
+    public static void InheritedConvenience(StringBuilder output, string cref, string details)
+    {
+        output.AppendLine($"    /// <inheritdoc cref=\"{cref}\"/>");
+        ConvenienceRemarks(output, details);
+    }
+
+    /// <summary>Emits the standard convenience-overload remarks prefix with operation-specific details.</summary>
+    public static void ConvenienceRemarks(StringBuilder output, string details) =>
+        output.AppendLine(
+            $"    /// <remarks>Convenience overload. {details}</remarks>");
+
     /// <summary>Capitalizes leading ASCII lowercase text for readable summaries.</summary>
     private static string Capitalize(string text) =>
         text.Length > 0 && char.IsAsciiLetterLower(text[0]) ? char.ToUpperInvariant(text[0]) + text[1..] : text;

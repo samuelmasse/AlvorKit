@@ -29,27 +29,56 @@ public sealed class BindingCodeEmitterOverloadTest
 
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
 
-        var api = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Test.cs"));
-        StringAssert.Contains(api, "private Dictionary<(nint Owner, int Slot), Delegate>? rootedCallbacks;");
-        StringAssert.Contains(api, "TestCallback? callback");
-        StringAssert.Contains(api, "RootCallback(handle.Handle, 0, callback)");
+        var overloads = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestOverloads.cs"));
+        StringAssert.Contains(overloads, "private Dictionary<(nint Owner, int Slot), Delegate>? rootedCallbacks;");
+        StringAssert.Contains(overloads, "TestCallback? callback");
+        StringAssert.Contains(overloads, "RootCallback(handle.Handle, 0, callback)");
     }
 
+    /// <summary>Callback overloads use a zero owner when no handle parameter is available.</summary>
     [TestMethod]
-    public void Emit_SpanExtensionsConvertPointerAndSizeParameters()
+    public void Emit_CallbackSetterWithoutHandleUsesZeroOwner()
     {
         using var workspace = TempWorkspace.Create();
         var config = CHeaderTestConfig.Create();
-        config.SpanExtensions = true;
+        var model = new BindingModel(
+            [],
+            [],
+            [],
+            [new("TestCallback", "void", [])],
+            [new("test_set", "Set", "void", "void",
+                [new("callback", "nint", "nint", "", false, CallbackType: "TestCallback")], null)],
+            [],
+            [],
+            []);
+
+        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
+
+        var overloads = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestOverloads.cs"));
+        StringAssert.Contains(overloads, "RootCallback(0, 0, callback)");
+    }
+
+    [TestMethod]
+    public void Emit_SpanOverloadsConvertPointerAndSizeParameters()
+    {
+        using var workspace = TempWorkspace.Create();
+        var config = CHeaderTestConfig.Create();
+        config.SpanOverloads = true;
         var model = new BindingModel([], [], [], [], [new("test_fill", "Fill", "void", "void",
             [new("buffer", "nint", "nint", "", false, IsUntypedPointer: true), new("bufferSize", "nuint", "nuint", "", false, IsSizeT: true)], null)],
             [], [], []);
 
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
 
-        var extensions = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestExtensions.cs"));
-        StringAssert.Contains(extensions, "public static void Fill<TBuffer>(this Test test, Span<TBuffer> buffer)");
-        StringAssert.Contains(extensions, "ByteLength<TBuffer>(buffer)");
-        StringAssert.Contains(extensions, "/// <summary>Returns the byte length of an unmanaged span.</summary>");
+        var overloads = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestOverloads.cs"));
+        StringAssert.Contains(overloads, "public unsafe partial class Test");
+        StringAssert.Contains(overloads, "/// <inheritdoc cref=\"Test.Fill(nint, nuint)\"/>");
+        StringAssert.Contains(
+            overloads,
+            "/// <remarks>Convenience overload. Pins span arguments for the duration of the call, supplies byte lengths where the native method expects them, " +
+            "and forwards to the underlying method.</remarks>");
+        StringAssert.Contains(overloads, "public void Fill<TBuffer>(Span<TBuffer> buffer)");
+        StringAssert.Contains(overloads, "ByteLength<TBuffer>(buffer)");
+        StringAssert.Contains(overloads, "/// <summary>Returns the byte length of an unmanaged span.</summary>");
     }
 }

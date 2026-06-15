@@ -16,6 +16,7 @@ internal static class XmlDocText
         if (line.StartsWith('<'))
             line = line[1..];
         line = Regex.Replace(line, @"^--+\s*", "");
+        line = Regex.Replace(line, @"\s*\*{2,}\s*$", "");
         return line.Trim();
     }
 

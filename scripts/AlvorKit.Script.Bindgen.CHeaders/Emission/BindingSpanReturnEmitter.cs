@@ -14,8 +14,10 @@ internal sealed class BindingSpanReturnEmitter(BindingEmitterContext context)
             var signature = string.Join(", ", leading.Select(BindingSignature.Parameter));
             var callArguments = string.Join(", ", leading.Select(BindingSignature.Argument).Append("out var count"));
             output.AppendLine();
-            output.AppendLine($"    /// <inheritdoc cref=\"{function.ManagedName}({BindingSignature.Cref(function.Parameters)})\"/>");
-            output.AppendLine("    /// <remarks>Convenience overload. Returns a read-only span over native memory while supplying the count internally.</remarks>");
+            BindingDocs.InheritedConvenience(
+                output,
+                $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
+                "Returns a read-only span over native memory while supplying the count internally.");
             output.AppendLine($"    public unsafe ReadOnlySpan<{elementType}> {function.ManagedName}({signature})");
             output.AppendLine("    {");
             output.AppendLine($"        var pointer = {function.ManagedName}({callArguments});");

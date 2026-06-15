@@ -21,10 +21,42 @@ limit.
 When touching an existing over-limit line, wrap it if it is not one of those
 exceptions. Do not create unrelated churn just to clean historical lines.
 
+## Generated Code Review
+
+When changing a code generator or generator configuration, capture generated
+output before and after the change whenever feasible. Use an ignored directory
+under `out/` so the snapshots are disposable:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library|all> --output-root out\bindgen-review\<case>\before
+dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library|all> --output-root out\bindgen-review\<case>\after
+git diff --no-index -- out\bindgen-review\<case>\before out\bindgen-review\<case>\after
+```
+
+Review the generated source and project-file diff carefully. Use focused
+fixtures under `out/bindgen-review/` when a full binding output is too large,
+and summarize the meaningful generated-code changes before handing off.
+
 ## C# File Placement
 
 A `.cs` file may live directly at the root of its project when that is the
 clearest home. Do not create a subdirectory solely because the file is C#.
+
+## Linting
+
+Run the repository linter before handing off changes that touch code, workflow
+configuration, JSON, or Markdown:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.Lint
+```
+
+Use formatter write mode when you need to fix supported formatting issues in
+touched files:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.Lint -- --fix
+```
 
 ## Code Coverage
 
@@ -33,23 +65,26 @@ tool writes agent-readable and human-readable artifacts under `out/coverage/`.
 
 Quick commands:
 
-- Full strict gate: `dotnet run --project scripts\AlvorKit.Script.TestCoverage`
-- One test project:
-  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --test-project AlvorKit.Script.NativeBuild.Test`
-- Report-only targeted run:
-  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --test-project AlvorKit.Script.NativeBuild.Test --threshold 0`
-- Open the browser report after a run: `Invoke-Item .\out\coverage\html\index.html`
+- Agent full strict gate:
+  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent`
+- Agent focused strict gate:
+  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --test-project AlvorKit.Script.NativeBuild.Test`
+- Agent report-only targeted run:
+  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --test-project AlvorKit.Script.NativeBuild.Test --threshold 0`
+- Full human/browser report: omit `--agent`.
+- Open the browser report after a full report run:
+  `Invoke-Item .\out\coverage\html\index.html`
 
 Run the full strict gate before finishing broad or cross-project work:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.TestCoverage
+dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent
 ```
 
 For focused work, run only the matching test project:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --test-project AlvorKit.Script.NativeBuild.Test
+dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --test-project AlvorKit.Script.NativeBuild.Test
 ```
 
 The `--test-project` value may be a test project name, project file name, or
@@ -61,19 +96,34 @@ To generate reports without enforcing the coverage percentage, use
 `--threshold 0`:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --test-project AlvorKit.Script.NativeBuild.Test --threshold 0
+dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --test-project AlvorKit.Script.NativeBuild.Test --threshold 0
 ```
+
+Agent optimization notes:
+
+- Prefer `--agent` for automated checks. It keeps the same pass/fail gate but
+  skips ReportGenerator, Cobertura, and LCOV so the tool writes only the JSON
+  data needed for `coverage-summary.json` and the compact Markdown summary.
+- The tool runs multiple selected test projects concurrently by default after a
+  prebuild step. Use `--max-parallel 1` only when diagnosing order-sensitive
+  build or test issues on a busy machine.
+- Omit `--agent` only when you need the browser HTML report, raw Cobertura XML,
+  or raw LCOV artifacts.
 
 Generated artifacts:
 
 - `out/coverage/coverage-summary.json`: agent-oriented summary with `passed`,
   `totals`, `modules`, `unmeasuredModules`, missing line details, and test logs.
 - `out/coverage/coverage-summary.md`: compact human-readable summary.
-- `out/coverage/html/index.html`: browser-readable ReportGenerator report.
+- `out/coverage/projects/<test-project>/coverage.json`: raw Coverlet JSON for
+  each executed test project.
+- `out/coverage/projects/<test-project>/dotnet-test.log`: captured test output.
+- `out/coverage/html/index.html`: browser-readable ReportGenerator report when
+  `--agent` is omitted.
 - `out/coverage/reportgenerator.log`: captured `dotnet tool restore` and
-  ReportGenerator output.
-- `out/coverage/projects/<test-project>/`: raw Coverlet JSON, Cobertura XML,
-  LCOV, and `dotnet-test.log` for each executed test project.
+  ReportGenerator output when `--agent` is omitted.
+- `out/coverage/projects/<test-project>/coverage.cobertura.xml` and
+  `coverage.info`: raw Cobertura XML and LCOV reports when `--agent` is omitted.
 
 Agent workflow:
 

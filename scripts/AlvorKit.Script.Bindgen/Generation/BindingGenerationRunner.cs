@@ -5,6 +5,9 @@ namespace AlvorKit.Script.Bindgen;
 /// <param name="options">Command-line options that control selection and strict validation.</param>
 public sealed class BindingGenerationRunner(RepositoryLayout repository, BindgenOptions options)
 {
+    /// <summary>Optional output root used for generated project snapshots.</summary>
+    private readonly string? outputRoot = repository.ResolveGeneratedOutputRoot(options.OutputRoot);
+
     /// <summary>Generator for C header-backed bindings.</summary>
     private readonly CHeaderBindingGenerator cHeaderGenerator = new(options);
 
@@ -23,10 +26,10 @@ public sealed class BindingGenerationRunner(RepositoryLayout repository, Bindgen
     {
         if (library.Config.Kind == BindgenConfig.GlRegistryKind)
         {
-            await glRegistryGenerator.GenerateAsync(library);
+            await glRegistryGenerator.GenerateAsync(library, outputRoot);
             return;
         }
 
-        await cHeaderGenerator.GenerateAsync(library);
+        await cHeaderGenerator.GenerateAsync(library, outputRoot);
     }
 }

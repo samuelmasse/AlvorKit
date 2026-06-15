@@ -21,25 +21,119 @@ internal sealed class CoverageRunner(CoverageOptions options)
             throw new InvalidOperationException("No source projects found under src or scripts.");
 
         var testRunner = new TestProjectRunner(repoRoot, options, sourceModules);
-        var testResults = new List<TestProjectResult>();
+        var noBuildTests = ShouldPrebuild(testProjects);
+        IReadOnlyList<TestProjectExecution> buildResults = noBuildTests
+            ? await BuildTestProjectsAsync(testRunner, testProjects, output.ProjectsRoot)
+            : [];
+        var failedBuilds = buildResults.Where(execution => execution.Result.ExitCode != 0).ToArray();
         var coverage = new CoverageAccumulator();
 
-        foreach (var testProject in testProjects)
+        if (failedBuilds.Length > 0)
         {
-            var result = await testRunner.RunAsync(testProject, output.ProjectsRoot);
-            testResults.Add(result);
+            var failedResults = failedBuilds.Select(execution => execution.Result).ToArray();
+            return await CompleteAsync(repoRoot, output, started, coverage, sourceModules, failedResults);
+        }
 
+        var testExecutions = await RunTestProjectsAsync(testRunner, testProjects, output.ProjectsRoot, noBuildTests);
+        var testResults = testExecutions.Select(execution => execution.Result).ToArray();
+
+        foreach (var result in testResults)
+        {
             if (File.Exists(Path.Combine(repoRoot, result.CoverageJsonPath)))
                 coverage.AddCoverletJson(Path.Combine(repoRoot, result.CoverageJsonPath), repoRoot);
         }
 
+        return await CompleteAsync(repoRoot, output, started, coverage, sourceModules, testResults);
+    }
+
+    /// <summary>Returns true when a separate build lets parallel tests avoid shared file-copy work.</summary>
+    private bool ShouldPrebuild(IReadOnlyCollection<string> testProjects) =>
+        options.MaxParallel > 1 && testProjects.Count > 1;
+
+    /// <summary>Builds selected test projects sequentially before parallel no-build test execution.</summary>
+    private static async Task<IReadOnlyList<TestProjectExecution>> BuildTestProjectsAsync(
+        TestProjectRunner testRunner,
+        IReadOnlyList<string> testProjects,
+        string projectsRoot)
+    {
+        var results = new List<TestProjectExecution>();
+
+        foreach (var testProject in testProjects)
+        {
+            var execution = await testRunner.BuildAsync(testProject, projectsRoot);
+            Console.Write(execution.Output);
+            results.Add(execution);
+        }
+
+        return results;
+    }
+
+    /// <summary>Runs selected test projects with bounded concurrency and returns results in discovery order.</summary>
+    private async Task<IReadOnlyList<TestProjectExecution>> RunTestProjectsAsync(
+        TestProjectRunner testRunner,
+        IReadOnlyList<string> testProjects,
+        string projectsRoot,
+        bool noBuild)
+    {
+        using var semaphore = new SemaphoreSlim(options.MaxParallel);
+        var tasks = testProjects
+            .Select((testProject, index) => RunIndexedAsync(testRunner, testProject, projectsRoot, noBuild, semaphore, index))
+            .ToArray();
+        var results = await Task.WhenAll(tasks);
+
+        return
+        [
+            .. results
+                .OrderBy(result => result.Index)
+                .Select(result =>
+                {
+                    Console.Write(result.Execution.Output);
+                    return result.Execution;
+                })
+        ];
+    }
+
+    /// <summary>Runs one test project after acquiring a parallelism slot.</summary>
+    private static async Task<(int Index, TestProjectExecution Execution)> RunIndexedAsync(
+        TestProjectRunner testRunner,
+        string testProject,
+        string projectsRoot,
+        bool noBuild,
+        SemaphoreSlim semaphore,
+        int index)
+    {
+        await semaphore.WaitAsync();
+
+        try
+        {
+            return (index, await testRunner.RunAsync(testProject, projectsRoot, noBuild));
+        }
+        finally
+        {
+            semaphore.Release();
+        }
+    }
+
+    /// <summary>Writes final reports, optionally generates HTML, and returns the process exit code.</summary>
+    private async Task<int> CompleteAsync(
+        string repoRoot,
+        CoverageOutputPaths output,
+        DateTimeOffset started,
+        CoverageAccumulator coverage,
+        IReadOnlyCollection<string> sourceModules,
+        IReadOnlyList<TestProjectResult> testResults)
+    {
         var summary = coverage.BuildSummary(sourceModules);
         var passed = CoverageGate.Passes(testResults, summary, options.Threshold);
 
         CoverageReportWriter.Write(output, started, DateTimeOffset.UtcNow, options, passed, summary, testResults);
-        var htmlReportGenerated = await ReportGeneratorRunner.RunAsync(repoRoot, output, testResults);
-        ConsoleSummary.Write(repoRoot, output, passed, summary, htmlReportGenerated);
+        var htmlReportGenerated = false;
 
-        return passed && htmlReportGenerated ? 0 : 1;
+        if (options.GenerateHtmlReport)
+            htmlReportGenerated = await ReportGeneratorRunner.RunAsync(repoRoot, output, testResults);
+
+        ConsoleSummary.Write(repoRoot, output, passed, summary, htmlReportGenerated, options.GenerateHtmlReport);
+
+        return passed && (!options.GenerateHtmlReport || htmlReportGenerated) ? 0 : 1;
     }
 }

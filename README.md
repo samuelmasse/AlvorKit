@@ -21,6 +21,31 @@ Generate the local projects with:
 dotnet run --project scripts\AlvorKit.Script.Bindgen -- all
 ```
 
+To compare generator changes without overwriting the default local bindings,
+write snapshots under `out/` and diff them:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.Bindgen -- xxhash --output-root out\bindgen-review\xxhash-before
+dotnet run --project scripts\AlvorKit.Script.Bindgen -- xxhash --output-root out\bindgen-review\xxhash-after
+git diff --no-index -- out\bindgen-review\xxhash-before out\bindgen-review\xxhash-after
+```
+
+## Linting
+
+Run the repository linter from the repository root with:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.Lint
+```
+
+The linter coordinates C# formatting, Prettier checks, EditorConfig checks, and
+GitHub Actions workflow validation. To apply supported formatter fixes locally,
+run:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.Lint -- --fix
+```
+
 ## Unit test coverage
 
 Generate a local coverage report with:

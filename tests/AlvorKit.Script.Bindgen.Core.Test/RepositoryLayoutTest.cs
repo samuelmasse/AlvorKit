@@ -19,6 +19,18 @@ public sealed class RepositoryLayoutTest
         Assert.AreEqual(Path.Combine(workspace.Root, "native"), layout.NativeDirectory);
     }
 
+    /// <summary>Repository discovery reports a clear failure when no solution marker is present.</summary>
+    [TestMethod]
+    public void FindFrom_RejectsMissingSolutionRoot()
+    {
+        using var workspace = TempWorkspace.Create();
+
+        var exception = Assert.ThrowsException<InvalidOperationException>(
+            () => RepositoryLayout.FindFrom(Path.Combine(workspace.Root, "missing")));
+
+        StringAssert.Contains(exception.Message, "AlvorKit.slnx not found above");
+    }
+
     /// <summary>Explicit library names are returned when they have bindgen metadata.</summary>
     [TestMethod]
     public void SelectedLibraries_ReturnsExplicitSelection()
@@ -67,5 +79,56 @@ public sealed class RepositoryLayoutTest
         var layout = RepositoryLayout.FindFrom(workspace.Root);
 
         CollectionAssert.AreEqual(new[] { "alpha", "zeta" }, layout.SelectedLibraries("all").ToArray());
+    }
+
+    /// <summary>The all selection is empty when the repository has no native directory.</summary>
+    [TestMethod]
+    public void SelectedLibraries_ReturnsEmptyWhenNativeDirectoryIsMissing()
+    {
+        using var workspace = TempWorkspace.Create();
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        var layout = RepositoryLayout.FindFrom(workspace.Root);
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), layout.SelectedLibraries("all").ToArray());
+    }
+
+    /// <summary>Missing generated-output roots keep the configured bindgen project paths.</summary>
+    [TestMethod]
+    public void ResolveGeneratedOutputRoot_AllowsMissingOverride()
+    {
+        using var workspace = TempWorkspace.Create();
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        var layout = RepositoryLayout.FindFrom(workspace.Root);
+
+        Assert.IsNull(layout.ResolveGeneratedOutputRoot(null));
+        Assert.IsNull(layout.ResolveGeneratedOutputRoot(""));
+    }
+
+    /// <summary>Relative and absolute generated-output roots are normalized when they stay under out.</summary>
+    [TestMethod]
+    public void ResolveGeneratedOutputRoot_AllowsOutDirectory()
+    {
+        using var workspace = TempWorkspace.Create();
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        var layout = RepositoryLayout.FindFrom(workspace.Root);
+        var expected = Path.Combine(workspace.Root, "out", "bindgen-review", "after");
+
+        Assert.AreEqual(Path.Combine(workspace.Root, "out"), layout.ResolveGeneratedOutputRoot("out"));
+        Assert.AreEqual(expected, layout.ResolveGeneratedOutputRoot("out/bindgen-review/after"));
+        Assert.AreEqual(expected, layout.ResolveGeneratedOutputRoot(expected));
+    }
+
+    /// <summary>Generated-output roots outside out are rejected so review snapshots cannot overwrite source files.</summary>
+    [TestMethod]
+    public void ResolveGeneratedOutputRoot_RejectsDirectoryOutsideOut()
+    {
+        using var workspace = TempWorkspace.Create();
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        var layout = RepositoryLayout.FindFrom(workspace.Root);
+
+        var exception = Assert.ThrowsException<InvalidOperationException>(
+            () => layout.ResolveGeneratedOutputRoot("generated/bindings"));
+
+        StringAssert.Contains(exception.Message, "inside the repository out directory");
     }
 }

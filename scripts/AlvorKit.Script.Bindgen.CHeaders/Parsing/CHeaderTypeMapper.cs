@@ -15,6 +15,8 @@ internal sealed class CHeaderTypeMapper(
         var spelling = CHeaderNameMapper.CleanTypeSpelling(type);
         if (!boolAsRaw && IsConfiguredBool(spelling, isParam, isReturn))
             return "bool";
+        if (config.TypeAliases.TryGetValue(spelling, out var alias))
+            return alias;
         if (state.EnumByNativeName.TryGetValue(spelling, out var enumType))
             return enumType.ManagedName;
         if (spelling == "size_t")
@@ -75,9 +77,11 @@ internal sealed class CHeaderTypeMapper(
             return "nint";
         if (isParam && IsConstCharPointer(pointee))
             return "string";
-        if (pointee.CanonicalType.kind == CXTypeKind.CXType_Record
-            && OpaqueHandle(CHeaderNameMapper.CleanTypeSpelling(pointee)) is { } handle)
-            return handle;
+        var pointeeName = CHeaderNameMapper.CleanTypeSpelling(pointee);
+        if (ConfiguredOpaqueHandle(pointeeName) is { } configuredHandle)
+            return configuredHandle;
+        if (pointee.CanonicalType.kind == CXTypeKind.CXType_Record && RenamedOpaqueHandle(pointeeName) is { } renamedHandle)
+            return renamedHandle;
         return "nint";
     }
 
@@ -85,8 +89,17 @@ internal sealed class CHeaderTypeMapper(
     private static bool IsConstCharPointer(CXType pointee) =>
         pointee.kind is CXTypeKind.CXType_Char_S or CXTypeKind.CXType_Char_U && pointee.IsConstQualified;
 
-    /// <summary>Returns an opt-in opaque handle for an unknown record pointer.</summary>
-    private string? OpaqueHandle(string nativeName)
+    /// <summary>Returns an explicitly configured opaque handle for a pointer type.</summary>
+    private string? ConfiguredOpaqueHandle(string nativeName)
+    {
+        if (!config.OpaqueTypes.TryGetValue(nativeName, out var managed))
+            return null;
+        state.HandlesByNativeName[nativeName] = managed;
+        return managed;
+    }
+
+    /// <summary>Returns a legacy opaque handle for a renamed unknown record pointer.</summary>
+    private string? RenamedOpaqueHandle(string nativeName)
     {
         if (state.RecordByNativeName.ContainsKey(nativeName) || !config.TypeRenames.TryGetValue(nativeName, out var managed))
             return null;

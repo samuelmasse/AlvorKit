@@ -30,9 +30,10 @@ internal static class AgentCoverageReportWriter
             {
                 agent = "out/coverage/coverage-summary.json",
                 human = "out/coverage/coverage-summary.md",
-                html = "out/coverage/html/index.html",
-                reportGeneratorLog = "out/coverage/reportgenerator.log",
+                html = options.GenerateHtmlReport ? "out/coverage/html/index.html" : null,
+                reportGeneratorLog = options.GenerateHtmlReport ? "out/coverage/reportgenerator.log" : null,
                 projectReports = "out/coverage/projects/<test-project>/",
+                coverletFormats = options.CoverletOutputFormats(),
             },
         };
 

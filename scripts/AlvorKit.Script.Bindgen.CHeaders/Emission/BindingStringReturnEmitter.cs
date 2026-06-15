@@ -4,7 +4,7 @@ namespace AlvorKit.Script.Bindgen;
 internal static class BindingStringReturnEmitter
 {
     /// <summary>Emits managed string-return overloads when a function returns a const C string.</summary>
-    public static void StringReturn(StringBuilder output, BindingFunction function)
+    public static void StringReturn(StringBuilder output, BindingFunction function, string apiClass)
     {
         if (!function.ReturnsCString)
             return;
@@ -14,27 +14,30 @@ internal static class BindingStringReturnEmitter
         var result = Unique(taken, "result");
         var leading = function.Parameters.Select(BindingSignature.Parameter).ToList();
         var callArguments = string.Join(", ", function.Parameters.Select(BindingSignature.Argument));
-        var inheritDoc = $"    /// <inheritdoc cref=\"{function.ManagedName}({BindingSignature.Cref(function.Parameters)})\"/>";
+        var inheritCref = $"{apiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})";
+        var call = $"{function.ManagedName}({callArguments})";
 
         output.AppendLine();
-        output.AppendLine(inheritDoc);
-        output.AppendLine("    /// <remarks>Convenience overload. Decodes the returned C string to a managed string, or null when the pointer is null.</remarks>");
+        BindingDocs.InheritedConvenience(
+            output,
+            inheritCref,
+            "Decodes the returned C string to a managed string, or null when the pointer is null.");
         var stringParameters = string.Join(", ", leading.Append($"out string? {value}"));
         output.AppendLine(
             $"    public void {function.ManagedName}({stringParameters}) => " +
-            $"{value} = Marshal.PtrToStringUTF8({function.ManagedName}({callArguments}));");
+            $"{value} = Marshal.PtrToStringUTF8({call});");
 
         output.AppendLine();
-        output.AppendLine(inheritDoc);
-        output.AppendLine(
-            $"    /// <remarks>Convenience overload. Decodes the returned C string into " +
-            $"<paramref name=\"{destination}\"/> and returns the slice written.</remarks>");
+        BindingDocs.InheritedConvenience(
+            output,
+            inheritCref,
+            $"Decodes the returned C string into <paramref name=\"{destination}\"/> and returns the slice written.");
         var spanParameters = string.Join(
             ", ",
             leading.Append($"Span<char> {destination}").Append($"out ReadOnlySpan<char> {result}"));
         output.AppendLine($"    public unsafe void {function.ManagedName}({spanParameters})");
         output.AppendLine("    {");
-        output.AppendLine($"        var pointer = {function.ManagedName}({callArguments});");
+        output.AppendLine($"        var pointer = {call};");
         output.AppendLine($"        if (pointer == 0) {{ {result} = default; return; }}");
         output.AppendLine("        var bytes = MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)pointer);");
         output.AppendLine($"        System.Text.Unicode.Utf8.ToUtf16(bytes, {destination}, out _, out var written);");

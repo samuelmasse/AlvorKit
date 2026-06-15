@@ -6,28 +6,17 @@ internal sealed class BindingApiEmitter(BindingEmitterContext context)
     /// <summary>Emits the generated API contract source.</summary>
     public string ApiContract(BindingModel model)
     {
-        var hasStringConvenience = model.Functions.Any(function => function.Parameters.Any(parameter => parameter.HasStringConvenience));
         var output = context.SourceHeader();
-        if (hasStringConvenience)
-            output.AppendLine("using System.Text;").AppendLine();
         output.AppendLine($"namespace {context.Config.Namespace};");
         output.AppendLine();
         output.AppendLine("/// <summary>");
         output.AppendLine($"/// {context.Config.ApiSummary}");
         output.AppendLine($"/// Use through a backend implementation, such as {context.Config.BackendClass} from {context.Config.Namespace}.Backend.");
         output.AppendLine("/// </summary>");
-        output.AppendLine($"public class {context.Config.ApiClass}");
+        output.AppendLine($"public partial class {context.Config.ApiClass}");
         output.AppendLine("{");
         EmitConstants(output, model);
         EmitVirtualMethods(output, model);
-        foreach (var function in model.Functions)
-            new BindingTypedOverloadEmitter(context).TypedOverloads(output, function);
-        BindingCallbackSetterEmitter.CallbackSetters(output, model);
-        foreach (var function in model.Functions)
-            BindingStringReturnEmitter.StringReturn(output, function);
-        new BindingSpanReturnEmitter(context).SpanReturns(output, model);
-        if (hasStringConvenience)
-            BindingUtf8HelperEmitter.Utf8Helper(output);
         output.AppendLine("}");
         return output.ToString();
     }

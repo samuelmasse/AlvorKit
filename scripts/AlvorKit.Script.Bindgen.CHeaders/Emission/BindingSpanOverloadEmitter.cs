@@ -1,12 +1,12 @@
 namespace AlvorKit.Script.Bindgen;
 
-/// <summary>Emits span overload extension methods for pointer-plus-length parameters.</summary>
-internal sealed class BindingSpanExtensionEmitter(BindingEmitterContext context)
+/// <summary>Emits span overloads for pointer-plus-length parameters.</summary>
+internal sealed class BindingSpanOverloadEmitter(BindingEmitterContext context)
 {
-    /// <summary>Emits the span extensions source file, or null when no overloads are needed.</summary>
-    public string? SpanExtensions(BindingModel model)
+    /// <summary>Emits span overload methods and returns true when any were produced.</summary>
+    public bool SpanOverloads(StringBuilder overloads, BindingModel model)
     {
-        var overloads = new StringBuilder();
+        var startLength = overloads.Length;
         foreach (var function in model.Functions)
         {
             var candidates = SpanCandidates(function);
@@ -17,25 +17,20 @@ internal sealed class BindingSpanExtensionEmitter(BindingEmitterContext context)
             for (var mask = 1; mask < full; mask++)
                 EmitSpanOverload(overloads, function, candidates, mask);
         }
-        if (overloads.Length == 0)
-            return null;
+        return overloads.Length > startLength;
+    }
 
-        var output = context.SourceHeader();
-        output.AppendLine($"namespace {context.Config.Namespace};");
+    /// <summary>Emits the byte-length helper used by generated span overloads.</summary>
+    public static void ByteLengthHelper(StringBuilder output)
+    {
         output.AppendLine();
-        output.AppendLine($"/// <summary>Span overloads for <see cref=\"{context.Config.ApiClass}\"/> pointer buffer functions.</summary>");
-        output.AppendLine($"public static unsafe class {context.Config.ApiClass}Extensions");
-        output.AppendLine("{");
-        output.Append(overloads);
         output.AppendLine("    /// <summary>Returns the byte length of an unmanaged span.</summary>");
         output.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining)]");
         output.AppendLine("    private static nuint ByteLength<T>(ReadOnlySpan<T> span) where T : unmanaged =>");
         output.AppendLine("        checked((nuint)span.Length * (nuint)sizeof(T));");
-        output.AppendLine("}");
-        return output.ToString();
     }
 
-    /// <summary>Finds pointer parameters that can safely become spans in extension overloads.</summary>
+    /// <summary>Finds pointer parameters that can safely become spans in overloads.</summary>
     private List<(int Pointer, int? Length)> SpanCandidates(BindingFunction function)
     {
         var candidates = new List<(int Pointer, int? Length)>();
@@ -67,8 +62,13 @@ internal sealed class BindingSpanExtensionEmitter(BindingEmitterContext context)
         var signature = Signature(function, typeParameterByPointer, pointerByLength, out var arguments);
         var typeParameters = spanned.Select(candidate => typeParameterByPointer[candidate.Pointer]).ToList();
 
-        output.AppendLine($"    /// <inheritdoc cref=\"{context.Config.ApiClass}.{function.ManagedName}\"/>");
-        output.Append($"    public static {function.ReturnType} {function.ManagedName}<{string.Join(", ", typeParameters)}>({string.Join(", ", signature)})");
+        output.AppendLine();
+        BindingDocs.InheritedConvenience(
+            output,
+            $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
+            "Pins span arguments for the duration of the call, supplies byte lengths where the native method expects them, "
+            + "and forwards to the underlying method.");
+        output.Append($"    public {function.ReturnType} {function.ManagedName}<{string.Join(", ", typeParameters)}>({string.Join(", ", signature)})");
         EmitTypeConstraints(output, typeParameters);
         output.AppendLine("    {");
         foreach (var candidate in spanned)
@@ -76,11 +76,9 @@ internal sealed class BindingSpanExtensionEmitter(BindingEmitterContext context)
             var parameter = function.Parameters[candidate.Pointer];
             output.AppendLine($"        fixed ({typeParameterByPointer[candidate.Pointer]}* {parameter.ManagedName}Ptr = {parameter.ManagedName})");
         }
-        var instance = context.Config.ApiClass.ToLowerInvariant();
-        var call = $"{instance}.{function.ManagedName}({string.Join(", ", arguments)})";
+        var call = $"{function.ManagedName}({string.Join(", ", arguments)})";
         output.AppendLine($"            {(function.ReturnType == "void" ? call : "return " + call)};");
         output.AppendLine("    }");
-        output.AppendLine();
     }
 
     /// <summary>Builds an overload signature and call argument list.</summary>
@@ -90,8 +88,7 @@ internal sealed class BindingSpanExtensionEmitter(BindingEmitterContext context)
         Dictionary<int, int> pointerByLength,
         out List<string> arguments)
     {
-        var instance = context.Config.ApiClass.ToLowerInvariant();
-        var signature = new List<string> { $"this {context.Config.ApiClass} {instance}" };
+        var signature = new List<string>();
         arguments = [];
         foreach (var (parameter, index) in function.Parameters.Select((parameter, index) => (parameter, index)))
             AddParameter(function.Parameters, parameter, index, typeParameterByPointer, pointerByLength, signature, arguments);

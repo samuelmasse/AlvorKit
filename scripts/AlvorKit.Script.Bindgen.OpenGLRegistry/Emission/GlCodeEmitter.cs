@@ -6,19 +6,26 @@ namespace AlvorKit.Script.Bindgen;
 /// <param name="docTag">OpenGL refpage source tag or commit used in generated attribution.</param>
 public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTag)
 {
-    /// <summary>Writes every generated OpenGL source and project file.</summary>
+    /// <summary>Writes every generated OpenGL source and project file using the configured project paths.</summary>
     public void Emit(GlBindingModel model, string repoRoot, string version)
     {
+        Emit(model, repoRoot, outputRoot: null, version);
+    }
+
+    /// <summary>Writes every generated OpenGL source and project file, optionally replacing the configured binding root.</summary>
+    public void Emit(GlBindingModel model, string repoRoot, string? outputRoot, string version)
+    {
         var context = new GlCodeEmissionContext(config, tag, docTag);
-        var apiDirectory = Path.Combine(repoRoot, config.ApiProject);
-        var backendDirectory = Path.Combine(repoRoot, config.BackendProject);
+        var layout = GeneratedOutput.ResolveProjectLayout(repoRoot, outputRoot, config.ApiProject, config.BackendProject);
+        var apiDirectory = layout.ApiDirectory;
+        var backendDirectory = layout.BackendDirectory;
         GeneratedOutput.RecreateDirectory(apiDirectory);
         GeneratedOutput.RecreateDirectory(backendDirectory);
 
         var apiProjectName = Path.GetFileName(config.ApiProject);
         var backendProjectName = Path.GetFileName(config.BackendProject);
         var projects = new GlProjectEmitter(context);
-        File.WriteAllText(Path.Combine(Path.GetDirectoryName(apiDirectory)!, "Directory.Build.props"), GeneratedOutput.EmitSharedProps());
+        File.WriteAllText(Path.Combine(layout.Root, "Directory.Build.props"), GeneratedOutput.EmitSharedProps());
         File.WriteAllText(Path.Combine(apiDirectory, apiProjectName + ".csproj"), projects.EmitApiProject(version));
         File.WriteAllText(Path.Combine(backendDirectory, backendProjectName + ".csproj"), projects.EmitBackendProject(version, apiProjectName));
 

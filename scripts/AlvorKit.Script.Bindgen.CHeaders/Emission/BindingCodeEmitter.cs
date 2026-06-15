@@ -3,19 +3,26 @@ namespace AlvorKit.Script.Bindgen;
 /// <summary>Writes the generated C-header API, backend, native imports, and support projects.</summary>
 public sealed class BindingCodeEmitter(BindgenConfig config, string tag)
 {
-    /// <summary>Emits all generated source and project files for one binding model.</summary>
+    /// <summary>Emits all generated source and project files using the configured project paths.</summary>
     public void Emit(BindingModel model, string repoRoot, string bindingVersion, string nativeVersion)
     {
+        Emit(model, repoRoot, outputRoot: null, bindingVersion, nativeVersion);
+    }
+
+    /// <summary>Emits all generated source and project files, optionally replacing the configured binding root.</summary>
+    public void Emit(BindingModel model, string repoRoot, string? outputRoot, string bindingVersion, string nativeVersion)
+    {
         var context = new BindingEmitterContext(config, tag);
-        var apiDirectory = Path.Combine(repoRoot, config.ApiProject);
-        var backendDirectory = Path.Combine(repoRoot, config.BackendProject);
+        var layout = GeneratedOutput.ResolveProjectLayout(repoRoot, outputRoot, config.ApiProject, config.BackendProject);
+        var apiDirectory = layout.ApiDirectory;
+        var backendDirectory = layout.BackendDirectory;
         GeneratedOutput.RecreateDirectory(apiDirectory);
         GeneratedOutput.RecreateDirectory(backendDirectory);
 
         var apiProjectName = Path.GetFileName(config.ApiProject);
         var backendProjectName = Path.GetFileName(config.BackendProject);
         var projectEmitter = new BindingProjectEmitter(context);
-        File.WriteAllText(Path.Combine(Path.GetDirectoryName(apiDirectory)!, "Directory.Build.props"), GeneratedOutput.EmitSharedProps());
+        File.WriteAllText(Path.Combine(layout.Root, "Directory.Build.props"), GeneratedOutput.EmitSharedProps());
         File.WriteAllText(Path.Combine(apiDirectory, apiProjectName + ".csproj"), projectEmitter.ApiProject(model, bindingVersion));
         File.WriteAllText(Path.Combine(backendDirectory, backendProjectName + ".csproj"),
             projectEmitter.BackendProject(bindingVersion, nativeVersion, apiProjectName));
@@ -33,8 +40,8 @@ public sealed class BindingCodeEmitter(BindgenConfig config, string tag)
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + ".cs"), new BindingApiEmitter(context).ApiContract(model));
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Wrapper.cs"), new BindingWrapperEmitter(context).Wrapper(model));
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Noop.cs"), new BindingNoopEmitter(context).Noop(model));
-        if (config.SpanExtensions && new BindingSpanExtensionEmitter(context).SpanExtensions(model) is { } spanExtensions)
-            File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Extensions.cs"), spanExtensions);
+        if (new BindingOverloadEmitter(context).Overloads(model) is { } overloads)
+            File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Overloads.cs"), overloads);
         File.WriteAllText(Path.Combine(backendDirectory, config.NativeClass + ".cs"), new BindingNativeImportEmitter(context).NativeImports(model));
         File.WriteAllText(Path.Combine(backendDirectory, config.BackendClass + ".cs"), new BindingBackendEmitter(context).Backend(model));
     }

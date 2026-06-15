@@ -46,6 +46,52 @@ public sealed class CHeaderBindingParserFunctionTest
     }
 
     [TestMethod]
+    public void Parse_AppliesConfiguredFunctionRenames()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            void test_hash3_64bits(void);
+            void test_hash3_64bits_withSeed(unsigned long long seed);
+            """);
+        var config = CHeaderTestConfig.Create();
+        config.FunctionRenames = new()
+        {
+            ["test_hash3_64bits"] = "Hash3To64",
+            ["test_hash3_64bits_withSeed"] = "Hash3To64"
+        };
+
+        var model = CHeaderParserHarness.Parse(translationUnit, source, config);
+
+        CollectionAssert.AreEqual(
+            new[] { "Hash3To64", "Hash3To64" },
+            model.Functions.Select(function => function.ManagedName).ToArray());
+    }
+
+    [TestMethod]
+    public void Parse_UsesConfiguredTypeAliasesWithoutEmittingStructs()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            typedef struct test_hash128 {
+                unsigned long long low64;
+                unsigned long long high64;
+            } test_hash128;
+            test_hash128 test_hash_data(test_hash128 seed);
+            """);
+        var config = CHeaderTestConfig.Create();
+        config.TypeAliases = new() { ["test_hash128"] = "UInt128" };
+
+        var model = CHeaderParserHarness.Parse(translationUnit, source, config);
+        var function = model.Functions.Single();
+
+        Assert.AreEqual("UInt128", function.ReturnType);
+        Assert.AreEqual("UInt128", function.Parameters.Single().ManagedType);
+        Assert.AreEqual(0, model.Structs.Count);
+    }
+
+    [TestMethod]
     public void Parse_TracksSizeofCandidateForStructInitFunction()
     {
         using var workspace = TempWorkspace.Create();

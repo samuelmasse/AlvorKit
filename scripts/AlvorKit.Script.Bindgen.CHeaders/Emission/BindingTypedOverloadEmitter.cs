@@ -9,7 +9,6 @@ internal sealed class BindingTypedOverloadEmitter(BindingEmitterContext context)
         var overloads = context.Config.EnumOverloads;
         var perFunction = overloads?.Functions.GetValueOrDefault(function.NativeName);
         var candidateTypes = function.Parameters.Select(parameter => CandidateTypes(parameter, perFunction, overloads)).ToList();
-        var inheritDoc = $"    /// <inheritdoc cref=\"{function.ManagedName}({BindingSignature.Cref(function.Parameters)})\"/>";
         var emitted = new HashSet<string>();
 
         foreach (var combination in CartesianProduct(candidateTypes))
@@ -21,7 +20,7 @@ internal sealed class BindingTypedOverloadEmitter(BindingEmitterContext context)
             var signature = string.Join(", ", typed.Select(SignatureParameter));
             if (!emitted.Add(signature))
                 continue;
-            EmitOverload(output, function, typed, inheritDoc, perFunction?.Return, signature);
+            EmitOverload(output, function, typed, perFunction?.Return, signature);
         }
     }
 
@@ -37,23 +36,23 @@ internal sealed class BindingTypedOverloadEmitter(BindingEmitterContext context)
     }
 
     /// <summary>Emits one overload body for a specific type combination.</summary>
-    private static void EmitOverload(
+    private void EmitOverload(
         StringBuilder output,
         BindingFunction function,
         List<(string First, BindingParameter Second)> typed,
-        string inheritDoc,
         string? returnEnum,
         string signature)
     {
         var strings = typed.Where(pair => pair.First == "string").Select(pair => pair.Second.ManagedName).ToList();
         var arguments = string.Join(", ", typed.Select(Argument));
         var returnType = returnEnum ?? function.ReturnType;
-        var invoke = returnEnum is not null ? $"({returnEnum}){function.ManagedName}({arguments})" : $"{function.ManagedName}({arguments})";
+        var call = $"{function.ManagedName}({arguments})";
+        var invoke = returnEnum is not null ? $"({returnEnum}){call}" : call;
+        var remarks = strings.Count > 0
+            ? "Marshals string arguments to UTF-8 on the stack when possible."
+            : "Casts typed arguments and forwards to the underlying method.";
 
-        output.AppendLine(inheritDoc);
-        output.AppendLine(strings.Count > 0
-            ? "    /// <remarks>Convenience overload. Marshals string arguments to UTF-8 on the stack when possible.</remarks>"
-            : "    /// <remarks>Convenience overload. Casts typed arguments and forwards to the underlying method.</remarks>");
+        BindingDocs.InheritedConvenience(output, $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})", remarks);
         if (strings.Count == 0)
         {
             output.AppendLine($"    public {returnType} {function.ManagedName}({signature}) => {invoke};");

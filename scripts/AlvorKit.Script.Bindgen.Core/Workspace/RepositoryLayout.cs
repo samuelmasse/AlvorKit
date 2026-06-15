@@ -16,6 +16,20 @@ public sealed class RepositoryLayout
     /// <summary>Absolute repository native package directory.</summary>
     public string NativeDirectory { get; }
 
+    /// <summary>Resolves an optional generated-output root and requires it to stay under the repository out directory.</summary>
+    public string? ResolveGeneratedOutputRoot(string? outputRoot)
+    {
+        if (string.IsNullOrWhiteSpace(outputRoot))
+            return null;
+
+        var resolved = Path.GetFullPath(Path.Combine(Root, outputRoot));
+        var outRoot = Path.GetFullPath(Path.Combine(Root, "out"));
+        if (!IsInsideOrEqual(resolved, outRoot))
+            throw new InvalidOperationException("--output-root must resolve inside the repository out directory.");
+
+        return resolved;
+    }
+
     /// <summary>Walks upward from a start directory until the AlvorKit solution file is found.</summary>
     public static RepositoryLayout FindFrom(string startDirectory) =>
         File.Exists(Path.Combine(startDirectory, "AlvorKit.slnx"))
@@ -45,4 +59,15 @@ public sealed class RepositoryLayout
                 .OfType<string>()
                 .Order(StringComparer.OrdinalIgnoreCase)
             : [];
+
+    /// <summary>Returns true when a resolved path is the expected directory or one of its descendants.</summary>
+    private static bool IsInsideOrEqual(string path, string directory)
+    {
+        var relative = Path.GetRelativePath(directory, path);
+        return relative == "."
+            || (relative != ".."
+                && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                && !relative.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
+                && !Path.IsPathRooted(relative));
+    }
 }

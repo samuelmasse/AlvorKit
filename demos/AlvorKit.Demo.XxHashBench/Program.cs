@@ -48,10 +48,10 @@ file static class BenchReport
     /// <returns>The hash functions and published comparison values in report order.</returns>
     public static HashCandidate[] CreateCandidates(Xxh xxh) =>
     [
-        new("xxh3", (input, length) => xxh.Xxh3_64bits(input, length), publishedGbps: 31.5, publishedVelocity: 133.1),
-        new("XXH32", (input, length) => xxh.Xxh32(input, length, 0), publishedGbps: 9.7, publishedVelocity: 71.9),
-        new("XXH64", (input, length) => xxh.Xxh64(input, length, 0), publishedGbps: 19.4, publishedVelocity: 71.0),
-        new("XXH128", (input, length) => xxh.Xxh3_128bits(input, length).Low64, publishedGbps: 29.6, publishedVelocity: 118.1),
+        new("xxh3", (input, length) => xxh.Hash3To64(input, length), publishedGbps: 31.5, publishedVelocity: 133.1),
+        new("XXH32", (input, length) => xxh.Hash32(input, length, 0), publishedGbps: 9.7, publishedVelocity: 71.9),
+        new("XXH64", (input, length) => xxh.Hash64(input, length, 0), publishedGbps: 19.4, publishedVelocity: 71.0),
+        new("XXH128", (input, length) => (ulong)xxh.Hash3To128(input, length), publishedGbps: 29.6, publishedVelocity: 118.1),
     ];
 
     /// <summary>Prints the runtime context needed to interpret benchmark numbers.</summary>
@@ -59,7 +59,7 @@ file static class BenchReport
     public static void PrintEnvironment(Xxh xxh)
     {
         Console.WriteLine("AlvorKit.Demo.XxHashBench - port of the xxHash tests/bench harness");
-        Console.WriteLine($"xxhash {VersionString(xxh.VersionNumber())} via AlvorKit.XxHash.Backend, .NET {Environment.Version}");
+        Console.WriteLine($"xxhash {VersionString(xxh.GetVersionNumber())} via AlvorKit.XxHash.Backend, .NET {Environment.Version}");
         Console.WriteLine($"{RuntimeInformation.OSDescription}, {RuntimeInformation.ProcessArchitecture}, {Environment.ProcessorCount} logical cores");
 
         var cpu = CpuName();

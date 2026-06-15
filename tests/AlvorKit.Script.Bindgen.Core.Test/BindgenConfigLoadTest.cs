@@ -74,6 +74,15 @@ public sealed class BindgenConfigLoadTest
                   "managedName": "FixtureProc",
                   "paramGroups": { "mode": "FixtureMode" }
                 }
+              },
+              "typeAliases": {
+                "fixture_hash128": "UInt128"
+              },
+              "opaqueTypes": {
+                "fixture_state": "FixtureState"
+              },
+              "functionRenames": {
+                "fixture_hash": "Hash"
               }
             }
             """);
@@ -86,5 +95,8 @@ public sealed class BindgenConfigLoadTest
         CollectionAssert.AreEqual(new[] { "FixtureMode", "int" }, config.EnumOverloads?.Functions["fixture_run"].Params["mode"]);
         Assert.AreEqual("FixtureProc", config.Callbacks["FIXTUREPROC"].ManagedName);
         Assert.AreEqual("FixtureMode", config.Callbacks["FIXTUREPROC"].ParamGroups["mode"]);
+        Assert.AreEqual("UInt128", config.TypeAliases["fixture_hash128"]);
+        Assert.AreEqual("FixtureState", config.OpaqueTypes["fixture_state"]);
+        Assert.AreEqual("Hash", config.FunctionRenames["fixture_hash"]);
     }
 }

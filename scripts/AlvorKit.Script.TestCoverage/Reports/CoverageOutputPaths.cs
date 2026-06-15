@@ -23,6 +23,7 @@ internal sealed record CoverageOutputPaths(
         var root = Path.Combine(repoRoot, "out", "coverage");
         var projectsRoot = Path.Combine(root, "projects");
         var htmlRoot = Path.Combine(root, "html");
+        ResetDirectory(root);
         Directory.CreateDirectory(projectsRoot);
 
         return new(
@@ -33,5 +34,14 @@ internal sealed record CoverageOutputPaths(
             htmlRoot,
             Path.Combine(htmlRoot, "index.html"),
             Path.Combine(root, "reportgenerator.log"));
+    }
+
+    /// <summary>Recreates a directory so stale artifacts from previous runs cannot survive.</summary>
+    private static void ResetDirectory(string path)
+    {
+        if (Directory.Exists(path))
+            Directory.Delete(path, recursive: true);
+
+        Directory.CreateDirectory(path);
     }
 }

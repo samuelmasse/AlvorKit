@@ -65,9 +65,11 @@ internal sealed class CHeaderFunctionDiscovery(
         var returnInteropType = isBoolReturn
             ? types.MapNativeType(function.ReturnType.Handle, isReturn: true, boolAsRaw: true)!
             : returnType;
+        var managedName = config.FunctionRenames.GetValueOrDefault(function.Name)
+            ?? CSharpName.FromNativeIdentifier(function.Name, matchingPrefix, config.DigitNamePrefix);
         return new(
             function.Name,
-            CSharpName.FromNativeIdentifier(function.Name, matchingPrefix, config.DigitNamePrefix),
+            managedName,
             isBoolReturn ? "bool" : returnType,
             returnInteropType,
             [.. boundParameters.OfType<BindingParameter>()],

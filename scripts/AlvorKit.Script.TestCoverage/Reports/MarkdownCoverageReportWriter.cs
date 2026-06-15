@@ -20,7 +20,7 @@ internal static class MarkdownCoverageReportWriter
         WriteModules(builder, summary);
         WriteTestProjects(builder, testResults);
         WriteFiles(builder, summary.Files);
-        WriteArtifacts(builder);
+        WriteArtifacts(builder, options);
         File.WriteAllText(path, builder.ToString());
     }
 
@@ -102,16 +102,26 @@ internal static class MarkdownCoverageReportWriter
     }
 
     /// <summary>Writes the fixed artifact path reference block.</summary>
-    private static void WriteArtifacts(StringBuilder builder)
+    private static void WriteArtifacts(StringBuilder builder, CoverageOptions options)
     {
         builder.AppendLine();
         builder.AppendLine("## Artifacts");
         builder.AppendLine();
         builder.AppendLine("- Agent JSON: `out/coverage/coverage-summary.json`");
         builder.AppendLine("- Human summary: `out/coverage/coverage-summary.md`");
-        builder.AppendLine("- HTML summary: `out/coverage/html/index.html`");
-        builder.AppendLine("- ReportGenerator log: `out/coverage/reportgenerator.log`");
-        builder.AppendLine("- Per-project reports: `out/coverage/projects/<test-project>/coverage.cobertura.xml`, `.json`, and `.info`");
+
+        if (options.GenerateHtmlReport)
+        {
+            builder.AppendLine("- HTML summary: `out/coverage/html/index.html`");
+            builder.AppendLine("- ReportGenerator log: `out/coverage/reportgenerator.log`");
+        }
+
+        builder.AppendLine("- Per-project JSON reports: `out/coverage/projects/<test-project>/coverage.json`");
+
+        if (options.GenerateCoberturaReport || options.GenerateHtmlReport)
+            builder.AppendLine("- Per-project Cobertura reports: `out/coverage/projects/<test-project>/coverage.cobertura.xml`");
+        if (options.GenerateLcovReport)
+            builder.AppendLine("- Per-project LCOV reports: `out/coverage/projects/<test-project>/coverage.info`");
     }
 
     /// <summary>Writes one metric row.</summary>

@@ -8,11 +8,8 @@
 
     <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
         <PackageReference Include="AlvorKit.FreeType.Backend" Version="$(FtBindVer)" />
-        <PackageReference Include="AlvorKit.FreeType.Native" Version="$(FtNativeVer)" />
         <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(GlfwBindVer)" />
-        <PackageReference Include="AlvorKit.GLFW.Native" Version="$(GlfwNativeVer)" />
         <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="$(MaBindVer)" />
-        <PackageReference Include="AlvorKit.MiniAudio.Native" Version="$(MaNativeVer)" />
         <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(GlBindVer)" />
         <PackageReference Include="BigGustave" Version="1.0.6" />
     </ItemGroup>
