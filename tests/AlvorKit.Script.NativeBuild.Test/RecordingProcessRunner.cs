@@ -1,5 +1,3 @@
-using AlvorKit.Script.NativeBuild;
-
 namespace AlvorKit.Script.NativeBuild.Test;
 
 /// <summary>Process runner test double that records commands and returns configured output.</summary>

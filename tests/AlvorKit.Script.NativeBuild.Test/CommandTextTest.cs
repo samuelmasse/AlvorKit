@@ -1,5 +1,3 @@
-using AlvorKit.Script.NativeBuild;
-
 namespace AlvorKit.Script.NativeBuild.Test;
 
 /// <summary>Tests for command and script text helpers.</summary>

@@ -1,0 +1,32 @@
+name: .NET
+
+on:
+  push:
+  pull_request:
+
+permissions: read-all
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  build:
+    name: build and test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore AlvorKit.slnx
+
+      - name: Build
+        run: dotnet build AlvorKit.slnx --no-restore
+
+      - name: Test
+        run: dotnet test AlvorKit.slnx --no-build --verbosity normal

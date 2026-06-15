@@ -260,5 +260,11 @@ jobs:
       - name: Publish to NuGet.org
         if: steps.versions.outputs.skip != 'true' && github.event_name == 'push'
         run: |
-          dotnet nuget push bin/${{ matrix.package.api_project }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push bin/${{ matrix.package.backend_project }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/${{ matrix.package.api_project }}/Release/*.nupkg \
+            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+          dotnet nuget push bin/${{ matrix.package.backend_project }}/Release/*.nupkg \
+            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate

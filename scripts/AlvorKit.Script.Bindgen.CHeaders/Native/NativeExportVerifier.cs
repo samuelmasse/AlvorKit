@@ -1,6 +1,3 @@
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Checks that generated binding functions are present in a native library.</summary>
@@ -29,15 +26,11 @@ public static class NativeExportVerifier
 
     /// <summary>Returns functions missing from a read export set.</summary>
     private static List<BindingFunction> MissingFrom(HashSet<string> exports, BindingModel model) =>
-        model.Functions
-            .Where(function => !exports.Contains(function.NativeName))
-            .ToList();
+        [.. model.Functions.Where(function => !exports.Contains(function.NativeName))];
 
     /// <summary>Returns functions missing from a loaded native library handle.</summary>
     private static List<BindingFunction> MissingFrom(nint nativeLibrary, BindingModel model) =>
-        model.Functions
-            .Where(function => !NativeLibrary.TryGetExport(nativeLibrary, function.NativeName, out _))
-            .ToList();
+        [.. model.Functions.Where(function => !NativeLibrary.TryGetExport(nativeLibrary, function.NativeName, out _))];
 
     /// <summary>Reads ELF exports with readelf when the library is an ELF shared object.</summary>
     private static HashSet<string>? TryReadElfExports(string libraryPath)

@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using AlvorKit.Script.Bindgen;
 
 namespace AlvorKit.Script.Bindgen.Core.Test;
 

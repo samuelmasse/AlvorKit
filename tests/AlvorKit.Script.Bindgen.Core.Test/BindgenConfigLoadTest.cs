@@ -1,5 +1,3 @@
-using AlvorKit.Script.Bindgen;
-
 namespace AlvorKit.Script.Bindgen.Core.Test;
 
 /// <summary>Covers JSON-backed bindgen config loading.</summary>

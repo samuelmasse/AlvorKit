@@ -3,16 +3,16 @@
         <UseLocalBindings Condition="'$(UseLocalBindings)' == ''">false</UseLocalBindings>
         <BindingsRoot Condition="'$(BindingsRoot)' == ''">$(MSBuildThisFileDirectory)out\bindgen</BindingsRoot>
 
-        <FtNativeVer>2.14.3.4</FtNativeVer>
+        <FtNativeVer>2.14.3.7</FtNativeVer>
         <FtBindVer>2.14.3.4</FtBindVer>
 
-        <GlfwNativeVer>3.4.1</GlfwNativeVer>
+        <GlfwNativeVer>3.4.4</GlfwNativeVer>
         <GlfwBindVer>3.4.1</GlfwBindVer>
 
-        <MaNativeVer>0.11.25.6</MaNativeVer>
+        <MaNativeVer>0.11.25.9</MaNativeVer>
         <MaBindVer>0.11.25.6</MaBindVer>
 
-        <XxhNativeVer>0.8.3.2</XxhNativeVer>
+        <XxhNativeVer>0.8.3.5</XxhNativeVer>
         <XxhBindVer>0.8.3.2</XxhBindVer>
 
         <GlBindVer>4.6.3</GlBindVer>

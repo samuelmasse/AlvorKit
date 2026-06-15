@@ -18,10 +18,7 @@ on:
   # Push releases are intentionally tied only to the OpenGL binding version file.
   push:
     branches: [main]
-    paths:
-      [
-        "native/opengl/version/BINDING_REVISION",
-      ]
+    paths: ["native/opengl/version/BINDING_REVISION"]
 
 # This workflow only reads the repository. NuGet publishing uses NUGET_API_KEY.
 permissions:
@@ -102,5 +99,11 @@ jobs:
       - name: Publish to NuGet.org
         if: github.event_name == 'push'
         run: |
-          dotnet nuget push bin/AlvorKit.OpenGL/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push bin/AlvorKit.OpenGL.Backend/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push bin/AlvorKit.OpenGL/Release/*.nupkg \
+            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+          dotnet nuget push bin/AlvorKit.OpenGL.Backend/Release/*.nupkg \
+            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate

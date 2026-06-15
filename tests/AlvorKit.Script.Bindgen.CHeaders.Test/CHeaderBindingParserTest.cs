@@ -1,5 +1,3 @@
-using AlvorKit.Script.Bindgen;
-
 namespace AlvorKit.Script.Bindgen.CHeaders.Test;
 
 [TestClass]
@@ -56,6 +54,30 @@ public sealed class CHeaderBindingParserTest
 
         Assert.IsTrue(model.Functions.Single(function => function.NativeName == "test_const_string").ReturnsCString);
         Assert.IsFalse(model.Functions.Single(function => function.NativeName == "test_mutable_string").ReturnsCString);
+    }
+
+    [TestMethod]
+    public void Parse_AddsImplFileDirectoryToIncludeRoots()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var implDirectory = Directory.CreateDirectory(Path.Combine(source, "src")).FullName;
+        var header = Path.Combine(source, "fixture.h");
+        var translationUnit = Path.Combine(workspace.Root, "fixture.c");
+        var siblingImpl = Path.Combine(implDirectory, "alvorkit.c");
+
+        File.WriteAllText(header, "void test_visible(void);");
+        File.WriteAllText(siblingImpl, "int alvorkit_value(void) { return 1; }");
+        File.WriteAllText(translationUnit, """
+            #include "fixture.h"
+            #include "alvorkit.c"
+            """);
+
+        var config = CHeaderTestConfig.Create();
+        config.ImplFile = "src/miniaudio.c";
+        var model = CHeaderParserHarness.Parse(translationUnit, source, config);
+
+        CollectionAssert.Contains(model.Functions.Select(function => function.NativeName).ToList(), "test_visible");
     }
 
     [TestMethod]

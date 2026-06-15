@@ -1,5 +1,3 @@
-using AlvorKit.Script.Bindgen;
-
 namespace AlvorKit.Script.Bindgen.Core.Test;
 
 /// <summary>Covers generated output filesystem and MSBuild helpers.</summary>

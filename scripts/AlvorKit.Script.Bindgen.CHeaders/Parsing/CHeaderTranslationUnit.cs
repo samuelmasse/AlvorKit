@@ -81,9 +81,23 @@ internal sealed class CHeaderTranslationUnit : IDisposable
         [
             "-x", "c", "-std=c11", $"--target={targetTriple}",
             "-nostdinc", $"-isystem{Path.Combine(AppContext.BaseDirectory, "include")}",
-            $"-I{includeDirectory}", $"-I{libraryDirectory}", "-fparse-all-comments",
+            $"-I{includeDirectory}", .. ImplementationIncludeArguments(config, libraryDirectory),
+            $"-I{libraryDirectory}", "-fparse-all-comments",
             .. config.ExtraDefines.Select(define => $"-D{define}")
         ];
+
+    /// <summary>Adds the configured implementation file directory so sibling includes still resolve from temp TUs.</summary>
+    private static IEnumerable<string> ImplementationIncludeArguments(BindgenConfig config, string libraryDirectory)
+    {
+        if (config.ImplFile is not { Length: > 0 } implFile)
+            yield break;
+
+        var implDirectory = Path.GetDirectoryName(implFile);
+        if (string.IsNullOrEmpty(implDirectory))
+            yield break;
+
+        yield return $"-I{Path.Combine(libraryDirectory, implDirectory)}";
+    }
 
     /// <summary>Throws the first Clang diagnostic at error severity or above.</summary>
     private static void ThrowIfClangReportedErrors(CXTranslationUnit handle)

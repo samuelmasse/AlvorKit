@@ -265,4 +265,8 @@ jobs:
       # Only main pushes publish to NuGet.org. workflow_dispatch stays artifact-only.
       - name: Publish native package to NuGet.org
         if: github.event_name == 'push'
-        run: dotnet nuget push bin/${{ matrix.package.package_name }}/Release/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: |
+          dotnet nuget push bin/${{ matrix.package.package_name }}/Release/*.nupkg \
+            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate

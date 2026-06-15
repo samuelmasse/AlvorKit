@@ -1,5 +1,3 @@
-using AlvorKit.Script.Bindgen;
-
 namespace AlvorKit.Script.Bindgen.Core.Test;
 
 /// <summary>Covers native-to-managed C# naming rules.</summary>

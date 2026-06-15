@@ -1,5 +1,3 @@
-using AlvorKit.Script.Bindgen;
-
 namespace AlvorKit.Script.Bindgen.CHeaders.Test;
 
 internal static class CHeaderParserHarness

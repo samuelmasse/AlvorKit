@@ -1,8 +1,8 @@
 <Project>
     <ItemGroup>
         <None Include="$(MSBuildProjectDirectory)\README.md" Pack="true" PackagePath="\" />
-        <Content Include="$(MSBuildProjectDirectory)\runtimes\**"
-            PackagePath="runtimes\%(RecursiveDir)" Visible="false" />
+        <Content Include="$(MSBuildProjectDirectory)\runtimes\**\*.*"
+            PackagePath="runtimes\%(RecursiveDir)%(Filename)%(Extension)" Visible="false" />
     </ItemGroup>
 
     <Target Name="EnsureNativeBinaries" BeforeTargets="GenerateNuspec">
