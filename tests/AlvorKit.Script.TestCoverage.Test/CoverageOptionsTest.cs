@@ -13,6 +13,7 @@ public sealed class CoverageOptionsTest
         Assert.AreEqual("Debug", options.Configuration);
         Assert.AreEqual(100.0, options.Threshold);
         Assert.AreEqual(0, options.TestProjectFilters.Count);
+        Assert.AreEqual(0, options.SourceProjectFilters.Count);
         Assert.AreEqual(CoverageOptions.DefaultMaxParallel, options.MaxParallel);
         Assert.IsTrue(options.GenerateHtmlReport);
         Assert.IsTrue(options.GenerateCoberturaReport);
@@ -29,6 +30,18 @@ public sealed class CoverageOptionsTest
         Assert.AreEqual(87.5, options.Threshold);
     }
 
+    /// <summary>Long and alias options parse through the same validation path.</summary>
+    [TestMethod]
+    public void Parse_LongAndAliasOptions_ReturnsValues()
+    {
+        var options = CoverageOptions.Parse(["--configuration", "Release", "--threshold", "50", "-m", "1", "--agent-fast"]);
+
+        Assert.AreEqual("Release", options.Configuration);
+        Assert.AreEqual(50.0, options.Threshold);
+        Assert.AreEqual(1, options.MaxParallel);
+        Assert.IsFalse(options.GenerateHtmlReport);
+    }
+
     /// <summary>Test project filters can be repeated for targeted coverage runs.</summary>
     [TestMethod]
     public void Parse_TestProjectFilters_ReturnsAllValues()
@@ -36,6 +49,15 @@ public sealed class CoverageOptionsTest
         var options = CoverageOptions.Parse(["--test-project", "One.Test", "--project", "tests/Two.Test/Two.Test.csproj"]);
 
         CollectionAssert.AreEqual(new[] { "One.Test", "tests/Two.Test/Two.Test.csproj" }, options.TestProjectFilters.ToArray());
+    }
+
+    /// <summary>Source project filters can be repeated for source-scoped coverage gates.</summary>
+    [TestMethod]
+    public void Parse_SourceProjectFilters_ReturnsAllValues()
+    {
+        var options = CoverageOptions.Parse(["--source-project", "Tool", "--source", "scripts/Other/Other.csproj"]);
+
+        CollectionAssert.AreEqual(new[] { "Tool", "scripts/Other/Other.csproj" }, options.SourceProjectFilters.ToArray());
     }
 
     /// <summary>Max parallelism can be configured for hosts with different CPU and IO capacity.</summary>
@@ -57,6 +79,17 @@ public sealed class CoverageOptionsTest
         Assert.IsFalse(options.GenerateCoberturaReport);
         Assert.IsFalse(options.GenerateLcovReport);
         CollectionAssert.AreEqual(new[] { "json" }, options.CoverletOutputFormats().ToArray());
+    }
+
+    /// <summary>Individual raw report options can be disabled without entering agent mode.</summary>
+    [TestMethod]
+    public void Parse_DisableReportOptions_ReturnsValues()
+    {
+        var options = CoverageOptions.Parse(["--no-html", "--no-lcov"]);
+
+        Assert.IsFalse(options.GenerateHtmlReport);
+        Assert.IsTrue(options.GenerateCoberturaReport);
+        Assert.IsFalse(options.GenerateLcovReport);
     }
 
     /// <summary>Full report mode includes every existing raw report format.</summary>

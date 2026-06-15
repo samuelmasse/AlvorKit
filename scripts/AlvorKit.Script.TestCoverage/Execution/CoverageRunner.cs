@@ -10,20 +10,12 @@ internal sealed class CoverageRunner(CoverageOptions options)
         var repoRoot = RepositoryPaths.FindRoot();
         var started = DateTimeOffset.UtcNow;
         var output = CoverageOutputPaths.Create(repoRoot);
-        var testProjects = ProjectDiscovery.TestProjects(repoRoot, options.TestProjectFilters);
-        var sourceModules = options.TestProjectFilters.Count == 0
-            ? ProjectDiscovery.SourceAssemblyNames(repoRoot)
-            : ProjectReferenceDiscovery.SourceAssemblyNamesForTests(repoRoot, testProjects);
+        var selection = CoverageSelection.FromOptions(repoRoot, options);
 
-        if (testProjects.Count == 0)
-            throw new InvalidOperationException("No test projects found under tests.");
-        if (sourceModules.Count == 0)
-            throw new InvalidOperationException("No source projects found under src or scripts.");
-
-        var testRunner = new TestProjectRunner(repoRoot, options, sourceModules);
-        var noBuildTests = ShouldPrebuild(testProjects);
+        var testRunner = new TestProjectRunner(repoRoot, options, selection.SourceModules);
+        var noBuildTests = ShouldPrebuild(selection.TestProjects);
         IReadOnlyList<TestProjectExecution> buildResults = noBuildTests
-            ? await BuildTestProjectsAsync(testRunner, testProjects, output.ProjectsRoot)
+            ? await BuildTestProjectsAsync(testRunner, selection.TestProjects, output.ProjectsRoot)
             : [];
         var failedBuilds = buildResults.Where(execution => execution.Result.ExitCode != 0).ToArray();
         var coverage = new CoverageAccumulator();
@@ -31,10 +23,10 @@ internal sealed class CoverageRunner(CoverageOptions options)
         if (failedBuilds.Length > 0)
         {
             var failedResults = failedBuilds.Select(execution => execution.Result).ToArray();
-            return await CompleteAsync(repoRoot, output, started, coverage, sourceModules, failedResults);
+            return await CompleteAsync(repoRoot, output, started, coverage, selection.SourceModules, failedResults);
         }
 
-        var testExecutions = await RunTestProjectsAsync(testRunner, testProjects, output.ProjectsRoot, noBuildTests);
+        var testExecutions = await RunTestProjectsAsync(testRunner, selection.TestProjects, output.ProjectsRoot, noBuildTests);
         var testResults = testExecutions.Select(execution => execution.Result).ToArray();
 
         foreach (var result in testResults)
@@ -43,7 +35,7 @@ internal sealed class CoverageRunner(CoverageOptions options)
                 coverage.AddCoverletJson(Path.Combine(repoRoot, result.CoverageJsonPath), repoRoot);
         }
 
-        return await CompleteAsync(repoRoot, output, started, coverage, sourceModules, testResults);
+        return await CompleteAsync(repoRoot, output, started, coverage, selection.SourceModules, testResults);
     }
 
     /// <summary>Returns true when a separate build lets parallel tests avoid shared file-copy work.</summary>

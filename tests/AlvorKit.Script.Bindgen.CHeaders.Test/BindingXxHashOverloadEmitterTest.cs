@@ -35,7 +35,7 @@ public sealed class BindingXxHashOverloadEmitterTest
         StringAssert.Contains(secretSource, "public unsafe XxhSecret(nuint size)");
         StringAssert.Contains(secretSource, "if (size < Xxh.Xxh3SecretSizeMin)");
         StringAssert.Contains(secretSource, "if (size > int.MaxValue)");
-        StringAssert.Contains(secretSource, "Pointer = (nint)NativeMemory.Alloc(size);");
+        StringAssert.Contains(secretSource, "Pointer = (nint)NativeMemory.AllocZeroed(size);");
         StringAssert.Contains(secretSource, "throw new OutOfMemoryException");
         Assert.IsFalse(secretSource.Contains("public XxhSecret(nint pointer, nuint size)", StringComparison.Ordinal));
         StringAssert.Contains(secretSource, "public unsafe Span<byte> Bytes");

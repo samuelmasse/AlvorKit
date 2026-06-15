@@ -18,17 +18,22 @@ internal static class ProjectDiscovery
     /// <summary>Returns source assembly names under src and scripts.</summary>
     public static IReadOnlyList<string> SourceAssemblyNames(string repoRoot)
     {
-        string[] sourceRoots = ["src", "scripts"];
+        return [.. SourceProjects(repoRoot).Select(project => project.AssemblyName).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+    }
 
-        return sourceRoots
-            .Select(path => Path.Combine(repoRoot, path))
-            .Where(Directory.Exists)
-            .SelectMany(root => Directory.GetFiles(root, "*.csproj", SearchOption.AllDirectories))
-            .Select(Path.GetFileNameWithoutExtension)
-            .Where(name => !string.IsNullOrWhiteSpace(name))
-            .Distinct(StringComparer.Ordinal)
-            .Order(StringComparer.Ordinal)
-            .ToArray()!;
+    /// <summary>Returns source assembly names matching source project filters.</summary>
+    public static IReadOnlyList<string> SourceAssemblyNames(string repoRoot, IReadOnlyList<string> filters)
+    {
+        return [.. SourceProjects(repoRoot, filters).Select(project => project.AssemblyName).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+    }
+
+    /// <summary>Returns source project paths and assembly names matching source project filters.</summary>
+    public static IReadOnlyList<ProjectInfo> SourceProjects(string repoRoot, IReadOnlyList<string> filters)
+    {
+        var projects = SourceProjects(repoRoot);
+        return filters.Count == 0
+            ? projects
+            : [.. projects.Where(project => filters.Any(filter => MatchesFilter(repoRoot, project.Path, filter)))];
     }
 
     /// <summary>Returns source project paths and assembly names under src and scripts.</summary>
@@ -36,15 +41,13 @@ internal static class ProjectDiscovery
     {
         string[] sourceRoots = ["src", "scripts"];
 
-        return
-        [
-            .. sourceRoots
-                .Select(path => Path.Combine(repoRoot, path))
-                .Where(Directory.Exists)
-                .SelectMany(root => Directory.GetFiles(root, "*.csproj", SearchOption.AllDirectories))
-                .Select(project => new ProjectInfo(Path.GetFullPath(project), Path.GetFileNameWithoutExtension(project)))
-                .OrderBy(project => project.Path, StringComparer.Ordinal)
-        ];
+        return sourceRoots
+            .Select(path => Path.Combine(repoRoot, path))
+            .Where(Directory.Exists)
+            .SelectMany(root => Directory.GetFiles(root, "*.csproj", SearchOption.AllDirectories))
+            .Select(project => new ProjectInfo(Path.GetFullPath(project), Path.GetFileNameWithoutExtension(project)))
+            .OrderBy(project => project.Path, StringComparer.Ordinal)
+            .ToArray();
     }
 
     /// <summary>Finds runnable test project files under a root, or returns an empty set when the root is absent.</summary>
@@ -69,11 +72,14 @@ internal static class ProjectDiscovery
     {
         var fullPath = Path.GetFullPath(Path.Combine(repoRoot, filter));
         var relativePath = RepositoryPaths.Relative(repoRoot, project);
+        var relativeDirectory = RepositoryPaths.Relative(repoRoot, Path.GetDirectoryName(project)!);
         var normalizedFilter = filter.Replace('\\', '/');
 
         return string.Equals(project, fullPath, StringComparison.OrdinalIgnoreCase)
             || string.Equals(relativePath, normalizedFilter, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(relativeDirectory, normalizedFilter, StringComparison.OrdinalIgnoreCase)
             || string.Equals(Path.GetFileName(project), filter, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(Path.GetFileNameWithoutExtension(project), filter, StringComparison.OrdinalIgnoreCase);
+            || string.Equals(Path.GetFileNameWithoutExtension(project), filter, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(Path.GetFileName(Path.GetDirectoryName(project)), filter, StringComparison.OrdinalIgnoreCase);
     }
 }

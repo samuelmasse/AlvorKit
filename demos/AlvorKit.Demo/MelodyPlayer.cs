@@ -3,7 +3,7 @@ using AlvorKit.MiniAudio;
 namespace AlvorKit.Demo;
 
 /// <summary>Plays an endless Ode to Joy on a sine waveform through miniaudio.</summary>
-public sealed class MelodyPlayer : IDisposable
+public sealed unsafe class MelodyPlayer : IDisposable
 {
     /// <summary>The melody frequencies cycled by the background thread.</summary>
     private static readonly double[] Notes = [330, 330, 349, 392, 392, 349, 330, 294, 262, 262, 294, 330, 330, 294, 294];
@@ -29,14 +29,14 @@ public sealed class MelodyPlayer : IDisposable
     /// <summary>The miniaudio API used for engine, waveform, and sound operations.</summary>
     private readonly Ma ma;
 
-    /// <summary>The native miniaudio engine memory owned by this player.</summary>
-    private readonly nint engine;
+    /// <summary>The native miniaudio engine object memory owned by this player.</summary>
+    private readonly MaEngine* engine;
 
-    /// <summary>The native waveform memory owned by this player.</summary>
-    private readonly nint waveform;
+    /// <summary>The native waveform data-source object memory owned by this player.</summary>
+    private readonly MaWaveform* waveform;
 
-    /// <summary>The native sound memory owned by this player.</summary>
-    private readonly nint sound;
+    /// <summary>The native miniaudio sound object memory owned by this player.</summary>
+    private readonly MaSound* sound;
 
     /// <summary>The background thread that advances the melody frequency.</summary>
     private readonly Thread thread;
@@ -49,14 +49,17 @@ public sealed class MelodyPlayer : IDisposable
     public MelodyPlayer(Ma ma)
     {
         this.ma = ma;
-        engine = Marshal.AllocHGlobal((int)ma.SizeofMaEngine());
-        waveform = Marshal.AllocHGlobal((int)ma.SizeofMaWaveform());
-        sound = Marshal.AllocHGlobal((int)ma.SizeofMaSound());
 
-        ma.EngineInit(0, engine);
+        // Miniaudio's C objects are transparent structs, but the demo treats stateful
+        // objects as stable native storage and never reads their backend-specific fields.
+        engine = AllocateNativeObject<MaEngine>();
+        waveform = AllocateNativeObject<MaWaveform>();
+        sound = AllocateNativeObject<MaSound>();
+
+        ma.EngineInit(null, engine);
         var config = ma.WaveformConfigInit(MaFormat.FormatF32, Channels, SampleRate, MaWaveformType.WaveformTypeSine, Volume, Notes[0]);
         ma.WaveformInit(in config, waveform);
-        ma.SoundInitFromDataSource(engine, waveform, 0, 0, sound);
+        ma.SoundInitFromDataSource(engine, (nint)waveform, 0, null, sound);
         ma.SoundStart(sound);
 
         running = true;
@@ -74,9 +77,9 @@ public sealed class MelodyPlayer : IDisposable
         ma.WaveformUninit(waveform);
         ma.EngineUninit(engine);
 
-        Marshal.FreeHGlobal(sound);
-        Marshal.FreeHGlobal(waveform);
-        Marshal.FreeHGlobal(engine);
+        NativeMemory.Free(sound);
+        NativeMemory.Free(waveform);
+        NativeMemory.Free(engine);
     }
 
     /// <summary>Cycles melody frequencies until disposal asks the thread to stop.</summary>
@@ -91,4 +94,9 @@ public sealed class MelodyPlayer : IDisposable
                 Thread.Sleep(StepSleepMs);
         }
     }
+
+    /// <summary>Allocates a zero-filled native object using the generated struct size.</summary>
+    private static T* AllocateNativeObject<T>()
+        where T : unmanaged =>
+        (T*)NativeMemory.AllocZeroed((nuint)sizeof(T));
 }

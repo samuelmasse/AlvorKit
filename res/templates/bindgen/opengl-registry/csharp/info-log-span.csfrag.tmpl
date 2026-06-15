@@ -1,6 +1,6 @@
     public virtual ReadOnlySpan<char> {{ManagedName}}({{Signature}})
     {
-        void* native = destination.Length <= 1024 ? null : NativeMemory.Alloc((nuint)destination.Length);
+        void* native = destination.Length <= 1024 ? null : NativeMemory.AllocZeroed((nuint)destination.Length);
         try
         {
             Span<byte> buffer = native != null ? new Span<byte>(native, destination.Length) : stackalloc byte[destination.Length];

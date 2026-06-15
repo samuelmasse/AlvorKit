@@ -13,6 +13,7 @@ internal sealed class BindingSpanReturnEmitter(BindingEmitterContext context)
             var leading = function.Parameters.Take(function.Parameters.Count - 1).ToList();
             var signature = string.Join(", ", leading.Select(BindingSignature.Parameter));
             var callArguments = string.Join(", ", leading.Select(BindingSignature.Argument).Append("out var count"));
+            var nullCheck = function.ReturnType.TrimEnd().EndsWith('*') ? "pointer == null" : "pointer == 0";
             var documentation = new StringBuilder();
             BindingDocs.InheritedConvenience(
                 documentation,
@@ -25,7 +26,8 @@ internal sealed class BindingSpanReturnEmitter(BindingEmitterContext context)
                 ("ElementType", elementType),
                 ("ManagedName", function.ManagedName),
                 ("Signature", signature),
-                ("CallArguments", callArguments)));
+                ("CallArguments", callArguments),
+                ("NullCheck", nullCheck)));
         }
     }
 }

@@ -17,7 +17,7 @@
         public Utf8(string text, Span<byte> stack)
         {
             Length = Encoding.UTF8.GetByteCount(text);
-            native = Length < stack.Length ? null : NativeMemory.Alloc((nuint)(Length + 1));
+            native = Length < stack.Length ? null : NativeMemory.AllocZeroed((nuint)(Length + 1));
             var buffer = native != null ? new Span<byte>(native, Length + 1) : stack;
             Encoding.UTF8.GetBytes(text, buffer);
             buffer[Length] = 0;
@@ -43,7 +43,7 @@
             for (var i = 0; i < strings.Length; i++)
                 total += Encoding.UTF8.GetByteCount(strings[i]) + 1;
             var size = strings.Length * sizeof(nint) + total;
-            native = size <= stack.Length * sizeof(nint) ? null : NativeMemory.Alloc((nuint)size);
+            native = size <= stack.Length * sizeof(nint) ? null : NativeMemory.AllocZeroed((nuint)size);
             var basePtr = native != null ? (byte*)native : (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(stack));
             var pointers = (byte**)basePtr;
             var data = basePtr + strings.Length * sizeof(nint);

@@ -29,12 +29,14 @@ internal sealed class CHeaderRecordResolver(
             XmlDocComment.Parse(record.Handle.RawCommentText.ToString())?.Summary);
         state.StructByNativeName[nativeName] = built;
 
+        var anonymousFieldIndex = 0;
         foreach (var field in record.Fields)
         {
-            var fieldManagedName = field.Name.Length == 0
+            var fieldNativeName = IsAnonymousRecordField(field) ? $"anonymous{anonymousFieldIndex++}" : field.Name;
+            var fieldManagedName = fieldNativeName.Length == 0
                 ? ""
-                : CSharpName.FromNativeIdentifier(field.Name, config.Prefix, config.DigitNamePrefix);
-            var managedType = field.Name.Length == 0 ? null : MapStructFieldType(field, fieldManagedName, built);
+                : CSharpName.FromNativeIdentifier(fieldNativeName, config.Prefix, config.DigitNamePrefix);
+            var managedType = fieldNativeName.Length == 0 ? null : MapStructFieldType(field, fieldNativeName, fieldManagedName, built);
             if (managedType is null)
             {
                 if (isUnion)
@@ -56,28 +58,28 @@ internal sealed class CHeaderRecordResolver(
     }
 
     /// <summary>Maps a native field to a managed field type.</summary>
-    private string? MapStructFieldType(FieldDecl field, string fieldManagedName, BindingStruct owner)
+    private string? MapStructFieldType(FieldDecl field, string fieldNativeName, string fieldManagedName, BindingStruct owner)
     {
         var canonical = field.Type.Handle.CanonicalType;
         if (canonical.kind == CXTypeKind.CXType_ConstantArray)
             return MapInlineArray(canonical, fieldManagedName, owner);
         if (canonical.kind == CXTypeKind.CXType_Record)
-            return MapRecordField(field, owner.NativeName);
+            return MapRecordField(field, owner.NativeName, fieldNativeName);
         if (state.DelegatesByNativeName.ContainsKey(CHeaderNameMapper.CleanTypeSpelling(field.Type.Handle)))
             state.UsedCallbackTypedefs.Add(CHeaderNameMapper.CleanTypeSpelling(field.Type.Handle));
         return types.MapNativeType(field.Type.Handle);
     }
 
     /// <summary>Maps a named or anonymous nested record field.</summary>
-    private string? MapRecordField(FieldDecl field, string parentNativeName)
+    private string? MapRecordField(FieldDecl field, string parentNativeName, string fieldNativeName)
     {
         var nativeTypeName = CHeaderNameMapper.CleanTypeSpelling(field.Type.Handle);
-        if (state.RecordByNativeName.ContainsKey(nativeTypeName))
+        if (!IsAnonymousName(nativeTypeName) && state.RecordByNativeName.ContainsKey(nativeTypeName))
             return ResolveStruct(nativeTypeName)?.ManagedName;
         if (field.Type.CanonicalType is not RecordType { Decl.Definition: RecordDecl definition })
             return null;
 
-        var synthesizedName = $"{parentNativeName}_{field.Name}";
+        var synthesizedName = $"{parentNativeName}_{fieldNativeName}";
         if (state.StructByNativeName.TryGetValue(synthesizedName, out var existing))
             return existing.ManagedName;
         if (state.FailedStructs.Contains(synthesizedName))
@@ -103,4 +105,12 @@ internal sealed class CHeaderRecordResolver(
         owner.NestedBuffers.Add(new(bufferName, elementType, count));
         return bufferName;
     }
+
+    /// <summary>Returns true for Clang's synthetic field names for anonymous struct and union fields.</summary>
+    private static bool IsAnonymousRecordField(FieldDecl field) =>
+        field.Type.Handle.CanonicalType.kind == CXTypeKind.CXType_Record && IsAnonymousName(field.Name);
+
+    /// <summary>Returns true for anonymous Clang spellings that are unsuitable as generated C# identifiers.</summary>
+    private static bool IsAnonymousName(string name) =>
+        name.Length == 0 || name.Contains("(anonymous at ", StringComparison.Ordinal);
 }

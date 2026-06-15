@@ -33,6 +33,7 @@ public sealed class BindingCodeEmitterPartialOverloadTest
                         new("count", "int", "int", "out", false)
                     ],
                     null),
+                new("test_pick", "Pick", "uint", "uint", [new("mode", "uint", "uint", "", false)], null),
                 new("test_set_name", "SetName", "void", "void", [new("name", "nint", "nint", "", true)], null),
                 new("test_open", "Open", "int", "int", [new("path", "nint", "nint", "", true)], null)
             ],
@@ -52,6 +53,7 @@ public sealed class BindingCodeEmitterPartialOverloadTest
         StringAssert.Contains(
             overloads,
             "public int TryRun(TestMode mode, int seed, out int count) => TryRun((int)mode, seed, out count);");
+        StringAssert.Contains(overloads, "public uint Pick(TestMode mode) => Pick((uint)mode);");
         StringAssert.Contains(overloads, "using var nameUtf8 = new Utf8(name, stackalloc byte[256]);");
         StringAssert.Contains(overloads, "SetName(nameUtf8.Pointer);");
         StringAssert.Contains(overloads, "return Open(pathUtf8.Pointer);");
@@ -64,7 +66,11 @@ public sealed class BindingCodeEmitterPartialOverloadTest
     {
         using var workspace = TempWorkspace.Create();
         var config = CHeaderTestConfig.Create();
-        config.SpanReturns = new() { ["test_items"] = "int" };
+        config.SpanReturns = new()
+        {
+            ["test_items"] = "int",
+            ["test_pointer_items"] = "int"
+        };
         var model = new BindingModel(
             [],
             [],
@@ -76,6 +82,13 @@ public sealed class BindingCodeEmitterPartialOverloadTest
                     "Items",
                     "nint",
                     "nint",
+                    [new("source", "nint", "nint", "", false), new("count", "int", "int", "out", false)],
+                    null),
+                new(
+                    "test_pointer_items",
+                    "PointerItems",
+                    "int*",
+                    "int*",
                     [new("source", "nint", "nint", "", false), new("count", "int", "int", "out", false)],
                     null)
             ],
@@ -90,6 +103,9 @@ public sealed class BindingCodeEmitterPartialOverloadTest
         StringAssert.Contains(overloads, "public unsafe ReadOnlySpan<int> Items(nint source)");
         StringAssert.Contains(overloads, "var pointer = Items(source, out var count);");
         StringAssert.Contains(overloads, "return pointer == 0 || count <= 0 ? default : new ReadOnlySpan<int>((void*)pointer, count);");
+        StringAssert.Contains(overloads, "public unsafe ReadOnlySpan<int> PointerItems(nint source)");
+        StringAssert.Contains(overloads, "var pointer = PointerItems(source, out var count);");
+        StringAssert.Contains(overloads, "return pointer == null || count <= 0 ? default : new ReadOnlySpan<int>((void*)pointer, count);");
     }
 
 }

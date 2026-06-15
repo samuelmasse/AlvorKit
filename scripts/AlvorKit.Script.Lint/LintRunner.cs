@@ -18,17 +18,27 @@ internal sealed class LintRunner(
     public async Task<int> RunAsync()
     {
         var repoRoot = Path.GetFullPath(options.RepoRoot);
-        var actionlintTask = ResolveActionlintAsync(repoRoot);
-        var commandTasks = LintPlan.CommandsBeforeActionlint(repoRoot, options.Fix)
+        var scope = options.IncludePatterns.Count == 0 ? null : LintScope.FromPatterns(repoRoot, options.IncludePatterns);
+        if (scope is { IsEmpty: true })
+        {
+            WriteProgress("[lint:skip] no existing files matched scoped lint includes");
+            return 0;
+        }
+
+        var actionlintTask = LintPlan.RequiresActionlint(scope) ? ResolveActionlintAsync(repoRoot) : null;
+        var preActionlintCommands = scope is null
+            ? LintPlan.CommandsBeforeActionlint(repoRoot, options.Fix)
+            : LintPlan.CommandsBeforeActionlint(repoRoot, options.Fix, scope);
+        var commandTasks = preActionlintCommands
             .Select(RunCommandAsync)
             .ToList();
 
-        var actionlintPath = await actionlintTask;
+        var actionlintPath = actionlintTask is null ? null : await actionlintTask;
         if (actionlintPath is not null)
-            commandTasks.Add(RunCommandAsync(LintPlan.ActionlintCommand(repoRoot, actionlintPath)));
+            commandTasks.Add(RunCommandAsync(LintPlan.ActionlintCommand(repoRoot, actionlintPath, scope)));
 
         var results = await Task.WhenAll(commandTasks);
-        return results.FirstOrDefault(result => result.ExitCode != 0)?.ExitCode ?? (actionlintPath is null ? 1 : 0);
+        return results.FirstOrDefault(result => result.ExitCode != 0)?.ExitCode ?? (LintPlan.RequiresActionlint(scope) && actionlintPath is null ? 1 : 0);
     }
 
     /// <summary>Resolves actionlint while other lint commands are allowed to run.</summary>

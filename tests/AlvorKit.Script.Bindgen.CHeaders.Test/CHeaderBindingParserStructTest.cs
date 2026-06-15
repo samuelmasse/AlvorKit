@@ -79,6 +79,26 @@ public sealed class CHeaderBindingParserStructTest
     }
 
     [TestMethod]
+    public void Parse_UnderlyingRecordPointerUsesPublicTypedefName()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            typedef struct test_other_ {
+                int z;
+            } test_other;
+            typedef struct test_alias_ {
+                int x;
+            } test_alias;
+            void test_take_alias(struct test_alias_* alias);
+            """);
+
+        var model = CHeaderParserHarness.Parse(translationUnit, source, CHeaderTestConfig.Create());
+
+        Assert.AreEqual("TestAlias*", ParameterType(model, "test_take_alias"));
+    }
+
+    [TestMethod]
     public void Parse_RecordPointerFieldsEmitPointedStructs()
     {
         using var workspace = TempWorkspace.Create();
@@ -123,4 +143,7 @@ public sealed class CHeaderBindingParserStructTest
 
         StringAssert.Contains(ex.Message, "bitfield");
     }
+
+    private static string ParameterType(BindingModel model, string nativeName) =>
+        model.Functions.Single(function => function.NativeName == nativeName).Parameters.Single().ManagedType;
 }

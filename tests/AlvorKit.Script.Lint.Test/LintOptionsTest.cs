@@ -15,6 +15,16 @@ public sealed class LintOptionsTest
         Assert.AreEqual(Path.GetFullPath(repoRoot), options.RepoRoot);
         Assert.IsTrue(options.Fix);
         Assert.IsFalse(options.ShowHelp);
+        Assert.AreEqual(0, options.IncludePatterns.Count);
+    }
+
+    /// <summary>Parses repeated scoped include patterns in command-line order.</summary>
+    [TestMethod]
+    public void ParseUsesScopedIncludePatterns()
+    {
+        var options = LintOptions.Parse(["--include", "scripts/**/*.cs", "--include", "AGENTS.md"]);
+
+        CollectionAssert.AreEqual(new[] { "scripts/**/*.cs", "AGENTS.md" }, options.IncludePatterns.ToArray());
     }
 
     /// <summary>Parses the help flag without enabling fix mode.</summary>
@@ -25,6 +35,7 @@ public sealed class LintOptionsTest
 
         Assert.IsTrue(options.ShowHelp);
         Assert.IsFalse(options.Fix);
+        Assert.AreEqual(0, options.IncludePatterns.Count);
     }
 
     /// <summary>Rejects a repository root flag without a value.</summary>
@@ -32,6 +43,13 @@ public sealed class LintOptionsTest
     public void ParseRejectsRepoRootWithoutPath()
     {
         Assert.ThrowsException<ArgumentException>(() => LintOptions.Parse(["--repo-root"]));
+    }
+
+    /// <summary>Rejects an include flag without a value.</summary>
+    [TestMethod]
+    public void ParseRejectsIncludeWithoutPattern()
+    {
+        Assert.ThrowsException<ArgumentException>(() => LintOptions.Parse(["--include"]));
     }
 
     /// <summary>Rejects unknown options so typos do not silently skip checks.</summary>

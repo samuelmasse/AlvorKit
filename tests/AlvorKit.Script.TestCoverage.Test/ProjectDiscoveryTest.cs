@@ -77,6 +77,35 @@ public sealed class ProjectDiscoveryTest
         Assert.AreEqual(0, modules.Count);
     }
 
+    /// <summary>Source project filters match source project names, files, and directories.</summary>
+    [TestMethod]
+    public void SourceAssemblyNames_WithFilters_ReturnsMatchingProjects()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.WriteProject("scripts", "Tool", []);
+        workspace.WriteProject("scripts", "Other", []);
+
+        var byName = ProjectDiscovery.SourceAssemblyNames(workspace.Root, ["Tool"]);
+        var byFile = ProjectDiscovery.SourceAssemblyNames(workspace.Root, ["scripts/Other/Other.csproj"]);
+        var byDirectory = ProjectDiscovery.SourceAssemblyNames(workspace.Root, ["scripts/Tool"]);
+
+        CollectionAssert.AreEqual(new[] { "Tool" }, byName.ToArray());
+        CollectionAssert.AreEqual(new[] { "Other" }, byFile.ToArray());
+        CollectionAssert.AreEqual(new[] { "Tool" }, byDirectory.ToArray());
+    }
+
+    /// <summary>An empty source project filter returns all discovered source projects.</summary>
+    [TestMethod]
+    public void SourceAssemblyNames_WithEmptyFilters_ReturnsAllProjects()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.WriteProject("scripts", "Tool", []);
+
+        var modules = ProjectDiscovery.SourceAssemblyNames(workspace.Root, []);
+
+        CollectionAssert.AreEqual(new[] { "Tool" }, modules.ToArray());
+    }
+
     /// <summary>Targeted coverage includes transitive source project references only.</summary>
     [TestMethod]
     public void SourceAssemblyNamesForTests_ReturnsTransitiveSourceReferences()
@@ -90,5 +119,143 @@ public sealed class ProjectDiscoveryTest
         var modules = ProjectReferenceDiscovery.SourceAssemblyNamesForTests(workspace.Root, [test]);
 
         CollectionAssert.AreEqual(new[] { "Core", "Tool" }, modules.ToArray());
+    }
+
+    /// <summary>Missing referenced test projects are ignored during source reference discovery.</summary>
+    [TestMethod]
+    public void SourceAssemblyNamesForTests_IgnoresMissingTestProjects()
+    {
+        using var workspace = TempWorkspace.Create();
+
+        var modules = ProjectReferenceDiscovery.SourceAssemblyNamesForTests(workspace.Root, ["tests/Missing/Missing.csproj"]);
+
+        Assert.AreEqual(0, modules.Count);
+    }
+
+    /// <summary>Duplicate test projects are visited once during source reference discovery.</summary>
+    [TestMethod]
+    public void SourceAssemblyNamesForTests_IgnoresDuplicateTestProjects()
+    {
+        using var workspace = TempWorkspace.Create();
+        var tool = workspace.WriteProject("scripts", "Tool", []);
+        var test = workspace.WriteProject("tests", "Tool.Test", [tool]);
+
+        var modules = ProjectReferenceDiscovery.SourceAssemblyNamesForTests(workspace.Root, [test, test]);
+
+        CollectionAssert.AreEqual(new[] { "Tool" }, modules.ToArray());
+    }
+
+    /// <summary>Project references without an Include attribute are ignored.</summary>
+    [TestMethod]
+    public void SourceAssemblyNamesForTests_IgnoresProjectReferencesWithoutInclude()
+    {
+        using var workspace = TempWorkspace.Create();
+        var test = workspace.Write(
+            "tests/Tool.Test/Tool.Test.csproj",
+            "<Project><ItemGroup><ProjectReference /></ItemGroup></Project>");
+
+        var modules = ProjectReferenceDiscovery.SourceAssemblyNamesForTests(workspace.Root, [test]);
+
+        Assert.AreEqual(0, modules.Count);
+    }
+
+    /// <summary>Source-scoped coverage can discover tests that reference selected modules.</summary>
+    [TestMethod]
+    public void TestProjectsReferencingSourceModules_ReturnsReferencingTests()
+    {
+        using var workspace = TempWorkspace.Create();
+        var tool = workspace.WriteProject("scripts", "Tool", []);
+        workspace.WriteProject("scripts", "Other", []);
+        var toolTest = workspace.WriteProject("tests", "Tool.Test", [tool]);
+        workspace.WriteProject("tests", "Other.Test", []);
+        var tests = ProjectDiscovery.TestProjects(workspace.Root, []);
+
+        var selected = ProjectReferenceDiscovery.TestProjectsReferencingSourceModules(workspace.Root, tests, ["Tool"]);
+
+        CollectionAssert.AreEqual(new[] { toolTest }, selected.ToArray());
+    }
+
+    /// <summary>Coverage selection gates source-filtered runs only on selected source modules.</summary>
+    [TestMethod]
+    public void CoverageSelection_WithSourceFilter_SelectsReferencingTestsAndSourceOnly()
+    {
+        using var workspace = TempWorkspace.Create();
+        var shared = workspace.WriteProject("scripts", "Shared", []);
+        var tool = workspace.WriteProject("scripts", "Tool", [shared]);
+        workspace.WriteProject("tests", "Tool.Test", [tool]);
+
+        var options = CoverageOptions.Parse(["--source-project", "Tool"]);
+        var selection = CoverageSelection.FromOptions(workspace.Root, options);
+
+        Assert.AreEqual(1, selection.TestProjects.Count);
+        CollectionAssert.AreEqual(new[] { "Tool" }, selection.SourceModules.ToArray());
+    }
+
+    /// <summary>Coverage selection without filters includes all tests and source modules.</summary>
+    [TestMethod]
+    public void CoverageSelection_WithoutFilters_SelectsAllTestsAndSources()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.WriteProject("scripts", "Tool", []);
+        workspace.WriteProject("tests", "Tool.Test", []);
+
+        var selection = CoverageSelection.FromOptions(workspace.Root, CoverageOptions.Parse([]));
+
+        Assert.AreEqual(1, selection.TestProjects.Count);
+        CollectionAssert.AreEqual(new[] { "Tool" }, selection.SourceModules.ToArray());
+    }
+
+    /// <summary>Coverage selection without source filters gates modules referenced by selected tests.</summary>
+    [TestMethod]
+    public void CoverageSelection_WithTestFilter_SelectsReferencedSources()
+    {
+        using var workspace = TempWorkspace.Create();
+        var tool = workspace.WriteProject("scripts", "Tool", []);
+        workspace.WriteProject("scripts", "Other", []);
+        workspace.WriteProject("tests", "Tool.Test", [tool]);
+
+        var options = CoverageOptions.Parse(["--test-project", "Tool.Test"]);
+        var selection = CoverageSelection.FromOptions(workspace.Root, options);
+
+        CollectionAssert.AreEqual(new[] { "Tool" }, selection.SourceModules.ToArray());
+    }
+
+    /// <summary>Coverage selection can combine explicit test and source filters.</summary>
+    [TestMethod]
+    public void CoverageSelection_WithTestAndSourceFilters_UsesBoth()
+    {
+        using var workspace = TempWorkspace.Create();
+        var tool = workspace.WriteProject("scripts", "Tool", []);
+        workspace.WriteProject("tests", "Tool.Test", [tool]);
+
+        var options = CoverageOptions.Parse(["--test-project", "Tool.Test", "--source-project", "Tool"]);
+        var selection = CoverageSelection.FromOptions(workspace.Root, options);
+
+        Assert.AreEqual(1, selection.TestProjects.Count);
+        CollectionAssert.AreEqual(new[] { "Tool" }, selection.SourceModules.ToArray());
+    }
+
+    /// <summary>Coverage selection fails clearly when filters match no projects.</summary>
+    [TestMethod]
+    public void CoverageSelection_WithMissingSourceFilter_Throws()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.WriteProject("tests", "Tool.Test", []);
+
+        var options = CoverageOptions.Parse(["--source-project", "Missing"]);
+
+        Assert.ThrowsException<InvalidOperationException>(() => CoverageSelection.FromOptions(workspace.Root, options));
+    }
+
+    /// <summary>Coverage selection fails clearly when selected tests reference no source modules.</summary>
+    [TestMethod]
+    public void CoverageSelection_WithNoSourceModules_Throws()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.WriteProject("tests", "Tool.Test", []);
+
+        var options = CoverageOptions.Parse(["--test-project", "Tool.Test"]);
+
+        Assert.ThrowsException<InvalidOperationException>(() => CoverageSelection.FromOptions(workspace.Root, options));
     }
 }

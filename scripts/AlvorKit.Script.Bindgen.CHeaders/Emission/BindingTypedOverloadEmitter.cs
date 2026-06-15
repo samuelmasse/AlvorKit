@@ -87,7 +87,7 @@ internal sealed class BindingTypedOverloadEmitter(BindingEmitterContext context)
         : pair.First == pair.Second.ManagedType ? pair.Second.ManagedName
         : pair.First == "string" ? $"{pair.Second.ManagedName.TrimStart('@')}Utf8.Pointer"
         : pair.First == "bool" ? $"({pair.Second.ManagedName} ? 1 : 0)"
-        : $"(int){pair.Second.ManagedName}";
+        : $"({pair.Second.ManagedType}){pair.Second.ManagedName}";
 
     /// <summary>Returns the cartesian product of candidate overload parameter types.</summary>
     private static IEnumerable<string[]> CartesianProduct(List<string[]> lists)

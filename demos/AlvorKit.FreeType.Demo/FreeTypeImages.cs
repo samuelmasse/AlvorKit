@@ -433,8 +433,7 @@ internal static unsafe class FreeTypeDrawing
 
     private static int KerningPixels(Ft ft, FtFaceRec* face, uint leftGlyph, uint rightGlyph)
     {
-        var kerning = new FtVector();
-        FreeTypeStatus.Require(ft, "FT_Get_Kerning", ft.GetKerning(face, leftGlyph, rightGlyph, (uint)FtKerningMode.KerningDefault, &kerning));
+        FreeTypeStatus.Require(ft, "FT_Get_Kerning", ft.GetKerning(face, leftGlyph, rightGlyph, FtKerningMode.KerningDefault, out var kerning));
         return FreeTypeValues.Pixel26Dot6(kerning.X);
     }
 }

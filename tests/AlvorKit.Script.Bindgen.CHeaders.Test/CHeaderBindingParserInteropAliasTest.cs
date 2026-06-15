@@ -4,6 +4,28 @@ namespace AlvorKit.Script.Bindgen.CHeaders.Test;
 public sealed class CHeaderBindingParserInteropAliasTest
 {
     [TestMethod]
+    public void Parse_UsesConfiguredInteropTypeAliasesForPrimitiveRawSignatures()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            unsigned int test_read(unsigned int value);
+            """);
+        var config = CHeaderTestConfig.Create();
+        config.TypeAliases = new() { ["unsigned int"] = "TestUInt" };
+        config.InteropTypeAliases = new() { ["unsigned int"] = "uint" };
+
+        var model = CHeaderParserHarness.Parse(translationUnit, source, config);
+        var function = model.Functions.Single();
+        var parameter = function.Parameters.Single();
+
+        Assert.AreEqual("TestUInt", function.ReturnType);
+        Assert.AreEqual("uint", function.ReturnInteropType);
+        Assert.AreEqual("TestUInt", parameter.ManagedType);
+        Assert.AreEqual("uint", parameter.InteropType);
+    }
+
+    [TestMethod]
     public void Parse_UsesConfiguredInteropTypeAliasesForRawSignatures()
     {
         using var workspace = TempWorkspace.Create();

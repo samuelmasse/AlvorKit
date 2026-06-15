@@ -2,7 +2,7 @@
 
 miniaudio binaries for win (x64, x86, arm64), linux (x64, arm, arm64) and osx (x64, arm64)
 
-The package version is the upstream [miniaudio](https://github.com/mackron/miniaudio) tag the binaries were built from, compiled with `MA_DLL` plus `alvorkit_sizeof_*` helpers for the caller-allocated types. A 4th version segment (x.y.z.N) is an AlvorKit packaging revision: same upstream release, rebuilt packaging.
+The package version is the upstream [miniaudio](https://github.com/mackron/miniaudio) tag the binaries were built from, compiled with `MA_DLL`. A 4th version segment (x.y.z.N) is an AlvorKit packaging revision: same upstream release, rebuilt packaging.
 
 | RID         | Binary               |
 | ----------- | -------------------- |

@@ -37,23 +37,45 @@ git diff --no-index -- out\bindgen-review\xxhash-before out\bindgen-review\xxhas
 
 ## Linting
 
-Run the repository linter from the repository root with:
+Run the repository linter from the repository root with scoped includes while iterating:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.Lint -- --include "scripts/**/*.cs"
+```
+
+Repeat `--include` for multiple files, directories, or globs. Use `--fix` with the same scope
+to apply supported formatter fixes locally:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.Lint -- --fix --include "AGENTS.md"
+```
+
+Run the full repository linter for broad changes or CI parity checks:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.Lint
 ```
 
 The linter coordinates C# formatting, Prettier checks, EditorConfig checks, and
-GitHub Actions workflow validation. To apply supported formatter fixes locally,
-run:
-
-```powershell
-dotnet run --project scripts\AlvorKit.Script.Lint -- --fix
-```
+GitHub Actions workflow validation.
 
 ## Unit test coverage
 
-Generate a local coverage report with:
+Run focused coverage for a source project while iterating:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --source-project AlvorKit.Script.NativeBuild --threshold 0
+```
+
+The tool runs test projects that reference the selected source project and gates
+coverage only on that source project. To choose tests explicitly, combine
+`--source-project` with `--test-project`:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --source-project AlvorKit.Script.NativeBuild --test-project AlvorKit.Script.NativeBuild.Test --threshold 0
+```
+
+Run the full coverage report for broad changes or CI parity checks:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --threshold 0
@@ -65,15 +87,9 @@ Open the ReportGenerator HTML report:
 Invoke-Item .\out\coverage\html\index.html
 ```
 
-To run coverage for one test project while iterating, pass a project name or path:
-
-```powershell
-dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --test-project AlvorKit.Script.NativeBuild.Test --threshold 0
-```
-
 Raw per-project coverage files and logs are written under `out/coverage/projects/<test-project>/`.
-The strict coverage gate is the same command without `--threshold 0`; it fails unless line,
-branch, and method coverage are all 100%.
+The strict coverage gate is the same command without `--threshold 0`; it fails
+unless line, branch, and method coverage are all 100%.
 
 ## Native package builds
 

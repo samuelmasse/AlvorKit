@@ -1,7 +1,7 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Emits FreeType-specific convenience members over the generated freetype.h API.</summary>
-internal static class BindingFreeTypeOverloadEmitter
+internal static partial class BindingFreeTypeOverloadEmitter
 {
     /// <summary>Emits the first batch of FreeType convenience methods.</summary>
     /// <param name="output">The overload file body being built.</param>
@@ -13,6 +13,7 @@ internal static class BindingFreeTypeOverloadEmitter
             CharacterCodeOverloads(output, model, apiClass);
         if (HasFunction(model, "FT_Get_Glyph_Name"))
             GlyphNameOverload(output, model, apiClass);
+        StructuredOverloads(output, model, apiClass);
     }
 
     /// <summary>Emits char and Rune overloads for FT character-code APIs.</summary>

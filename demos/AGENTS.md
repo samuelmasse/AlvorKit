@@ -126,6 +126,9 @@ These instructions apply to C# code under `demos/`.
 ## Tests
 
 - Do not create tests for demos or demo-only code.
+- If logic moves out of a demo and receives tests elsewhere, those test files
+  use the repo-wide 750-line test limit, not the normal source or demo file-size
+  limits.
 - Prefer moving testable rules into small helpers instead of testing through a
   live graphics window.
 - If logic becomes important enough to need unit coverage, move it into `src/`

@@ -60,6 +60,9 @@ These instructions apply to C# code under `src/` and the matching tests under
 ## File Size
 
 - Keep each edited C# file at or below 150 lines.
+- This 150-line target applies to source files, not tests. Matching test files
+  under `tests/AlvorKit.*.Test/` may be up to 750 lines when the scenarios are
+  cohesive.
 - When a touched file is already over 150 lines, split out cohesive helpers or
   data shapes before adding more code.
 - If a file cannot reasonably be kept under 150 lines because of API shape,
@@ -94,8 +97,8 @@ These instructions apply to C# code under `src/` and the matching tests under
 ## Final Review
 
 - Re-read the changed files before finishing.
-- Check that edited files respect the 150-line target, the repo-wide
-  170-character code line limit, XML docs are meaningful, constructors are not
-  redundant, hot paths avoid allocation churn, and tests cover the changed
-  behavior.
+- Check that edited source files respect the 150-line target, edited test files
+  stay within the 750-line test limit, the repo-wide 170-character code line
+  limit is respected, XML docs are meaningful, constructors are not redundant,
+  hot paths avoid allocation churn, and tests cover the changed behavior.
 - Report the exact tests run and any remaining risk.

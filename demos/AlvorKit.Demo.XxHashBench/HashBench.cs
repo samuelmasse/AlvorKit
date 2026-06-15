@@ -105,7 +105,7 @@ public sealed unsafe class HashBench
     }
 
     /// <summary>Owns one native allocation for a benchmark cell and frees it when the measurement completes.</summary>
-    /// <param name="pointer">The native pointer returned by <see cref="NativeMemory.Alloc(nuint)"/>.</param>
+    /// <param name="pointer">The native pointer returned by <see cref="NativeMemory.AllocZeroed(nuint)"/>.</param>
     private readonly struct NativeBuffer(nint pointer) : IDisposable
     {
         /// <summary>The native pointer passed to xxHash during the timed loops.</summary>
@@ -115,7 +115,7 @@ public sealed unsafe class HashBench
         /// <param name="size">The number of bytes to allocate.</param>
         /// <returns>An owned native buffer that must be disposed after the benchmark cell completes.</returns>
         public static NativeBuffer Allocate(nuint size) =>
-            new((nint)NativeMemory.Alloc(size));
+            new((nint)NativeMemory.AllocZeroed(size));
 
         /// <summary>Frees the owned native allocation.</summary>
         public void Dispose() =>

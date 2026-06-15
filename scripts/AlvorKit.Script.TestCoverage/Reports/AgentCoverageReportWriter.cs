@@ -19,6 +19,7 @@ internal static class AgentCoverageReportWriter
             durationSeconds = Math.Round((generatedAt - started).TotalSeconds, 3),
             threshold = options.Threshold,
             testProjectFilters = options.TestProjectFilters,
+            sourceProjectFilters = options.SourceProjectFilters,
             passed,
             unmeasuredModulesFailGate = options.Threshold > 0,
             totals = summary.Totals,

@@ -19,14 +19,18 @@ These instructions apply to all test projects under `tests/`.
 
 ## Test File Size
 
-- Do not split test files just to keep them tiny. A cohesive test file around
-  750 lines is acceptable when it keeps related scenarios together.
-- Split a test file when the scenarios stop sharing context, not because an
-  agent prefers small files.
+- Test files have their own file-size limit: up to 750 lines for a cohesive
+  file. This is intentionally different from the normal source or script code
+  limits.
+- Do not split test files just to keep them tiny. Keeping related scenarios
+  together is preferred when the file remains at or below 750 lines.
+- Split a test file when the scenarios stop sharing context or it would exceed
+  750 lines, not because an agent prefers small files.
 
 ## Verification
 
-- For C# test changes, run the focused coverage command for the affected test
-  project when practical, then run the repo linter before handing off.
+- For C# test changes, run focused coverage for the affected source project with
+  `--source-project`, adding `--test-project` only when you need to choose the
+  test project explicitly, then run scoped lint before handing off.
 - If a shared helper changes behavior used by many projects, prefer the full
   strict coverage gate before finishing.

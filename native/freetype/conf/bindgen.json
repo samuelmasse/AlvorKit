@@ -18,7 +18,23 @@
     "FT_Init_FreeType": ["alibrary"],
     "FT_New_Face": ["aface"],
     "FT_Open_Face": ["aface"],
-    "FT_New_Memory_Face": ["aface"]
+    "FT_New_Memory_Face": ["aface"],
+    "FT_Get_Transform": ["matrix", "delta"],
+    "FT_Get_Kerning": ["akerning"],
+    "FT_Get_Track_Kerning": ["akerning"],
+    "FT_Get_First_Char": ["agindex"],
+    "FT_Get_Next_Char": ["agindex"],
+    "FT_Get_SubGlyph_Info": ["p_index", "p_flags", "p_arg1", "p_arg2", "p_transform"],
+    "FT_Library_Version": ["amajor", "aminor", "apatch"]
+  },
+  "boolReturns": ["FT_Face_CheckTrueTypePatents", "FT_Face_SetUnpatentedHinting"],
+  "boolParams": {
+    "FT_Face_SetUnpatentedHinting": ["value"]
+  },
+  "enumOverloads": {
+    "functions": {
+      "FT_Get_Kerning": { "params": { "kern_mode": ["uint", "FtKerningMode"] } }
+    }
   },
   "skip": {},
   "sourceUrl": "https://gitlab.freedesktop.org/freetype/freetype/-/archive/VER-{tagDashes}/freetype-VER-{tagDashes}.tar.gz"

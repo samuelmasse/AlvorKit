@@ -6,7 +6,6 @@
   "nativeClass": "MaNative",
   "nativeLibrary": "miniaudio",
   "prefix": "ma_",
-  "extraPrefixes": ["alvorkit_"],
   "workDir": "miniaudio-build",
   "sourceDir": "miniaudio-{tag}",
   "header": "miniaudio.h",
@@ -17,8 +16,6 @@
   "typeRenames": {
     "ma_backend": "MaBackendKind"
   },
-  "sizeofShim": "src/alvorkit.c",
-  "shimExport": "MA_API",
   "transparentStructs": ["ma_waveform_config"],
   "inParams": {
     "ma_waveform_init": ["pConfig"]

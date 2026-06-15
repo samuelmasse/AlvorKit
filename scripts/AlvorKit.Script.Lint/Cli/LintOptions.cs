@@ -4,7 +4,8 @@ namespace AlvorKit.Script.Lint;
 /// <param name="RepoRoot">Absolute or relative repository root to lint.</param>
 /// <param name="Fix">True when supported formatters should write changes instead of checking only.</param>
 /// <param name="ShowHelp">True when help text should be printed.</param>
-internal sealed record LintOptions(string RepoRoot, bool Fix, bool ShowHelp)
+/// <param name="IncludePatterns">Repository-relative file, directory, or glob patterns to lint.</param>
+internal sealed record LintOptions(string RepoRoot, bool Fix, bool ShowHelp, IReadOnlyList<string> IncludePatterns)
 {
     /// <summary>Usage text printed for --help.</summary>
     public const string HelpText = """
@@ -12,6 +13,7 @@ internal sealed record LintOptions(string RepoRoot, bool Fix, bool ShowHelp)
 
         Options:
           --fix                 Format supported files instead of checking them.
+          --include <pattern>   Lint only matching files. May be repeated.
           --repo-root <path>    Repository root to lint. Defaults to the current repo.
           -h, --help            Show this help text.
         """;
@@ -22,6 +24,7 @@ internal sealed record LintOptions(string RepoRoot, bool Fix, bool ShowHelp)
         var repoRoot = RepositoryPaths.FindRoot();
         var fix = false;
         var showHelp = false;
+        var includePatterns = new List<string>();
 
         for (var i = 0; i < args.Count; i++)
         {
@@ -39,11 +42,16 @@ internal sealed record LintOptions(string RepoRoot, bool Fix, bool ShowHelp)
                         throw new ArgumentException("--repo-root requires a path argument.");
                     repoRoot = Path.GetFullPath(args[i]);
                     break;
+                case "--include":
+                    if (++i >= args.Count)
+                        throw new ArgumentException("--include requires a path or glob argument.");
+                    includePatterns.Add(args[i]);
+                    break;
                 default:
                     throw new ArgumentException($"Unknown lint option '{args[i]}'.");
             }
         }
 
-        return new(repoRoot, fix, showHelp);
+        return new(repoRoot, fix, showHelp, includePatterns);
     }
 }

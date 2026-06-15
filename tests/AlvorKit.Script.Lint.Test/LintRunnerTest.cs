@@ -11,7 +11,7 @@ public sealed class LintRunnerTest
         using var workspace = TempWorkspace.Create();
         var processRunner = new BlockingProcessRunner(expectedStarts: 3);
         var actionlintTool = new FakeActionlintTool("actionlint");
-        var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false), processRunner, actionlintTool);
+        var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false, []), processRunner, actionlintTool);
 
         var runnerTask = runner.RunAsync();
         await processRunner.AllStarted.Task;
@@ -31,7 +31,7 @@ public sealed class LintRunnerTest
         using var workspace = TempWorkspace.Create();
         var processRunner = new FakeProcessRunner(new Queue<int>([0, 9, 0]));
         var actionlintTool = new FakeActionlintTool("actionlint");
-        var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false), processRunner, actionlintTool);
+        var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false, []), processRunner, actionlintTool);
 
         var exitCode = await runner.RunAsync();
 
@@ -47,7 +47,7 @@ public sealed class LintRunnerTest
         using var workspace = TempWorkspace.Create();
         var processRunner = new FakeProcessRunner(new Queue<int>([0, 0]));
         var actionlintTool = new FailingActionlintTool();
-        var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false), processRunner, actionlintTool);
+        var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false, []), processRunner, actionlintTool);
 
         var exitCode = await runner.RunAsync();
 
@@ -62,12 +62,52 @@ public sealed class LintRunnerTest
         using var workspace = TempWorkspace.Create();
         var processRunner = new ThrowingProcessRunner();
         var actionlintTool = new FakeActionlintTool("actionlint");
-        var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false), processRunner, actionlintTool);
+        var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false, []), processRunner, actionlintTool);
 
         var exitCode = await runner.RunAsync();
 
         Assert.AreEqual(1, exitCode);
         Assert.AreEqual(3, processRunner.Commands.Count);
+    }
+
+    /// <summary>Skips actionlint setup when scoped lint does not include workflow files.</summary>
+    [TestMethod]
+    public async Task RunAsyncSkipsActionlintForNonWorkflowScope()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.Write("scripts/Tool/Tool.csproj", "<Project />");
+        workspace.Write("scripts/Tool/A.cs", "namespace Tool;");
+        var processRunner = new FakeProcessRunner(new Queue<int>([0, 0]));
+        var actionlintTool = new FakeActionlintTool("actionlint");
+        var runner = new LintRunner(
+            new(workspace.Root, Fix: false, ShowHelp: false, ["scripts/Tool/A.cs"]),
+            processRunner,
+            actionlintTool);
+
+        var exitCode = await runner.RunAsync();
+
+        Assert.AreEqual(0, exitCode);
+        Assert.IsFalse(actionlintTool.Called);
+        Assert.AreEqual(2, processRunner.Commands.Count);
+    }
+
+    /// <summary>Returns success without running commands when scoped includes only missing files.</summary>
+    [TestMethod]
+    public async Task RunAsyncSucceedsWhenScopedFilesAreMissing()
+    {
+        using var workspace = TempWorkspace.Create();
+        var processRunner = new FakeProcessRunner(new Queue<int>());
+        var actionlintTool = new FakeActionlintTool("actionlint");
+        var runner = new LintRunner(
+            new(workspace.Root, Fix: false, ShowHelp: false, ["scripts/Tool/Deleted.cs"]),
+            processRunner,
+            actionlintTool);
+
+        var exitCode = await runner.RunAsync();
+
+        Assert.AreEqual(0, exitCode);
+        Assert.IsFalse(actionlintTool.Called);
+        Assert.AreEqual(0, processRunner.Commands.Count);
     }
 
     /// <summary>Fake process runner that returns predetermined exit codes.</summary>

@@ -9,12 +9,9 @@ internal static unsafe class FreeTypeTour
         Console.WriteLine($"FT_Error_String: 0 => {successText ?? "(no string)"}, 1 => {sampleText ?? "(no string)"}");
     }
 
-    public static unsafe void ReportLibraryVersion(Ft ft, nint library)
+    public static void ReportLibraryVersion(Ft ft, nint library)
     {
-        int major;
-        int minor;
-        int patch;
-        ft.LibraryVersion(library, (nint)(&major), (nint)(&minor), (nint)(&patch));
+        ft.LibraryVersion(library, out var major, out var minor, out var patch);
         Console.WriteLine($"FT_Library_Version: {major}.{minor}.{patch}");
     }
 
@@ -29,9 +26,9 @@ internal static unsafe class FreeTypeTour
         Console.WriteLine($"FT_Get_Postscript_Name: {postscriptName ?? "(none)"}");
         Console.WriteLine($"FT_Get_FSType_Flags: 0x{ft.GetFSTypeFlags(face):X4}");
         Console.WriteLine($"FT_Face_Properties: no-op reset call for {Path.GetFileName(fontPath)}");
-        FreeTypeStatus.Require(ft, "FT_Face_Properties", ft.FaceProperties(face, 0, null));
+        FreeTypeStatus.Require(ft, "FT_Face_Properties", ft.FaceProperties(face, []));
         Console.WriteLine($"FT_Face_CheckTrueTypePatents: {ft.FaceCheckTrueTypePatents(face)}");
-        Console.WriteLine($"FT_Face_SetUnpatentedHinting: {ft.FaceSetUnpatentedHinting(face, 1)}");
+        Console.WriteLine($"FT_Face_SetUnpatentedHinting: {ft.FaceSetUnpatentedHinting(face, true)}");
     }
 
     public static void ReportReferenceCounting(Ft ft, FtFaceRec* face)
@@ -117,7 +114,7 @@ internal static unsafe class FreeTypeTour
             HoriResolution = 96,
             VertResolution = 96,
         };
-        FreeTypeStatus.Require(ft, "FT_Request_Size", ft.RequestSize(face, &request));
+        FreeTypeStatus.Require(ft, "FT_Request_Size", ft.RequestSize(face, in request));
         FreeTypeDrawing.DrawTextCurrentSize(ft, face, canvas, "FT_Request_Size", 34, 238, useKerning: true, DemoColor.Green);
         FreeTypeDrawing.DrawTextCurrentSize(ft, face, canvas, "explicit FT_Size_RequestRec", 390, 238, useKerning: true, DemoColor.White);
 
@@ -195,11 +192,9 @@ internal static unsafe class FreeTypeTour
 
         var matrix = RotationMatrix(-14);
         var delta = new FtVector { X = FreeTypeValues.Long(14 * 64) };
-        ft.SetTransform(face, &matrix, &delta);
+        ft.SetTransform(face, in matrix, in delta);
 
-        var roundTripMatrix = new FtMatrix();
-        var roundTripDelta = new FtVector();
-        ft.GetTransform(face, &roundTripMatrix, &roundTripDelta);
+        ft.GetTransform(face, out var roundTripMatrix, out var roundTripDelta);
         Console.WriteLine(
             "FT_Set_Transform / FT_Get_Transform: " +
             $"xx={FreeTypeValues.ToInt64(roundTripMatrix.Xx)}, deltaX={FreeTypeValues.ToInt64(roundTripDelta.X)}");
@@ -222,10 +217,9 @@ internal static unsafe class FreeTypeTour
         var canvas = new PngCanvas(880, 330, DemoColor.Background);
         var a = ft.GetCharIndex(face, 'A');
         var v = ft.GetCharIndex(face, 'V');
-        var kerning = new FtVector();
-        FreeTypeStatus.Require(ft, "FT_Get_Kerning", ft.GetKerning(face, a, v, (uint)FtKerningMode.KerningDefault, &kerning));
+        FreeTypeStatus.Require(ft, "FT_Get_Kerning", ft.GetKerning(face, a, v, FtKerningMode.KerningDefault, out var kerning));
         Console.WriteLine($"FT_Get_Kerning A/V: {FreeTypeValues.Pixel26Dot6(kerning.X)} px");
-        FreeTypeStatus.ReportOptional(ft, "FT_Get_Track_Kerning", ft.GetTrackKerning(face, FreeTypeValues.Long(12 * 64), 0, (nint)(&kerning)));
+        FreeTypeStatus.ReportOptional(ft, "FT_Get_Track_Kerning", ft.GetTrackKerning(face, FreeTypeValues.Long(12 * 64), 0, out _));
 
         FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 76));
         FreeTypeDrawing.DrawTextCurrentSize(ft, face, canvas, "AVATAR", 70, 130, useKerning: false, DemoColor.Red);
@@ -255,15 +249,14 @@ internal static unsafe class FreeTypeTour
         Console.WriteLine($"FT_Get_Char_Index 'A': {ft.GetCharIndex(face, 'A')}");
 
         var glyphs = new List<uint>();
-        uint glyphIndex;
-        var charCode = ft.GetFirstChar(face, (nint)(&glyphIndex));
+        var charCode = ft.GetFirstChar(face, out var glyphIndex);
         while (glyphIndex != 0 && glyphs.Count < 48)
         {
             var scalar = FreeTypeValues.ToUInt64(charCode);
             if (scalar is >= 0x21 and <= 0x7E)
                 glyphs.Add(glyphIndex);
 
-            charCode = ft.GetNextChar(face, charCode, (nint)(&glyphIndex));
+            charCode = ft.GetNextChar(face, charCode, out glyphIndex);
         }
 
         var canvas = new PngCanvas(760, 430, DemoColor.Background);
@@ -425,15 +418,10 @@ internal static unsafe class FreeTypeTour
 
     private static void ReportFirstSubglyph(Ft ft, FtGlyphSlotRec* glyphSlot)
     {
-        int index;
-        uint flags;
-        int arg1;
-        int arg2;
-        var transform = new FtMatrix();
         FreeTypeStatus.Require(
             ft,
             "FT_Get_SubGlyph_Info",
-            ft.GetSubGlyphInfo(glyphSlot, 0, (nint)(&index), (nint)(&flags), (nint)(&arg1), (nint)(&arg2), &transform));
+            ft.GetSubGlyphInfo(glyphSlot, 0, out var index, out var flags, out var arg1, out var arg2, out _));
         Console.WriteLine($"FT_Get_SubGlyph_Info: index={index}, flags=0x{flags:X}, args=({arg1}, {arg2})");
     }
 
@@ -496,15 +484,15 @@ internal static unsafe class FreeTypeTour
         canvas.DrawRectangle(x, baselineY + 190 - height, 48, height, color);
     }
 
-    private static string FormatUInt32List(nint pointer)
+    private static string FormatUInt32List(uint* pointer)
     {
-        if (pointer == 0)
+        if (pointer == null)
             return "(none)";
 
         var values = new List<uint>();
         for (var i = 0; i < 8; i++)
         {
-            var value = (uint)Marshal.ReadInt32(pointer, i * sizeof(uint));
+            var value = pointer[i];
             if (value == 0)
                 break;
 

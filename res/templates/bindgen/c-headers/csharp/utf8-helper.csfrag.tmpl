@@ -11,7 +11,7 @@
         public Utf8(string text, Span<byte> stack)
         {
             var length = Encoding.UTF8.GetByteCount(text);
-            native = length < stack.Length ? null : NativeMemory.Alloc((nuint)(length + 1));
+            native = length < stack.Length ? null : NativeMemory.AllocZeroed((nuint)(length + 1));
             var buffer = native != null ? new Span<byte>(native, length + 1) : stack;
             Encoding.UTF8.GetBytes(text, buffer);
             buffer[length] = 0;

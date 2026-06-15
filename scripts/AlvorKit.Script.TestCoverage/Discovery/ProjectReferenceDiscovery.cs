@@ -19,6 +19,20 @@ internal static class ProjectReferenceDiscovery
         return [.. modules];
     }
 
+    /// <summary>Returns test projects that reference at least one selected source module.</summary>
+    public static IReadOnlyList<string> TestProjectsReferencingSourceModules(
+        string repoRoot,
+        IReadOnlyList<string> testProjects,
+        IReadOnlyCollection<string> sourceModules)
+    {
+        var selectedModules = new HashSet<string>(sourceModules, StringComparer.Ordinal);
+        return
+        [
+            .. testProjects
+                .Where(testProject => SourceAssemblyNamesForTests(repoRoot, [testProject]).Any(selectedModules.Contains))
+        ];
+    }
+
     /// <summary>Walks a project reference graph and records source modules.</summary>
     private static void Visit(
         string project,
@@ -42,7 +56,7 @@ internal static class ProjectReferenceDiscovery
     /// <summary>Reads normalized project reference paths from an SDK-style project file.</summary>
     private static IEnumerable<string> ProjectReferences(string project)
     {
-        var directory = Path.GetDirectoryName(project) ?? "";
+        var directory = Path.GetDirectoryName(project)!;
         var document = XDocument.Load(project);
 
         return document.Descendants("ProjectReference")

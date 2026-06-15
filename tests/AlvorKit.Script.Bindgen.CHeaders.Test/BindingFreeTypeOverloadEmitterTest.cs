@@ -19,6 +19,12 @@ public sealed class BindingFreeTypeOverloadEmitterTest
         StringAssert.Contains(overloads, "public int LoadChar(FtFaceRec* face, Rune character, int load_flags)");
         StringAssert.Contains(overloads, "public uint GetCharIndex(FtFaceRec* face, char character)");
         StringAssert.Contains(overloads, "public unsafe int GetGlyphName(FtFaceRec* face, uint glyph_index, out string? value)");
+        StringAssert.Contains(overloads, "public int RequestSize(FtFaceRec* face, in FtSizeRequestRec req)");
+        StringAssert.Contains(overloads, "public void SetTransform(FtFaceRec* face, in FtMatrix matrix, in FtVector delta)");
+        StringAssert.Contains(overloads, "public int FaceProperties(FtFaceRec* face, ReadOnlySpan<FtParameter> properties)");
+        StringAssert.Contains(overloads, "Span<byte> buffer,");
+        StringAssert.Contains(overloads, "out ReadOnlySpan<byte> value)");
+        StringAssert.Contains(overloads, "MemoryMarshal.CreateReadOnlySpanFromNullTerminated(pointer)");
         Assert.IsFalse(overloads.Contains("DescribeError", StringComparison.Ordinal));
         Assert.IsFalse(overloads.Contains("ThrowIfError", StringComparison.Ordinal));
         Assert.IsFalse(overloads.Contains("GetFaceRec", StringComparison.Ordinal));
@@ -79,7 +85,7 @@ public sealed class BindingFreeTypeOverloadEmitterTest
     /// <summary>Creates a model containing the FreeType members needed by the first convenience batch.</summary>
     private static BindingModel FreeTypeModel() => EmptyModel() with
     {
-        Functions = [LoadChar(), GetCharIndex(), GetGlyphName()],
+        Functions = [LoadChar(), GetCharIndex(), GetGlyphName(), RequestSize(), SetTransform(), FaceProperties()],
     };
 
     /// <summary>Returns an empty binding model.</summary>
@@ -105,6 +111,32 @@ public sealed class BindingFreeTypeOverloadEmitterTest
                 new("glyph_index", "uint", "uint", "", false),
                 new("buffer", "nint", "nint", "", false),
                 new("buffer_max", "uint", "uint", "", false),
+            ],
+            null);
+
+    /// <summary>Returns an FT_Request_Size fixture function.</summary>
+    private static BindingFunction RequestSize() =>
+        new("FT_Request_Size", "RequestSize", "int", "int",
+            [new("face", "FtFaceRec*", "FtFaceRec*", "", false), new("req", "FtSizeRequestRec*", "FtSizeRequestRec*", "", false)],
+            null);
+
+    /// <summary>Returns an FT_Set_Transform fixture function.</summary>
+    private static BindingFunction SetTransform() =>
+        new("FT_Set_Transform", "SetTransform", "void", "void",
+            [
+                new("face", "FtFaceRec*", "FtFaceRec*", "", false),
+                new("matrix", "FtMatrix*", "FtMatrix*", "", false),
+                new("delta", "FtVector*", "FtVector*", "", false),
+            ],
+            null);
+
+    /// <summary>Returns an FT_Face_Properties fixture function.</summary>
+    private static BindingFunction FaceProperties() =>
+        new("FT_Face_Properties", "FaceProperties", "int", "int",
+            [
+                new("face", "FtFaceRec*", "FtFaceRec*", "", false),
+                new("num_properties", "uint", "uint", "", false),
+                new("properties", "FtParameter*", "FtParameter*", "", false),
             ],
             null);
 }

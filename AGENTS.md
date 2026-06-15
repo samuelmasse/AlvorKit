@@ -59,21 +59,36 @@ generate code.
 A `.cs` file may live directly at the root of its project when that is the
 clearest home. Do not create a subdirectory solely because the file is C#.
 
+## Test File Size
+
+Test files are allowed to be larger than normal code files. A cohesive test file
+may be up to 750 lines when keeping related scenarios together improves
+readability. Do not apply the normal source, script, or config file-size targets
+to test files.
+
 ## Linting
 
 Run the repository linter before handing off changes that touch code, workflow
-configuration, JSON, or Markdown:
+configuration, JSON, or Markdown. For agent work, prefer scoped linting over
+repo-wide linting. Pass only files, directories, or globs you edited:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.Lint
+dotnet run --project scripts\AlvorKit.Script.Lint -- --include "path/or/glob"
 ```
 
-Use formatter write mode when you need to fix supported formatting issues in
-touched files:
+Repeat `--include` for multiple paths. Use formatter write mode with the same
+scoped includes when you need to fix supported formatting issues in touched
+files:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.Lint -- --fix
+dotnet run --project scripts\AlvorKit.Script.Lint -- --fix --include "path/or/glob"
 ```
+
+Do not use an unfiltered `git diff --name-only` in a dirty shared worktree,
+because it may include other agents' changes. Run the repo-wide linter only for
+broad cross-repo changes, CI parity checks, or when explicitly requested. If
+scoped lint passes but repo-wide lint fails on unrelated files, report that
+instead of fixing unrelated work.
 
 ## Code Coverage
 
@@ -82,38 +97,53 @@ tool writes agent-readable and human-readable artifacts under `out/coverage/`.
 
 Quick commands:
 
+- Agent focused strict gate for a touched source project:
+  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild`
+- Agent focused strict gate with an explicit test project:
+  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild --test-project AlvorKit.Script.NativeBuild.Test`
+- Agent report-only targeted run:
+  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild --threshold 0`
 - Agent full strict gate:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent`
-- Agent focused strict gate:
-  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --test-project AlvorKit.Script.NativeBuild.Test`
-- Agent report-only targeted run:
-  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --test-project AlvorKit.Script.NativeBuild.Test --threshold 0`
 - Full human/browser report: omit `--agent`.
 - Open the browser report after a full report run:
   `Invoke-Item .\out\coverage\html\index.html`
 
-Run the full strict gate before finishing broad or cross-project work:
+For focused work, gate coverage on the source project or projects you changed:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild
+```
+
+The `--source-project` value may be a source project name, project file name, or
+repository-relative project directory or file path. Repeat `--source-project`
+for multiple touched source projects. When `--test-project` is omitted, the tool
+runs test projects that reference the selected source projects.
+
+Use `--test-project` only when you need to further narrow or explicitly choose
+the tests to run:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild --test-project AlvorKit.Script.NativeBuild.Test
+```
+
+The `--test-project` value may be a test project name, project file name, or
+repository-relative path. Repeat `--test-project` to run more than one test
+project. When `--source-project` is present, the gate expects only those source
+modules, even if the selected tests also reference helper projects.
+
+Run the full strict gate only before finishing broad or cross-project work,
+for CI parity checks, or when explicitly requested:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent
 ```
 
-For focused work, run only the matching test project:
-
-```powershell
-dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --test-project AlvorKit.Script.NativeBuild.Test
-```
-
-The `--test-project` value may be a test project name, project file name, or
-repository-relative path. Repeat `--test-project` to run more than one focused
-test project. In targeted mode, the gate only expects source modules reachable
-through the selected test projects' `ProjectReference` graph.
-
 To generate reports without enforcing the coverage percentage, use
 `--threshold 0`:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --test-project AlvorKit.Script.NativeBuild.Test --threshold 0
+dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild --threshold 0
 ```
 
 Agent optimization notes:
@@ -130,7 +160,8 @@ Agent optimization notes:
 Generated artifacts:
 
 - `out/coverage/coverage-summary.json`: agent-oriented summary with `passed`,
-  `totals`, `modules`, `unmeasuredModules`, missing line details, and test logs.
+  `testProjectFilters`, `sourceProjectFilters`, `totals`, `modules`,
+  `unmeasuredModules`, missing line details, and test logs.
 - `out/coverage/coverage-summary.md`: compact human-readable summary.
 - `out/coverage/projects/<test-project>/coverage.json`: raw Coverlet JSON for
   each executed test project.
@@ -146,8 +177,11 @@ Agent workflow:
 
 - Do not parse the HTML, Cobertura, LCOV, or test logs unless debugging the
   coverage tool itself. Start with `out/coverage/coverage-summary.json`.
-- Check `passed`. If it is `false`, inspect `unmeasuredModules` first; those are
-  source projects that did not produce coverage at all.
+- Check `passed`. Confirm `sourceProjectFilters` contains only the source
+  projects you meant to gate. If it is empty during focused work, rerun with
+  `--source-project` before chasing unrelated failures.
+- If `passed` is `false`, inspect `unmeasuredModules` first; those are source
+  projects that did not produce coverage at all.
 - Inspect `files`, which is sorted with the most missing coverage first. Each
   entry has `path`, `missingLines`, `missingBranches`, `missingMethods`,
   `missingLineNumbers`, `missingBranchLineNumbers`, and `missingMethodNames`.
@@ -157,10 +191,9 @@ Agent workflow:
 - Use `out/coverage/coverage-summary.md` for a quick human-readable ranked list
   when deciding which file to tackle next.
 - After adding tests, rerun the same targeted coverage command until the touched
-  files have no missing lines, branches, or methods, then run the broader gate
-  when feasible.
+  files have no missing lines, branches, or methods.
 
 If the strict gate fails, inspect the JSON for precise missing lines and
-methods, add or adjust unit tests, then rerun the same targeted command. Before
-handing off, run the full strict gate when feasible, or state exactly why it was
-not possible and point to the generated report.
+methods, add or adjust unit tests, then rerun the same targeted command. If
+focused coverage passes but a broader run fails on unrelated source projects,
+report that instead of fixing unrelated work.
