@@ -11,7 +11,7 @@ public sealed class ConsoleSummaryTest
         using var writer = new StringWriter();
         var previous = Console.Out;
         var summary = new CoverageSummary(new(new(1, 1), new(1, 1), new(1, 1)), [], [], []);
-        var output = new CoverageOutputPaths("out/coverage", "projects", "agent.json", "human.md", "html", "html/index.html", "log");
+        var output = new CoverageOutputPaths("out/coverage", "projects", "agent.json", "human.md", "html", "html/index.html", "log", "latest.json", "run");
 
         try
         {

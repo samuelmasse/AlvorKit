@@ -102,6 +102,7 @@
     "FT_New_Glyph": ["aglyph"],
     "FT_Get_Glyph": ["aglyph"],
     "FT_Glyph_Copy": ["target"],
+    "FT_Glyph_Get_CBox": ["acbox"],
     "FTC_Manager_New": ["amanager"],
     "FTC_Manager_LookupFace": ["aface"],
     "FTC_Manager_LookupSize": ["asize"],
@@ -144,7 +145,19 @@
     "FT_Set_Renderer": { "parameters": "num_params" }
   },
   "enumGroups": {
+    "FtAdvanceFlags": { "prefix": "FT_ADVANCE_FLAG_", "flags": true },
+    "FtCurveTag": { "prefix": "FT_CURVE_TAG_", "flags": true },
+    "FtFaceFlags": { "prefix": "FT_FACE_FLAG_", "flags": true },
+    "FtFSTypeFlags": { "prefix": "FT_FSTYPE_", "flags": true },
+    "FtGaspFlags": { "prefix": "FT_GASP_", "flags": true },
     "FtLoadFlags": { "prefix": "FT_LOAD_", "flags": true },
+    "FtModuleFlags": { "prefix": "FT_MODULE_", "flags": true },
+    "FtOpenFlags": { "prefix": "FT_OPEN_", "flags": true },
+    "FtOutlineFlags": { "prefix": "FT_OUTLINE_", "flags": true },
+    "FtPaletteFlags": { "prefix": "FT_PALETTE_FOR_", "flags": true },
+    "FtRasterFlags": { "prefix": "FT_RASTER_FLAG_", "flags": true },
+    "FtStyleFlags": { "prefix": "FT_STYLE_FLAG_", "flags": true },
+    "FtSubglyphFlags": { "prefix": "FT_SUBGLYPH_FLAG_", "flags": true },
     "FtValidationFlags": {
       "prefix": "FT_VALIDATE_",
       "flags": true,
@@ -171,7 +184,9 @@
         "FT_VALIDATE_MATH",
         "FT_VALIDATE_OT"
       ]
-    }
+    },
+    "FtVarAxisFlags": { "prefix": "FT_VAR_AXIS_FLAG_", "flags": true },
+    "FtWinFntId": { "prefix": "FT_WinFNT_ID_" }
   },
   "enumOverloads": {
     "functions": {

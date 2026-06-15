@@ -33,6 +33,8 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         foreach (var group in model.Groups)
             File.WriteAllText(Path.Combine(apiDirectory, group.ManagedName + ".cs"), enums.Emit(group, catchAll: false));
         File.WriteAllText(Path.Combine(apiDirectory, model.AllTokens.ManagedName + ".cs"), enums.Emit(model.AllTokens, catchAll: true));
+        if (model.WideTokens is { } wideTokens)
+            File.WriteAllText(Path.Combine(apiDirectory, wideTokens.ManagedName + ".cs"), enums.Emit(wideTokens, catchAll: false));
         if (model.HandleTypes.Count > 0)
             File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Handles.cs"), new GlHandleEmitter(context).Emit(model));
         foreach (var callback in model.Delegates)
@@ -41,8 +43,6 @@ public sealed class GlCodeEmitter(BindgenConfig config, string tag, string docTa
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + ".cs"), new GlApiContractEmitter(context).Emit(model));
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Wrapper.cs"), new GlWrapperEmitter(context).Emit(model));
         File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Noop.cs"), new GlNoopEmitter(context).Emit(model));
-        if (model.WideConstants.Count > 0)
-            File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Constants.cs"), new GlConstantEmitter(context).Emit(model));
         if (new GlExtensionsEmitter(config).Emit(model, context.SourceHeader()) is { } extensions)
             File.WriteAllText(Path.Combine(apiDirectory, config.ApiClass + "Extensions.cs"), extensions);
         File.WriteAllText(Path.Combine(apiDirectory, "THIRD-PARTY-NOTICES.txt"), new GlThirdPartyNoticeEmitter(context).Emit(model));

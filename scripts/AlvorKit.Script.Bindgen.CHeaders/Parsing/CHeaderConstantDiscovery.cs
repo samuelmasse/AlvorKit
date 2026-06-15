@@ -31,12 +31,11 @@ internal sealed class CHeaderConstantDiscovery(
 
         AddMissingConfiguredNativeValues();
 
-        var usedManagedNames = state.Functions.Select(function => function.ManagedName)
-            .ToHashSet();
+        var usedManagedNames = new HashSet<string>(StringComparer.Ordinal);
         foreach (var nativeName in state.NativeNamesInOrder)
             AddDiscoveredConstant(nativeName, usedManagedNames);
         AddConfiguredManagedConstants(usedManagedNames);
-        state.Constants.Sort((a, b) => string.Compare(a.ManagedName, b.ManagedName, StringComparison.Ordinal));
+        state.ConstantTokens.Sort((a, b) => string.Compare(a.ManagedName, b.ManagedName, StringComparison.Ordinal));
     }
 
     /// <summary>Seeds native-style configured values so later macro expressions can refer to them.</summary>
@@ -75,7 +74,7 @@ internal sealed class CHeaderConstantDiscovery(
         var prefix = prefixes.First(namePrefix => nativeName.StartsWith(namePrefix, StringComparison.OrdinalIgnoreCase));
         var managedName = CSharpName.FromNativeIdentifier(nativeName, prefix, config.DigitNamePrefix);
         if (usedManagedNames.Add(managedName))
-            state.Constants.Add(new(managedName, state.ValuesByNativeName[nativeName]));
+            state.ConstantTokens.Add(new(nativeName, managedName, state.ValuesByNativeName[nativeName]));
     }
 
     /// <summary>Returns a configured fallback value for a considered native macro, if one was supplied.</summary>
@@ -103,7 +102,7 @@ internal sealed class CHeaderConstantDiscovery(
         foreach (var (managedName, value) in config.Constants)
         {
             if (!IsNativeConstantName(managedName) && usedManagedNames.Add(managedName))
-                state.Constants.Add(new(managedName, value));
+                state.ConstantTokens.Add(new(managedName, managedName, value));
         }
     }
 

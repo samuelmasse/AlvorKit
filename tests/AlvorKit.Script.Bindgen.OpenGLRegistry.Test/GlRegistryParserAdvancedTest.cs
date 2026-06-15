@@ -42,9 +42,9 @@ public sealed class GlRegistryParserAdvancedTest
         Assert.AreEqual("GlFooGroup", command.Parameters.Single().ManagedType);
     }
 
-    /// <summary>Handles, generic object identifiers, bool returns, and wide constants are mapped.</summary>
+    /// <summary>Handles, generic object identifiers, bool returns, and wide tokens are mapped.</summary>
     [TestMethod]
-    public void Parse_MapsHandlesBooleansObjectIdentifiersAndWideConstants()
+    public void Parse_MapsHandlesBooleansObjectIdentifiersAndWideTokens()
     {
         using var workspace = TempWorkspace.Create();
         var registry = workspace.WriteFile("gl.xml", """
@@ -80,6 +80,8 @@ public sealed class GlRegistryParserAdvancedTest
         Assert.AreEqual("GlBufferHandle", isBuffer.Parameters.Single().ManagedType);
         Assert.AreEqual("GlHandle", model.Commands.Single(command => command.NativeName == "glDeleteObject").Parameters.Single().ManagedType);
         CollectionAssert.AreEquivalent(new[] { "GlBufferHandle", "GlHandle" }, model.HandleTypes.ToArray());
-        Assert.AreEqual("TimeoutIgnored", model.WideConstants.Single().ManagedName);
+        Assert.AreEqual("GlWideEnum", model.WideTokens!.ManagedName);
+        Assert.AreEqual("ulong", model.WideTokens.UnderlyingType);
+        Assert.AreEqual("TimeoutIgnored", model.WideTokens.Members.Single().ManagedName);
     }
 }

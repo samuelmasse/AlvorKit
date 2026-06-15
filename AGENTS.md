@@ -13,6 +13,51 @@ concise complaint under `out/complaints/`. Use a descriptive Markdown filename
 when possible. These complaints are later input for agent quality-of-life
 improvements.
 
+## Agent Coordination
+
+Use advisory leases under `out/agents/` to make concurrent agent work visible.
+These leases are coordination hints, not hard locks. If an active lease overlaps
+your intended write paths, avoid the overlap when practical, or leave a short
+conflict note explaining why the overlap is unavoidable.
+
+Read-only exploration does not need a lease unless it runs expensive, broad, or
+disruptive commands. Create a lease before editing files, generating code,
+running repo-wide or broad scoped formatters, refreshing generated bindings,
+performing cleanup, staging files, or doing other work that could disturb
+another agent.
+
+Before claiming paths, run `list` or `check` to inspect active non-expired leases.
+Use the lease helper instead of hand-editing JSON:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.AgentLease -- start --agent <id> --task "Short task" --path "src/Foo/**"
+dotnet run --project scripts\AlvorKit.Script.AgentLease -- touch --agent <id>
+dotnet run --project scripts\AlvorKit.Script.AgentLease -- list
+dotnet run --project scripts\AlvorKit.Script.AgentLease -- check --agent <id> --path "src/Foo/**"
+dotnet run --project scripts\AlvorKit.Script.AgentLease -- conflict --agent <id> --task "Short task" --path "src/Foo.cs" --reason "Brief reason"
+dotnet run --project scripts\AlvorKit.Script.AgentLease -- done --agent <id>
+```
+
+You may set `ALVORKIT_AGENT_ID` instead of passing `--agent` on every command.
+When starting without an explicit agent id, the helper generates one and prints
+it; reuse that id for `touch`, `check`, `conflict`, and `done`.
+
+Lease files are JSON at `out/agents/<agent-id>.json`. Use repository-relative
+paths and globs such as `src/Foo.cs`, `scripts/AlvorKit.Script.Lint/**`,
+`*.slnx`, `*`, or `repo-wide`. Keep the path list specific enough for overlap
+checks to be useful. Valid modes are `write`, `generate`, `format`, `test`,
+`cleanup`, and `review`.
+
+Leases expire five minutes after their last update by default. Refresh your lease
+before editing again after any long-running command, and refresh it once in a
+while during longer work. Use `--timeout-minutes <n>` when a longer-running
+operation needs a larger stale window. Delete the lease with `done` when work
+finishes; stale leases expire automatically if cleanup is missed.
+
+Before staging, run `check` for the exact files or globs you intend to stage and
+confirm your current lease still covers them. If overlap is unavoidable, write a
+conflict note; the helper stores it under `out/agents/conflicts/`.
+
 ## Line Length
 
 Keep hand-authored code and config lines at or below 170 characters.
@@ -32,13 +77,22 @@ exceptions. Do not create unrelated churn just to clean historical lines.
 ## Generated Code Review
 
 When changing a code generator or generator configuration, capture generated
-output before and after the change whenever feasible. Use an ignored directory
-under `out/` so the snapshots are disposable:
+output before and after the change whenever feasible. Prefer the helper, which
+adds a random five-character suffix to avoid collisions and removes the review
+directory when `finish` completes:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library> --output-root out\bindgen-review\<case>\before
-dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library> --output-root out\bindgen-review\<case>\after
-git diff --no-index -- out\bindgen-review\<case>\before out\bindgen-review\<case>\after
+dotnet run --project scripts\AlvorKit.Script.BindgenReview -- start <library> --case <case>
+dotnet run --project scripts\AlvorKit.Script.BindgenReview -- finish <review-root-printed-by-start>
+```
+
+If you capture snapshots manually, use an ignored directory under `out/` and
+append a random five-character suffix to the case directory:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library> --output-root out\bindgen-review\<case>-<suffix>\before
+dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library> --output-root out\bindgen-review\<case>-<suffix>\after
+git diff --no-index -- out\bindgen-review\<case>-<suffix>\before out\bindgen-review\<case>-<suffix>\after
 ```
 
 Regenerate only the binding library whose generator inputs, configuration, or
@@ -46,7 +100,9 @@ source project changed. Use `all` only when the change intentionally affects
 every generated binding project, and say why in the handoff. Review the
 generated source and project-file diff carefully. Use focused fixtures under
 `out/bindgen-review/` when a full binding output is too large, and summarize the
-meaningful generated-code changes before handing off.
+meaningful generated-code changes before handing off. Delete disposable
+`out/bindgen-review/` snapshot directories before finishing the task unless the
+user explicitly asks to keep them for follow-up inspection.
 
 Do not wire bindgen into normal restore or build targets. Local binding mode is
 explicit: create `AlvorKit.Local.props`, run bindgen for the changed library,
@@ -98,7 +154,9 @@ instead of fixing unrelated work.
 ## Code Coverage
 
 Use the coverage tool whenever a change touches C# source or unit tests. The
-tool writes agent-readable and human-readable artifacts under `out/coverage/`.
+tool writes agent-readable and human-readable artifacts under an isolated
+`out/coverage/runs/<run-id>/` directory by default. The console output prints
+the exact paths for the current run.
 
 Quick commands:
 
@@ -112,9 +170,6 @@ Quick commands:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --binding xxhash --threshold 0`
 - Agent full strict gate:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent`
-- Full human/browser report: omit `--agent`.
-- Open the browser report after a full report run:
-  `Invoke-Item .\out\coverage\html\index.html`
 
 For focused work, gate coverage on the source project or projects you changed:
 
@@ -171,33 +226,49 @@ Agent optimization notes:
 
 - Prefer `--agent` for automated checks. It keeps the same pass/fail gate but
   skips ReportGenerator, Cobertura, and LCOV so the tool writes only the JSON
-  data needed for `coverage-summary.json` and the compact Markdown summary.
+  data needed for the run-scoped `coverage-summary.json` and compact Markdown
+  summary.
 - The tool runs multiple selected test projects concurrently by default after a
   prebuild step. Use `--max-parallel 1` only when diagnosing order-sensitive
   build or test issues on a busy machine.
-- Omit `--agent` only when you need the browser HTML report, raw Cobertura XML,
-  or raw LCOV artifacts.
+- Omit `--agent` only when the user explicitly asks for the browser HTML report,
+  raw Cobertura XML, raw LCOV artifacts, or when debugging the coverage reporting
+  pipeline itself. When you do generate a full report, use the `HTML report:`
+  path printed by the coverage tool.
+- Use `--run-id <name>` when you want a stable run directory, or
+  `--output-root out/coverage/agents/<agent-id>` to place isolated runs under an
+  agent-specific parent directory.
 
 Generated artifacts:
 
-- `out/coverage/coverage-summary.json`: agent-oriented summary with `passed`,
-  `testProjectFilters`, `sourceProjectFilters`, `totals`, `modules`,
-  `unmeasuredModules`, missing line details, and test logs.
-- `out/coverage/coverage-summary.md`: compact human-readable summary.
-- `out/coverage/projects/<test-project>/coverage.json`: raw Coverlet JSON for
-  each executed test project.
-- `out/coverage/projects/<test-project>/dotnet-test.log`: captured test output.
-- `out/coverage/html/index.html`: browser-readable ReportGenerator report when
-  `--agent` is omitted.
-- `out/coverage/reportgenerator.log`: captured `dotnet tool restore` and
-  ReportGenerator output when `--agent` is omitted.
-- `out/coverage/projects/<test-project>/coverage.cobertura.xml` and
-  `coverage.info`: raw Cobertura XML and LCOV reports when `--agent` is omitted.
+Fast agent runs with `--agent` write:
+
+- `out/coverage/runs/<run-id>/coverage-summary.json`: agent-oriented summary
+  with `passed`, `testProjectFilters`, `sourceProjectFilters`, `totals`,
+  `modules`, `unmeasuredModules`, missing line details, and test logs.
+- `out/coverage/runs/<run-id>/coverage-summary.md`: compact human-readable
+  summary.
+- `out/coverage/runs/<run-id>/projects/<test-project>/coverage.json`: raw
+  Coverlet JSON for each executed test project.
+- `out/coverage/runs/<run-id>/projects/<test-project>/dotnet-test.log`:
+  captured test output.
+- `out/coverage/latest-run.json`: non-authoritative pointer to the latest run.
+  It is useful for manual navigation but can be overwritten by concurrent work.
+
+Full reports without `--agent` additionally write:
+
+- `out/coverage/runs/<run-id>/html/index.html`: browser-readable ReportGenerator
+  report.
+- `out/coverage/runs/<run-id>/reportgenerator.log`: captured ReportGenerator
+  setup and execution output.
+- `out/coverage/runs/<run-id>/projects/<test-project>/coverage.cobertura.xml` and
+  `coverage.info`: raw Cobertura XML and LCOV reports.
 
 Agent workflow:
 
 - Do not parse the HTML, Cobertura, LCOV, or test logs unless debugging the
-  coverage tool itself. Start with `out/coverage/coverage-summary.json`.
+  coverage tool itself. Start with the `Agent report:` path printed by the
+  current coverage command.
 - Check `passed`. Confirm `sourceProjectFilters` contains only the source
   projects you meant to gate. If it is empty during focused work, rerun with
   `--source-project` before chasing unrelated failures.
@@ -209,8 +280,8 @@ Agent workflow:
 - For focused work, filter `files` to the source paths touched in the change.
   Read only those source files and nearby tests; do not scan the raw coverage
   reports by hand.
-- Use `out/coverage/coverage-summary.md` for a quick human-readable ranked list
-  when deciding which file to tackle next.
+- Use the `Human report:` path printed by the current coverage command for a
+  quick human-readable ranked list when deciding which file to tackle next.
 - After adding tests, rerun the same targeted coverage command until the touched
   files have no missing lines, branches, or methods.
 

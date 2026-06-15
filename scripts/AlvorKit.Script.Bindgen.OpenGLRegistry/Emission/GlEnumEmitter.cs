@@ -10,8 +10,11 @@ internal sealed class GlEnumEmitter(GlCodeEmissionContext context)
         var summary = catchAll
             ? $"Every {context.Config.GlApi} {context.Config.GlVersion} {context.Config.GlProfile} token: " +
                 "the fallback type for parameters without a typed group."
+            : group.UnderlyingType == "ulong"
+                ? "OpenGL tokens whose values are too wide for the uint-backed catch-all enum."
             : $"OpenGL tokens from the <c>{group.NativeName}</c> registry group.";
-        var members = string.Join("", group.Members.Select(member => Member(member, catchAll)));
+        var includeMembership = catchAll || group.UnderlyingType == "ulong";
+        var members = string.Join("", group.Members.Select(member => Member(member, includeMembership)));
         return TemplateResource.Render(
             typeof(GlEnumEmitter),
             "res/templates/bindgen/opengl-registry/csharp/enum.cs.tmpl",
@@ -20,13 +23,14 @@ internal sealed class GlEnumEmitter(GlCodeEmissionContext context)
             ("Summary", summary),
             ("Flags", group.IsFlags ? "[Flags]" + Environment.NewLine : ""),
             ("ManagedName", group.ManagedName),
+            ("UnderlyingType", group.UnderlyingType),
             ("Members", members));
     }
 
     /// <summary>Renders one generated enum member.</summary>
-    private static string Member(GlEnumMember member, bool catchAll)
+    private static string Member(GlEnumMember member, bool includeMembership)
     {
-        var membership = catchAll && member.Groups.Count > 0
+        var membership = includeMembership && member.Groups.Count > 0
             ? $" See {string.Join(", ", member.Groups.Select(group => $"<see cref=\"{group}\"/>"))}."
             : "";
         return TemplateResource.Render(

@@ -12,6 +12,8 @@ namespace AlvorKit.Script.TestCoverage;
 /// <param name="GenerateHtmlReport">Whether to generate the browser-readable ReportGenerator output.</param>
 /// <param name="GenerateCoberturaReport">Whether to emit raw Cobertura XML reports.</param>
 /// <param name="GenerateLcovReport">Whether to emit raw LCOV reports.</param>
+/// <param name="OutputRoot">Optional parent directory for run-scoped coverage output.</param>
+/// <param name="RunId">Optional directory name for this coverage run.</param>
 internal sealed record CoverageOptions(
     string Configuration,
     double Threshold,
@@ -21,7 +23,9 @@ internal sealed record CoverageOptions(
     int MaxParallel,
     bool GenerateHtmlReport,
     bool GenerateCoberturaReport,
-    bool GenerateLcovReport)
+    bool GenerateLcovReport,
+    string? OutputRoot = null,
+    string? RunId = null)
 {
     /// <summary>Default bounded parallelism that avoids overwhelming local build and test infrastructure.</summary>
     public static int DefaultMaxParallel => Math.Min(4, Math.Max(1, Environment.ProcessorCount));
@@ -51,6 +55,8 @@ internal sealed record CoverageOptions(
         var generateHtmlReport = true;
         var generateCoberturaReport = true;
         var generateLcovReport = true;
+        string? outputRoot = null;
+        string? runId = null;
 
         for (var index = 0; index < args.Count; index++)
         {
@@ -91,6 +97,12 @@ internal sealed record CoverageOptions(
                 case "--no-lcov":
                     generateLcovReport = false;
                     break;
+                case "--output-root":
+                    outputRoot = ReadValue(args, ref index);
+                    break;
+                case "--run-id":
+                    runId = ReadValue(args, ref index);
+                    break;
                 default:
                     throw new ArgumentException($"Unknown argument '{args[index]}'.");
             }
@@ -100,6 +112,10 @@ internal sealed record CoverageOptions(
             throw new ArgumentOutOfRangeException(nameof(args), "Threshold must be between 0 and 100.");
         if (maxParallel < 1)
             throw new ArgumentOutOfRangeException(nameof(args), "Max parallelism must be at least 1.");
+        if (outputRoot is { Length: 0 })
+            throw new ArgumentException("Output root must not be empty.", nameof(args));
+        if (runId is not null)
+            ValidateRunId(runId);
 
         return new(
             configuration,
@@ -110,7 +126,18 @@ internal sealed record CoverageOptions(
             maxParallel,
             generateHtmlReport,
             generateCoberturaReport,
-            generateLcovReport);
+            generateLcovReport,
+            outputRoot,
+            runId);
+    }
+
+    /// <summary>Rejects run IDs that cannot safely be used as one directory name.</summary>
+    private static void ValidateRunId(string value)
+    {
+        if (value.Length == 0)
+            throw new ArgumentException("Run ID must not be empty.");
+        if (value.Contains('/') || value.Contains('\\') || value.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            throw new ArgumentException("Run ID must be a single valid directory name.");
     }
 
     /// <summary>Reads the value following an option name.</summary>

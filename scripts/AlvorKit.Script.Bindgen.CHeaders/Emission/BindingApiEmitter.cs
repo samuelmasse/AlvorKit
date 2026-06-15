@@ -22,9 +22,7 @@ internal sealed class BindingApiEmitter(BindingEmitterContext context)
     private static string Members(BindingModel model)
     {
         var output = new StringBuilder();
-        foreach (var constant in model.Constants)
-            output.Append(Constant(constant));
-        var first = model.Constants.Count == 0;
+        var first = true;
         foreach (var function in model.Functions)
         {
             if (!first)
@@ -35,15 +33,6 @@ internal sealed class BindingApiEmitter(BindingEmitterContext context)
         }
         return output.ToString();
     }
-
-    /// <summary>Renders a public API constant.</summary>
-    private static string Constant(BindingConstant constant) =>
-        TemplateResource.Render(
-            typeof(BindingApiEmitter),
-            "res/templates/bindgen/c-headers/csharp/api-constant.csfrag.tmpl",
-            ("ManagedName", constant.ManagedName),
-            ("Type", constant.Value is >= int.MinValue and <= int.MaxValue ? "int" : "long"),
-            ("Value", constant.Value.ToString()));
 
     /// <summary>Renders a virtual native function method.</summary>
     private static string Method(BindingFunction function) =>

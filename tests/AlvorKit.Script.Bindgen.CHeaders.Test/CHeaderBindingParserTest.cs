@@ -30,11 +30,12 @@ public sealed class CHeaderBindingParserTest
             """);
 
         var model = CHeaderParserHarness.Parse(translationUnit, source);
+        var tokens = model.Enums.Single(binding => binding.ManagedName == "TestEnum").Members.Select(member => member.ManagedName).ToList();
 
         CollectionAssert.Contains(model.Functions.Select(function => function.NativeName).ToList(), "test_visible");
         CollectionAssert.DoesNotContain(model.Functions.Select(function => function.NativeName).ToList(), "test_hidden");
-        CollectionAssert.Contains(model.Constants.Select(constant => constant.ManagedName).ToList(), "VisibleConstant");
-        CollectionAssert.DoesNotContain(model.Constants.Select(constant => constant.ManagedName).ToList(), "HiddenConstant");
+        CollectionAssert.Contains(tokens, "VisibleConstant");
+        CollectionAssert.DoesNotContain(tokens, "HiddenConstant");
     }
 
     /// <summary>Only const char pointer returns are surfaced as generated C string conveniences.</summary>
@@ -200,16 +201,42 @@ public sealed class CHeaderBindingParserTest
         var model = CHeaderParserHarness.Parse(translationUnit, source, config);
         var group = model.Enums.Single(binding => binding.ManagedName == "TestMode");
         var members = group.Members.ToDictionary(member => member.ManagedName, member => member.Value);
+        var tokens = model.Enums.Single(binding => binding.ManagedName == "TestEnum");
+        var tokenNames = tokens.Members.Select(member => member.ManagedName).ToList();
 
         Assert.AreEqual(1, members["A"]);
         Assert.AreEqual(2, members["B"]);
         Assert.AreEqual(4, members["C"]);
         Assert.AreEqual(7, members["All"]);
         CollectionAssert.DoesNotContain(group.Members.Select(member => member.ManagedName).ToList(), "Bad");
-        CollectionAssert.Contains(model.Constants.Select(constant => constant.ManagedName).ToList(), "ModeB");
-        CollectionAssert.Contains(model.Constants.Select(constant => constant.ManagedName).ToList(), "ManagedOnly");
-        CollectionAssert.DoesNotContain(model.Constants.Select(constant => constant.ManagedName).ToList(), "Empty");
-        CollectionAssert.DoesNotContain(model.Constants.Select(constant => constant.ManagedName).ToList(), "Collide");
+        CollectionAssert.Contains(tokenNames, "ModeB");
+        CollectionAssert.Contains(tokenNames, "ManagedOnly");
+        CollectionAssert.Contains(tokenNames, "Collide");
+        CollectionAssert.DoesNotContain(tokenNames, "Empty");
+        CollectionAssert.DoesNotContain(tokenNames, "Bad");
+        var modeBDocs = tokens.Members.Single(member => member.ManagedName == "ModeB").Documentation!;
+        StringAssert.Contains(modeBDocs, "<see cref=\"TestMode\"/>");
+    }
+
+    /// <summary>Macro constants synthesize a long-backed catch-all enum for signed and unsigned-style values.</summary>
+    [TestMethod]
+    public void Parse_SynthesizesCatchAllEnumForMacroConstants()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            #define test_NEGATIVE -1
+            #define test_BIG 0x80000000U
+            #define test_MASK 0xFFFFFFFFU
+            """);
+
+        var tokens = CHeaderParserHarness.Parse(translationUnit, source).Enums.Single(binding => binding.ManagedName == "TestEnum");
+        var members = tokens.Members.ToDictionary(member => member.ManagedName, member => member.Value);
+
+        Assert.AreEqual("long", tokens.UnderlyingType);
+        Assert.AreEqual(-1, members["Negative"]);
+        Assert.AreEqual(2147483648, members["Big"]);
+        Assert.AreEqual(4294967295, members["Mask"]);
     }
 
 }

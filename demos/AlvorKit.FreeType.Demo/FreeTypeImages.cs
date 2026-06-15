@@ -2,6 +2,7 @@ using BigGustave;
 
 namespace AlvorKit.FreeType.Demo;
 
+/// <summary>Small RGB color value used by generated demo images.</summary>
 internal readonly struct DemoColor(byte r, byte g, byte b)
 {
     public byte R { get; } = r;
@@ -25,6 +26,7 @@ internal readonly struct DemoColor(byte r, byte g, byte b)
     public static DemoColor Red { get; } = new(235, 104, 104);
 }
 
+/// <summary>Controls whether a glyph bitmap is treated as coverage or self-colored pixels.</summary>
 internal enum GlyphPixelView
 {
     Coverage,
@@ -32,30 +34,39 @@ internal enum GlyphPixelView
     OwnColor,
 }
 
+/// <summary>Numeric helpers for FreeType fixed-point and native-sized values.</summary>
 internal static class FreeTypeValues
 {
     public const int FixedOne = 65536;
 
     public const int PixelOne = 64;
 
+    /// <summary>Converts a CLong wrapper to a managed signed integer.</summary>
     public static long ToInt64(CLong value) => value.Value.ToInt64();
 
+    /// <summary>Converts a CULong wrapper to a managed unsigned integer.</summary>
     public static ulong ToUInt64(CULong value) => value.Value.ToUInt64();
 
+    /// <summary>Converts a floating-point scalar to FreeType 16.16 fixed point.</summary>
     public static CLong Fixed(double value) => new((nint)Math.Round(value * FixedOne));
 
+    /// <summary>Wraps a managed integer as a CLong value.</summary>
     public static CLong Long(int value) => new(value);
 
+    /// <summary>Wraps a managed unsigned integer as a CULong value.</summary>
     public static CULong ULong(uint value) => new(value);
 
+    /// <summary>Converts a FreeType 26.6 pixel value to an integer pixel.</summary>
     public static int Pixel26Dot6(CLong value) => (int)Math.Round(ToInt64(value) / (double)PixelOne);
 
     /// <summary>Converts a FreeType 16.16 fixed-point value to a floating-point scalar.</summary>
     public static double Fixed16Dot16(CLong value) => ToInt64(value) / (double)FixedOne;
 }
 
+/// <summary>Managed RGBA glyph image plus placement metrics read from FreeType bitmaps.</summary>
 internal sealed class GlyphImage
 {
+    /// <summary>Creates a managed glyph image with placement metrics.</summary>
     private GlyphImage(int width, int height, int bitmapLeft, int bitmapTop, int advanceX, byte[] rgba, bool usesOwnColor)
     {
         Width = width;
@@ -110,6 +121,7 @@ internal sealed class GlyphImage
         };
     }
 
+    /// <summary>Saves this glyph centered on a small PNG canvas.</summary>
     public void SaveCentered(string path, DemoColor background, DemoColor tint)
     {
         var canvas = new PngCanvas(Math.Max(180, Width + 80), Math.Max(180, Height + 80), background);
@@ -121,9 +133,11 @@ internal sealed class GlyphImage
         canvas.Save(path);
     }
 
+    /// <summary>Creates a transparent placeholder for unsupported or empty bitmap modes.</summary>
     private static GlyphImage CreateEmpty(int bitmapLeft, int bitmapTop, int advanceX) =>
         new(1, 1, bitmapLeft, bitmapTop, advanceX, [0, 0, 0, 0], usesOwnColor: false);
 
+    /// <summary>Reads a one-bit monochrome FreeType bitmap into RGBA coverage pixels.</summary>
     private static GlyphImage ReadMono(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX)
     {
         var width = checked((int)bitmap.Width);
@@ -144,6 +158,7 @@ internal sealed class GlyphImage
         return new GlyphImage(width, height, bitmapLeft, bitmapTop, advanceX, rgba, usesOwnColor: false);
     }
 
+    /// <summary>Reads an eight-bit grayscale FreeType bitmap into RGBA pixels.</summary>
     private static GlyphImage ReadGray(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX, GlyphPixelView view)
     {
         var width = checked((int)bitmap.Width);
@@ -173,6 +188,7 @@ internal sealed class GlyphImage
             view == GlyphPixelView.OwnColor);
     }
 
+    /// <summary>Reads a packed two-bit or four-bit grayscale FreeType bitmap.</summary>
     private static GlyphImage ReadPackedGray(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX, int bitsPerPixel)
     {
         var width = checked((int)bitmap.Width);
@@ -196,6 +212,7 @@ internal sealed class GlyphImage
         return new GlyphImage(width, height, bitmapLeft, bitmapTop, advanceX, rgba, usesOwnColor: false);
     }
 
+    /// <summary>Reads a horizontal LCD subpixel FreeType bitmap.</summary>
     private static GlyphImage ReadLcd(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX)
     {
         var width = checked((int)bitmap.Width) / 3;
@@ -217,6 +234,7 @@ internal sealed class GlyphImage
         return new GlyphImage(width, height, bitmapLeft / 3, bitmapTop, advanceX, rgba, usesOwnColor: true);
     }
 
+    /// <summary>Reads a vertical LCD subpixel FreeType bitmap.</summary>
     private static GlyphImage ReadLcdV(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX)
     {
         var width = checked((int)bitmap.Width);
@@ -240,6 +258,7 @@ internal sealed class GlyphImage
         return new GlyphImage(width, height, bitmapLeft, bitmapTop / 3, advanceX, rgba, usesOwnColor: true);
     }
 
+    /// <summary>Reads a BGRA color FreeType bitmap.</summary>
     private static GlyphImage ReadBgra(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX)
     {
         var width = checked((int)bitmap.Width);
@@ -263,14 +282,17 @@ internal sealed class GlyphImage
         return new GlyphImage(width, height, bitmapLeft, bitmapTop, advanceX, rgba, usesOwnColor: true);
     }
 
+    /// <summary>Returns a row pointer while honoring positive or negative FreeType bitmap pitch.</summary>
     private static nint RowPointer(FtBitmap bitmap, int y)
     {
         var pitch = bitmap.Pitch;
         return pitch >= 0 ? bitmap.Buffer + y * pitch : bitmap.Buffer + (checked((int)bitmap.Rows) - 1 - y) * -pitch;
     }
 
+    /// <summary>Writes a white coverage pixel into an RGBA buffer.</summary>
     private static void WriteCoverage(byte[] rgba, int width, int x, int y, byte alpha) => WriteOwnColor(rgba, width, x, y, 255, 255, 255, alpha);
 
+    /// <summary>Writes a caller-colored pixel into an RGBA buffer.</summary>
     private static void WriteOwnColor(byte[] rgba, int width, int x, int y, byte r, byte g, byte b, byte a)
     {
         var offset = (y * width + x) * 4;
@@ -281,10 +303,12 @@ internal sealed class GlyphImage
     }
 }
 
+/// <summary>Minimal RGB canvas used to render demo PNG outputs.</summary>
 internal sealed class PngCanvas
 {
     private readonly byte[] pixels;
 
+    /// <summary>Creates a canvas filled with a background color.</summary>
     public PngCanvas(int width, int height, DemoColor background)
     {
         Width = width;
@@ -302,6 +326,7 @@ internal sealed class PngCanvas
 
     public int Height { get; }
 
+    /// <summary>Alpha-blends a glyph image onto the canvas at a baseline origin.</summary>
     public void DrawGlyph(GlyphImage glyph, int originX, int baselineY, DemoColor tint)
     {
         var targetX = originX + glyph.BitmapLeft;
@@ -324,6 +349,7 @@ internal sealed class PngCanvas
         }
     }
 
+    /// <summary>Draws a filled rectangle clipped to the canvas bounds.</summary>
     public void DrawRectangle(int x, int y, int width, int height, DemoColor color)
     {
         for (var row = Math.Max(0, y); row < Math.Min(Height, y + height); row++)
@@ -333,6 +359,7 @@ internal sealed class PngCanvas
         }
     }
 
+    /// <summary>Draws a simple integer line clipped by pixel writes.</summary>
     public void DrawLine(int x0, int y0, int x1, int y1, DemoColor color)
     {
         var dx = x1 - x0;
@@ -348,6 +375,7 @@ internal sealed class PngCanvas
             SetPixel(x0 + dx * i / steps, y0 + dy * i / steps, color);
     }
 
+    /// <summary>Draws a filled circle clipped to the canvas bounds.</summary>
     public void DrawCircle(int centerX, int centerY, int radius, DemoColor color)
     {
         var radiusSquared = radius * radius;
@@ -361,6 +389,7 @@ internal sealed class PngCanvas
         }
     }
 
+    /// <summary>Writes the canvas as a PNG file.</summary>
     public void Save(string path)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
@@ -379,6 +408,7 @@ internal sealed class PngCanvas
         png.Save(output);
     }
 
+    /// <summary>Writes one opaque RGB pixel if it lies inside the canvas.</summary>
     private void SetPixel(int x, int y, DemoColor color)
     {
         if ((uint)x >= (uint)Width || (uint)y >= (uint)Height)
@@ -390,6 +420,7 @@ internal sealed class PngCanvas
         pixels[offset + 2] = color.B;
     }
 
+    /// <summary>Alpha-blends one source RGB pixel if it lies inside the canvas.</summary>
     private void BlendPixel(int x, int y, byte r, byte g, byte b, byte alpha)
     {
         if ((uint)x >= (uint)Width || (uint)y >= (uint)Height)
@@ -403,16 +434,25 @@ internal sealed class PngCanvas
     }
 }
 
+/// <summary>Drawing helpers that bridge FreeType glyph slots and the demo canvas.</summary>
 internal static unsafe class FreeTypeDrawing
 {
+    /// <summary>Copies a face record from its native pointer.</summary>
     public static FtFaceRec ReadFace(FtFaceRec* face) => *face;
 
+    /// <summary>Returns the active glyph slot pointer for a face.</summary>
     public static FtGlyphSlotRec* GlyphSlot(FtFaceRec* face) => face->Glyph;
 
+    /// <summary>Copies the active glyph slot record for a face.</summary>
     public static FtGlyphSlotRec ReadGlyphSlot(FtFaceRec* face) => *GlyphSlot(face);
 
+    /// <summary>Reads the active glyph slot into a managed glyph image.</summary>
     public static GlyphImage CurrentGlyph(FtFaceRec* face, GlyphPixelView view = GlyphPixelView.Coverage) => GlyphImage.FromSlot(ReadGlyphSlot(face), view);
 
+    /// <summary>Converts typed load flags for FreeType character overloads that still take raw flag bits.</summary>
+    public static int LoadFlagBits(FtLoadFlags flags) => (int)flags;
+
+    /// <summary>Draws text at the current face size, optionally applying FreeType kerning.</summary>
     public static void DrawTextCurrentSize(
         Ft ft,
         FtFaceRec* face,
@@ -438,7 +478,7 @@ internal static unsafe class FreeTypeDrawing
             if (useKerning && previousGlyph != 0)
                 penX += KerningPixels(ft, face, previousGlyph, glyphIndex);
 
-            FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, glyphIndex, Ft.LoadRender));
+            FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, glyphIndex, FtLoadFlags.Render));
             var glyph = CurrentGlyph(face);
             canvas.DrawGlyph(glyph, penX, baselineY, color);
             penX += glyph.AdvanceX;
@@ -446,6 +486,7 @@ internal static unsafe class FreeTypeDrawing
         }
     }
 
+    /// <summary>Returns pair kerning in integer pixels for two glyph indices.</summary>
     private static int KerningPixels(Ft ft, FtFaceRec* face, uint leftGlyph, uint rightGlyph)
     {
         FreeTypeStatus.Require(ft, "FT_Get_Kerning", ft.GetKerning(face, leftGlyph, rightGlyph, FtKerningMode.KerningDefault, out var kerning));

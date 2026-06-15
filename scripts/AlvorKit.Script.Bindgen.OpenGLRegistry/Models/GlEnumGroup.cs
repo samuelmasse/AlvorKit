@@ -9,4 +9,8 @@ public sealed record GlEnumGroup(
     string NativeName,
     string ManagedName,
     bool IsFlags,
-    IReadOnlyList<GlEnumMember> Members);
+    IReadOnlyList<GlEnumMember> Members)
+{
+    /// <summary>Managed enum backing type used for all members in the group.</summary>
+    public string UnderlyingType { get; init; } = "uint";
+}

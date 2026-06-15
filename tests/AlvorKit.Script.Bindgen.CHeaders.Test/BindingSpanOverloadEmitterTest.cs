@@ -36,7 +36,6 @@ public sealed class BindingSpanOverloadEmitterTest
                     null)
             ],
             [],
-            [],
             []);
 
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
@@ -113,7 +112,6 @@ public sealed class BindingSpanOverloadEmitterTest
                     [new("images", "TestImage*", "TestImage*", "", false)],
                     null)
             ],
-            [],
             [],
             []);
 

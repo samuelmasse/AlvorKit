@@ -37,7 +37,6 @@ public sealed class BindingCodeEmitterUInt128InteropTest
                     Parameters: [new("seed", "UInt128", "TestHash128", "", HasStringConvenience: false)],
                     Documentation: null)
             ],
-            Constants: [],
             SkippedFunctions: [],
             SizeofTypes: []);
 
@@ -77,7 +76,6 @@ public sealed class BindingCodeEmitterUInt128InteropTest
                     ],
                     Documentation: null)
             ],
-            Constants: [],
             SkippedFunctions: [],
             SizeofTypes: []);
 

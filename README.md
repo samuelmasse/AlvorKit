@@ -84,12 +84,18 @@ dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --threshold 0
 Open the ReportGenerator HTML report:
 
 ```powershell
-Invoke-Item .\out\coverage\html\index.html
+$artifacts = Get-Content .\out\coverage\latest-run.json | ConvertFrom-Json | Select-Object -ExpandProperty artifacts
+Invoke-Item $artifacts.html
 ```
 
-Raw per-project coverage files and logs are written under `out/coverage/projects/<test-project>/`.
-The strict coverage gate is the same command without `--threshold 0`; it fails
-unless line, branch, and method coverage are all 100%.
+Each run writes isolated artifacts under `out/coverage/runs/<run-id>/` by default,
+and the console output prints the exact agent, human, and HTML report paths.
+Use `--run-id <name>` for a stable run directory, or `--output-root <path>` to
+place isolated runs under another parent such as `out/coverage/agents/<agent-id>/`.
+`out/coverage/latest-run.json` is a convenience pointer to the most recent run,
+not a concurrency-safe artifact. The strict coverage gate is the same command
+without `--threshold 0`; it fails unless line, branch, and method coverage are
+all 100%.
 
 ## Native package builds
 

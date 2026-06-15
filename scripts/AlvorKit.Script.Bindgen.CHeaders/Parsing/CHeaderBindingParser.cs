@@ -32,6 +32,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         new CHeaderFunctionDiscovery(config, state, types).Discover(translationUnit.Declarations);
         new CHeaderConstantDiscovery(config, state, translationUnit).Discover();
         CHeaderEnumGroupSynthesizer.Synthesize(config, state);
+        CHeaderCatchAllEnumSynthesizer.Synthesize(config, state);
         return state.ToModel();
     }
 

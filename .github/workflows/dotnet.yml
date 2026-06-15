@@ -82,14 +82,14 @@ jobs:
           dotnet restore AlvorKit.slnx
           restore_status=$?
           if [ "$restore_status" -ne 0 ]; then
-              skip_build 'Skipped because `dotnet restore AlvorKit.slnx` failed in non-local binding mode.'
+              skip_build "Skipped because \`dotnet restore AlvorKit.slnx\` failed in non-local binding mode."
               exit 0
           fi
 
           dotnet build AlvorKit.slnx --no-restore
           build_status=$?
           if [ "$build_status" -ne 0 ]; then
-              skip_build 'Skipped because `dotnet build AlvorKit.slnx --no-restore` failed in non-local binding mode.'
+              skip_build "Skipped because \`dotnet build AlvorKit.slnx --no-restore\` failed in non-local binding mode."
               exit 0
           fi
 

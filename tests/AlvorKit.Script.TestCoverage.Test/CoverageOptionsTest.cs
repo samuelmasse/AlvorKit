@@ -19,6 +19,8 @@ public sealed class CoverageOptionsTest
         Assert.IsTrue(options.GenerateHtmlReport);
         Assert.IsTrue(options.GenerateCoberturaReport);
         Assert.IsTrue(options.GenerateLcovReport);
+        Assert.IsNull(options.OutputRoot);
+        Assert.IsNull(options.RunId);
     }
 
     /// <summary>Short options override configuration and threshold.</summary>
@@ -79,6 +81,16 @@ public sealed class CoverageOptionsTest
         Assert.AreEqual(2, options.MaxParallel);
     }
 
+    /// <summary>Output routing options select a parent directory and stable run directory name.</summary>
+    [TestMethod]
+    public void Parse_OutputRootAndRunId_ReturnsValues()
+    {
+        var options = CoverageOptions.Parse(["--output-root", "out/coverage/agents/codex", "--run-id", "focused-run"]);
+
+        Assert.AreEqual("out/coverage/agents/codex", options.OutputRoot);
+        Assert.AreEqual("focused-run", options.RunId);
+    }
+
     /// <summary>Agent mode keeps only the artifacts needed for automated coverage decisions.</summary>
     [TestMethod]
     public void Parse_AgentMode_UsesJsonOnlyReports()
@@ -123,6 +135,35 @@ public sealed class CoverageOptionsTest
     public void Parse_MissingValue_Throws()
     {
         Assert.ThrowsExactly<ArgumentException>(() => CoverageOptions.Parse(["--threshold"]));
+    }
+
+    /// <summary>Output roots must name a real parent directory.</summary>
+    [TestMethod]
+    public void Parse_EmptyOutputRoot_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => CoverageOptions.Parse(["--output-root", ""]));
+    }
+
+    /// <summary>Run IDs must not be empty.</summary>
+    [TestMethod]
+    public void Parse_EmptyRunId_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => CoverageOptions.Parse(["--run-id", ""]));
+    }
+
+    /// <summary>Run IDs cannot contain path separators.</summary>
+    [TestMethod]
+    public void Parse_PathSeparatorRunId_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => CoverageOptions.Parse(["--run-id", "agent/run"]));
+        Assert.ThrowsExactly<ArgumentException>(() => CoverageOptions.Parse(["--run-id", @"agent\run"]));
+    }
+
+    /// <summary>Run IDs cannot contain invalid filename characters.</summary>
+    [TestMethod]
+    public void Parse_InvalidFilenameRunId_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => CoverageOptions.Parse(["--run-id", "agent:run"]));
     }
 
     /// <summary>Thresholds outside percentage bounds are rejected.</summary>

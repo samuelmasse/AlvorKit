@@ -6,7 +6,7 @@ public sealed class NativeExportVerifierTest
     [TestMethod]
     public void Verify_ReturnsMissingLibraryResultWithoutLoading()
     {
-        var model = new BindingModel([], [], [], [], [new("test_missing", "Missing", "void", "void", [], null)], [], [], []);
+        var model = new BindingModel([], [], [], [], [new("test_missing", "Missing", "void", "void", [], null)], [], []);
         var path = Path.Combine(Path.GetTempPath(), "AlvorKit.Script.Bindgen.CHeaders.Test", Guid.NewGuid().ToString("N"), "missing.dll");
 
         var result = NativeExportVerifier.Verify(path, model);

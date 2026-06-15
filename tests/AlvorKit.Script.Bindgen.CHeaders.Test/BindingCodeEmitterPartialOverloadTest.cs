@@ -40,7 +40,6 @@ public sealed class BindingCodeEmitterPartialOverloadTest
                 new("test_open", "Open", "int", "int", [new("path", "nint", "nint", "", true)], null)
             ],
             [],
-            [],
             []);
 
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
@@ -95,7 +94,6 @@ public sealed class BindingCodeEmitterPartialOverloadTest
                     [new("source", "nint", "nint", "", false), new("count", "int", "int", "out", false)],
                     null)
             ],
-            [],
             [],
             []);
 

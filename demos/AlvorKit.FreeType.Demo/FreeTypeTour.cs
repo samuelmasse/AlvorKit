@@ -2,6 +2,7 @@ namespace AlvorKit.FreeType.Demo;
 
 internal static unsafe partial class FreeTypeTour
 {
+    /// <summary>Reports the generated string overload for FreeType error text.</summary>
     public static void ReportErrorString(Ft ft)
     {
         ft.ErrorString(0, out var successText);
@@ -9,28 +10,35 @@ internal static unsafe partial class FreeTypeTour
         Console.WriteLine($"FT_Error_String: 0 => {successText ?? "(no string)"}, 1 => {sampleText ?? "(no string)"}");
     }
 
+    /// <summary>Reports the loaded FreeType runtime version.</summary>
     public static void ReportLibraryVersion(Ft ft, nint library)
     {
         ft.LibraryVersion(library, out var major, out var minor, out var patch);
         Console.WriteLine($"FT_Library_Version: {major}.{minor}.{patch}");
     }
 
+    /// <summary>Reports basic face metadata and simple face-level APIs.</summary>
     public static void ReportFaceBasics(Ft ft, FtFaceRec* face, string fontPath)
     {
         var faceRec = FreeTypeDrawing.ReadFace(face);
         var family = Marshal.PtrToStringUTF8(faceRec.FamilyName) ?? "(no family)";
         var style = Marshal.PtrToStringUTF8(faceRec.StyleName) ?? "(no style)";
+        var faceFlags = (FtFaceFlags)FreeTypeValues.ToInt64(faceRec.FaceFlags);
+        var rawStyleFlags = (int)FreeTypeValues.ToInt64(faceRec.StyleFlags);
+        var fsTypeFlags = (FtFSTypeFlags)ft.GetFSTypeFlags(face);
         ft.GetPostscriptName(face, out var postscriptName);
 
         Console.WriteLine($"FT_FaceRec: {family} {style}, {FreeTypeValues.ToInt64(faceRec.NumGlyphs)} glyphs");
+        Console.WriteLine($"FT_FaceRec flags: {faceFlags}; style flags: {FormatKnownStyleFlags(rawStyleFlags)}");
         Console.WriteLine($"FT_Get_Postscript_Name: {postscriptName ?? "(none)"}");
-        Console.WriteLine($"FT_Get_FSType_Flags: 0x{ft.GetFSTypeFlags(face):X4}");
+        Console.WriteLine($"FT_Get_FSType_Flags: {fsTypeFlags} (0x{(int)fsTypeFlags:X4})");
         Console.WriteLine($"FT_Face_Properties: no-op reset call for {Path.GetFileName(fontPath)}");
         FreeTypeStatus.Require(ft, "FT_Face_Properties", ft.FaceProperties(face, []));
         Console.WriteLine($"FT_Face_CheckTrueTypePatents: {ft.FaceCheckTrueTypePatents(face)}");
         Console.WriteLine($"FT_Face_SetUnpatentedHinting: {ft.FaceSetUnpatentedHinting(face, true)}");
     }
 
+    /// <summary>Shows the extra reference and release round-trip for a face handle.</summary>
     public static void ReportReferenceCounting(Ft ft, FtFaceRec* face)
     {
         FreeTypeStatus.Require(ft, "FT_Reference_Face", ft.ReferenceFace(face));
@@ -38,6 +46,7 @@ internal static unsafe partial class FreeTypeTour
         Console.WriteLine("FT_Reference_Face / FT_Done_Face: extra reference round-trip complete");
     }
 
+    /// <summary>Reports optional attachment APIs against the demo font.</summary>
     public static void ReportOptionalAttachments(Ft ft, FtFaceRec* face, string fontPath)
     {
         FreeTypeStatus.ReportOptional(ft, "FT_Attach_File", ft.AttachFile(face, fontPath));
@@ -47,13 +56,14 @@ internal static unsafe partial class FreeTypeTour
         {
             var args = new FtOpenArgs
             {
-                Flags = Ft.OpenPathname,
+                Flags = (uint)FtOpenFlags.Pathname,
                 Pathname = (nint)path,
             };
             FreeTypeStatus.ReportOptional(ft, "FT_Attach_Stream", ft.AttachStream(face, &args));
         }
     }
 
+    /// <summary>Reports whether the face exposes selectable bitmap strikes.</summary>
     public static void ReportOptionalBitmapStrike(Ft ft, FtFaceRec* face)
     {
         var faceRec = FreeTypeDrawing.ReadFace(face);
@@ -61,37 +71,41 @@ internal static unsafe partial class FreeTypeTour
         FreeTypeStatus.ReportOptional(ft, "FT_Select_Size", ft.SelectSize(face, 0));
     }
 
+    /// <summary>Exports the first glyph image loaded from the path-based face.</summary>
     public static string ExportNewFaceGlyph(Ft ft, FtFaceRec* face, string outputRoot)
     {
         FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 118));
-        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'F', Ft.LoadRender));
+        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'F', FreeTypeDrawing.LoadFlagBits(FtLoadFlags.Render)));
 
         var path = Path.Combine(outputRoot, "01-ft-new-face-load-char.png");
         FreeTypeDrawing.CurrentGlyph(face).SaveCentered(path, DemoColor.Background, DemoColor.Gold);
         return Path.GetFullPath(path);
     }
 
+    /// <summary>Exports a glyph loaded from the memory-backed face path.</summary>
     public static string ExportMemoryFaceGlyph(Ft ft, FtFaceRec* face, string outputRoot)
     {
         FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 118));
-        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'M', Ft.LoadRender));
+        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'M', FreeTypeDrawing.LoadFlagBits(FtLoadFlags.Render)));
 
         var path = Path.Combine(outputRoot, "02-ft-new-memory-face.png");
         FreeTypeDrawing.CurrentGlyph(face).SaveCentered(path, DemoColor.Background, DemoColor.Cyan);
         return Path.GetFullPath(path);
     }
 
+    /// <summary>Exports a glyph loaded by glyph index through the open-face path.</summary>
     public static string ExportOpenFaceGlyph(Ft ft, FtFaceRec* face, string outputRoot)
     {
         FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 118));
         var glyphIndex = ft.GetCharIndex(face, 'O');
-        FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, glyphIndex, Ft.LoadRender));
+        FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, glyphIndex, FtLoadFlags.Render));
 
         var path = Path.Combine(outputRoot, "03-ft-open-face-load-glyph.png");
         FreeTypeDrawing.CurrentGlyph(face).SaveCentered(path, DemoColor.Background, DemoColor.Green);
         return Path.GetFullPath(path);
     }
 
+    /// <summary>Exports a comparison of FreeType size-selection APIs.</summary>
     public static string ExportSizingApis(Ft ft, FtFaceRec* face, string outputRoot)
     {
         var canvas = new PngCanvas(980, 300, DemoColor.Background);
@@ -123,6 +137,7 @@ internal static unsafe partial class FreeTypeTour
         return Path.GetFullPath(path);
     }
 
+    /// <summary>Exports sample glyphs rendered with each FreeType render mode.</summary>
     public static string ExportRenderModes(Ft ft, FtFaceRec* face, string outputRoot)
     {
         var canvas = new PngCanvas(1100, 300, DemoColor.Background);
@@ -140,7 +155,7 @@ internal static unsafe partial class FreeTypeTour
         {
             var x = 36 + i * 176;
             FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 88));
-            FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, '@', Ft.LoadDefault));
+            FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, '@', FreeTypeDrawing.LoadFlagBits(FtLoadFlags.Default)));
             var error = ft.RenderGlyph(FreeTypeDrawing.GlyphSlot(face), modes[i].Mode);
             if (error == 0)
                 canvas.DrawGlyph(FreeTypeDrawing.CurrentGlyph(face, modes[i].View), x + 42, 154, DemoColor.White);
@@ -156,23 +171,24 @@ internal static unsafe partial class FreeTypeTour
         return Path.GetFullPath(path);
     }
 
+    /// <summary>Exports a visual comparison of common glyph load flags.</summary>
     public static string ExportLoadFlags(Ft ft, FtFaceRec* face, string outputRoot)
     {
         var canvas = new PngCanvas(1050, 300, DemoColor.Background);
-        var flags = new (string Label, int Flags, DemoColor Color)[]
+        var flags = new (string Label, FtLoadFlags Flags, DemoColor Color)[]
         {
-            ("FT_LOAD_RENDER", Ft.LoadRender, DemoColor.Gold),
-            ("NO_HINTING", Ft.LoadNoHinting | Ft.LoadRender, DemoColor.Cyan),
-            ("FORCE_AUTOHINT", Ft.LoadForceAutohint | Ft.LoadRender, DemoColor.Green),
-            ("MONOCHROME", Ft.LoadMonochrome | Ft.LoadRender, DemoColor.White),
-            ("NO_BITMAP", Ft.LoadNoBitmap | Ft.LoadRender, DemoColor.Red),
+            ("FT_LOAD_RENDER", FtLoadFlags.Render, DemoColor.Gold),
+            ("NO_HINTING", FtLoadFlags.NoHinting | FtLoadFlags.Render, DemoColor.Cyan),
+            ("FORCE_AUTOHINT", FtLoadFlags.ForceAutohint | FtLoadFlags.Render, DemoColor.Green),
+            ("MONOCHROME", FtLoadFlags.Monochrome | FtLoadFlags.Render, DemoColor.White),
+            ("NO_BITMAP", FtLoadFlags.NoBitmap | FtLoadFlags.Render, DemoColor.Red),
         };
 
         for (var i = 0; i < flags.Length; i++)
         {
             var x = 40 + i * 200;
             FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 88));
-            FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'g', flags[i].Flags));
+            FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'g', FreeTypeDrawing.LoadFlagBits(flags[i].Flags)));
             canvas.DrawGlyph(FreeTypeDrawing.CurrentGlyph(face), x + 54, 154, flags[i].Color);
             FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 18));
             FreeTypeDrawing.DrawTextCurrentSize(ft, face, canvas, flags[i].Label, x, 245, useKerning: true, DemoColor.White);
@@ -183,11 +199,12 @@ internal static unsafe partial class FreeTypeTour
         return Path.GetFullPath(path);
     }
 
+    /// <summary>Exports a before-and-after view of a face transform.</summary>
     public static string ExportTransform(Ft ft, FtFaceRec* face, string outputRoot)
     {
         var canvas = new PngCanvas(720, 300, DemoColor.Background);
         FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 112));
-        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'T', Ft.LoadRender));
+        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'T', FreeTypeDrawing.LoadFlagBits(FtLoadFlags.Render)));
         canvas.DrawGlyph(FreeTypeDrawing.CurrentGlyph(face), 110, 176, DemoColor.Cyan);
 
         var matrix = RotationMatrix(-14);
@@ -199,7 +216,7 @@ internal static unsafe partial class FreeTypeTour
             "FT_Set_Transform / FT_Get_Transform: " +
             $"xx={FreeTypeValues.ToInt64(roundTripMatrix.Xx)}, deltaX={FreeTypeValues.ToInt64(roundTripDelta.X)}");
 
-        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'T', Ft.LoadRender));
+        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'T', FreeTypeDrawing.LoadFlagBits(FtLoadFlags.Render)));
         canvas.DrawGlyph(FreeTypeDrawing.CurrentGlyph(face), 390, 176, DemoColor.Gold);
         ft.SetTransform(face, null, null);
 
@@ -212,6 +229,7 @@ internal static unsafe partial class FreeTypeTour
         return Path.GetFullPath(path);
     }
 
+    /// <summary>Exports kerning output with and without pair adjustment.</summary>
     public static string ExportKerning(Ft ft, FtFaceRec* face, string outputRoot)
     {
         var canvas = new PngCanvas(880, 330, DemoColor.Background);
@@ -234,6 +252,7 @@ internal static unsafe partial class FreeTypeTour
         return Path.GetFullPath(path);
     }
 
+    /// <summary>Exports a grid of glyphs discovered by walking the active charmap.</summary>
     public static string ExportCharmapGrid(Ft ft, FtFaceRec* face, string outputRoot)
     {
         var firstCharmap = (FtCharMapRec*)Marshal.ReadIntPtr(FreeTypeDrawing.ReadFace(face).Charmaps);
@@ -274,7 +293,7 @@ internal static unsafe partial class FreeTypeTour
         FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 34));
         for (var i = 0; i < glyphs.Count; i++)
         {
-            FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, glyphs[i], Ft.LoadRender));
+            FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, glyphs[i], FtLoadFlags.Render));
             var x = 44 + i % 12 * 58;
             var y = 112 + i / 12 * 70;
             canvas.DrawGlyph(FreeTypeDrawing.CurrentGlyph(face), x, y, DemoColor.Gold);
@@ -285,6 +304,7 @@ internal static unsafe partial class FreeTypeTour
         return Path.GetFullPath(path);
     }
 
+    /// <summary>Exports glyph-name and composite-subglyph API examples.</summary>
     public static string ExportNamesAndComposite(Ft ft, FtFaceRec* face, string outputRoot)
     {
         var nameIndex = ft.GetNameIndex(face, "A");
@@ -297,17 +317,17 @@ internal static unsafe partial class FreeTypeTour
         Console.WriteLine($"FT_Get_Glyph_Name: {glyphNameText ?? "(none)"}");
 
         FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 104));
-        FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, nameIndex, Ft.LoadRender));
+        FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, nameIndex, FtLoadFlags.Render));
         var nameGlyph = FreeTypeDrawing.CurrentGlyph(face);
 
-        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, '\u00E9', Ft.LoadNoRecurse));
+        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, '\u00E9', FreeTypeDrawing.LoadFlagBits(FtLoadFlags.NoRecurse)));
         var compositeSlot = FreeTypeDrawing.ReadGlyphSlot(face);
         if (compositeSlot.NumSubglyphs > 0)
             ReportFirstSubglyph(ft, FreeTypeDrawing.GlyphSlot(face));
         else
             Console.WriteLine("FT_Get_SubGlyph_Info: current font did not expose a decomposed U+00E9 composite");
 
-        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, '\u00E9', Ft.LoadRender));
+        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, '\u00E9', FreeTypeDrawing.LoadFlagBits(FtLoadFlags.Render)));
         var compositeGlyph = FreeTypeDrawing.CurrentGlyph(face);
 
         var canvas = new PngCanvas(680, 300, DemoColor.Background);
@@ -323,10 +343,14 @@ internal static unsafe partial class FreeTypeTour
         return Path.GetFullPath(path);
     }
 
+    /// <summary>Exports raw outline points and contour connectivity for one glyph.</summary>
     public static string ExportOutline(Ft ft, FtFaceRec* face, string outputRoot)
     {
         FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 160));
-        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'S', Ft.LoadNoBitmap | Ft.LoadNoHinting));
+        FreeTypeStatus.Require(
+            ft,
+            "FT_Load_Char",
+            ft.LoadChar(face, 'S', FreeTypeDrawing.LoadFlagBits(FtLoadFlags.NoBitmap | FtLoadFlags.NoHinting)));
 
         var slot = FreeTypeDrawing.ReadGlyphSlot(face);
         var outline = slot.Outline;
@@ -345,6 +369,7 @@ internal static unsafe partial class FreeTypeTour
         return Path.GetFullPath(path);
     }
 
+    /// <summary>Exports fixed-point arithmetic and vector transform examples.</summary>
     public static string ExportFixedPointAndVector(Ft ft, FtFaceRec* face, string outputRoot)
     {
         var mulDiv = FreeTypeValues.ToInt64(ft.MulDiv(FreeTypeValues.Long(21), FreeTypeValues.Long(11), FreeTypeValues.Long(3)));
@@ -392,10 +417,15 @@ internal static unsafe partial class FreeTypeTour
     public static string ExportOutlineGeometry(Ft ft, FtFaceRec* face, string outputRoot)
     {
         FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 160));
-        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'Q', Ft.LoadNoBitmap | Ft.LoadNoHinting));
+        FreeTypeStatus.Require(
+            ft,
+            "FT_Load_Char",
+            ft.LoadChar(face, 'Q', FreeTypeDrawing.LoadFlagBits(FtLoadFlags.NoBitmap | FtLoadFlags.NoHinting)));
 
         var slot = FreeTypeDrawing.ReadGlyphSlot(face);
         var outline = slot.Outline;
+        var firstCurveTag = outline.NPoints > 0 && outline.Tags != 0 ? (FtCurveTag)Marshal.ReadByte(outline.Tags) : (FtCurveTag)0;
+        Console.WriteLine($"FT_Outline flags: {(FtOutlineFlags)outline.Flags}; first point tag: {firstCurveTag}");
         var points = ReadOutlinePoints(outline);
         var contours = ReadOutlineContours(outline);
         var canvas = new PngCanvas(760, 460, DemoColor.Background);
@@ -435,10 +465,14 @@ internal static unsafe partial class FreeTypeTour
         CLong advance = default;
         FreeTypeStatus.Require(ft, "FT_Get_Advance", ft.GetAdvance(face, glyphIndex, FtLoadFlags.Default, out advance));
         Console.WriteLine($"FT_Get_Advance 'B': {FreeTypeValues.Fixed16Dot16(advance):0.##} px");
+        var fastAdvanceError = ft.GetAdvance(face, glyphIndex, (int)FtAdvanceFlags.FastOnly, out var fastAdvance);
+        FreeTypeStatus.ReportOptional(ft, "FT_Get_Advance FAST_ONLY", fastAdvanceError);
+        if (fastAdvanceError == 0)
+            Console.WriteLine($"FT_Get_Advance FAST_ONLY 'B': {FreeTypeValues.Fixed16Dot16(fastAdvance):0.##} px");
 
         ReportDetachedGlyphBox(ft, face, glyphIndex);
 
-        FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, glyphIndex, Ft.LoadRender));
+        FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, glyphIndex, FtLoadFlags.Render));
         var slot = FreeTypeDrawing.ReadGlyphSlot(face);
         var directGlyph = GlyphImage.FromSlot(slot);
         var copied = default(FtBitmap);
@@ -475,6 +509,7 @@ internal static unsafe partial class FreeTypeTour
         }
     }
 
+    /// <summary>Reports variation selector lookup APIs for a sample Unicode scalar.</summary>
     public static void ReportVariationSelectors(Ft ft, FtFaceRec* face)
     {
         const uint heart = 0x2764;
@@ -489,6 +524,7 @@ internal static unsafe partial class FreeTypeTour
         Console.WriteLine($"FT_Face_GetCharsOfVariant: {FormatUInt32List(ft.FaceGetCharsOfVariant(face, FreeTypeValues.ULong(emojiVariation)))}");
     }
 
+    /// <summary>Builds a FreeType fixed-point rotation matrix.</summary>
     private static FtMatrix RotationMatrix(double degrees)
     {
         var radians = degrees * Math.PI / 180.0;
@@ -503,15 +539,48 @@ internal static unsafe partial class FreeTypeTour
         };
     }
 
+    /// <summary>Reports the first subglyph record for a composite glyph slot.</summary>
     private static void ReportFirstSubglyph(Ft ft, FtGlyphSlotRec* glyphSlot)
     {
         FreeTypeStatus.Require(
             ft,
             "FT_Get_SubGlyph_Info",
             ft.GetSubGlyphInfo(glyphSlot, 0, out var index, out var flags, out var arg1, out var arg2, out _));
-        Console.WriteLine($"FT_Get_SubGlyph_Info: index={index}, flags=0x{flags:X}, args=({arg1}, {arg2})");
+        Console.WriteLine($"FT_Get_SubGlyph_Info: index={index}, flags={FormatKnownSubglyphFlags(unchecked((int)flags))}, args=({arg1}, {arg2})");
     }
 
+    /// <summary>Formats public style flag bits while preserving any raw bits FreeType reports.</summary>
+    private static string FormatKnownStyleFlags(int rawFlags)
+    {
+        const int knownMask = (int)(FtStyleFlags.Italic | FtStyleFlags.Bold);
+        return FormatKnownFlags((FtStyleFlags)(rawFlags & knownMask), rawFlags, knownMask);
+    }
+
+    /// <summary>Formats public subglyph flag bits while preserving any raw bits FreeType reports.</summary>
+    private static string FormatKnownSubglyphFlags(int rawFlags)
+    {
+        const int knownMask = (int)(
+            FtSubglyphFlags.ArgsAreWords |
+            FtSubglyphFlags.ArgsAreXyValues |
+            FtSubglyphFlags.RoundXyToGrid |
+            FtSubglyphFlags.Scale |
+            FtSubglyphFlags.XyScale |
+            FtSubglyphFlags.Num2x2 |
+            FtSubglyphFlags.UseMyMetrics);
+        return FormatKnownFlags((FtSubglyphFlags)(rawFlags & knownMask), rawFlags, knownMask);
+    }
+
+    /// <summary>Formats an enum value plus unknown raw bits for partially public native flag fields.</summary>
+    private static string FormatKnownFlags<TEnum>(TEnum knownFlags, int rawFlags, int knownMask)
+        where TEnum : struct, Enum
+    {
+        var knownBits = rawFlags & knownMask;
+        var unknownBits = rawFlags & ~knownMask;
+        var knownText = knownBits == 0 ? "None" : knownFlags.ToString();
+        return unknownBits == 0 ? $"{knownText} (0x{rawFlags:X})" : $"{knownText}, unknown 0x{unknownBits:X} (0x{rawFlags:X})";
+    }
+
+    /// <summary>Copies outline points into a managed list for drawing.</summary>
     private static List<FtVector> ReadOutlinePoints(FtOutline outline)
     {
         var points = new List<FtVector>(outline.NPoints);
@@ -521,6 +590,7 @@ internal static unsafe partial class FreeTypeTour
         return points;
     }
 
+    /// <summary>Copies outline contour end indices into a managed list for drawing.</summary>
     private static List<short> ReadOutlineContours(FtOutline outline)
     {
         var contours = new List<short>(outline.NContours);
@@ -530,11 +600,13 @@ internal static unsafe partial class FreeTypeTour
         return contours;
     }
 
+    /// <summary>Draws outline contours using a map derived from the outline points.</summary>
     private static void DrawOutline(PngCanvas canvas, List<FtVector> points, List<short> contours)
     {
         DrawOutline(canvas, points, contours, CreateOutlineMap(points));
     }
 
+    /// <summary>Draws outline contours and point markers using a precomputed coordinate map.</summary>
     private static void DrawOutline(
         PngCanvas canvas,
         List<FtVector> points,
@@ -563,6 +635,7 @@ internal static unsafe partial class FreeTypeTour
         }
     }
 
+    /// <summary>Creates a canvas-space mapping for an outline point cloud.</summary>
     private static (long MinX, long MaxY, double Scale) CreateOutlineMap(List<FtVector> points)
     {
         var minX = points.Min(point => FreeTypeValues.ToInt64(point.X));
@@ -573,6 +646,7 @@ internal static unsafe partial class FreeTypeTour
         return (minX, maxY, scale);
     }
 
+    /// <summary>Draws a FreeType bounding box in canvas space.</summary>
     private static void DrawOutlineBox(PngCanvas canvas, FtBBox box, (long MinX, long MaxY, double Scale) map, DemoColor color)
     {
         var bottomLeft = MapOutlinePoint(FreeTypeValues.ToInt64(box.XMin), FreeTypeValues.ToInt64(box.YMin), map);
@@ -585,20 +659,24 @@ internal static unsafe partial class FreeTypeTour
         canvas.DrawLine(topLeft.X, topLeft.Y, bottomLeft.X, bottomLeft.Y, color);
     }
 
+    /// <summary>Maps a FreeType vector into canvas coordinates.</summary>
     private static (int X, int Y) MapOutlinePoint(FtVector point, (long MinX, long MaxY, double Scale) map) =>
         MapOutlinePoint(FreeTypeValues.ToInt64(point.X), FreeTypeValues.ToInt64(point.Y), map);
 
+    /// <summary>Maps raw FreeType coordinates into canvas coordinates.</summary>
     private static (int X, int Y) MapOutlinePoint(long x, long y, (long MinX, long MaxY, double Scale) map) =>
         (
             60 + (int)Math.Round((x - map.MinX) * map.Scale),
             40 + (int)Math.Round((map.MaxY - y) * map.Scale));
 
+    /// <summary>Draws a compact bar for fixed-point arithmetic comparisons.</summary>
     private static void DrawBar(PngCanvas canvas, int x, int baselineY, int value, DemoColor color)
     {
         var height = Math.Clamp(Math.Abs(value), 8, 190);
         canvas.DrawRectangle(x, baselineY + 190 - height, 48, height, color);
     }
 
+    /// <summary>Formats a null-terminated FreeType UInt32 list for console output.</summary>
     private static string FormatUInt32List(uint* pointer)
     {
         if (pointer == null)
@@ -620,6 +698,7 @@ internal static unsafe partial class FreeTypeTour
 
 internal static class FreeTypeStatus
 {
+    /// <summary>Throws when a required FreeType call returns an error.</summary>
     public static void Require(Ft ft, string cName, int error)
     {
         if (error == 0)
@@ -628,6 +707,7 @@ internal static class FreeTypeStatus
         throw new InvalidOperationException($"{cName} failed with FT_Error {error}: {Describe(ft, error)}");
     }
 
+    /// <summary>Writes a console message for optional FreeType calls.</summary>
     public static void ReportOptional(Ft ft, string cName, int error)
     {
         if (error == 0)
@@ -636,6 +716,7 @@ internal static class FreeTypeStatus
             Console.WriteLine($"{cName}: unavailable for this font ({error}, {Describe(ft, error)})");
     }
 
+    /// <summary>Formats a FreeType error code for console diagnostics.</summary>
     public static string Describe(Ft ft, int error)
     {
         ft.ErrorString(error, out var value);

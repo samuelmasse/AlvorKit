@@ -9,6 +9,9 @@ public sealed class GlRegistryParser(BindgenConfig config)
     /// <summary>Generated catch-all enum name for untyped GLenum positions.</summary>
     private string CatchAllName => config.ApiClass + "Enum";
 
+    /// <summary>Generated catch-all enum name for tokens too wide for the normal catch-all enum.</summary>
+    private string WideCatchAllName => config.ApiClass + "WideEnum";
+
     /// <summary>Parses the registry and returns the complete model consumed by emitters.</summary>
     public GlBindingModel Parse(string registryPath, IReadOnlyDictionary<string, XmlDocComment> docs)
     {
@@ -36,11 +39,15 @@ public sealed class GlRegistryParser(BindgenConfig config)
             CatchAllName,
             IsFlags: false,
             GlRegistryMemberSorter.Sort(narrow, groupSet.ManagedNameByGroup));
-        var wideConstants = tokens
-            .Where(token => token.Value > uint.MaxValue)
-            .OrderBy(token => token.ManagedName, StringComparer.Ordinal)
-            .Select(token => new GlConstant(token.ManagedName, token.NativeName, token.Value, token.Availability))
-            .ToList();
+        var wideTokens = tokens.Where(token => token.Value > uint.MaxValue).ToList();
+        var wideGroup = wideTokens.Count == 0
+            ? null
+            : new GlEnumGroup(
+                "GLwide",
+                WideCatchAllName,
+                IsFlags: false,
+                GlRegistryMemberSorter.Sort(wideTokens, groupSet.ManagedNameByGroup))
+            { UnderlyingType = "ulong" };
         var handleTypes = commandSet.HandleTypes.Count == 0
             ? commandSet.HandleTypes
             : commandSet.HandleTypes.Append("GlHandle").Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToList();
@@ -52,8 +59,8 @@ public sealed class GlRegistryParser(BindgenConfig config)
         return new(
             groupSet.Groups,
             allTokens,
+            wideGroup,
             commandSet.Commands,
-            wideConstants,
             commandSet.UngroupedEnumUses,
             commandSet.SkippedCommands,
             handleTypes,

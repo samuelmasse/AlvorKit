@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\scripts\AlvorKit.Script.AgentLease\AlvorKit.Script.AgentLease.csproj" />
+    </ItemGroup>
+
+</Project>

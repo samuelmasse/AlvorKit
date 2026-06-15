@@ -8,14 +8,17 @@ internal static unsafe partial class FreeTypeTour
         ft.GetFontFormat(face, out var fontFormat);
         ft.GetX11FontFormat(face, out var x11FontFormat);
         Console.WriteLine($"FT_Get_Font_Format / FT_Get_X11_Font_Format: {fontFormat ?? "(none)"} / {x11FontFormat ?? "(none)"}");
-        Console.WriteLine($"FT_Get_Gasp at 16 ppem: 0x{ft.GetGasp(face, 16):X}");
+        var gaspFlags = (FtGaspFlags)ft.GetGasp(face, 16);
+        Console.WriteLine($"FT_Get_Gasp at 16 ppem: {gaspFlags} (0x{(int)gaspFlags:X})");
 
         ReportSfntTables(ft, face);
         ReportFormatSpecificMetadata(ft, face);
         ReportPaletteAndVariations(ft, library, face);
         ReportSizeObjectRoundTrip(ft, face);
+        ReportGeneratedMacroEnumSamples();
     }
 
+    /// <summary>Reports representative SFNT table and name metadata.</summary>
     private static void ReportSfntTables(Ft ft, FtFaceRec* face)
     {
         var head = ft.GetSfntTable(face, FtSfntTag.SfntHead);
@@ -46,6 +49,7 @@ internal static unsafe partial class FreeTypeTour
         }
     }
 
+    /// <summary>Reports optional BDF and Windows FNT metadata APIs.</summary>
     private static void ReportFormatSpecificMetadata(Ft ft, FtFaceRec* face)
     {
         var bdfError = ft.GetBdfProperty(face, "FONT_ASCENT", out var bdfProperty);
@@ -56,23 +60,36 @@ internal static unsafe partial class FreeTypeTour
         var winError = ft.GetWinFNTHeader(face, out var winHeader);
         FreeTypeStatus.ReportOptional(ft, "FT_Get_WinFNT_Header", winError);
         if (winError == 0)
-            Console.WriteLine($"FT_Get_WinFNT_Header: {winHeader.PixelWidth}x{winHeader.PixelHeight}, ascent {winHeader.Ascent}");
+            Console.WriteLine(
+                "FT_Get_WinFNT_Header: " +
+                $"{winHeader.PixelWidth}x{winHeader.PixelHeight}, charset {(FtWinFntId)winHeader.Charset}, ascent {winHeader.Ascent}");
     }
 
+    /// <summary>Reports palette and multiple-master variation metadata.</summary>
     private static void ReportPaletteAndVariations(Ft ft, nint library, FtFaceRec* face)
     {
         var paletteError = ft.PaletteDataGet(face, out var palette);
         FreeTypeStatus.ReportOptional(ft, "FT_Palette_Data_Get", paletteError);
         if (paletteError == 0)
-            Console.WriteLine($"FT_Palette_Data_Get: {palette.NumPalettes} palettes, {palette.NumPaletteEntries} entries");
+        {
+            var firstPaletteFlags = palette.NumPalettes > 0 && palette.PaletteFlags != 0
+                ? (FtPaletteFlags)(ushort)Marshal.ReadInt16(palette.PaletteFlags)
+                : (FtPaletteFlags)0;
+            Console.WriteLine(
+                "FT_Palette_Data_Get: " +
+                $"{palette.NumPalettes} palettes, {palette.NumPaletteEntries} entries, first flags {firstPaletteFlags}");
+        }
 
         var mmError = ft.GetMmVar(face, out var mmVar);
         FreeTypeStatus.ReportOptional(ft, "FT_Get_MM_Var", mmError);
         if (mmError == 0 && mmVar != null)
         {
+            var axisFlags = (FtVarAxisFlags)0;
+            if (mmVar->NumAxis > 0 && ft.GetVarAxisFlags(mmVar, 0, out var rawAxisFlags) == 0)
+                axisFlags = (FtVarAxisFlags)rawAxisFlags;
             Console.WriteLine(
                 "FT_Get_MM_Var: " +
-                $"{mmVar->NumAxis} axes, {mmVar->NumNamedstyles} named styles, first axis {FormatFirstVariationAxis(mmVar)}");
+                $"{mmVar->NumAxis} axes, {mmVar->NumNamedstyles} named styles, first axis {FormatFirstVariationAxis(mmVar)}, flags {axisFlags}");
             FreeTypeStatus.Require(ft, "FT_Done_MM_Var", ft.DoneMmVar(library, mmVar));
         }
 
@@ -82,6 +99,15 @@ internal static unsafe partial class FreeTypeTour
             Console.WriteLine($"FT_Get_Default_Named_Instance: {defaultInstance}");
     }
 
+    /// <summary>Shows generated macro enum groups that are not otherwise exercised by this font walkthrough.</summary>
+    private static void ReportGeneratedMacroEnumSamples()
+    {
+        var moduleFlags = FtModuleFlags.FontDriver | FtModuleFlags.DriverScalable;
+        var rasterFlags = FtRasterFlags.Aa | FtRasterFlags.Clip;
+        Console.WriteLine($"Generated FT_MODULE_* / FT_RASTER_FLAG_* enums: {moduleFlags}; {rasterFlags}");
+    }
+
+    /// <summary>Creates, activates, and disposes an extra FreeType size object.</summary>
     private static void ReportSizeObjectRoundTrip(Ft ft, FtFaceRec* face)
     {
         var originalSize = FreeTypeDrawing.ReadFace(face).Size;
@@ -104,15 +130,15 @@ internal static unsafe partial class FreeTypeTour
         }
     }
 
+    /// <summary>Reports a detached glyph bounding box and bitmap conversion result.</summary>
     private static void ReportDetachedGlyphBox(Ft ft, FtFaceRec* face, uint glyphIndex)
     {
-        FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, glyphIndex, Ft.LoadDefault));
+        FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, glyphIndex, FtLoadFlags.Default));
         FreeTypeStatus.Require(ft, "FT_Get_Glyph", ft.GetGlyph(FreeTypeDrawing.GlyphSlot(face), out var glyphHandle));
 
         try
         {
-            FtBBox glyphBox;
-            ft.GlyphGetCBox(glyphHandle, FtGlyphBBoxMode.GlyphBboxPixels, &glyphBox);
+            ft.GlyphGetCBox(glyphHandle, FtGlyphBBoxMode.GlyphBboxPixels, out var glyphBox);
             Console.WriteLine($"FT_Get_Glyph / FT_Glyph_Get_CBox 'B': {FormatBoxPixels(glyphBox)}");
 
             var glyphToBitmapError = ft.GlyphToBitmap((nint)(&glyphHandle), FtRenderMode.RenderModeNormal, null, destroy: true);
@@ -125,6 +151,7 @@ internal static unsafe partial class FreeTypeTour
         }
     }
 
+    /// <summary>Decodes an SFNT name record into display text.</summary>
     private static string DecodeSfntName(FtSfntName name)
     {
         if (name.String == 0 || name.StringLen == 0)
@@ -137,6 +164,7 @@ internal static unsafe partial class FreeTypeTour
         return Encoding.UTF8.GetString(bytes);
     }
 
+    /// <summary>Formats a BDF property union for console output.</summary>
     private static string FormatBdfProperty(FtBdfPropertyRec property) =>
         property.Type switch
         {
@@ -146,6 +174,7 @@ internal static unsafe partial class FreeTypeTour
             _ => property.Type.ToString(),
         };
 
+    /// <summary>Formats the first variation axis in an MM var record.</summary>
     private static string FormatFirstVariationAxis(FtMmVar* mmVar)
     {
         if (mmVar->NumAxis == 0 || mmVar->Axis == null)
@@ -157,6 +186,7 @@ internal static unsafe partial class FreeTypeTour
             $"{FreeTypeValues.Fixed16Dot16(axis.Maximum):0.##}";
     }
 
+    /// <summary>Formats a numeric SFNT table tag as four printable characters.</summary>
     private static string FormatSfntTag(CULong tag)
     {
         var value = (uint)FreeTypeValues.ToUInt64(tag);
@@ -170,12 +200,15 @@ internal static unsafe partial class FreeTypeTour
         return new string(chars);
     }
 
+    /// <summary>Returns a printable ASCII character or a placeholder.</summary>
     private static char PrintableAscii(byte value) => value is >= 0x20 and <= 0x7E ? (char)value : '?';
 
+    /// <summary>Formats a 26.6 fixed-point bounding box in pixels.</summary>
     private static string FormatBox26Dot6(FtBBox box) =>
         $"[{FreeTypeValues.Pixel26Dot6(box.XMin)}, {FreeTypeValues.Pixel26Dot6(box.YMin)}].." +
         $"[{FreeTypeValues.Pixel26Dot6(box.XMax)}, {FreeTypeValues.Pixel26Dot6(box.YMax)}] px";
 
+    /// <summary>Formats an integer-pixel bounding box.</summary>
     private static string FormatBoxPixels(FtBBox box) =>
         $"[{FreeTypeValues.ToInt64(box.XMin)}, {FreeTypeValues.ToInt64(box.YMin)}].." +
         $"[{FreeTypeValues.ToInt64(box.XMax)}, {FreeTypeValues.ToInt64(box.YMax)}] px";

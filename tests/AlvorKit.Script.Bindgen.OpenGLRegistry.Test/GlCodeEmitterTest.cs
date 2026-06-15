@@ -13,8 +13,8 @@ public sealed class GlCodeEmitterTest
         var model = new GlBindingModel(
             Groups: [],
             AllTokens: new("GLenum", "GlEnum", IsFlags: false, Members: []),
+            WideTokens: null,
             Commands: [],
-            WideConstants: [],
             UngroupedEnumUses: [],
             SkippedCommands: [],
             HandleTypes: [],
@@ -26,7 +26,16 @@ public sealed class GlCodeEmitterTest
                     ReturnType: "void",
                     Parameters:
                     [
-                        new("source", "source", "uint", "uint", Len: null, PointerDepth: 0, PointeeType: null, PointeeIsConst: false, PointeeIsChar: false)
+                        new(
+                            "source",
+                            "source",
+                            "uint",
+                            "uint",
+                            Len: null,
+                            PointerDepth: 0,
+                            PointeeType: null,
+                            PointeeIsConst: false,
+                            PointeeIsChar: false)
                     ])
             ]);
 
@@ -53,8 +62,13 @@ public sealed class GlCodeEmitterTest
                     Members: [new("Texture2D", "GL_TEXTURE_2D", 0x0DE1, availability, ["TextureTarget"])])
             ],
             AllTokens: new("GLenum", "GlEnum", IsFlags: false, Members: [new("Texture2D", "GL_TEXTURE_2D", 0x0DE1, availability, [])]),
+            WideTokens: new(
+                NativeName: "GLwide",
+                ManagedName: "GlWideEnum",
+                IsFlags: false,
+                Members: [new("TimeoutIgnored", "GL_TIMEOUT_IGNORED", ulong.MaxValue, availability, [])])
+            { UnderlyingType = "ulong" },
             Commands: [],
-            WideConstants: [new("TimeoutIgnored", "GL_TIMEOUT_IGNORED", ulong.MaxValue, availability)],
             UngroupedEnumUses: [],
             SkippedCommands: [],
             HandleTypes: ["GlHandle", "GlTextureHandle"],
@@ -67,9 +81,14 @@ public sealed class GlCodeEmitterTest
         Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "Gl", "Gl.csproj")));
         Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "Gl", "TextureTarget.cs")));
         Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "Gl", "GlHandles.cs")));
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "Gl", "GlConstants.cs")));
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "Gl", "GlWideEnum.cs")));
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "Gl", "GlConstants.cs")));
         Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "Gl.Backend", "Gl.Backend.csproj")));
         Assert.IsFalse(Directory.Exists(Path.Combine(workspace.Root, config.ApiProject)));
+
+        var wideEnum = File.ReadAllText(Path.Combine(outputRoot, "Gl", "GlWideEnum.cs"));
+        StringAssert.Contains(wideEnum, "public enum GlWideEnum : ulong");
+        StringAssert.Contains(wideEnum, "TimeoutIgnored = 0xFFFFFFFFFFFFFFFF,");
     }
 
     /// <summary>Generated OpenGL API contract, wrapper, and noop scaffolding are excluded from coverage metrics.</summary>
@@ -81,8 +100,8 @@ public sealed class GlCodeEmitterTest
         var model = new GlBindingModel(
             Groups: [],
             AllTokens: new("GLenum", "GlEnum", IsFlags: false, Members: []),
+            WideTokens: null,
             Commands: [],
-            WideConstants: [],
             UngroupedEnumUses: [],
             SkippedCommands: [],
             HandleTypes: [],
@@ -105,6 +124,7 @@ public sealed class GlCodeEmitterTest
         var model = new GlBindingModel(
             Groups: [],
             AllTokens: new("GLenum", "GlEnum", IsFlags: false, Members: []),
+            WideTokens: null,
             Commands:
             [
                 new(
@@ -117,7 +137,6 @@ public sealed class GlCodeEmitterTest
                     Documentation: null,
                     ReturnsCString: true)
             ],
-            WideConstants: [],
             UngroupedEnumUses: [],
             SkippedCommands: [],
             HandleTypes: [],

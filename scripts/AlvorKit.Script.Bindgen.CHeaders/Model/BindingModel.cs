@@ -6,7 +6,6 @@ namespace AlvorKit.Script.Bindgen;
 /// <param name="Handles">Opaque handles to emit.</param>
 /// <param name="Delegates">Callback delegates to emit.</param>
 /// <param name="Functions">Functions to emit.</param>
-/// <param name="Constants">Constants to emit.</param>
 /// <param name="SkippedFunctions">Native functions skipped with reasons.</param>
 /// <param name="SizeofTypes">Native types needing runtime sizeof shims.</param>
 public record BindingModel(
@@ -15,6 +14,5 @@ public record BindingModel(
     List<BindingHandle> Handles,
     List<BindingDelegate> Delegates,
     List<BindingFunction> Functions,
-    List<BindingConstant> Constants,
     List<string> SkippedFunctions,
     List<string> SizeofTypes);

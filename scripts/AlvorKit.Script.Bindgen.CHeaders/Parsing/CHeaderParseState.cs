@@ -32,8 +32,8 @@ internal sealed class CHeaderParseState
     /// <summary>Functions selected for the managed API.</summary>
     public List<BindingFunction> Functions { get; } = [];
 
-    /// <summary>Constants selected for the managed API.</summary>
-    public List<BindingConstant> Constants { get; } = [];
+    /// <summary>Native constants selected for the generated catch-all enum.</summary>
+    public List<BindingConstant> ConstantTokens { get; } = [];
 
     /// <summary>Macro values keyed by native spelling.</summary>
     public Dictionary<string, long> ValuesByNativeName { get; } = [];
@@ -54,7 +54,6 @@ internal sealed class CHeaderParseState
         [.. HandlesByNativeName.Select(handle => new BindingHandle(handle.Key, handle.Value))],
         [.. DelegatesByNativeName.Where(entry => UsedCallbackTypedefs.Contains(entry.Key)).Select(entry => entry.Value)],
         Functions,
-        Constants,
         SkippedFunctions,
         [.. SizeofTypes]);
 }

@@ -9,7 +9,7 @@ internal sealed class CoverageRunner(CoverageOptions options)
     {
         var repoRoot = RepositoryPaths.FindRoot();
         var started = DateTimeOffset.UtcNow;
-        var output = CoverageOutputPaths.Create(repoRoot);
+        var output = CoverageOutputPaths.Create(repoRoot, options, started);
         var selection = CoverageSelection.FromOptions(repoRoot, options);
 
         var testRunner = new TestProjectRunner(repoRoot, options, selection.SourceModules);
@@ -118,12 +118,14 @@ internal sealed class CoverageRunner(CoverageOptions options)
         var summary = coverage.BuildSummary(sourceModules);
         var passed = CoverageGate.Passes(testResults, summary, options.Threshold);
 
-        CoverageReportWriter.Write(output, started, DateTimeOffset.UtcNow, options, passed, summary, testResults);
+        var generatedAt = DateTimeOffset.UtcNow;
+        CoverageReportWriter.Write(repoRoot, output, started, generatedAt, options, passed, summary, testResults);
         var htmlReportGenerated = false;
 
         if (options.GenerateHtmlReport)
             htmlReportGenerated = await ReportGeneratorRunner.RunAsync(repoRoot, output, testResults);
 
+        LatestCoverageRunWriter.Write(repoRoot, output, generatedAt, options, passed);
         ConsoleSummary.Write(repoRoot, output, passed, summary, htmlReportGenerated, options.GenerateHtmlReport);
 
         return passed && (!options.GenerateHtmlReport || htmlReportGenerated) ? 0 : 1;

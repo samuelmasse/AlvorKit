@@ -23,7 +23,6 @@ public sealed class BindingXxHashOverloadEmitterTest
                 ResetWithSecret("XXH3_128bits_reset_withSecretandSeed", "ResetHash3To128", seeded: true),
                 CompareHash128(),
             ],
-            Constants: [],
             SkippedFunctions: [],
             SizeofTypes: []);
 
@@ -33,7 +32,7 @@ public sealed class BindingXxHashOverloadEmitterTest
         var overloads = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "XxhOverloads.cs"));
         StringAssert.Contains(secretSource, "public sealed class XxhSecret : IDisposable");
         StringAssert.Contains(secretSource, "public unsafe XxhSecret(nuint size)");
-        StringAssert.Contains(secretSource, "if (size < Xxh.Xxh3SecretSizeMin)");
+        StringAssert.Contains(secretSource, "if (size < (nuint)(long)XxhEnum.Xxh3SecretSizeMin)");
         StringAssert.Contains(secretSource, "if (size > int.MaxValue)");
         StringAssert.Contains(secretSource, "Pointer = (nint)NativeMemory.AllocZeroed(size);");
         StringAssert.Contains(secretSource, "throw new OutOfMemoryException");

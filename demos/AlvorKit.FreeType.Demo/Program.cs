@@ -74,19 +74,21 @@ unsafe
 
     return 0;
 
+    // Opens a face through FT_Open_Face using the generated FtOpenArgs struct.
     static unsafe FtFaceRec* OpenPathFace(Ft ft, nint library, string fontPath)
     {
         FtFaceRec* face;
         var pathBytes = Encoding.UTF8.GetBytes(fontPath + '\0');
         fixed (byte* path = pathBytes)
         {
-            var openArgs = new FtOpenArgs { Flags = Ft.OpenPathname, Pathname = (nint)path };
+            var openArgs = new FtOpenArgs { Flags = (uint)FtOpenFlags.Pathname, Pathname = (nint)path };
             FreeTypeStatus.Require(ft, "FT_Open_Face", ft.OpenFace(library, &openArgs, FreeTypeValues.Long(0), out face));
         }
 
         return face;
     }
 
+    // Releases every FreeType resource allocated by the walkthrough.
     static unsafe void ReleaseFreeTypeResources(Ft ft, FtFaceRec* openFace, FtFaceRec* memoryFace, FtFaceRec* pathFace, nint library)
     {
         if (openFace != null)
@@ -99,6 +101,7 @@ unsafe
             _ = ft.DoneFreeType(library);
     }
 
+    // Prints the PNG paths created by the demo run.
     static void PrintExportedPngs(IEnumerable<string> exported)
     {
         Console.WriteLine();

@@ -89,7 +89,7 @@ public sealed class BindingFreeTypeOverloadEmitterTest
     };
 
     /// <summary>Returns an empty binding model.</summary>
-    private static BindingModel EmptyModel() => new([], [], [], [], [], [], [], []);
+    private static BindingModel EmptyModel() => new([], [], [], [], [], [], []);
 
     /// <summary>Returns an FT_Load_Char fixture function.</summary>
     private static BindingFunction LoadChar() =>

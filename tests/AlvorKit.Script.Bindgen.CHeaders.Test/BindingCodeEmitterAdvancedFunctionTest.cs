@@ -18,7 +18,7 @@ public sealed class BindingCodeEmitterAdvancedFunctionTest
             [new("data", "nint", "nint", "", HasStringConvenience: false)],
             Documentation: null,
             IsAdvanced: true);
-        var model = new BindingModel([], [], [], [], [function], [], [], []);
+        var model = new BindingModel([], [], [], [], [function], [], []);
 
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
 
@@ -35,7 +35,7 @@ public sealed class BindingCodeEmitterAdvancedFunctionTest
     {
         using var workspace = TempWorkspace.Create();
         var config = CHeaderTestConfig.Create();
-        var model = new BindingModel([], [], [], [], [], [], [], []);
+        var model = new BindingModel([], [], [], [], [], [], []);
 
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
 

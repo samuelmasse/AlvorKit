@@ -7,7 +7,8 @@ internal static class MarkdownCoverageReportWriter
 {
     /// <summary>Writes a Markdown coverage summary to a file.</summary>
     public static void Write(
-        string path,
+        string repoRoot,
+        CoverageOutputPaths output,
         DateTimeOffset generatedAt,
         CoverageOptions options,
         bool passed,
@@ -20,8 +21,8 @@ internal static class MarkdownCoverageReportWriter
         WriteModules(builder, summary);
         WriteTestProjects(builder, testResults);
         WriteFiles(builder, summary.Files);
-        WriteArtifacts(builder, options);
-        File.WriteAllText(path, builder.ToString());
+        WriteArtifacts(builder, CoverageArtifactPaths.Create(repoRoot, output, options));
+        File.WriteAllText(output.HumanReport, builder.ToString());
     }
 
     /// <summary>Writes report title and run metadata.</summary>
@@ -103,27 +104,29 @@ internal static class MarkdownCoverageReportWriter
             builder.AppendLine($"| `{file.Path}` | {file.MissingLines} | {file.MissingBranches} | {file.MissingMethods} |");
     }
 
-    /// <summary>Writes the fixed artifact path reference block.</summary>
-    private static void WriteArtifacts(StringBuilder builder, CoverageOptions options)
+    /// <summary>Writes artifact paths for the isolated coverage run.</summary>
+    private static void WriteArtifacts(StringBuilder builder, CoverageArtifactPaths artifacts)
     {
         builder.AppendLine();
         builder.AppendLine("## Artifacts");
         builder.AppendLine();
-        builder.AppendLine("- Agent JSON: `out/coverage/coverage-summary.json`");
-        builder.AppendLine("- Human summary: `out/coverage/coverage-summary.md`");
+        builder.AppendLine($"- Agent JSON: `{artifacts.Agent}`");
+        builder.AppendLine($"- Human summary: `{artifacts.Human}`");
 
-        if (options.GenerateHtmlReport)
+        if (artifacts.Html is not null && artifacts.ReportGeneratorLog is not null)
         {
-            builder.AppendLine("- HTML summary: `out/coverage/html/index.html`");
-            builder.AppendLine("- ReportGenerator log: `out/coverage/reportgenerator.log`");
+            builder.AppendLine($"- HTML summary: `{artifacts.Html}`");
+            builder.AppendLine($"- ReportGenerator log: `{artifacts.ReportGeneratorLog}`");
         }
 
-        builder.AppendLine("- Per-project JSON reports: `out/coverage/projects/<test-project>/coverage.json`");
+        builder.AppendLine($"- Per-project JSON reports: `{artifacts.ProjectReports}`");
 
-        if (options.GenerateCoberturaReport || options.GenerateHtmlReport)
-            builder.AppendLine("- Per-project Cobertura reports: `out/coverage/projects/<test-project>/coverage.cobertura.xml`");
-        if (options.GenerateLcovReport)
-            builder.AppendLine("- Per-project LCOV reports: `out/coverage/projects/<test-project>/coverage.info`");
+        if (artifacts.ProjectCoberturaReports is not null)
+            builder.AppendLine($"- Per-project Cobertura reports: `{artifacts.ProjectCoberturaReports}`");
+        if (artifacts.ProjectLcovReports is not null)
+            builder.AppendLine($"- Per-project LCOV reports: `{artifacts.ProjectLcovReports}`");
+
+        builder.AppendLine($"- Latest run pointer: `{artifacts.LatestRun}`");
     }
 
     /// <summary>Writes one metric row.</summary>

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Script.BindgenReview.Test" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
+    </ItemGroup>
+
+</Project>

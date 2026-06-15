@@ -8,6 +8,12 @@ public sealed class XxHashRuntimeTest
 {
     private const uint Seed32 = 0x9E37_79B1u;
     private const ulong Seed64 = 0x9E37_79B1_85EB_CA87ul;
+    private const int VersionMajor = (int)XxhEnum.VersionMajor;
+    private const int VersionMinor = (int)XxhEnum.VersionMinor;
+    private const int VersionRelease = (int)XxhEnum.VersionRelease;
+    private const int VersionNumber = (int)XxhEnum.VersionNumber;
+    private const int Xxh3SecretDefaultSize = (int)XxhEnum.Xxh3SecretDefaultSize;
+    private const int Xxh3SecretSizeMin = (int)XxhEnum.Xxh3SecretSizeMin;
 
     /// <summary>Verifies that the backend reports the same version and exported constants as the generated API surface.</summary>
     [TestMethod]
@@ -15,11 +21,11 @@ public sealed class XxHashRuntimeTest
     {
         Xxh xxh = new XxhBackend();
 
-        Assert.AreEqual((uint)Xxh.VersionNumber, xxh.GetVersionNumber());
-        Assert.AreEqual(Xxh.VersionMajor * 10_000 + Xxh.VersionMinor * 100 + Xxh.VersionRelease, Xxh.VersionNumber);
-        Assert.AreEqual(0, Xxh.VersionMajor);
-        Assert.AreEqual(8, Xxh.VersionMinor);
-        Assert.AreEqual(3, Xxh.VersionRelease);
+        Assert.AreEqual((uint)VersionNumber, xxh.GetVersionNumber());
+        Assert.AreEqual(VersionMajor * 10_000 + VersionMinor * 100 + VersionRelease, VersionNumber);
+        Assert.AreEqual(0, VersionMajor);
+        Assert.AreEqual(8, VersionMinor);
+        Assert.AreEqual(3, VersionRelease);
     }
 
     /// <summary>Checks that XXH32 one-shot, streaming, copied state, and canonical conversion paths agree.</summary>
@@ -123,16 +129,16 @@ public sealed class XxHashRuntimeTest
     {
         Xxh xxh = new XxhBackend();
         ReadOnlySpan<byte> material = "application-specific secret material for the demo"u8;
-        Span<byte> firstSeededSecret = stackalloc byte[Xxh.Xxh3SecretDefaultSize];
-        Span<byte> secondSeededSecret = stackalloc byte[Xxh.Xxh3SecretDefaultSize];
+        Span<byte> firstSeededSecret = stackalloc byte[Xxh3SecretDefaultSize];
+        Span<byte> secondSeededSecret = stackalloc byte[Xxh3SecretDefaultSize];
 
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => new XxhSecret((nuint)(Xxh.Xxh3SecretSizeMin - 1)));
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => new XxhSecret((nuint)(Xxh3SecretSizeMin - 1)));
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => new XxhSecret((nuint)int.MaxValue + 1));
 
-        using XxhSecret secret = new(Xxh.Xxh3SecretSizeMin);
-        Assert.AreEqual((nuint)Xxh.Xxh3SecretSizeMin, secret.Size);
+        using XxhSecret secret = new(Xxh3SecretSizeMin);
+        Assert.AreEqual((nuint)Xxh3SecretSizeMin, secret.Size);
         Assert.AreNotEqual(0, secret.Pointer);
-        Assert.AreEqual(Xxh.Xxh3SecretSizeMin, secret.Bytes.Length);
+        Assert.AreEqual(Xxh3SecretSizeMin, secret.Bytes.Length);
         RequireOk(xxh.GenerateHash3Secret(secret.Bytes, material));
         AssertHasAnyNonZero(secret.Bytes);
 
@@ -281,7 +287,7 @@ public sealed class XxHashRuntimeTest
     private static XxhSecret CreateGeneratedSecret(Xxh xxh)
     {
         ReadOnlySpan<byte> material = "runtime secret material"u8;
-        var secret = new XxhSecret(Xxh.Xxh3SecretSizeMin);
+        var secret = new XxhSecret(Xxh3SecretSizeMin);
         RequireOk(xxh.GenerateHash3Secret(secret.Bytes, material));
         return secret;
     }

@@ -5,6 +5,7 @@ internal static class AgentCoverageReportWriter
 {
     /// <summary>Serializes a complete coverage result to JSON.</summary>
     public static void Write(
+        string repoRoot,
         CoverageOutputPaths output,
         DateTimeOffset started,
         DateTimeOffset generatedAt,
@@ -13,10 +14,12 @@ internal static class AgentCoverageReportWriter
         CoverageSummary summary,
         IReadOnlyList<TestProjectResult> testResults)
     {
+        var artifacts = CoverageArtifactPaths.Create(repoRoot, output, options);
         var report = new
         {
             generatedAtUtc = generatedAt,
             durationSeconds = Math.Round((generatedAt - started).TotalSeconds, 3),
+            runId = output.RunId,
             threshold = options.Threshold,
             testProjectFilters = options.TestProjectFilters,
             sourceProjectFilters = options.SourceProjectFilters,
@@ -30,11 +33,14 @@ internal static class AgentCoverageReportWriter
             testProjects = testResults,
             artifacts = new
             {
-                agent = "out/coverage/coverage-summary.json",
-                human = "out/coverage/coverage-summary.md",
-                html = options.GenerateHtmlReport ? "out/coverage/html/index.html" : null,
-                reportGeneratorLog = options.GenerateHtmlReport ? "out/coverage/reportgenerator.log" : null,
-                projectReports = "out/coverage/projects/<test-project>/",
+                agent = artifacts.Agent,
+                human = artifacts.Human,
+                html = artifacts.Html,
+                reportGeneratorLog = artifacts.ReportGeneratorLog,
+                projectReports = artifacts.ProjectReports,
+                projectCoberturaReports = artifacts.ProjectCoberturaReports,
+                projectLcovReports = artifacts.ProjectLcovReports,
+                latestRun = artifacts.LatestRun,
                 coverletFormats = options.CoverletOutputFormats(),
             },
         };

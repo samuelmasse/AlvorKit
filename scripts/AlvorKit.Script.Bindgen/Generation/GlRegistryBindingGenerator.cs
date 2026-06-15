@@ -23,7 +23,7 @@ internal sealed class GlRegistryBindingGenerator
         Console.WriteLine(
             $"Model: {model.Commands.Count} commands, {model.Groups.Count} enum groups " +
             $"({model.Groups.Sum(group => group.Members.Count)} members), {model.AllTokens.Members.Count} tokens, " +
-            $"{model.WideConstants.Count} wide constants, {model.SkippedCommands.Count} skipped");
+            $"{model.WideTokens?.Members.Count ?? 0} wide tokens, {model.SkippedCommands.Count} skipped");
 
         if (model.UngroupedEnumUses.Count > 0)
             Console.WriteLine(

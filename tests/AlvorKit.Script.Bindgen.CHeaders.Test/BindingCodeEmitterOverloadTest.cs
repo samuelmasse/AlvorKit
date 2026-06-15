@@ -25,7 +25,6 @@ public sealed class BindingCodeEmitterOverloadTest
                 ],
                 null)],
             [],
-            [],
             []);
 
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
@@ -50,7 +49,6 @@ public sealed class BindingCodeEmitterOverloadTest
             [new("TestCallback", "void", [])],
             [new("test_set", "Set", "void", "void",
                 [new("callback", "nint", "nint", "", false, CallbackType: "TestCallback")], null)],
-            [],
             [],
             []);
 
@@ -77,7 +75,6 @@ public sealed class BindingCodeEmitterOverloadTest
                     new("handle", "TestHandle", "TestHandle", "out", false)
                 ],
                 null)],
-            [],
             [],
             []);
 
@@ -111,7 +108,6 @@ public sealed class BindingCodeEmitterOverloadTest
                 new("test_seek", "Seek", "int", "int", [new("offset", "CLong", "CLong", "", false)], null)
             ],
             [],
-            [],
             []);
 
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
@@ -119,6 +115,45 @@ public sealed class BindingCodeEmitterOverloadTest
         var overloads = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestOverloads.cs"));
         StringAssert.Contains(overloads, "public int Load(TestFlags flags) => Load(new CULong((uint)flags));");
         StringAssert.Contains(overloads, "public int Seek(TestOffset offset) => Seek(new CLong((int)offset));");
+    }
+
+    /// <summary>Typed enum overloads preserve out parameters while forwarding to the native-shaped API.</summary>
+    [TestMethod]
+    public void Emit_TypedOverloadPreservesOutParameters()
+    {
+        using var workspace = TempWorkspace.Create();
+        var config = CHeaderTestConfig.Create();
+        config.EnumOverloads = new()
+        {
+            Functions =
+            {
+                ["test_get_box"] = new() { Params = { ["mode"] = ["TestBoxMode"] } }
+            }
+        };
+        var model = new BindingModel(
+            [],
+            [],
+            [],
+            [],
+            [
+                new(
+                    "test_get_box",
+                    "GetBox",
+                    "void",
+                    "void",
+                    [
+                        new("mode", "uint", "uint", "", false),
+                        new("box", "TestBox", "TestBox", "out", false)
+                    ],
+                    null)
+            ],
+            [],
+            []);
+
+        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
+
+        var overloads = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestOverloads.cs"));
+        StringAssert.Contains(overloads, "public void GetBox(TestBoxMode mode, out TestBox box) => GetBox((uint)mode, out box);");
     }
 
     /// <summary>Span overloads convert raw pointer and size pairs to managed spans.</summary>
@@ -130,7 +165,7 @@ public sealed class BindingCodeEmitterOverloadTest
         config.SpanOverloads = true;
         var model = new BindingModel([], [], [], [], [new("test_fill", "Fill", "void", "void",
             [new("buffer", "nint", "nint", "", false, IsUntypedPointer: true), new("bufferSize", "nuint", "nuint", "", false, IsSizeT: true)], null)],
-            [], [], []);
+            [], []);
 
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
 

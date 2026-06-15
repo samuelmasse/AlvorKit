@@ -46,8 +46,16 @@ public readonly partial record struct GlTextureInfo(
     {
         GlInternalFormat.R8 or GlInternalFormat.R8i or GlInternalFormat.R8ui or GlInternalFormat.R8Snorm => 1,
         GlInternalFormat.Rg8 or GlInternalFormat.Rg8i or GlInternalFormat.Rg8ui or GlInternalFormat.Rg8Snorm => 2,
-        GlInternalFormat.Rgb8 or GlInternalFormat.Rgb8i or GlInternalFormat.Rgb8ui or GlInternalFormat.Rgb8Snorm or GlInternalFormat.Srgb8 => 3,
-        GlInternalFormat.Rgba8 or GlInternalFormat.Rgba8i or GlInternalFormat.Rgba8ui or GlInternalFormat.Rgba8Snorm or GlInternalFormat.Srgb8Alpha8 => 4,
+        GlInternalFormat.Rgb8
+            or GlInternalFormat.Rgb8i
+            or GlInternalFormat.Rgb8ui
+            or GlInternalFormat.Rgb8Snorm
+            or GlInternalFormat.SRgb8 => 3,
+        GlInternalFormat.Rgba8
+            or GlInternalFormat.Rgba8i
+            or GlInternalFormat.Rgba8ui
+            or GlInternalFormat.Rgba8Snorm
+            or GlInternalFormat.SRgb8Alpha8 => 4,
 
         GlInternalFormat.R16 or GlInternalFormat.R16f or GlInternalFormat.R16i or GlInternalFormat.R16ui or GlInternalFormat.R16Snorm => 2,
         GlInternalFormat.Rg16 or GlInternalFormat.Rg16f or GlInternalFormat.Rg16i or GlInternalFormat.Rg16ui or GlInternalFormat.Rg16Snorm => 4,
@@ -76,7 +84,7 @@ public readonly partial record struct GlTextureInfo(
             or GlInternalFormat.CompressedRgRgtc2
             or GlInternalFormat.CompressedSignedRgRgtc2 => 1,
         GlInternalFormat.CompressedRgbaBptcUnorm
-            or GlInternalFormat.CompressedSrgbAlphaBptcUnorm
+            or GlInternalFormat.CompressedSRgbAlphaBptcUnorm
             or GlInternalFormat.CompressedRgbBptcSignedFloat
             or GlInternalFormat.CompressedRgbBptcUnsignedFloat => 1,
 

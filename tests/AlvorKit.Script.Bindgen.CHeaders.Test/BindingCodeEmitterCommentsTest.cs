@@ -3,6 +3,7 @@ namespace AlvorKit.Script.Bindgen.CHeaders.Test;
 [TestClass]
 public sealed class BindingCodeEmitterCommentsTest
 {
+    /// <summary>Generated members receive fallback XML docs when no native docs are available.</summary>
     [TestMethod]
     public void Emit_AddsFallbackXmlDocsToGeneratedMembers()
     {
@@ -18,7 +19,6 @@ public sealed class BindingCodeEmitterCommentsTest
         var native = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "TestNative.cs"));
         var backend = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "TestBackend.cs"));
 
-        StringAssert.Contains(api, "/// <summary>Native constant value for <c>Answer</c>.</summary>");
         StringAssert.Contains(api, "/// <param name=\"left\">Native <c>left</c> parameter.</param>");
         StringAssert.Contains(value, "/// <summary>Maps <c>test_value</c>.</summary>");
         StringAssert.Contains(point, "/// <summary>Maps the native field at byte offset 0.</summary>");
@@ -27,6 +27,7 @@ public sealed class BindingCodeEmitterCommentsTest
         StringAssert.Contains(backend, "/// <inheritdoc/>");
     }
 
+    /// <summary>Generated standalone types are written as separate source files.</summary>
     [TestMethod]
     public void Emit_WritesEachGeneratedTypeToItsOwnFile()
     {
@@ -42,6 +43,7 @@ public sealed class BindingCodeEmitterCommentsTest
         Assert.IsFalse(File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Test.cs")).Contains("public struct TestPoint", StringComparison.Ordinal));
     }
 
+    /// <summary>Boolean return documentation describes the public managed bool shape.</summary>
     [TestMethod]
     public void Emit_BoolReturnDocumentationMatchesManagedReturn()
     {
@@ -56,7 +58,6 @@ public sealed class BindingCodeEmitterCommentsTest
             [
                 new("test_ready", "Ready", "bool", "int", [], Documentation: null)
             ],
-            Constants: [],
             SkippedFunctions: [],
             SizeofTypes: []);
 
@@ -75,7 +76,6 @@ public sealed class BindingCodeEmitterCommentsTest
         [
             new("test_add", "Add", "int", "int", [new("left", "int", "int", "", false)], null)
         ],
-        Constants: [new("Answer", 42)],
         SkippedFunctions: [],
         SizeofTypes: []);
 }

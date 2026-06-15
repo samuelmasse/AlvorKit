@@ -31,8 +31,9 @@ These instructions apply to C# code under `demos/`.
   sequence.
 - Comment the main walkthrough path enough to explain intent, sequencing,
   native/API relationships, and important lifetime or layout constraints. Keep
-  utility helpers, formatting functions, guards, and other incidental plumbing
-  uncommented unless a non-obvious constraint would otherwise be hidden there.
+  implementation comments out of utility helpers, formatting functions, guards,
+  and other incidental plumbing unless a non-obvious constraint would otherwise
+  be hidden there.
 - Keep setup, platform glue, resource wrappers, repetitive initialization,
   disposal plumbing, and other boilerplate out of the main narrative when it
   distracts from the concept being demonstrated.
@@ -116,6 +117,11 @@ These instructions apply to C# code under `demos/`.
 
 - Add concise XML documentation comments for every type, constructor, method,
   field, and property introduced or changed.
+- Every demo method should have at least a quick XML `<summary>`, including
+  private helpers and formatting methods. These summaries may be brief, but they
+  should say what role the method plays in the demo.
+- For local functions under top-level statements, use a short leading comment
+  that gives the same quick purpose summary.
 - For methods and constructors, write one useful `<summary>` comment instead of
   separate `<param>` comments for each parameter. Add other XML tags only when
   they explain an important contract that the summary cannot express clearly.

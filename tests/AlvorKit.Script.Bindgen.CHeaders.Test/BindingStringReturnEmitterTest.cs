@@ -25,7 +25,6 @@ public sealed class BindingStringReturnEmitterTest
                     ReturnsCString: true)
             ],
             [],
-            [],
             []);
 
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
@@ -54,7 +53,6 @@ public sealed class BindingStringReturnEmitterTest
                     null,
                     ReturnsCString: true)
             ],
-            [],
             [],
             []);
 
@@ -95,7 +93,6 @@ public sealed class BindingStringReturnEmitterTest
                     [new("count", "uint", "uint", "out", false)],
                     null)
             ],
-            [],
             [],
             []);
 
