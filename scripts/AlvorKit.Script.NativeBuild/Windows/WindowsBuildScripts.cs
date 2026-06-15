@@ -11,13 +11,15 @@ internal static class WindowsBuildScripts
         var outputArgument = CommandText.PowerShellQuote("/Fe:" + outputFile);
         var implFile = CommandText.PowerShellQuote(NativeBuildPlanner.RequiredImplFile(library));
         var linkLibraries = CommandText.PowerShellArgs(platform.LinkLibraries.Select(link => link + ".lib"));
-        return $$"""
-            {{VisualStudioDevShell(target)}}
-            New-Item -ItemType Directory -Force {{CommandText.PowerShellQuote(library.BuildDirectory(target))}} | Out-Null
-            Set-Location {{CommandText.PowerShellQuote(library.BuildDirectory(target))}}
-            & cl /nologo /O2 /MT /LD /I {{sourceDirectory}} {{outputArgument}} {{implFile}} {{linkLibraries}}
-            if ($LASTEXITCODE -ne 0) { throw "cl failed with exit code $LASTEXITCODE." }
-            """;
+        var buildDirectory = CommandText.PowerShellQuote(library.BuildDirectory(target));
+        return TemplateResource.Render(
+            "res/templates/native-build/windows/single-c.ps1.tmpl",
+            ("VisualStudioDevShell", VisualStudioDevShell(target)),
+            ("BuildDirectory", buildDirectory),
+            ("SourceDirectory", sourceDirectory),
+            ("OutputArgument", outputArgument),
+            ("ImplFile", implFile),
+            ("LinkLibraries", linkLibraries));
     }
 
     /// <summary>Generates the Windows CMake PowerShell script.</summary>
@@ -26,18 +28,14 @@ internal static class WindowsBuildScripts
         var cmakeOutput = NativeBuildPlanner.RequiredCMakeOutput(library, platform);
         var sourceDirectory = CommandText.PowerShellQuote(library.SourceDirectory);
         var buildDirectory = CommandText.PowerShellQuote(library.BuildDirectory(target));
-        return $$"""
-            {{VisualStudioDevShell(target)}}
-            & cmake --fresh -S {{sourceDirectory}} -B {{buildDirectory}} -G 'NMake Makefiles' `
-                -DCMAKE_BUILD_TYPE=Release `
-                -DCMAKE_POLICY_DEFAULT_CMP0091=NEW `
-                -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded `
-                {{CommandText.PowerShellArgs(platform.CMakeOptions)}}
-            if ($LASTEXITCODE -ne 0) { throw "cmake configure failed." }
-            & cmake --build {{CommandText.PowerShellQuote(library.BuildDirectory(target))}}
-            if ($LASTEXITCODE -ne 0) { throw "cmake build failed." }
-            Copy-Item {{CommandText.PowerShellQuote(library.BuildFile(target, cmakeOutput))}} {{CommandText.PowerShellQuote(library.OutputFile(target))}} -Force
-            """;
+        return TemplateResource.Render(
+            "res/templates/native-build/windows/cmake.ps1.tmpl",
+            ("VisualStudioDevShell", VisualStudioDevShell(target)),
+            ("SourceDirectory", sourceDirectory),
+            ("BuildDirectory", buildDirectory),
+            ("CMakeOptions", CommandText.PowerShellArgs(platform.CMakeOptions)),
+            ("CMakeOutputFile", CommandText.PowerShellQuote(library.BuildFile(target, cmakeOutput))),
+            ("OutputFile", CommandText.PowerShellQuote(library.OutputFile(target))));
     }
 
     /// <summary>Generates the Visual Studio developer shell setup fragment.</summary>
@@ -46,11 +44,10 @@ internal static class WindowsBuildScripts
         var toolset = target.Architecture == TargetArchitecture.Arm64
             ? "Microsoft.VisualStudio.Component.VC.Tools.ARM64"
             : "Microsoft.VisualStudio.Component.VC.Tools.x86.x64";
-        return $$"""
-            $env:PATH = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer;$env:PATH"
-            $VsPath = & vswhere.exe -latest -products * -requires {{CommandText.PowerShellQuote(toolset)}} -property installationPath
-            if (-not $VsPath) { throw "No Visual Studio with the {{target.WindowsArchitecture}} C++ toolset found." }
-            & "$VsPath\Common7\Tools\Launch-VsDevShell.ps1" -Arch {{CommandText.PowerShellQuote(target.VisualStudioArchitecture)}} -SkipAutomaticLocation | Out-Null
-            """;
+        return TemplateResource.Render(
+            "res/templates/native-build/windows/dev-shell.ps1.tmpl",
+            ("Toolset", CommandText.PowerShellQuote(toolset)),
+            ("WindowsArchitecture", target.WindowsArchitecture),
+            ("VisualStudioArchitecture", CommandText.PowerShellQuote(target.VisualStudioArchitecture)));
     }
 }

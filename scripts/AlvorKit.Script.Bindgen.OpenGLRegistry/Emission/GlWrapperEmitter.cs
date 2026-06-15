@@ -7,32 +7,26 @@ internal sealed class GlWrapperEmitter(GlCodeEmissionContext context)
     /// <summary>Emits the forwarding base used by validation, tracing, or resource-tracking layers.</summary>
     public string Emit(GlBindingModel model)
     {
-        var output = context.SourceHeader();
-        output.AppendLine($"namespace {context.Config.Namespace};");
-        output.AppendLine();
-        output.AppendLine("/// <summary>");
-        output.AppendLine($"/// A <see cref=\"{context.Config.ApiClass}\"/> that forwards every call to an inner instance. Subclass it and");
-        output.AppendLine("/// override only the calls you want to intercept; the rest pass straight through.");
-        output.AppendLine("/// </summary>");
-        output.AppendLine($"public class {context.Config.ApiClass}Wrapper({context.Config.ApiClass} inner) : {context.Config.ApiClass}");
-        output.AppendLine("{");
-        output.AppendLine("    /// <summary>The instance each call is forwarded to.</summary>");
-        output.AppendLine($"    protected {context.Config.ApiClass} Inner {{ get; }} = inner ?? throw new ArgumentNullException(nameof(inner));");
-        foreach (var command in model.Commands)
-            EmitCommand(output, command);
-        output.AppendLine("}");
-        return output.ToString();
+        var methods = string.Join("", model.Commands.Select(Method));
+        return TemplateResource.Render(
+            typeof(GlWrapperEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/wrapper.cs.tmpl",
+            ("SourceHeader", context.SourceHeader().ToString()),
+            ("Namespace", context.Config.Namespace),
+            ("ApiClass", context.Config.ApiClass),
+            ("Methods", methods));
     }
 
-    /// <summary>Emits one forwarding override.</summary>
-    private static void EmitCommand(StringBuilder output, GlCommand command)
+    /// <summary>Renders one forwarding override.</summary>
+    private static string Method(GlCommand command)
     {
-        output.AppendLine();
         var arguments = string.Join(", ", command.Parameters.Select(parameter => parameter.ManagedName));
-        var signature = GlSignatureFormatter.Signature(command);
-        output.AppendLine("    /// <inheritdoc/>");
-        output.AppendLine(
-            $"    public override {command.ReturnType} {command.ManagedName}({signature}) => " +
-            $"Inner.{command.ManagedName}({arguments});");
+        return TemplateResource.Render(
+            typeof(GlWrapperEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/wrapper-method.csfrag.tmpl",
+            ("ReturnType", command.ReturnType),
+            ("ManagedName", command.ManagedName),
+            ("Signature", GlSignatureFormatter.Signature(command)),
+            ("Arguments", arguments));
     }
 }

@@ -1,0 +1,9 @@
+{{SourceHeader}}namespace {{Namespace}};
+
+/// <summary>
+/// Implements <see cref="{{ApiClass}}"/> over function pointers resolved from the current OpenGL context.
+/// Construct it with a proc loader once the context is current.
+/// </summary>
+public unsafe class {{BackendClass}} : {{ApiClass}}
+{
+{{Fields}}{{Constructor}}{{Commands}}{{NotLoaded}}}

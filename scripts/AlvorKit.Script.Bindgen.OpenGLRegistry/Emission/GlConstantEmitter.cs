@@ -7,22 +7,23 @@ internal sealed class GlConstantEmitter(GlCodeEmissionContext context)
     /// <summary>Emits 64-bit sentinel tokens that cannot fit in uint-backed enum types.</summary>
     public string Emit(GlBindingModel model)
     {
-        var output = context.SourceHeader();
-        output.AppendLine($"namespace {context.Config.Namespace};");
-        output.AppendLine();
-        output.AppendLine($"/// <summary>OpenGL tokens whose values are too wide for the uint-backed {context.Config.ApiClass} enums.</summary>");
-        output.AppendLine($"public static class {context.Config.ApiClass}Constants");
-        output.AppendLine("{");
-        var first = true;
-        foreach (var constant in model.WideConstants)
-        {
-            if (!first)
-                output.AppendLine();
-            first = false;
-            output.AppendLine($"    /// <summary>{constant.NativeName} ({GlCodeEmissionContext.AvailabilityText(constant.Availability)}).</summary>");
-            output.AppendLine($"    public const ulong {constant.ManagedName} = 0x{constant.Value:X};");
-        }
-        output.AppendLine("}");
-        return output.ToString();
+        var constants = string.Join(Environment.NewLine, model.WideConstants.Select(Constant));
+        return TemplateResource.Render(
+            typeof(GlConstantEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/constants.cs.tmpl",
+            ("SourceHeader", context.SourceHeader().ToString()),
+            ("Namespace", context.Config.Namespace),
+            ("ApiClass", context.Config.ApiClass),
+            ("Constants", constants));
     }
+
+    /// <summary>Renders one wide OpenGL constant.</summary>
+    private static string Constant(GlConstant constant) =>
+        TemplateResource.Render(
+            typeof(GlConstantEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/constant.csfrag.tmpl",
+            ("NativeName", constant.NativeName),
+            ("Availability", GlCodeEmissionContext.AvailabilityText(constant.Availability)),
+            ("ManagedName", constant.ManagedName),
+            ("Value", constant.Value.ToString("X")));
 }

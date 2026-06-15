@@ -55,15 +55,26 @@ internal sealed class BindingTypedOverloadEmitter(BindingEmitterContext context)
         BindingDocs.InheritedConvenience(output, $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})", remarks);
         if (strings.Count == 0)
         {
-            output.AppendLine($"    public {returnType} {function.ManagedName}({signature}) => {invoke};");
+            output.Append(TemplateResource.Render(
+                typeof(BindingTypedOverloadEmitter),
+                "res/templates/bindgen/c-headers/csharp/typed-expression-overload.csfrag.tmpl",
+                ("ReturnType", returnType),
+                ("ManagedName", function.ManagedName),
+                ("Signature", signature),
+                ("Invoke", invoke)));
             return;
         }
-        output.AppendLine($"    public {returnType} {function.ManagedName}({signature})");
-        output.AppendLine("    {");
-        foreach (var name in strings)
-            output.AppendLine($"        using var {name.TrimStart('@')}Utf8 = new Utf8({name}, stackalloc byte[256]);");
-        output.AppendLine($"        {(returnType == "void" ? invoke : "return " + invoke)};");
-        output.AppendLine("    }");
+        var stringLocals = string.Join(
+            "",
+            strings.Select(name => $"        using var {name.TrimStart('@')}Utf8 = new Utf8({name}, stackalloc byte[256]);{Environment.NewLine}"));
+        output.Append(TemplateResource.Render(
+            typeof(BindingTypedOverloadEmitter),
+            "res/templates/bindgen/c-headers/csharp/typed-string-overload.csfrag.tmpl",
+            ("ReturnType", returnType),
+            ("ManagedName", function.ManagedName),
+            ("Signature", signature),
+            ("StringLocals", stringLocals),
+            ("Invocation", returnType == "void" ? invoke : "return " + invoke)));
     }
 
     /// <summary>Formats one overload signature parameter.</summary>

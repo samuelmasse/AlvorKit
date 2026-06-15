@@ -20,12 +20,10 @@ internal static class NativeBuildVerifier
 
     /// <summary>Generates Windows import-library verification script.</summary>
     internal static string WindowsVerifyScript(LibraryBuildContext library, TargetRid target) =>
-        $$"""
-        {{WindowsBuildScripts.VisualStudioDevShell(target)}}
-        $Deps = & dumpbin /nologo /dependents {{CommandText.PowerShellQuote(library.OutputFile(target))}} | Select-String '\.dll'
-        $Deps | ForEach-Object { Write-Host $_.Line.Trim() }
-        if ($Deps -match 'VCRUNTIME|MSVCP') { throw 'DLL depends on the VC++ runtime - static CRT did not take.' }
-        """;
+        TemplateResource.Render(
+            "res/templates/native-build/windows/verify.ps1.tmpl",
+            ("VisualStudioDevShell", WindowsBuildScripts.VisualStudioDevShell(target)),
+            ("OutputFile", CommandText.PowerShellQuote(library.OutputFile(target))));
 
     /// <summary>Verifies Linux ELF dependencies against the manifest allow-list.</summary>
     private static async Task VerifyLinuxAsync(

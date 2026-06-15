@@ -1,0 +1,10 @@
+{{VisualStudioDevShell}}
+& cmake --fresh -S {{SourceDirectory}} -B {{BuildDirectory}} -G 'NMake Makefiles' `
+    -DCMAKE_BUILD_TYPE=Release `
+    -DCMAKE_POLICY_DEFAULT_CMP0091=NEW `
+    -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded `
+    {{CMakeOptions}}
+if ($LASTEXITCODE -ne 0) { throw "cmake configure failed." }
+& cmake --build {{BuildDirectory}}
+if ($LASTEXITCODE -ne 0) { throw "cmake build failed." }
+Copy-Item {{CMakeOutputFile}} {{OutputFile}} -Force

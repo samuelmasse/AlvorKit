@@ -1,0 +1,24 @@
+    {
+        Span<byte> buffer = stackalloc byte[1024];
+        void* native = null;
+        try
+        {
+            while (true)
+            {
+                int written;
+                fixed (byte* bufferPtr = buffer)
+                    this.{{ManagedName}}({{CoreArgs}});
+                if (written < buffer.Length - 1)
+                {
+{{OnComplete}}                }
+                var size = buffer.Length * 2;
+                NativeMemory.Free(native);
+                native = NativeMemory.Alloc((nuint)size);
+                buffer = new Span<byte>(native, size);
+            }
+        }
+        finally
+        {
+            NativeMemory.Free(native);
+        }
+    }

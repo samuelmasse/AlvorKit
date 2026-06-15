@@ -25,16 +25,15 @@ public sealed class GlExtensionsEmitter(BindgenConfig config)
         if (body.Length == 0)
             return null;
 
-        var output = sourceHeader;
-        output.AppendLine("using System.Text;");
-        output.AppendLine();
-        output.AppendLine($"namespace {config.Namespace};");
-        output.AppendLine();
-        output.AppendLine($"public unsafe partial class {config.ApiClass}");
-        output.AppendLine("{");
-        output.Append(body);
-        GlExtensionHelperEmitter.Append(output);
-        output.AppendLine("}");
-        return output.ToString();
+        var helpers = new StringBuilder();
+        GlExtensionHelperEmitter.Append(helpers);
+        return TemplateResource.Render(
+            typeof(GlExtensionsEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/extensions.cs.tmpl",
+            ("SourceHeader", sourceHeader.ToString()),
+            ("Namespace", config.Namespace),
+            ("ApiClass", config.ApiClass),
+            ("Body", body.ToString()),
+            ("Helpers", helpers.ToString()));
     }
 }

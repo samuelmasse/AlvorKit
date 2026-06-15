@@ -1,0 +1,11 @@
+
+    /// <summary>Delegates rooted by native owner and callback slot.</summary>
+    private Dictionary<(nint Owner, int Slot), Delegate>? rootedCallbacks;
+
+    /// <summary>Roots, replaces, or clears a native callback delegate.</summary>
+    private nint RootCallback(nint owner, int slot, Delegate? handler)
+    {
+        if (handler is null) { rootedCallbacks?.Remove((owner, slot)); return 0; }
+        (rootedCallbacks ??= [])[(owner, slot)] = handler;
+        return Marshal.GetFunctionPointerForDelegate(handler);
+    }

@@ -59,11 +59,13 @@ internal sealed class GlSingularOverloadEmitter(GlExtensionEmissionState state) 
         IReadOnlyList<string> signature,
         IEnumerable<string> arguments)
     {
-        output.AppendLine($"    public virtual void {name}({string.Join(", ", signature)})");
-        output.AppendLine("    {");
-        output.AppendLine($"        this.{command.ManagedName}({string.Join(", ", arguments.Append($"(nint)(&{singular})"))});");
-        output.AppendLine("    }");
-        output.AppendLine();
+        output.Append(TemplateResource.RenderFragment(
+            typeof(GlSingularOverloadEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/singular-const.csfrag.tmpl",
+            ("Name", name),
+            ("Signature", string.Join(", ", signature)),
+            ("ManagedName", command.ManagedName),
+            ("Arguments", string.Join(", ", arguments.Append($"(nint)(&{singular})")))));
     }
 
     /// <summary>Emits a singular helper for a writable output pointer.</summary>
@@ -76,12 +78,15 @@ internal sealed class GlSingularOverloadEmitter(GlExtensionEmissionState state) 
         IReadOnlyList<string> signature,
         IEnumerable<string> arguments)
     {
-        output.AppendLine($"    public virtual {pointer.PointeeType} {name}({string.Join(", ", signature)})");
-        output.AppendLine("    {");
-        output.AppendLine($"        {pointer.PointeeType} {singular};");
-        output.AppendLine($"        this.{command.ManagedName}({string.Join(", ", arguments.Append($"(nint)(&{singular})"))});");
-        output.AppendLine($"        return {singular};");
-        output.AppendLine("    }");
-        output.AppendLine();
+        var returnType = pointer.PointeeType ?? throw new InvalidOperationException($"Parameter '{pointer.ManagedName}' has no pointee type.");
+        output.Append(TemplateResource.RenderFragment(
+            typeof(GlSingularOverloadEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/singular-writable.csfrag.tmpl",
+            ("ReturnType", returnType),
+            ("Name", name),
+            ("Signature", string.Join(", ", signature)),
+            ("LocalName", singular),
+            ("ManagedName", command.ManagedName),
+            ("Arguments", string.Join(", ", arguments.Append($"(nint)(&{singular})")))));
     }
 }

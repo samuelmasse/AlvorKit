@@ -24,14 +24,12 @@ internal sealed class GlSingleSourceOverloadEmitter(GlExtensionEmissionState sta
             .Append("(nint)(&sourcePointer)")
             .Append("(nint)(&length)");
         GlExtensionDocEmitter.Emit(output, state.Config, command, "Marshals <paramref name=\"source\"/> to UTF-8 and passes it with its byte length.");
-        output.AppendLine($"    public virtual void {command.ManagedName}({string.Join(", ", signature)})");
-        output.AppendLine("    {");
-        output.AppendLine("        using var sourceUtf8 = new Utf8(source, stackalloc byte[256]);");
-        output.AppendLine("        var sourcePointer = sourceUtf8.Pointer;");
-        output.AppendLine("        var length = sourceUtf8.Length;");
-        output.AppendLine($"        this.{command.ManagedName}({string.Join(", ", arguments)});");
-        output.AppendLine("    }");
-        output.AppendLine();
+        output.Append(TemplateResource.RenderFragment(
+            typeof(GlSingleSourceOverloadEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/single-source.csfrag.tmpl",
+            ("ManagedName", command.ManagedName),
+            ("Signature", string.Join(", ", signature)),
+            ("Arguments", string.Join(", ", arguments))));
     }
 
     /// <summary>Returns whether the command has the trailing count, string array, length array shape.</summary>

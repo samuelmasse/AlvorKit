@@ -1,0 +1,64 @@
+    /// <summary>Returns the byte length of a span of unmanaged elements.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static nint ByteLength<T>(ReadOnlySpan<T> span) where T : unmanaged =>
+        checked((nint)((nuint)span.Length * (nuint)sizeof(T)));
+
+    /// <summary>A NUL-terminated UTF-8 copy of a string for interop.</summary>
+    private readonly ref struct Utf8
+    {
+        /// <summary>Native heap allocation when the stack buffer is too small.</summary>
+        private readonly void* native;
+        /// <summary>Pointer to the NUL-terminated UTF-8 bytes.</summary>
+        public readonly nint Pointer;
+        /// <summary>Byte length excluding the NUL terminator.</summary>
+        public readonly int Length;
+
+        /// <summary>Encodes a managed string into stack or native NUL-terminated UTF-8 storage.</summary>
+        public Utf8(string text, Span<byte> stack)
+        {
+            Length = Encoding.UTF8.GetByteCount(text);
+            native = Length < stack.Length ? null : NativeMemory.Alloc((nuint)(Length + 1));
+            var buffer = native != null ? new Span<byte>(native, Length + 1) : stack;
+            Encoding.UTF8.GetBytes(text, buffer);
+            buffer[Length] = 0;
+            Pointer = (nint)Unsafe.AsPointer(ref MemoryMarshal.GetReference(buffer));
+        }
+
+        /// <summary>Releases any native heap storage used by this helper.</summary>
+        public void Dispose() => NativeMemory.Free(native);
+    }
+
+    /// <summary>An array of NUL-terminated UTF-8 strings plus a char** pointer array.</summary>
+    private readonly ref struct Utf8Array
+    {
+        /// <summary>Native heap allocation when the stack buffer is too small.</summary>
+        private readonly void* native;
+        /// <summary>Pointer to the array of string pointers.</summary>
+        public readonly nint Pointers;
+
+        /// <summary>Encodes managed strings into stack or native NUL-terminated UTF-8 storage.</summary>
+        public Utf8Array(ReadOnlySpan<string> strings, Span<nint> stack)
+        {
+            var total = 0;
+            for (var i = 0; i < strings.Length; i++)
+                total += Encoding.UTF8.GetByteCount(strings[i]) + 1;
+            var size = strings.Length * sizeof(nint) + total;
+            native = size <= stack.Length * sizeof(nint) ? null : NativeMemory.Alloc((nuint)size);
+            var basePtr = native != null ? (byte*)native : (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(stack));
+            var pointers = (byte**)basePtr;
+            var data = basePtr + strings.Length * sizeof(nint);
+            var remaining = total;
+            for (var i = 0; i < strings.Length; i++)
+            {
+                pointers[i] = data;
+                var written = Encoding.UTF8.GetBytes(strings[i], new Span<byte>(data, remaining));
+                data[written] = 0;
+                data += written + 1;
+                remaining -= written + 1;
+            }
+            Pointers = (nint)basePtr;
+        }
+
+        /// <summary>Releases any native heap storage used by this helper.</summary>
+        public void Dispose() => NativeMemory.Free(native);
+    }

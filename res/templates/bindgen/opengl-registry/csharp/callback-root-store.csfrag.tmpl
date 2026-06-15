@@ -1,0 +1,11 @@
+
+    /// <summary>Delegates rooted for native callback slots installed on this API instance.</summary>
+    private Dictionary<int, Delegate>? rootedCallbacks;
+
+    /// <summary>Roots or clears a callback delegate and returns its native function pointer.</summary>
+    private nint RootCallback(int slot, Delegate? handler)
+    {
+        if (handler is null) { rootedCallbacks?.Remove(slot); return 0; }
+        (rootedCallbacks ??= [])[slot] = handler;
+        return Marshal.GetFunctionPointerForDelegate(handler);
+    }

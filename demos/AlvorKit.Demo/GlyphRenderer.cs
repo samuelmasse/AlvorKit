@@ -24,22 +24,8 @@ public sealed class GlyphRenderer
          1f, -1f, 1f, 1f,
     ];
 
-    private const string VertexSource = """
-        #version 330 core
-        layout(location = 0) in vec2 position;
-        layout(location = 1) in vec2 uv;
-        out vec2 vertexUv;
-        uniform vec2 uScale;
-        void main() { vertexUv = uv; gl_Position = vec4(position * uScale, 0.0, 1.0); }
-        """;
-
-    private const string FragmentSource = """
-        #version 330 core
-        in vec2 vertexUv;
-        out vec4 color;
-        uniform sampler2D glyph;
-        void main() { color = vec4(vec3(texture(glyph, vertexUv).r), 1.0); }
-        """;
+    private static readonly string VertexSource = ReadShader("glyph.vert.glsl");
+    private static readonly string FragmentSource = ReadShader("glyph.frag.glsl");
 
     private readonly GlLayer gl;
     private readonly GlyphBitmap glyph;
@@ -134,14 +120,47 @@ public sealed class GlyphRenderer
         return (vertexArray, vertexBuffer);
     }
 
-    /// <summary>Compiles a shader from embedded demo source.</summary>
+    /// <summary>Compiles a shader from demo source.</summary>
     /// <param name="type">The shader stage to compile.</param>
-    /// <param name="source">The GLSL source embedded in the demo.</param>
+    /// <param name="source">The GLSL source read from the repository root res directory.</param>
     private GlShaderHandle Compile(GlShaderType type, string source)
     {
         var shader = gl.CreateShader(type);
         gl.ShaderSource(shader, source);
         gl.CompileShader(shader);
         return shader;
+    }
+
+    /// <summary>Reads a GLSL shader from the repository root res directory.</summary>
+    /// <param name="name">The shader file name under <c>res/shaders/AlvorKit.Demo</c>.</param>
+    private static string ReadShader(string name)
+    {
+        var path = Path.Combine(FindRepositoryRoot(), "res", "shaders", "AlvorKit.Demo", name);
+        return File.ReadAllText(path, Encoding.UTF8);
+    }
+
+    /// <summary>Finds the nearest repository root by walking upward from likely demo execution directories.</summary>
+    private static string FindRepositoryRoot()
+    {
+        foreach (var start in CandidateDirectories())
+        {
+            for (var current = start; current is not null; current = Directory.GetParent(current)?.FullName)
+            {
+                if (File.Exists(Path.Combine(current, "AlvorKit.slnx")) && Directory.Exists(Path.Combine(current, "res")))
+                    return current;
+            }
+        }
+
+        throw new InvalidOperationException("Could not find the AlvorKit repository root containing the res directory.");
+    }
+
+    /// <summary>Returns likely starting directories for repository root discovery.</summary>
+    private static IEnumerable<string> CandidateDirectories()
+    {
+        if (!string.IsNullOrWhiteSpace(Environment.CurrentDirectory))
+            yield return Environment.CurrentDirectory;
+
+        if (!string.IsNullOrWhiteSpace(AppContext.BaseDirectory))
+            yield return AppContext.BaseDirectory;
     }
 }

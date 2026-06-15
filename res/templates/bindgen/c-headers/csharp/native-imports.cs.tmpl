@@ -1,0 +1,10 @@
+{{SourceHeader}}[assembly: DisableRuntimeMarshalling]
+
+namespace {{Namespace}};
+
+/// <summary>Raw imports from the {{NativeLibrary}} shared library ({{NativePackageId}}).</summary>
+internal static partial class {{NativeClass}}
+{
+    /// <summary>Name of the native shared library.</summary>
+    private const string Lib = "{{NativeLibrary}}";
+{{Imports}}}

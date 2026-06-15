@@ -7,24 +7,23 @@ internal sealed class GlNoopEmitter(GlCodeEmissionContext context)
     /// <summary>Emits a null-object GL implementation for tests and headless paths.</summary>
     public string Emit(GlBindingModel model)
     {
-        var output = context.SourceHeader();
-        output.AppendLine($"namespace {context.Config.Namespace};");
-        output.AppendLine();
-        output.AppendLine($"/// <summary>A <see cref=\"{context.Config.ApiClass}\"/> that ignores every call and returns default values.</summary>");
-        output.AppendLine($"public class {context.Config.ApiClass}Noop : {context.Config.ApiClass}");
-        output.AppendLine("{");
-        foreach (var command in model.Commands)
-            EmitCommand(output, command);
-        output.AppendLine("}");
-        return output.ToString();
+        var methods = string.Join("", model.Commands.Select(Method));
+        return TemplateResource.Render(
+            typeof(GlNoopEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/noop.cs.tmpl",
+            ("SourceHeader", context.SourceHeader().ToString()),
+            ("Namespace", context.Config.Namespace),
+            ("ApiClass", context.Config.ApiClass),
+            ("Methods", methods));
     }
 
-    /// <summary>Emits one no-op override.</summary>
-    private static void EmitCommand(StringBuilder output, GlCommand command)
-    {
-        output.AppendLine("    /// <inheritdoc/>");
-        output.AppendLine(command.ReturnType == "void"
-            ? $"    public override void {command.ManagedName}({GlSignatureFormatter.Signature(command)}) {{ }}"
-            : $"    public override {command.ReturnType} {command.ManagedName}({GlSignatureFormatter.Signature(command)}) => default;");
-    }
+    /// <summary>Renders one no-op override.</summary>
+    private static string Method(GlCommand command) =>
+        TemplateResource.Render(
+            typeof(GlNoopEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/noop-method.csfrag.tmpl",
+            ("ReturnType", command.ReturnType),
+            ("ManagedName", command.ManagedName),
+            ("Signature", GlSignatureFormatter.Signature(command)),
+            ("Body", command.ReturnType == "void" ? "{ }" : "=> default;"));
 }

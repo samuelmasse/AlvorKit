@@ -10,17 +10,7 @@ internal static class BindingCallbackSetterEmitter
         if (setters.Count == 0)
             return;
 
-        output.AppendLine();
-        output.AppendLine("    /// <summary>Delegates rooted by native owner and callback slot.</summary>");
-        output.AppendLine("    private Dictionary<(nint Owner, int Slot), Delegate>? rootedCallbacks;");
-        output.AppendLine();
-        output.AppendLine("    /// <summary>Roots, replaces, or clears a native callback delegate.</summary>");
-        output.AppendLine("    private nint RootCallback(nint owner, int slot, Delegate? handler)");
-        output.AppendLine("    {");
-        output.AppendLine("        if (handler is null) { rootedCallbacks?.Remove((owner, slot)); return 0; }");
-        output.AppendLine("        (rootedCallbacks ??= [])[(owner, slot)] = handler;");
-        output.AppendLine("        return Marshal.GetFunctionPointerForDelegate(handler);");
-        output.AppendLine("    }");
+        output.Append(TemplateResource.Read(typeof(BindingCallbackSetterEmitter), "res/templates/bindgen/c-headers/csharp/callback-root-store.csfrag.tmpl"));
 
         var slot = 0;
         foreach (var function in setters)
@@ -38,11 +28,17 @@ internal static class BindingCallbackSetterEmitter
         var arguments = string.Join(", ", function.Parameters.Select(parameter =>
             parameter == callbackParameter ? $"RootCallback({owner}, {slot}, {parameter.ManagedName})" : parameter.ManagedName));
 
-        output.AppendLine();
+        var documentation = new StringBuilder();
         BindingDocs.InheritedConvenience(
-            output,
+            documentation,
             $"{apiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
             "Roots the delegate and installs its function pointer; pass null to clear it.");
-        output.AppendLine($"    public void {function.ManagedName}({signature}) => {function.ManagedName}({arguments});");
+        output.Append(TemplateResource.Render(
+            typeof(BindingCallbackSetterEmitter),
+            "res/templates/bindgen/c-headers/csharp/callback-setter.csfrag.tmpl",
+            ("Documentation", documentation.ToString()),
+            ("ManagedName", function.ManagedName),
+            ("Signature", signature),
+            ("Arguments", arguments)));
     }
 }

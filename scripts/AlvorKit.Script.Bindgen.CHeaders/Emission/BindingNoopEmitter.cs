@@ -6,35 +6,37 @@ internal sealed class BindingNoopEmitter(BindingEmitterContext context)
     /// <summary>Emits the noop class source file.</summary>
     public string Noop(BindingModel model)
     {
-        var output = context.SourceHeader();
-        output.AppendLine($"namespace {context.Config.Namespace};");
-        output.AppendLine();
-        output.AppendLine($"/// <summary>A <see cref=\"{context.Config.ApiClass}\"/> that ignores calls and returns default values.</summary>");
-        output.AppendLine($"public class {context.Config.ApiClass}Noop : {context.Config.ApiClass}");
-        output.AppendLine("{");
-        foreach (var function in model.Functions)
-            NoopMethod(output, function);
-        output.AppendLine("}");
-        return output.ToString();
+        var methods = string.Join("", model.Functions.Select(NoopMethod));
+        return TemplateResource.Render(
+            typeof(BindingNoopEmitter),
+            "res/templates/bindgen/c-headers/csharp/noop.cs.tmpl",
+            ("SourceHeader", context.SourceHeader().ToString()),
+            ("Namespace", context.Config.Namespace),
+            ("ApiClass", context.Config.ApiClass),
+            ("Methods", methods));
     }
 
-    /// <summary>Emits one noop override.</summary>
-    private static void NoopMethod(StringBuilder output, BindingFunction function)
+    /// <summary>Renders one noop override.</summary>
+    private static string NoopMethod(BindingFunction function)
     {
-        var header = $"    public override {function.ReturnType} {function.ManagedName}({BindingSignature.ForFunction(function)})";
         var outParameters = function.Parameters.Where(parameter => parameter.Modifier == "out").ToList();
-        output.AppendLine("    /// <inheritdoc/>");
         if (outParameters.Count == 0)
-        {
-            output.AppendLine(function.ReturnType == "void" ? header + " { }" : header + " => default;");
-            return;
-        }
-        output.AppendLine(header);
-        output.AppendLine("    {");
-        foreach (var parameter in outParameters)
-            output.AppendLine($"        {parameter.ManagedName} = default;");
-        if (function.ReturnType != "void")
-            output.AppendLine("        return default;");
-        output.AppendLine("    }");
+            return TemplateResource.Render(
+                typeof(BindingNoopEmitter),
+                "res/templates/bindgen/c-headers/csharp/noop-expression-method.csfrag.tmpl",
+                ("ReturnType", function.ReturnType),
+                ("ManagedName", function.ManagedName),
+                ("Signature", BindingSignature.ForFunction(function)),
+                ("Body", function.ReturnType == "void" ? "{ }" : "=> default;"));
+
+        var outAssignments = string.Join("", outParameters.Select(parameter => $"        {parameter.ManagedName} = default;{Environment.NewLine}"));
+        return TemplateResource.Render(
+            typeof(BindingNoopEmitter),
+            "res/templates/bindgen/c-headers/csharp/noop-block-method.csfrag.tmpl",
+            ("ReturnType", function.ReturnType),
+            ("ManagedName", function.ManagedName),
+            ("Signature", BindingSignature.ForFunction(function)),
+            ("OutAssignments", outAssignments),
+            ("ReturnDefault", function.ReturnType == "void" ? "" : $"        return default;{Environment.NewLine}"));
     }
 }

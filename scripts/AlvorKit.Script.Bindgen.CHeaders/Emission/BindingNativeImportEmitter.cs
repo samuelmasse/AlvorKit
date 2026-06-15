@@ -6,25 +6,25 @@ internal sealed class BindingNativeImportEmitter(BindingEmitterContext context)
     /// <summary>Emits the native imports source file.</summary>
     public string NativeImports(BindingModel model)
     {
-        var output = context.SourceHeader();
-        output.AppendLine("[assembly: DisableRuntimeMarshalling]");
-        output.AppendLine();
-        output.AppendLine($"namespace {context.Config.Namespace};");
-        output.AppendLine();
-        output.AppendLine($"/// <summary>Raw imports from the {context.Config.NativeLibrary} shared library ({context.Config.Namespace}.Native).</summary>");
-        output.AppendLine($"internal static partial class {context.Config.NativeClass}");
-        output.AppendLine("{");
-        output.AppendLine($"    /// <summary>Name of the native shared library.</summary>");
-        output.AppendLine($"    private const string Lib = \"{context.Config.NativeLibrary}\";");
-        foreach (var function in model.Functions)
-        {
-            output.AppendLine();
-            output.AppendLine($"    /// <summary>Imports native <c>{function.NativeName}</c>.</summary>");
-            output.AppendLine($"    [LibraryImport(Lib, EntryPoint = \"{function.NativeName}\")]");
-            output.AppendLine("    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]");
-            output.AppendLine($"    public static partial {function.ReturnInteropType} {function.ManagedName}({BindingSignature.ForFunction(function, native: true)});");
-        }
-        output.AppendLine("}");
-        return output.ToString();
+        var imports = string.Join("", model.Functions.Select(Import));
+        return TemplateResource.Render(
+            typeof(BindingNativeImportEmitter),
+            "res/templates/bindgen/c-headers/csharp/native-imports.cs.tmpl",
+            ("SourceHeader", context.SourceHeader().ToString()),
+            ("Namespace", context.Config.Namespace),
+            ("NativeLibrary", context.Config.NativeLibrary),
+            ("NativePackageId", context.Config.Namespace + ".Native"),
+            ("NativeClass", context.Config.NativeClass),
+            ("Imports", imports));
     }
+
+    /// <summary>Renders one native import declaration.</summary>
+    private static string Import(BindingFunction function) =>
+        TemplateResource.Render(
+            typeof(BindingNativeImportEmitter),
+            "res/templates/bindgen/c-headers/csharp/native-import.csfrag.tmpl",
+            ("NativeName", function.NativeName),
+            ("ReturnInteropType", function.ReturnInteropType),
+            ("ManagedName", function.ManagedName),
+            ("Signature", BindingSignature.ForFunction(function, native: true)));
 }

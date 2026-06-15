@@ -23,11 +23,7 @@ internal sealed class BindingSpanOverloadEmitter(BindingEmitterContext context)
     /// <summary>Emits the byte-length helper used by generated span overloads.</summary>
     public static void ByteLengthHelper(StringBuilder output)
     {
-        output.AppendLine();
-        output.AppendLine("    /// <summary>Returns the byte length of an unmanaged span.</summary>");
-        output.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        output.AppendLine("    private static nuint ByteLength<T>(ReadOnlySpan<T> span) where T : unmanaged =>");
-        output.AppendLine("        checked((nuint)span.Length * (nuint)sizeof(T));");
+        output.Append(TemplateResource.Read(typeof(BindingSpanOverloadEmitter), "res/templates/bindgen/c-headers/csharp/byte-length-helper.csfrag.tmpl"));
     }
 
     /// <summary>Finds pointer parameters that can safely become spans in overloads.</summary>
@@ -62,23 +58,29 @@ internal sealed class BindingSpanOverloadEmitter(BindingEmitterContext context)
         var signature = Signature(function, typeParameterByPointer, pointerByLength, out var arguments);
         var typeParameters = spanned.Select(candidate => typeParameterByPointer[candidate.Pointer]).ToList();
 
-        output.AppendLine();
+        var documentation = new StringBuilder();
         BindingDocs.InheritedConvenience(
-            output,
+            documentation,
             $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
             "Pins span arguments for the duration of the call, supplies byte lengths where the native method expects them, "
             + "and forwards to the underlying method.");
-        output.Append($"    public {function.ReturnType} {function.ManagedName}<{string.Join(", ", typeParameters)}>({string.Join(", ", signature)})");
-        EmitTypeConstraints(output, typeParameters);
-        output.AppendLine("    {");
-        foreach (var candidate in spanned)
+        var call = $"{function.ManagedName}({string.Join(", ", arguments)})";
+        var fixedStatements = string.Join("", spanned.Select(candidate =>
         {
             var parameter = function.Parameters[candidate.Pointer];
-            output.AppendLine($"        fixed ({typeParameterByPointer[candidate.Pointer]}* {parameter.ManagedName}Ptr = {parameter.ManagedName})");
-        }
-        var call = $"{function.ManagedName}({string.Join(", ", arguments)})";
-        output.AppendLine($"            {(function.ReturnType == "void" ? call : "return " + call)};");
-        output.AppendLine("    }");
+            return $"        fixed ({typeParameterByPointer[candidate.Pointer]}* {parameter.ManagedName}Ptr = {parameter.ManagedName}){Environment.NewLine}";
+        }));
+        output.Append(TemplateResource.Render(
+            typeof(BindingSpanOverloadEmitter),
+            "res/templates/bindgen/c-headers/csharp/span-overload.csfrag.tmpl",
+            ("Documentation", documentation.ToString()),
+            ("ReturnType", function.ReturnType),
+            ("ManagedName", function.ManagedName),
+            ("TypeParameters", string.Join(", ", typeParameters)),
+            ("Signature", string.Join(", ", signature)),
+            ("Constraints", TypeConstraints(typeParameters)),
+            ("FixedStatements", fixedStatements),
+            ("Invocation", function.ReturnType == "void" ? call : "return " + call)));
     }
 
     /// <summary>Builds an overload signature and call argument list.</summary>
@@ -123,16 +125,15 @@ internal sealed class BindingSpanOverloadEmitter(BindingEmitterContext context)
         }
     }
 
-    /// <summary>Emits unmanaged constraints for span overload type parameters.</summary>
-    private static void EmitTypeConstraints(StringBuilder output, List<string> typeParameters)
+    /// <summary>Renders unmanaged constraints for span overload type parameters.</summary>
+    private static string TypeConstraints(List<string> typeParameters)
     {
         if (typeParameters.Count == 1)
-            output.AppendLine($" where {typeParameters[0]} : unmanaged");
-        else
-        {
-            output.AppendLine();
-            foreach (var typeParameter in typeParameters)
-                output.AppendLine($"        where {typeParameter} : unmanaged");
-        }
+            return $" where {typeParameters[0]} : unmanaged{Environment.NewLine}";
+
+        var output = new StringBuilder().AppendLine();
+        foreach (var typeParameter in typeParameters)
+            output.AppendLine($"        where {typeParameter} : unmanaged");
+        return output.ToString();
     }
 }

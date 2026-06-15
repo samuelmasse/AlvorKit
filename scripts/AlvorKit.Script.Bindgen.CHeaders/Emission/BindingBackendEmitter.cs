@@ -6,24 +6,27 @@ internal sealed class BindingBackendEmitter(BindingEmitterContext context)
     /// <summary>Emits the backend class source file.</summary>
     public string Backend(BindingModel model)
     {
-        var output = context.SourceHeader();
-        output.AppendLine($"namespace {context.Config.Namespace};");
-        output.AppendLine();
-        output.AppendLine($"/// <summary>Implements <see cref=\"{context.Config.ApiClass}\"/> against the {context.Config.NativeLibrary} shared library.</summary>");
-        output.AppendLine($"public class {context.Config.BackendClass} : {context.Config.ApiClass}");
-        output.AppendLine("{");
-        var first = true;
-        foreach (var function in model.Functions)
-        {
-            if (!first)
-                output.AppendLine();
-            first = false;
-            output.AppendLine("    /// <inheritdoc/>");
-            output.AppendLine($"    public override {function.ReturnType} {function.ManagedName}({BindingSignature.ForFunction(function)}) => {Body(function)};");
-        }
-        output.AppendLine("}");
-        return output.ToString();
+        var methods = string.Join(Environment.NewLine, model.Functions.Select(Method));
+        return TemplateResource.Render(
+            typeof(BindingBackendEmitter),
+            "res/templates/bindgen/c-headers/csharp/backend.cs.tmpl",
+            ("SourceHeader", context.SourceHeader().ToString()),
+            ("Namespace", context.Config.Namespace),
+            ("ApiClass", context.Config.ApiClass),
+            ("NativeLibrary", context.Config.NativeLibrary),
+            ("BackendClass", context.Config.BackendClass),
+            ("Methods", methods));
     }
+
+    /// <summary>Renders one backend override.</summary>
+    private string Method(BindingFunction function) =>
+        TemplateResource.Render(
+            typeof(BindingBackendEmitter),
+            "res/templates/bindgen/c-headers/csharp/backend-method.csfrag.tmpl",
+            ("ReturnType", function.ReturnType),
+            ("ManagedName", function.ManagedName),
+            ("Signature", BindingSignature.ForFunction(function)),
+            ("Body", Body(function)));
 
     /// <summary>Formats a backend method body for a native import call.</summary>
     private string Body(BindingFunction function)

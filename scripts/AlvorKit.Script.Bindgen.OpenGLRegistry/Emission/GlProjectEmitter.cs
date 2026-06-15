@@ -5,38 +5,19 @@ namespace AlvorKit.Script.Bindgen;
 internal sealed class GlProjectEmitter(GlCodeEmissionContext context)
 {
     /// <summary>Emits the generated public API project file.</summary>
-    public string EmitApiProject(string version) => $"""
-        {context.XmlBanner()}
-        <Project Sdk="Microsoft.NET.Sdk">
-
-            <PropertyGroup>
-                <Version>{version}</Version>
-                <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-            </PropertyGroup>
-
-            <ItemGroup>
-                <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="\" />
-            </ItemGroup>
-
-        </Project>
-
-        """;
+    public string EmitApiProject(string version) =>
+        TemplateResource.Render(
+            typeof(GlProjectEmitter),
+            "res/templates/bindgen/opengl-registry/api-project.csproj.tmpl",
+            ("XmlBanner", context.XmlBanner()),
+            ("Version", version));
 
     /// <summary>Emits the backend project file that references the generated API project.</summary>
-    public string EmitBackendProject(string version, string apiProjectName) => $"""
-        {context.XmlBanner()}
-        <Project Sdk="Microsoft.NET.Sdk">
-
-            <PropertyGroup>
-                <Version>{version}</Version>
-                <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-            </PropertyGroup>
-
-            <ItemGroup>
-                <ProjectReference Include="..\{apiProjectName}\{apiProjectName}.csproj" />
-            </ItemGroup>
-
-        </Project>
-
-        """;
+    public string EmitBackendProject(string version, string apiProjectName) =>
+        TemplateResource.Render(
+            typeof(GlProjectEmitter),
+            "res/templates/bindgen/opengl-registry/backend-project.csproj.tmpl",
+            ("XmlBanner", context.XmlBanner()),
+            ("Version", version),
+            ("ApiProjectName", apiProjectName));
 }

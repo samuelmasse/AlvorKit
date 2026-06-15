@@ -19,30 +19,10 @@ public sealed class HelloTriangle : IDisposable
     private const int ColorOffsetBytes = 3 * sizeof(float);
 
     /// <summary>Vertex shader source for transforming positions and passing per-vertex color through.</summary>
-    private const string VertexShaderSource =
-        """
-        #version 330 core
-        layout (location = 0) in vec3 aPos;
-        layout (location = 1) in vec3 aColor;
-        out vec3 ourColor;
-        void main()
-        {
-            gl_Position = vec4(aPos, 1.0);
-            ourColor = aColor;
-        }
-        """;
+    private static readonly string VertexShaderSource = ReadShader("triangle.vert.glsl");
 
     /// <summary>Fragment shader source that writes the interpolated vertex color to the framebuffer.</summary>
-    private const string FragmentShaderSource =
-        """
-        #version 330 core
-        in vec3 ourColor;
-        out vec4 FragColor;
-        void main()
-        {
-            FragColor = vec4(ourColor, 1.0);
-        }
-        """;
+    private static readonly string FragmentShaderSource = ReadShader("triangle.frag.glsl");
 
     /// <summary>The raw OpenGL command surface bound to the live GLFW context.</summary>
     private readonly Gl gl;
@@ -155,5 +135,38 @@ public sealed class HelloTriangle : IDisposable
         var log = gl.GetShaderInfoLog(shader);
         gl.DeleteShader(shader);
         throw new InvalidOperationException($"Shader compilation failed: {log}");
+    }
+
+    /// <summary>Reads a GLSL shader from the repository root res directory.</summary>
+    /// <param name="name">The shader file name under <c>res/shaders/AlvorKit.OpenGL.Demo.HelloTriangle</c>.</param>
+    private static string ReadShader(string name)
+    {
+        var path = Path.Combine(FindRepositoryRoot(), "res", "shaders", "AlvorKit.OpenGL.Demo.HelloTriangle", name);
+        return File.ReadAllText(path, Encoding.UTF8);
+    }
+
+    /// <summary>Finds the nearest repository root by walking upward from likely demo execution directories.</summary>
+    private static string FindRepositoryRoot()
+    {
+        foreach (var start in CandidateDirectories())
+        {
+            for (var current = start; current is not null; current = Directory.GetParent(current)?.FullName)
+            {
+                if (File.Exists(Path.Combine(current, "AlvorKit.slnx")) && Directory.Exists(Path.Combine(current, "res")))
+                    return current;
+            }
+        }
+
+        throw new InvalidOperationException("Could not find the AlvorKit repository root containing the res directory.");
+    }
+
+    /// <summary>Returns likely starting directories for repository root discovery.</summary>
+    private static IEnumerable<string> CandidateDirectories()
+    {
+        if (!string.IsNullOrWhiteSpace(Environment.CurrentDirectory))
+            yield return Environment.CurrentDirectory;
+
+        if (!string.IsNullOrWhiteSpace(AppContext.BaseDirectory))
+            yield return AppContext.BaseDirectory;
     }
 }

@@ -18,22 +18,21 @@ internal sealed class BindingOverloadEmitter(BindingEmitterContext context)
             return null;
 
         var hasStringConvenience = model.Functions.Any(function => function.Parameters.Any(parameter => parameter.HasStringConvenience));
-        var output = context.SourceHeader();
-        if (hasStringConvenience)
-            output.AppendLine("using System.Text;").AppendLine();
-        output.AppendLine($"namespace {context.Config.Namespace};");
-        output.AppendLine();
-        output.AppendLine($"/// <summary>Convenience overloads for <see cref=\"{context.Config.ApiClass}\"/>.</summary>");
-        output.AppendLine("/// <remarks>These methods adapt managed-friendly argument shapes and forward to the native-shaped API members.</remarks>");
-        output.AppendLine($"public{(NeedsUnsafe(model) ? " unsafe" : "")} partial class {context.Config.ApiClass}");
-        output.AppendLine("{");
-        output.Append(overloads);
+        var helpers = new StringBuilder();
         if (hasSpanOverloads)
-            BindingSpanOverloadEmitter.ByteLengthHelper(output);
+            BindingSpanOverloadEmitter.ByteLengthHelper(helpers);
         if (hasStringConvenience)
-            BindingUtf8HelperEmitter.Utf8Helper(output);
-        output.AppendLine("}");
-        return output.ToString();
+            BindingUtf8HelperEmitter.Utf8Helper(helpers);
+        return TemplateResource.Render(
+            typeof(BindingOverloadEmitter),
+            "res/templates/bindgen/c-headers/csharp/overloads.cs.tmpl",
+            ("SourceHeader", context.SourceHeader().ToString()),
+            ("Usings", hasStringConvenience ? "using System.Text;" + Environment.NewLine + Environment.NewLine : ""),
+            ("Namespace", context.Config.Namespace),
+            ("ApiClass", context.Config.ApiClass),
+            ("Unsafe", NeedsUnsafe(model) ? " unsafe" : ""),
+            ("Overloads", overloads.ToString()),
+            ("Helpers", helpers.ToString()));
     }
 
     /// <summary>Returns true when generated overloads require unsafe code.</summary>

@@ -1,0 +1,17 @@
+{{XmlBanner}}
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Version>{{BindingVersion}}</Version>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="{{NativePackageId}}" Version="{{NativeVersion}}" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\{{ApiProjectName}}\{{ApiProjectName}}.csproj" />
+    </ItemGroup>
+
+</Project>

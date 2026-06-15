@@ -1,0 +1,6 @@
+
+{{Documentation}}    public unsafe ReadOnlySpan<{{ElementType}}> {{ManagedName}}({{Signature}})
+    {
+        var pointer = {{ManagedName}}({{CallArguments}});
+        return pointer == 0 || count <= 0 ? default : new ReadOnlySpan<{{ElementType}}>((void*)pointer, count);
+    }

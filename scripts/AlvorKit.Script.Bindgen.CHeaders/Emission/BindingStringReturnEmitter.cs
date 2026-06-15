@@ -17,32 +17,38 @@ internal static class BindingStringReturnEmitter
         var inheritCref = $"{apiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})";
         var call = $"{function.ManagedName}({callArguments})";
 
-        output.AppendLine();
+        var stringDocumentation = new StringBuilder();
         BindingDocs.InheritedConvenience(
-            output,
+            stringDocumentation,
             inheritCref,
             "Decodes the returned C string to a managed string, or null when the pointer is null.");
         var stringParameters = string.Join(", ", leading.Append($"out string? {value}"));
-        output.AppendLine(
-            $"    public void {function.ManagedName}({stringParameters}) => " +
-            $"{value} = Marshal.PtrToStringUTF8({call});");
+        output.Append(TemplateResource.Render(
+            typeof(BindingStringReturnEmitter),
+            "res/templates/bindgen/c-headers/csharp/string-return.csfrag.tmpl",
+            ("Documentation", stringDocumentation.ToString()),
+            ("ManagedName", function.ManagedName),
+            ("StringParameters", stringParameters),
+            ("Value", value),
+            ("Call", call)));
 
-        output.AppendLine();
+        var spanDocumentation = new StringBuilder();
         BindingDocs.InheritedConvenience(
-            output,
+            spanDocumentation,
             inheritCref,
             $"Decodes the returned C string into <paramref name=\"{destination}\"/> and returns the slice written.");
         var spanParameters = string.Join(
             ", ",
             leading.Append($"Span<char> {destination}").Append($"out ReadOnlySpan<char> {result}"));
-        output.AppendLine($"    public unsafe void {function.ManagedName}({spanParameters})");
-        output.AppendLine("    {");
-        output.AppendLine($"        var pointer = {call};");
-        output.AppendLine($"        if (pointer == 0) {{ {result} = default; return; }}");
-        output.AppendLine("        var bytes = MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)pointer);");
-        output.AppendLine($"        System.Text.Unicode.Utf8.ToUtf16(bytes, {destination}, out _, out var written);");
-        output.AppendLine($"        {result} = {destination}[..written];");
-        output.AppendLine("    }");
+        output.Append(TemplateResource.Render(
+            typeof(BindingStringReturnEmitter),
+            "res/templates/bindgen/c-headers/csharp/string-return-span.csfrag.tmpl",
+            ("Documentation", spanDocumentation.ToString()),
+            ("ManagedName", function.ManagedName),
+            ("SpanParameters", spanParameters),
+            ("Call", call),
+            ("Result", result),
+            ("Destination", destination)));
     }
 
     /// <summary>Returns a unique generated parameter name.</summary>

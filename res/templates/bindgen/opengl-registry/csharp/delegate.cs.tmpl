@@ -1,0 +1,5 @@
+{{SourceHeader}}namespace {{Namespace}};
+
+/// <summary>An OpenGL callback (<c>{{NativeName}}</c>); install it through the matching setter, which roots it on the instance.</summary>
+[UnmanagedFunctionPointer(CallingConvention.Winapi)]
+public delegate {{ReturnType}} {{ManagedName}}({{Signature}});

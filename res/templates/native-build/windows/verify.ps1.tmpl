@@ -1,0 +1,4 @@
+{{VisualStudioDevShell}}
+$Deps = & dumpbin /nologo /dependents {{OutputFile}} | Select-String '\.dll'
+$Deps | ForEach-Object { Write-Host $_.Line.Trim() }
+if ($Deps -match 'VCRUNTIME|MSVCP') { throw 'DLL depends on the VC++ runtime - static CRT did not take.' }

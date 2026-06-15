@@ -7,32 +7,29 @@ internal sealed class GlHandleEmitter(GlCodeEmissionContext context)
     /// <summary>Emits typed wrappers around GL object names plus a generic handle.</summary>
     public string Emit(GlBindingModel model)
     {
-        var output = context.SourceHeader();
-        output.AppendLine($"namespace {context.Config.Namespace};");
-        foreach (var handle in model.HandleTypes)
-            EmitHandle(output, handle);
-        return output.ToString();
+        var handles = string.Join("", model.HandleTypes.Select(Handle)).TrimEnd('\r', '\n');
+        return TemplateResource.Render(
+            typeof(GlHandleEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/handles.cs.tmpl",
+            ("SourceHeader", context.SourceHeader().ToString()),
+            ("Namespace", context.Config.Namespace),
+            ("Handles", handles));
     }
 
-    /// <summary>Emits one generated handle record struct.</summary>
-    private static void EmitHandle(StringBuilder output, string handle)
+    /// <summary>Renders one generated handle record struct.</summary>
+    private static string Handle(string handle)
     {
-        output.AppendLine();
-        output.AppendLine(handle == "GlHandle"
-            ? "/// <summary>A strongly-typed handle to any OpenGL object; every specific handle widens to it.</summary>"
-            : "/// <summary>A strongly-typed OpenGL object handle.</summary>");
-        output.AppendLine("/// <param name=\"Handle\">Raw OpenGL object name.</param>");
-        output.AppendLine($"public readonly record struct {handle}(uint Handle)");
-        output.AppendLine("{");
-        if (handle != "GlHandle")
-        {
-            output.AppendLine("    /// <summary>Widens to the generic <see cref=\"GlHandle\"/> handle.</summary>");
-            output.AppendLine($"    public static implicit operator GlHandle({handle} handle) => new(handle.Handle);");
-        }
-        output.AppendLine("    /// <summary>The raw object name. Explicit: a handle never implicitly becomes an integer.</summary>");
-        output.AppendLine($"    public static explicit operator uint({handle} handle) => handle.Handle;");
-        output.AppendLine("    /// <summary>Wraps a raw object name. Explicit: an integer is never implicitly a handle.</summary>");
-        output.AppendLine($"    public static explicit operator {handle}(uint handle) => new(handle);");
-        output.AppendLine("}");
+        var widening = handle == "GlHandle" ? "" : TemplateResource.Render(
+            typeof(GlHandleEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/handle-widening.csfrag.tmpl",
+            ("Handle", handle));
+        return TemplateResource.Render(
+            typeof(GlHandleEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/handle.csfrag.tmpl",
+            ("Summary", handle == "GlHandle"
+                ? "A strongly-typed handle to any OpenGL object; every specific handle widens to it."
+                : "A strongly-typed OpenGL object handle."),
+            ("Handle", handle),
+            ("Widening", widening));
     }
 }

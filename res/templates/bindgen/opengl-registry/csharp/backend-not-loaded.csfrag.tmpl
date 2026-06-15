@@ -1,0 +1,4 @@
+
+    /// <summary>Creates the exception thrown for an unresolved OpenGL entry point.</summary>
+    private static EntryPointNotFoundException NotLoaded(string entryPoint) =>
+        new($"OpenGL entry point not available in the current context: {entryPoint} (the proc loader did not provide it - the function is not in the active GL version or driver).");

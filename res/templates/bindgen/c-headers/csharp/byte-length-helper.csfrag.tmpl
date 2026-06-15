@@ -1,0 +1,5 @@
+
+    /// <summary>Returns the byte length of an unmanaged span.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static nuint ByteLength<T>(ReadOnlySpan<T> span) where T : unmanaged =>
+        checked((nuint)span.Length * (nuint)sizeof(T));

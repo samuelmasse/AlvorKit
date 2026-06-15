@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+        <PackageReference Include="AlvorKit.FreeType.Backend" Version="$(FtBindVer)" />
+        <PackageReference Include="BigGustave" Version="1.0.6" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj" />
+        <PackageReference Include="BigGustave" Version="1.0.6" />
+    </ItemGroup>
+
+</Project>

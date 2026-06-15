@@ -1,0 +1,4 @@
+$env:PATH = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer;$env:PATH"
+$VsPath = & vswhere.exe -latest -products * -requires {{Toolset}} -property installationPath
+if (-not $VsPath) { throw "No Visual Studio with the {{WindowsArchitecture}} C++ toolset found." }
+& "$VsPath\Common7\Tools\Launch-VsDevShell.ps1" -Arch {{VisualStudioArchitecture}} -SkipAutomaticLocation | Out-Null

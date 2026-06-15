@@ -9,38 +9,22 @@ internal sealed class BindingProjectEmitter(BindingEmitterContext context)
         var unsafeBlocks = context.Config.SpanOverloads
             || context.Config.SpanReturns.Count > 0
             || model.Functions.Any(function => function.ReturnsCString || function.Parameters.Any(parameter => parameter.HasStringConvenience));
-        return $"""
-            {context.XmlBanner()}
-            <Project Sdk="Microsoft.NET.Sdk">
-
-                <PropertyGroup>
-                    <Version>{version}</Version>{(unsafeBlocks ? "\n        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>" : "")}
-                </PropertyGroup>
-
-            </Project>
-
-            """;
+        return TemplateResource.Render(
+            typeof(BindingProjectEmitter),
+            "res/templates/bindgen/c-headers/api-project.csproj.tmpl",
+            ("XmlBanner", context.XmlBanner()),
+            ("Version", version),
+            ("UnsafeBlocks", unsafeBlocks ? Environment.NewLine + "        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>" : ""));
     }
 
     /// <summary>Emits the generated backend project file.</summary>
-    public string BackendProject(string bindingVersion, string nativeVersion, string apiProjectName) => $"""
-        {context.XmlBanner()}
-        <Project Sdk="Microsoft.NET.Sdk">
-
-            <PropertyGroup>
-                <Version>{bindingVersion}</Version>
-                <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-            </PropertyGroup>
-
-            <ItemGroup>
-                <PackageReference Include="{context.Config.Namespace}.Native" Version="{nativeVersion}" />
-            </ItemGroup>
-
-            <ItemGroup>
-                <ProjectReference Include="..\{apiProjectName}\{apiProjectName}.csproj" />
-            </ItemGroup>
-
-        </Project>
-
-        """;
+    public string BackendProject(string bindingVersion, string nativeVersion, string apiProjectName) =>
+        TemplateResource.Render(
+            typeof(BindingProjectEmitter),
+            "res/templates/bindgen/c-headers/backend-project.csproj.tmpl",
+            ("XmlBanner", context.XmlBanner()),
+            ("BindingVersion", bindingVersion),
+            ("NativePackageId", context.Config.Namespace + ".Native"),
+            ("NativeVersion", nativeVersion),
+            ("ApiProjectName", apiProjectName));
 }

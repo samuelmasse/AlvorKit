@@ -6,36 +6,24 @@ internal sealed class BindingApiEmitter(BindingEmitterContext context)
     /// <summary>Emits the generated API contract source.</summary>
     public string ApiContract(BindingModel model)
     {
-        var output = context.SourceHeader();
-        output.AppendLine($"namespace {context.Config.Namespace};");
-        output.AppendLine();
-        output.AppendLine("/// <summary>");
-        output.AppendLine($"/// {context.Config.ApiSummary}");
-        output.AppendLine($"/// Use through a backend implementation, such as {context.Config.BackendClass} from {context.Config.Namespace}.Backend.");
-        output.AppendLine("/// </summary>");
-        output.AppendLine($"public partial class {context.Config.ApiClass}");
-        output.AppendLine("{");
-        EmitConstants(output, model);
-        EmitVirtualMethods(output, model);
-        output.AppendLine("}");
-        return output.ToString();
+        var members = Members(model);
+        return TemplateResource.Render(
+            typeof(BindingApiEmitter),
+            "res/templates/bindgen/c-headers/csharp/api-contract.cs.tmpl",
+            ("SourceHeader", context.SourceHeader().ToString()),
+            ("Namespace", context.Config.Namespace),
+            ("ApiSummary", context.Config.ApiSummary),
+            ("BackendClass", context.Config.BackendClass),
+            ("ApiClass", context.Config.ApiClass),
+            ("Members", members));
     }
 
-    /// <summary>Emits public constants on the API class.</summary>
-    private static void EmitConstants(StringBuilder output, BindingModel model)
+    /// <summary>Renders all generated API members.</summary>
+    private static string Members(BindingModel model)
     {
+        var output = new StringBuilder();
         foreach (var constant in model.Constants)
-        {
-            output.AppendLine($"    /// <summary>Native constant value for <c>{constant.ManagedName}</c>.</summary>");
-            output.AppendLine(constant.Value is >= int.MinValue and <= int.MaxValue
-                ? $"    public const int {constant.ManagedName} = {constant.Value};"
-                : $"    public const long {constant.ManagedName} = {constant.Value};");
-        }
-    }
-
-    /// <summary>Emits virtual native function methods on the API class.</summary>
-    private static void EmitVirtualMethods(StringBuilder output, BindingModel model)
-    {
+            output.Append(Constant(constant));
         var first = model.Constants.Count == 0;
         foreach (var function in model.Functions)
         {
@@ -43,9 +31,26 @@ internal sealed class BindingApiEmitter(BindingEmitterContext context)
                 output.AppendLine();
             first = false;
             BindingDocs.Function(output, function);
-            var signature = BindingSignature.ForFunction(function);
-            output.AppendLine(
-                $"    public virtual {function.ReturnType} {function.ManagedName}({signature}) => throw new NotImplementedException();");
+            output.Append(Method(function));
         }
+        return output.ToString();
     }
+
+    /// <summary>Renders a public API constant.</summary>
+    private static string Constant(BindingConstant constant) =>
+        TemplateResource.Render(
+            typeof(BindingApiEmitter),
+            "res/templates/bindgen/c-headers/csharp/api-constant.csfrag.tmpl",
+            ("ManagedName", constant.ManagedName),
+            ("Type", constant.Value is >= int.MinValue and <= int.MaxValue ? "int" : "long"),
+            ("Value", constant.Value.ToString()));
+
+    /// <summary>Renders a virtual native function method.</summary>
+    private static string Method(BindingFunction function) =>
+        TemplateResource.Render(
+            typeof(BindingApiEmitter),
+            "res/templates/bindgen/c-headers/csharp/api-method.csfrag.tmpl",
+            ("ReturnType", function.ReturnType),
+            ("ManagedName", function.ManagedName),
+            ("Signature", BindingSignature.ForFunction(function)));
 }

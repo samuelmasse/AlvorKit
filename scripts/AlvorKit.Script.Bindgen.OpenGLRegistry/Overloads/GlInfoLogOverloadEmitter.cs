@@ -60,22 +60,11 @@ internal sealed class GlInfoLogOverloadEmitter(GlExtensionEmissionState state) :
         if (!state.AddSignature($"{command.ManagedName}({spanSignature})"))
             return;
         GlExtensionDocEmitter.Emit(output, state.Config, command, "Decodes the UTF-8 text into <paramref name=\"destination\"/> and returns the characters written.");
-        output.AppendLine($"    public virtual ReadOnlySpan<char> {command.ManagedName}({spanSignature})");
-        output.AppendLine("    {");
-        output.AppendLine("        void* native = destination.Length <= 1024 ? null : NativeMemory.Alloc((nuint)destination.Length);");
-        output.AppendLine("        try");
-        output.AppendLine("        {");
-        output.AppendLine("            Span<byte> buffer = native != null ? new Span<byte>(native, destination.Length) : stackalloc byte[destination.Length];");
-        output.AppendLine("            int written;");
-        output.AppendLine("            fixed (byte* bufferPtr = buffer)");
-        output.AppendLine($"                this.{command.ManagedName}({coreArgs});");
-        output.AppendLine("            return destination[..Encoding.UTF8.GetChars(buffer[..written], destination)];");
-        output.AppendLine("        }");
-        output.AppendLine("        finally");
-        output.AppendLine("        {");
-        output.AppendLine("            NativeMemory.Free(native);");
-        output.AppendLine("        }");
-        output.AppendLine("    }");
-        output.AppendLine();
+        output.Append(TemplateResource.RenderFragment(
+            typeof(GlInfoLogOverloadEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/info-log-span.csfrag.tmpl",
+            ("ManagedName", command.ManagedName),
+            ("Signature", spanSignature),
+            ("CoreArgs", coreArgs)));
     }
 }

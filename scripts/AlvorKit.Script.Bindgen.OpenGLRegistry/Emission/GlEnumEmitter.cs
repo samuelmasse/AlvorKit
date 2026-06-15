@@ -7,30 +7,35 @@ internal sealed class GlEnumEmitter(GlCodeEmissionContext context)
     /// <summary>Emits one generated enum from a registry token group.</summary>
     public string Emit(GlEnumGroup group, bool catchAll)
     {
-        var output = context.SourceHeader();
-        output.AppendLine($"namespace {context.Config.Namespace};");
-        output.AppendLine();
-        output.AppendLine(catchAll
-            ? $"/// <summary>Every {context.Config.GlApi} {context.Config.GlVersion} {context.Config.GlProfile} token: " +
-                "the fallback type for parameters without a typed group.</summary>"
-            : $"/// <summary>OpenGL tokens from the <c>{group.NativeName}</c> registry group.</summary>");
-        if (group.IsFlags)
-            output.AppendLine("[Flags]");
-        output.AppendLine($"public enum {group.ManagedName} : uint");
-        output.AppendLine("{");
-        foreach (var member in group.Members)
-            EmitMember(output, member, catchAll);
-        output.AppendLine("}");
-        return output.ToString();
+        var summary = catchAll
+            ? $"Every {context.Config.GlApi} {context.Config.GlVersion} {context.Config.GlProfile} token: " +
+                "the fallback type for parameters without a typed group."
+            : $"OpenGL tokens from the <c>{group.NativeName}</c> registry group.";
+        var members = string.Join("", group.Members.Select(member => Member(member, catchAll)));
+        return TemplateResource.Render(
+            typeof(GlEnumEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/enum.cs.tmpl",
+            ("SourceHeader", context.SourceHeader().ToString()),
+            ("Namespace", context.Config.Namespace),
+            ("Summary", summary),
+            ("Flags", group.IsFlags ? "[Flags]" + Environment.NewLine : ""),
+            ("ManagedName", group.ManagedName),
+            ("Members", members));
     }
 
-    /// <summary>Emits one generated enum member.</summary>
-    private static void EmitMember(StringBuilder output, GlEnumMember member, bool catchAll)
+    /// <summary>Renders one generated enum member.</summary>
+    private static string Member(GlEnumMember member, bool catchAll)
     {
         var membership = catchAll && member.Groups.Count > 0
             ? $" See {string.Join(", ", member.Groups.Select(group => $"<see cref=\"{group}\"/>"))}."
             : "";
-        output.AppendLine($"    /// <summary>{member.NativeName} ({GlCodeEmissionContext.AvailabilityText(member.Availability)}).{membership}</summary>");
-        output.AppendLine($"    {member.ManagedName} = 0x{member.Value:X4},");
+        return TemplateResource.Render(
+            typeof(GlEnumEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/enum-member.csfrag.tmpl",
+            ("NativeName", member.NativeName),
+            ("Availability", GlCodeEmissionContext.AvailabilityText(member.Availability)),
+            ("Membership", membership),
+            ("ManagedName", member.ManagedName),
+            ("Value", member.Value.ToString("X4")));
     }
 }

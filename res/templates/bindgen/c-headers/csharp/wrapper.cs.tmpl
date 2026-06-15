@@ -1,0 +1,11 @@
+{{SourceHeader}}namespace {{Namespace}};
+
+/// <summary>
+/// A <see cref="{{ApiClass}}"/> that forwards every call to an inner instance.
+/// Override only the calls you want to intercept; the rest pass straight through.
+/// </summary>
+public class {{ApiClass}}Wrapper({{ApiClass}} inner) : {{ApiClass}}
+{
+    /// <summary>The instance each call is forwarded to.</summary>
+    protected {{ApiClass}} Inner { get; } = inner ?? throw new ArgumentNullException(nameof(inner));
+{{Methods}}}

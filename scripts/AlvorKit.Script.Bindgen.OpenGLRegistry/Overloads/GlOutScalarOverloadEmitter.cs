@@ -31,12 +31,13 @@ internal sealed class GlOutScalarOverloadEmitter(GlExtensionEmissionState state)
             command,
             $"Reads a single value, returned through the <paramref name=\"{GlExtensionNames.Local(pointer)}\"/> " +
             "out parameter via a stack address.");
-        output.AppendLine($"    public virtual void {command.ManagedName}({string.Join(", ", signature)})");
-        output.AppendLine("    {");
-        output.AppendLine($"        {pointer.PointeeType} value;");
-        output.AppendLine($"        this.{command.ManagedName}({string.Join(", ", arguments)});");
-        output.AppendLine($"        {pointer.ManagedName} = value;");
-        output.AppendLine("    }");
-        output.AppendLine();
+        output.Append(TemplateResource.RenderFragment(
+            typeof(GlOutScalarOverloadEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/out-scalar.csfrag.tmpl",
+            ("ManagedName", command.ManagedName),
+            ("Signature", string.Join(", ", signature)),
+            ("ValueType", pointer.PointeeType),
+            ("Arguments", string.Join(", ", arguments)),
+            ("ParameterName", pointer.ManagedName)));
     }
 }

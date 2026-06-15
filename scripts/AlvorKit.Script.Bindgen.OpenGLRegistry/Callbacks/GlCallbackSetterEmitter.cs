@@ -19,17 +19,7 @@ internal static class GlCallbackSetterEmitter
     /// <summary>Emits the private callback-root storage and helper method.</summary>
     private static void EmitRootStore(StringBuilder output)
     {
-        output.AppendLine();
-        output.AppendLine("    /// <summary>Delegates rooted for native callback slots installed on this API instance.</summary>");
-        output.AppendLine("    private Dictionary<int, Delegate>? rootedCallbacks;");
-        output.AppendLine();
-        output.AppendLine("    /// <summary>Roots or clears a callback delegate and returns its native function pointer.</summary>");
-        output.AppendLine("    private nint RootCallback(int slot, Delegate? handler)");
-        output.AppendLine("    {");
-        output.AppendLine("        if (handler is null) { rootedCallbacks?.Remove(slot); return 0; }");
-        output.AppendLine("        (rootedCallbacks ??= [])[slot] = handler;");
-        output.AppendLine("        return Marshal.GetFunctionPointerForDelegate(handler);");
-        output.AppendLine("    }");
+        output.Append(TemplateResource.Read(typeof(GlCallbackSetterEmitter), "res/templates/bindgen/opengl-registry/csharp/callback-root-store.csfrag.tmpl"));
     }
 
     /// <summary>Emits one typed callback setter overload.</summary>
@@ -41,11 +31,12 @@ internal static class GlCallbackSetterEmitter
         var arguments = string.Join(", ", command.Parameters.Select(parameter =>
             parameter == callbackParameter ? $"RootCallback({slot}, {parameter.ManagedName})" : parameter.ManagedName));
         var cref = string.Join(", ", command.Parameters.Select(parameter => parameter.ManagedType));
-        output.AppendLine();
-        output.AppendLine($"    /// <inheritdoc cref=\"{command.ManagedName}({cref})\"/>");
-        output.AppendLine(
-            "    /// <remarks>Convenience overload. Roots the delegate on this instance and installs " +
-            "its function pointer; pass null to clear it.</remarks>");
-        output.AppendLine($"    public void {command.ManagedName}({signature}) => {command.ManagedName}({arguments});");
+        output.Append(TemplateResource.Render(
+            typeof(GlCallbackSetterEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/callback-setter.csfrag.tmpl",
+            ("Cref", $"{command.ManagedName}({cref})"),
+            ("ManagedName", command.ManagedName),
+            ("Signature", signature),
+            ("Arguments", arguments)));
     }
 }

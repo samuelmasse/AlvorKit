@@ -1,0 +1,10 @@
+
+/// <summary>{{Summary}}</summary>
+/// <param name="Handle">Raw OpenGL object name.</param>
+public readonly record struct {{Handle}}(uint Handle)
+{
+{{Widening}}    /// <summary>The raw object name. Explicit: a handle never implicitly becomes an integer.</summary>
+    public static explicit operator uint({{Handle}} handle) => handle.Handle;
+    /// <summary>Wraps a raw object name. Explicit: an integer is never implicitly a handle.</summary>
+    public static explicit operator {{Handle}}(uint handle) => new(handle);
+}

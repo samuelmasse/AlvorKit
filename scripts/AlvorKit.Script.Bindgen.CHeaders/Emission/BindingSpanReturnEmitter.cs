@@ -13,16 +13,19 @@ internal sealed class BindingSpanReturnEmitter(BindingEmitterContext context)
             var leading = function.Parameters.Take(function.Parameters.Count - 1).ToList();
             var signature = string.Join(", ", leading.Select(BindingSignature.Parameter));
             var callArguments = string.Join(", ", leading.Select(BindingSignature.Argument).Append("out var count"));
-            output.AppendLine();
+            var documentation = new StringBuilder();
             BindingDocs.InheritedConvenience(
-                output,
+                documentation,
                 $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
                 "Returns a read-only span over native memory while supplying the count internally.");
-            output.AppendLine($"    public unsafe ReadOnlySpan<{elementType}> {function.ManagedName}({signature})");
-            output.AppendLine("    {");
-            output.AppendLine($"        var pointer = {function.ManagedName}({callArguments});");
-            output.AppendLine($"        return pointer == 0 || count <= 0 ? default : new ReadOnlySpan<{elementType}>((void*)pointer, count);");
-            output.AppendLine("    }");
+            output.Append(TemplateResource.Render(
+                typeof(BindingSpanReturnEmitter),
+                "res/templates/bindgen/c-headers/csharp/span-return.csfrag.tmpl",
+                ("Documentation", documentation.ToString()),
+                ("ElementType", elementType),
+                ("ManagedName", function.ManagedName),
+                ("Signature", signature),
+                ("CallArguments", callArguments)));
         }
     }
 }

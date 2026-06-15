@@ -1,0 +1,7 @@
+    public virtual void {{ManagedName}}({{Signature}})
+    {
+        using var sourceUtf8 = new Utf8(source, stackalloc byte[256]);
+        var sourcePointer = sourceUtf8.Pointer;
+        var length = sourceUtf8.Length;
+        this.{{ManagedName}}({{Arguments}});
+    }

@@ -22,11 +22,12 @@ internal sealed class GlStringGetterOverloadEmitter(GlExtensionEmissionState sta
         if (!state.AddSignature($"{command.ManagedName}({outStringSignature})"))
             return;
         GlExtensionDocEmitter.Emit(output, state.Config, command, "Decodes the returned C string into <paramref name=\"value\"/>, or null when GL returns no string.");
-        output.AppendLine($"    public virtual void {command.ManagedName}({outStringSignature})");
-        output.AppendLine("    {");
-        output.AppendLine($"        value = Marshal.PtrToStringUTF8(this.{command.ManagedName}({callArgs}));");
-        output.AppendLine("    }");
-        output.AppendLine();
+        output.Append(TemplateResource.RenderFragment(
+            typeof(GlStringGetterOverloadEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/string-getter-out.csfrag.tmpl",
+            ("ManagedName", command.ManagedName),
+            ("Signature", outStringSignature),
+            ("CallArgs", callArgs)));
     }
 
     /// <summary>Emits a non-allocating span decode overload.</summary>
@@ -43,14 +44,11 @@ internal sealed class GlStringGetterOverloadEmitter(GlExtensionEmissionState sta
             command,
             "Decodes the returned C string into <paramref name=\"destination\"/> and sets " +
             "<paramref name=\"result\"/> to the slice written.");
-        output.AppendLine($"    public virtual void {command.ManagedName}({spanSignature})");
-        output.AppendLine("    {");
-        output.AppendLine($"        var pointer = this.{command.ManagedName}({callArgs});");
-        output.AppendLine("        if (pointer == 0) { result = default; return; }");
-        output.AppendLine("        var bytes = MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)pointer);");
-        output.AppendLine("        System.Text.Unicode.Utf8.ToUtf16(bytes, destination, out _, out var written);");
-        output.AppendLine("        result = destination[..written];");
-        output.AppendLine("    }");
-        output.AppendLine();
+        output.Append(TemplateResource.RenderFragment(
+            typeof(GlStringGetterOverloadEmitter),
+            "res/templates/bindgen/opengl-registry/csharp/string-getter-span.csfrag.tmpl",
+            ("ManagedName", command.ManagedName),
+            ("Signature", spanSignature),
+            ("CallArgs", callArgs)));
     }
 }
