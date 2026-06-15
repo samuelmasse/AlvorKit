@@ -14,9 +14,11 @@ public sealed class LibraryBuildContextTest
         {
             var context = LibraryBuildContext.Load(new(root), "sample");
 
+            Assert.AreEqual(root, context.RepositoryRoot);
             Assert.AreEqual("1.2.3.2", context.NativeVersion);
             StringAssert.EndsWith(context.SourceDirectory, Path.Combine(workDir, "src-1.2.3"));
             StringAssert.EndsWith(context.OutputFile(TargetRid.Parse("linux-x64")), Path.Combine("runtimes", "linux-x64", "native", "libsample.so"));
+            StringAssert.EndsWith(context.BuildFile(TargetRid.Parse("linux-x64"), "bin/libsample.so"), Path.Combine("build-linux-x64", "bin", "libsample.so"));
         }
         finally
         {
@@ -54,5 +56,14 @@ public sealed class LibraryBuildContextTest
         {
             Directory.Delete(root, recursive: true);
         }
+    }
+
+    /// <summary>Unknown platform values are rejected when selecting platform build settings.</summary>
+    [TestMethod]
+    public void Platform_UnknownOperatingSystem_Throws()
+    {
+        var config = new NativeBuildConfig { Kind = "single-c" };
+
+        Assert.ThrowsExactly<PlatformNotSupportedException>(() => config.Platform((TargetOperatingSystem)999));
     }
 }

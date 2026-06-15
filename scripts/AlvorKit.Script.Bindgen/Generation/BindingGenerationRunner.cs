@@ -3,6 +3,7 @@ namespace AlvorKit.Script.Bindgen;
 /// <summary>Coordinates binding generation for the selected native library metadata.</summary>
 /// <param name="repository">Repository layout used to discover configured native libraries.</param>
 /// <param name="options">Command-line options that control selection and strict validation.</param>
+[ExcludeFromCodeCoverage]
 public sealed class BindingGenerationRunner(RepositoryLayout repository, BindgenOptions options)
 {
     /// <summary>Optional output root used for generated project snapshots.</summary>

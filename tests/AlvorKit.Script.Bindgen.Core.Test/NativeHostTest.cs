@@ -40,4 +40,14 @@ public sealed class NativeHostTest
         Assert.AreEqual("libfixture.so", NativeHost.LibraryFileName(NativeOperatingSystem.Linux, "fixture"));
         Assert.AreEqual("libfixture.dylib", NativeHost.LibraryFileName(NativeOperatingSystem.MacOS, "fixture"));
     }
+
+    /// <summary>Unsupported operating system values fail without producing invented identifiers or file names.</summary>
+    [TestMethod]
+    public void UnsupportedOperatingSystemValues_Throw()
+    {
+        Assert.ThrowsException<PlatformNotSupportedException>(
+            () => NativeHost.RuntimeIdentifier((NativeOperatingSystem)999, Architecture.X64));
+        Assert.ThrowsException<PlatformNotSupportedException>(
+            () => NativeHost.LibraryFileName((NativeOperatingSystem)999, "fixture"));
+    }
 }

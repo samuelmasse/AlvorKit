@@ -13,7 +13,7 @@ public sealed class AgentCoverageReportWriterTest
         using var workspace = TempWorkspace.Create();
         var output = OutputPaths(workspace.Root);
         Directory.CreateDirectory(output.Root);
-        var options = new CoverageOptions("Debug", 100, ["Tool.Test"], ["Tool"], ["xxhash"], 1, false, false, false);
+        var options = new CoverageOptions("Debug", CoverageThresholds.Default, ["Tool.Test"], ["Tool"], ["xxhash"], 1, false, false, false);
         var summary = new CoverageSummary(new(new(1, 1), new(1, 1), new(1, 1)), [], [], []);
 
         AgentCoverageReportWriter.Write(
@@ -32,6 +32,9 @@ public sealed class AgentCoverageReportWriterTest
         Assert.AreEqual("Tool.Test", root.GetProperty("testProjectFilters")[0].GetString());
         Assert.AreEqual("Tool", root.GetProperty("sourceProjectFilters")[0].GetString());
         Assert.AreEqual("xxhash", root.GetProperty("bindingFilters")[0].GetString());
+        Assert.AreEqual(95.0, root.GetProperty("thresholds").GetProperty("line").GetDouble());
+        Assert.AreEqual(85.0, root.GetProperty("thresholds").GetProperty("branch").GetDouble());
+        Assert.AreEqual(95.0, root.GetProperty("thresholds").GetProperty("method").GetDouble());
         Assert.AreEqual("test-output/coverage-summary.json", root.GetProperty("artifacts").GetProperty("agent").GetString());
         Assert.AreEqual("test-run", root.GetProperty("runId").GetString());
         Assert.AreEqual("out/coverage/latest-run.json", root.GetProperty("artifacts").GetProperty("latestRun").GetString());
@@ -44,7 +47,7 @@ public sealed class AgentCoverageReportWriterTest
         using var workspace = TempWorkspace.Create();
         var output = OutputPaths(workspace.Root);
         Directory.CreateDirectory(output.Root);
-        var options = new CoverageOptions("Debug", 100, [], [], [], 1, true, true, true);
+        var options = new CoverageOptions("Debug", CoverageThresholds.Default, [], [], [], 1, true, true, true);
         var summary = new CoverageSummary(new(new(1, 1), new(1, 1), new(1, 1)), [], [], []);
 
         AgentCoverageReportWriter.Write(

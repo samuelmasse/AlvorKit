@@ -1,6 +1,7 @@
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Default process runner backed by System.Diagnostics.Process.</summary>
+[ExcludeFromCodeCoverage]
 internal sealed class ProcessRunner : IProcessRunner
 {
     /// <summary>Runs a process and streams its output to the current console.</summary>

@@ -1,6 +1,7 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Runs the OpenGL registry binding pipeline for one configured native library.</summary>
+[ExcludeFromCodeCoverage]
 internal sealed class GlRegistryBindingGenerator
 {
     /// <summary>Downloads or locates the OpenGL registry and optional reference-page sources.</summary>

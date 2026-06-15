@@ -6,6 +6,7 @@ namespace AlvorKit.Script.Bindgen;
 /// <param name="LibraryPath">Resolved or expected host native library path.</param>
 /// <param name="LibraryExists">Whether the host native library exists at the resolved path.</param>
 /// <param name="Failure">Reason the host native library could not be resolved, when absent.</param>
+[ExcludeFromCodeCoverage]
 public sealed record NativePackageLibraryResolution(
     string PackageId,
     string Version,
@@ -14,6 +15,7 @@ public sealed record NativePackageLibraryResolution(
     string? Failure);
 
 /// <summary>Finds the restored host native library package used to verify generated imports.</summary>
+[ExcludeFromCodeCoverage]
 public static class NativePackageResolver
 {
     /// <summary>Resolves the host native library, restoring the generated backend project when needed.</summary>

@@ -116,7 +116,7 @@ internal sealed class CoverageRunner(CoverageOptions options)
         IReadOnlyList<TestProjectResult> testResults)
     {
         var summary = coverage.BuildSummary(sourceModules);
-        var passed = CoverageGate.Passes(testResults, summary, options.Threshold);
+        var passed = CoverageGate.Passes(testResults, summary, options.Thresholds);
 
         var generatedAt = DateTimeOffset.UtcNow;
         CoverageReportWriter.Write(repoRoot, output, started, generatedAt, options, passed, summary, testResults);

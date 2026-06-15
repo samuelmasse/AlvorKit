@@ -40,4 +40,25 @@ public sealed class CliParserTest
     {
         Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["version"]));
     }
+
+    /// <summary>List and version commands parse without target runtime options.</summary>
+    [TestMethod]
+    public void Parse_ListAndVersion_ReturnRequests()
+    {
+        Assert.AreEqual(CliCommand.List, CliParser.Parse(["list"]).Command);
+
+        var version = CliParser.Parse(["version", "xxhash"]);
+
+        Assert.AreEqual(CliCommand.Version, version.Command);
+        Assert.AreEqual("xxhash", version.Selection);
+    }
+
+    /// <summary>Invalid commands and missing option values produce argument errors.</summary>
+    [TestMethod]
+    public void Parse_InvalidInput_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["build"]));
+        Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["build", "xxhash", "--rid"]));
+        Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["publish"]));
+    }
 }

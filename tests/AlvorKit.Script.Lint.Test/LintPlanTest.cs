@@ -26,34 +26,43 @@ public sealed class LintPlanTest
             projects.ToArray());
     }
 
-    /// <summary>Plans dotnet format in verify mode by default.</summary>
+    /// <summary>Plans dotnet format and info-level code style checks in verify mode by default.</summary>
     [TestMethod]
     public void DotNetFormatCommandsVerifyNoChanges()
     {
         using var workspace = TempWorkspace.Create();
         workspace.Write("scripts/Tool/Tool.csproj", "<Project />");
 
-        var command = LintPlan.DotNetFormatCommands(workspace.Root, fix: false).Single();
+        var commands = LintPlan.DotNetFormatCommands(workspace.Root, fix: false).ToArray();
 
+        Assert.AreEqual(2, commands.Length);
         CollectionAssert.AreEqual(
             new[] { "format", "scripts/Tool/Tool.csproj", "--verify-no-changes", "--verbosity", "minimal" },
-            command.Arguments.ToArray());
-        Assert.AreEqual(workspace.Root, command.WorkingDirectory);
-        Assert.AreEqual("dotnet format scripts/Tool/Tool.csproj", command.Label);
+            commands[0].Arguments.ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "format", "style", "scripts/Tool/Tool.csproj", "--verify-no-changes", "--severity", "info", "--verbosity", "minimal" },
+            commands[1].Arguments.ToArray());
+        Assert.AreEqual(workspace.Root, commands[0].WorkingDirectory);
+        Assert.AreEqual("dotnet format scripts/Tool/Tool.csproj", commands[0].Label);
+        Assert.AreEqual("dotnet format style scripts/Tool/Tool.csproj", commands[1].Label);
     }
 
-    /// <summary>Plans dotnet format in write mode when requested.</summary>
+    /// <summary>Plans dotnet format and info-level code style checks in write mode when requested.</summary>
     [TestMethod]
     public void DotNetFormatCommandsCanWriteChanges()
     {
         using var workspace = TempWorkspace.Create();
         workspace.Write("scripts/Tool/Tool.csproj", "<Project />");
 
-        var command = LintPlan.DotNetFormatCommands(workspace.Root, fix: true).Single();
+        var commands = LintPlan.DotNetFormatCommands(workspace.Root, fix: true).ToArray();
 
+        Assert.AreEqual(2, commands.Length);
         CollectionAssert.AreEqual(
             new[] { "format", "scripts/Tool/Tool.csproj", "--verbosity", "minimal" },
-            command.Arguments.ToArray());
+            commands[0].Arguments.ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "format", "style", "scripts/Tool/Tool.csproj", "--severity", "info", "--verbosity", "minimal" },
+            commands[1].Arguments.ToArray());
     }
 
     /// <summary>Plans dotnet format for scoped C# files under their owning project.</summary>
@@ -65,8 +74,9 @@ public sealed class LintPlanTest
         workspace.Write("scripts/Tool/A.cs", "namespace Tool;");
         var scope = LintScope.FromPatterns(workspace.Root, ["scripts/Tool/A.cs"]);
 
-        var command = LintPlan.DotNetFormatCommands(workspace.Root, fix: false, scope).Single();
+        var commands = LintPlan.DotNetFormatCommands(workspace.Root, fix: false, scope).ToArray();
 
+        Assert.AreEqual(2, commands.Length);
         CollectionAssert.AreEqual(
             new[]
             {
@@ -78,7 +88,22 @@ public sealed class LintPlanTest
                 "--include",
                 "scripts/Tool/A.cs",
             },
-            command.Arguments.ToArray());
+            commands[0].Arguments.ToArray());
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                "format",
+                "style",
+                "scripts/Tool/Tool.csproj",
+                "--verify-no-changes",
+                "--severity",
+                "info",
+                "--verbosity",
+                "minimal",
+                "--include",
+                "scripts/Tool/A.cs",
+            },
+            commands[1].Arguments.ToArray());
     }
 
     /// <summary>Finds the nearest owning project for scoped C# files in nested directories.</summary>
@@ -90,9 +115,11 @@ public sealed class LintPlanTest
         workspace.Write("scripts/Tool/Sub/A.cs", "namespace Tool;");
         var scope = LintScope.FromPatterns(workspace.Root, ["scripts/Tool/Sub/A.cs"]);
 
-        var command = LintPlan.DotNetFormatCommands(workspace.Root, fix: false, scope).Single();
+        var commands = LintPlan.DotNetFormatCommands(workspace.Root, fix: false, scope).ToArray();
 
-        Assert.AreEqual("dotnet format scripts/Tool/Tool.csproj", command.Label);
+        Assert.AreEqual(2, commands.Length);
+        Assert.AreEqual("dotnet format scripts/Tool/Tool.csproj", commands[0].Label);
+        Assert.AreEqual("dotnet format style scripts/Tool/Tool.csproj", commands[1].Label);
     }
 
     /// <summary>Rejects scoped C# files in a directory with multiple project files.</summary>
@@ -128,10 +155,11 @@ public sealed class LintPlanTest
 
         var commands = LintPlan.CommandsBeforeActionlint(workspace.Root, fix: false);
 
-        Assert.AreEqual(3, commands.Count);
+        Assert.AreEqual(4, commands.Count);
         Assert.AreEqual("dotnet", commands[0].FileName);
-        CollectionAssert.Contains(commands[1].Arguments.ToArray(), "prettier@3");
-        CollectionAssert.Contains(commands[2].Arguments.ToArray(), "editorconfig-checker@6.1.1");
+        Assert.AreEqual("dotnet format style scripts/Tool/Tool.csproj", commands[1].Label);
+        CollectionAssert.Contains(commands[2].Arguments.ToArray(), "prettier@3");
+        CollectionAssert.Contains(commands[3].Arguments.ToArray(), "editorconfig-checker@6.1.1");
     }
 
     /// <summary>Combines only the checks needed for scoped files before actionlint.</summary>
@@ -145,10 +173,11 @@ public sealed class LintPlanTest
 
         var commands = LintPlan.CommandsBeforeActionlint(workspace.Root, fix: false, scope);
 
-        Assert.AreEqual(2, commands.Count);
+        Assert.AreEqual(3, commands.Count);
         Assert.AreEqual("dotnet format scripts/Tool/Tool.csproj", commands[0].Label);
-        Assert.AreEqual("editorconfig", commands[1].Label);
-        CollectionAssert.Contains(commands[1].Arguments.ToArray(), "scripts/Tool/A.cs");
+        Assert.AreEqual("dotnet format style scripts/Tool/Tool.csproj", commands[1].Label);
+        Assert.AreEqual("editorconfig", commands[2].Label);
+        CollectionAssert.Contains(commands[2].Arguments.ToArray(), "scripts/Tool/A.cs");
     }
 
     /// <summary>Returns no pre-actionlint commands when scoped includes resolve to no files.</summary>

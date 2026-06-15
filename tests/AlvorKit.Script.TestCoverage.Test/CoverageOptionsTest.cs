@@ -4,14 +4,16 @@ namespace AlvorKit.Script.TestCoverage.Test;
 [TestClass]
 public sealed class CoverageOptionsTest
 {
-    /// <summary>Empty arguments use the standard Debug configuration and strict threshold.</summary>
+    /// <summary>Empty arguments use the standard Debug configuration and repository threshold.</summary>
     [TestMethod]
     public void Parse_EmptyArgs_UsesDefaults()
     {
         var options = CoverageOptions.Parse([]);
 
         Assert.AreEqual("Debug", options.Configuration);
-        Assert.AreEqual(100.0, options.Threshold);
+        Assert.AreEqual(95.0, options.Thresholds.Line);
+        Assert.AreEqual(85.0, options.Thresholds.Branch);
+        Assert.AreEqual(95.0, options.Thresholds.Method);
         Assert.AreEqual(0, options.TestProjectFilters.Count);
         Assert.AreEqual(0, options.SourceProjectFilters.Count);
         Assert.AreEqual(0, options.BindingFilters.Count);
@@ -23,14 +25,14 @@ public sealed class CoverageOptionsTest
         Assert.IsNull(options.RunId);
     }
 
-    /// <summary>Short options override configuration and threshold.</summary>
+    /// <summary>Short options override configuration and all metric thresholds.</summary>
     [TestMethod]
     public void Parse_ShortOptions_ReturnsValues()
     {
         var options = CoverageOptions.Parse(["-c", "Release", "-t", "87.5"]);
 
         Assert.AreEqual("Release", options.Configuration);
-        Assert.AreEqual(87.5, options.Threshold);
+        Assert.AreEqual(new CoverageThresholds(87.5, 87.5, 87.5), options.Thresholds);
     }
 
     /// <summary>Long and alias options parse through the same validation path.</summary>
@@ -40,9 +42,18 @@ public sealed class CoverageOptionsTest
         var options = CoverageOptions.Parse(["--configuration", "Release", "--threshold", "50", "-m", "1", "--agent-fast"]);
 
         Assert.AreEqual("Release", options.Configuration);
-        Assert.AreEqual(50.0, options.Threshold);
+        Assert.AreEqual(new CoverageThresholds(50.0, 50.0, 50.0), options.Thresholds);
         Assert.AreEqual(1, options.MaxParallel);
         Assert.IsFalse(options.GenerateHtmlReport);
+    }
+
+    /// <summary>Metric-specific thresholds override only their selected coverage metric.</summary>
+    [TestMethod]
+    public void Parse_MetricThresholdOptions_ReturnsValues()
+    {
+        var options = CoverageOptions.Parse(["--line-threshold", "96", "--branch-threshold", "86.5", "--method-threshold", "97"]);
+
+        Assert.AreEqual(new CoverageThresholds(96.0, 86.5, 97.0), options.Thresholds);
     }
 
     /// <summary>Test project filters can be repeated for targeted coverage runs.</summary>

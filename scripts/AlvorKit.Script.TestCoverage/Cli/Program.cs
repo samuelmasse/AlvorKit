@@ -1,6 +1,7 @@
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Entry point for the repository coverage reporting tool.</summary>
+[ExcludeFromCodeCoverage]
 internal static class Program
 {
     /// <summary>Runs coverage collection and returns a process exit code.</summary>

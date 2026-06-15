@@ -11,6 +11,14 @@ ReadOnlySpan<byte> secretMaterial = "application-specific secret material for th
 
 const uint Seed32 = 0x9E37_79B1u;
 const ulong Seed64 = 0x9E37_79B1_85EB_CA87ul;
+const int VersionMajor = (int)XxhEnum.VersionMajor;
+const int VersionMinor = (int)XxhEnum.VersionMinor;
+const int VersionRelease = (int)XxhEnum.VersionRelease;
+const int VersionNumber = (int)XxhEnum.VersionNumber;
+const int Xxh3SecretSizeMin = (int)XxhEnum.Xxh3SecretSizeMin;
+const int Xxh3SecretDefaultSize = (int)XxhEnum.Xxh3SecretDefaultSize;
+const int Xxh3MidsizeMax = (int)XxhEnum.Xxh3MidsizeMax;
+const int Xxh3InternalbufferSize = (int)XxhEnum.Xxh3InternalbufferSize;
 
 Xxh xxh = new XxhBackend();
 
@@ -19,12 +27,12 @@ Section("Backend and constants");
 
 var runtimeVersion = xxh.GetVersionNumber();
 Console.WriteLine($"XXH_versionNumber / GetVersionNumber: {runtimeVersion} ({VersionString(runtimeVersion)})");
-// Native constants are emitted onto the API class alongside callable entry points.
-Console.WriteLine($"XXH_VERSION_NUMBER / Xxh.VersionNumber: {Xxh.VersionNumber} ({Xxh.VersionMajor}.{Xxh.VersionMinor}.{Xxh.VersionRelease})");
-Console.WriteLine($"XXH3_SECRET_SIZE_MIN / Xxh.Xxh3SecretSizeMin: {Xxh.Xxh3SecretSizeMin} bytes");
-Console.WriteLine($"XXH3_SECRET_DEFAULT_SIZE / Xxh.Xxh3SecretDefaultSize: {Xxh.Xxh3SecretDefaultSize} bytes");
-Console.WriteLine($"XXH3_MIDSIZE_MAX / Xxh.Xxh3MidsizeMax: {Xxh.Xxh3MidsizeMax} bytes");
-Console.WriteLine($"XXH3_INTERNALBUFFER_SIZE / Xxh.Xxh3InternalbufferSize: {Xxh.Xxh3InternalbufferSize} bytes");
+// Native constants are emitted onto an enum so they stay distinct from callable entry points.
+Console.WriteLine($"XXH_VERSION_NUMBER / XxhEnum.VersionNumber: {VersionNumber} ({VersionMajor}.{VersionMinor}.{VersionRelease})");
+Console.WriteLine($"XXH3_SECRET_SIZE_MIN / XxhEnum.Xxh3SecretSizeMin: {Xxh3SecretSizeMin} bytes");
+Console.WriteLine($"XXH3_SECRET_DEFAULT_SIZE / XxhEnum.Xxh3SecretDefaultSize: {Xxh3SecretDefaultSize} bytes");
+Console.WriteLine($"XXH3_MIDSIZE_MAX / XxhEnum.Xxh3MidsizeMax: {Xxh3MidsizeMax} bytes");
+Console.WriteLine($"XXH3_INTERNALBUFFER_SIZE / XxhEnum.Xxh3InternalbufferSize: {Xxh3InternalbufferSize} bytes");
 
 Section("XXH32 one-shot, streaming, copy, canonical");
 
@@ -87,8 +95,8 @@ Print("XXH64_hashFromCanonical / Hash64FromCanonical", Hex64(xxh.Hash64FromCanon
 Section("XXH3 secret generation");
 
 // XxhSecret owns native memory because streaming reset-with-secret APIs retain the secret pointer.
-using XxhSecret customSecret = new(Xxh.Xxh3SecretSizeMin);
-Span<byte> seededSecret = stackalloc byte[(int)Xxh.Xxh3SecretDefaultSize];
+using XxhSecret customSecret = new(Xxh3SecretSizeMin);
+Span<byte> seededSecret = stackalloc byte[Xxh3SecretDefaultSize];
 
 // generateSecret expands arbitrary user material; generateSecret_fromSeed produces the seeded secret family.
 RequireOk(xxh.GenerateHash3Secret(customSecret.Bytes, secretMaterial), "XXH3_generateSecret");

@@ -4,7 +4,7 @@ namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Command-line options controlling coverage collection.</summary>
 /// <param name="Configuration">Build configuration passed to dotnet test.</param>
-/// <param name="Threshold">Required percentage for line, branch, and method coverage.</param>
+/// <param name="Thresholds">Required percentages for line, branch, and method coverage.</param>
 /// <param name="TestProjectFilters">Optional test project names or paths to run.</param>
 /// <param name="SourceProjectFilters">Optional source project names or paths to measure.</param>
 /// <param name="BindingFilters">Optional native library binding names to measure under out/bindgen.</param>
@@ -16,7 +16,7 @@ namespace AlvorKit.Script.TestCoverage;
 /// <param name="RunId">Optional directory name for this coverage run.</param>
 internal sealed record CoverageOptions(
     string Configuration,
-    double Threshold,
+    CoverageThresholds Thresholds,
     IReadOnlyList<string> TestProjectFilters,
     IReadOnlyList<string> SourceProjectFilters,
     IReadOnlyList<string> BindingFilters,
@@ -47,7 +47,7 @@ internal sealed record CoverageOptions(
     public static CoverageOptions Parse(IReadOnlyList<string> args)
     {
         var configuration = "Debug";
-        var threshold = 100.0;
+        var thresholds = CoverageThresholds.Default;
         var testProjectFilters = new List<string>();
         var sourceProjectFilters = new List<string>();
         var bindingFilters = new List<string>();
@@ -68,7 +68,16 @@ internal sealed record CoverageOptions(
                     break;
                 case "--threshold":
                 case "-t":
-                    threshold = double.Parse(ReadValue(args, ref index), CultureInfo.InvariantCulture);
+                    thresholds = CoverageThresholds.All(double.Parse(ReadValue(args, ref index), CultureInfo.InvariantCulture));
+                    break;
+                case "--line-threshold":
+                    thresholds = thresholds with { Line = double.Parse(ReadValue(args, ref index), CultureInfo.InvariantCulture) };
+                    break;
+                case "--branch-threshold":
+                    thresholds = thresholds with { Branch = double.Parse(ReadValue(args, ref index), CultureInfo.InvariantCulture) };
+                    break;
+                case "--method-threshold":
+                    thresholds = thresholds with { Method = double.Parse(ReadValue(args, ref index), CultureInfo.InvariantCulture) };
                     break;
                 case "--test-project":
                 case "--project":
@@ -108,8 +117,7 @@ internal sealed record CoverageOptions(
             }
         }
 
-        if (threshold is < 0 or > 100)
-            throw new ArgumentOutOfRangeException(nameof(args), "Threshold must be between 0 and 100.");
+        thresholds.Validate();
         if (maxParallel < 1)
             throw new ArgumentOutOfRangeException(nameof(args), "Max parallelism must be at least 1.");
         if (outputRoot is { Length: 0 })
@@ -119,7 +127,7 @@ internal sealed record CoverageOptions(
 
         return new(
             configuration,
-            threshold,
+            thresholds,
             testProjectFilters,
             sourceProjectFilters,
             bindingFilters,

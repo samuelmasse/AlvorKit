@@ -120,6 +120,31 @@ tests must compile the same way in both modes.
 A `.cs` file may live directly at the root of its project when that is the
 clearest home. Do not create a subdirectory solely because the file is C#.
 
+## C# Using Directives
+
+Prefer repository-level and project-level global usings over ordinary file-level
+`using` directives.
+
+Before adding a `using` directive to a `.cs` file, first check whether the
+namespace is already available through implicit usings or an existing
+`<Using Include="..." />` entry. If the namespace is broadly useful across an
+area, add it to that area's `Directory.Build.props`. If it is only useful for one
+project, add it to that project's `.csproj`.
+
+Ordinary file-level `using` directives should be reserved for genuinely narrow
+cases where a global using would make the project less clear, such as aliases,
+rare namespace conflicts, or one-off third-party APIs. `using var` declarations
+and `using (...)` disposal statements are not import directives and are allowed.
+
+## C# Style
+
+Prefer clean primary constructors when they express a type's dependency or
+value shape. Do not add mirrored private fields or properties solely to make
+primary constructor parameters `readonly`; use the parameters directly unless a
+distinct member is needed for validation, transformation, API naming, or real
+mutable state. In partial types, first verify whether the primary constructor
+parameters are already in scope before adding mirror state for another file.
+
 ## Test File Size
 
 Test files are allowed to be larger than normal code files. A cohesive test file
@@ -158,17 +183,26 @@ tool writes agent-readable and human-readable artifacts under an isolated
 `out/coverage/runs/<run-id>/` directory by default. The console output prints
 the exact paths for the current run.
 
+The repository coverage gate is 95% line, 85% branch, and 95% method coverage,
+but agents should still aim for meaningful 100% coverage in touched source
+modules. Use the 85% branch gate as a practical floor to avoid ridiculous or
+low-value test setups for defensive branches, compiler-shaped branch artifacts,
+platform probes, and integration boundaries. Treat missing lines in touched files
+as test candidates unless the code is a CLI entry point, external process
+wrapper, native-host probe, report generator integration, or other integration
+boundary that is better marked with `ExcludeFromCodeCoverage`.
+
 Quick commands:
 
-- Agent focused strict gate for a touched source project:
+- Agent focused coverage gate for a touched source project:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild`
-- Agent focused strict gate with an explicit test project:
+- Agent focused coverage gate with an explicit test project:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild --test-project AlvorKit.Script.NativeBuild.Test`
 - Agent report-only targeted run:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild --threshold 0`
 - Agent generated binding report:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --binding xxhash --threshold 0`
-- Agent full strict gate:
+- Agent full coverage gate:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent`
 
 For focused work, gate coverage on the source project or projects you changed:
@@ -189,7 +223,7 @@ projects by package or project reference, and forces `UseLocalBindings=true` so
 Coverlet instruments the generated project assemblies. If this fails because
 `out/bindgen` is missing, run bindgen for that library first. Inspect the
 reported missing lines and methods; omit `--threshold 0` only when you intend to
-enforce the strict coverage gate for generated binding modules.
+enforce the coverage gate for generated binding modules.
 
 The `--source-project` value may be a source project name, project file name, or
 repository-relative project directory or file path. Repeat `--source-project`
@@ -208,7 +242,7 @@ repository-relative path. Repeat `--test-project` to run more than one test
 project. When `--source-project` is present, the gate expects only those source
 modules, even if the selected tests also reference helper projects.
 
-Run the full strict gate only before finishing broad or cross-project work,
+Run the full coverage gate only before finishing broad or cross-project work,
 for CI parity checks, or when explicitly requested:
 
 ```powershell
@@ -285,7 +319,7 @@ Agent workflow:
 - After adding tests, rerun the same targeted coverage command until the touched
   files have no missing lines, branches, or methods.
 
-If the strict gate fails, inspect the JSON for precise missing lines and
+If the coverage gate fails, inspect the JSON for precise missing lines and
 methods, add or adjust unit tests, then rerun the same targeted command. If
 focused coverage passes but a broader run fails on unrelated source projects,
 report that instead of fixing unrelated work.

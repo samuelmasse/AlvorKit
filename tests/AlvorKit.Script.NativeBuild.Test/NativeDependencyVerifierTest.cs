@@ -16,6 +16,15 @@ public sealed class NativeDependencyVerifierTest
         Assert.AreEqual("libc.so.6,libm.so.6", string.Join(",", NativeDependencyVerifier.ElfDependencies(output)));
     }
 
+    /// <summary>Malformed dependency lines without a closing bracket are ignored.</summary>
+    [TestMethod]
+    public void ElfDependencies_MalformedLine_Ignores()
+    {
+        var dependencies = NativeDependencyVerifier.ElfDependencies("0x0001 (NEEDED) Shared library: [libc.so.6\n");
+
+        Assert.AreEqual(0, dependencies.Count);
+    }
+
     /// <summary>Loader dependencies are allowed even when absent from the manifest list.</summary>
     [TestMethod]
     public void EnsureElfDependenciesAllowed_IgnoresLdLinux()

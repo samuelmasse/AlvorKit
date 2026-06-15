@@ -27,4 +27,20 @@ public sealed class JsonFileTest
             File.Delete(path);
         }
     }
+
+    /// <summary>JSON null content fails with a clear read error for required manifests.</summary>
+    [TestMethod]
+    public void Read_NullDocument_Throws()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "alvorkit-json-" + Guid.NewGuid().ToString("N") + ".json");
+        File.WriteAllText(path, "null");
+        try
+        {
+            Assert.ThrowsException<InvalidOperationException>(() => JsonFile.Read<NativeBuildConfig>(path));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
 }

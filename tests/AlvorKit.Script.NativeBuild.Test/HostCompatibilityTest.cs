@@ -27,4 +27,22 @@ public sealed class HostCompatibilityTest
     {
         HostCompatibility.EnsureCanBuild(TargetRid.Parse("linux-arm"), new(false, true, false, Architecture.Arm64));
     }
+
+    /// <summary>Linux native builds require matching Linux host architecture except for arm cross builds.</summary>
+    [TestMethod]
+    public void EnsureCanBuild_LinuxNativeWrongArchitecture_Throws()
+    {
+        Assert.ThrowsExactly<PlatformNotSupportedException>(
+            () => HostCompatibility.EnsureCanBuild(TargetRid.Parse("linux-arm64"), new(false, true, false, Architecture.X64)));
+    }
+
+    /// <summary>Linux and macOS targets reject hosts on the wrong operating system.</summary>
+    [TestMethod]
+    public void EnsureCanBuild_WrongOperatingSystems_Throw()
+    {
+        Assert.ThrowsExactly<PlatformNotSupportedException>(
+            () => HostCompatibility.EnsureCanBuild(TargetRid.Parse("linux-x64"), new(true, false, false, Architecture.X64)));
+        Assert.ThrowsExactly<PlatformNotSupportedException>(
+            () => HostCompatibility.EnsureCanBuild(TargetRid.Parse("osx-x64"), new(false, true, false, Architecture.X64)));
+    }
 }

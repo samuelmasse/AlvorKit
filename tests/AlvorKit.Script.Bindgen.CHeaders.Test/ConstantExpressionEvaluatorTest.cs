@@ -23,8 +23,12 @@ public sealed class ConstantExpressionEvaluatorTest
     public void Evaluate_HandlesUnaryShiftAndHexLiterals()
     {
         Assert.AreEqual(16, ConstantExpressionEvaluator.Evaluate(["1", "<<", "4"], []));
+        Assert.AreEqual(2, ConstantExpressionEvaluator.Evaluate(["8", ">>", "2"], []));
         Assert.AreEqual(~0x10L, ConstantExpressionEvaluator.Evaluate(["~", "0x10UL"], []));
         Assert.AreEqual(-12, ConstantExpressionEvaluator.Evaluate(["-", "12L"], []));
+        Assert.AreEqual(12, ConstantExpressionEvaluator.Evaluate(["+", "12L"], []));
+        Assert.AreEqual(2, ConstantExpressionEvaluator.Evaluate(["17", "%", "5"], []));
+        Assert.AreEqual(6, ConstantExpressionEvaluator.Evaluate(["3", "^", "5"], []));
     }
 
     [TestMethod]
@@ -35,5 +39,8 @@ public sealed class ConstantExpressionEvaluatorTest
         Assert.IsNull(ConstantExpressionEvaluator.Evaluate(["1", "+"], []));
         Assert.IsNull(ConstantExpressionEvaluator.Evaluate(["(", "1", "+", "2"], []));
         Assert.IsNull(ConstantExpressionEvaluator.Evaluate(["1", "2"], []));
+        Assert.IsNull(ConstantExpressionEvaluator.Evaluate(["1", "%", "0"], []));
+        Assert.IsNull(ConstantExpressionEvaluator.Evaluate(["0xZZ"], []));
+        Assert.IsNull(ConstantExpressionEvaluator.Evaluate([], []));
     }
 }

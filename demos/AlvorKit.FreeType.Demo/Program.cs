@@ -15,91 +15,43 @@ unsafe
     Console.WriteLine($"Output: {outputRoot}");
     Console.WriteLine();
 
-    Ft ft = new FtBackend();
-    nint library = 0;
-    FtFaceRec* pathFace = null;
-    FtFaceRec* memoryFace = null;
-    FtFaceRec* openFace = null;
-    GCHandle pinnedFont = default;
+    using var demo = new FreeTypeDemo(new FtBackend(), fontPath, outputRoot);
+    demo.ReportErrorString();
+    demo.InitializeLibrary();
+    demo.ReportLibraryVersion();
 
-    try
+    demo.OpenNewFace();
+    demo.ReportFaceBasics();
+    demo.ReportReferenceCounting();
+    demo.ReportOptionalAttachments();
+    demo.ReportOptionalBitmapStrike();
+    demo.ReportExtraHeaderApis();
+
+    demo.OpenMemoryFace();
+    demo.OpenFaceWithOpenArgs();
+
+    var exported = new[]
     {
-        FreeTypeTour.ReportErrorString(ft);
-        FreeTypeStatus.Require(ft, "FT_Init_FreeType", ft.InitFreeType(out library));
-        FreeTypeTour.ReportLibraryVersion(ft, library);
+        demo.ExportNewFaceGlyph(),
+        demo.ExportMemoryFaceGlyph(),
+        demo.ExportOpenFaceGlyph(),
+        demo.ExportSizingApis(),
+        demo.ExportRenderModes(),
+        demo.ExportLoadFlags(),
+        demo.ExportTransform(),
+        demo.ExportKerning(),
+        demo.ExportCharmapGrid(),
+        demo.ExportNamesAndComposite(),
+        demo.ExportOutline(),
+        demo.ExportFixedPointAndVector(),
+        demo.ExportOutlineGeometry(),
+        demo.ExportGlyphBitmapObjects(),
+    };
 
-        FreeTypeStatus.Require(ft, "FT_New_Face", ft.NewFace(library, fontPath, FreeTypeValues.Long(0), out pathFace));
-        FreeTypeTour.ReportFaceBasics(ft, pathFace, fontPath);
-        FreeTypeTour.ReportReferenceCounting(ft, pathFace);
-        FreeTypeTour.ReportOptionalAttachments(ft, pathFace, fontPath);
-        FreeTypeTour.ReportOptionalBitmapStrike(ft, pathFace);
-        FreeTypeTour.ReportExtraHeaderApis(ft, library, pathFace);
-
-        var fontBytes = File.ReadAllBytes(fontPath);
-        pinnedFont = GCHandle.Alloc(fontBytes, GCHandleType.Pinned);
-        FreeTypeStatus.Require(
-            ft,
-            "FT_New_Memory_Face",
-            ft.NewMemoryFace(library, pinnedFont.AddrOfPinnedObject(), FreeTypeValues.Long(fontBytes.Length), FreeTypeValues.Long(0), out memoryFace));
-
-        openFace = OpenPathFace(ft, library, fontPath);
-
-        var exported = new[]
-        {
-            FreeTypeTour.ExportNewFaceGlyph(ft, pathFace, outputRoot),
-            FreeTypeTour.ExportMemoryFaceGlyph(ft, memoryFace, outputRoot),
-            FreeTypeTour.ExportOpenFaceGlyph(ft, openFace, outputRoot),
-            FreeTypeTour.ExportSizingApis(ft, pathFace, outputRoot),
-            FreeTypeTour.ExportRenderModes(ft, pathFace, outputRoot),
-            FreeTypeTour.ExportLoadFlags(ft, pathFace, outputRoot),
-            FreeTypeTour.ExportTransform(ft, pathFace, outputRoot),
-            FreeTypeTour.ExportKerning(ft, pathFace, outputRoot),
-            FreeTypeTour.ExportCharmapGrid(ft, pathFace, outputRoot),
-            FreeTypeTour.ExportNamesAndComposite(ft, pathFace, outputRoot),
-            FreeTypeTour.ExportOutline(ft, pathFace, outputRoot),
-            FreeTypeTour.ExportFixedPointAndVector(ft, pathFace, outputRoot),
-            FreeTypeTour.ExportOutlineGeometry(ft, pathFace, outputRoot),
-            FreeTypeTour.ExportGlyphBitmapObjects(ft, library, pathFace, outputRoot),
-        };
-
-        FreeTypeTour.ReportVariationSelectors(ft, pathFace);
-        PrintExportedPngs(exported);
-    }
-    finally
-    {
-        ReleaseFreeTypeResources(ft, openFace, memoryFace, pathFace, library);
-        if (pinnedFont.IsAllocated)
-            pinnedFont.Free();
-    }
+    demo.ReportVariationSelectors();
+    PrintExportedPngs(exported);
 
     return 0;
-
-    // Opens a face through FT_Open_Face using the generated FtOpenArgs struct.
-    static unsafe FtFaceRec* OpenPathFace(Ft ft, nint library, string fontPath)
-    {
-        FtFaceRec* face;
-        var pathBytes = Encoding.UTF8.GetBytes(fontPath + '\0');
-        fixed (byte* path = pathBytes)
-        {
-            var openArgs = new FtOpenArgs { Flags = (uint)FtOpenFlags.Pathname, Pathname = (nint)path };
-            FreeTypeStatus.Require(ft, "FT_Open_Face", ft.OpenFace(library, &openArgs, FreeTypeValues.Long(0), out face));
-        }
-
-        return face;
-    }
-
-    // Releases every FreeType resource allocated by the walkthrough.
-    static unsafe void ReleaseFreeTypeResources(Ft ft, FtFaceRec* openFace, FtFaceRec* memoryFace, FtFaceRec* pathFace, nint library)
-    {
-        if (openFace != null)
-            _ = ft.DoneFace(openFace);
-        if (memoryFace != null)
-            _ = ft.DoneFace(memoryFace);
-        if (pathFace != null)
-            _ = ft.DoneFace(pathFace);
-        if (library != 0)
-            _ = ft.DoneFreeType(library);
-    }
 
     // Prints the PNG paths created by the demo run.
     static void PrintExportedPngs(IEnumerable<string> exported)

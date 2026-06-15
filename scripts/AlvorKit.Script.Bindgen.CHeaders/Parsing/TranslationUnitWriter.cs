@@ -1,6 +1,7 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Writes the temporary C translation unit passed to Clang.</summary>
+[ExcludeFromCodeCoverage]
 public sealed class TranslationUnitWriter
 {
     /// <summary>Writes a translation unit file and returns its path.</summary>

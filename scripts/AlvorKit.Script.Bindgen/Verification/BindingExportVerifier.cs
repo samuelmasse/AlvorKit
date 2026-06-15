@@ -2,6 +2,7 @@ namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Verifies generated C header imports against the restored native package for the host runtime.</summary>
 /// <param name="options">Command-line options that decide whether verification failures are fatal.</param>
+[ExcludeFromCodeCoverage]
 internal sealed class BindingExportVerifier(BindgenOptions options)
 {
     /// <summary>Checks whether every generated import has a matching native export.</summary>

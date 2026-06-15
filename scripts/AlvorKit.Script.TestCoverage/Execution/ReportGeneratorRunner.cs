@@ -1,6 +1,7 @@
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Runs the standard ReportGenerator dotnet tool over collected Cobertura reports.</summary>
+[ExcludeFromCodeCoverage]
 internal static class ReportGeneratorRunner
 {
     /// <summary>Generates the browser-readable HTML report and writes a tool log.</summary>

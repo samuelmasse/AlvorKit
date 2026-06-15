@@ -5,6 +5,7 @@ namespace AlvorKit.Script.NativeBuild;
 /// <param name="target">Target runtime identifier to build.</param>
 /// <param name="processRunner">External process runner.</param>
 /// <param name="host">Host values used for compatibility checks.</param>
+[ExcludeFromCodeCoverage]
 internal sealed class NativeBuildRunner(
     LibraryBuildContext library,
     TargetRid target,

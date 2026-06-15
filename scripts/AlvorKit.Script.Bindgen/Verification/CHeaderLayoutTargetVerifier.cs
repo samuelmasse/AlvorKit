@@ -1,6 +1,7 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Validates that generated C header structs keep natural layout across supported targets.</summary>
+[ExcludeFromCodeCoverage]
 internal static class CHeaderLayoutTargetVerifier
 {
     /// <summary>Additional Clang targets used to catch platform-sensitive layout issues.</summary>

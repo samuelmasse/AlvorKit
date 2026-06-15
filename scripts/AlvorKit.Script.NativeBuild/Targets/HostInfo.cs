@@ -8,6 +8,7 @@ namespace AlvorKit.Script.NativeBuild;
 internal sealed record HostInfo(bool IsWindows, bool IsLinux, bool IsMacOS, Architecture Architecture)
 {
     /// <summary>Reads host information from the current process.</summary>
+    [ExcludeFromCodeCoverage]
     public static HostInfo Current() =>
         new(OperatingSystem.IsWindows(), OperatingSystem.IsLinux(), OperatingSystem.IsMacOS(), RuntimeInformation.ProcessArchitecture);
 }

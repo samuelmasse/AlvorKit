@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Script.Bindgen.Test" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\AlvorKit.Script.Bindgen.Core\AlvorKit.Script.Bindgen.Core.csproj" />
         <ProjectReference Include="..\AlvorKit.Script.Bindgen.CHeaders\AlvorKit.Script.Bindgen.CHeaders.csproj" />
         <ProjectReference Include="..\AlvorKit.Script.Bindgen.OpenGLRegistry\AlvorKit.Script.Bindgen.OpenGLRegistry.csproj" />

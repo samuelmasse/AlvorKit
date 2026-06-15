@@ -1,6 +1,7 @@
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Coordinates parsed command-line requests with repository metadata and build services.</summary>
+[ExcludeFromCodeCoverage]
 internal sealed class NativeBuildCli
 {
     /// <summary>Runs the requested command and converts handled exceptions into exit code 1.</summary>

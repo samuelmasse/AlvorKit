@@ -81,6 +81,12 @@ These instructions apply to C# code under `demos/`.
   logic so the game loop stays obvious.
 - Prefer primary constructors for classes and records when they express the
   dependency or value shape cleanly.
+- Keep primary constructors clean. Do not mirror constructor parameters into
+  private members solely to make them `readonly`; use the parameters directly
+  unless a distinct member is needed for validation, transformation, naming, or
+  real mutable state. In partial demo types, first verify whether the primary
+  constructor parameters are already in scope before adding mirror state for
+  another file.
 - Do not create boilerplate constructors when a primary constructor or generated
   record constructor is sufficient.
 - Prefer expression-bodied members (`=>`) for simple one-expression methods,
@@ -93,6 +99,11 @@ These instructions apply to C# code under `demos/`.
   tradeoff is explained.
 - Keep demo projects intentionally compact. Prefer as few files and as few types
   as practical while preserving a clear step-by-step explanation.
+- When a demo needs to grow large, prefer one cohesive demo class split across
+  partial source files over a bag of public static tour or runner methods.
+- Keep demo-specific state, native handles, and lifetime sequencing on the demo
+  instance. Reserve `static` for constants, pure value helpers, and genuinely
+  stateless shared utilities.
 - A `.cs` file may live directly at the root of its demo project when that is
   the clearest home. Subdirectories are optional organization, not a requirement.
 - Multiple related types can live in the same `.cs` file when they support one

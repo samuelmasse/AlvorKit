@@ -57,6 +57,7 @@ internal sealed record TargetRid(string Value, TargetOperatingSystem OperatingSy
         };
 
     /// <summary>Detects the current process runtime identifier.</summary>
+    [ExcludeFromCodeCoverage]
     public static TargetRid Current()
     {
         var host = HostInfo.Current();
@@ -81,6 +82,7 @@ internal sealed record TargetRid(string Value, TargetOperatingSystem OperatingSy
         };
 
     /// <summary>Maps runtime architecture values to package architecture values.</summary>
+    [ExcludeFromCodeCoverage]
     private static TargetArchitecture FromRuntimeArchitecture(Architecture architecture) =>
         architecture switch
         {
@@ -92,6 +94,7 @@ internal sealed record TargetRid(string Value, TargetOperatingSystem OperatingSy
         };
 
     /// <summary>Formats the architecture suffix used in .NET runtime identifiers.</summary>
+    [ExcludeFromCodeCoverage]
     private static string ArchSuffix(TargetArchitecture architecture) =>
         architecture switch
         {

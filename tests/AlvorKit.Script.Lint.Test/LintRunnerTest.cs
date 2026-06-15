@@ -77,7 +77,7 @@ public sealed class LintRunnerTest
         using var workspace = TempWorkspace.Create();
         workspace.Write("scripts/Tool/Tool.csproj", "<Project />");
         workspace.Write("scripts/Tool/A.cs", "namespace Tool;");
-        var processRunner = new FakeProcessRunner(new Queue<int>([0, 0]));
+        var processRunner = new FakeProcessRunner(new Queue<int>([0, 0, 0]));
         var actionlintTool = new FakeActionlintTool("actionlint");
         var runner = new LintRunner(
             new(workspace.Root, Fix: false, ShowHelp: false, ["scripts/Tool/A.cs"]),
@@ -88,7 +88,7 @@ public sealed class LintRunnerTest
 
         Assert.AreEqual(0, exitCode);
         Assert.IsFalse(actionlintTool.Called);
-        Assert.AreEqual(2, processRunner.Commands.Count);
+        Assert.AreEqual(3, processRunner.Commands.Count);
     }
 
     /// <summary>Returns success without running commands when scoped includes only missing files.</summary>

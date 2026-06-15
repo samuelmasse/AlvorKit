@@ -34,7 +34,7 @@ internal static class LintPlan
     /// <summary>Creates dotnet format commands for source, script, and test projects.</summary>
     public static IReadOnlyList<CommandSpec> DotNetFormatCommands(string repoRoot, bool fix) =>
         DiscoverProjects(repoRoot)
-            .Select(project => new CommandSpec("dotnet", DotNetFormatArguments(project, fix), repoRoot, $"dotnet format {project}"))
+            .SelectMany(project => DotNetFormatCommands(project, repoRoot, fix))
             .ToArray();
 
     /// <summary>Creates dotnet format commands for the scoped C# files grouped by owning project.</summary>
@@ -42,11 +42,7 @@ internal static class LintPlan
         scope.CSharpFiles
             .GroupBy(file => FindOwningProject(repoRoot, file), StringComparer.OrdinalIgnoreCase)
             .OrderBy(group => group.Key, StringComparer.Ordinal)
-            .Select(group => new CommandSpec(
-                "dotnet",
-                DotNetFormatArguments(group.Key, fix, group.Order(StringComparer.Ordinal).ToArray()),
-                repoRoot,
-                $"dotnet format {group.Key}"))
+            .SelectMany(group => DotNetFormatCommands(group.Key, repoRoot, fix, group.Order(StringComparer.Ordinal).ToArray()))
             .ToArray();
 
     /// <summary>Creates the Prettier command for JSON, YAML, and Markdown files.</summary>
@@ -87,13 +83,36 @@ internal static class LintPlan
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-    /// <summary>Creates dotnet format arguments for a single project.</summary>
+    /// <summary>Creates the normal and info-level code style dotnet format commands for a single project.</summary>
+    private static IReadOnlyList<CommandSpec> DotNetFormatCommands(
+        string project,
+        string repoRoot,
+        bool fix,
+        IReadOnlyList<string>? includedFiles = null) =>
+    [
+        new("dotnet", DotNetFormatArguments(project, fix, includedFiles), repoRoot, $"dotnet format {project}"),
+        new("dotnet", DotNetStyleInfoArguments(project, fix, includedFiles), repoRoot, $"dotnet format style {project}"),
+    ];
+
+    /// <summary>Creates normal dotnet format arguments for a single project.</summary>
     private static IReadOnlyList<string> DotNetFormatArguments(string project, bool fix, IReadOnlyList<string>? includedFiles = null)
     {
         var arguments = new List<string> { "format", project };
         if (!fix)
             arguments.Add("--verify-no-changes");
         arguments.AddRange(["--verbosity", "minimal"]);
+        if (includedFiles is { Count: > 0 })
+            arguments.AddRange(["--include", .. includedFiles]);
+        return arguments;
+    }
+
+    /// <summary>Creates info-level code style dotnet format arguments for a single project.</summary>
+    private static IReadOnlyList<string> DotNetStyleInfoArguments(string project, bool fix, IReadOnlyList<string>? includedFiles = null)
+    {
+        var arguments = new List<string> { "format", "style", project };
+        if (!fix)
+            arguments.Add("--verify-no-changes");
+        arguments.AddRange(["--severity", "info", "--verbosity", "minimal"]);
         if (includedFiles is { Count: > 0 })
             arguments.AddRange(["--include", .. includedFiles]);
         return arguments;

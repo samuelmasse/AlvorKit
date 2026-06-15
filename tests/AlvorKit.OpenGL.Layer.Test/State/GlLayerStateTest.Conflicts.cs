@@ -17,6 +17,64 @@ public partial class GlLayerStateTest
         Assert.Throws<GlConflictException>(() => gl.BlendFunci(0, GlBlendingFactor.One, GlBlendingFactor.Zero));
     }
 
+    /// <summary>Global blend func conflicts with per-buffer separate blend func state.</summary>
+    [TestMethod]
+    public void BlendFuncSeparatei_ThenBlendFunc_Conflicts()
+    {
+        gl.BlendFuncSeparatei(0, GlBlendingFactor.One, GlBlendingFactor.Zero, GlBlendingFactor.One, GlBlendingFactor.Zero);
+
+        Assert.Throws<GlConflictException>(() => gl.BlendFunc(GlBlendingFactor.SrcAlpha, GlBlendingFactor.OneMinusSrcAlpha));
+    }
+
+    /// <summary>Per-buffer blend func conflicts with global separate blend func state.</summary>
+    [TestMethod]
+    public void BlendFuncSeparate_ThenBlendFunci_Conflicts()
+    {
+        gl.BlendFuncSeparate(GlBlendingFactor.One, GlBlendingFactor.Zero, GlBlendingFactor.One, GlBlendingFactor.Zero);
+
+        Assert.Throws<GlConflictException>(() => gl.BlendFunci(0, GlBlendingFactor.One, GlBlendingFactor.Zero));
+    }
+
+    /// <summary>Global separate blend func conflicts with per-buffer blend func state.</summary>
+    [TestMethod]
+    public void BlendFunci_ThenBlendFuncSeparate_Conflicts()
+    {
+        gl.BlendFunci(0, GlBlendingFactor.One, GlBlendingFactor.Zero);
+
+        Assert.Throws<GlConflictException>(() =>
+            gl.BlendFuncSeparate(GlBlendingFactor.One, GlBlendingFactor.Zero, GlBlendingFactor.One, GlBlendingFactor.Zero));
+    }
+
+    /// <summary>Per-buffer separate blend func conflicts with global blend func state.</summary>
+    [TestMethod]
+    public void BlendFunc_ThenBlendFuncSeparatei_Conflicts()
+    {
+        gl.BlendFunc(GlBlendingFactor.SrcAlpha, GlBlendingFactor.OneMinusSrcAlpha);
+
+        Assert.Throws<GlConflictException>(() =>
+            gl.BlendFuncSeparatei(0, GlBlendingFactor.One, GlBlendingFactor.Zero, GlBlendingFactor.One, GlBlendingFactor.Zero));
+    }
+
+    /// <summary>Per-buffer separate blend func conflicts with global separate blend func state.</summary>
+    [TestMethod]
+    public void BlendFuncSeparate_ThenBlendFuncSeparatei_Conflicts()
+    {
+        gl.BlendFuncSeparate(GlBlendingFactor.One, GlBlendingFactor.Zero, GlBlendingFactor.One, GlBlendingFactor.Zero);
+
+        Assert.Throws<GlConflictException>(() =>
+            gl.BlendFuncSeparatei(0, GlBlendingFactor.One, GlBlendingFactor.Zero, GlBlendingFactor.One, GlBlendingFactor.Zero));
+    }
+
+    /// <summary>Per-buffer blend func conflicts with per-buffer separate blend func state.</summary>
+    [TestMethod]
+    public void BlendFunci_ThenBlendFuncSeparatei_Conflicts()
+    {
+        gl.BlendFunci(0, GlBlendingFactor.One, GlBlendingFactor.Zero);
+
+        Assert.Throws<GlConflictException>(() =>
+            gl.BlendFuncSeparatei(1, GlBlendingFactor.One, GlBlendingFactor.Zero, GlBlendingFactor.One, GlBlendingFactor.Zero));
+    }
+
     [TestMethod]
     public void BlendFunc_AfterResettingSeparate_Succeeds()
     {
@@ -32,6 +90,35 @@ public partial class GlLayerStateTest
         gl.BlendFunci(1, GlBlendingFactor.One, GlBlendingFactor.Zero);
         gl.ResetBlendFunc(0);
         Assert.Throws<GlAlreadyUnsetException>(() => gl.ResetBlendFunc(0));
+    }
+
+    /// <summary>Blend equation conflicts are enforced between global and per-buffer separate state.</summary>
+    [TestMethod]
+    public void BlendEquationSeparatei_ThenBlendEquation_Conflicts()
+    {
+        gl.BlendEquationSeparatei(0, GlBlendEquationModeEXT.FuncAdd, GlBlendEquationModeEXT.FuncReverseSubtract);
+
+        Assert.Throws<GlConflictException>(() => gl.BlendEquation(GlBlendEquationModeEXT.FuncSubtract));
+    }
+
+    /// <summary>Per-buffer separate blend equation conflicts with global blend equation state.</summary>
+    [TestMethod]
+    public void BlendEquation_ThenBlendEquationSeparatei_Conflicts()
+    {
+        gl.BlendEquation(GlBlendEquationModeEXT.FuncAdd);
+
+        Assert.Throws<GlConflictException>(() =>
+            gl.BlendEquationSeparatei(0, GlBlendEquationModeEXT.FuncAdd, GlBlendEquationModeEXT.FuncReverseSubtract));
+    }
+
+    /// <summary>Per-buffer separate blend equation conflicts with global separate blend equation state.</summary>
+    [TestMethod]
+    public void BlendEquationSeparate_ThenBlendEquationSeparatei_Conflicts()
+    {
+        gl.BlendEquationSeparate(GlBlendEquationModeEXT.FuncAdd, GlBlendEquationModeEXT.FuncReverseSubtract);
+
+        Assert.Throws<GlConflictException>(() =>
+            gl.BlendEquationSeparatei(0, GlBlendEquationModeEXT.FuncAdd, GlBlendEquationModeEXT.FuncReverseSubtract));
     }
 
     [TestMethod]

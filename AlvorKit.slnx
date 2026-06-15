@@ -3,7 +3,7 @@
     <Folder Name="/Demos/">
         <Project Path="demos/AlvorKit.Demo/AlvorKit.Demo.csproj" />
         <Project Path="demos/AlvorKit.Demo.XxHash/AlvorKit.Demo.XxHash.csproj" />
-        <Project Path="demos/AlvorKit.Demo.XxHashBench/AlvorKit.Demo.XxHashBench.csproj" />
+        <Project Path="demos/AlvorKit.Demo.XxHash.Bench/AlvorKit.Demo.XxHash.Bench.csproj" />
         <Project Path="demos/AlvorKit.FreeType.Demo/AlvorKit.FreeType.Demo.csproj" />
         <Project Path="demos/AlvorKit.MiniAudio.Demo/AlvorKit.MiniAudio.Demo.csproj" />
         <Project

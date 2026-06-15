@@ -11,11 +11,11 @@ internal sealed record CoverageSummary(
     IReadOnlyList<string> UnmeasuredModules,
     IReadOnlyList<FileCoverageSummary> Files)
 {
-    /// <summary>Returns true when every metric meets a percentage threshold.</summary>
-    public bool MeetsThreshold(double threshold) =>
-        Totals.Line.Percent >= threshold
-        && Totals.Branch.Percent >= threshold
-        && Totals.Method.Percent >= threshold;
+    /// <summary>Returns true when every metric meets its required percentage threshold.</summary>
+    public bool MeetsThreshold(CoverageThresholds thresholds) =>
+        Totals.Line.Percent >= thresholds.Line
+        && Totals.Branch.Percent >= thresholds.Branch
+        && Totals.Method.Percent >= thresholds.Method;
 }
 
 /// <summary>Aggregated total coverage metrics.</summary>

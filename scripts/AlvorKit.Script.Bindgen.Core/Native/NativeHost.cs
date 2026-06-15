@@ -4,10 +4,12 @@ namespace AlvorKit.Script.Bindgen;
 internal static class NativeHost
 {
     /// <summary>Gets the runtime identifier for the process host.</summary>
+    [ExcludeFromCodeCoverage]
     internal static string CurrentRuntimeIdentifier =>
         RuntimeIdentifier(CurrentOperatingSystem(), RuntimeInformation.ProcessArchitecture);
 
     /// <summary>Gets the native library file name for the process host.</summary>
+    [ExcludeFromCodeCoverage]
     internal static string CurrentLibraryFileName(string libraryName) =>
         LibraryFileName(CurrentOperatingSystem(), libraryName);
 
@@ -49,6 +51,7 @@ internal static class NativeHost
         };
 
     /// <summary>Detects the operating system for the current process.</summary>
+    [ExcludeFromCodeCoverage]
     private static NativeOperatingSystem CurrentOperatingSystem() =>
         OperatingSystem.IsWindows()
             ? NativeOperatingSystem.Windows

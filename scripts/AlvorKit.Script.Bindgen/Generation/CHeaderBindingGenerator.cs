@@ -2,6 +2,7 @@ namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Runs the C header binding pipeline for one configured native library.</summary>
 /// <param name="options">Command-line options that control strict validation.</param>
+[ExcludeFromCodeCoverage]
 internal sealed class CHeaderBindingGenerator(BindgenOptions options)
 {
     /// <summary>Primary Clang target used to build the generated binding model.</summary>

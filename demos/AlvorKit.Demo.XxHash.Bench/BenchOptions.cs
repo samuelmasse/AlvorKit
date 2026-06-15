@@ -1,4 +1,4 @@
-namespace AlvorKit.Demo.XxHashBench;
+namespace AlvorKit.Demo.XxHash.Bench;
 
 /// <summary>
 /// Command line options, mirroring the flags of the upstream harness
@@ -10,8 +10,11 @@ namespace AlvorKit.Demo.XxHashBench;
 /// <param name="SmallMin">The first byte length considered by the small-input sweep.</param>
 /// <param name="SmallMax">The last byte length considered by the small-input sweep.</param>
 /// <param name="Dense">Whether the small-input sweep measures every size instead of the sampled set.</param>
-public sealed record BenchOptions(int LargeLogMin, int LargeLogMax, int SmallMin, int SmallMax, bool Dense)
+internal sealed record BenchOptions(int LargeLogMin, int LargeLogMax, int SmallMin, int SmallMax, bool Dense)
 {
+    /// <summary>The sampled small-input sizes used by default to keep the demo compact.</summary>
+    private static ReadOnlySpan<int> SampledSmallInputSizes => [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 127];
+
     // Upstream defaults are minl=9 maxl=27 mins=1 maxs=127; maxl is lowered here
     // to keep the demo around three minutes, and the small sweep is sampled
     // unless --dense is given. The in-cache plateau the published table reports
@@ -54,14 +57,36 @@ public sealed record BenchOptions(int LargeLogMin, int LargeLogMax, int SmallMin
         return options;
     }
 
-    /// <summary>The small input sizes to measure: every size when dense, a sampled subset otherwise.</summary>
-    public int[] SmallSizes()
+    /// <summary>Returns the log2 large-input sizes to measure.</summary>
+    public int[] LargeInputLogs()
+    {
+        var count = Math.Max(0, LargeLogMax - LargeLogMin + 1);
+        var logs = new int[count];
+        for (var index = 0; index < logs.Length; index++)
+            logs[index] = LargeLogMin + index;
+        return logs;
+    }
+
+    /// <summary>Returns the small input sizes to measure: every size when dense, a sampled subset otherwise.</summary>
+    public int[] SmallInputSizes()
     {
         if (Dense)
-            return [.. Enumerable.Range(SmallMin, Math.Max(0, SmallMax - SmallMin + 1))];
+        {
+            var count = Math.Max(0, SmallMax - SmallMin + 1);
+            var sizes = new int[count];
+            for (var index = 0; index < sizes.Length; index++)
+                sizes[index] = SmallMin + index;
+            return sizes;
+        }
 
-        int[] sampled = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 127];
-        var inRange = sampled.Where(size => size >= SmallMin && size <= SmallMax).ToList();
+        var sampled = SampledSmallInputSizes;
+        var inRange = new List<int>(sampled.Length + 1);
+        foreach (var size in sampled)
+        {
+            if (size >= SmallMin && size <= SmallMax)
+                inRange.Add(size);
+        }
+
         if (inRange.Count == 0 || inRange[^1] != SmallMax)
             inRange.Add(SmallMax);
         return [.. inRange];

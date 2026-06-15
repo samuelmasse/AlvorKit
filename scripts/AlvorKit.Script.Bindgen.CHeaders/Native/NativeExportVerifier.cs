@@ -1,6 +1,7 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Checks that generated binding functions are present in a native library.</summary>
+[ExcludeFromCodeCoverage]
 public static class NativeExportVerifier
 {
     /// <summary>Verifies generated function exports against a native library path.</summary>

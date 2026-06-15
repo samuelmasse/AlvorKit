@@ -4,6 +4,7 @@ using System.IO.Compression;
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Downloads and extracts upstream source archives when not already cached.</summary>
+[ExcludeFromCodeCoverage]
 internal static class SourceArchiveFetcher
 {
     /// <summary>Ensures the source directory exists for a library.</summary>

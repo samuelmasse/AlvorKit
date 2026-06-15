@@ -5,6 +5,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Script.Bindgen.CHeaders.Test" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\AlvorKit.Script.Bindgen.Core\AlvorKit.Script.Bindgen.Core.csproj" />
     </ItemGroup>
 

@@ -3,6 +3,7 @@ using System.ComponentModel;
 namespace AlvorKit.Script.NativeBuild;
 
 /// <summary>Writes generated PowerShell to a temporary file and executes it.</summary>
+[ExcludeFromCodeCoverage]
 internal static class WindowsScriptRunner
 {
     /// <summary>Runs generated PowerShell and falls back to powershell.exe when pwsh is absent.</summary>

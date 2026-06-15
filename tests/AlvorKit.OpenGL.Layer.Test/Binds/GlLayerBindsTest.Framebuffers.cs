@@ -45,6 +45,25 @@ public partial class GlLayerBindsTest
         Assert.Throws<GlBindConflictException>(() => gl.BindFramebuffer(GlFramebufferTarget.Framebuffer, Framebuffer(1)));
     }
 
+    /// <summary>Draw framebuffer binding is allowed while read-buffer state is live.</summary>
+    [TestMethod]
+    public void BindFramebuffer_DrawFramebufferWhenReadBufferSet_Succeeds()
+    {
+        gl.ReadBuffer(GlReadBufferMode.ColorAttachment0);
+
+        gl.BindFramebuffer(GlFramebufferTarget.DrawFramebuffer, Framebuffer(1));
+    }
+
+    /// <summary>Read framebuffer unbinding is allowed while draw-buffer state is live.</summary>
+    [TestMethod]
+    public void UnbindFramebuffer_ReadFramebufferWhenDrawBuffersSet_Succeeds()
+    {
+        gl.BindFramebuffer(GlFramebufferTarget.ReadFramebuffer, Framebuffer(1));
+        gl.DrawBuffer(GlDrawBufferMode.ColorAttachment0);
+
+        gl.UnbindFramebuffer(GlFramebufferTarget.ReadFramebuffer);
+    }
+
     [TestMethod]
     public void UnbindFramebuffer_WhenNothingBound_Throws()
     {

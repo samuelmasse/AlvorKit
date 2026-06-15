@@ -32,7 +32,7 @@ internal static class MarkdownCoverageReportWriter
         builder.AppendLine();
         builder.AppendLine($"Generated: {generatedAt:yyyy-MM-dd HH:mm:ss} UTC");
         builder.AppendLine($"Status: {(passed ? "PASS" : "FAIL")}");
-        builder.AppendLine($"Threshold: {options.Threshold.ToString(CultureInfo.InvariantCulture)}% line, branch, and method coverage");
+        builder.AppendLine($"Thresholds: {options.Thresholds.Format()}");
         builder.AppendLine($"Test project filter: {FilterText(options.TestProjectFilters)}");
         builder.AppendLine($"Source project filter: {FilterText(options.SourceProjectFilters)}");
         builder.AppendLine($"Binding filter: {FilterText(options.BindingFilters)}");

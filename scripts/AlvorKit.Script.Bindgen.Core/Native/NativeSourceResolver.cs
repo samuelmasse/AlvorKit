@@ -4,6 +4,7 @@ using System.IO.Compression;
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Downloads and extracts native source material required by a binding run.</summary>
+[ExcludeFromCodeCoverage]
 public sealed class NativeSourceResolver
 {
     /// <summary>Ensures the configured primary header or registry source exists locally.</summary>

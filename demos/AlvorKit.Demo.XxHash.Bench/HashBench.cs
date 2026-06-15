@@ -1,4 +1,4 @@
-namespace AlvorKit.Demo.XxHashBench;
+namespace AlvorKit.Demo.XxHash.Bench;
 
 /// <summary>
 /// Port of the upstream xxHash benchmark core (tests/bench/benchHash.c and
@@ -6,15 +6,27 @@ namespace AlvorKit.Demo.XxHashBench;
 /// measurement, and report the fastest observed run. One run hashes a batch of
 /// blocks sized so roughly 200 KB are hashed per run.
 /// </summary>
-public sealed unsafe class HashBench
+internal sealed unsafe class HashBench
 {
+    /// <summary>Extra bytes that let the latency benchmark vary its input pointer without reading past the buffer.</summary>
     private const int MarginForLatency = 1024;
-    private const int StartMask = MarginForLatency - 1;
-    private const int SizeToHashPerRound = 200_000;
-    private const int NbHashRoundsMax = 1000;
-    private static readonly double NsPerTick = 1e9 / System.Diagnostics.Stopwatch.Frequency;
 
+    /// <summary>Mask used to keep the latency-chain pointer offset inside <see cref="MarginForLatency"/>.</summary>
+    private const int StartMask = MarginForLatency - 1;
+
+    /// <summary>Approximate input bytes hashed by one measured run before loop-count calibration.</summary>
+    private const int SizeToHashPerRound = 200_000;
+
+    /// <summary>Maximum number of hash calls included in one measured run.</summary>
+    private const int NbHashRoundsMax = 1000;
+
+    /// <summary>Conversion factor from stopwatch ticks to nanoseconds.</summary>
+    private static readonly double NsPerTick = 1e9 / Stopwatch.Frequency;
+
+    /// <summary>Accumulator carried between latency measurements to preserve the upstream dependency chain shape.</summary>
     private ulong latencyChain;
+
+    /// <summary>Stores hash results so the measured loops keep observable work outside the method body.</summary>
     private ulong sink;
 
     /// <summary>Benchmarks <paramref name="hashFn"/> and returns the number of hashes per second of the fastest run.</summary>
@@ -30,10 +42,16 @@ public sealed unsafe class HashBench
             lengths[n] = (nuint)(sizeMode == SizeMode.Fixed ? size : random.Next(1, size + 1));
 
         var bufferSize = (nuint)size + MarginForLatency;
-        using var buffer = NativeBuffer.Allocate(bufferSize);
-
-        InitBuffer(buffer.Pointer, bufferSize);
-        return 1e9 / MeasureFastestRunNs(hashFn, benchMode, buffer.Pointer, lengths, totalTimeMs, iterTimeMs) * nbBlocks;
+        var buffer = (nint)NativeMemory.Alloc(bufferSize);
+        try
+        {
+            InitBuffer(buffer, bufferSize);
+            return 1e9 / MeasureFastestRunNs(hashFn, benchMode, buffer, lengths, totalTimeMs, iterTimeMs) * nbBlocks;
+        }
+        finally
+        {
+            NativeMemory.Free((void*)buffer);
+        }
     }
 
     /// <summary>
@@ -42,7 +60,13 @@ public sealed unsafe class HashBench
     /// <paramref name="totalTimeMs"/> is spent, and return the fastest
     /// nanoseconds-per-run observed.
     /// </summary>
-    private double MeasureFastestRunNs(HashFn hashFn, BenchMode benchMode, nint buffer, nuint[] lengths, int totalTimeMs, int iterTimeMs)
+    private double MeasureFastestRunNs(
+        HashFn hashFn,
+        BenchMode benchMode,
+        nint buffer,
+        ReadOnlySpan<nuint> lengths,
+        int totalTimeMs,
+        int iterTimeMs)
     {
         var runBudgetNs = iterTimeMs * 1e6;
         var totalBudgetNs = totalTimeMs * 1e6;
@@ -52,7 +76,7 @@ public sealed unsafe class HashBench
 
         while (spentNs < totalBudgetNs)
         {
-            var started = System.Diagnostics.Stopwatch.GetTimestamp();
+            var started = Stopwatch.GetTimestamp();
             for (var loop = 0L; loop < nbLoops; loop++)
             {
                 if (benchMode == BenchMode.Throughput)
@@ -60,7 +84,7 @@ public sealed unsafe class HashBench
                 else
                     LatencyRun(hashFn, buffer, lengths);
             }
-            var elapsedNs = (System.Diagnostics.Stopwatch.GetTimestamp() - started) * NsPerTick;
+            var elapsedNs = (Stopwatch.GetTimestamp() - started) * NsPerTick;
 
             spentNs += elapsedNs;
             fastestNsPerRun = Math.Min(fastestNsPerRun, elapsedNs / nbLoops);
@@ -72,21 +96,23 @@ public sealed unsafe class HashBench
         return fastestNsPerRun;
     }
 
-    private void ThroughputRun(HashFn hashFn, nint buffer, nuint[] lengths)
+    /// <summary>Runs independent hash calls for the throughput benchmark mode.</summary>
+    private void ThroughputRun(HashFn hashFn, nint buffer, ReadOnlySpan<nuint> lengths)
     {
         var acc = 0ul;
-        foreach (var length in lengths)
-            acc ^= hashFn(buffer, length);
+        for (var index = 0; index < lengths.Length; index++)
+            acc ^= hashFn(buffer, lengths[index]);
         sink = acc;
     }
 
-    private void LatencyRun(HashFn hashFn, nint buffer, nuint[] lengths)
+    /// <summary>Runs a serialized pointer dependency chain for the latency benchmark mode.</summary>
+    private void LatencyRun(HashFn hashFn, nint buffer, ReadOnlySpan<nuint> lengths)
     {
         // The chain survives across runs, like the static accumulator in
         // upstream's benchLatency.
         var chain = latencyChain;
-        foreach (var length in lengths)
-            chain = hashFn(buffer + (nint)(chain & StartMask), length);
+        for (var index = 0; index < lengths.Length; index++)
+            chain = hashFn(buffer + (nint)(chain & StartMask), lengths[index]);
         latencyChain = chain;
         sink = chain;
     }
@@ -103,31 +129,13 @@ public sealed unsafe class HashBench
             bytes[i] = (byte)(acc >> 56);
         }
     }
-
-    /// <summary>Owns one native allocation for a benchmark cell and frees it when the measurement completes.</summary>
-    /// <param name="pointer">The native pointer returned by <see cref="NativeMemory.AllocZeroed(nuint)"/>.</param>
-    private readonly struct NativeBuffer(nint pointer) : IDisposable
-    {
-        /// <summary>The native pointer passed to xxHash during the timed loops.</summary>
-        public nint Pointer { get; } = pointer;
-
-        /// <summary>Allocates a native byte buffer without adding GC pressure to the measured path.</summary>
-        /// <param name="size">The number of bytes to allocate.</param>
-        /// <returns>An owned native buffer that must be disposed after the benchmark cell completes.</returns>
-        public static NativeBuffer Allocate(nuint size) =>
-            new((nint)NativeMemory.AllocZeroed(size));
-
-        /// <summary>Frees the owned native allocation.</summary>
-        public void Dispose() =>
-            NativeMemory.Free((void*)Pointer);
-    }
 }
 
 /// <summary>A single hash invocation over <paramref name="input"/>, returning the (truncated) hash value.</summary>
-public delegate ulong HashFn(nint input, nuint length);
+internal delegate ulong HashFn(nint input, nuint length);
 
 /// <summary>The dependency pattern used between repeated hash calls in a benchmark cell.</summary>
-public enum BenchMode
+internal enum BenchMode
 {
     /// <summary>Independent back-to-back hash calls.</summary>
     Throughput,
@@ -137,7 +145,7 @@ public enum BenchMode
 }
 
 /// <summary>The input length policy used for each block in a benchmark cell.</summary>
-public enum SizeMode
+internal enum SizeMode
 {
     /// <summary>Hash exactly Size bytes every call.</summary>
     Fixed,
