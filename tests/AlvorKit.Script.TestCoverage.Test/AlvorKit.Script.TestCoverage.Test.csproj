@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\scripts\AlvorKit.Script.TestCoverage\AlvorKit.Script.TestCoverage.csproj" />
+    </ItemGroup>
+
+</Project>

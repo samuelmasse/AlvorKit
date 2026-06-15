@@ -94,9 +94,18 @@ jobs:
               mapfile -t changed < <(git diff --name-only "$base" "$head")
             fi
 
+            changed_any() {
+              local path="$1"
+              local file
+              for file in "${changed[@]}"; do
+                [[ "$file" == "$path" ]] && return 0
+              done
+              return 1
+            }
+
             # version/BINDING_REVISION means "publish a new managed binding version".
             for library in freetype glfw miniaudio xxhash; do
-              if printf '%s\n' "${changed[@]}" | grep -qx "native/${library}/version/BINDING_REVISION"; then
+              if changed_any "native/${library}/version/BINDING_REVISION"; then
                 selected+=("$library")
               fi
             done

@@ -1,10 +1,10 @@
-using AlvorKit.Script.Bindgen;
-
 namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
 
+/// <summary>Core tests for OpenGL registry parsing and type mapping.</summary>
 [TestClass]
 public sealed class GlRegistryParserTest
 {
+    /// <summary>Bitmask groups become typed flags enums and typed command parameters.</summary>
     [TestMethod]
     public void Parse_MapsGroupedBitfieldParametersToTypedFlagEnums()
     {
@@ -29,7 +29,7 @@ public sealed class GlRegistryParserTest
             </registry>
             """);
 
-        var model = new GlRegistryParser(TestConfig()).Parse(registry, new Dictionary<string, XmlDocComment>());
+        var model = new GlRegistryParser(OpenGlRegistryTestConfig.Create()).Parse(registry, new Dictionary<string, XmlDocComment>());
 
         var group = model.Groups.Single();
         Assert.AreEqual("GlClearBufferMask", group.ManagedName);
@@ -38,6 +38,7 @@ public sealed class GlRegistryParserTest
         CollectionAssert.Contains(model.AllTokens.Members.Single().Groups.ToList(), "GlClearBufferMask");
     }
 
+    /// <summary>Core profile removal blocks remove previously selected symbols.</summary>
     [TestMethod]
     public void Parse_AppliesCoreProfileRemovals()
     {
@@ -65,12 +66,13 @@ public sealed class GlRegistryParserTest
             </registry>
             """);
 
-        var model = new GlRegistryParser(TestConfig(glVersion: "1.1")).Parse(registry, new Dictionary<string, XmlDocComment>());
+        var model = new GlRegistryParser(OpenGlRegistryTestConfig.Create(glVersion: "1.1")).Parse(registry, new Dictionary<string, XmlDocComment>());
 
         Assert.AreEqual(0, model.Commands.Count);
         Assert.AreEqual(0, model.AllTokens.Members.Count);
     }
 
+    /// <summary>Configured callback typedefs are parsed and projected as managed delegates.</summary>
     [TestMethod]
     public void Parse_ConfiguredCallbackTypedefDoesNotNeedHardCodedValueType()
     {
@@ -97,7 +99,7 @@ public sealed class GlRegistryParserTest
               </feature>
             </registry>
             """);
-        var config = TestConfig();
+        var config = OpenGlRegistryTestConfig.Create();
         config.Callbacks = new()
         {
             ["GLFOOPROC"] = new CallbackConfig
@@ -117,19 +119,4 @@ public sealed class GlRegistryParserTest
         Assert.IsTrue(callback.Parameters[1].PointeeIsChar);
     }
 
-    private static BindgenConfig TestConfig(string glVersion = "1.0") => new()
-    {
-        Kind = BindgenConfig.GlRegistryKind,
-        Namespace = "AlvorKit.Bindgen.OpenGLFixture",
-        ApiClass = "Gl",
-        ApiSummary = "Fixture GL API.",
-        BackendClass = "GlBackend",
-        Prefix = "GL_",
-        WorkDir = "fixture-work",
-        SourceDir = "fixture-source",
-        Header = "gl.xml",
-        ApiProject = "generated/Gl",
-        BackendProject = "generated/Gl.Backend",
-        GlVersion = glVersion
-    };
 }

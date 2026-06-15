@@ -10,9 +10,24 @@ public sealed class BindingCodeEmitterOverloadTest
     {
         using var workspace = TempWorkspace.Create();
         var config = CHeaderTestConfig.Create();
-        var model = new BindingModel([], [], [new("test_handle", "TestHandle")], [new("TestCallback", "void", [])],
-            [new("test_set", "Set", "void", "void", [new("handle", "TestHandle", "TestHandle", "", false), new("callback", "nint", "nint", "", false, CallbackType: "TestCallback")], null)],
-            [], [], []);
+        var model = new BindingModel(
+            [],
+            [],
+            [new("test_handle", "TestHandle")],
+            [new("TestCallback", "void", [])],
+            [new(
+                "test_set",
+                "Set",
+                "void",
+                "void",
+                [
+                    new("handle", "TestHandle", "TestHandle", "", false),
+                    new("callback", "nint", "nint", "", false, CallbackType: "TestCallback"),
+                ],
+                null)],
+            [],
+            [],
+            []);
 
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
 

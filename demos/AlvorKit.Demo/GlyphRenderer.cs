@@ -62,6 +62,9 @@ public sealed class GlyphRenderer
         (vertexArray, vertexBuffer) = CreateGeometry();
     }
 
+    /// <summary>Draws one frame of the glyph without allocating in the render path.</summary>
+    /// <param name="width">The current framebuffer width.</param>
+    /// <param name="height">The current framebuffer height.</param>
     public void Draw(int width, int height)
     {
         gl.Viewport(0, 0, width, height);
@@ -83,6 +86,8 @@ public sealed class GlyphRenderer
         gl.ResetViewport();
     }
 
+    /// <summary>Uploads the grayscale glyph to a single-channel OpenGL texture.</summary>
+    /// <param name="glyph">The glyph bitmap copied from FreeType during startup.</param>
     private GlTextureHandle CreateTexture(GlyphBitmap glyph)
     {
         var texture = gl.GenTexture();
@@ -98,23 +103,20 @@ public sealed class GlyphRenderer
         return texture;
     }
 
+    /// <summary>Creates the shader program used to draw the textured glyph quad.</summary>
     private GlProgramHandle CreateProgram()
     {
         var program = gl.CreateProgram();
         gl.AttachShader(program, Compile(GlShaderType.VertexShader, VertexSource));
         gl.AttachShader(program, Compile(GlShaderType.FragmentShader, FragmentSource));
         gl.LinkProgram(program);
-
-        gl.GetProgramiv(program, GlProgramProperty.LinkStatus, out var linkStatus);
-        if (linkStatus == 0)
-            throw new InvalidOperationException($"Program link failed: {gl.GetProgramInfoLog(program)}");
-
         gl.UseProgram(program);
         gl.Uniform1i(gl.GetUniformLocation(program, "glyph"), 0);
         gl.UnuseProgram();
         return program;
     }
 
+    /// <summary>Creates the vertex array and buffer for a full-size triangle-strip quad.</summary>
     private (GlVertexArrayHandle VertexArray, GlBufferHandle VertexBuffer) CreateGeometry()
     {
         var vertexArray = gl.GenVertexArray();
@@ -132,16 +134,14 @@ public sealed class GlyphRenderer
         return (vertexArray, vertexBuffer);
     }
 
+    /// <summary>Compiles a shader from embedded demo source.</summary>
+    /// <param name="type">The shader stage to compile.</param>
+    /// <param name="source">The GLSL source embedded in the demo.</param>
     private GlShaderHandle Compile(GlShaderType type, string source)
     {
         var shader = gl.CreateShader(type);
         gl.ShaderSource(shader, source);
         gl.CompileShader(shader);
-
-        gl.GetShaderiv(shader, GlShaderParameterName.CompileStatus, out var compileStatus);
-        if (compileStatus == 0)
-            throw new InvalidOperationException($"Shader compilation failed: {gl.GetShaderInfoLog(shader)}");
-
         return shader;
     }
 }

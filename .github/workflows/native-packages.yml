@@ -101,9 +101,18 @@ jobs:
               mapfile -t changed < <(git diff --name-only "$base" "$head")
             fi
 
+            changed_any() {
+              local pattern="$1"
+              local file
+              for file in "${changed[@]}"; do
+                [[ "$file" =~ $pattern ]] && return 0
+              done
+              return 1
+            }
+
             # Only version/TAG and version/REVISION are native-package release signals.
             for library in freetype glfw miniaudio xxhash; do
-              if printf '%s\n' "${changed[@]}" | grep -Eq "^native/${library}/version/(TAG|REVISION)$"; then
+              if changed_any "^native/${library}/version/(TAG|REVISION)$"; then
                 selected+=("$library")
               fi
             done

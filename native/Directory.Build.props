@@ -7,6 +7,8 @@
             $([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/version/REVISION').Trim())</NativeRevision>
         <Version Condition="'$(NativeRevision)' != ''">$(Version).$(NativeRevision)</Version>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <RepositoryType>git</RepositoryType>

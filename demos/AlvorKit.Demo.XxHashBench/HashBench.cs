@@ -1,25 +1,4 @@
-using System.Runtime.InteropServices;
-
 namespace AlvorKit.Demo.XxHashBench;
-
-/// <summary>A single hash invocation over <paramref name="input"/>, returning the (truncated) hash value.</summary>
-public delegate ulong HashFn(nint input, nuint length);
-
-public enum BenchMode
-{
-    /// <summary>Independent back-to-back hash calls.</summary>
-    Throughput,
-    /// <summary>Each call's input pointer depends on the previous hash value, serializing the chain.</summary>
-    Latency
-}
-
-public enum SizeMode
-{
-    /// <summary>Hash exactly Size bytes every call.</summary>
-    Fixed,
-    /// <summary>Hash a per-block random number of bytes between 1 and Size (inclusive).</summary>
-    Random
-}
 
 /// <summary>
 /// Port of the upstream xxHash benchmark core (tests/bench/benchHash.c and
@@ -27,7 +6,7 @@ public enum SizeMode
 /// measurement, and report the fastest observed run. One run hashes a batch of
 /// blocks sized so roughly 200 KB are hashed per run.
 /// </summary>
-public sealed class HashBench
+public sealed unsafe class HashBench
 {
     private const int MarginForLatency = 1024;
     private const int StartMask = MarginForLatency - 1;
@@ -51,24 +30,10 @@ public sealed class HashBench
             lengths[n] = (nuint)(sizeMode == SizeMode.Fixed ? size : random.Next(1, size + 1));
 
         var bufferSize = (nuint)size + MarginForLatency;
-        nint buffer;
-        unsafe
-        {
-            buffer = (nint)NativeMemory.Alloc(bufferSize);
-        }
+        using var buffer = NativeBuffer.Allocate(bufferSize);
 
-        try
-        {
-            InitBuffer(buffer, bufferSize);
-            return 1e9 / MeasureFastestRunNs(hashFn, benchMode, buffer, lengths, totalTimeMs, iterTimeMs) * nbBlocks;
-        }
-        finally
-        {
-            unsafe
-            {
-                NativeMemory.Free((void*)buffer);
-            }
-        }
+        InitBuffer(buffer.Pointer, bufferSize);
+        return 1e9 / MeasureFastestRunNs(hashFn, benchMode, buffer.Pointer, lengths, totalTimeMs, iterTimeMs) * nbBlocks;
     }
 
     /// <summary>
@@ -131,14 +96,52 @@ public sealed class HashBench
     {
         const ulong k1 = 11400714785074694791ul;
         var acc = 14029467366897019727ul;
-        unsafe
+        var bytes = (byte*)buffer;
+        for (nuint i = 0; i < size; i++)
         {
-            var bytes = (byte*)buffer;
-            for (nuint i = 0; i < size; i++)
-            {
-                acc *= k1;
-                bytes[i] = (byte)(acc >> 56);
-            }
+            acc *= k1;
+            bytes[i] = (byte)(acc >> 56);
         }
     }
+
+    /// <summary>Owns one native allocation for a benchmark cell and frees it when the measurement completes.</summary>
+    /// <param name="pointer">The native pointer returned by <see cref="NativeMemory.Alloc(nuint)"/>.</param>
+    private readonly struct NativeBuffer(nint pointer) : IDisposable
+    {
+        /// <summary>The native pointer passed to xxHash during the timed loops.</summary>
+        public nint Pointer { get; } = pointer;
+
+        /// <summary>Allocates a native byte buffer without adding GC pressure to the measured path.</summary>
+        /// <param name="size">The number of bytes to allocate.</param>
+        /// <returns>An owned native buffer that must be disposed after the benchmark cell completes.</returns>
+        public static NativeBuffer Allocate(nuint size) =>
+            new((nint)NativeMemory.Alloc(size));
+
+        /// <summary>Frees the owned native allocation.</summary>
+        public void Dispose() =>
+            NativeMemory.Free((void*)Pointer);
+    }
+}
+
+/// <summary>A single hash invocation over <paramref name="input"/>, returning the (truncated) hash value.</summary>
+public delegate ulong HashFn(nint input, nuint length);
+
+/// <summary>The dependency pattern used between repeated hash calls in a benchmark cell.</summary>
+public enum BenchMode
+{
+    /// <summary>Independent back-to-back hash calls.</summary>
+    Throughput,
+
+    /// <summary>Each call's input pointer depends on the previous hash value, serializing the chain.</summary>
+    Latency
+}
+
+/// <summary>The input length policy used for each block in a benchmark cell.</summary>
+public enum SizeMode
+{
+    /// <summary>Hash exactly Size bytes every call.</summary>
+    Fixed,
+
+    /// <summary>Hash a per-block random number of bytes between 1 and Size (inclusive).</summary>
+    Random
 }

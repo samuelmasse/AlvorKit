@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

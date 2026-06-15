@@ -1,15 +1,15 @@
-using AlvorKit.Script.Bindgen;
-
 namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
 
+/// <summary>Tests for generated OpenGL code-emission artifacts.</summary>
 [TestClass]
 public sealed class GlCodeEmitterTest
 {
+    /// <summary>Generated callback delegates use the Winapi unmanaged calling convention.</summary>
     [TestMethod]
     public void EmitDelegate_UsesWinapiCallingConventionForApiEntryCallbacks()
     {
         using var workspace = TempWorkspace.Create();
-        var config = TestConfig();
+        var config = OpenGlRegistryTestConfig.Create();
         var model = new GlBindingModel(
             Groups: [],
             AllTokens: new("GLenum", "GlEnum", IsFlags: false, Members: []),
@@ -36,11 +36,12 @@ public sealed class GlCodeEmitterTest
         StringAssert.Contains(delegateSource, "[UnmanagedFunctionPointer(CallingConvention.Winapi)]");
     }
 
+    /// <summary>Generated C-string span overloads handle null native string pointers.</summary>
     [TestMethod]
     public void EmitStringGetter_SpanOverloadHandlesNullNativePointer()
     {
         using var workspace = TempWorkspace.Create();
-        var config = TestConfig();
+        var config = OpenGlRegistryTestConfig.Create();
         var model = new GlBindingModel(
             Groups: [],
             AllTokens: new("GLenum", "GlEnum", IsFlags: false, Members: []),
@@ -70,19 +71,4 @@ public sealed class GlCodeEmitterTest
         StringAssert.Contains(extensionsSource, "MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)pointer)");
     }
 
-    private static BindgenConfig TestConfig() => new()
-    {
-        Kind = BindgenConfig.GlRegistryKind,
-        Namespace = "AlvorKit.Bindgen.OpenGLFixture",
-        ApiClass = "Gl",
-        ApiSummary = "Fixture GL API.",
-        BackendClass = "GlBackend",
-        Prefix = "GL_",
-        WorkDir = "fixture-work",
-        SourceDir = "fixture-source",
-        Header = "gl.xml",
-        ApiProject = "generated/Gl",
-        BackendProject = "generated/Gl.Backend",
-        GlVersion = "4.6"
-    };
 }

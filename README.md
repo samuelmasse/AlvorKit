@@ -21,6 +21,30 @@ Generate the local projects with:
 dotnet run --project scripts\AlvorKit.Script.Bindgen -- all
 ```
 
+## Unit test coverage
+
+Generate a local coverage report with:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --threshold 0
+```
+
+Open the ReportGenerator HTML report:
+
+```powershell
+Invoke-Item .\out\coverage\html\index.html
+```
+
+To run coverage for one test project while iterating, pass a project name or path:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --test-project AlvorKit.Script.NativeBuild.Test --threshold 0
+```
+
+Raw per-project coverage files and logs are written under `out/coverage/projects/<test-project>/`.
+The strict coverage gate is the same command without `--threshold 0`; it fails unless line,
+branch, and method coverage are all 100%.
+
 ## Native package builds
 
 Native packages are built by the shared native build runner. To see the configured native packages:
