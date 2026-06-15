@@ -1,10 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <!-- Required by the [LibraryImport] source generator in the GLFW backend source compiled below. -->
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Demo" />
+        <Using Include="AlvorKit.FreeType" />
+        <Using Include="AlvorKit.GLFW" />
+        <Using Include="AlvorKit.MiniAudio" />
+        <Using Include="AlvorKit.OpenGL" />
+        <Using Include="AlvorKit.OpenGL.Layer" />
+        <Using Include="BigGustave" />
+    </ItemGroup>
 
     <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
         <PackageReference Include="AlvorKit.FreeType.Backend" Version="$(FtBindVer)" />
@@ -25,5 +34,4 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
     </ItemGroup>
-
 </Project>

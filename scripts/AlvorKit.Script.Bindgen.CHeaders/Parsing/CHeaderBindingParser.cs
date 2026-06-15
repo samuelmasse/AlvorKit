@@ -23,7 +23,7 @@ public sealed class CHeaderBindingParser(BindgenConfig config, string managedTyp
         CHeaderRecordResolver? records = null;
         var types = new CHeaderTypeMapper(config, state, nativeName => records?.ResolveStruct(nativeName));
 
-        CHeaderEnumDiscovery.Discover(config, state, names, types, translationUnit.Declarations);
+        CHeaderEnumDiscovery.Discover(config, state, names, translationUnit.Declarations);
         CHeaderRecordIndex.Index(state, translationUnit.Declarations);
         records = new CHeaderRecordResolver(config, state, names, types);
         CHeaderCallbackDiscovery.Discover(config, state, names, types, translationUnit.Declarations);

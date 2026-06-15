@@ -15,6 +15,12 @@ These instructions apply to C# code under `demos/`.
   without hunting through incidental plumbing.
 - Keep changes cohesive, reviewable, and easy to understand for someone learning
   from the demo.
+- Resolve checked-in demo assets under `res/` through the
+  `AlvorKit.Script.Workspace` project. `demos/Directory.Build.props` provides
+  the shared project reference and global using for demo projects; use
+  `ProjectRoot.ResDirectory(...)` or `ProjectRoot.FindFromCurrentProcess(...)`
+  instead of process-working-directory-relative paths or local repository-root
+  walkers.
 
 ## Demo Narrative
 
@@ -155,6 +161,9 @@ These instructions apply to C# code under `demos/`.
   or another non-demo project and test it there.
 - Avoid test designs that require real graphics hardware unless the task is
   explicitly integration-focused.
+- Do not run the repository coverage tool for changes that only touch demo
+  projects or demo-only code. Demo projects have no unit tests by design, so
+  coverage is not required for demo-only work.
 - Before finishing, build the touched demo project or explain why that was not
   possible.
 

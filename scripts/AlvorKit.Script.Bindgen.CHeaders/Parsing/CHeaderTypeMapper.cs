@@ -26,7 +26,7 @@ internal sealed partial class CHeaderTypeMapper(
         if (primitive is not null)
             return primitive;
         if (canonical.kind == CXTypeKind.CXType_Pointer)
-            return MapPointer(type, canonical.PointeeType, isParam, isReturn);
+            return MapPointer(canonical.PointeeType, isParam, isReturn);
         if (isParam && canonical.kind is CXTypeKind.CXType_ConstantArray or CXTypeKind.CXType_IncompleteArray)
             return "nint";
         return canonical.kind == CXTypeKind.CXType_Record ? resolveStruct(spelling)?.ManagedName : null;
@@ -51,7 +51,7 @@ internal sealed partial class CHeaderTypeMapper(
         spelling == $"{config.Prefix}bool" || ((isParam || isReturn) && config.BoolTypes.Contains(spelling));
 
     /// <summary>Maps native pointer types to strings, handles, callbacks, or raw pointers.</summary>
-    private string MapPointer(CXType original, CXType pointee, bool isParam, bool isReturn)
+    private string MapPointer(CXType pointee, bool isParam, bool isReturn)
     {
         if (pointee.CanonicalType.kind is CXTypeKind.CXType_FunctionProto or CXTypeKind.CXType_FunctionNoProto)
             return "nint";

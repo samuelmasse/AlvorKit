@@ -1,5 +1,3 @@
-using AlvorKit.MiniAudio;
-
 namespace AlvorKit.Demo;
 
 /// <summary>Plays an endless Ode to Joy on a sine waveform through miniaudio.</summary>
@@ -44,8 +42,7 @@ public sealed unsafe class MelodyPlayer : IDisposable
     /// <summary>Signals the playback thread to continue cycling notes.</summary>
     private volatile bool running;
 
-    /// <summary>Starts the miniaudio engine, waveform, sound, and playback thread.</summary>
-    /// <param name="ma">The miniaudio API used for playback.</param>
+    /// <summary>Starts the miniaudio engine, waveform, sound, and playback thread used by the demo.</summary>
     public MelodyPlayer(Ma ma)
     {
         this.ma = ma;

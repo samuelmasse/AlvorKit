@@ -6,7 +6,7 @@ namespace AlvorKit.Script.AgentLease;
 /// <param name="currentAgent">Function that returns the ambient agent identifier, usually from an environment variable.</param>
 internal sealed partial class AgentLeaseCoordinator(
     AgentLeaseRepository repository,
-    AgentLeaseClock clock,
+    IAgentLeaseClock clock,
     Func<string?> currentAgent)
 {
     /// <summary>Executes a parsed lease helper command.</summary>

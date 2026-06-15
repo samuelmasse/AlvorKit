@@ -1,15 +1,9 @@
-using AlvorKit.FreeType;
-using BigGustave;
-
 namespace AlvorKit.Demo;
 
 /// <summary>A glyph rasterized by FreeType into tight grayscale rows.</summary>
 public sealed class GlyphBitmap
 {
     /// <summary>Stores a copied grayscale bitmap owned by managed memory.</summary>
-    /// <param name="width">The number of pixels in each row.</param>
-    /// <param name="height">The number of rows in the bitmap.</param>
-    /// <param name="pixels">The tightly packed grayscale pixels copied out of FreeType.</param>
     private GlyphBitmap(int width, int height, byte[] pixels)
     {
         Width = width;
@@ -26,11 +20,7 @@ public sealed class GlyphBitmap
     /// <summary>The tightly packed grayscale pixels copied out of FreeType.</summary>
     public byte[] Pixels { get; }
 
-    /// <summary>Rasterizes one character through FreeType and returns a managed copy of the bitmap.</summary>
-    /// <param name="ft">The FreeType API used for the font calls.</param>
-    /// <param name="fontPath">The font file loaded for this demo run.</param>
-    /// <param name="character">The character to render.</param>
-    /// <param name="pixelHeight">The requested pixel height for the glyph.</param>
+    /// <summary>Rasterizes one character through FreeType and returns a managed copy of the requested bitmap.</summary>
     public static unsafe GlyphBitmap Render(Ft ft, string fontPath, char character, uint pixelHeight)
     {
         nint library = 0;
@@ -41,7 +31,7 @@ public sealed class GlyphBitmap
             ft.InitFreeType(out library);
             ft.NewFace(library, fontPath, new(0), out face);
             ft.SetPixelSizes(face, 0, pixelHeight);
-            ft.LoadChar(face, character, Ft.LoadRender);
+            ft.LoadChar(face, character, (int)FtLoadFlags.Render);
 
             var bitmap = face->Glyph->Bitmap;
             var width = (int)bitmap.Width;
@@ -62,8 +52,7 @@ public sealed class GlyphBitmap
         }
     }
 
-    /// <summary>Exports the managed grayscale pixels as a PNG file for quick inspection.</summary>
-    /// <param name="path">The output PNG path; parent directories are created during export.</param>
+    /// <summary>Exports the managed grayscale pixels to the given PNG path for quick inspection.</summary>
     public void ExportPng(string path)
     {
         var png = PngBuilder.Create(Width, Height, false);

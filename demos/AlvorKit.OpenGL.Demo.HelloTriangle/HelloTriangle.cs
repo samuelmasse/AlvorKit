@@ -141,32 +141,11 @@ public sealed class HelloTriangle : IDisposable
     /// <param name="name">The shader file name under <c>res/shaders/AlvorKit.OpenGL.Demo.HelloTriangle</c>.</param>
     private static string ReadShader(string name)
     {
-        var path = Path.Combine(FindRepositoryRoot(), "res", "shaders", "AlvorKit.OpenGL.Demo.HelloTriangle", name);
+        var path = Path.Combine(
+            ProjectRoot.ResDirectory(typeof(HelloTriangle)),
+            "shaders",
+            "AlvorKit.OpenGL.Demo.HelloTriangle",
+            name);
         return File.ReadAllText(path, Encoding.UTF8);
-    }
-
-    /// <summary>Finds the nearest repository root by walking upward from likely demo execution directories.</summary>
-    private static string FindRepositoryRoot()
-    {
-        foreach (var start in CandidateDirectories())
-        {
-            for (var current = start; current is not null; current = Directory.GetParent(current)?.FullName)
-            {
-                if (File.Exists(Path.Combine(current, "AlvorKit.slnx")) && Directory.Exists(Path.Combine(current, "res")))
-                    return current;
-            }
-        }
-
-        throw new InvalidOperationException("Could not find the AlvorKit repository root containing the res directory.");
-    }
-
-    /// <summary>Returns likely starting directories for repository root discovery.</summary>
-    private static IEnumerable<string> CandidateDirectories()
-    {
-        if (!string.IsNullOrWhiteSpace(Environment.CurrentDirectory))
-            yield return Environment.CurrentDirectory;
-
-        if (!string.IsNullOrWhiteSpace(AppContext.BaseDirectory))
-            yield return AppContext.BaseDirectory;
     }
 }

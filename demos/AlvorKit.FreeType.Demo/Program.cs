@@ -3,7 +3,7 @@ using AlvorKit.FreeType.Demo;
 
 unsafe
 {
-    var fontPath = Path.GetFullPath(Path.Combine("res", "fonts", "Inter.ttf"));
+    var fontPath = Path.Combine(ProjectRoot.ResDirectory(typeof(FreeTypeDemo)), "fonts", "Inter.ttf");
     if (!File.Exists(fontPath))
         throw new FileNotFoundException("Required demo font is missing.", fontPath);
 

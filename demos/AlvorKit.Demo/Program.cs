@@ -1,16 +1,10 @@
-using AlvorKit.Demo;
-using AlvorKit.FreeType;
-using AlvorKit.GLFW;
-using AlvorKit.MiniAudio;
-using AlvorKit.OpenGL;
-using AlvorKit.OpenGL.Layer;
-
-const int initialWidth = 800;
-const int initialHeight = 450;
-const double frameWaitSeconds = 0.01;
-const int glyphScale = 4;
-const uint glyphPixelHeight = 64;
-const char demoCharacter = 'a';
+const int InitialWidth = 800;
+const int InitialHeight = 450;
+const double FrameWaitSeconds = 0.01;
+const int GlyphScale = 4;
+const uint GlyphPixelHeight = 64;
+const char DemoCharacter = 'a';
+const string GlyphPreviewPath = "out/a.png";
 
 var glfw = new GlfwBackend();
 glfw.Init();
@@ -18,45 +12,59 @@ glfw.Init();
 Ma audio = new MaBackend();
 Ft freeType = new FtBackend();
 
-var fontPath = Path.GetFullPath(Path.Combine("res", "fonts", "Inter.ttf"));
-if (!File.Exists(fontPath))
-    throw new FileNotFoundException("Required demo font is missing.", fontPath);
+var fontPath = ResolveDemoFontPath();
 
-var glyph = GlyphBitmap.Render(freeType, fontPath, demoCharacter, glyphPixelHeight);
-ExportGlyphPreview(glyph);
+// FreeType runs first so the OpenGL half receives a plain managed bitmap instead of a live face.
+var glyph = GlyphBitmap.Render(freeType, fontPath, DemoCharacter, GlyphPixelHeight);
+ExportGlyphPreview(glyph, DemoCharacter, GlyphPreviewPath);
 
-var window = glfw.CreateWindow(initialWidth, initialHeight, "AlvorKit.Demo", default, default);
+// The OpenGL layer needs a current GLFW context because it resolves function pointers from that context.
+var window = glfw.CreateWindow(InitialWidth, InitialHeight, "AlvorKit.Demo", default, default);
 glfw.MakeContextCurrent(window);
 
 var gl = new GlLayer(new GlBackend(glfw.GetProcAddress));
 ReportWindowCreated(glfw, window);
 
-var renderer = new GlyphRenderer(gl, glyph, glyphScale);
+var renderer = new GlyphRenderer(gl, glyph, GlyphScale);
 var melody = new MelodyPlayer(audio);
 Console.WriteLine("Playing Ode to Joy.");
 
-RunFrameLoop(glfw, window, renderer, frameWaitSeconds);
+// The frame loop keeps the demo responsive while the melody thread advances miniaudio's waveform frequency.
+RunFrameLoop(glfw, window, renderer, FrameWaitSeconds);
 ReportTrackedResources(gl);
 
+// Cleanup is deliberately direct here so the native lifetime order stays visible in the demo path.
 melody.Dispose();
 gl.Dispose();
 glfw.DestroyWindow(window);
 glfw.Terminate();
 return 0;
 
-static void ExportGlyphPreview(GlyphBitmap glyph)
+// Resolves the checked-in Inter font used by the FreeType step.
+static string ResolveDemoFontPath()
 {
-    const string path = "out/a.png";
-    glyph.ExportPng(path);
-    Console.WriteLine($"Exported 'a' ({glyph.Width}x{glyph.Height}, gray) to {Path.GetFullPath(path)}");
+    var fontPath = Path.Combine(ProjectRoot.ResDirectory(typeof(GlyphBitmap)), "fonts", "Inter.ttf");
+    if (!File.Exists(fontPath))
+        throw new FileNotFoundException("Required demo font is missing.", fontPath);
+
+    return fontPath;
 }
 
+// Writes the rasterized glyph as a PNG so the FreeType output can be inspected without the window.
+static void ExportGlyphPreview(GlyphBitmap glyph, char character, string path)
+{
+    glyph.ExportPng(path);
+    Console.WriteLine($"Exported '{character}' ({glyph.Width}x{glyph.Height}, gray) to {Path.GetFullPath(path)}");
+}
+
+// Reports the framebuffer size GLFW created for the demo window.
 static void ReportWindowCreated(Glfw glfw, GlfwWindow window)
 {
     glfw.GetFramebufferSize(window, out var width, out var height);
     Console.WriteLine($"Window created: {width}x{height} - press Escape or close it to exit.");
 }
 
+// Waits for input, closes on Escape, and renders the glyph at the current framebuffer size.
 static void RunFrameLoop(Glfw glfw, GlfwWindow window, GlyphRenderer renderer, double frameWaitSeconds)
 {
     while (!glfw.WindowShouldClose(window))
@@ -71,6 +79,7 @@ static void RunFrameLoop(Glfw glfw, GlfwWindow window, GlyphRenderer renderer, d
     }
 }
 
+// Prints the layer's tracked GPU resources before the layer disposes them.
 static void ReportTrackedResources(GlLayer gl)
 {
     Console.WriteLine($"GPU memory tracked: {gl.BufferUsage} buffer byte(s), {gl.TextureUsage} texture byte(s).");

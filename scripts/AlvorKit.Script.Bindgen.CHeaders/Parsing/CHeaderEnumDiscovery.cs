@@ -11,7 +11,6 @@ internal static class CHeaderEnumDiscovery
         BindgenConfig config,
         CHeaderParseState state,
         CHeaderNameMapper names,
-        CHeaderTypeMapper types,
         List<Decl> declarations)
     {
         TypedefDecl? previousTypedef = null;
@@ -23,13 +22,13 @@ internal static class CHeaderEnumDiscovery
             if (declaration is TypedefDecl typedef)
             {
                 if (typedef.UnderlyingType.CanonicalType is EnumType enumType)
-                    AddEnum(config, state, names, types, typedef.Name, enumType.Decl, enumType.Decl.IntegerType, typedef);
+                    AddEnum(config, state, names, typedef.Name, enumType.Decl, enumType.Decl.IntegerType, typedef);
                 else
                     (previousTypedef, previousTypedefLine) = (typedef, line);
             }
             else if (declaration is EnumDecl enumDecl && previousTypedef is not null && line == previousTypedefLine)
             {
-                AddEnum(config, state, names, types, previousTypedef.Name, enumDecl, previousTypedef.UnderlyingType, previousTypedef);
+                AddEnum(config, state, names, previousTypedef.Name, enumDecl, previousTypedef.UnderlyingType, previousTypedef);
             }
         }
     }
@@ -39,7 +38,6 @@ internal static class CHeaderEnumDiscovery
         BindgenConfig config,
         CHeaderParseState state,
         CHeaderNameMapper names,
-        CHeaderTypeMapper types,
         string nativeName,
         EnumDecl enumDecl,
         ClangType underlyingType,
@@ -51,8 +49,8 @@ internal static class CHeaderEnumDiscovery
         var lookupName = nativeName.TrimStart('_');
         var members = CHeaderEnumMembers.Read(config, enumDecl);
         var managedUnderlyingType = CHeaderTypeMapper.MapIntegerType(underlyingType);
-        var range = RangeFor(managedUnderlyingType);
-        foreach (var outOfRange in members.Where(member => member.Value < range.Min || member.Value > range.Max).ToList())
+        var (Min, Max) = RangeFor(managedUnderlyingType);
+        foreach (var outOfRange in members.Where(member => member.Value < Min || member.Value > Max).ToList())
         {
             Console.WriteLine($"  dropping {nativeName}.{outOfRange.ManagedName} = {outOfRange.Value} (out of range for underlying type)");
             members.Remove(outOfRange);

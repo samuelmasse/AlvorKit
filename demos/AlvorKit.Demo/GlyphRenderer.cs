@@ -1,6 +1,3 @@
-using AlvorKit.OpenGL;
-using AlvorKit.OpenGL.Layer;
-
 namespace AlvorKit.Demo;
 
 /// <summary>
@@ -10,12 +7,22 @@ namespace AlvorKit.Demo;
 /// </summary>
 public sealed class GlyphRenderer
 {
+    /// <summary>The number of vertices in the triangle-strip quad.</summary>
     private const int VertexCount = 4;
+
+    /// <summary>The number of floating-point values in each interleaved vertex.</summary>
     private const int FloatsPerVertex = 4;
+
+    /// <summary>The byte stride between adjacent interleaved vertices.</summary>
     private const int VertexStrideBytes = FloatsPerVertex * sizeof(float);
+
+    /// <summary>The byte offset of the clip-space position inside each vertex.</summary>
     private const int PositionOffsetBytes = 0;
+
+    /// <summary>The byte offset of the texture coordinate inside each vertex.</summary>
     private const int UvOffsetBytes = 2 * sizeof(float);
 
+    /// <summary>A full-size quad with clip-space coordinates followed by glyph texture coordinates.</summary>
     private static readonly float[] UnitQuad =
     [
         -1f,  1f, 0f, 0f,
@@ -24,18 +31,37 @@ public sealed class GlyphRenderer
          1f, -1f, 1f, 1f,
     ];
 
+    /// <summary>The vertex shader source read during startup, before the render loop begins.</summary>
     private static readonly string VertexSource = ReadShader("glyph.vert.glsl");
+
+    /// <summary>The fragment shader source read during startup, before the render loop begins.</summary>
     private static readonly string FragmentSource = ReadShader("glyph.frag.glsl");
 
+    /// <summary>The strict OpenGL layer that tracks state and resource lifetime for the demo.</summary>
     private readonly GlLayer gl;
+
+    /// <summary>The managed glyph bitmap used to compute the on-screen scale each frame.</summary>
     private readonly GlyphBitmap glyph;
+
+    /// <summary>The display scale applied to the glyph bitmap dimensions.</summary>
     private readonly int scale;
+
+    /// <summary>The OpenGL texture containing the grayscale glyph alpha mask.</summary>
     private readonly GlTextureHandle texture;
+
+    /// <summary>The linked shader program used for the textured quad.</summary>
     private readonly GlProgramHandle program;
+
+    /// <summary>The vertex array that records the glyph quad attribute layout.</summary>
     private readonly GlVertexArrayHandle vertexArray;
+
+    /// <summary>The static vertex buffer containing the glyph quad.</summary>
     private readonly GlBufferHandle vertexBuffer;
+
+    /// <summary>The cached uniform location for the normalized glyph scale.</summary>
     private readonly int scaleLocation;
 
+    /// <summary>Uploads the glyph texture and creates the fixed shader and quad resources.</summary>
     public GlyphRenderer(GlLayer gl, GlyphBitmap glyph, int scale)
     {
         this.gl = gl;
@@ -49,8 +75,6 @@ public sealed class GlyphRenderer
     }
 
     /// <summary>Draws one frame of the glyph without allocating in the render path.</summary>
-    /// <param name="width">The current framebuffer width.</param>
-    /// <param name="height">The current framebuffer height.</param>
     public void Draw(int width, int height)
     {
         gl.Viewport(0, 0, width, height);
@@ -73,14 +97,22 @@ public sealed class GlyphRenderer
     }
 
     /// <summary>Uploads the grayscale glyph to a single-channel OpenGL texture.</summary>
-    /// <param name="glyph">The glyph bitmap copied from FreeType during startup.</param>
     private GlTextureHandle CreateTexture(GlyphBitmap glyph)
     {
         var texture = gl.GenTexture();
         gl.ActiveTexture(GlTextureUnit.Texture0);
         gl.BindTexture(GlTextureTarget.Texture2D, texture);
         gl.PixelStorei(GlPixelStoreParameter.UnpackAlignment, 1);
-        gl.TexImage2D<byte>(GlTextureTarget.Texture2D, 0, GlInternalFormat.R8, glyph.Width, glyph.Height, 0, GlPixelFormat.Red, GlPixelType.UnsignedByte, glyph.Pixels);
+        gl.TexImage2D<byte>(
+            GlTextureTarget.Texture2D,
+            0,
+            GlInternalFormat.R8,
+            glyph.Width,
+            glyph.Height,
+            0,
+            GlPixelFormat.Red,
+            GlPixelType.UnsignedByte,
+            glyph.Pixels);
         gl.TexParameteri(GlTextureTarget.Texture2D, GlTextureParameterName.TextureMinFilter, (int)GlTextureMinFilter.Linear);
         gl.TexParameteri(GlTextureTarget.Texture2D, GlTextureParameterName.TextureMagFilter, (int)GlTextureMagFilter.Linear);
         gl.ResetPixelStore(GlPixelStoreParameter.UnpackAlignment);
@@ -121,8 +153,6 @@ public sealed class GlyphRenderer
     }
 
     /// <summary>Compiles a shader from demo source.</summary>
-    /// <param name="type">The shader stage to compile.</param>
-    /// <param name="source">The GLSL source read from the repository root res directory.</param>
     private GlShaderHandle Compile(GlShaderType type, string source)
     {
         var shader = gl.CreateShader(type);
@@ -132,35 +162,9 @@ public sealed class GlyphRenderer
     }
 
     /// <summary>Reads a GLSL shader from the repository root res directory.</summary>
-    /// <param name="name">The shader file name under <c>res/shaders/AlvorKit.Demo</c>.</param>
     private static string ReadShader(string name)
     {
-        var path = Path.Combine(FindRepositoryRoot(), "res", "shaders", "AlvorKit.Demo", name);
+        var path = Path.Combine(ProjectRoot.ResDirectory(typeof(GlyphRenderer)), "shaders", "AlvorKit.Demo", name);
         return File.ReadAllText(path, Encoding.UTF8);
-    }
-
-    /// <summary>Finds the nearest repository root by walking upward from likely demo execution directories.</summary>
-    private static string FindRepositoryRoot()
-    {
-        foreach (var start in CandidateDirectories())
-        {
-            for (var current = start; current is not null; current = Directory.GetParent(current)?.FullName)
-            {
-                if (File.Exists(Path.Combine(current, "AlvorKit.slnx")) && Directory.Exists(Path.Combine(current, "res")))
-                    return current;
-            }
-        }
-
-        throw new InvalidOperationException("Could not find the AlvorKit repository root containing the res directory.");
-    }
-
-    /// <summary>Returns likely starting directories for repository root discovery.</summary>
-    private static IEnumerable<string> CandidateDirectories()
-    {
-        if (!string.IsNullOrWhiteSpace(Environment.CurrentDirectory))
-            yield return Environment.CurrentDirectory;
-
-        if (!string.IsNullOrWhiteSpace(AppContext.BaseDirectory))
-            yield return AppContext.BaseDirectory;
     }
 }

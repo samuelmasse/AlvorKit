@@ -12,7 +12,7 @@ internal sealed class LintRunner(
     IActionlintTool actionlintTool)
 {
     /// <summary>Synchronizes progress output from parallel lint tasks.</summary>
-    private readonly object consoleLock = new();
+    private readonly Lock consoleLock = new();
 
     /// <summary>Runs every configured lint command concurrently and returns the first non-zero exit code.</summary>
     public async Task<int> RunAsync()

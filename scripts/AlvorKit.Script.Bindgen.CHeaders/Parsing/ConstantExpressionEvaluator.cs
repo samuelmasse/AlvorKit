@@ -6,8 +6,8 @@ public static class ConstantExpressionEvaluator
     /// <summary>Returns the expression value when every token can be evaluated safely.</summary>
     public static long? Evaluate(List<string> tokens, Dictionary<string, long> knownConstants)
     {
-        var parsed = ParseBinary(tokens, knownConstants, position: 0, minPrecedence: 0);
-        return parsed.Value is not null && parsed.Position == tokens.Count ? parsed.Value : null;
+        var (Value, Position) = ParseBinary(tokens, knownConstants, position: 0, minPrecedence: 0);
+        return Value is not null && Position == tokens.Count ? Value : null;
     }
 
     /// <summary>Parses a precedence-climbing binary expression.</summary>
@@ -25,8 +25,8 @@ public static class ConstantExpressionEvaluator
                 return left;
 
             var op = tokens[left.Position];
-            var right = ParseBinary(tokens, knownConstants, left.Position + 1, precedence + 1);
-            left = right.Value is null ? (null, right.Position) : (Apply(op, left.Value.Value, right.Value.Value), right.Position);
+            var (Value, Position) = ParseBinary(tokens, knownConstants, left.Position + 1, precedence + 1);
+            left = Value is null ? (null, Position) : (Apply(op, left.Value.Value, Value.Value), Position);
         }
         return left;
     }
@@ -58,10 +58,10 @@ public static class ConstantExpressionEvaluator
         Dictionary<string, long> knownConstants,
         int position)
     {
-        var inner = ParseBinary(tokens, knownConstants, position, minPrecedence: 0);
-        return inner.Value is not null && inner.Position < tokens.Count && tokens[inner.Position] == ")"
-            ? (inner.Value, inner.Position + 1)
-            : (null, inner.Position);
+        var (Value, Position) = ParseBinary(tokens, knownConstants, position, minPrecedence: 0);
+        return Value is not null && Position < tokens.Count && tokens[Position] == ")"
+            ? (Value, Position + 1)
+            : (null, Position);
     }
 
     /// <summary>Applies a safe binary operation, returning null for invalid division or remainder.</summary>

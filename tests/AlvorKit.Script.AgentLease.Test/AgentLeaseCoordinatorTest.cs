@@ -385,7 +385,7 @@ public sealed class AgentLeaseCoordinatorTest
         };
 
     /// <summary>Mutable test clock used to make lease timestamps deterministic.</summary>
-    private sealed class FakeClock(DateTimeOffset now) : AgentLeaseClock
+    private sealed class FakeClock(DateTimeOffset now) : IAgentLeaseClock
     {
         /// <inheritdoc />
         public DateTimeOffset UtcNow { get; set; } = now;
