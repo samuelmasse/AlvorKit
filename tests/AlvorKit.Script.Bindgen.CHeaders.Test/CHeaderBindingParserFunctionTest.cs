@@ -31,18 +31,52 @@ public sealed class CHeaderBindingParserFunctionTest
         var source = workspace.CreateDirectory("source");
         var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
             #include <stddef.h>
+            typedef struct test_image { int width; } test_image;
             void test_write(void* data, size_t dataSize);
             void test_read(const void* data, size_t dataSize);
+            void test_icons(int count, const test_image* images);
+            void test_flag(int enabled);
+            void test_native_bool(_Bool enabled);
+            void test_unnamed(int);
             """);
+        var config = CHeaderTestConfig.Create();
+        config.BoolParams = new() { ["test_flag"] = ["enabled"] };
 
-        var model = CHeaderParserHarness.Parse(translationUnit, source);
+        var model = CHeaderParserHarness.Parse(translationUnit, source, config);
         var write = model.Functions.Single(function => function.NativeName == "test_write");
         var read = model.Functions.Single(function => function.NativeName == "test_read");
+        var icons = model.Functions.Single(function => function.NativeName == "test_icons");
+        var flag = model.Functions.Single(function => function.NativeName == "test_flag");
+        var nativeBool = model.Functions.Single(function => function.NativeName == "test_native_bool");
+        var unnamed = model.Functions.Single(function => function.NativeName == "test_unnamed");
 
         Assert.IsTrue(write.Parameters[0].IsUntypedPointer);
         Assert.IsFalse(write.Parameters[0].IsConstPointee);
         Assert.IsTrue(write.Parameters[1].IsSizeT);
         Assert.IsTrue(read.Parameters[0].IsConstPointee);
+        Assert.IsTrue(icons.Parameters[1].IsConstPointee);
+        Assert.AreEqual("bool", flag.Parameters.Single().ManagedType);
+        Assert.AreEqual("int", flag.Parameters.Single().InteropType);
+        Assert.AreEqual("bool", nativeBool.Parameters.Single().ManagedType);
+        Assert.AreEqual("bool", nativeBool.Parameters.Single().InteropType);
+        Assert.AreEqual("arg0", unnamed.Parameters.Single().ManagedName);
+    }
+
+    /// <summary>Unsupported parameter types skip only the affected function and record the reason.</summary>
+    [TestMethod]
+    public void Parse_SkipsUnsupportedParameterType()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            void test_bad(_Complex float value);
+            void test_good(int value);
+            """);
+
+        var model = CHeaderParserHarness.Parse(translationUnit, source);
+
+        CollectionAssert.AreEqual(new[] { "test_good" }, model.Functions.Select(function => function.NativeName).ToArray());
+        Assert.IsTrue(model.SkippedFunctions.Single().StartsWith("test_bad (param value:", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -66,6 +100,42 @@ public sealed class CHeaderBindingParserFunctionTest
         CollectionAssert.AreEqual(
             new[] { "Hash3To64", "Hash3To64" },
             model.Functions.Select(function => function.ManagedName).ToArray());
+    }
+
+    /// <summary>Configured enum return types become the public return while native imports keep the raw type.</summary>
+    [TestMethod]
+    public void Parse_AppliesConfiguredEnumReturnType()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            typedef int test_pointer_alias;
+            int test_get_mode(void);
+            test_pointer_alias test_get_aliased_pointer(void);
+            char* test_get_mutable_name(void);
+            const char* test_get_const_name(void);
+            const unsigned char* test_get_bytes_name(void);
+            """);
+        var config = CHeaderTestConfig.Create();
+        config.TypeAliases = new() { ["test_pointer_alias"] = "nint" };
+        config.EnumOverloads = new()
+        {
+            Functions = { ["test_get_mode"] = new() { Return = "TestMode" } }
+        };
+
+        var functions = CHeaderParserHarness.Parse(translationUnit, source, config).Functions;
+        var function = functions.Single(item => item.NativeName == "test_get_mode");
+        var aliased = functions.Single(item => item.NativeName == "test_get_aliased_pointer");
+        var mutableName = functions.Single(item => item.NativeName == "test_get_mutable_name");
+        var constName = functions.Single(item => item.NativeName == "test_get_const_name");
+        var bytesName = functions.Single(item => item.NativeName == "test_get_bytes_name");
+
+        Assert.AreEqual("TestMode", function.ReturnType);
+        Assert.AreEqual("int", function.ReturnInteropType);
+        Assert.IsFalse(aliased.ReturnsCString);
+        Assert.IsFalse(mutableName.ReturnsCString);
+        Assert.IsTrue(constName.ReturnsCString);
+        Assert.IsFalse(bytesName.ReturnsCString);
     }
 
     [TestMethod]

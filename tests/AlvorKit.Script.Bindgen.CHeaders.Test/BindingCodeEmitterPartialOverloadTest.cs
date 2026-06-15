@@ -15,6 +15,7 @@ public sealed class BindingCodeEmitterPartialOverloadTest
             Functions =
             {
                 ["test_run"] = new() { Return = "TestResult" },
+                ["test_run_typed"] = new() { Return = "TestResult" },
                 ["test_toggle"] = new() { Return = "TestResult", Params = { ["enabled"] = ["bool", "bool", "int"] } }
             }
         };
@@ -25,6 +26,7 @@ public sealed class BindingCodeEmitterPartialOverloadTest
             [],
             [
                 new("test_run", "Run", "int", "int", [new("mode", "int", "int", "", false)], null),
+                new("test_run_typed", "RunTyped", "TestResult", "int", [new("mode", "int", "int", "", false)], null),
                 new("test_toggle", "Toggle", "int", "int", [new("enabled", "int", "int", "", false)], null),
                 new("test_try_run", "TryRun", "int", "int",
                     [
@@ -49,6 +51,7 @@ public sealed class BindingCodeEmitterPartialOverloadTest
         Assert.IsFalse(overloads.Contains("static class", StringComparison.Ordinal));
         Assert.IsFalse(overloads.Contains("this Test", StringComparison.Ordinal));
         StringAssert.Contains(overloads, "public TestResult Run(TestMode mode) => (TestResult)Run((int)mode);");
+        StringAssert.Contains(overloads, "public TestResult RunTyped(TestMode mode) => RunTyped((int)mode);");
         StringAssert.Contains(overloads, "public TestResult Toggle(bool enabled) => (TestResult)Toggle((enabled ? 1 : 0));");
         StringAssert.Contains(
             overloads,

@@ -14,6 +14,16 @@ public sealed class CSharpNameTest
         Assert.AreEqual("D0", CSharpName.FromNativeIdentifier("GLFW_KEY_0", "GLFW_KEY_", "D"));
     }
 
+    /// <summary>Known native acronym tokens keep conventional managed casing.</summary>
+    [TestMethod]
+    public void FromNativeIdentifier_PreservesKnownAcronymCasing()
+    {
+        Assert.AreEqual("OpenGLESApi", CSharpName.FromNativeIdentifier("GLFW_OPENGL_ES_API", "GLFW_"));
+        Assert.AreEqual("GamepadButtonDPadUp", CSharpName.FromNativeIdentifier("GLFW_GAMEPAD_BUTTON_DPAD_UP", "GLFW_"));
+        Assert.AreEqual("Win32ShowDefault", CSharpName.FromNativeIdentifier("GLFW_WIN32_SHOWDEFAULT", "GLFW_"));
+        Assert.AreEqual("X11XCBVulkanSurface", CSharpName.FromNativeIdentifier("GLFW_X11_XCB_VULKAN_SURFACE", "GLFW_"));
+    }
+
     /// <summary>Native type names add the configured managed type prefix after normal conversion.</summary>
     [TestMethod]
     public void FromNativeTypeName_AddsManagedTypePrefix()

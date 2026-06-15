@@ -106,6 +106,120 @@ public sealed class ProjectDiscoveryTest
         CollectionAssert.AreEqual(new[] { "Tool" }, modules.ToArray());
     }
 
+    /// <summary>Binding source discovery reads API and backend modules from native bindgen configuration.</summary>
+    [TestMethod]
+    public void BindingSourceAssemblyNames_WithFilter_ReturnsApiAndBackendModules()
+    {
+        using var workspace = TempWorkspace.Create();
+        WriteBindingConfig(workspace, "xxhash", "AlvorKit.XxHash");
+        WriteBindingConfig(workspace, "freetype", "AlvorKit.FreeType");
+
+        var modules = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["xxhash"]);
+
+        CollectionAssert.AreEqual(new[] { "AlvorKit.XxHash", "AlvorKit.XxHash.Backend" }, modules.ToArray());
+    }
+
+    /// <summary>Binding source discovery returns no modules when the repository has no native directory.</summary>
+    [TestMethod]
+    public void BindingSourceAssemblyNames_MissingNativeRoot_ReturnsEmpty()
+    {
+        using var workspace = TempWorkspace.Create();
+
+        var modules = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["xxhash"]);
+
+        Assert.AreEqual(0, modules.Count);
+    }
+
+    /// <summary>Binding filters can match config paths, native directories, and generated assembly names.</summary>
+    [TestMethod]
+    public void BindingSourceAssemblyNames_WithAlternateFilters_ReturnsMatchingModules()
+    {
+        using var workspace = TempWorkspace.Create();
+        WriteBindingConfig(workspace, "xxhash", "AlvorKit.XxHash");
+
+        var byConfig = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["native/xxhash/conf/bindgen.json"]);
+        var byDirectory = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["native/xxhash"]);
+        var byAssembly = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["AlvorKit.XxHash.Backend"]);
+
+        CollectionAssert.AreEqual(new[] { "AlvorKit.XxHash", "AlvorKit.XxHash.Backend" }, byConfig.ToArray());
+        CollectionAssert.AreEqual(new[] { "AlvorKit.XxHash", "AlvorKit.XxHash.Backend" }, byDirectory.ToArray());
+        CollectionAssert.AreEqual(new[] { "AlvorKit.XxHash", "AlvorKit.XxHash.Backend" }, byAssembly.ToArray());
+    }
+
+    /// <summary>Binding source discovery without filters returns every configured binding module.</summary>
+    [TestMethod]
+    public void BindingSourceAssemblyNames_WithEmptyFilters_ReturnsAllModules()
+    {
+        using var workspace = TempWorkspace.Create();
+        WriteBindingConfig(workspace, "xxhash", "AlvorKit.XxHash");
+        WriteBindingConfig(workspace, "freetype", "AlvorKit.FreeType");
+
+        var modules = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, []);
+
+        CollectionAssert.AreEqual(
+            new[] { "AlvorKit.FreeType", "AlvorKit.FreeType.Backend", "AlvorKit.XxHash", "AlvorKit.XxHash.Backend" },
+            modules.ToArray());
+    }
+
+    /// <summary>Binding source discovery tolerates configs that omit one generated project path.</summary>
+    [TestMethod]
+    public void BindingSourceAssemblyNames_WithPartialConfig_ReturnsPresentModules()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.Write(
+            "native/partial/conf/bindgen.json",
+            """
+            {
+              "apiProject": "out/bindgen/AlvorKit.Partial"
+            }
+            """);
+
+        var modules = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["partial"]);
+
+        CollectionAssert.AreEqual(new[] { "AlvorKit.Partial" }, modules.ToArray());
+    }
+
+    /// <summary>Binding test discovery matches package and generated project references by module name.</summary>
+    [TestMethod]
+    public void TestProjectsReferencingBindingModules_ReturnsMatchingTests()
+    {
+        using var workspace = TempWorkspace.Create();
+        var packageTest = WriteBindingTestProject(workspace, "Package.Test", packageReference: "AlvorKit.XxHash.Backend");
+        var projectTest = WriteBindingTestProject(
+            workspace,
+            "Project.Test",
+            projectReference: "$(BindingsRoot)\\AlvorKit.XxHash.Backend\\AlvorKit.XxHash.Backend.csproj");
+        WriteBindingTestProject(workspace, "Other.Test", packageReference: "AlvorKit.FreeType.Backend");
+        var tests = ProjectDiscovery.TestProjects(workspace.Root, []);
+
+        var selected = BindingProjectDiscovery.TestProjectsReferencingBindingModules(tests, ["AlvorKit.XxHash", "AlvorKit.XxHash.Backend"]);
+
+        CollectionAssert.AreEqual(new[] { packageTest, projectTest }, selected.ToArray());
+    }
+
+    /// <summary>Binding test discovery ignores missing projects and references without an Include value.</summary>
+    [TestMethod]
+    public void TestProjectsReferencingBindingModules_IgnoresMissingAndEmptyReferences()
+    {
+        using var workspace = TempWorkspace.Create();
+        var test = workspace.Write(
+            "tests/Empty.Test/Empty.Test.csproj",
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <ItemGroup>
+                <PackageReference />
+                <ProjectReference />
+              </ItemGroup>
+            </Project>
+            """);
+
+        var selected = BindingProjectDiscovery.TestProjectsReferencingBindingModules(
+            [test, Path.Combine(workspace.Root, "tests", "Missing.Test", "Missing.Test.csproj")],
+            ["AlvorKit.XxHash.Backend"]);
+
+        Assert.AreEqual(0, selected.Count);
+    }
+
     /// <summary>Targeted coverage includes transitive source project references only.</summary>
     [TestMethod]
     public void SourceAssemblyNamesForTests_ReturnsTransitiveSourceReferences()
@@ -191,6 +305,21 @@ public sealed class ProjectDiscoveryTest
         CollectionAssert.AreEqual(new[] { "Tool" }, selection.SourceModules.ToArray());
     }
 
+    /// <summary>Coverage selection with a binding filter gates generated API and backend modules and finds matching tests.</summary>
+    [TestMethod]
+    public void CoverageSelection_WithBindingFilter_SelectsBindingTestsAndModules()
+    {
+        using var workspace = TempWorkspace.Create();
+        WriteBindingConfig(workspace, "xxhash", "AlvorKit.XxHash");
+        var test = WriteBindingTestProject(workspace, "AlvorKit.XxHash.Test", packageReference: "AlvorKit.XxHash.Backend");
+
+        var options = CoverageOptions.Parse(["--binding", "xxhash"]);
+        var selection = CoverageSelection.FromOptions(workspace.Root, options);
+
+        CollectionAssert.AreEqual(new[] { test }, selection.TestProjects.ToArray());
+        CollectionAssert.AreEqual(new[] { "AlvorKit.XxHash", "AlvorKit.XxHash.Backend" }, selection.SourceModules.ToArray());
+    }
+
     /// <summary>Coverage selection without filters includes all tests and source modules.</summary>
     [TestMethod]
     public void CoverageSelection_WithoutFilters_SelectsAllTestsAndSources()
@@ -257,5 +386,40 @@ public sealed class ProjectDiscoveryTest
         var options = CoverageOptions.Parse(["--test-project", "Tool.Test"]);
 
         Assert.ThrowsException<InvalidOperationException>(() => CoverageSelection.FromOptions(workspace.Root, options));
+    }
+
+    /// <summary>Writes a minimal native bindgen configuration for generated binding discovery tests.</summary>
+    private static void WriteBindingConfig(TempWorkspace workspace, string name, string apiAssembly) =>
+        workspace.Write(
+            $"native/{name}/conf/bindgen.json",
+            $$"""
+            {
+              "apiProject": "out/bindgen/{{apiAssembly}}",
+              "backendProject": "out/bindgen/{{apiAssembly}}.Backend"
+            }
+            """);
+
+    /// <summary>Writes a test project with optional binding package and project references.</summary>
+    private static string WriteBindingTestProject(
+        TempWorkspace workspace,
+        string name,
+        string? packageReference = null,
+        string? projectReference = null)
+    {
+        var items = new List<string>();
+        if (packageReference is not null)
+            items.Add($"""<PackageReference Include="{packageReference}" />""");
+        if (projectReference is not null)
+            items.Add($"""<ProjectReference Include="{projectReference}" />""");
+
+        return workspace.Write(
+            $"tests/{name}/{name}.csproj",
+            $$"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <ItemGroup>
+                {{string.Join(Environment.NewLine + "    ", items)}}
+              </ItemGroup>
+            </Project>
+            """);
     }
 }

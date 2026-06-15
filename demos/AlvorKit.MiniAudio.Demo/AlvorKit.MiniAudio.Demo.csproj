@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+        <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="$(MaBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj" />
+    </ItemGroup>
+
+</Project>

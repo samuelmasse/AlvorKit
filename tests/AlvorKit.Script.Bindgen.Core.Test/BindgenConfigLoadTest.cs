@@ -88,6 +88,10 @@ public sealed class BindgenConfigLoadTest
               },
               "functionRenames": {
                 "fixture_hash": "Hash"
+              },
+              "stringArrayReturns": [ "fixture_extensions" ],
+              "countedSpanParams": {
+                "fixture_icons": { "images": "count" }
               }
             }
             """);
@@ -104,6 +108,8 @@ public sealed class BindgenConfigLoadTest
         Assert.AreEqual("FixtureHash128", config.InteropTypeAliases["fixture_hash128"]);
         Assert.AreEqual("FixtureState", config.OpaqueTypes["fixture_state"]);
         Assert.AreEqual("Hash", config.FunctionRenames["fixture_hash"]);
+        CollectionAssert.AreEqual(new[] { "fixture_extensions" }, config.StringArrayReturns);
+        Assert.AreEqual("count", config.CountedSpanParams["fixture_icons"]["images"]);
         CollectionAssert.AreEqual(new[] { "fixture_raw" }, config.AdvancedFunctions);
         Assert.IsTrue(config.XxHashConvenience);
     }

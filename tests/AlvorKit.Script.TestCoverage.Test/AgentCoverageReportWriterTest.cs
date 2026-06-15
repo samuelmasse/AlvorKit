@@ -13,7 +13,7 @@ public sealed class AgentCoverageReportWriterTest
         using var workspace = TempWorkspace.Create();
         var output = OutputPaths(workspace.Root);
         Directory.CreateDirectory(output.Root);
-        var options = new CoverageOptions("Debug", 100, ["Tool.Test"], ["Tool"], 1, false, false, false);
+        var options = new CoverageOptions("Debug", 100, ["Tool.Test"], ["Tool"], ["xxhash"], 1, false, false, false);
         var summary = new CoverageSummary(new(new(1, 1), new(1, 1), new(1, 1)), [], [], []);
 
         AgentCoverageReportWriter.Write(
@@ -30,6 +30,7 @@ public sealed class AgentCoverageReportWriterTest
 
         Assert.AreEqual("Tool.Test", root.GetProperty("testProjectFilters")[0].GetString());
         Assert.AreEqual("Tool", root.GetProperty("sourceProjectFilters")[0].GetString());
+        Assert.AreEqual("xxhash", root.GetProperty("bindingFilters")[0].GetString());
         Assert.AreEqual("out/coverage/coverage-summary.json", root.GetProperty("artifacts").GetProperty("agent").GetString());
     }
 
@@ -40,7 +41,7 @@ public sealed class AgentCoverageReportWriterTest
         using var workspace = TempWorkspace.Create();
         var output = OutputPaths(workspace.Root);
         Directory.CreateDirectory(output.Root);
-        var options = new CoverageOptions("Debug", 100, [], [], 1, true, true, true);
+        var options = new CoverageOptions("Debug", 100, [], [], [], 1, true, true, true);
         var summary = new CoverageSummary(new(new(1, 1), new(1, 1), new(1, 1)), [], [], []);
 
         AgentCoverageReportWriter.Write(

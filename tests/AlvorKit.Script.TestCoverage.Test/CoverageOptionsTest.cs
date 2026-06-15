@@ -14,6 +14,7 @@ public sealed class CoverageOptionsTest
         Assert.AreEqual(100.0, options.Threshold);
         Assert.AreEqual(0, options.TestProjectFilters.Count);
         Assert.AreEqual(0, options.SourceProjectFilters.Count);
+        Assert.AreEqual(0, options.BindingFilters.Count);
         Assert.AreEqual(CoverageOptions.DefaultMaxParallel, options.MaxParallel);
         Assert.IsTrue(options.GenerateHtmlReport);
         Assert.IsTrue(options.GenerateCoberturaReport);
@@ -58,6 +59,15 @@ public sealed class CoverageOptionsTest
         var options = CoverageOptions.Parse(["--source-project", "Tool", "--source", "scripts/Other/Other.csproj"]);
 
         CollectionAssert.AreEqual(new[] { "Tool", "scripts/Other/Other.csproj" }, options.SourceProjectFilters.ToArray());
+    }
+
+    /// <summary>Binding filters can be repeated for generated binding coverage gates.</summary>
+    [TestMethod]
+    public void Parse_BindingFilters_ReturnsAllValues()
+    {
+        var options = CoverageOptions.Parse(["--binding", "xxhash", "--binding", "native/freetype/conf/bindgen.json"]);
+
+        CollectionAssert.AreEqual(new[] { "xxhash", "native/freetype/conf/bindgen.json" }, options.BindingFilters.ToArray());
     }
 
     /// <summary>Max parallelism can be configured for hosts with different CPU and IO capacity.</summary>

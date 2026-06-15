@@ -54,6 +54,11 @@ then build. If `UseLocalBindings=true` fails because `out/bindgen` is missing,
 keep that failure and tell the user to run bindgen rather than making builds
 generate code.
 
+Do not add `LOCAL_BINDINGS` or any other compile-time symbol to distinguish
+local generated bindings from packaged bindings. `UseLocalBindings` may choose
+MSBuild project references instead of package references, but C# source and
+tests must compile the same way in both modes.
+
 ## C# File Placement
 
 A `.cs` file may live directly at the root of its project when that is the
@@ -103,6 +108,8 @@ Quick commands:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild --test-project AlvorKit.Script.NativeBuild.Test`
 - Agent report-only targeted run:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild --threshold 0`
+- Agent generated binding report:
+  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --binding xxhash --threshold 0`
 - Agent full strict gate:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent`
 - Full human/browser report: omit `--agent`.
@@ -114,6 +121,20 @@ For focused work, gate coverage on the source project or projects you changed:
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild
 ```
+
+For generated binding test work, gate coverage on the binding library name:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --binding xxhash --threshold 0
+```
+
+The binding coverage path reads `native/<library>/conf/bindgen.json`, measures
+both the generated API project and its `.Backend` project, selects matching test
+projects by package or project reference, and forces `UseLocalBindings=true` so
+Coverlet instruments the generated project assemblies. If this fails because
+`out/bindgen` is missing, run bindgen for that library first. Inspect the
+reported missing lines and methods; omit `--threshold 0` only when you intend to
+enforce the strict coverage gate for generated binding modules.
 
 The `--source-project` value may be a source project name, project file name, or
 repository-relative project directory or file path. Repeat `--source-project`

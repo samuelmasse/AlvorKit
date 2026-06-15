@@ -21,12 +21,13 @@ internal static class BindingCallbackSetterEmitter
     private static void EmitSetter(StringBuilder output, BindingModel model, BindingFunction function, string apiClass, int slot)
     {
         var callbackParameter = function.Parameters.First(parameter => parameter.CallbackType is not null);
-        var ownerParameter = function.Parameters.FirstOrDefault(parameter => model.Handles.Any(handle => handle.ManagedName == parameter.ManagedType));
+        var ownerParameter = function.Parameters.FirstOrDefault(parameter =>
+            parameter.Modifier.Length == 0 && model.Handles.Any(handle => handle.ManagedName == parameter.ManagedType));
         var owner = ownerParameter is not null ? $"{ownerParameter.ManagedName}.Handle" : "0";
         var signature = string.Join(", ", function.Parameters.Select(parameter =>
-            parameter == callbackParameter ? $"{parameter.CallbackType}? {parameter.ManagedName}" : $"{parameter.ManagedType} {parameter.ManagedName}"));
+            parameter == callbackParameter ? $"{parameter.CallbackType}? {parameter.ManagedName}" : BindingSignature.Parameter(parameter)));
         var arguments = string.Join(", ", function.Parameters.Select(parameter =>
-            parameter == callbackParameter ? $"RootCallback({owner}, {slot}, {parameter.ManagedName})" : parameter.ManagedName));
+            parameter == callbackParameter ? $"RootCallback({owner}, {slot}, {parameter.ManagedName})" : BindingSignature.Argument(parameter)));
 
         var documentation = new StringBuilder();
         BindingDocs.InheritedConvenience(
@@ -37,6 +38,7 @@ internal static class BindingCallbackSetterEmitter
             typeof(BindingCallbackSetterEmitter),
             "res/templates/bindgen/c-headers/csharp/callback-setter.csfrag.tmpl",
             ("Documentation", documentation.ToString()),
+            ("ReturnType", function.ReturnType),
             ("ManagedName", function.ManagedName),
             ("Signature", signature),
             ("Arguments", arguments)));

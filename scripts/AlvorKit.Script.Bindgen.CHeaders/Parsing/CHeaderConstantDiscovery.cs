@@ -12,6 +12,8 @@ internal sealed class CHeaderConstantDiscovery(
     /// <summary>Adds macro and configured constants in deterministic managed-name order.</summary>
     public void Discover()
     {
+        SeedConfiguredNativeValues();
+
         foreach (var cursor in translationUnit.Unit.TranslationUnitDecl.CursorChildren)
         {
             if (!ShouldConsider(cursor))
@@ -19,6 +21,7 @@ internal sealed class CHeaderConstantDiscovery(
             var nativeName = cursor.Handle.Spelling.ToString();
             var tokens = MacroTokens(cursor);
             var value = tokens.Count == 0 ? null : ConstantExpressionEvaluator.Evaluate(tokens, state.ValuesByNativeName);
+            value ??= ConfiguredNativeValue(nativeName);
             if (value is null)
                 continue;
 
@@ -26,26 +29,35 @@ internal sealed class CHeaderConstantDiscovery(
             state.NativeNamesInOrder.Add(nativeName);
         }
 
+        AddMissingConfiguredNativeValues();
+
         var usedManagedNames = state.Functions.Select(function => function.ManagedName)
-            .Concat(config.Constants.Keys)
             .ToHashSet();
         foreach (var nativeName in state.NativeNamesInOrder)
             AddDiscoveredConstant(nativeName, usedManagedNames);
-        foreach (var (name, value) in config.Constants)
-            state.Constants.Add(new(name, value));
+        AddConfiguredManagedConstants(usedManagedNames);
         state.Constants.Sort((a, b) => string.Compare(a.ManagedName, b.ManagedName, StringComparison.Ordinal));
+    }
+
+    /// <summary>Seeds native-style configured values so later macro expressions can refer to them.</summary>
+    private void SeedConfiguredNativeValues()
+    {
+        foreach (var (nativeName, value) in config.Constants)
+        {
+            if (IsNativeConstantName(nativeName) && !config.SkipConstants.ContainsKey(nativeName))
+                state.ValuesByNativeName[nativeName] = value;
+        }
     }
 
     /// <summary>Returns true when a macro definition belongs to the generated API surface.</summary>
     private bool ShouldConsider(Cursor cursor)
     {
-        string[] prefixes = [config.Prefix, .. config.ExtraPrefixes];
         var nativeName = cursor.Handle.Spelling.ToString();
         return cursor.Handle.Kind == CXCursorKind.CXCursor_MacroDefinition
             && !cursor.Handle.IsMacroFunctionLike
             && translationUnit.Scope.IsInScope(cursor.Handle.Location)
-            && prefixes.Any(prefix => nativeName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-            && !state.ValuesByNativeName.ContainsKey(nativeName)
+            && IsNativeConstantName(nativeName)
+            && !state.NativeNamesInOrder.Contains(nativeName, StringComparer.Ordinal)
             && !config.SkipConstants.ContainsKey(nativeName);
     }
 
@@ -64,5 +76,41 @@ internal sealed class CHeaderConstantDiscovery(
         var managedName = CSharpName.FromNativeIdentifier(nativeName, prefix, config.DigitNamePrefix);
         if (usedManagedNames.Add(managedName))
             state.Constants.Add(new(managedName, state.ValuesByNativeName[nativeName]));
+    }
+
+    /// <summary>Returns a configured fallback value for a considered native macro, if one was supplied.</summary>
+    private long? ConfiguredNativeValue(string nativeName) =>
+        config.Constants.TryGetValue(nativeName, out var value) ? value : null;
+
+    /// <summary>Adds configured native-style constants that have no visible macro definition.</summary>
+    private void AddMissingConfiguredNativeValues()
+    {
+        foreach (var (nativeName, value) in config.Constants)
+        {
+            if (!IsNativeConstantName(nativeName)
+                || config.SkipConstants.ContainsKey(nativeName)
+                || state.NativeNamesInOrder.Contains(nativeName, StringComparer.Ordinal))
+                continue;
+
+            state.ValuesByNativeName[nativeName] = value;
+            state.NativeNamesInOrder.Add(nativeName);
+        }
+    }
+
+    /// <summary>Adds managed-name configured constants for values that are not native macro fallbacks.</summary>
+    private void AddConfiguredManagedConstants(HashSet<string> usedManagedNames)
+    {
+        foreach (var (managedName, value) in config.Constants)
+        {
+            if (!IsNativeConstantName(managedName) && usedManagedNames.Add(managedName))
+                state.Constants.Add(new(managedName, value));
+        }
+    }
+
+    /// <summary>Returns true when a configured or discovered name belongs to a generated native prefix.</summary>
+    private bool IsNativeConstantName(string nativeName)
+    {
+        string[] prefixes = [config.Prefix, .. config.ExtraPrefixes];
+        return prefixes.Any(prefix => nativeName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
     }
 }

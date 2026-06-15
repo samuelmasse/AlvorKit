@@ -1,6 +1,6 @@
 namespace AlvorKit.FreeType.Demo;
 
-internal static unsafe class FreeTypeTour
+internal static unsafe partial class FreeTypeTour
 {
     public static void ReportErrorString(Ft ft)
     {
@@ -388,6 +388,93 @@ internal static unsafe class FreeTypeTour
         return Path.GetFullPath(path);
     }
 
+    /// <summary>Exports a visual comparison of control and exact bounding boxes from the outline helper APIs.</summary>
+    public static string ExportOutlineGeometry(Ft ft, FtFaceRec* face, string outputRoot)
+    {
+        FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 160));
+        FreeTypeStatus.Require(ft, "FT_Load_Char", ft.LoadChar(face, 'Q', Ft.LoadNoBitmap | Ft.LoadNoHinting));
+
+        var slot = FreeTypeDrawing.ReadGlyphSlot(face);
+        var outline = slot.Outline;
+        var points = ReadOutlinePoints(outline);
+        var contours = ReadOutlineContours(outline);
+        var canvas = new PngCanvas(760, 460, DemoColor.Background);
+
+        FtBBox controlBox;
+        FtBBox exactBox;
+        ft.OutlineGetCBox(&outline, out controlBox);
+        FreeTypeStatus.Require(ft, "FT_Outline_Get_BBox", ft.OutlineGetBBox(&outline, out exactBox));
+        var orientation = ft.OutlineGetOrientation(&outline);
+        Console.WriteLine($"FT_Outline_Get_CBox: {FormatBox26Dot6(controlBox)}");
+        Console.WriteLine($"FT_Outline_Get_BBox: {FormatBox26Dot6(exactBox)}");
+        Console.WriteLine($"FT_Outline_Get_Orientation: {orientation}");
+
+        if (points.Count > 0)
+        {
+            var map = CreateOutlineMap(points);
+            DrawOutline(canvas, points, contours, map);
+            DrawOutlineBox(canvas, controlBox, map, DemoColor.Green);
+            DrawOutlineBox(canvas, exactBox, map, DemoColor.Cyan);
+        }
+
+        FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 20));
+        FreeTypeDrawing.DrawTextCurrentSize(ft, face, canvas, "FT_Outline_Get_CBox", 36, 392, useKerning: true, DemoColor.Green);
+        FreeTypeDrawing.DrawTextCurrentSize(ft, face, canvas, "FT_Outline_Get_BBox", 380, 392, useKerning: true, DemoColor.Cyan);
+        FreeTypeDrawing.DrawTextCurrentSize(ft, face, canvas, orientation.ToString(), 36, 430, useKerning: true, DemoColor.White);
+
+        var path = Path.Combine(outputRoot, "13-outline-geometry.png");
+        canvas.Save(path);
+        return Path.GetFullPath(path);
+    }
+
+    /// <summary>Exports glyphs produced from slot, copied, and converted bitmaps while reporting detached glyph metrics.</summary>
+    public static string ExportGlyphBitmapObjects(Ft ft, nint library, FtFaceRec* face, string outputRoot)
+    {
+        FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 116));
+        var glyphIndex = ft.GetCharIndex(face, 'B');
+        CLong advance = default;
+        FreeTypeStatus.Require(ft, "FT_Get_Advance", ft.GetAdvance(face, glyphIndex, FtLoadFlags.Default, out advance));
+        Console.WriteLine($"FT_Get_Advance 'B': {FreeTypeValues.Fixed16Dot16(advance):0.##} px");
+
+        ReportDetachedGlyphBox(ft, face, glyphIndex);
+
+        FreeTypeStatus.Require(ft, "FT_Load_Glyph", ft.LoadGlyph(face, glyphIndex, Ft.LoadRender));
+        var slot = FreeTypeDrawing.ReadGlyphSlot(face);
+        var directGlyph = GlyphImage.FromSlot(slot);
+        var copied = default(FtBitmap);
+        var converted = default(FtBitmap);
+        ft.BitmapNew(&copied);
+        ft.BitmapNew(&converted);
+
+        try
+        {
+            var source = slot.Bitmap;
+            FreeTypeStatus.Require(ft, "FT_Bitmap_Copy", ft.BitmapCopy(library, &source, &copied));
+            FreeTypeStatus.Require(ft, "FT_Bitmap_Convert", ft.BitmapConvert(library, &source, &converted, alignment: 1));
+            var copiedGlyph = GlyphImage.FromBitmap(copied, slot.BitmapLeft, slot.BitmapTop, directGlyph.AdvanceX);
+            var convertedGlyph = GlyphImage.FromBitmap(converted, slot.BitmapLeft, slot.BitmapTop, directGlyph.AdvanceX);
+
+            var canvas = new PngCanvas(780, 340, DemoColor.Background);
+            canvas.DrawGlyph(directGlyph, 100, 186, DemoColor.Gold);
+            canvas.DrawGlyph(copiedGlyph, 330, 186, DemoColor.Cyan);
+            canvas.DrawGlyph(convertedGlyph, 570, 186, DemoColor.Green);
+
+            FreeTypeStatus.Require(ft, "FT_Set_Pixel_Sizes", ft.SetPixelSizes(face, 0, 20));
+            FreeTypeDrawing.DrawTextCurrentSize(ft, face, canvas, "slot bitmap", 52, 286, useKerning: true, DemoColor.White);
+            FreeTypeDrawing.DrawTextCurrentSize(ft, face, canvas, "FT_Bitmap_Copy", 272, 286, useKerning: true, DemoColor.White);
+            FreeTypeDrawing.DrawTextCurrentSize(ft, face, canvas, "FT_Bitmap_Convert", 500, 286, useKerning: true, DemoColor.White);
+
+            var path = Path.Combine(outputRoot, "14-glyph-bitmap-objects.png");
+            canvas.Save(path);
+            return Path.GetFullPath(path);
+        }
+        finally
+        {
+            _ = ft.BitmapDone(library, &converted);
+            _ = ft.BitmapDone(library, &copied);
+        }
+    }
+
     public static void ReportVariationSelectors(Ft ft, FtFaceRec* face)
     {
         const uint heart = 0x2764;
@@ -445,12 +532,15 @@ internal static unsafe class FreeTypeTour
 
     private static void DrawOutline(PngCanvas canvas, List<FtVector> points, List<short> contours)
     {
-        var minX = points.Min(point => FreeTypeValues.ToInt64(point.X));
-        var maxX = points.Max(point => FreeTypeValues.ToInt64(point.X));
-        var minY = points.Min(point => FreeTypeValues.ToInt64(point.Y));
-        var maxY = points.Max(point => FreeTypeValues.ToInt64(point.Y));
-        var scale = Math.Min(500.0 / Math.Max(1, maxX - minX), 310.0 / Math.Max(1, maxY - minY));
+        DrawOutline(canvas, points, contours, CreateOutlineMap(points));
+    }
 
+    private static void DrawOutline(
+        PngCanvas canvas,
+        List<FtVector> points,
+        List<short> contours,
+        (long MinX, long MaxY, double Scale) map)
+    {
         var previousEnd = -1;
         foreach (var end in contours)
         {
@@ -458,8 +548,8 @@ internal static unsafe class FreeTypeTour
             for (var i = start; i <= end; i++)
             {
                 var next = i == end ? start : i + 1;
-                var p0 = MapOutlinePoint(points[i], minX, maxY, scale);
-                var p1 = MapOutlinePoint(points[next], minX, maxY, scale);
+                var p0 = MapOutlinePoint(points[i], map);
+                var p1 = MapOutlinePoint(points[next], map);
                 canvas.DrawLine(p0.X, p0.Y, p1.X, p1.Y, DemoColor.Guide);
             }
 
@@ -468,15 +558,40 @@ internal static unsafe class FreeTypeTour
 
         foreach (var point in points)
         {
-            var mapped = MapOutlinePoint(point, minX, maxY, scale);
+            var mapped = MapOutlinePoint(point, map);
             canvas.DrawCircle(mapped.X, mapped.Y, 3, DemoColor.Gold);
         }
     }
 
-    private static (int X, int Y) MapOutlinePoint(FtVector point, long minX, long maxY, double scale) =>
+    private static (long MinX, long MaxY, double Scale) CreateOutlineMap(List<FtVector> points)
+    {
+        var minX = points.Min(point => FreeTypeValues.ToInt64(point.X));
+        var maxX = points.Max(point => FreeTypeValues.ToInt64(point.X));
+        var minY = points.Min(point => FreeTypeValues.ToInt64(point.Y));
+        var maxY = points.Max(point => FreeTypeValues.ToInt64(point.Y));
+        var scale = Math.Min(500.0 / Math.Max(1, maxX - minX), 310.0 / Math.Max(1, maxY - minY));
+        return (minX, maxY, scale);
+    }
+
+    private static void DrawOutlineBox(PngCanvas canvas, FtBBox box, (long MinX, long MaxY, double Scale) map, DemoColor color)
+    {
+        var bottomLeft = MapOutlinePoint(FreeTypeValues.ToInt64(box.XMin), FreeTypeValues.ToInt64(box.YMin), map);
+        var bottomRight = MapOutlinePoint(FreeTypeValues.ToInt64(box.XMax), FreeTypeValues.ToInt64(box.YMin), map);
+        var topRight = MapOutlinePoint(FreeTypeValues.ToInt64(box.XMax), FreeTypeValues.ToInt64(box.YMax), map);
+        var topLeft = MapOutlinePoint(FreeTypeValues.ToInt64(box.XMin), FreeTypeValues.ToInt64(box.YMax), map);
+        canvas.DrawLine(bottomLeft.X, bottomLeft.Y, bottomRight.X, bottomRight.Y, color);
+        canvas.DrawLine(bottomRight.X, bottomRight.Y, topRight.X, topRight.Y, color);
+        canvas.DrawLine(topRight.X, topRight.Y, topLeft.X, topLeft.Y, color);
+        canvas.DrawLine(topLeft.X, topLeft.Y, bottomLeft.X, bottomLeft.Y, color);
+    }
+
+    private static (int X, int Y) MapOutlinePoint(FtVector point, (long MinX, long MaxY, double Scale) map) =>
+        MapOutlinePoint(FreeTypeValues.ToInt64(point.X), FreeTypeValues.ToInt64(point.Y), map);
+
+    private static (int X, int Y) MapOutlinePoint(long x, long y, (long MinX, long MaxY, double Scale) map) =>
         (
-            60 + (int)Math.Round((FreeTypeValues.ToInt64(point.X) - minX) * scale),
-            40 + (int)Math.Round((maxY - FreeTypeValues.ToInt64(point.Y)) * scale));
+            60 + (int)Math.Round((x - map.MinX) * map.Scale),
+            40 + (int)Math.Round((map.MaxY - y) * map.Scale));
 
     private static void DrawBar(PngCanvas canvas, int x, int baselineY, int value, DemoColor color)
     {

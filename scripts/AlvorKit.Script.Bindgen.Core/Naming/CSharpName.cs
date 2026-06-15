@@ -22,6 +22,24 @@ public static class CSharpName
         "var", "when", "where", "with", "yield"
     ];
 
+    /// <summary>Common native acronym forms that should stay readable in generated C# identifiers.</summary>
+    private static readonly (string Source, string Target)[] Acronyms =
+    [
+        ("OpenglEs", "OpenGLES"),
+        ("Opengles", "OpenGLES"),
+        ("Opengl", "OpenGL"),
+        ("Osmesa", "OSMesa"),
+        ("Srgb", "SRgb"),
+        ("Ibeam", "IBeam"),
+        ("Hresize", "HResize"),
+        ("Vresize", "VResize"),
+        ("Dpad", "DPad"),
+        ("D3d", "D3D"),
+        ("Egl", "EGL"),
+        ("Xcb", "XCB"),
+        ("Showdefault", "ShowDefault")
+    ];
+
     /// <summary>
     /// Turns a native identifier into PascalCase after stripping the native prefix. Numeric edge cases
     /// stay readable: digit-leading identifiers receive <paramref name="digitNamePrefix"/>, adjacent
@@ -60,7 +78,7 @@ public static class CSharpName
             throw new ArgumentException($"Native name '{nativeName}' did not produce a managed identifier.", nameof(nativeName));
         if (char.IsAsciiDigit(managedName[0]))
             managedName.Insert(0, digitNamePrefix);
-        return managedName.ToString();
+        return ApplyAcronyms(managedName.ToString());
     }
 
     /// <summary>Adds the library type prefix after applying the normal identifier conversion.</summary>
@@ -69,4 +87,12 @@ public static class CSharpName
 
     /// <summary>Escapes C# keywords that are valid C parameter names.</summary>
     public static string Parameter(string name) => Keywords.Contains(name) ? "@" + name : name;
+
+    /// <summary>Applies known acronym casing to a generated identifier without changing token order.</summary>
+    private static string ApplyAcronyms(string managedName)
+    {
+        foreach (var (source, target) in Acronyms)
+            managedName = managedName.Replace(source, target, StringComparison.Ordinal);
+        return managedName;
+    }
 }

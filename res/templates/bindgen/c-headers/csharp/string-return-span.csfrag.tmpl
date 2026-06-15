@@ -1,7 +1,7 @@
 
 {{Documentation}}    public unsafe void {{ManagedName}}({{SpanParameters}})
     {
-        var pointer = {{Call}};
+{{StringLocals}}        var pointer = {{Call}};
         if (pointer == 0) { {{Result}} = default; return; }
         var bytes = MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)pointer);
         System.Text.Unicode.Utf8.ToUtf16(bytes, {{Destination}}, out _, out var written);

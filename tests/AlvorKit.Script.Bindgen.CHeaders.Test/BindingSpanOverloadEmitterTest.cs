@@ -60,6 +60,78 @@ public sealed class BindingSpanOverloadEmitterTest
             "Mix(id, (nint)inputPtr, ByteLength<TInput>(input), (nint)outputPtr, ByteLength<TOutput>(output), (nint)userdataPtr);");
     }
 
+    /// <summary>Configured counted pointer parameters can become span overloads with element counts.</summary>
+    [TestMethod]
+    public void Emit_AddsConfiguredCountedSpanOverload()
+    {
+        using var workspace = TempWorkspace.Create();
+        var config = CHeaderTestConfig.Create();
+        config.CountedSpanParams = new()
+        {
+            ["test_icons"] = new() { ["images"] = "count" },
+            ["test_writable_icons"] = new() { ["images"] = "count" },
+            ["test_score_icons"] = new() { ["images"] = "count" },
+            ["test_bad_icons"] = new() { ["images"] = "count" },
+            ["test_missing_images"] = new() { ["images"] = "count" },
+            ["test_missing_count"] = new() { ["images"] = "count" }
+        };
+        var model = new BindingModel(
+            [],
+            [],
+            [],
+            [],
+            [
+                new("test_icons", "Icons", "void", "void",
+                    [
+                        new("window", "TestWindow", "TestWindow", "", false),
+                        new("count", "int", "int", "", false),
+                        new("images", "TestImage*", "TestImage*", "", false, IsConstPointee: true)
+                    ],
+                    null),
+                new("test_writable_icons", "WritableIcons", "void", "void",
+                    [
+                        new("count", "uint", "uint", "", false),
+                        new("images", "TestImage*", "TestImage*", "", false)
+                    ],
+                    null),
+                new("test_score_icons", "ScoreIcons", "int", "int",
+                    [
+                        new("count", "int", "int", "", false),
+                        new("images", "TestImage*", "TestImage*", "", false)
+                    ],
+                    null),
+                new("test_bad_icons", "BadIcons", "void", "void",
+                    [
+                        new("count", "int", "int", "", false),
+                        new("images", "nint", "nint", "", false)
+                    ],
+                    null),
+                new("test_missing_images", "MissingImages", "void", "void",
+                    [new("count", "int", "int", "", false), new("other", "TestImage*", "TestImage*", "", false)],
+                    null),
+                new("test_missing_count", "MissingCount", "void", "void",
+                    [new("images", "TestImage*", "TestImage*", "", false)],
+                    null)
+            ],
+            [],
+            [],
+            []);
+
+        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
+
+        var overloads = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestOverloads.cs"));
+        StringAssert.Contains(overloads, "public void Icons(TestWindow window, ReadOnlySpan<TestImage> images)");
+        StringAssert.Contains(overloads, "fixed (TestImage* imagesPtr = images)");
+        StringAssert.Contains(overloads, "Icons(window, images.Length, imagesPtr);");
+        StringAssert.Contains(overloads, "public void WritableIcons(Span<TestImage> images)");
+        StringAssert.Contains(overloads, "WritableIcons(checked((uint)images.Length), imagesPtr);");
+        StringAssert.Contains(overloads, "public int ScoreIcons(Span<TestImage> images)");
+        StringAssert.Contains(overloads, "return ScoreIcons(images.Length, imagesPtr);");
+        Assert.IsFalse(overloads.Contains("public void BadIcons(Span", StringComparison.Ordinal));
+        Assert.IsFalse(overloads.Contains("public void MissingImages(Span", StringComparison.Ordinal));
+        Assert.IsFalse(overloads.Contains("public void MissingCount(Span", StringComparison.Ordinal));
+    }
+
     private static List<BindingParameter> PointerAndSize(string name) =>
     [
         new(name, "nint", "nint", "", false, IsUntypedPointer: true),

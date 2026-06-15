@@ -2,8 +2,11 @@
 
     <Import Project="..\..\AlvorKit.Packages.props" />
 
-    <PropertyGroup Condition="'$(UseLocalBindings)' == 'true'">
-        <DefineConstants>$(DefineConstants);LOCAL_BINDINGS</DefineConstants>
+    <PropertyGroup>
+        <XxHashXxh3SecretSizeMin>136</XxHashXxh3SecretSizeMin>
+        <XxHashXxh3SecretDefaultSize>192</XxHashXxh3SecretDefaultSize>
+        <XxHashXxh3MidsizeMax>240</XxHashXxh3MidsizeMax>
+        <XxHashXxh3InternalbufferSize>256</XxHashXxh3InternalbufferSize>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
@@ -13,5 +16,12 @@
     <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.XxHash.Backend\AlvorKit.XxHash.Backend.csproj" />
     </ItemGroup>
+
+    <Target Name="WarnOnXxHashConstantInvariantDrift" BeforeTargets="CoreCompile">
+        <Warning Condition="$(XxHashXxh3SecretDefaultSize) &lt; $(XxHashXxh3SecretSizeMin)"
+            Text="XXH3_SECRET_DEFAULT_SIZE is smaller than XXH3_SECRET_SIZE_MIN; review XxHash secret allocation tests." />
+        <Warning Condition="$(XxHashXxh3InternalbufferSize) &lt;= $(XxHashXxh3MidsizeMax)"
+            Text="XXH3_INTERNALBUFFER_SIZE is not greater than XXH3_MIDSIZE_MAX; review XxHash demo constant assumptions." />
+    </Target>
 
 </Project>

@@ -61,6 +61,7 @@ internal sealed class CHeaderFunctionDiscovery(
         if (boundParameters.Any(parameter => parameter is null))
             return null;
 
+        var enumReturn = config.EnumOverloads?.Functions.GetValueOrDefault(function.Name)?.Return;
         var isBoolReturn = returnType == "bool" || config.BoolReturns.Contains(function.Name);
         var returnInteropType = isBoolReturn
             ? types.MapInteropType(function.ReturnType.Handle, isReturn: true, boolAsRaw: true)!
@@ -76,7 +77,7 @@ internal sealed class CHeaderFunctionDiscovery(
         return new(
             function.Name,
             managedName,
-            isBoolReturn ? "bool" : returnType,
+            enumReturn ?? (isBoolReturn ? "bool" : returnType),
             returnInteropType,
             [.. boundParameters.OfType<BindingParameter>()],
             XmlDocComment.Parse(function.Handle.RawCommentText.ToString()),

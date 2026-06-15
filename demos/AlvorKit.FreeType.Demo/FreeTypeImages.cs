@@ -49,6 +49,9 @@ internal static class FreeTypeValues
     public static CULong ULong(uint value) => new(value);
 
     public static int Pixel26Dot6(CLong value) => (int)Math.Round(ToInt64(value) / (double)PixelOne);
+
+    /// <summary>Converts a FreeType 16.16 fixed-point value to a floating-point scalar.</summary>
+    public static double Fixed16Dot16(CLong value) => ToInt64(value) / (double)FixedOne;
 }
 
 internal sealed class GlyphImage
@@ -78,20 +81,32 @@ internal sealed class GlyphImage
 
     public bool UsesOwnColor { get; }
 
+    /// <summary>Reads the current slot bitmap into a managed RGBA image.</summary>
     public static GlyphImage FromSlot(FtGlyphSlotRec slot, GlyphPixelView view = GlyphPixelView.Coverage)
     {
-        var bitmap = slot.Bitmap;
+        var advanceX = FreeTypeValues.Pixel26Dot6(slot.Advance.X);
+        return FromBitmap(slot.Bitmap, slot.BitmapLeft, slot.BitmapTop, advanceX, view);
+    }
+
+    /// <summary>Reads a caller-owned FreeType bitmap with explicit glyph placement metrics.</summary>
+    public static GlyphImage FromBitmap(
+        FtBitmap bitmap,
+        int bitmapLeft,
+        int bitmapTop,
+        int advanceX,
+        GlyphPixelView view = GlyphPixelView.Coverage)
+    {
         var mode = (FtPixelMode)bitmap.PixelMode;
         return mode switch
         {
-            FtPixelMode.PixelModeMono => ReadMono(slot, bitmap),
-            FtPixelMode.PixelModeGray => ReadGray(slot, bitmap, view),
-            FtPixelMode.PixelModeGray2 => ReadPackedGray(slot, bitmap, bitsPerPixel: 2),
-            FtPixelMode.PixelModeGray4 => ReadPackedGray(slot, bitmap, bitsPerPixel: 4),
-            FtPixelMode.PixelModeLcd => ReadLcd(slot, bitmap),
-            FtPixelMode.PixelModeLcdV => ReadLcdV(slot, bitmap),
-            FtPixelMode.PixelModeBgra => ReadBgra(slot, bitmap),
-            _ => CreateEmpty(slot),
+            FtPixelMode.PixelModeMono => ReadMono(bitmap, bitmapLeft, bitmapTop, advanceX),
+            FtPixelMode.PixelModeGray => ReadGray(bitmap, bitmapLeft, bitmapTop, advanceX, view),
+            FtPixelMode.PixelModeGray2 => ReadPackedGray(bitmap, bitmapLeft, bitmapTop, advanceX, bitsPerPixel: 2),
+            FtPixelMode.PixelModeGray4 => ReadPackedGray(bitmap, bitmapLeft, bitmapTop, advanceX, bitsPerPixel: 4),
+            FtPixelMode.PixelModeLcd => ReadLcd(bitmap, bitmapLeft, bitmapTop, advanceX),
+            FtPixelMode.PixelModeLcdV => ReadLcdV(bitmap, bitmapLeft, bitmapTop, advanceX),
+            FtPixelMode.PixelModeBgra => ReadBgra(bitmap, bitmapLeft, bitmapTop, advanceX),
+            _ => CreateEmpty(bitmapLeft, bitmapTop, advanceX),
         };
     }
 
@@ -106,10 +121,10 @@ internal sealed class GlyphImage
         canvas.Save(path);
     }
 
-    private static GlyphImage CreateEmpty(FtGlyphSlotRec slot) =>
-        new(1, 1, slot.BitmapLeft, slot.BitmapTop, FreeTypeValues.Pixel26Dot6(slot.Advance.X), [0, 0, 0, 0], usesOwnColor: false);
+    private static GlyphImage CreateEmpty(int bitmapLeft, int bitmapTop, int advanceX) =>
+        new(1, 1, bitmapLeft, bitmapTop, advanceX, [0, 0, 0, 0], usesOwnColor: false);
 
-    private static GlyphImage ReadMono(FtGlyphSlotRec slot, FtBitmap bitmap)
+    private static GlyphImage ReadMono(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX)
     {
         var width = checked((int)bitmap.Width);
         var height = checked((int)bitmap.Rows);
@@ -126,10 +141,10 @@ internal sealed class GlyphImage
             }
         }
 
-        return new GlyphImage(width, height, slot.BitmapLeft, slot.BitmapTop, FreeTypeValues.Pixel26Dot6(slot.Advance.X), rgba, usesOwnColor: false);
+        return new GlyphImage(width, height, bitmapLeft, bitmapTop, advanceX, rgba, usesOwnColor: false);
     }
 
-    private static GlyphImage ReadGray(FtGlyphSlotRec slot, FtBitmap bitmap, GlyphPixelView view)
+    private static GlyphImage ReadGray(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX, GlyphPixelView view)
     {
         var width = checked((int)bitmap.Width);
         var height = checked((int)bitmap.Rows);
@@ -151,14 +166,14 @@ internal sealed class GlyphImage
         return new GlyphImage(
             width,
             height,
-            slot.BitmapLeft,
-            slot.BitmapTop,
-            FreeTypeValues.Pixel26Dot6(slot.Advance.X),
+            bitmapLeft,
+            bitmapTop,
+            advanceX,
             rgba,
             view == GlyphPixelView.OwnColor);
     }
 
-    private static GlyphImage ReadPackedGray(FtGlyphSlotRec slot, FtBitmap bitmap, int bitsPerPixel)
+    private static GlyphImage ReadPackedGray(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX, int bitsPerPixel)
     {
         var width = checked((int)bitmap.Width);
         var height = checked((int)bitmap.Rows);
@@ -178,10 +193,10 @@ internal sealed class GlyphImage
             }
         }
 
-        return new GlyphImage(width, height, slot.BitmapLeft, slot.BitmapTop, FreeTypeValues.Pixel26Dot6(slot.Advance.X), rgba, usesOwnColor: false);
+        return new GlyphImage(width, height, bitmapLeft, bitmapTop, advanceX, rgba, usesOwnColor: false);
     }
 
-    private static GlyphImage ReadLcd(FtGlyphSlotRec slot, FtBitmap bitmap)
+    private static GlyphImage ReadLcd(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX)
     {
         var width = checked((int)bitmap.Width) / 3;
         var height = checked((int)bitmap.Rows);
@@ -199,10 +214,10 @@ internal sealed class GlyphImage
             }
         }
 
-        return new GlyphImage(width, height, slot.BitmapLeft / 3, slot.BitmapTop, FreeTypeValues.Pixel26Dot6(slot.Advance.X), rgba, usesOwnColor: true);
+        return new GlyphImage(width, height, bitmapLeft / 3, bitmapTop, advanceX, rgba, usesOwnColor: true);
     }
 
-    private static GlyphImage ReadLcdV(FtGlyphSlotRec slot, FtBitmap bitmap)
+    private static GlyphImage ReadLcdV(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX)
     {
         var width = checked((int)bitmap.Width);
         var height = checked((int)bitmap.Rows) / 3;
@@ -222,10 +237,10 @@ internal sealed class GlyphImage
             }
         }
 
-        return new GlyphImage(width, height, slot.BitmapLeft, slot.BitmapTop / 3, FreeTypeValues.Pixel26Dot6(slot.Advance.X), rgba, usesOwnColor: true);
+        return new GlyphImage(width, height, bitmapLeft, bitmapTop / 3, advanceX, rgba, usesOwnColor: true);
     }
 
-    private static GlyphImage ReadBgra(FtGlyphSlotRec slot, FtBitmap bitmap)
+    private static GlyphImage ReadBgra(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX)
     {
         var width = checked((int)bitmap.Width);
         var height = checked((int)bitmap.Rows);
@@ -245,7 +260,7 @@ internal sealed class GlyphImage
             }
         }
 
-        return new GlyphImage(width, height, slot.BitmapLeft, slot.BitmapTop, FreeTypeValues.Pixel26Dot6(slot.Advance.X), rgba, usesOwnColor: true);
+        return new GlyphImage(width, height, bitmapLeft, bitmapTop, advanceX, rgba, usesOwnColor: true);
     }
 
     private static nint RowPointer(FtBitmap bitmap, int y)

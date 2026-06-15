@@ -3,6 +3,7 @@ namespace AlvorKit.Script.Bindgen.CHeaders.Test;
 [TestClass]
 public sealed class CHeaderBindingParserTest
 {
+    /// <summary>Parser scope follows the selected source root when sibling paths share the same prefix.</summary>
     [TestMethod]
     public void Parse_IgnoresDeclarationsFromSiblingDirectoriesWithSamePrefix()
     {
@@ -36,6 +37,7 @@ public sealed class CHeaderBindingParserTest
         CollectionAssert.DoesNotContain(model.Constants.Select(constant => constant.ManagedName).ToList(), "HiddenConstant");
     }
 
+    /// <summary>Only const char pointer returns are surfaced as generated C string conveniences.</summary>
     [TestMethod]
     public void Parse_OnlyConstCharPointerReturnsAreCStringConveniences()
     {
@@ -56,6 +58,7 @@ public sealed class CHeaderBindingParserTest
         Assert.IsFalse(model.Functions.Single(function => function.NativeName == "test_mutable_string").ReturnsCString);
     }
 
+    /// <summary>The configured implementation file directory is added to parser include roots.</summary>
     [TestMethod]
     public void Parse_AddsImplFileDirectoryToIncludeRoots()
     {
@@ -80,6 +83,7 @@ public sealed class CHeaderBindingParserTest
         CollectionAssert.Contains(model.Functions.Select(function => function.NativeName).ToList(), "test_visible");
     }
 
+    /// <summary>Configured pointer directions replace raw pointer parameters with in and out shapes.</summary>
     [TestMethod]
     public void Parse_ConfiguredInAndOutPointerParametersUsePointeeTypes()
     {
@@ -100,6 +104,7 @@ public sealed class CHeaderBindingParserTest
         Assert.AreEqual("int", function.Parameters[1].ManagedType);
     }
 
+    /// <summary>Configured boolean shapes keep raw interop types while exposing managed bools.</summary>
     [TestMethod]
     public void Parse_ConfiguredBoolReturnsAndParametersKeepRawInteropTypes()
     {
@@ -123,6 +128,7 @@ public sealed class CHeaderBindingParserTest
         Assert.AreEqual("int", set.Parameters.Single().InteropType);
     }
 
+    /// <summary>Opaque pointer records with type renames become generated handle wrappers.</summary>
     [TestMethod]
     public void Parse_OpaquePointerWithTypeRenameBecomesHandle()
     {
@@ -141,6 +147,7 @@ public sealed class CHeaderBindingParserTest
         Assert.AreEqual("TestHandle", model.Functions.Single().Parameters.Single().ManagedType);
     }
 
+    /// <summary>Configured macro groups synthesize enum members from discovered constants.</summary>
     [TestMethod]
     public void Parse_SynthesizesConfiguredEnumGroupsFromMacroConstants()
     {
@@ -161,6 +168,48 @@ public sealed class CHeaderBindingParserTest
 
         Assert.IsTrue(group.IsFlags);
         CollectionAssert.AreEqual(new[] { "A", "B" }, group.Members.Select(member => member.ManagedName).ToArray());
+    }
+
+    /// <summary>Configured native constants participate in macro evaluation and enum synthesis.</summary>
+    [TestMethod]
+    public void Parse_ConfiguredNativeConstantsSeedEnumGroups()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            #define test_MODE_A 1
+            #define test_MODE_C UNKNOWN
+            #define test_MODE_BAD UNKNOWN
+            #define test_MODE_ALL ( test_MODE_A | test_MODE_B | test_MODE_C )
+            #define test_EMPTY
+            #define test_COLLIDE 11
+            int test_collide(void);
+            """);
+        var config = CHeaderTestConfig.Create();
+        config.Constants = new()
+        {
+            ["test_MODE_B"] = 2,
+            ["test_MODE_C"] = 4,
+            ["ManagedOnly"] = 9
+        };
+        config.EnumGroups = new()
+        {
+            ["TestMode"] = new EnumGroup { Prefix = "test_MODE_", Flags = true }
+        };
+
+        var model = CHeaderParserHarness.Parse(translationUnit, source, config);
+        var group = model.Enums.Single(binding => binding.ManagedName == "TestMode");
+        var members = group.Members.ToDictionary(member => member.ManagedName, member => member.Value);
+
+        Assert.AreEqual(1, members["A"]);
+        Assert.AreEqual(2, members["B"]);
+        Assert.AreEqual(4, members["C"]);
+        Assert.AreEqual(7, members["All"]);
+        CollectionAssert.DoesNotContain(group.Members.Select(member => member.ManagedName).ToList(), "Bad");
+        CollectionAssert.Contains(model.Constants.Select(constant => constant.ManagedName).ToList(), "ModeB");
+        CollectionAssert.Contains(model.Constants.Select(constant => constant.ManagedName).ToList(), "ManagedOnly");
+        CollectionAssert.DoesNotContain(model.Constants.Select(constant => constant.ManagedName).ToList(), "Empty");
+        CollectionAssert.DoesNotContain(model.Constants.Select(constant => constant.ManagedName).ToList(), "Collide");
     }
 
 }

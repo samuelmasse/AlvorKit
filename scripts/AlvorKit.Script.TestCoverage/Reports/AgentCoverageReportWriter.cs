@@ -20,6 +20,7 @@ internal static class AgentCoverageReportWriter
             threshold = options.Threshold,
             testProjectFilters = options.TestProjectFilters,
             sourceProjectFilters = options.SourceProjectFilters,
+            bindingFilters = options.BindingFilters,
             passed,
             unmeasuredModulesFailGate = options.Threshold > 0,
             totals = summary.Totals,

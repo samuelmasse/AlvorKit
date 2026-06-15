@@ -5,6 +5,7 @@
         <Project Path="demos/AlvorKit.Demo.XxHash/AlvorKit.Demo.XxHash.csproj" />
         <Project Path="demos/AlvorKit.Demo.XxHashBench/AlvorKit.Demo.XxHashBench.csproj" />
         <Project Path="demos/AlvorKit.FreeType.Demo/AlvorKit.FreeType.Demo.csproj" />
+        <Project Path="demos/AlvorKit.MiniAudio.Demo/AlvorKit.MiniAudio.Demo.csproj" />
         <Project
             Path="demos/AlvorKit.OpenGL.Demo.HelloTriangle/AlvorKit.OpenGL.Demo.HelloTriangle.csproj" />
     </Folder>

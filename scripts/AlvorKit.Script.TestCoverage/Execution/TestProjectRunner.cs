@@ -43,15 +43,20 @@ internal sealed class TestProjectRunner(string repoRoot, CoverageOptions options
     }
 
     /// <summary>Builds the dotnet build command-line for one test project.</summary>
-    private IReadOnlyList<string> BuildBuildArguments(string testProject) =>
-    [
-        "build",
-        testProject,
-        "--configuration",
-        options.Configuration,
-        "--verbosity",
-        "minimal",
-    ];
+    private IReadOnlyList<string> BuildBuildArguments(string testProject)
+    {
+        var arguments = new List<string>
+        {
+            "build",
+            testProject,
+            "--configuration",
+            options.Configuration,
+            "--verbosity",
+            "minimal",
+        };
+
+        return AddBindingArguments(arguments);
+    }
 
     /// <summary>Builds the dotnet test command-line for one project.</summary>
     private IReadOnlyList<string> BuildTestArguments(string testProject, string outputPrefix, bool noBuild)
@@ -80,6 +85,15 @@ internal sealed class TestProjectRunner(string repoRoot, CoverageOptions options
             $"/p:Include={string.Join("%2c", sourceModules.Select(name => $"[{name}]*"))}",
             "/p:Exclude=[*.Test]*",
         ]);
+
+        return AddBindingArguments(arguments);
+    }
+
+    /// <summary>Forces local generated project references when measuring generated binding modules.</summary>
+    private IReadOnlyList<string> AddBindingArguments(List<string> arguments)
+    {
+        if (options.BindingFilters.Count > 0)
+            arguments.Add("/p:UseLocalBindings=true");
 
         return arguments;
     }

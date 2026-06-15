@@ -20,7 +20,7 @@ public sealed class MarkdownCoverageReportWriterTest
             new TestProjectResult("Tool.Test", "tests/Tool.Test/Tool.Test.csproj", 1, TimeSpan.FromSeconds(1.25), "log", "json", "xml", "info")
         };
 
-        var options = new CoverageOptions("Debug", 100, ["Tool.Test"], ["Tool"], 1, true, true, true);
+        var options = new CoverageOptions("Debug", 100, ["Tool.Test"], ["Tool"], ["xxhash"], 1, true, true, true);
 
         MarkdownCoverageReportWriter.Write(path, DateTimeOffset.Parse("2026-06-15T00:00:00Z"), options, false, summary, results);
         var markdown = File.ReadAllText(path);
@@ -28,6 +28,7 @@ public sealed class MarkdownCoverageReportWriterTest
         StringAssert.Contains(markdown, "## Totals");
         StringAssert.Contains(markdown, "Test project filter: `Tool.Test`");
         StringAssert.Contains(markdown, "Source project filter: `Tool`");
+        StringAssert.Contains(markdown, "Binding filter: `xxhash`");
         StringAssert.Contains(markdown, "MissingTool");
         StringAssert.Contains(markdown, "FAIL (1)");
         StringAssert.Contains(markdown, "out/coverage/coverage-summary.json");
@@ -41,7 +42,7 @@ public sealed class MarkdownCoverageReportWriterTest
         using var workspace = TempWorkspace.Create();
         var path = workspace.PathFor("coverage-summary.md");
         var summary = new CoverageSummary(new(new(1, 1), new(1, 1), new(1, 1)), [], [], []);
-        var options = new CoverageOptions("Debug", 100, [], [], 4, false, false, false);
+        var options = new CoverageOptions("Debug", 100, [], [], [], 4, false, false, false);
 
         MarkdownCoverageReportWriter.Write(path, DateTimeOffset.Parse("2026-06-15T00:00:00Z"), options, true, summary, []);
         var markdown = File.ReadAllText(path);
@@ -67,7 +68,7 @@ public sealed class MarkdownCoverageReportWriterTest
         {
             new TestProjectResult("Tool.Test", "tests/Tool.Test/Tool.Test.csproj", 0, TimeSpan.FromSeconds(1), "log", "json", "xml", "info")
         };
-        var options = new CoverageOptions("Debug", 100, [], [], 1, false, false, false);
+        var options = new CoverageOptions("Debug", 100, [], [], [], 1, false, false, false);
 
         MarkdownCoverageReportWriter.Write(path, DateTimeOffset.Parse("2026-06-15T00:00:00Z"), options, true, summary, results);
         var markdown = File.ReadAllText(path);

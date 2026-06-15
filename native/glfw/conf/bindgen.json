@@ -11,7 +11,17 @@
   "sourceDir": "glfw-{tag}",
   "header": "include/GLFW/glfw3.h",
   "includeSubdir": "include",
-  "tuLines": ["#include <GLFW/glfw3.h>"],
+  "tuLines": [
+    "#define VK_VERSION_1_0 1",
+    "#define VKAPI_PTR",
+    "typedef struct VkInstance_T* VkInstance;",
+    "typedef struct VkPhysicalDevice_T* VkPhysicalDevice;",
+    "typedef struct VkAllocationCallbacks VkAllocationCallbacks;",
+    "typedef unsigned long long VkSurfaceKHR;",
+    "typedef int VkResult;",
+    "typedef void* PFN_vkGetInstanceProcAddr;",
+    "#include <GLFW/glfw3.h>"
+  ],
   "apiProject": "out/bindgen/AlvorKit.GLFW",
   "backendProject": "out/bindgen/AlvorKit.GLFW.Backend",
   "extraDefines": ["GLFW_INCLUDE_NONE"],
@@ -23,7 +33,38 @@
     "GLFWallocator": "GlfwAllocator",
     "GLFWwindow": "GlfwWindow",
     "GLFWmonitor": "GlfwMonitor",
-    "GLFWcursor": "GlfwCursor"
+    "GLFWcursor": "GlfwCursor",
+    "GLFWallocatefun": "GlfwAllocateDelegate",
+    "GLFWreallocatefun": "GlfwReallocateDelegate",
+    "GLFWdeallocatefun": "GlfwDeallocateDelegate",
+    "GLFWerrorfun": "GlfwErrorDelegate",
+    "GLFWmonitorfun": "GlfwMonitorDelegate",
+    "GLFWwindowposfun": "GlfwWindowPosDelegate",
+    "GLFWwindowsizefun": "GlfwWindowSizeDelegate",
+    "GLFWwindowclosefun": "GlfwWindowCloseDelegate",
+    "GLFWwindowrefreshfun": "GlfwWindowRefreshDelegate",
+    "GLFWwindowfocusfun": "GlfwWindowFocusDelegate",
+    "GLFWwindowiconifyfun": "GlfwWindowIconifyDelegate",
+    "GLFWwindowmaximizefun": "GlfwWindowMaximizeDelegate",
+    "GLFWframebuffersizefun": "GlfwFramebufferSizeDelegate",
+    "GLFWwindowcontentscalefun": "GlfwWindowContentScaleDelegate",
+    "GLFWkeyfun": "GlfwKeyDelegate",
+    "GLFWcharfun": "GlfwCharDelegate",
+    "GLFWcharmodsfun": "GlfwCharModsDelegate",
+    "GLFWmousebuttonfun": "GlfwMouseButtonDelegate",
+    "GLFWcursorposfun": "GlfwCursorPosDelegate",
+    "GLFWcursorenterfun": "GlfwCursorEnterDelegate",
+    "GLFWscrollfun": "GlfwScrollDelegate",
+    "GLFWdropfun": "GlfwDropDelegate",
+    "GLFWjoystickfun": "GlfwJoystickDelegate"
+  },
+  "typeAliases": {
+    "VkInstance": "nint",
+    "VkPhysicalDevice": "nint",
+    "VkSurfaceKHR": "ulong",
+    "VkResult": "int",
+    "PFN_vkGetInstanceProcAddr": "nint",
+    "GLFWvkproc": "nint"
   },
   "transparentStructs": ["GLFWvidmode", "GLFWgammaramp", "GLFWimage", "GLFWgamepadstate", "GLFWallocator"],
   "enumGroups": {
@@ -165,11 +206,15 @@
       "button": "GlfwMouseButton",
       "mods": "GlfwKeyModifier",
       "action": "GlfwInputAction",
+      "event": "GlfwConnectionEvent",
+      "error_code": "GlfwErrorCode",
       "jid": "GlfwJoystick",
       "shape": "GlfwCursorShape",
       "platform": "GlfwPlatform"
     },
     "functions": {
+      "glfwGetError": { "return": "GlfwErrorCode" },
+      "glfwGetPlatform": { "return": "GlfwPlatform" },
       "glfwGetKey": { "return": "GlfwInputAction" },
       "glfwGetMouseButton": { "return": "GlfwInputAction" },
       "glfwGetInputMode": { "params": { "mode": ["GlfwInputMode"] } },
@@ -204,7 +249,13 @@
     "glfwGetMonitorPos": ["xpos", "ypos"],
     "glfwGetMonitorWorkarea": ["xpos", "ypos", "width", "height"],
     "glfwGetMonitorPhysicalSize": ["widthMM", "heightMM"],
-    "glfwGetMonitorContentScale": ["xscale", "yscale"]
+    "glfwGetMonitorContentScale": ["xscale", "yscale"],
+    "glfwGetGamepadState": ["state"],
+    "glfwCreateWindowSurface": ["surface"]
+  },
+  "inParams": {
+    "glfwSetGammaRamp": ["ramp"],
+    "glfwCreateCursor": ["image"]
   },
   "boolReturns": [
     "glfwInit",
@@ -215,6 +266,7 @@
     "glfwUpdateGamepadMappings",
     "glfwGetGamepadState",
     "glfwPlatformSupported",
+    "glfwGetPhysicalDevicePresentationSupport",
     "glfwExtensionSupported",
     "glfwVulkanSupported"
   ],
@@ -227,6 +279,10 @@
     "glfwGetJoystickAxes": "float",
     "glfwGetJoystickButtons": "byte",
     "glfwGetJoystickHats": "byte"
+  },
+  "stringArrayReturns": ["glfwGetRequiredInstanceExtensions"],
+  "countedSpanParams": {
+    "glfwSetWindowIcon": { "images": "count" }
   },
   "skip": {},
   "sourceUrl": "https://github.com/glfw/glfw/archive/refs/tags/{tag}.tar.gz"

@@ -7,6 +7,7 @@ namespace AlvorKit.Script.TestCoverage;
 /// <param name="Threshold">Required percentage for line, branch, and method coverage.</param>
 /// <param name="TestProjectFilters">Optional test project names or paths to run.</param>
 /// <param name="SourceProjectFilters">Optional source project names or paths to measure.</param>
+/// <param name="BindingFilters">Optional native library binding names to measure under out/bindgen.</param>
 /// <param name="MaxParallel">Maximum number of coverage-enabled test projects to run concurrently.</param>
 /// <param name="GenerateHtmlReport">Whether to generate the browser-readable ReportGenerator output.</param>
 /// <param name="GenerateCoberturaReport">Whether to emit raw Cobertura XML reports.</param>
@@ -16,6 +17,7 @@ internal sealed record CoverageOptions(
     double Threshold,
     IReadOnlyList<string> TestProjectFilters,
     IReadOnlyList<string> SourceProjectFilters,
+    IReadOnlyList<string> BindingFilters,
     int MaxParallel,
     bool GenerateHtmlReport,
     bool GenerateCoberturaReport,
@@ -44,6 +46,7 @@ internal sealed record CoverageOptions(
         var threshold = 100.0;
         var testProjectFilters = new List<string>();
         var sourceProjectFilters = new List<string>();
+        var bindingFilters = new List<string>();
         var maxParallel = DefaultMaxParallel;
         var generateHtmlReport = true;
         var generateCoberturaReport = true;
@@ -68,6 +71,9 @@ internal sealed record CoverageOptions(
                 case "--source-project":
                 case "--source":
                     sourceProjectFilters.Add(ReadValue(args, ref index));
+                    break;
+                case "--binding":
+                    bindingFilters.Add(ReadValue(args, ref index));
                     break;
                 case "--max-parallel":
                 case "-m":
@@ -100,6 +106,7 @@ internal sealed record CoverageOptions(
             threshold,
             testProjectFilters,
             sourceProjectFilters,
+            bindingFilters,
             maxParallel,
             generateHtmlReport,
             generateCoberturaReport,

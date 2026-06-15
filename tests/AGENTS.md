@@ -8,6 +8,7 @@ These instructions apply to all test projects under `tests/`.
 
 - Name runnable test projects with the `.Test` suffix so `Directory.Build.props`
   gives them MSTest, coverage, and the shared helper reference.
+- Add a concise XML `<summary>` doc comment to each runnable test method.
 - Use `AlvorKit.Testing` for cross-project test fixtures such as temporary
   workspaces, disposable filesystem setup, and small repository/project writers.
 - When the same helper shape appears in more than one test project, move it to
@@ -32,5 +33,10 @@ These instructions apply to all test projects under `tests/`.
 - For C# test changes, run focused coverage for the affected source project with
   `--source-project`, adding `--test-project` only when you need to choose the
   test project explicitly, then run scoped lint before handing off.
+- For generated binding test changes, run focused coverage with `--binding`
+  using the native library name, such as
+  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --binding xxhash --threshold 0`.
+  This checks both the generated API project and its `.Backend` project; inspect
+  the reported missing coverage before handing off.
 - If a shared helper changes behavior used by many projects, prefer the full
   strict coverage gate before finishing.

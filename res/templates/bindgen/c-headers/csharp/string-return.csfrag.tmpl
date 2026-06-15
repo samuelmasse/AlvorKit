@@ -1,2 +1,4 @@
-
-{{Documentation}}    public void {{ManagedName}}({{StringParameters}}) => {{Value}} = Marshal.PtrToStringUTF8({{Call}});
+{{Documentation}}    public void {{ManagedName}}({{StringParameters}})
+    {
+{{StringLocals}}        {{Value}} = Marshal.PtrToStringUTF8({{Call}});
+    }

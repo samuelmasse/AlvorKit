@@ -1,20 +1,33 @@
 namespace AlvorKit.Script.Bindgen;
 
 /// <summary>Emits string-return convenience overloads for const C-string functions.</summary>
-internal static class BindingStringReturnEmitter
+internal sealed class BindingStringReturnEmitter(BindingEmitterContext context)
 {
     /// <summary>Emits managed string-return overloads when a function returns a const C string.</summary>
-    public static void StringReturn(StringBuilder output, BindingFunction function, string apiClass)
+    public void StringReturn(StringBuilder output, BindingFunction function)
     {
         if (!function.ReturnsCString)
             return;
+
+        EmitStringReturn(output, function, [.. function.Parameters.Select(parameter => (parameter.ManagedType, parameter))]);
+        foreach (var typed in BindingOverloadTypes.Variants(function, context.Config.EnumOverloads))
+            EmitStringReturn(output, function, typed);
+    }
+
+    /// <summary>Emits out-string and span-string overloads for one parameter shape.</summary>
+    private void EmitStringReturn(
+        StringBuilder output,
+        BindingFunction function,
+        List<(string Type, BindingParameter Parameter)> typed)
+    {
         var taken = function.Parameters.Select(parameter => parameter.ManagedName.TrimStart('@')).ToHashSet();
         var value = Unique(taken, "value");
         var destination = Unique(taken, "destination");
         var result = Unique(taken, "result");
-        var leading = function.Parameters.Select(BindingSignature.Parameter).ToList();
-        var callArguments = string.Join(", ", function.Parameters.Select(BindingSignature.Argument));
-        var inheritCref = $"{apiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})";
+        var leading = typed.Select(BindingOverloadTypes.SignatureParameter).ToList();
+        var callArguments = string.Join(", ", typed.Select(BindingOverloadTypes.Argument));
+        var inheritCref = $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})";
+        var stringLocals = BindingOverloadTypes.StringLocals(typed);
         var call = $"{function.ManagedName}({callArguments})";
 
         var stringDocumentation = new StringBuilder();
@@ -30,6 +43,7 @@ internal static class BindingStringReturnEmitter
             ("ManagedName", function.ManagedName),
             ("StringParameters", stringParameters),
             ("Value", value),
+            ("StringLocals", stringLocals),
             ("Call", call)));
 
         var spanDocumentation = new StringBuilder();
@@ -46,6 +60,7 @@ internal static class BindingStringReturnEmitter
             ("Documentation", spanDocumentation.ToString()),
             ("ManagedName", function.ManagedName),
             ("SpanParameters", spanParameters),
+            ("StringLocals", stringLocals),
             ("Call", call),
             ("Result", result),
             ("Destination", destination)));

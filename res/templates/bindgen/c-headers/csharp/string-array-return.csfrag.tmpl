@@ -1,0 +1,12 @@
+
+{{Documentation}}    public unsafe string[] {{ManagedName}}({{Signature}})
+    {
+        var pointer = {{ManagedName}}({{CallArguments}});
+        if (pointer == 0 || count == 0) return [];
+        var length = checked((int)count);
+        var items = new ReadOnlySpan<nint>((void*)pointer, length);
+        var values = new string[length];
+        for (var index = 0; index < values.Length; index++)
+            values[index] = Marshal.PtrToStringUTF8(items[index]) ?? "";
+        return values;
+    }

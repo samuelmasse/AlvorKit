@@ -116,9 +116,12 @@ These instructions apply to C# code under `demos/`.
 
 - Add concise XML documentation comments for every type, constructor, method,
   field, and property introduced or changed.
+- For methods and constructors, write one useful `<summary>` comment instead of
+  separate `<param>` comments for each parameter. Add other XML tags only when
+  they explain an important contract that the summary cannot express clearly.
 - Documentation should explain purpose, contracts, ownership, performance
-  expectations, edge cases, or side effects; do not add comments that merely
-  restate the implementation.
+  expectations, edge cases, or side effects; do not add useless comments or
+  comments that merely restate the implementation.
 - Keep implementation comments rare. Use them only to explain non-obvious
   runtime constraints, native/API compatibility, resource lifetime rules, or
   algorithmic choices.

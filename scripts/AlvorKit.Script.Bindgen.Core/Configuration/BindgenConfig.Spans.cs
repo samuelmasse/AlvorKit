@@ -14,4 +14,10 @@ public sealed partial class BindgenConfig
 
     /// <summary>Pointer-plus-count returns that should expose read-only span convenience views.</summary>
     public Dictionary<string, string> SpanReturns { get; set; } = [];
+
+    /// <summary>Native functions whose returned array of C strings should be copied to a managed string array.</summary>
+    public string[] StringArrayReturns { get; set; } = [];
+
+    /// <summary>Native functions whose count and typed pointer parameters should be projected as spans.</summary>
+    public Dictionary<string, Dictionary<string, string>> CountedSpanParams { get; set; } = [];
 }

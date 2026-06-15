@@ -33,6 +33,7 @@ unsafe
         FreeTypeTour.ReportReferenceCounting(ft, pathFace);
         FreeTypeTour.ReportOptionalAttachments(ft, pathFace, fontPath);
         FreeTypeTour.ReportOptionalBitmapStrike(ft, pathFace);
+        FreeTypeTour.ReportExtraHeaderApis(ft, library, pathFace);
 
         var fontBytes = File.ReadAllBytes(fontPath);
         pinnedFont = GCHandle.Alloc(fontBytes, GCHandleType.Pinned);
@@ -57,6 +58,8 @@ unsafe
             FreeTypeTour.ExportNamesAndComposite(ft, pathFace, outputRoot),
             FreeTypeTour.ExportOutline(ft, pathFace, outputRoot),
             FreeTypeTour.ExportFixedPointAndVector(ft, pathFace, outputRoot),
+            FreeTypeTour.ExportOutlineGeometry(ft, pathFace, outputRoot),
+            FreeTypeTour.ExportGlyphBitmapObjects(ft, library, pathFace, outputRoot),
         };
 
         FreeTypeTour.ReportVariationSelectors(ft, pathFace);

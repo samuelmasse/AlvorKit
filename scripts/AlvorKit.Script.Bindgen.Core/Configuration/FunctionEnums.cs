@@ -3,7 +3,7 @@ namespace AlvorKit.Script.Bindgen;
 /// <summary>Enum typing rules for one native function.</summary>
 public sealed class FunctionEnums
 {
-    /// <summary>Enum represented by the raw integer return value, when any.</summary>
+    /// <summary>Enum used as the public return type for a raw integer native result, when any.</summary>
     public string? Return { get; set; }
 
     /// <summary>

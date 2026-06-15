@@ -72,6 +72,30 @@ public sealed class GlCodeEmitterTest
         Assert.IsFalse(Directory.Exists(Path.Combine(workspace.Root, config.ApiProject)));
     }
 
+    /// <summary>Generated OpenGL API contract, wrapper, and noop scaffolding are excluded from coverage metrics.</summary>
+    [TestMethod]
+    public void Emit_GeneratedScaffoldingAddsCoverageExclusionAttribute()
+    {
+        using var workspace = TempWorkspace.Create();
+        var config = OpenGlRegistryTestConfig.Create();
+        var model = new GlBindingModel(
+            Groups: [],
+            AllTokens: new("GLenum", "GlEnum", IsFlags: false, Members: []),
+            Commands: [],
+            WideConstants: [],
+            UngroupedEnumUses: [],
+            SkippedCommands: [],
+            HandleTypes: [],
+            Delegates: []);
+
+        new GlCodeEmitter(config, "registry-tag", "doc-tag").Emit(model, workspace.Root, "4.6.3");
+
+        var attribute = "[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]";
+        StringAssert.Contains(File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Gl.cs")), attribute);
+        StringAssert.Contains(File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "GlWrapper.cs")), attribute);
+        StringAssert.Contains(File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "GlNoop.cs")), attribute);
+    }
+
     /// <summary>Generated C-string span overloads handle null native string pointers.</summary>
     [TestMethod]
     public void EmitStringGetter_SpanOverloadHandlesNullNativePointer()

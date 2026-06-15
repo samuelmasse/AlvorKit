@@ -41,7 +41,7 @@ internal sealed class CHeaderParameterBinder(BindgenConfig config, CHeaderParseS
             modifier,
             HasStringConvenience: isString,
             IsUntypedPointer: IsUntypedPointer(modifier, isString, managedType, canonical),
-            IsConstPointee: IsConstUntypedPointer(modifier, isString, managedType, canonical),
+            IsConstPointee: IsConstPointee(canonical),
             IsSizeT: modifier.Length == 0 && CHeaderNameMapper.CleanTypeSpelling(parameter.Type.Handle) == "size_t",
             CallbackType: callbackType);
     }
@@ -77,7 +77,7 @@ internal sealed class CHeaderParameterBinder(BindgenConfig config, CHeaderParseS
             or CXTypeKind.CXType_Char_S or CXTypeKind.CXType_Char_U
             or CXTypeKind.CXType_SChar or CXTypeKind.CXType_UChar;
 
-    /// <summary>Returns true when an untyped pointer points to const data.</summary>
-    private static bool IsConstUntypedPointer(string modifier, bool isString, string managedType, CXType canonical) =>
-        IsUntypedPointer(modifier, isString, managedType, canonical) && canonical.PointeeType.IsConstQualified;
+    /// <summary>Returns true when a pointer parameter points to const data.</summary>
+    private static bool IsConstPointee(CXType canonical) =>
+        canonical.kind == CXTypeKind.CXType_Pointer && canonical.PointeeType.IsConstQualified;
 }

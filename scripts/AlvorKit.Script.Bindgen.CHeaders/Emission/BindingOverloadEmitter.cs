@@ -11,12 +11,14 @@ internal sealed class BindingOverloadEmitter(BindingEmitterContext context)
             new BindingTypedOverloadEmitter(context).TypedOverloads(overloads, function);
         BindingCallbackSetterEmitter.CallbackSetters(overloads, model, context.Config.ApiClass);
         foreach (var function in model.Functions)
-            BindingStringReturnEmitter.StringReturn(overloads, function, context.Config.ApiClass);
+            new BindingStringReturnEmitter(context).StringReturn(overloads, function);
         if (context.Config.FreeTypeConvenience)
             BindingFreeTypeOverloadEmitter.FreeTypeOverloads(overloads, model, context.Config.ApiClass);
         if (context.Config.XxHashConvenience)
             BindingXxHashOverloadEmitter.XxHashOverloads(overloads, model, context.Config.ApiClass);
         new BindingSpanReturnEmitter(context).SpanReturns(overloads, model);
+        new BindingStringArrayReturnEmitter(context).StringArrayReturns(overloads, model);
+        new BindingCountedSpanOverloadEmitter(context).CountedSpanOverloads(overloads, model);
         var hasSpanOverloads = context.Config.SpanOverloads && new BindingSpanOverloadEmitter(context).SpanOverloads(overloads, model);
         if (overloads.Length == 0)
             return null;
@@ -44,6 +46,8 @@ internal sealed class BindingOverloadEmitter(BindingEmitterContext context)
     private bool NeedsUnsafe(BindingModel model) =>
         context.Config.SpanOverloads
         || context.Config.SpanReturns.Count > 0
+        || context.Config.StringArrayReturns.Length > 0
+        || context.Config.CountedSpanParams.Count > 0
         || context.Config.FreeTypeConvenience
         || context.Config.XxHashConvenience
         || model.Functions.Any(function => function.ReturnsCString || function.Parameters.Any(parameter => parameter.HasStringConvenience));

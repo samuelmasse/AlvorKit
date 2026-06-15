@@ -24,8 +24,23 @@ internal sealed record CoverageSelection(
     /// <summary>Returns the source modules to gate for the selected coverage run.</summary>
     private static IReadOnlyList<string> SelectSourceModules(string repoRoot, CoverageOptions options)
     {
-        if (options.SourceProjectFilters.Count > 0)
-            return ProjectDiscovery.SourceAssemblyNames(repoRoot, options.SourceProjectFilters);
+        if (options.SourceProjectFilters.Count > 0 || options.BindingFilters.Count > 0)
+        {
+            var modules = new SortedSet<string>(StringComparer.Ordinal);
+            if (options.SourceProjectFilters.Count > 0)
+            {
+                foreach (var module in ProjectDiscovery.SourceAssemblyNames(repoRoot, options.SourceProjectFilters))
+                    modules.Add(module);
+            }
+
+            if (options.BindingFilters.Count > 0)
+            {
+                foreach (var module in BindingProjectDiscovery.SourceAssemblyNames(repoRoot, options.BindingFilters))
+                    modules.Add(module);
+            }
+
+            return [.. modules];
+        }
 
         return options.TestProjectFilters.Count == 0
             ? ProjectDiscovery.SourceAssemblyNames(repoRoot)
@@ -42,8 +57,22 @@ internal sealed record CoverageSelection(
             return ProjectDiscovery.TestProjects(repoRoot, options.TestProjectFilters);
 
         var allTests = ProjectDiscovery.TestProjects(repoRoot, []);
-        return options.SourceProjectFilters.Count == 0
-            ? allTests
-            : ProjectReferenceDiscovery.TestProjectsReferencingSourceModules(repoRoot, allTests, sourceModules);
+        if (options.SourceProjectFilters.Count == 0 && options.BindingFilters.Count == 0)
+            return allTests;
+
+        var selected = new SortedSet<string>(StringComparer.Ordinal);
+        if (options.SourceProjectFilters.Count > 0)
+        {
+            foreach (var testProject in ProjectReferenceDiscovery.TestProjectsReferencingSourceModules(repoRoot, allTests, sourceModules))
+                selected.Add(testProject);
+        }
+
+        if (options.BindingFilters.Count > 0)
+        {
+            foreach (var testProject in BindingProjectDiscovery.TestProjectsReferencingBindingModules(allTests, sourceModules))
+                selected.Add(testProject);
+        }
+
+        return [.. selected];
     }
 }
