@@ -170,6 +170,7 @@ jobs:
 
   # Generates, packs, artifacts, and optionally publishes the selected bindings.
   pack:
+    name: bindings ${{ matrix.package.selection }}
     needs: [detect]
     if: needs.detect.outputs.has_packages == 'true'
     timeout-minutes: 30

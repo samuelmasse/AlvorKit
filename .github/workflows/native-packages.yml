@@ -185,6 +185,7 @@ jobs:
   # Compiles each selected native library for every runtime identifier the
   # package supports. Each matrix cell uploads only that library/RID's runtimes.
   build:
+    name: build ${{ matrix.package.library }} ${{ matrix.target.rid }}
     needs: [detect]
     if: needs.detect.outputs.has_packages == 'true'
     timeout-minutes: 90
@@ -225,6 +226,7 @@ jobs:
   # Downloads all runtime artifacts for one selected library and packs the native
   # NuGet package. Push-triggered runs publish; manual runs stop at artifacts.
   pack:
+    name: pack ${{ matrix.package.library }}
     needs: [detect, build]
     if: needs.detect.outputs.has_packages == 'true'
     timeout-minutes: 30

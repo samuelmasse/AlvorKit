@@ -43,6 +43,7 @@ jobs:
   # there is nothing to compile. The generator turns gl.xml into the API package
   # and a proc-loading backend package.
   pack:
+    name: bindings opengl
     timeout-minutes: 30
     runs-on: ubuntu-24.04
     steps:
