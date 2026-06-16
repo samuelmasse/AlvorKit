@@ -119,4 +119,4 @@ dotnet build -c Release native\xxhash\AlvorKit.XxHash.Native.csproj
 
 Native package revisions live in `native/<lib>/version/REVISION`; generated binding package
 revisions live in `native/<lib>/version/BINDING_REVISION`. Native build settings live in
-`native/<lib>/conf/native-build.json`.
+`native/<lib>/conf/native-build.yml`.

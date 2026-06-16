@@ -39,11 +39,29 @@ internal static class CoverageRunIdentity
     /// <summary>Returns a readable filter name without treating dotted project names as extensions.</summary>
     private static string FilterName(string value)
     {
-        var fileName = Path.GetFileName(value);
+        var normalized = value.Replace('\\', '/');
+        var fileName = Path.GetFileName(normalized);
 
-        return Path.GetExtension(fileName) is ".csproj" or ".json"
+        if (IsBindgenConfig(fileName) && LibraryNameFromConfigPath(normalized) is { } libraryName)
+            return libraryName;
+
+        return Path.GetExtension(fileName) is ".csproj" or ".json" or ".yml" or ".yaml"
             ? Path.GetFileNameWithoutExtension(fileName)
             : fileName;
+    }
+
+    /// <summary>Returns whether the filter names a bindgen config file.</summary>
+    private static bool IsBindgenConfig(string fileName) =>
+        Path.GetFileNameWithoutExtension(fileName).Equals("bindgen", StringComparison.OrdinalIgnoreCase)
+        && Path.GetExtension(fileName) is ".json" or ".yml" or ".yaml";
+
+    /// <summary>Returns the native library name from a conventional native library config path.</summary>
+    private static string? LibraryNameFromConfigPath(string normalized)
+    {
+        var parts = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 3 && parts[^2].Equals("conf", StringComparison.OrdinalIgnoreCase)
+            ? parts[^3]
+            : null;
     }
 
     /// <summary>Replaces characters that are inconvenient or unsafe inside a directory name.</summary>

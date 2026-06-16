@@ -8,4 +8,8 @@
         <InternalsVisibleTo Include="AlvorKit.Script.Workspace.Test" />
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="YamlDotNet" Version="18.0.0" />
+    </ItemGroup>
+
 </Project>

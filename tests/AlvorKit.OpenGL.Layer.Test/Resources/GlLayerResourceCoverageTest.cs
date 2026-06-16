@@ -6,6 +6,7 @@ namespace AlvorKit.OpenGL.Layer.Test;
 [TestClass]
 public unsafe class GlLayerResourceCoverageTest
 {
+    /// <summary>Generated resource families enter and leave their tracking sets.</summary>
     [TestMethod]
     public void GeneratedResourceSets_ExposeAndDeleteAllFamilies()
     {
@@ -36,8 +37,15 @@ public unsafe class GlLayerResourceCoverageTest
         var feedback = (GlTransformFeedbackHandle)id[0];
         Assert.IsTrue(gl.TransformFeedbacks.Contains(feedback));
         gl.DeleteTransformFeedbacks(1, (nint)id);
+
+        Assert.AreEqual(0, gl.Framebuffers.Count);
+        Assert.AreEqual(0, gl.Samplers.Count);
+        Assert.AreEqual(0, gl.Queries.Count);
+        Assert.AreEqual(0, gl.ProgramPipelines.Count);
+        Assert.AreEqual(0, gl.TransformFeedbacks.Count);
     }
 
+    /// <summary>Created resource families enter and leave their tracking sets.</summary>
     [TestMethod]
     public void CreatedResourceSets_ExposeAndDeleteAllFamilies()
     {
@@ -78,8 +86,19 @@ public unsafe class GlLayerResourceCoverageTest
         id[0] = 109;
         gl.CreateTransformFeedbacks(1, (nint)id);
         gl.DeleteTransformFeedbacks(1, (nint)id);
+
+        Assert.AreEqual(0, gl.Textures.Count);
+        Assert.AreEqual(0, gl.Buffers.Count);
+        Assert.AreEqual(0, gl.VertexArrays.Count);
+        Assert.AreEqual(0, gl.Framebuffers.Count);
+        Assert.AreEqual(0, gl.Renderbuffers.Count);
+        Assert.AreEqual(0, gl.Samplers.Count);
+        Assert.AreEqual(0, gl.Queries.Count);
+        Assert.AreEqual(0, gl.ProgramPipelines.Count);
+        Assert.AreEqual(0, gl.TransformFeedbacks.Count);
     }
 
+    /// <summary>Singular resource factories track their handles until each explicit delete.</summary>
     [TestMethod]
     public void SingularResourceSets_ExposeAndDeleteAllFamilies()
     {
@@ -88,17 +107,21 @@ public unsafe class GlLayerResourceCoverageTest
         var shader = gl.CreateShader(GlShaderType.VertexShader);
         Assert.IsTrue(gl.Shaders.Contains(shader));
         gl.DeleteShader(shader);
+        Assert.IsFalse(gl.Shaders.Contains(shader));
 
         var program = gl.CreateProgram();
         Assert.IsTrue(gl.Programs.Contains(program));
         gl.DeleteProgram(program);
+        Assert.IsFalse(gl.Programs.Contains(program));
 
         var shaderProgram = gl.CreateShaderProgramv(GlShaderType.FragmentShader, 0, 0);
         gl.DeleteProgram(shaderProgram);
+        Assert.IsFalse(gl.Programs.Contains(shaderProgram));
 
         var sync = gl.FenceSync(GlSyncCondition.SyncGpuCommandsComplete, 0);
         Assert.IsTrue(gl.Syncs.Contains(sync));
         gl.DeleteSync(sync);
+        Assert.IsFalse(gl.Syncs.Contains(sync));
         Assert.Throws<GlResourceNotTrackedException<nint>>(() => gl.DeleteSync(sync));
     }
 }

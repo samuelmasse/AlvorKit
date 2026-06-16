@@ -51,7 +51,7 @@ public sealed class RepositoryLayout
     private IEnumerable<string> BindgenLibraries() =>
         Directory.Exists(NativeDirectory)
             ? Directory.GetDirectories(NativeDirectory)
-                .Where(directory => File.Exists(Path.Combine(directory, "conf", "bindgen.json")))
+                .Where(directory => RepositoryConfigFile.Find(Path.Combine(directory, "conf"), "bindgen") is not null)
                 .Select(Path.GetFileName)
                 .OfType<string>()
                 .Order(StringComparer.OrdinalIgnoreCase)

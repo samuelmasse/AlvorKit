@@ -3,6 +3,7 @@ namespace AlvorKit.OpenGL.Layer.Test;
 [TestClass]
 public class GlBindingMapTest
 {
+    /// <summary>A fresh keyed binding accepts one object and reports it through direct and value lookups.</summary>
     [TestMethod]
     public void Bind_NewKey_Succeeds()
     {
@@ -11,8 +12,11 @@ public class GlBindingMapTest
         Assert.IsTrue(map.TryGet(1, out var value));
         Assert.AreEqual(5u, value);
         Assert.AreEqual(5u, map.Bound[1]);
+        Assert.IsTrue(map.ContainsValue(5));
+        Assert.IsFalse(map.ContainsValue(0));
     }
 
+    /// <summary>An occupied key rejects another object until that key is released.</summary>
     [TestMethod]
     public void Bind_OccupiedKey_Throws()
     {
@@ -21,6 +25,7 @@ public class GlBindingMapTest
         Assert.Throws<GlAlreadyBoundException>(() => map.Bind("Fn", 1, 6));
     }
 
+    /// <summary>Unbinding a live key removes its recorded object.</summary>
     [TestMethod]
     public void Unbind_BoundKey_Removes()
     {
@@ -30,6 +35,7 @@ public class GlBindingMapTest
         Assert.IsFalse(map.TryGet(1, out _));
     }
 
+    /// <summary>Unbinding an empty key reports that no object is bound there.</summary>
     [TestMethod]
     public void Unbind_UnboundKey_Throws()
     {
@@ -37,6 +43,7 @@ public class GlBindingMapTest
         Assert.Throws<GlNotBoundException>(() => map.Unbind("Fn", 1));
     }
 
+    /// <summary>Different keys can hold different objects without conflicting.</summary>
     [TestMethod]
     public void DifferentKeys_DoNotConflict()
     {
@@ -49,6 +56,7 @@ public class GlBindingMapTest
         Assert.AreEqual(6u, second);
     }
 
+    /// <summary>A released key can accept a later object.</summary>
     [TestMethod]
     public void Rebind_AfterUnbind_Succeeds()
     {
@@ -60,6 +68,7 @@ public class GlBindingMapTest
         Assert.AreEqual(6u, value);
     }
 
+    /// <summary>Predicate-based unbinding reports when no occupied key matches.</summary>
     [TestMethod]
     public void UnbindWhere_WhenNoKeysMatch_Throws()
     {

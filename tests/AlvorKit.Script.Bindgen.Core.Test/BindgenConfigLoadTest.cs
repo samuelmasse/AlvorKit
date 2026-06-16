@@ -1,34 +1,32 @@
 namespace AlvorKit.Script.Bindgen.Core.Test;
 
-/// <summary>Covers JSON-backed bindgen config loading.</summary>
+/// <summary>Covers YAML-backed bindgen config loading.</summary>
 [TestClass]
 public sealed class BindgenConfigLoadTest
 {
-    /// <summary>JSON config loading is case-insensitive and preserves top-level values.</summary>
+    /// <summary>YAML config loading is case-insensitive and preserves top-level values.</summary>
     [TestMethod]
     public void Load_LoadsConfigCaseInsensitively()
     {
         using var workspace = TempWorkspace.Create();
         var conf = Path.Combine(workspace.Root, "conf");
         Directory.CreateDirectory(conf);
-        File.WriteAllText(Path.Combine(conf, "bindgen.json"), """
-            {
-              "namespace": "Fixture.Native",
-              "apiClass": "FixtureApi",
-              "apiSummary": "Fixture API.",
-              "backendClass": "FixtureBackend",
-              "nativeClass": "FixtureNative",
-              "nativeLibrary": "fixture",
-              "prefix": "fixture_",
-              "workDir": "fixture-work",
-              "sourceDir": "fixture-source",
-              "header": "fixture.h",
-              "apiProject": "generated/Fixture",
-              "backendProject": "generated/Fixture.Backend"
-            }
+        File.WriteAllText(Path.Combine(conf, "bindgen.yml"), """
+            NAMESPACE: Fixture.Native
+            apiClass: FixtureApi
+            apiSummary: Fixture API.
+            backendClass: FixtureBackend
+            nativeClass: FixtureNative
+            nativeLibrary: fixture
+            prefix: fixture_
+            workDir: fixture-work
+            sourceDir: fixture-source
+            header: fixture.h
+            apiProject: generated/Fixture
+            backendProject: generated/Fixture.Backend
             """);
 
-        var config = BindgenConfig.Load(workspace.Root, "fixture");
+        var config = BindgenConfig.Load(workspace.Root);
 
         Assert.AreEqual(BindgenConfig.CHeaderKind, config.Kind);
         Assert.AreEqual("Fixture.Native", config.Namespace);
@@ -43,60 +41,57 @@ public sealed class BindgenConfigLoadTest
         using var workspace = TempWorkspace.Create();
         var conf = Path.Combine(workspace.Root, "conf");
         Directory.CreateDirectory(conf);
-        File.WriteAllText(Path.Combine(conf, "bindgen.json"), """
-            {
-              "namespace": "Fixture.Native",
-              "apiClass": "FixtureApi",
-              "apiSummary": "Fixture API.",
-              "backendClass": "FixtureBackend",
-              "nativeClass": "FixtureNative",
-              "nativeLibrary": "fixture",
-              "prefix": "fixture_",
-              "workDir": "fixture-work",
-              "sourceDir": "fixture-source",
-              "header": "fixture.h",
-              "apiProject": "generated/Fixture",
-              "backendProject": "generated/Fixture.Backend",
-              "xxHashConvenience": true,
-              "advancedFunctions": [ "fixture_raw" ],
-              "enumGroups": {
-                "FixtureMode": { "prefix": "FIXTURE_MODE_", "flags": true }
-              },
-              "enumOverloads": {
-                "byParamName": { "mode": "FixtureMode" },
-                "functions": {
-                  "fixture_run": {
-                    "return": "FixtureResult",
-                    "params": { "mode": [ "FixtureMode", "int" ] }
-                  }
-                }
-              },
-              "callbacks": {
-                "FIXTUREPROC": {
-                  "managedName": "FixtureProc",
-                  "paramGroups": { "mode": "FixtureMode" }
-                }
-              },
-              "typeAliases": {
-                "fixture_hash128": "UInt128"
-              },
-              "interopTypeAliases": {
-                "fixture_hash128": "FixtureHash128"
-              },
-              "opaqueTypes": {
-                "fixture_state": "FixtureState"
-              },
-              "functionRenames": {
-                "fixture_hash": "Hash"
-              },
-              "stringArrayReturns": [ "fixture_extensions" ],
-              "countedSpanParams": {
-                "fixture_icons": { "images": "count" }
-              }
-            }
+        File.WriteAllText(Path.Combine(conf, "bindgen.yml"), """
+            namespace: Fixture.Native
+            apiClass: FixtureApi
+            apiSummary: Fixture API.
+            backendClass: FixtureBackend
+            nativeClass: FixtureNative
+            nativeLibrary: fixture
+            prefix: fixture_
+            workDir: fixture-work
+            sourceDir: fixture-source
+            header: fixture.h
+            apiProject: generated/Fixture
+            backendProject: generated/Fixture.Backend
+            xxHashConvenience: true
+            advancedFunctions:
+              - fixture_raw
+            enumGroups:
+              FixtureMode:
+                prefix: FIXTURE_MODE_
+                flags: true
+            enumOverloads:
+              byParamName:
+                mode: FixtureMode
+              functions:
+                fixture_run:
+                  return: FixtureResult
+                  params:
+                    mode:
+                      - FixtureMode
+                      - int
+            callbacks:
+              FIXTUREPROC:
+                managedName: FixtureProc
+                paramGroups:
+                  mode: FixtureMode
+            typeAliases:
+              fixture_hash128: UInt128
+            interopTypeAliases:
+              fixture_hash128: FixtureHash128
+            opaqueTypes:
+              fixture_state: FixtureState
+            functionRenames:
+              fixture_hash: Hash
+            stringArrayReturns:
+              - fixture_extensions
+            countedSpanParams:
+              fixture_icons:
+                images: count
             """);
 
-        var config = BindgenConfig.Load(workspace.Root, "fixture");
+        var config = BindgenConfig.Load(workspace.Root);
 
         Assert.IsTrue(config.EnumGroups["FixtureMode"].Flags);
         Assert.AreEqual("FixtureMode", config.EnumOverloads?.ByParamName["mode"]);

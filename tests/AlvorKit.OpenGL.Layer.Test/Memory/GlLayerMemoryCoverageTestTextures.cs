@@ -15,6 +15,7 @@ public class GlLayerMemoryCoverageTestTextures
         gl.ActiveTexture(GlTextureUnit.Texture0);
     }
 
+    /// <summary>Bound texture allocation entry points record shapes for every generated texture.</summary>
     [TestMethod]
     public void BoundTextureAllocations_TrackEveryAllocationShape()
     {
@@ -44,8 +45,12 @@ public class GlLayerMemoryCoverageTestTextures
             gl.TexStorage3DMultisample(target, 2, GlSizedInternalFormat.Rgba8, 2, 2, 2, false));
         WithBoundTexture(GlTextureTarget.Texture1D, target =>
             gl.CopyTexImage1D(target, 0, GlInternalFormat.R8, 0, 0, 4, 0));
+
+        Assert.AreEqual(13, gl.TextureSizes.Count);
+        Assert.IsTrue(gl.TextureUsage > 0);
     }
 
+    /// <summary>Direct texture allocation entry points record shapes for tracked texture handles.</summary>
     [TestMethod]
     public void DirectTextureAllocations_TrackEveryAllocationShape()
     {
@@ -58,6 +63,8 @@ public class GlLayerMemoryCoverageTestTextures
         gl.TextureStorage2DMultisample(multi, 2, GlSizedInternalFormat.Rgba8, 2, 2, false);
         gl.TextureStorage3DMultisample(multi, 2, GlSizedInternalFormat.Rgba8, 2, 2, 2, false);
 
+        Assert.AreEqual(3, gl.TextureSizes.Count);
+        Assert.IsTrue(gl.TextureUsage > 0);
         Assert.Throws<GlException>(() =>
             gl.TextureStorage1D((GlTextureHandle)999u, 1, GlSizedInternalFormat.R8, 4));
     }

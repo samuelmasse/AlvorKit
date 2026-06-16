@@ -18,24 +18,23 @@ internal static class TestRepositoryFactory
         File.WriteAllText(Path.Combine(version, "TAG"), "1.2.3");
         File.WriteAllText(Path.Combine(version, "REVISION"), revision);
         File.WriteAllText(Path.Combine(src, "shim.c"), "int test(void) { return 0; }");
-        File.WriteAllText(Path.Combine(conf, "bindgen.json"), $$"""
-            {
-                "nativeLibrary": "{{name}}",
-                "workDir": "{{workDir}}",
-                "sourceDir": "src-{tag}",
-                "sourceUrl": "https://example.invalid/{{name}}.tar.gz",
-                "implFile": "src/shim.c"
-            }
-            """);
-        File.WriteAllText(Path.Combine(conf, "native-build.json"), """
-            {
-                "kind": "single-c",
-                "linux": {
-                    "packages": ["build-essential"],
-                    "linkLibraries": ["m"],
-                    "allowedDependencies": ["libc.so.6", "libm.so.6"]
-                }
-            }
+        RepositoryConfigFixture.WriteYamlMapping(
+            Path.Combine(conf, "bindgen.yml"),
+            ("nativeLibrary", name),
+            ("workDir", workDir),
+            ("sourceDir", "src-{tag}"),
+            ("sourceUrl", $"https://example.invalid/{name}.tar.gz"),
+            ("implFile", "src/shim.c"));
+        File.WriteAllText(Path.Combine(conf, "native-build.yml"), """
+            kind: single-c
+            linux:
+              packages:
+                - build-essential
+              linkLibraries:
+                - m
+              allowedDependencies:
+                - libc.so.6
+                - libm.so.6
             """);
         return root;
     }
@@ -45,20 +44,21 @@ internal static class TestRepositoryFactory
     {
         var root = CreateSingleCLibrary(name, workDir, revision: "");
         var conf = Path.Combine(root, "native", name, "conf");
-        File.WriteAllText(Path.Combine(conf, "native-build.json"), """
-            {
-                "kind": "cmake",
-                "linux": {
-                    "packages": ["build-essential", "cmake"],
-                    "cmakeOutput": "src/libsample.so",
-                    "cmakeOptions": ["-DBUILD_SHARED_LIBS=ON"],
-                    "allowedDependencies": ["libc.so.6"]
-                },
-                "macos": {
-                    "cmakeOutput": "src/libsample.dylib",
-                    "cmakeOptions": ["-DBUILD_SHARED_LIBS=ON"]
-                }
-            }
+        File.WriteAllText(Path.Combine(conf, "native-build.yml"), """
+            kind: cmake
+            linux:
+              packages:
+                - build-essential
+                - cmake
+              cmakeOutput: src/libsample.so
+              cmakeOptions:
+                - -DBUILD_SHARED_LIBS=ON
+              allowedDependencies:
+                - libc.so.6
+            macos:
+              cmakeOutput: src/libsample.dylib
+              cmakeOptions:
+                - -DBUILD_SHARED_LIBS=ON
             """);
         return root;
     }

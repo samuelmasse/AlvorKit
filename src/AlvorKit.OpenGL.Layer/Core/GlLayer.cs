@@ -11,6 +11,7 @@ namespace AlvorKit.OpenGL.Layer;
 /// <item>Every bind (<c>glBindBuffer</c>, <c>glBindTexture</c>, ...) must be released with the
 /// matching <c>Unbind*</c> for the same target before another object is bound there; scoped binds
 /// such as <c>glBeginQuery</c> are closed with their real <c>glEnd*</c>.</item>
+/// <item>Explicit <c>glDelete*</c> calls require the deleted object to be unbound or inactive first.</item>
 /// </list>
 /// The <c>Reset*</c>/<c>Unbind*</c> methods (in the <c>GlLayer.State</c> and <c>GlLayer.Binds</c>
 /// partials) are the vocabulary for that discipline; "unbind" is just <c>glBind*(target, 0)</c> and

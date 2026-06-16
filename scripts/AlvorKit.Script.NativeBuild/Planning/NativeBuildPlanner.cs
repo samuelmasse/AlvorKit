@@ -100,7 +100,7 @@ internal static class NativeBuildPlanner
     public static string RequiredImplFile(LibraryBuildContext library) =>
         library.Metadata.ImplFile is { Length: > 0 } implFile
             ? Path.Combine(library.LibraryDirectory, implFile)
-            : throw new InvalidOperationException($"{library.Name}: single-c builds require implFile in conf/bindgen.json.");
+            : throw new InvalidOperationException($"{library.Name}: single-c builds require implFile in conf/bindgen.yml.");
 
     /// <summary>Returns the configured CMake output or throws a manifest error.</summary>
     public static string RequiredCMakeOutput(LibraryBuildContext library, PlatformBuildConfig platform) =>

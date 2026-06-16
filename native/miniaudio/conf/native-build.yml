@@ -1,0 +1,20 @@
+kind: "single-c"
+windows: {}
+linux:
+  packages:
+    - "build-essential"
+  armPackages:
+    - "gcc-arm-linux-gnueabihf"
+  linkLibraries:
+    - "dl"
+    - "pthread"
+    - "m"
+  allowedDependencies:
+    - "libc.so.6"
+    - "libm.so.6"
+    - "libpthread.so.0"
+    - "libdl.so.2"
+macos:
+  linkLibraries:
+    - "pthread"
+    - "m"

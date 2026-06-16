@@ -225,7 +225,7 @@ For generated binding test work, gate coverage on the binding library name:
 dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --binding xxhash --threshold 0
 ```
 
-The binding coverage path reads `native/<library>/conf/bindgen.json`, measures
+The binding coverage path reads `native/<library>/conf/bindgen.yml`, measures
 both the generated API project and its `.Backend` project, selects matching test
 projects by package or project reference, and forces `UseLocalBindings=true` so
 Coverlet instruments the generated project assemblies. If this fails because

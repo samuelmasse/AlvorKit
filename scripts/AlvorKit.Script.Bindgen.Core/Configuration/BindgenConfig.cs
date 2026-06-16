@@ -1,11 +1,8 @@
 namespace AlvorKit.Script.Bindgen;
 
-/// <summary>Configuration for one native library binding, loaded from native/&lt;library&gt;/conf/bindgen.json.</summary>
+/// <summary>Configuration for one native library binding, loaded from native/&lt;library&gt;/conf/bindgen.yml.</summary>
 public sealed partial class BindgenConfig
 {
-    /// <summary>Serializer options used by hand-authored bindgen.json files.</summary>
-    private static readonly JsonSerializerOptions ConfigJsonOptions = new() { PropertyNameCaseInsensitive = true };
-
     /// <summary>Bindgen kind used for C header parsing and emission.</summary>
     public const string CHeaderKind = "c-header";
 
@@ -60,10 +57,7 @@ public sealed partial class BindgenConfig
     /// <summary>Native constants skipped during generation with reasons for maintainers.</summary>
     public Dictionary<string, string> SkipConstants { get; set; } = [];
 
-    /// <summary>Reads and deserializes a case-insensitive conf/bindgen.json file.</summary>
-    public static BindgenConfig Load(string libraryDirectory, string libraryName) =>
-        JsonSerializer.Deserialize<BindgenConfig>(
-            File.ReadAllText(Path.Combine(libraryDirectory, "conf", "bindgen.json")),
-            ConfigJsonOptions)
-        ?? throw new InvalidOperationException($"Could not read bindgen config for {libraryName}.");
+    /// <summary>Reads and deserializes a case-insensitive conf/bindgen.yml file.</summary>
+    public static BindgenConfig Load(string libraryDirectory) =>
+        RepositoryConfigFile.Read<BindgenConfig>(Path.Combine(libraryDirectory, "conf"), "bindgen");
 }

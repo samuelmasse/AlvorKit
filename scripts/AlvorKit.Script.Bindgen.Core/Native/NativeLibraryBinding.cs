@@ -71,7 +71,7 @@ public sealed partial class NativeLibraryBinding
     public static NativeLibraryBinding Load(RepositoryLayout repository, string name)
     {
         var directory = Path.Combine(repository.NativeDirectory, name);
-        var config = BindgenConfig.Load(directory, name);
+        var config = BindgenConfig.Load(directory);
         var versionDirectory = Path.Combine(directory, "version");
         var tag = config.SourceTag ?? ReadOptionalVersion(versionDirectory, "TAG");
         var nativeRevision = config.Kind == BindgenConfig.GlRegistryKind

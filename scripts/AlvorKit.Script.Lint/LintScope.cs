@@ -17,7 +17,7 @@ internal sealed record LintScope(
         ".github/workflows/*.yml",
         ".vscode/*.json",
         ".config/*.json",
-        "native/**/*.json",
+        "native/**/*.yml",
         "*.md",
         "native/**/*.md",
         "src/**/*.md",

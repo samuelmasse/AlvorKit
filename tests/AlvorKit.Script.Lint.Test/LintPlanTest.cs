@@ -185,12 +185,13 @@ public sealed class LintPlanTest
 
     /// <summary>Plans Prettier for the JSON, YAML, and Markdown globs owned by the repo policy.</summary>
     [TestMethod]
-    public void PrettierCommandIncludesMarkdownAndVsCodeJson()
+    public void PrettierCommandIncludesMarkdownNativeYamlAndVsCodeJson()
     {
         var command = LintPlan.PrettierCommand("repo", fix: false);
 
         CollectionAssert.Contains(command.Arguments.ToArray(), "--check");
         CollectionAssert.Contains(command.Arguments.ToArray(), ".vscode/*.json");
+        CollectionAssert.Contains(command.Arguments.ToArray(), "native/**/*.yml");
         CollectionAssert.Contains(command.Arguments.ToArray(), "native/**/*.md");
         CollectionAssert.Contains(command.Arguments.ToArray(), "*.md");
     }

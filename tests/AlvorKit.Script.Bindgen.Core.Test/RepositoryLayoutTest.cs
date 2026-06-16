@@ -40,7 +40,7 @@ public sealed class RepositoryLayoutTest
         var native = Path.Combine(workspace.Root, "native", "glfw");
         var conf = Path.Combine(native, "conf");
         Directory.CreateDirectory(conf);
-        File.WriteAllText(Path.Combine(conf, "bindgen.json"), "{}");
+        File.WriteAllText(Path.Combine(conf, "bindgen.yml"), "{}");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
 
         CollectionAssert.AreEqual(new[] { "glfw" }, layout.SelectedLibraries("GLFW").ToArray());
@@ -55,7 +55,7 @@ public sealed class RepositoryLayoutTest
         var native = Path.Combine(workspace.Root, "native", "alpha");
         var conf = Path.Combine(native, "conf");
         Directory.CreateDirectory(conf);
-        File.WriteAllText(Path.Combine(conf, "bindgen.json"), "{}");
+        File.WriteAllText(Path.Combine(conf, "bindgen.yml"), "{}");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
 
         var exception = Assert.ThrowsException<InvalidOperationException>(() => layout.SelectedLibraries("glfw").ToArray());
@@ -74,8 +74,8 @@ public sealed class RepositoryLayoutTest
         Directory.CreateDirectory(Path.Combine(native, "zeta", "conf"));
         Directory.CreateDirectory(Path.Combine(native, "alpha", "conf"));
         Directory.CreateDirectory(Path.Combine(native, "ignored"));
-        File.WriteAllText(Path.Combine(native, "zeta", "conf", "bindgen.json"), "{}");
-        File.WriteAllText(Path.Combine(native, "alpha", "conf", "bindgen.json"), "{}");
+        File.WriteAllText(Path.Combine(native, "zeta", "conf", "bindgen.yml"), "{}");
+        File.WriteAllText(Path.Combine(native, "alpha", "conf", "bindgen.yml"), "{}");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
 
         CollectionAssert.AreEqual(new[] { "alpha", "zeta" }, layout.SelectedLibraries("all").ToArray());

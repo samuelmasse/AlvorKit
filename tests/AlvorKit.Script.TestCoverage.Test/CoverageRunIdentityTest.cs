@@ -27,15 +27,15 @@ public sealed class CoverageRunIdentityTest
         StringAssert.Contains(runId, "One.Tool-plus-1");
     }
 
-    /// <summary>Binding filters are used when no source filters are present.</summary>
+    /// <summary>Binding config filters use the native library name when no source filters are present.</summary>
     [TestMethod]
-    public void Create_BindingFilter_UsesBindingSlug()
+    public void Create_BindingConfigFilter_UsesLibrarySlug()
     {
-        var options = CoverageOptions.Parse(["--binding", "native/xxhash/conf/bindgen.json"]);
+        var options = CoverageOptions.Parse(["--binding", "native/xxhash/conf/bindgen.yml"]);
 
         var runId = CoverageRunIdentity.Create(DateTimeOffset.Parse("2026-06-15T01:02:03Z"), options);
 
-        StringAssert.Contains(runId, "bindgen");
+        StringAssert.EndsWith(runId, "-xxhash");
     }
 
     /// <summary>Test filters are used when no source or binding filters are present.</summary>

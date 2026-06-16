@@ -141,9 +141,29 @@ public sealed class NativeLibraryBindingTest
 
     /// <summary>Writes a bindgen config fixture for a native library.</summary>
     private static void WriteConfig(RepositoryLayout repository, string name, BindgenConfig config) =>
-        File.WriteAllText(
-            Path.Combine(repository.NativeDirectory, name, "conf", "bindgen.json"),
-            JsonSerializer.Serialize(config));
+        RepositoryConfigFixture.WriteYamlMapping(
+            Path.Combine(repository.NativeDirectory, name, "conf", "bindgen.yml"),
+            ("kind", config.Kind),
+            ("namespace", config.Namespace),
+            ("apiClass", config.ApiClass),
+            ("apiSummary", config.ApiSummary),
+            ("backendClass", config.BackendClass),
+            ("nativeClass", config.NativeClass),
+            ("nativeLibrary", config.NativeLibrary),
+            ("prefix", config.Prefix),
+            ("workDir", config.WorkDir),
+            ("sourceTag", config.SourceTag),
+            ("sourceDir", config.SourceDir),
+            ("header", config.Header),
+            ("includeSubdir", config.IncludeSubdir),
+            ("sizeofShim", config.SizeofShim),
+            ("glVersion", config.GlVersion),
+            ("docTag", config.DocTag),
+            ("docUrl", config.DocUrl),
+            ("docDir", config.DocDir),
+            ("docSubdir", config.DocSubdir),
+            ("apiProject", config.ApiProject),
+            ("backendProject", config.BackendProject));
 
     /// <summary>Creates a valid C-header config with test-local work directories.</summary>
     private static BindgenConfig TestConfig(TempWorkspace workspace) => new()

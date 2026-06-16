@@ -16,6 +16,13 @@ internal struct GlBinding
     internal readonly uint Current => current;
 
     /// <summary>
+    /// Returns whether this slot currently binds the specified nonzero object id.
+    /// </summary>
+    /// <param name="value">The GL object id to inspect.</param>
+    /// <returns><see langword="true"/> when <paramref name="value"/> is live-bound in this slot.</returns>
+    internal readonly bool IsBound(uint value) => value != 0 && current == value;
+
+    /// <summary>
     /// Records a non-overlapping bind for this slot.
     /// </summary>
     /// <param name="function">The GL function that requested the bind.</param>

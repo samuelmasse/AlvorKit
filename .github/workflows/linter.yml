@@ -19,5 +19,11 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      - name: Enable local bindings
+        run: cp AlvorKit.Local.props.example AlvorKit.Local.props
+
+      - name: Generate bindings
+        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- all --strict
+
       - name: Run lint coordinator
         run: dotnet run --project scripts/AlvorKit.Script.Lint

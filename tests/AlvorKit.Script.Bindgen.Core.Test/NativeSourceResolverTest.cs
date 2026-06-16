@@ -73,9 +73,29 @@ public sealed class NativeSourceResolverTest
         var repository = RepositoryLayout.FindFrom(workspace.Root);
         var config = TestConfig(workspace);
         configure?.Invoke(config);
-        File.WriteAllText(Path.Combine(conf, "bindgen.json"), JsonSerializer.Serialize(config));
+        WriteConfig(conf, config);
         return NativeLibraryBinding.Load(repository, "fixture");
     }
+
+    /// <summary>Writes the resolver test config in the same YAML format used by native libraries.</summary>
+    private static void WriteConfig(string conf, BindgenConfig config) =>
+        RepositoryConfigFixture.WriteYamlMapping(
+            Path.Combine(conf, "bindgen.yml"),
+            ("namespace", config.Namespace),
+            ("apiClass", config.ApiClass),
+            ("apiSummary", config.ApiSummary),
+            ("backendClass", config.BackendClass),
+            ("nativeClass", config.NativeClass),
+            ("nativeLibrary", config.NativeLibrary),
+            ("prefix", config.Prefix),
+            ("workDir", config.WorkDir),
+            ("sourceDir", config.SourceDir),
+            ("header", config.Header),
+            ("apiProject", config.ApiProject),
+            ("backendProject", config.BackendProject),
+            ("docUrl", config.DocUrl),
+            ("docDir", config.DocDir),
+            ("docSubdir", config.DocSubdir));
 
     /// <summary>Creates a valid C-header config for resolver tests.</summary>
     private static BindgenConfig TestConfig(TempWorkspace workspace) => new()

@@ -78,9 +78,9 @@ public sealed class CoverageOptionsTest
     [TestMethod]
     public void Parse_BindingFilters_ReturnsAllValues()
     {
-        var options = CoverageOptions.Parse(["--binding", "xxhash", "--binding", "native/freetype/conf/bindgen.json"]);
+        var options = CoverageOptions.Parse(["--binding", "xxhash", "--binding", "native/freetype/conf/bindgen.yml"]);
 
-        CollectionAssert.AreEqual(new[] { "xxhash", "native/freetype/conf/bindgen.json" }, options.BindingFilters.ToArray());
+        CollectionAssert.AreEqual(new[] { "xxhash", "native/freetype/conf/bindgen.yml" }, options.BindingFilters.ToArray());
     }
 
     /// <summary>Max parallelism can be configured for hosts with different CPU and IO capacity.</summary>

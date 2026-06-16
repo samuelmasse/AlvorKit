@@ -74,15 +74,35 @@ internal sealed unsafe class GlResourceSet<THandle>(
     /// <exception cref="GlResourceNotTrackedException{THandle}">Thrown when any handle is not tracked.</exception>
     internal THandle[] Untrack(string function, int count, nint handles)
     {
+        var values = RequireTracked(function, count, handles);
+        UntrackKnown(values);
+        return values;
+    }
+
+    /// <summary>
+    /// Reads a native handle array and verifies every handle is currently tracked.
+    /// </summary>
+    /// <param name="function">The GL function that requested the validation.</param>
+    /// <param name="count">The number of handles in the native array.</param>
+    /// <param name="handles">The native pointer to the first raw id.</param>
+    /// <returns>The typed handles read from the native array.</returns>
+    internal THandle[] RequireTracked(string function, int count, nint handles)
+    {
         var values = Read(count, handles);
         foreach (var value in values)
-        {
             if (!items.Contains(value))
                 throw new GlResourceNotTrackedException<THandle>(function, name, value);
-        }
-        foreach (var value in values)
-            items.Remove(value);
         return values;
+    }
+
+    /// <summary>
+    /// Removes handles that were already validated as tracked.
+    /// </summary>
+    /// <param name="handles">The tracked handles to remove.</param>
+    internal void UntrackKnown(ReadOnlySpan<THandle> handles)
+    {
+        foreach (var handle in handles)
+            items.Remove(handle);
     }
 
     /// <summary>

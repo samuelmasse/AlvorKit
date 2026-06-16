@@ -3,69 +3,95 @@ namespace AlvorKit.OpenGL.Layer;
 public unsafe partial class GlLayer
 {
     /// <inheritdoc/>
-    /// <remarks>Layer: stops tracking the deleted textures and releases their tracked memory.</remarks>
+    /// <remarks>Layer: requires the deleted textures to be unbound, then releases their tracked memory.</remarks>
     public override void DeleteTextures(int n, nint textures)
     {
-        var ids = this.textures.Untrack(nameof(DeleteTextures), n, textures);
+        var ids = this.textures.RequireTracked(nameof(DeleteTextures), n, textures);
+        RequireTexturesUnbound(nameof(DeleteTextures), ids);
+        this.textures.UntrackKnown(ids);
         foreach (var id in ids) { textureTargets.Remove(id); ReleaseTextureMemory(id); }
         base.DeleteTextures(n, textures);
     }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: stops tracking the deleted buffers and releases their tracked memory.</remarks>
+    /// <remarks>Layer: requires the deleted buffers to be unbound, then releases their tracked memory.</remarks>
     public override void DeleteBuffers(int n, nint buffers)
     {
-        var ids = this.buffers.Untrack(nameof(DeleteBuffers), n, buffers);
+        var ids = this.buffers.RequireTracked(nameof(DeleteBuffers), n, buffers);
+        RequireBuffersUnbound(nameof(DeleteBuffers), ids);
+        this.buffers.UntrackKnown(ids);
         foreach (var id in ids) ReleaseBufferMemory(id);
         base.DeleteBuffers(n, buffers);
     }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: stops tracking the deleted vertex arrays.</remarks>
-    public override void DeleteVertexArrays(int n, nint arrays) { vertexArrays.Untrack(nameof(DeleteVertexArrays), n, arrays); base.DeleteVertexArrays(n, arrays); }
+    /// <remarks>Layer: requires the deleted vertex arrays to be unbound before removing them from tracking.</remarks>
+    public override void DeleteVertexArrays(int n, nint arrays)
+    {
+        var ids = vertexArrays.RequireTracked(nameof(DeleteVertexArrays), n, arrays);
+        RequireVertexArraysUnbound(nameof(DeleteVertexArrays), ids);
+        vertexArrays.UntrackKnown(ids);
+        base.DeleteVertexArrays(n, arrays);
+    }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: stops tracking the deleted framebuffers.</remarks>
+    /// <remarks>Layer: requires the deleted framebuffers to be unbound before removing them from tracking.</remarks>
     public override void DeleteFramebuffers(int n, nint framebuffers)
     {
-        this.framebuffers.Untrack(nameof(DeleteFramebuffers), n, framebuffers);
+        var ids = this.framebuffers.RequireTracked(nameof(DeleteFramebuffers), n, framebuffers);
+        RequireFramebuffersUnbound(nameof(DeleteFramebuffers), ids);
+        this.framebuffers.UntrackKnown(ids);
         base.DeleteFramebuffers(n, framebuffers);
     }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: stops tracking the deleted renderbuffers and releases their tracked memory.</remarks>
+    /// <remarks>Layer: requires the deleted renderbuffers to be unbound, then releases their tracked memory.</remarks>
     public override void DeleteRenderbuffers(int n, nint renderbuffers)
     {
-        var ids = this.renderbuffers.Untrack(nameof(DeleteRenderbuffers), n, renderbuffers);
+        var ids = this.renderbuffers.RequireTracked(nameof(DeleteRenderbuffers), n, renderbuffers);
+        RequireRenderbuffersUnbound(nameof(DeleteRenderbuffers), ids);
+        this.renderbuffers.UntrackKnown(ids);
         foreach (var id in ids) ReleaseRenderbufferMemory(id);
         base.DeleteRenderbuffers(n, renderbuffers);
     }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: stops tracking the deleted samplers.</remarks>
+    /// <remarks>Layer: requires the deleted samplers to be unbound before removing them from tracking.</remarks>
     public override void DeleteSamplers(int count, nint samplers)
     {
-        this.samplers.Untrack(nameof(DeleteSamplers), count, samplers);
+        var ids = this.samplers.RequireTracked(nameof(DeleteSamplers), count, samplers);
+        RequireSamplersUnbound(nameof(DeleteSamplers), ids);
+        this.samplers.UntrackKnown(ids);
         base.DeleteSamplers(count, samplers);
     }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: stops tracking the deleted queries.</remarks>
-    public override void DeleteQueries(int n, nint ids) { queries.Untrack(nameof(DeleteQueries), n, ids); base.DeleteQueries(n, ids); }
+    /// <remarks>Layer: requires the deleted queries to be inactive before removing them from tracking.</remarks>
+    public override void DeleteQueries(int n, nint ids)
+    {
+        var queryIds = queries.RequireTracked(nameof(DeleteQueries), n, ids);
+        RequireQueriesUnbound(nameof(DeleteQueries), queryIds);
+        queries.UntrackKnown(queryIds);
+        base.DeleteQueries(n, ids);
+    }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: stops tracking the deleted program pipelines.</remarks>
+    /// <remarks>Layer: requires the deleted program pipelines to be unbound before removing them from tracking.</remarks>
     public override void DeleteProgramPipelines(int n, nint pipelines)
     {
-        programPipelines.Untrack(nameof(DeleteProgramPipelines), n, pipelines);
+        var ids = programPipelines.RequireTracked(nameof(DeleteProgramPipelines), n, pipelines);
+        RequireProgramPipelinesUnbound(nameof(DeleteProgramPipelines), ids);
+        programPipelines.UntrackKnown(ids);
         base.DeleteProgramPipelines(n, pipelines);
     }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: stops tracking the deleted transform feedback objects.</remarks>
+    /// <remarks>Layer: requires the deleted transform feedback objects to be unbound before removing them from tracking.</remarks>
     public override void DeleteTransformFeedbacks(int n, nint ids)
     {
-        transformFeedbacks.Untrack(nameof(DeleteTransformFeedbacks), n, ids);
+        var feedbacks = transformFeedbacks.RequireTracked(nameof(DeleteTransformFeedbacks), n, ids);
+        RequireTransformFeedbacksUnbound(nameof(DeleteTransformFeedbacks), feedbacks);
+        transformFeedbacks.UntrackKnown(feedbacks);
         base.DeleteTransformFeedbacks(n, ids);
     }
 
@@ -74,8 +100,15 @@ public unsafe partial class GlLayer
     public override void DeleteShader(GlShaderHandle shader) { shaders.Untrack(nameof(DeleteShader), shader); base.DeleteShader(shader); }
 
     /// <inheritdoc/>
-    /// <remarks>Layer: stops tracking the deleted program.</remarks>
-    public override void DeleteProgram(GlProgramHandle program) { programs.Untrack(nameof(DeleteProgram), program); base.DeleteProgram(program); }
+    /// <remarks>Layer: requires the deleted program to be unused before removing it from tracking.</remarks>
+    public override void DeleteProgram(GlProgramHandle program)
+    {
+        if (!programs.Contains(program))
+            throw new GlResourceNotTrackedException<GlProgramHandle>(nameof(DeleteProgram), "program", program);
+        RequireProgramUnbound(nameof(DeleteProgram), program);
+        programs.Untrack(nameof(DeleteProgram), program);
+        base.DeleteProgram(program);
+    }
 
     /// <inheritdoc/>
     /// <remarks>Layer: stops tracking the deleted sync object.</remarks>

@@ -28,6 +28,21 @@ These instructions apply to all test projects under `tests/`.
 - Split a test file when the scenarios stop sharing context or it would exceed
   750 lines, not because an agent prefers small files.
 
+## Test Quality
+
+- Do not add coverage-only smoke bundles that merely call many APIs. Each
+  runnable test should assert observable state, generated output, returned data,
+  or a specific exception. If a coverage sweep is unavoidable, keep it small and
+  state the behavioral invariant it protects in the test summary.
+- When adding repository config fixtures, prefer shared helpers from
+  `AlvorKit.Testing` over copied YAML/JSON writer methods. If a helper shape is
+  needed in two projects, move it before adding the second copy.
+- When changing a supported config format, keep tests for both the primary
+  format and any explicitly supported transitional fallback format.
+- Tests for generated artifact names or run IDs should prefer user-meaningful
+  identifiers, such as native library names, over generic filenames like
+  `bindgen`.
+
 ## Verification
 
 - For C# test changes, run focused coverage for the affected source project with

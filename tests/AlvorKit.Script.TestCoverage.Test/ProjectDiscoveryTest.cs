@@ -137,7 +137,7 @@ public sealed class ProjectDiscoveryTest
         using var workspace = TempWorkspace.Create();
         WriteBindingConfig(workspace, "xxhash", "AlvorKit.XxHash");
 
-        var byConfig = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["native/xxhash/conf/bindgen.json"]);
+        var byConfig = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["native/xxhash/conf/bindgen.yml"]);
         var byDirectory = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["native/xxhash"]);
         var byAssembly = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["AlvorKit.XxHash.Backend"]);
 
@@ -167,11 +167,9 @@ public sealed class ProjectDiscoveryTest
     {
         using var workspace = TempWorkspace.Create();
         workspace.Write(
-            "native/partial/conf/bindgen.json",
+            "native/partial/conf/bindgen.yml",
             """
-            {
-              "apiProject": "out/bindgen/AlvorKit.Partial"
-            }
+            apiProject: out/bindgen/AlvorKit.Partial
             """);
 
         var modules = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["partial"]);
@@ -391,12 +389,10 @@ public sealed class ProjectDiscoveryTest
     /// <summary>Writes a minimal native bindgen configuration for generated binding discovery tests.</summary>
     private static void WriteBindingConfig(TempWorkspace workspace, string name, string apiAssembly) =>
         workspace.Write(
-            $"native/{name}/conf/bindgen.json",
+            $"native/{name}/conf/bindgen.yml",
             $$"""
-            {
-              "apiProject": "out/bindgen/{{apiAssembly}}",
-              "backendProject": "out/bindgen/{{apiAssembly}}.Backend"
-            }
+            apiProject: out/bindgen/{{apiAssembly}}
+            backendProject: out/bindgen/{{apiAssembly}}.Backend
             """);
 
     /// <summary>Writes a test project with optional binding package and project references.</summary>

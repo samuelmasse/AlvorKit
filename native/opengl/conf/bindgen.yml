@@ -1,0 +1,53 @@
+kind: "gl-registry"
+namespace: "AlvorKit.OpenGL"
+apiClass: "Gl"
+apiSummary: "Modern OpenGL core-profile APIs with typed enum groups, resolved at runtime through a platform proc loader such as Glfw.GetProcAddress."
+backendClass: "GlBackend"
+prefix: "GL_"
+digitNamePrefix: "Gl"
+glApi: "gl"
+glProfile: "core"
+glVersion: "4.6"
+glExtensions: []
+workDir: "opengl-build"
+sourceTag: "9d527dbc81bb76e35ba284fe385ed8a5ddb90cbc"
+sourceDir: "OpenGL-Registry-{tag}"
+header: "gl.xml"
+docTag: "121f1891c688e0c75ad46ed83d9cb73712fbbbfc"
+docUrl: "https://github.com/KhronosGroup/OpenGL-Refpages/archive/{docTag}.tar.gz"
+docDir: "OpenGL-Refpages-{docTag}"
+docSubdir: "gl4"
+apiProject: "out/bindgen/AlvorKit.OpenGL"
+backendProject: "out/bindgen/AlvorKit.OpenGL.Backend"
+typeRenames: {}
+callbacks:
+  GLDEBUGPROC:
+    managedName: "GlDebugProc"
+    paramGroups:
+      source: "DebugSource"
+      type: "DebugType"
+      severity: "DebugSeverity"
+skip: {}
+skipConstants: {}
+spanParams:
+  glTexImage1D:
+    - "pixels"
+  glTexImage2D:
+    - "pixels"
+  glTexImage3D:
+    - "pixels"
+  glTexSubImage1D:
+    - "pixels"
+  glTexSubImage2D:
+    - "pixels"
+  glTexSubImage3D:
+    - "pixels"
+  glTextureSubImage1D:
+    - "pixels"
+  glTextureSubImage2D:
+    - "pixels"
+  glTextureSubImage3D:
+    - "pixels"
+  glReadPixels:
+    - "pixels"
+sourceUrl: "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Registry/{tag}/xml/gl.xml"

@@ -56,6 +56,13 @@ internal readonly struct GlBindingMap<TKey>() where TKey : notnull
     internal bool TryGet(TKey key, out uint value) => bound.TryGetValue(key, out value);
 
     /// <summary>
+    /// Returns whether any key currently binds the specified nonzero object id.
+    /// </summary>
+    /// <param name="value">The GL object id to inspect.</param>
+    /// <returns><see langword="true"/> when <paramref name="value"/> is live-bound by any key.</returns>
+    internal bool ContainsValue(uint value) => value != 0 && bound.ContainsValue(value);
+
+    /// <summary>
     /// Clears every recorded binding without calling the backend.
     /// </summary>
     internal void Clear() => bound.Clear();

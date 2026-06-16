@@ -35,21 +35,19 @@ internal static class BindingProjectDiscovery
     private static IReadOnlyList<string> BindingConfigs(string repoRoot)
     {
         var nativeRoot = Path.Combine(repoRoot, "native");
-        return Directory.Exists(nativeRoot)
-            ? [.. Directory.GetFiles(nativeRoot, "bindgen.json", SearchOption.AllDirectories).Order(StringComparer.Ordinal)]
-            : [];
+        return RepositoryConfigFile.FindAll(nativeRoot, "bindgen");
     }
 
     /// <summary>Reads generated project paths from one bindgen configuration file.</summary>
     private static IEnumerable<ProjectInfo> ProjectsFromConfig(string repoRoot, string config)
     {
-        using var document = JsonDocument.Parse(File.ReadAllText(config));
-        foreach (var property in new[] { "apiProject", "backendProject" })
+        var bindingConfig = RepositoryConfigFile.ReadPath<BindingProjectConfig>(config);
+        foreach (var projectPath in new[] { bindingConfig.ApiProject, bindingConfig.BackendProject })
         {
-            if (!document.RootElement.TryGetProperty(property, out var element))
+            if (string.IsNullOrWhiteSpace(projectPath))
                 continue;
 
-            var projectDirectory = Path.GetFullPath(Path.Combine(repoRoot, element.GetString()!.Replace('/', Path.DirectorySeparatorChar)));
+            var projectDirectory = Path.GetFullPath(Path.Combine(repoRoot, projectPath.Replace('/', Path.DirectorySeparatorChar)));
             var assemblyName = Path.GetFileName(projectDirectory);
             yield return new(Path.Combine(projectDirectory, assemblyName + ".csproj"), assemblyName);
         }
@@ -87,5 +85,15 @@ internal static class BindingProjectDiscovery
             if (!string.IsNullOrWhiteSpace(include))
                 yield return Path.GetFileNameWithoutExtension(include.Replace('\\', '/'));
         }
+    }
+
+    /// <summary>Minimal bindgen config values needed to find generated binding projects.</summary>
+    private sealed class BindingProjectConfig
+    {
+        /// <summary>Generated API project path from conf/bindgen.yml.</summary>
+        public string? ApiProject { get; init; }
+
+        /// <summary>Generated backend project path from conf/bindgen.yml.</summary>
+        public string? BackendProject { get; init; }
     }
 }
