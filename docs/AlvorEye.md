@@ -117,6 +117,30 @@ before adjusting the window title.
 The `output.directory` should normally be under `out/`, because those artifacts
 are temporary evidence, not source files.
 
+## Human Input Coordination
+
+AlvorEye sends keyboard and mouse input to the active desktop. While an AlvorEye
+scenario is driving a target, the human operator should keep hands off the
+keyboard and mouse unless the agent has paused or said input control is over.
+
+Before starting any scenario or session action batch that sends mouse or
+keyboard input, tell the user clearly:
+
+```text
+Hands off keyboard and mouse now: I am about to drive the target for about N seconds.
+I will tell you when it is safe to resume.
+```
+
+When the input burst, scenario, or handoff-safe pause is complete, say:
+
+```text
+Safe to use keyboard and mouse again.
+```
+
+For long exploratory sessions, prefer short input bursts with captures between
+them. This gives the human natural windows to use the machine and makes it
+easier to recover if focus or timing is wrong.
+
 ## Timeline Actions
 
 Supported action kinds:
