@@ -16,7 +16,47 @@ public sealed class TempWorkspace : IDisposable
 
     /// <summary>Creates a fresh workspace under the system temporary directory.</summary>
     public static TempWorkspace Create(string prefix = DefaultPrefix) =>
-        new(Path.Combine(Path.GetTempPath(), prefix, Guid.NewGuid().ToString("N")));
+        new(ResolvePhysicalPath(Path.Combine(Path.GetTempPath(), prefix, Guid.NewGuid().ToString("N"))));
+
+    /// <summary>Resolves symlinked path prefixes so test expectations match paths returned by the runtime.</summary>
+    private static string ResolvePhysicalPath(string path)
+    {
+        var pendingParts = new Stack<string>();
+        var existingPath = Path.GetFullPath(path);
+        while (!Directory.Exists(existingPath))
+        {
+            pendingParts.Push(Path.GetFileName(existingPath));
+            existingPath = Path.GetDirectoryName(existingPath) ?? throw new DirectoryNotFoundException(path);
+        }
+
+        var physicalPath = ResolveExistingPhysicalPath(existingPath);
+        while (pendingParts.TryPop(out var part))
+            physicalPath = Path.Combine(physicalPath, part);
+
+        return physicalPath;
+    }
+
+    /// <summary>Resolves symlinks in each component of an existing directory path.</summary>
+    private static string ResolveExistingPhysicalPath(string path)
+    {
+        var root = Path.GetPathRoot(path) ?? "";
+        var physicalPath = root;
+        var relativePath = Path.GetRelativePath(root, Path.GetFullPath(path));
+        if (relativePath == ".")
+            return physicalPath;
+
+        foreach (var part in relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))
+        {
+            if (part.Length == 0)
+                continue;
+
+            var nextPath = Path.Combine(physicalPath, part);
+            var linkTarget = new DirectoryInfo(nextPath).ResolveLinkTarget(returnFinalTarget: true);
+            physicalPath = linkTarget?.FullName ?? nextPath;
+        }
+
+        return physicalPath;
+    }
 
     /// <summary>Builds an absolute path under the workspace and creates its parent directory.</summary>
     public string PathFor(params string[] parts)
