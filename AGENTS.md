@@ -153,6 +153,26 @@ distinct member is needed for validation, transformation, API naming, or real
 mutable state. In partial types, first verify whether the primary constructor
 parameters are already in scope before adding mirror state for another file.
 
+## Runtime Allocation Discipline
+
+Avoid managed allocations in runtime, render-loop, resource lifetime, validation,
+bind/unbind, delete/dispose cleanup, polling, and other hot-path code unless the
+allocation is explicitly intended and documented. This includes hidden
+allocations from arrays, `List<T>`, LINQ, iterator blocks, closures, params
+arrays, boxing, string formatting, and defensive copies.
+
+When a native API passes a pointer and count for handles, ids, state values, or
+other blittable data, do not copy it into a managed array just to validate,
+track, delete, or forward it. Prefer `Span<T>`/`ReadOnlySpan<T>` over native
+memory, `stackalloc`, caller-owned buffers, or a no-allocation scan. If a stable
+snapshot is truly required because the source memory cannot remain valid or the
+collection must be mutated while enumerating, document why the allocation is
+acceptable and keep it outside hot paths whenever possible.
+
+Before finishing low-level runtime changes, scan the touched code for allocation
+constructs and remove accidental allocations from hot paths. Treat teardown and
+delete paths as allocation-sensitive unless the user explicitly says otherwise.
+
 ## Test File Size
 
 Test files are allowed to be larger than normal code files. A cohesive test file

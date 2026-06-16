@@ -2,56 +2,136 @@ namespace AlvorKit.OpenGL.Layer;
 
 public unsafe partial class GlLayer
 {
+    /// <summary>The maximum number of raw object ids deleted by one stack-buffered disposal batch.</summary>
+    private const int DeleteBatchSize = 128;
+
     /// <summary>Layer: deletes every object still tracked by this layer, in reverse dependency order.</summary>
     public void Dispose()
     {
-        foreach (var sync in Drain(syncs)) base.DeleteSync(sync);
-        DeleteAll(transformFeedbacks, base.DeleteTransformFeedbacks);
-        DeleteAll(programPipelines, base.DeleteProgramPipelines);
-        DeleteAll(queries, base.DeleteQueries);
-        DeleteAll(vertexArrays, base.DeleteVertexArrays);
-        DeleteAll(framebuffers, base.DeleteFramebuffers);
-        DeleteAll(renderbuffers, base.DeleteRenderbuffers);
-        DeleteAll(samplers, base.DeleteSamplers);
-        DeleteAll(textures, base.DeleteTextures);
-        DeleteAll(buffers, base.DeleteBuffers);
-        foreach (var shader in shaders.Drain()) base.DeleteShader(shader);
-        foreach (var program in programs.Drain()) base.DeleteProgram(program);
+        while (TryDrain(syncs, out var sync)) Inner.DeleteSync(sync);
+        DeleteAll(transformFeedbacks, PluralResourceKind.TransformFeedback);
+        DeleteAll(programPipelines, PluralResourceKind.ProgramPipeline);
+        DeleteAll(queries, PluralResourceKind.Query);
+        DeleteAll(vertexArrays, PluralResourceKind.VertexArray);
+        DeleteAll(framebuffers, PluralResourceKind.Framebuffer);
+        DeleteAll(renderbuffers, PluralResourceKind.Renderbuffer);
+        DeleteAll(samplers, PluralResourceKind.Sampler);
+        DeleteAll(textures, PluralResourceKind.Texture);
+        DeleteAll(buffers, PluralResourceKind.Buffer);
+        while (shaders.TryDrain(out var shader)) Inner.DeleteShader(shader);
+        while (programs.TryDrain(out var program)) Inner.DeleteProgram(program);
     }
 
     /// <summary>
-    /// Deletes a native array of GL object ids.
+    /// Identifies which backend plural delete function receives a disposal batch.
     /// </summary>
-    /// <param name="n">The number of object ids to delete.</param>
-    /// <param name="ids">The native pointer to the first object id.</param>
-    private delegate void PluralDelete(int n, nint ids);
+    private enum PluralResourceKind
+    {
+        /// <summary>Transform feedback objects.</summary>
+        TransformFeedback,
+
+        /// <summary>Program pipeline objects.</summary>
+        ProgramPipeline,
+
+        /// <summary>Query objects.</summary>
+        Query,
+
+        /// <summary>Vertex array objects.</summary>
+        VertexArray,
+
+        /// <summary>Framebuffer objects.</summary>
+        Framebuffer,
+
+        /// <summary>Renderbuffer objects.</summary>
+        Renderbuffer,
+
+        /// <summary>Sampler objects.</summary>
+        Sampler,
+
+        /// <summary>Texture objects.</summary>
+        Texture,
+
+        /// <summary>Buffer objects.</summary>
+        Buffer,
+    }
 
     /// <summary>
-    /// Deletes and drains every handle tracked by a plural resource set.
+    /// Deletes and drains every handle tracked by a plural resource set without managed allocations.
     /// </summary>
     /// <typeparam name="THandle">The typed handle stored by the resource set.</typeparam>
     /// <param name="set">The resource set to drain.</param>
-    /// <param name="delete">The backend delete function for the resource family.</param>
-    private static void DeleteAll<THandle>(GlResourceSet<THandle> set, PluralDelete delete) where THandle : struct
+    /// <param name="kind">The backend delete function category for the resource family.</param>
+    private void DeleteAll<THandle>(GlResourceSet<THandle> set, PluralResourceKind kind) where THandle : unmanaged
     {
-        if (set.Count == 0)
-            return;
-        var ids = set.DrainIds();
-        fixed (uint* p = ids)
-            delete(ids.Length, (nint)p);
+        Span<uint> ids = stackalloc uint[DeleteBatchSize];
+        int count;
+        while ((count = set.DrainIds(ids)) > 0)
+        {
+            fixed (uint* p = ids)
+                DeleteBatch(kind, count, (nint)p);
+        }
     }
 
     /// <summary>
-    /// Removes every item from a hash set and returns a snapshot of the removed values.
+    /// Forwards one disposal batch to the matching raw backend delete function.
+    /// </summary>
+    /// <param name="kind">The backend delete function category.</param>
+    /// <param name="count">The number of object ids to delete.</param>
+    /// <param name="ids">The native pointer to the first raw object id.</param>
+    private void DeleteBatch(PluralResourceKind kind, int count, nint ids)
+    {
+        switch (kind)
+        {
+            case PluralResourceKind.TransformFeedback:
+                Inner.DeleteTransformFeedbacks(count, ids);
+                break;
+            case PluralResourceKind.ProgramPipeline:
+                Inner.DeleteProgramPipelines(count, ids);
+                break;
+            case PluralResourceKind.Query:
+                Inner.DeleteQueries(count, ids);
+                break;
+            case PluralResourceKind.VertexArray:
+                Inner.DeleteVertexArrays(count, ids);
+                break;
+            case PluralResourceKind.Framebuffer:
+                Inner.DeleteFramebuffers(count, ids);
+                break;
+            case PluralResourceKind.Renderbuffer:
+                Inner.DeleteRenderbuffers(count, ids);
+                break;
+            case PluralResourceKind.Sampler:
+                Inner.DeleteSamplers(count, ids);
+                break;
+            case PluralResourceKind.Texture:
+                Inner.DeleteTextures(count, ids);
+                break;
+            case PluralResourceKind.Buffer:
+                Inner.DeleteBuffers(count, ids);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Removes one item from a hash set without allocating a snapshot.
     /// </summary>
     /// <typeparam name="T">The item type stored by the hash set.</typeparam>
     /// <param name="set">The set to drain.</param>
-    /// <returns>The values that were present before the set was drained.</returns>
-    private static T[] Drain<T>(HashSet<T> set)
+    /// <param name="value">The value that was removed, or the default value when the set is empty.</param>
+    /// <returns><see langword="true"/> when a value was removed; otherwise, <see langword="false"/>.</returns>
+    private static bool TryDrain<T>(HashSet<T> set, out T value)
     {
-        var ids = new T[set.Count];
-        set.CopyTo(ids);
-        set.Clear();
-        return ids;
+        var found = false;
+        value = default!;
+        foreach (var candidate in set)
+        {
+            value = candidate;
+            found = true;
+            break;
+        }
+        if (!found)
+            return false;
+        set.Remove(value);
+        return true;
     }
 }

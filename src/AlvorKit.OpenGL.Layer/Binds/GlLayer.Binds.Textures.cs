@@ -121,11 +121,4 @@ public unsafe partial class GlLayer
         throw new GlException(function, $"texture {texture} has no known target; bind it with glBindTexture or create it with glCreateTextures first.");
     }
 
-    /// <summary>
-    /// Clears every texture target binding for a texture unit.
-    /// </summary>
-    /// <param name="function">The GL function that requested the unbind.</param>
-    /// <param name="unit">The texture unit whose target bindings should be cleared.</param>
-    private void ResetTextureUnitBindings(string function, uint unit) =>
-        textureBinds.UnbindWhere(function, key => key.Item1 == unit);
 }

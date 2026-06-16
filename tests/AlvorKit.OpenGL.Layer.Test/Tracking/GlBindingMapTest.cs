@@ -68,13 +68,4 @@ public class GlBindingMapTest
         Assert.AreEqual(6u, value);
     }
 
-    /// <summary>Predicate-based unbinding reports when no occupied key matches.</summary>
-    [TestMethod]
-    public void UnbindWhere_WhenNoKeysMatch_Throws()
-    {
-        var map = new GlBindingMap<int>();
-        map.Bind("Fn", 1, 5);
-
-        Assert.Throws<GlNotBoundException>(() => map.UnbindWhere("Fn", key => key == 2));
-    }
 }

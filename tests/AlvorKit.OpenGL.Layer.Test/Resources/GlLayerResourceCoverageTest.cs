@@ -98,6 +98,49 @@ public unsafe class GlLayerResourceCoverageTest
         Assert.AreEqual(0, gl.TransformFeedbacks.Count);
     }
 
+    /// <summary>Typed span delete overloads route through the same tracking and backend delete path.</summary>
+    [TestMethod]
+    public void SpanDeleteOverloads_DeleteEveryTrackedFamily()
+    {
+        var inner = new RecordingGl();
+        var gl = new GlLayer(inner);
+
+        var buffer = gl.GenBuffer();
+        var texture = gl.GenTexture();
+        var vertexArray = gl.GenVertexArray();
+        var framebuffer = gl.GenFramebuffer();
+        var renderbuffer = gl.GenRenderbuffer();
+        var sampler = gl.GenSampler();
+        var query = gl.GenQuery();
+        var pipeline = gl.GenProgramPipeline();
+        var feedback = gl.GenTransformFeedback();
+
+        gl.DeleteBuffers([buffer]);
+        gl.DeleteTextures([texture]);
+        gl.DeleteVertexArrays([vertexArray]);
+        gl.DeleteFramebuffers([framebuffer]);
+        gl.DeleteRenderbuffers([renderbuffer]);
+        gl.DeleteSamplers([sampler]);
+        gl.DeleteQueries([query]);
+        gl.DeleteProgramPipelines([pipeline]);
+        gl.DeleteTransformFeedbacks([feedback]);
+
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                (uint)buffer,
+                (uint)texture,
+                (uint)vertexArray,
+                (uint)framebuffer,
+                (uint)renderbuffer,
+                (uint)sampler,
+                (uint)query,
+                (uint)pipeline,
+                (uint)feedback,
+            },
+            inner.Deleted);
+    }
+
     /// <summary>Singular resource factories track their handles until each explicit delete.</summary>
     [TestMethod]
     public void SingularResourceSets_ExposeAndDeleteAllFamilies()

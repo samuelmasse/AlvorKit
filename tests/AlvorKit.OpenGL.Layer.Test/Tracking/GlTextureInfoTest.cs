@@ -108,6 +108,28 @@ public class GlTextureInfoTest
     }
 
     /// <summary>
+    /// Verifies mip chains reduce only the configured dimensions.
+    /// </summary>
+    [TestMethod]
+    public void MemoryUsage_MipLevels_ReduceConfiguredDimensions()
+    {
+        var info = new GlTextureInfo(GlInternalFormat.Rgba8, (8, 4, 2), default, default, Levels: 3, MipmapDimensions: 2);
+
+        Assert.AreEqual(8L * 4 * 2 * 4 + 4L * 2 * 2 * 4 + 2L * 1 * 2 * 4, info.MemoryUsage);
+    }
+
+    /// <summary>
+    /// Verifies explicit byte sizes take precedence over estimated dimensions and formats.
+    /// </summary>
+    [TestMethod]
+    public void MemoryUsage_ByteSizeOverride_UsesExplicitBytes()
+    {
+        var info = new GlTextureInfo(GlInternalFormat.Rgba8, (16, 16, 1), default, default, ByteSizeOverride: 37);
+
+        Assert.AreEqual(37L, info.MemoryUsage);
+    }
+
+    /// <summary>
     /// Verifies unsized internal formats use the transfer format and type byte estimate.
     /// </summary>
     [DataTestMethod]

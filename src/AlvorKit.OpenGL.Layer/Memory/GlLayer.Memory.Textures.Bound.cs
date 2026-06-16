@@ -14,7 +14,7 @@ public unsafe partial class GlLayer
         GlPixelType type,
         nint pixels)
     {
-        TrackBoundTextureSize(nameof(TexImage1D), target, new(internalformat, (width, 1, 1), format, type));
+        TrackBoundTextureSize(nameof(TexImage1D), target, level, new(internalformat, (width, 1, 1), format, type, MipmapDimensions: 1));
         base.TexImage1D(target, level, internalformat, width, border, format, type, pixels);
     }
 
@@ -31,7 +31,11 @@ public unsafe partial class GlLayer
         GlPixelType type,
         nint pixels)
     {
-        TrackBoundTextureSize(nameof(TexImage2D), target, new(internalformat, (width, height, 1), format, type));
+        TrackBoundTextureSize(
+            nameof(TexImage2D),
+            target,
+            level,
+            new(internalformat, (width, height, 1), format, type, MipmapDimensions: MipmapDimensionsFor(target)));
         base.TexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
     }
 
@@ -49,7 +53,11 @@ public unsafe partial class GlLayer
         GlPixelType type,
         nint pixels)
     {
-        TrackBoundTextureSize(nameof(TexImage3D), target, new(internalformat, (width, height, depth), format, type));
+        TrackBoundTextureSize(
+            nameof(TexImage3D),
+            target,
+            level,
+            new(internalformat, (width, height, depth), format, type, MipmapDimensions: MipmapDimensionsFor(target)));
         base.TexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels);
     }
 }

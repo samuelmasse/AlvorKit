@@ -13,7 +13,7 @@ public unsafe partial class GlLayer
         int width,
         int border)
     {
-        TrackBoundTextureSize(nameof(CopyTexImage1D), target, new(internalformat, (width, 1, 1), default, default));
+        TrackBoundTextureSize(nameof(CopyTexImage1D), target, level, new(internalformat, (width, 1, 1), default, default, MipmapDimensions: 1));
         base.CopyTexImage1D(target, level, internalformat, x, y, width, border);
     }
 
@@ -29,7 +29,11 @@ public unsafe partial class GlLayer
         int height,
         int border)
     {
-        TrackBoundTextureSize(nameof(CopyTexImage2D), target, new(internalformat, (width, height, 1), default, default));
+        TrackBoundTextureSize(
+            nameof(CopyTexImage2D),
+            target,
+            level,
+            new(internalformat, (width, height, 1), default, default, MipmapDimensions: MipmapDimensionsFor(target)));
         base.CopyTexImage2D(target, level, internalformat, x, y, width, height, border);
     }
 }

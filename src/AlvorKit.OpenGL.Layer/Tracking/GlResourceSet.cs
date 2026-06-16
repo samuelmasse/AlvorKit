@@ -5,12 +5,8 @@ namespace AlvorKit.OpenGL.Layer;
 /// </summary>
 /// <typeparam name="THandle">The typed handle used by the GL resource family.</typeparam>
 /// <param name="name">The display name used in tracking exceptions.</param>
-/// <param name="fromId">The converter from a raw generated GL id to a typed handle.</param>
-/// <param name="toId">The converter from a typed handle back to a raw GL id.</param>
-internal sealed unsafe class GlResourceSet<THandle>(
-    string name,
-    Func<uint, THandle> fromId,
-    Func<THandle, uint> toId) where THandle : struct
+internal sealed unsafe partial class GlResourceSet<THandle>(
+    string name) where THandle : unmanaged
 {
     /// <summary>
     /// Stores the tracked live handles.
@@ -49,7 +45,7 @@ internal sealed unsafe class GlResourceSet<THandle>(
     {
         var ids = (uint*)handles;
         for (var i = 0; i < count; i++)
-            Track(fromId(ids[i]));
+            Track(FromId(ids[i]));
     }
 
     /// <summary>
@@ -70,9 +66,9 @@ internal sealed unsafe class GlResourceSet<THandle>(
     /// <param name="function">The GL function that requested the removal.</param>
     /// <param name="count">The number of handles in the native array.</param>
     /// <param name="handles">The native pointer to the first raw id.</param>
-    /// <returns>The typed handles that were removed.</returns>
+    /// <returns>A span over the native typed handles that were removed.</returns>
     /// <exception cref="GlResourceNotTrackedException{THandle}">Thrown when any handle is not tracked.</exception>
-    internal THandle[] Untrack(string function, int count, nint handles)
+    internal ReadOnlySpan<THandle> Untrack(string function, int count, nint handles)
     {
         var values = RequireTracked(function, count, handles);
         UntrackKnown(values);
@@ -85,10 +81,10 @@ internal sealed unsafe class GlResourceSet<THandle>(
     /// <param name="function">The GL function that requested the validation.</param>
     /// <param name="count">The number of handles in the native array.</param>
     /// <param name="handles">The native pointer to the first raw id.</param>
-    /// <returns>The typed handles read from the native array.</returns>
-    internal THandle[] RequireTracked(string function, int count, nint handles)
+    /// <returns>A span over the typed handles in the native array.</returns>
+    internal ReadOnlySpan<THandle> RequireTracked(string function, int count, nint handles)
     {
-        var values = Read(count, handles);
+        var values = NativeHandleSpan(count, handles);
         foreach (var value in values)
             if (!items.Contains(value))
                 throw new GlResourceNotTrackedException<THandle>(function, name, value);
@@ -106,42 +102,37 @@ internal sealed unsafe class GlResourceSet<THandle>(
     }
 
     /// <summary>
-    /// Removes every tracked handle and returns them as typed handles.
+    /// Removes one tracked handle without allocating a snapshot.
     /// </summary>
-    /// <returns>The handles that were tracked before the drain.</returns>
-    internal THandle[] Drain()
+    /// <param name="handle">The handle that was removed, or the default value when the set is empty.</param>
+    /// <returns><see langword="true"/> when a handle was removed; otherwise, <see langword="false"/>.</returns>
+    internal bool TryDrain(out THandle handle)
     {
-        var values = new THandle[items.Count];
-        items.CopyTo(values);
-        items.Clear();
-        return values;
+        var found = false;
+        handle = default;
+        foreach (var candidate in items)
+        {
+            handle = candidate;
+            found = true;
+            break;
+        }
+        if (!found)
+            return false;
+        items.Remove(handle);
+        return true;
     }
 
     /// <summary>
-    /// Removes every tracked handle and returns them as raw ids.
+    /// Removes tracked handles into a caller-owned raw id buffer without allocating a snapshot.
     /// </summary>
-    /// <returns>The raw GL ids that were tracked before the drain.</returns>
-    internal uint[] DrainIds()
+    /// <param name="destination">The caller-owned buffer that receives raw GL ids.</param>
+    /// <returns>The number of raw ids written to <paramref name="destination"/>.</returns>
+    internal int DrainIds(Span<uint> destination)
     {
-        var values = Drain();
-        var ids = new uint[values.Length];
-        for (var i = 0; i < values.Length; i++)
-            ids[i] = toId(values[i]);
-        return ids;
+        var count = 0;
+        while (count < destination.Length && TryDrain(out var handle))
+            destination[count++] = ToId(handle);
+        return count;
     }
 
-    /// <summary>
-    /// Reads a contiguous native array of raw ids as typed handles.
-    /// </summary>
-    /// <param name="count">The number of handles in the native array.</param>
-    /// <param name="handles">The native pointer to the first raw id.</param>
-    /// <returns>The typed handles read from the native array.</returns>
-    private THandle[] Read(int count, nint handles)
-    {
-        var ids = (uint*)handles;
-        var values = new THandle[count];
-        for (var i = 0; i < count; i++)
-            values[i] = fromId(ids[i]);
-        return values;
-    }
 }

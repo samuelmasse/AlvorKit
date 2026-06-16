@@ -13,12 +13,35 @@ public class GlLayerResourceTest
         var buffer = gl.GenBuffer();
         var texture = gl.GenTexture();
         var vao = gl.GenVertexArray();
+        var framebuffer = gl.GenFramebuffer();
+        var renderbuffer = gl.GenRenderbuffer();
+        var sampler = gl.GenSampler();
+        var query = gl.GenQuery();
+        var pipeline = gl.GenProgramPipeline();
+        var feedback = gl.GenTransformFeedback();
         var shader = gl.CreateShader(GlShaderType.VertexShader);
         var program = gl.CreateProgram();
+        var sync = gl.FenceSync(GlSyncCondition.SyncGpuCommandsComplete, 0);
 
         gl.Dispose();
 
-        CollectionAssert.AreEquivalent(new[] { (uint)buffer, (uint)texture, (uint)vao, (uint)shader, (uint)program }, inner.Deleted);
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                (uint)buffer,
+                (uint)texture,
+                (uint)vao,
+                (uint)framebuffer,
+                (uint)renderbuffer,
+                (uint)sampler,
+                (uint)query,
+                (uint)pipeline,
+                (uint)feedback,
+                (uint)shader,
+                (uint)program,
+                (uint)sync,
+            },
+            inner.Deleted);
     }
 
     /// <summary>Disposing after an explicit delete does not delete that object a second time.</summary>

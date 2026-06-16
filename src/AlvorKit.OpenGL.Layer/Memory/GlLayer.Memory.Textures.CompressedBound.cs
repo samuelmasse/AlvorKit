@@ -13,7 +13,11 @@ public unsafe partial class GlLayer
         int imageSize,
         nint data)
     {
-        TrackBoundTextureSize(nameof(CompressedTexImage1D), target, new(internalformat, (width, 1, 1), default, default));
+        TrackBoundTextureSize(
+            nameof(CompressedTexImage1D),
+            target,
+            level,
+            new(internalformat, (width, 1, 1), default, default, MipmapDimensions: 1, ByteSizeOverride: Math.Max(imageSize, 0)));
         base.CompressedTexImage1D(target, level, internalformat, width, border, imageSize, data);
     }
 
@@ -29,7 +33,17 @@ public unsafe partial class GlLayer
         int imageSize,
         nint data)
     {
-        TrackBoundTextureSize(nameof(CompressedTexImage2D), target, new(internalformat, (width, height, 1), default, default));
+        TrackBoundTextureSize(
+            nameof(CompressedTexImage2D),
+            target,
+            level,
+            new(
+                internalformat,
+                (width, height, 1),
+                default,
+                default,
+                MipmapDimensions: MipmapDimensionsFor(target),
+                ByteSizeOverride: Math.Max(imageSize, 0)));
         base.CompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data);
     }
 
@@ -46,7 +60,17 @@ public unsafe partial class GlLayer
         int imageSize,
         nint data)
     {
-        TrackBoundTextureSize(nameof(CompressedTexImage3D), target, new(internalformat, (width, height, depth), default, default));
+        TrackBoundTextureSize(
+            nameof(CompressedTexImage3D),
+            target,
+            level,
+            new(
+                internalformat,
+                (width, height, depth),
+                default,
+                default,
+                MipmapDimensions: MipmapDimensionsFor(target),
+                ByteSizeOverride: Math.Max(imageSize, 0)));
         base.CompressedTexImage3D(target, level, internalformat, width, height, depth, border, imageSize, data);
     }
 }

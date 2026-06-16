@@ -13,7 +13,7 @@ public unsafe partial class GlLayer
         TrackTextureSize(
             nameof(TextureStorage1D),
             texture,
-            new((GlInternalFormat)(uint)internalformat, (width, 1, 1), default, default));
+            new((GlInternalFormat)(uint)internalformat, (width, 1, 1), default, default, Levels: levels, MipmapDimensions: 1));
         base.TextureStorage1D(texture, levels, internalformat, width);
     }
 
@@ -29,7 +29,7 @@ public unsafe partial class GlLayer
         TrackTextureSize(
             nameof(TextureStorage2D),
             texture,
-            new((GlInternalFormat)(uint)internalformat, (width, height, 1), default, default));
+            new((GlInternalFormat)(uint)internalformat, (width, height, 1), default, default, Levels: levels, MipmapDimensions: 2));
         base.TextureStorage2D(texture, levels, internalformat, width, height);
     }
 
@@ -46,7 +46,7 @@ public unsafe partial class GlLayer
         TrackTextureSize(
             nameof(TextureStorage3D),
             texture,
-            new((GlInternalFormat)(uint)internalformat, (width, height, depth), default, default));
+            new((GlInternalFormat)(uint)internalformat, (width, height, depth), default, default, Levels: levels, MipmapDimensions: 3));
         base.TextureStorage3D(texture, levels, internalformat, width, height, depth);
     }
 
@@ -63,7 +63,7 @@ public unsafe partial class GlLayer
         TrackTextureSize(
             nameof(TextureStorage2DMultisample),
             texture,
-            new((GlInternalFormat)(uint)internalformat, (width, height, 1), default, default, samples));
+            new((GlInternalFormat)(uint)internalformat, (width, height, 1), default, default, samples, MipmapDimensions: 2));
         base.TextureStorage2DMultisample(texture, samples, internalformat, width, height, fixedsamplelocations);
     }
 
@@ -81,45 +81,7 @@ public unsafe partial class GlLayer
         TrackTextureSize(
             nameof(TextureStorage3DMultisample),
             texture,
-            new((GlInternalFormat)(uint)internalformat, (width, height, depth), default, default, samples));
+            new((GlInternalFormat)(uint)internalformat, (width, height, depth), default, default, samples, MipmapDimensions: 3));
         base.TextureStorage3DMultisample(texture, samples, internalformat, width, height, depth, fixedsamplelocations);
-    }
-
-    /// <summary>
-    /// Tracks storage bytes for the texture currently bound to a target on the active texture unit.
-    /// </summary>
-    /// <param name="function">The GL function that requested the accounting update.</param>
-    /// <param name="target">The texture target whose bound texture receives the shape.</param>
-    /// <param name="info">The texture shape used for accounting.</param>
-    private void TrackBoundTextureSize(string function, GlTextureTarget target, GlTextureInfo info)
-    {
-        var unit = GetActiveTextureIndex(function);
-        if (!textureBinds.TryGet((unit, target), out var texture) || texture == 0)
-            throw new GlException(function, $"cannot track texture size: no texture is bound to {target} on unit {unit}.");
-        TrackTextureSize(function, (GlTextureHandle)texture, info);
-    }
-
-    /// <summary>
-    /// Tracks storage bytes for a specific live texture handle.
-    /// </summary>
-    /// <param name="function">The GL function that requested the accounting update.</param>
-    /// <param name="texture">The texture handle receiving the shape.</param>
-    /// <param name="info">The texture shape used for accounting.</param>
-    private void TrackTextureSize(string function, GlTextureHandle texture, GlTextureInfo info)
-    {
-        if (!textures.Contains(texture))
-            throw new GlException(function, $"cannot track texture size: texture {texture} is not tracked.");
-        textureUsage += info.MemoryUsage - textureSizes.GetValueOrDefault(texture).MemoryUsage;
-        textureSizes[texture] = info;
-    }
-
-    /// <summary>
-    /// Releases any tracked storage bytes for a texture that is being deleted.
-    /// </summary>
-    /// <param name="texture">The texture handle whose memory accounting should be released.</param>
-    private void ReleaseTextureMemory(GlTextureHandle texture)
-    {
-        if (textureSizes.Remove(texture, out var info))
-            textureUsage -= info.MemoryUsage;
     }
 }

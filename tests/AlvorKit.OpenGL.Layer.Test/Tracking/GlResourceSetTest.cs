@@ -6,6 +6,7 @@ namespace AlvorKit.OpenGL.Layer.Test;
 [TestClass]
 public unsafe class GlResourceSetTest
 {
+    /// <summary>Tracking a single typed handle adds it to the live set.</summary>
     [TestMethod]
     public void Track_SingleHandle_AddsItem()
     {
@@ -19,6 +20,7 @@ public unsafe class GlResourceSetTest
         Assert.IsTrue(set.Items.Contains(handle));
     }
 
+    /// <summary>Tracking native ids converts them to typed handles in the live set.</summary>
     [TestMethod]
     public void Track_NativeIds_ConvertsAndAddsItems()
     {
@@ -31,6 +33,7 @@ public unsafe class GlResourceSetTest
         Assert.IsTrue(set.Contains(Buffer(2)));
     }
 
+    /// <summary>Untracking a single live handle removes it from the live set.</summary>
     [TestMethod]
     public void Untrack_SingleHandle_RemovesItem()
     {
@@ -43,6 +46,7 @@ public unsafe class GlResourceSetTest
         Assert.IsFalse(set.Contains(handle));
     }
 
+    /// <summary>Untracking a missing handle reports the missing resource.</summary>
     [TestMethod]
     public void Untrack_MissingHandle_Throws()
     {
@@ -51,6 +55,7 @@ public unsafe class GlResourceSetTest
         Assert.Throws<GlResourceNotTrackedException<GlBufferHandle>>(() => set.Untrack("Delete", Buffer(7)));
     }
 
+    /// <summary>Untracking native ids returns a non-copying span and removes every handle.</summary>
     [TestMethod]
     public void Untrack_NativeIds_ReturnsAndRemovesItems()
     {
@@ -61,10 +66,11 @@ public unsafe class GlResourceSetTest
 
         var removed = set.Untrack("Delete", 2, (nint)ids);
 
-        CollectionAssert.AreEquivalent(new[] { Buffer(1), Buffer(2) }, removed);
+        Assert.IsTrue(removed.SequenceEqual([Buffer(1), Buffer(2)]));
         Assert.AreEqual(0, set.Count);
     }
 
+    /// <summary>Untracking native ids validates the entire span before removing anything.</summary>
     [TestMethod]
     public void Untrack_NativeIdsWithMissingHandle_ThrowsBeforeRemoving()
     {
@@ -76,34 +82,69 @@ public unsafe class GlResourceSetTest
         Assert.IsTrue(set.Contains(Buffer(1)));
     }
 
+    /// <summary>Draining one handle removes a tracked value without requiring a snapshot.</summary>
     [TestMethod]
-    public void Drain_ReturnsAndClearsHandles()
+    public void TryDrain_WhenTracked_RemovesOneHandle()
     {
         var set = CreateSet();
         set.Track(Buffer(1));
         set.Track(Buffer(2));
 
-        var drained = set.Drain();
+        Assert.IsTrue(set.TryDrain(out var drained));
 
-        CollectionAssert.AreEquivalent(new[] { Buffer(1), Buffer(2) }, drained);
-        Assert.AreEqual(0, set.Count);
+        Assert.IsFalse(set.Contains(drained));
+        Assert.AreEqual(1, set.Count);
     }
 
+    /// <summary>Draining one handle reports an empty set without changing it.</summary>
     [TestMethod]
-    public void DrainIds_ReturnsRawIdsAndClearsHandles()
+    public void TryDrain_WhenEmpty_ReturnsFalse()
+    {
+        var set = CreateSet();
+
+        Assert.IsFalse(set.TryDrain(out _));
+    }
+
+    /// <summary>Draining raw ids writes them into caller-owned storage and clears the drained handles.</summary>
+    [TestMethod]
+    public void DrainIds_WritesRawIdsToCallerOwnedSpan()
     {
         var set = CreateSet();
         set.Track(Buffer(1));
         set.Track(Buffer(2));
+        Span<uint> drained = stackalloc uint[2];
 
-        var drained = set.DrainIds();
+        var count = set.DrainIds(drained);
 
-        CollectionAssert.AreEquivalent(new uint[] { 1, 2 }, drained);
+        Assert.AreEqual(2, count);
+        CollectionAssert.AreEquivalent(new uint[] { 1, 2 }, drained.ToArray());
         Assert.AreEqual(0, set.Count);
     }
 
-    private static GlResourceSet<GlBufferHandle> CreateSet() =>
-        new("buffer", id => (GlBufferHandle)id, handle => (uint)handle);
+    /// <summary>Draining raw ids only removes the handles that fit in the caller-owned buffer.</summary>
+    [TestMethod]
+    public void DrainIds_WhenSpanIsSmaller_RemovesOneChunk()
+    {
+        var set = CreateSet();
+        set.Track(Buffer(1));
+        set.Track(Buffer(2));
+        Span<uint> drained = stackalloc uint[1];
+
+        Assert.AreEqual(1, set.DrainIds(drained));
+        Assert.AreEqual(1, set.Count);
+    }
+
+    /// <summary>Tracking rejects unmanaged handles that do not match the generated single-uint handle layout.</summary>
+    [TestMethod]
+    public void Track_WhenHandleIsNotSingleUint_Throws()
+    {
+        var set = new GlResourceSet<ulong>("wide");
+        uint* ids = stackalloc uint[] { 1 };
+
+        Assert.Throws<InvalidOperationException>(() => set.Track(1, (nint)ids));
+    }
+
+    private static GlResourceSet<GlBufferHandle> CreateSet() => new("buffer");
 
     private static GlBufferHandle Buffer(uint id) => (GlBufferHandle)id;
 }

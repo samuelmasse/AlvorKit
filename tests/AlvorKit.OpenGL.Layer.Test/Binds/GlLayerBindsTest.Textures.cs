@@ -55,6 +55,13 @@ public partial class GlLayerBindsTest
         Assert.Throws<GlException>(() => gl.BindTextureUnit(0, Texture(42)));
     }
 
+    /// <summary>Unbinding a texture unit with no recorded target bindings reports the missing bind.</summary>
+    [TestMethod]
+    public void UnbindTextureUnit_WhenNothingBound_Throws()
+    {
+        Assert.Throws<GlNotBoundException>(() => gl.UnbindTextureUnit(0));
+    }
+
     [TestMethod]
     public void BindTexture_ThenBindTextureUnitSameUnit_Throws()
     {

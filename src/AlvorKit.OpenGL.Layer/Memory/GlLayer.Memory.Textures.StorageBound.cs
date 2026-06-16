@@ -9,7 +9,7 @@ public unsafe partial class GlLayer
         TrackBoundTextureSize(
             nameof(TexStorage1D),
             target,
-            new((GlInternalFormat)(uint)internalformat, (width, 1, 1), default, default));
+            new((GlInternalFormat)(uint)internalformat, (width, 1, 1), default, default, Levels: levels, MipmapDimensions: 1));
         base.TexStorage1D(target, levels, internalformat, width);
     }
 
@@ -25,7 +25,13 @@ public unsafe partial class GlLayer
         TrackBoundTextureSize(
             nameof(TexStorage2D),
             target,
-            new((GlInternalFormat)(uint)internalformat, (width, height, 1), default, default));
+            new(
+                (GlInternalFormat)(uint)internalformat,
+                (width, height, DepthForStorageTarget(target)),
+                default,
+                default,
+                Levels: levels,
+                MipmapDimensions: MipmapDimensionsFor(target)));
         base.TexStorage2D(target, levels, internalformat, width, height);
     }
 
@@ -42,7 +48,13 @@ public unsafe partial class GlLayer
         TrackBoundTextureSize(
             nameof(TexStorage3D),
             target,
-            new((GlInternalFormat)(uint)internalformat, (width, height, depth), default, default));
+            new(
+                (GlInternalFormat)(uint)internalformat,
+                (width, height, depth),
+                default,
+                default,
+                Levels: levels,
+                MipmapDimensions: MipmapDimensionsFor(target)));
         base.TexStorage3D(target, levels, internalformat, width, height, depth);
     }
 
@@ -59,7 +71,7 @@ public unsafe partial class GlLayer
         TrackBoundTextureSize(
             nameof(TexStorage2DMultisample),
             target,
-            new((GlInternalFormat)(uint)internalformat, (width, height, 1), default, default, samples));
+            new((GlInternalFormat)(uint)internalformat, (width, height, 1), default, default, samples, MipmapDimensions: 2));
         base.TexStorage2DMultisample(target, samples, internalformat, width, height, fixedsamplelocations);
     }
 
@@ -77,7 +89,13 @@ public unsafe partial class GlLayer
         TrackBoundTextureSize(
             nameof(TexStorage3DMultisample),
             target,
-            new((GlInternalFormat)(uint)internalformat, (width, height, depth), default, default, samples));
+            new(
+                (GlInternalFormat)(uint)internalformat,
+                (width, height, depth),
+                default,
+                default,
+                samples,
+                MipmapDimensions: MipmapDimensionsFor(target)));
         base.TexStorage3DMultisample(target, samples, internalformat, width, height, depth, fixedsamplelocations);
     }
 }

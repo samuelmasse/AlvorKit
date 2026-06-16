@@ -68,26 +68,8 @@ internal readonly struct GlBindingMap<TKey>() where TKey : notnull
     internal void Clear() => bound.Clear();
 
     /// <summary>
-    /// Clears every recorded binding whose key matches the supplied predicate.
+    /// Returns a struct enumerator over the current bindings.
     /// </summary>
-    /// <param name="function">The GL function that requested the unbind.</param>
-    /// <param name="predicate">The predicate used to choose keys to release.</param>
-    /// <exception cref="GlNotBoundException">Thrown when no keys match the predicate.</exception>
-    internal void UnbindWhere(string function, Func<TKey, bool> predicate)
-    {
-        List<TKey>? keys = null;
-        foreach (var key in bound.Keys)
-        {
-            if (!predicate(key))
-                continue;
-            keys ??= [];
-            keys.Add(key);
-        }
-
-        if (keys is null)
-            throw new GlNotBoundException(function, "attempted to unbind, but nothing is bound.");
-
-        foreach (var key in keys)
-            bound.Remove(key);
-    }
+    /// <returns>A dictionary enumerator for allocation-free scans.</returns>
+    internal Dictionary<TKey, uint>.Enumerator GetEnumerator() => bound.GetEnumerator();
 }

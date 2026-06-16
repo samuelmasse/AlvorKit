@@ -1,29 +1,49 @@
 namespace AlvorKit.OpenGL.Layer;
 
 /// <summary>
-/// The shape of a texture (or renderbuffer) level, used to estimate its GPU memory: volume times
-/// samples times an estimated bytes-per-pixel derived from the sized internal format, or from the
-/// transfer format and type when the internal format is unsized.
+/// The shape of texture or renderbuffer storage, used to estimate GPU memory from explicit byte
+/// sizes, mip level dimensions, samples, and bytes-per-pixel format information.
 /// </summary>
-/// <param name="InternalFormat">The internal storage format requested for the texture level.</param>
-/// <param name="Size">The texture level dimensions as width, height, and depth.</param>
+/// <param name="InternalFormat">The internal storage format requested for the storage.</param>
+/// <param name="Size">The base level dimensions as width, height, and depth.</param>
 /// <param name="PixelFormat">The transfer pixel format used when the internal format is unsized.</param>
 /// <param name="PixelType">The transfer pixel type used when the internal format is unsized.</param>
 /// <param name="Samples">The multisample count for the level, or one for non-multisampled storage.</param>
+/// <param name="Levels">The number of mip levels represented by this storage record.</param>
+/// <param name="MipmapDimensions">The number of dimensions reduced across mip levels.</param>
+/// <param name="ByteSizeOverride">A precise byte size supplied by the caller, or -1 to estimate.</param>
 public readonly partial record struct GlTextureInfo(
     GlInternalFormat InternalFormat,
     (int Width, int Height, int Depth) Size,
     GlPixelFormat PixelFormat,
     GlPixelType PixelType,
-    int Samples = 1)
+    int Samples = 1,
+    int Levels = 1,
+    int MipmapDimensions = 3,
+    long ByteSizeOverride = -1)
 {
-    /// <summary>The estimated byte size of one mip level with this shape.</summary>
+    /// <summary>The estimated or explicitly supplied byte size of this texture storage record.</summary>
     public long MemoryUsage
     {
         get
         {
-            long volume = (long)Size.Width * Size.Height * Size.Depth;
-            return volume * Math.Max(Samples, 1) * EstimateBytesPerPixel();
+            if (ByteSizeOverride >= 0)
+                return ByteSizeOverride;
+            var bytesPerPixel = EstimateBytesPerPixel();
+            var samples = Math.Max(Samples, 1);
+            var levels = Math.Max(Levels, 1);
+            var width = Math.Max(Size.Width, 0);
+            var height = Math.Max(Size.Height, 0);
+            var depth = Math.Max(Size.Depth, 0);
+            long total = 0;
+            for (var level = 0; level < levels; level++)
+            {
+                total += (long)width * height * depth * samples * bytesPerPixel;
+                width = NextMipDimension(width, MipmapDimensions >= 1);
+                height = NextMipDimension(height, MipmapDimensions >= 2);
+                depth = NextMipDimension(depth, MipmapDimensions >= 3);
+            }
+            return total;
         }
     }
 
@@ -36,6 +56,14 @@ public readonly partial record struct GlTextureInfo(
         int sized = EstimateFromSizedFormat(InternalFormat);
         return sized > 0 ? sized : EstimateFromFormatAndType(PixelFormat, PixelType);
     }
+
+    /// <summary>
+    /// Returns the next mip dimension for dimensions that participate in mip reduction.
+    /// </summary>
+    /// <param name="value">The current dimension.</param>
+    /// <param name="reduce">Whether this axis should be reduced.</param>
+    /// <returns>The next dimension, clamped so positive dimensions never fall below one.</returns>
+    private static int NextMipDimension(int value, bool reduce) => reduce && value > 1 ? value / 2 : value;
 
     /// <summary>
     /// Estimates bytes per pixel for sized internal formats known to the layer.

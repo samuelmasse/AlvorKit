@@ -29,6 +29,8 @@ internal sealed unsafe class RecordingGl : GlNoop
     public override void DeleteTransformFeedbacks(int n, nint p) => Record(n, p);
     public override void DeleteShader(GlShaderHandle shader) => Deleted.Add((uint)shader);
     public override void DeleteProgram(GlProgramHandle program) => Deleted.Add((uint)program);
+    public override void DeleteSync(nint sync) => Deleted.Add((uint)sync);
+    public override nint FenceSync(GlSyncCondition condition, GlSyncBehaviorFlags flags) => (nint)next++;
 
     private void Fill(int n, nint p)
     {
