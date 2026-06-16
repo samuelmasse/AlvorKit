@@ -58,6 +58,18 @@ Before staging, run `check` for the exact files or globs you intend to stage and
 confirm your current lease still covers them. If overlap is unavoidable, write a
 conflict note; the helper stores it under `out/agents/conflicts/`.
 
+## AlvorEye Visual Automation
+
+Use `scripts/AlvorKit.Script.AlvorEye` when an agent needs to see, drive, or
+verify a desktop visual target such as a game, OpenGL demo, rendering regression,
+or interactive UI workflow. Prefer AlvorEye over ad hoc screenshot scripts when
+the task needs timed captures, keyboard or mouse input, handoff freeze/resume, or
+visual proof that a scene changed.
+
+Read `docs/AlvorEye.md` before using or extending AlvorEye. That guide explains
+scenario files, JSONL sessions, result artifacts, handoff behavior, visual
+verification patterns, and the demo game used to practice agent-driven solving.
+
 ## Line Length
 
 Keep hand-authored code and config lines at or below 170 characters.

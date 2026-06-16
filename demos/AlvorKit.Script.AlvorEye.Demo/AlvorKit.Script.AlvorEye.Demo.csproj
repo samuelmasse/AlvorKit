@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <!-- Required by the [LibraryImport] source generator in the GLFW backend package. -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+        <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(GlfwBindVer)" />
+        <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(GlBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj" />
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.GLFW" />
+        <Using Include="AlvorKit.OpenGL" />
+        <Using Include="AlvorKit.Script.AlvorEye.Demo" />
+        <Using Include="System.Text.Json" />
+    </ItemGroup>
+
+</Project>

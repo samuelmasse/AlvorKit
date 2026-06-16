@@ -9,6 +9,7 @@
         <Project
             Path="demos/AlvorKit.OpenGL.Demo.HelloTriangle/AlvorKit.OpenGL.Demo.HelloTriangle.csproj" />
         <Project Path="demos/AlvorKit.OpenGL.Demo.TestCube/AlvorKit.OpenGL.Demo.TestCube.csproj" />
+        <Project Path="demos/AlvorKit.Script.AlvorEye.Demo/AlvorKit.Script.AlvorEye.Demo.csproj" />
     </Folder>
 
     <Folder Name="/Script/">
