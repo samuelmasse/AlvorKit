@@ -7,7 +7,13 @@ const char DemoCharacter = 'a';
 const string GlyphPreviewPath = "out/a.png";
 
 var glfw = new GlfwBackend();
-glfw.Init();
+if (!glfw.Init())
+    throw new InvalidOperationException("Failed to initialize GLFW.");
+
+glfw.WindowHint(GlfwWindowHint.ContextVersionMajor, 3);
+glfw.WindowHint(GlfwWindowHint.ContextVersionMinor, 3);
+glfw.WindowHint(GlfwWindowHint.OpenGLProfile, GlfwOpenGLProfile.CoreProfile);
+glfw.WindowHint(GlfwWindowHint.OpenGLForwardCompat, true);
 
 Ma audio = new MaBackend();
 Ft freeType = new FtBackend();
@@ -20,6 +26,12 @@ ExportGlyphPreview(glyph, DemoCharacter, GlyphPreviewPath);
 
 // The OpenGL layer needs a current GLFW context because it resolves function pointers from that context.
 var window = glfw.CreateWindow(InitialWidth, InitialHeight, "AlvorKit.Demo", default, default);
+if (window == default)
+{
+    glfw.Terminate();
+    throw new InvalidOperationException("Failed to create the GLFW window.");
+}
+
 glfw.MakeContextCurrent(window);
 
 var gl = new GlLayer(new GlBackend(glfw.GetProcAddress));

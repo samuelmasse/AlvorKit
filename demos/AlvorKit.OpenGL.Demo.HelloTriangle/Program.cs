@@ -2,6 +2,11 @@ var glfw = new GlfwBackend();
 if (!glfw.Init())
     throw new InvalidOperationException("Failed to initialize GLFW.");
 
+glfw.WindowHint(GlfwWindowHint.ContextVersionMajor, 3);
+glfw.WindowHint(GlfwWindowHint.ContextVersionMinor, 3);
+glfw.WindowHint(GlfwWindowHint.OpenGLProfile, GlfwOpenGLProfile.CoreProfile);
+glfw.WindowHint(GlfwWindowHint.OpenGLForwardCompat, true);
+
 var window = glfw.CreateWindow(800, 600, "AlvorKit HelloTriangle", default, default);
 if (window == default)
 {
