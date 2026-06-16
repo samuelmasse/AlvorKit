@@ -21,6 +21,7 @@
             Path="scripts/AlvorKit.Script.Bindgen.OpenGLRegistry/AlvorKit.Script.Bindgen.OpenGLRegistry.csproj" />
         <Project Path="scripts/AlvorKit.Script.Bindgen/AlvorKit.Script.Bindgen.csproj" />
         <Project Path="scripts/AlvorKit.Script.BindgenReview/AlvorKit.Script.BindgenReview.csproj" />
+        <Project Path="scripts/AlvorKit.Script.AlvorEye/AlvorKit.Script.AlvorEye.csproj" />
         <Project Path="scripts/AlvorKit.Script.Lint/AlvorKit.Script.Lint.csproj" />
         <Project Path="scripts/AlvorKit.Script.NativeBuild/AlvorKit.Script.NativeBuild.csproj" />
         <Project Path="scripts/AlvorKit.Script.TestCoverage/AlvorKit.Script.TestCoverage.csproj" />
@@ -35,6 +36,8 @@
         <Project Path="tests/AlvorKit.Script.Workspace.Test/AlvorKit.Script.Workspace.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.AgentLease.Test/AlvorKit.Script.AgentLease.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Script.AlvorEye.Test/AlvorKit.Script.AlvorEye.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.Bindgen.Core.Test/AlvorKit.Script.Bindgen.Core.Test.csproj" />
         <Project

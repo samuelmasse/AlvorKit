@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Script.AlvorEye.Test" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
+        <ProjectReference Include="..\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Script.Workspace" />
+        <Using Include="System.Diagnostics.CodeAnalysis" />
+        <Using Include="System.Drawing" />
+        <Using Include="System.Drawing.Imaging" />
+        <Using Include="System.Runtime.Versioning" />
+        <Using Include="System.Text.Json.Serialization" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
+        <ProjectReference Include="..\..\scripts\AlvorKit.Script.AlvorEye\AlvorKit.Script.AlvorEye.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System.Diagnostics" />
+        <Using Include="System.Drawing" />
+        <Using Include="System.Drawing.Imaging" />
+        <Using Include="System.Text.Json" />
+    </ItemGroup>
+
+</Project>
