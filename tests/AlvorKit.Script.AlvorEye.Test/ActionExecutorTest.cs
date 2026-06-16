@@ -109,7 +109,23 @@ public sealed class ActionExecutorTest
             platform.Calls.ToArray());
         Assert.AreEqual(1, context.Manifest.Frames.Count);
         Assert.IsTrue(File.Exists(context.LastFramePath));
-        StringAssert.Contains(Path.GetFileName(context.LastFramePath), "start-frame");
+        Assert.AreEqual("frame-000-start-frame.png", Path.GetFileName(context.LastFramePath));
+    }
+
+    /// <summary>Capture names use portable filesystem-safe stems on every OS.</summary>
+    [TestMethod]
+    public async Task ExecuteAsync_CaptureWithReservedFilenameCharacters_UsesPortableStem()
+    {
+        using var workspace = TempWorkspace.Create();
+        var platform = new FakeAlvorEyePlatform();
+        var context = Context(workspace.Root, platform);
+
+        await new ActionExecutor().ExecuteAsync(
+            context,
+            new AlvorEyeAction { Kind = AlvorEyeActionKind.Capture, Name = "bad<>:\"/\\|?*name" });
+
+        Assert.AreEqual("frame-000-bad---------name.png", Path.GetFileName(context.LastFramePath));
+        Assert.IsTrue(File.Exists(context.LastFramePath));
     }
 
     /// <summary>Basic analysis writes a sidecar for the last captured frame.</summary>

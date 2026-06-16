@@ -130,7 +130,11 @@ internal sealed class ActionExecutor
     private static ManifestEvent Event(AlvorEyeAction action, string status) =>
         new(DateTimeOffset.UtcNow, action.Kind.ToString(), status);
 
-    /// <summary>Builds a file-safe stem for a frame name.</summary>
+    /// <summary>Builds a file-safe stem for a frame name with the same result on every supported host.</summary>
     private static string SafeName(string name) =>
-        string.Concat(name.Select(character => Path.GetInvalidFileNameChars().Contains(character) ? '-' : character));
+        string.Concat(name.Select(character => IsPortableFileNameCharacter(character) ? character : '-'));
+
+    /// <summary>Returns whether a character is safe in artifact filenames across Windows, macOS, and Linux.</summary>
+    private static bool IsPortableFileNameCharacter(char character) =>
+        character is not ('<' or '>' or ':' or '"' or '/' or '\\' or '|' or '?' or '*') && !char.IsControl(character);
 }
