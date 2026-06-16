@@ -8,6 +8,7 @@
         <Project Path="demos/AlvorKit.MiniAudio.Demo/AlvorKit.MiniAudio.Demo.csproj" />
         <Project
             Path="demos/AlvorKit.OpenGL.Demo.HelloTriangle/AlvorKit.OpenGL.Demo.HelloTriangle.csproj" />
+        <Project Path="demos/AlvorKit.OpenGL.Demo.TestCube/AlvorKit.OpenGL.Demo.TestCube.csproj" />
     </Folder>
 
     <Folder Name="/Script/">
