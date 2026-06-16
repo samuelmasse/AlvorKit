@@ -32,6 +32,24 @@ public unsafe class GlLayerBindsCoverageTest
         gl.UnbindVertexBuffers(0, 2);
     }
 
+    /// <summary>Span bulk-buffer bind overloads use the same strict bind tracking as raw pointer calls.</summary>
+    [TestMethod]
+    public void SpanBufferRangeAndVertexRange_BindThenUnbind()
+    {
+        gl.BindBuffersRange(
+            GlBufferTarget.UniformBuffer,
+            0,
+            [Buffer(1), Buffer(2)],
+            [0, 16],
+            [16, 16]);
+        gl.UnbindBuffer(GlBufferTarget.UniformBuffer);
+        gl.UnbindBuffersRange(GlBufferTarget.UniformBuffer, 0, 2);
+        gl.UnbindBuffer(GlBufferTarget.UniformBuffer);
+
+        gl.BindVertexBuffers(0, [Buffer(3), Buffer(4)], [0, 16], [8, 8]);
+        gl.UnbindVertexBuffers(0, 2);
+    }
+
     [TestMethod]
     public void PipelineQueriesAndTransformFeedback_BindThenUnbind()
     {
@@ -63,6 +81,16 @@ public unsafe class GlLayerBindsCoverageTest
         TrackTextureTarget((GlTextureHandle)3u, GlTextureTarget.Texture2D);
         gl.BindImageTextures(2, 2, (nint)textures);
         gl.UnbindImageTextures(2, 2);
+    }
+
+    /// <summary>Span image-texture bind overloads use the same strict bind tracking as raw pointer calls.</summary>
+    [TestMethod]
+    public void SpanImageTextures_BindThenUnbind()
+    {
+        TrackTextureTarget((GlTextureHandle)4u, GlTextureTarget.Texture2D);
+
+        gl.BindImageTextures(0, [(GlTextureHandle)4u]);
+        gl.UnbindImageTextures(0, 1);
     }
 
     private static GlBufferHandle Buffer(uint id) => (GlBufferHandle)id;

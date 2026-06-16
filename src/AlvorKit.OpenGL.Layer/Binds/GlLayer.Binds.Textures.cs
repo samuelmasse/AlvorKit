@@ -70,8 +70,8 @@ public unsafe partial class GlLayer
     public void UnbindTextureUnit(uint unit) { ResetTextureUnitBindings(nameof(BindTextureUnit), unit); base.BindTextureUnit(unit, (GlTextureHandle)0u); }
 
     /// <summary>
-    /// Layer: Unbinds the range of textures bound by <see cref="BindTextures"/>.
-    /// Must be paired with exactly one earlier call to <see cref="BindTextures"/> for the same range.
+    /// Layer: Unbinds the range of textures bound by <see cref="BindTextures(uint, int, nint)"/>.
+    /// Must be paired with exactly one earlier call to <see cref="BindTextures(uint, int, nint)"/> for the same range.
     /// </summary>
     public void UnbindTextures(uint first, int count)
     {

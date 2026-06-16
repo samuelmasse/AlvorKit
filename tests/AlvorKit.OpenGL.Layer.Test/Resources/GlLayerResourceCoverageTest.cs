@@ -98,6 +98,109 @@ public unsafe class GlLayerResourceCoverageTest
         Assert.AreEqual(0, gl.TransformFeedbacks.Count);
     }
 
+    /// <summary>Span create overloads route through the tracked resource creation path.</summary>
+    [TestMethod]
+    public void SpanCreateOverloads_TrackEveryCreatedFamily()
+    {
+        var gl = new GlLayer(new FactoryGl());
+
+        Span<GlTextureHandle> textures = stackalloc GlTextureHandle[1];
+        Span<GlBufferHandle> buffers = stackalloc GlBufferHandle[1];
+        Span<GlVertexArrayHandle> arrays = stackalloc GlVertexArrayHandle[1];
+        Span<GlFramebufferHandle> framebuffers = stackalloc GlFramebufferHandle[1];
+        Span<GlRenderbufferHandle> renderbuffers = stackalloc GlRenderbufferHandle[1];
+        Span<GlSamplerHandle> samplers = stackalloc GlSamplerHandle[1];
+        Span<GlQueryHandle> queries = stackalloc GlQueryHandle[1];
+        Span<GlProgramPipelineHandle> pipelines = stackalloc GlProgramPipelineHandle[1];
+        Span<GlTransformFeedbackHandle> feedbacks = stackalloc GlTransformFeedbackHandle[1];
+
+        gl.CreateTextures(GlTextureTarget.Texture2D, textures);
+        gl.CreateBuffers(buffers);
+        gl.CreateVertexArrays(arrays);
+        gl.CreateFramebuffers(framebuffers);
+        gl.CreateRenderbuffers(renderbuffers);
+        gl.CreateSamplers(samplers);
+        gl.CreateQueries(GlQueryTarget.SamplesPassed, queries);
+        gl.CreateProgramPipelines(pipelines);
+        gl.CreateTransformFeedbacks(feedbacks);
+
+        Assert.IsTrue(gl.Textures.Contains(textures[0]));
+        Assert.IsTrue(gl.Buffers.Contains(buffers[0]));
+        Assert.IsTrue(gl.VertexArrays.Contains(arrays[0]));
+        Assert.IsTrue(gl.Framebuffers.Contains(framebuffers[0]));
+        Assert.IsTrue(gl.Renderbuffers.Contains(renderbuffers[0]));
+        Assert.IsTrue(gl.Samplers.Contains(samplers[0]));
+        Assert.IsTrue(gl.Queries.Contains(queries[0]));
+        Assert.IsTrue(gl.ProgramPipelines.Contains(pipelines[0]));
+        Assert.IsTrue(gl.TransformFeedbacks.Contains(feedbacks[0]));
+    }
+
+    /// <summary>Singular create overloads return tracked handles from the same raw creation calls.</summary>
+    [TestMethod]
+    public void SingularCreateOverloads_TrackReturnedHandles()
+    {
+        var gl = new GlLayer(new FactoryGl());
+
+        var texture = gl.CreateTexture(GlTextureTarget.Texture2D);
+        var buffer = gl.CreateBuffer();
+        var array = gl.CreateVertexArray();
+        var framebuffer = gl.CreateFramebuffer();
+        var renderbuffer = gl.CreateRenderbuffer();
+        var sampler = gl.CreateSampler();
+        var query = gl.CreateQuery(GlQueryTarget.SamplesPassed);
+        var pipeline = gl.CreateProgramPipeline();
+        var feedback = gl.CreateTransformFeedback();
+        var shaderProgram = gl.CreateShaderProgramv(GlShaderType.FragmentShader, ["void main() {}"]);
+
+        Assert.IsTrue(gl.Textures.Contains(texture));
+        Assert.IsTrue(gl.Buffers.Contains(buffer));
+        Assert.IsTrue(gl.VertexArrays.Contains(array));
+        Assert.IsTrue(gl.Framebuffers.Contains(framebuffer));
+        Assert.IsTrue(gl.Renderbuffers.Contains(renderbuffer));
+        Assert.IsTrue(gl.Samplers.Contains(sampler));
+        Assert.IsTrue(gl.Queries.Contains(query));
+        Assert.IsTrue(gl.ProgramPipelines.Contains(pipeline));
+        Assert.IsTrue(gl.TransformFeedbacks.Contains(feedback));
+        Assert.IsTrue(gl.Programs.Contains(shaderProgram));
+    }
+
+    /// <summary>Span generation overloads route through the tracked resource generation path.</summary>
+    [TestMethod]
+    public void SpanGenOverloads_TrackEveryGeneratedFamily()
+    {
+        var gl = new GlLayer(new RecordingGl());
+
+        Span<GlTextureHandle> textures = stackalloc GlTextureHandle[1];
+        Span<GlBufferHandle> buffers = stackalloc GlBufferHandle[1];
+        Span<GlVertexArrayHandle> arrays = stackalloc GlVertexArrayHandle[1];
+        Span<GlFramebufferHandle> framebuffers = stackalloc GlFramebufferHandle[1];
+        Span<GlRenderbufferHandle> renderbuffers = stackalloc GlRenderbufferHandle[1];
+        Span<GlSamplerHandle> samplers = stackalloc GlSamplerHandle[1];
+        Span<GlQueryHandle> queries = stackalloc GlQueryHandle[1];
+        Span<GlProgramPipelineHandle> pipelines = stackalloc GlProgramPipelineHandle[1];
+        Span<GlTransformFeedbackHandle> feedbacks = stackalloc GlTransformFeedbackHandle[1];
+
+        gl.GenTextures(textures);
+        gl.GenBuffers(buffers);
+        gl.GenVertexArrays(arrays);
+        gl.GenFramebuffers(framebuffers);
+        gl.GenRenderbuffers(renderbuffers);
+        gl.GenSamplers(samplers);
+        gl.GenQueries(queries);
+        gl.GenProgramPipelines(pipelines);
+        gl.GenTransformFeedbacks(feedbacks);
+
+        Assert.IsTrue(gl.Textures.Contains(textures[0]));
+        Assert.IsTrue(gl.Buffers.Contains(buffers[0]));
+        Assert.IsTrue(gl.VertexArrays.Contains(arrays[0]));
+        Assert.IsTrue(gl.Framebuffers.Contains(framebuffers[0]));
+        Assert.IsTrue(gl.Renderbuffers.Contains(renderbuffers[0]));
+        Assert.IsTrue(gl.Samplers.Contains(samplers[0]));
+        Assert.IsTrue(gl.Queries.Contains(queries[0]));
+        Assert.IsTrue(gl.ProgramPipelines.Contains(pipelines[0]));
+        Assert.IsTrue(gl.TransformFeedbacks.Contains(feedbacks[0]));
+    }
+
     /// <summary>Typed span delete overloads route through the same tracking and backend delete path.</summary>
     [TestMethod]
     public void SpanDeleteOverloads_DeleteEveryTrackedFamily()
@@ -166,5 +269,28 @@ public unsafe class GlLayerResourceCoverageTest
         gl.DeleteSync(sync);
         Assert.IsFalse(gl.Syncs.Contains(sync));
         Assert.Throws<GlResourceNotTrackedException<nint>>(() => gl.DeleteSync(sync));
+    }
+
+    private sealed unsafe class FactoryGl : GlNoop
+    {
+        private uint next = 500;
+
+        public override void CreateTextures(GlTextureTarget target, int n, nint textures) => Fill(n, textures);
+        public override void CreateBuffers(int n, nint buffers) => Fill(n, buffers);
+        public override void CreateVertexArrays(int n, nint arrays) => Fill(n, arrays);
+        public override void CreateFramebuffers(int n, nint framebuffers) => Fill(n, framebuffers);
+        public override void CreateRenderbuffers(int n, nint renderbuffers) => Fill(n, renderbuffers);
+        public override void CreateSamplers(int n, nint samplers) => Fill(n, samplers);
+        public override void CreateQueries(GlQueryTarget target, int n, nint ids) => Fill(n, ids);
+        public override void CreateProgramPipelines(int n, nint pipelines) => Fill(n, pipelines);
+        public override void CreateTransformFeedbacks(int n, nint ids) => Fill(n, ids);
+        public override GlProgramHandle CreateShaderProgramv(GlShaderType type, int count, nint strings) => (GlProgramHandle)next++;
+
+        private void Fill(int n, nint p)
+        {
+            var ids = (uint*)p;
+            for (var i = 0; i < n; i++)
+                ids[i] = next++;
+        }
     }
 }

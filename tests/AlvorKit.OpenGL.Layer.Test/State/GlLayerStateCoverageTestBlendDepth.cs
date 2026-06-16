@@ -57,6 +57,20 @@ public unsafe class GlLayerStateCoverageTestBlendDepth
         gl.ResetDepthRangeArray(0, 2);
     }
 
+    /// <summary>Span viewport, scissor, and depth-range array overloads use strict array state tracking.</summary>
+    [TestMethod]
+    public void SpanArrayStateOverloads_SetThenReset()
+    {
+        gl.ViewportArrayv(0, 1, [0, 0, 10, 10]);
+        gl.ResetViewportArray(0, 1);
+
+        gl.ScissorArrayv(0, 1, [0, 0, 10, 10]);
+        gl.ResetScissorArray(0, 1);
+
+        gl.DepthRangeArrayv(0, 1, [0, 1]);
+        gl.ResetDepthRangeArray(0, 1);
+    }
+
     [TestMethod]
     public void Clear_StencilAndIndexedScissorPrerequisites_Throw()
     {

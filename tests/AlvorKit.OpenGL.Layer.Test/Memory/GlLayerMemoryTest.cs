@@ -46,6 +46,28 @@ public class GlLayerMemoryTest
         Assert.AreEqual(2048L, gl.BufferUsage);
     }
 
+    /// <summary>Generic span buffer upload overloads derive byte sizes and update memory accounting.</summary>
+    [TestMethod]
+    public void BufferSpanOverloads_TrackDerivedByteSizes()
+    {
+        var bound = gl.GenBuffer();
+        var named = gl.GenBuffer();
+        Span<int> data = stackalloc int[4];
+
+        gl.BindBuffer(GlBufferTarget.ArrayBuffer, bound);
+        gl.BufferData(GlBufferTarget.ArrayBuffer, data, GlBufferUsage.StaticDraw);
+        Assert.AreEqual(16L, gl.BufferSizes[bound]);
+
+        gl.BufferStorage((GlBufferStorageTarget)(uint)GlBufferTarget.ArrayBuffer, data, 0);
+        Assert.AreEqual(16L, gl.BufferSizes[bound]);
+
+        gl.NamedBufferData(named, data, GlBufferUsage.StaticDraw);
+        Assert.AreEqual(16L, gl.BufferSizes[named]);
+
+        gl.NamedBufferStorage(named, data, 0);
+        Assert.AreEqual(32L, gl.BufferUsage);
+    }
+
     /// <summary>Indexed buffer binds also populate the generic target binding used by storage calls.</summary>
     [TestMethod]
     public void BufferData_AfterBindBufferBase_TracksGenericBinding()
@@ -78,6 +100,30 @@ public class GlLayerMemoryTest
         gl.TexImage2D(GlTextureTarget.Texture2D, 0, GlInternalFormat.Rgba8, 16, 16, 0, GlPixelFormat.Rgba, GlPixelType.UnsignedByte, 0);
         Assert.AreEqual(16L * 16 * 4, gl.TextureUsage);
         Assert.AreEqual(16L * 16 * 4, gl.TextureSizes[texture].MemoryUsage);
+    }
+
+    /// <summary>Generic span texture upload overloads keep the same bound-texture memory accounting.</summary>
+    [TestMethod]
+    public void TexImageSpanOverloads_TrackBoundTextureSizes()
+    {
+        Span<byte> pixels = stackalloc byte[16];
+        gl.ActiveTexture(GlTextureUnit.Texture0);
+
+        var one = gl.GenTexture();
+        gl.BindTexture(GlTextureTarget.Texture1D, one);
+        gl.TexImage1D(GlTextureTarget.Texture1D, 0, GlInternalFormat.R8, 4, 0, GlPixelFormat.Red, GlPixelType.UnsignedByte, pixels);
+        gl.UnbindTexture(GlTextureTarget.Texture1D);
+
+        var two = gl.GenTexture();
+        gl.BindTexture(GlTextureTarget.Texture2D, two);
+        gl.TexImage2D(GlTextureTarget.Texture2D, 0, GlInternalFormat.R8, 4, 4, 0, GlPixelFormat.Red, GlPixelType.UnsignedByte, pixels);
+        gl.UnbindTexture(GlTextureTarget.Texture2D);
+
+        var three = gl.GenTexture();
+        gl.BindTexture(GlTextureTarget.Texture3D, three);
+        gl.TexImage3D(GlTextureTarget.Texture3D, 0, GlInternalFormat.R8, 2, 2, 2, 0, GlPixelFormat.Red, GlPixelType.UnsignedByte, pixels);
+
+        Assert.AreEqual(4L + 16L + 8L, gl.TextureUsage);
     }
 
     /// <summary>Texture image levels accumulate into the texture's aggregate memory usage.</summary>

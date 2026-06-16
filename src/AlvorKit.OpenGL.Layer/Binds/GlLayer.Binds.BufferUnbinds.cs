@@ -47,8 +47,8 @@ public unsafe partial class GlLayer
     }
 
     /// <summary>
-    /// Layer: Unbinds the range of indexed buffers bound by <see cref="BindBuffersBase"/>.
-    /// Must be paired with exactly one earlier call to <see cref="BindBuffersBase"/> for the same target and range.
+    /// Layer: Unbinds the range of indexed buffers bound by <see cref="BindBuffersBase(GlBufferTarget, uint, int, nint)"/>.
+    /// Must be paired with exactly one earlier call to <see cref="BindBuffersBase(GlBufferTarget, uint, int, nint)"/> for the same range.
     /// </summary>
     public void UnbindBuffersBase(GlBufferTarget target, uint first, int count)
     {
@@ -61,8 +61,8 @@ public unsafe partial class GlLayer
     }
 
     /// <summary>
-    /// Layer: Unbinds the range of indexed buffers bound by <see cref="BindBuffersRange"/>.
-    /// Must be paired with exactly one earlier call to <see cref="BindBuffersRange"/> for the same target and range.
+    /// Layer: Unbinds the range of indexed buffers bound by <see cref="BindBuffersRange(GlBufferTarget, uint, int, nint, nint, nint)"/>.
+    /// Must be paired with exactly one earlier call to <see cref="BindBuffersRange(GlBufferTarget, uint, int, nint, nint, nint)"/> for the same range.
     /// </summary>
     public void UnbindBuffersRange(GlBufferTarget target, uint first, int count)
     {
@@ -77,8 +77,8 @@ public unsafe partial class GlLayer
     }
 
     /// <summary>
-    /// Layer: Unbinds the range of vertex buffers bound by <see cref="BindVertexBuffers"/>.
-    /// Must be paired with exactly one earlier call to <see cref="BindVertexBuffers"/> for the same range.
+    /// Layer: Unbinds the range of vertex buffers bound by <see cref="BindVertexBuffers(uint, int, nint, nint, nint)"/>.
+    /// Must be paired with exactly one earlier call to <see cref="BindVertexBuffers(uint, int, nint, nint, nint)"/> for the same range.
     /// </summary>
     public void UnbindVertexBuffers(uint first, int count)
     {

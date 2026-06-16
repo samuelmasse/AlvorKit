@@ -61,8 +61,8 @@ public unsafe partial class GlLayer
     }
 
     /// <summary>
-    /// Layer: Unbinds the range of samplers bound by <see cref="BindSamplers"/>.
-    /// Must be paired with exactly one earlier call to <see cref="BindSamplers"/> for the same range.
+    /// Layer: Unbinds the range of samplers bound by <see cref="BindSamplers(uint, int, nint)"/>.
+    /// Must be paired with exactly one earlier call to <see cref="BindSamplers(uint, int, nint)"/> for the same range.
     /// </summary>
     public void UnbindSamplers(uint first, int count)
     {
@@ -73,8 +73,8 @@ public unsafe partial class GlLayer
     }
 
     /// <summary>
-    /// Layer: Unbinds the range of image textures bound by <see cref="BindImageTextures"/>.
-    /// Must be paired with exactly one earlier call to <see cref="BindImageTextures"/> for the same range.
+    /// Layer: Unbinds the range of image textures bound by <see cref="BindImageTextures(uint, int, nint)"/>.
+    /// Must be paired with exactly one earlier call to <see cref="BindImageTextures(uint, int, nint)"/> for the same range.
     /// </summary>
     public void UnbindImageTextures(uint first, int count)
     {

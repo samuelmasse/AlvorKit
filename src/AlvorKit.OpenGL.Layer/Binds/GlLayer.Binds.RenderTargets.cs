@@ -26,7 +26,7 @@ public partial class GlLayer
     /// <inheritdoc/>
     /// <remarks>
     /// Layer: Must be paired with exactly one later call to <see cref="ResetDrawBuffers"/>.
-    /// Set-once; cannot be combined with <see cref="DrawBuffers"/>.
+    /// Set-once; cannot be combined with <see cref="DrawBuffers(int, nint)"/>.
     /// </remarks>
     public override void DrawBuffer(GlDrawBufferMode buf)
     {
@@ -71,7 +71,7 @@ public partial class GlLayer
 
     /// <summary>
     /// Layer: Restores the default draw buffer (<c>glDrawBuffer(ColorAttachment0)</c>).
-    /// Must be paired with one earlier call to <see cref="DrawBuffer"/> or <see cref="DrawBuffers"/>.
+    /// Must be paired with one earlier call to <see cref="DrawBuffer"/> or <see cref="DrawBuffers(int, nint)"/>.
     /// </summary>
     public void ResetDrawBuffers()
     {
