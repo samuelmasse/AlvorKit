@@ -30,9 +30,8 @@ internal readonly struct GlBindingMap<TKey>() where TKey : notnull
     /// <exception cref="GlAlreadyBoundException">Thrown when the key is already occupied.</exception>
     internal void Bind(string function, TKey key, uint value)
     {
-        if (bound.TryGetValue(key, out var current))
-            throw new GlAlreadyBoundException(function, $"attempted to bind {key} to {value}, but it is already bound to {current}; unbind it first.");
-        bound[key] = value;
+        RequireCanBind(function, key, value);
+        BindKnownFree(key, value);
     }
 
     /// <summary>
@@ -43,8 +42,50 @@ internal readonly struct GlBindingMap<TKey>() where TKey : notnull
     /// <exception cref="GlNotBoundException">Thrown when the key is not occupied.</exception>
     internal void Unbind(string function, TKey key)
     {
-        if (!bound.Remove(key))
+        RequireCanUnbind(function, key);
+        UnbindKnownBound(key);
+    }
+
+    /// <summary>
+    /// Requires a key to be free before a later bind commit.
+    /// </summary>
+    /// <param name="function">The GL function that requested the bind.</param>
+    /// <param name="key">The strict binding key to occupy.</param>
+    /// <param name="value">The GL object id that would be recorded for the key.</param>
+    internal void RequireCanBind(string function, TKey key, uint value)
+    {
+        if (bound.TryGetValue(key, out var current))
+            throw new GlAlreadyBoundException(function, $"attempted to bind {key} to {value}, but it is already bound to {current}; unbind it first.");
+    }
+
+    /// <summary>
+    /// Requires a key to be occupied before a later unbind commit.
+    /// </summary>
+    /// <param name="function">The GL function that requested the unbind.</param>
+    /// <param name="key">The strict binding key to release.</param>
+    internal void RequireCanUnbind(string function, TKey key)
+    {
+        if (!bound.ContainsKey(key))
             throw new GlNotBoundException(function, $"attempted to unbind {key}, but nothing is bound.");
+    }
+
+    /// <summary>
+    /// Commits a bind after all validation and backend work has succeeded.
+    /// </summary>
+    /// <param name="key">The strict binding key to occupy.</param>
+    /// <param name="value">The GL object id to record for the key.</param>
+    internal void BindKnownFree(TKey key, uint value)
+    {
+        bound[key] = value;
+    }
+
+    /// <summary>
+    /// Commits an unbind after all validation and backend work has succeeded.
+    /// </summary>
+    /// <param name="key">The strict binding key to release.</param>
+    internal void UnbindKnownBound(TKey key)
+    {
+        bound.Remove(key);
     }
 
     /// <summary>

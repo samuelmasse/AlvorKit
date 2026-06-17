@@ -1,7 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+    <Import Project="..\..\AlvorKit.Packages.props" />
+
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+        <None Include="$(NuGetPackageRoot)alvorkit.opengl\$(GlBindVer)\lib\$(TargetFramework)\AlvorKit.OpenGL.xml"
+            CopyToOutputDirectory="PreserveNewest"
+            Link="AlvorKit.OpenGL.xml"
+            Visible="false" />
     </ItemGroup>
 
     <ItemGroup>

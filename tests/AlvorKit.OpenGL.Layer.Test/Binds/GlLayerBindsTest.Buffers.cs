@@ -71,4 +71,28 @@ public partial class GlLayerBindsTest
         gl.BindBufferBase(GlBufferTarget.UniformBuffer, 0, Buffer(9));
         Assert.Throws<GlAlreadyBoundException>(() => gl.BindBuffersBase(GlBufferTarget.UniformBuffer, 0, [Buffer(1), Buffer(2)]));
     }
+
+    /// <summary>A failed indexed bind does not leave the generic buffer target poisoned.</summary>
+    [TestMethod]
+    public void BindBufferBase_WhenIndexedSlotOccupied_DoesNotBindGenericTarget()
+    {
+        gl.BindBufferBase(GlBufferTarget.UniformBuffer, 0, Buffer(1));
+        gl.UnbindBuffer(GlBufferTarget.UniformBuffer);
+
+        Assert.Throws<GlAlreadyBoundException>(() => gl.BindBufferBase(GlBufferTarget.UniformBuffer, 0, Buffer(2)));
+
+        gl.BindBuffer(GlBufferTarget.UniformBuffer, Buffer(3));
+    }
+
+    /// <summary>A failed bulk bind does not leave earlier indices occupied.</summary>
+    [TestMethod]
+    public void BindBuffersBase_WhenLaterIndexOccupied_DoesNotBindEarlierIndices()
+    {
+        gl.BindBufferBase(GlBufferTarget.UniformBuffer, 1, Buffer(9));
+        gl.UnbindBuffer(GlBufferTarget.UniformBuffer);
+
+        Assert.Throws<GlAlreadyBoundException>(() => gl.BindBuffersBase(GlBufferTarget.UniformBuffer, 0, [Buffer(1), Buffer(2)]));
+
+        gl.BindBufferBase(GlBufferTarget.UniformBuffer, 0, Buffer(3));
+    }
 }

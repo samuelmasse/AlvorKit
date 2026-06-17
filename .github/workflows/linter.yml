@@ -25,5 +25,8 @@ jobs:
       - name: Generate bindings
         run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- all --strict
 
+      - name: Build source generators
+        run: dotnet build src/AlvorKit.ECS.Generator/AlvorKit.ECS.Generator.csproj
+
       - name: Run lint coordinator
         run: dotnet run --project scripts/AlvorKit.Script.Lint

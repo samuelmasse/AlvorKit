@@ -36,8 +36,15 @@ public partial class GlLayer
         if (viewport.IsSet) throw new GlConflictException(nameof(ViewportArrayv), nameof(Viewport));
         var values = (float*)v;
         for (var i = 0; i < count; i++)
-            viewportMap.Set(nameof(ViewportArrayv), first + (uint)i, (values[i * 4], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]));
+        {
+            viewportMap.RequireCanSet(
+                nameof(ViewportArrayv),
+                first + (uint)i,
+                (values[i * 4], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]));
+        }
         base.ViewportArrayv(first, count, v);
+        for (var i = 0; i < count; i++)
+            viewportMap.SetKnownUnset(first + (uint)i, (values[i * 4], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]));
     }
 
     /// <inheritdoc/>
@@ -74,7 +81,14 @@ public partial class GlLayer
         if (scissor.IsSet) throw new GlConflictException(nameof(ScissorArrayv), nameof(Scissor));
         var values = (int*)v;
         for (var i = 0; i < count; i++)
-            scissorMap.Set(nameof(ScissorArrayv), first + (uint)i, (values[i * 4], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]));
+        {
+            scissorMap.RequireCanSet(
+                nameof(ScissorArrayv),
+                first + (uint)i,
+                (values[i * 4], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]));
+        }
         base.ScissorArrayv(first, count, v);
+        for (var i = 0; i < count; i++)
+            scissorMap.SetKnownUnset(first + (uint)i, (values[i * 4], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]));
     }
 }

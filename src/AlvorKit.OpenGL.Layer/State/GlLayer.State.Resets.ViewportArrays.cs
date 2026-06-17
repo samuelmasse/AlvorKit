@@ -10,7 +10,7 @@ public partial class GlLayer
     public unsafe void ResetViewportArray(uint first, int count)
     {
         for (var i = 0; i < count; i++)
-            viewportMap.Reset(nameof(ViewportArrayv), first + (uint)i);
+            viewportMap.RequireCanReset(nameof(ViewportArrayv), first + (uint)i);
         Span<float> values = stackalloc float[count * 4];
         for (var i = 0; i < count; i++)
         {
@@ -21,6 +21,8 @@ public partial class GlLayer
         }
         fixed (float* pointer = values)
             base.ViewportArrayv(first, count, (nint)pointer);
+        for (var i = 0; i < count; i++)
+            viewportMap.ResetKnownSet(first + (uint)i);
     }
 
     /// <summary>
@@ -31,7 +33,7 @@ public partial class GlLayer
     public unsafe void ResetScissorArray(uint first, int count)
     {
         for (var i = 0; i < count; i++)
-            scissorMap.Reset(nameof(ScissorArrayv), first + (uint)i);
+            scissorMap.RequireCanReset(nameof(ScissorArrayv), first + (uint)i);
         Span<int> values = stackalloc int[count * 4];
         for (var i = 0; i < count; i++)
         {
@@ -42,5 +44,7 @@ public partial class GlLayer
         }
         fixed (int* pointer = values)
             base.ScissorArrayv(first, count, (nint)pointer);
+        for (var i = 0; i < count; i++)
+            scissorMap.ResetKnownSet(first + (uint)i);
     }
 }

@@ -112,4 +112,31 @@ public partial class GlLayerBindsTest
 
         Assert.Throws<GlAlreadyBoundException>(() => gl.BindTextures(0, [Texture(2)]));
     }
+
+    /// <summary>A failed texture bind does not remember the rejected texture target.</summary>
+    [TestMethod]
+    public void BindTexture_WhenSlotOccupied_DoesNotRecordRejectedTarget()
+    {
+        gl.ActiveTexture(GlTextureUnit.Texture0);
+        gl.BindTexture(GlTextureTarget.Texture2D, Texture(1));
+
+        Assert.Throws<GlAlreadyBoundException>(() => gl.BindTexture(GlTextureTarget.Texture2D, Texture(2)));
+
+        gl.UnbindTexture(GlTextureTarget.Texture2D);
+        gl.BindTexture(GlTextureTarget.Texture3D, Texture(2));
+    }
+
+    /// <summary>A failed bulk texture bind does not leave earlier units occupied.</summary>
+    [TestMethod]
+    public void BindTextures_WhenLaterUnitOccupied_DoesNotBindEarlierUnit()
+    {
+        TrackTextureTarget(Texture(1), GlTextureTarget.Texture2D);
+        TrackTextureTarget(Texture(2), GlTextureTarget.Texture2D);
+        TrackTextureTarget(Texture(3), GlTextureTarget.Texture2D);
+        gl.BindTextureUnit(1, Texture(3));
+
+        Assert.Throws<GlAlreadyBoundException>(() => gl.BindTextures(0, [Texture(1), Texture(2)]));
+
+        gl.BindTextureUnit(0, Texture(1));
+    }
 }

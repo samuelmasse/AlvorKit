@@ -30,9 +30,8 @@ internal struct GlBinding
     /// <exception cref="GlAlreadyBoundException">Thrown when another object is already bound.</exception>
     internal void Bind(string function, uint value)
     {
-        if (current != 0)
-            throw new GlAlreadyBoundException(function, $"attempted to bind {value}, but {current} is already bound; unbind it first.");
-        current = value;
+        RequireCanBind(function, value);
+        BindKnownFree(value);
     }
 
     /// <summary>
@@ -42,8 +41,45 @@ internal struct GlBinding
     /// <exception cref="GlNotBoundException">Thrown when the slot is already unbound.</exception>
     internal void Unbind(string function)
     {
+        RequireCanUnbind(function);
+        UnbindKnownBound();
+    }
+
+    /// <summary>
+    /// Requires this slot to be free before a later commit.
+    /// </summary>
+    /// <param name="function">The GL function that requested the bind.</param>
+    /// <param name="value">The GL object id that would be recorded for the slot.</param>
+    internal readonly void RequireCanBind(string function, uint value)
+    {
+        if (current != 0)
+            throw new GlAlreadyBoundException(function, $"attempted to bind {value}, but {current} is already bound; unbind it first.");
+    }
+
+    /// <summary>
+    /// Requires this slot to be occupied before a later unbind commit.
+    /// </summary>
+    /// <param name="function">The GL function that requested the unbind.</param>
+    internal readonly void RequireCanUnbind(string function)
+    {
         if (current == 0)
             throw new GlNotBoundException(function, "attempted to unbind, but nothing is bound.");
+    }
+
+    /// <summary>
+    /// Commits a bind after all validation and backend work has succeeded.
+    /// </summary>
+    /// <param name="value">The GL object id to record for the slot.</param>
+    internal void BindKnownFree(uint value)
+    {
+        current = value;
+    }
+
+    /// <summary>
+    /// Commits an unbind after all validation and backend work has succeeded.
+    /// </summary>
+    internal void UnbindKnownBound()
+    {
         current = 0;
     }
 }

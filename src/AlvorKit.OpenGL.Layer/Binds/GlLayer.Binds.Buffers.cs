@@ -9,8 +9,9 @@ public unsafe partial class GlLayer
     public override void BindBuffer(GlBufferTarget target, GlBufferHandle buffer)
     {
         var id = (uint)buffer;
-        bufferBinds.Bind(nameof(BindBuffer), target, id);
+        bufferBinds.RequireCanBind(nameof(BindBuffer), target, id);
         base.BindBuffer(target, buffer);
+        bufferBinds.BindKnownFree(target, id);
     }
 
     /// <inheritdoc/>
@@ -19,9 +20,12 @@ public unsafe partial class GlLayer
     /// </remarks>
     public override void BindBufferBase(GlBufferTarget target, uint index, GlBufferHandle buffer)
     {
-        bufferBinds.Bind(nameof(BindBufferBase), target, (uint)buffer);
-        indexedBufferBinds.Bind(nameof(BindBufferBase), (target, index), (uint)buffer);
+        var id = (uint)buffer;
+        bufferBinds.RequireCanBind(nameof(BindBufferBase), target, id);
+        indexedBufferBinds.RequireCanBind(nameof(BindBufferBase), (target, index), id);
         base.BindBufferBase(target, index, buffer);
+        bufferBinds.BindKnownFree(target, id);
+        indexedBufferBinds.BindKnownFree((target, index), id);
     }
 
     /// <inheritdoc/>
@@ -35,9 +39,12 @@ public unsafe partial class GlLayer
         nint offset,
         nint size)
     {
-        bufferBinds.Bind(nameof(BindBufferRange), target, (uint)buffer);
-        indexedBufferBinds.Bind(nameof(BindBufferRange), (target, index), (uint)buffer);
+        var id = (uint)buffer;
+        bufferBinds.RequireCanBind(nameof(BindBufferRange), target, id);
+        indexedBufferBinds.RequireCanBind(nameof(BindBufferRange), (target, index), id);
         base.BindBufferRange(target, index, buffer, offset, size);
+        bufferBinds.BindKnownFree(target, id);
+        indexedBufferBinds.BindKnownFree((target, index), id);
     }
 
     /// <inheritdoc/>
@@ -46,8 +53,10 @@ public unsafe partial class GlLayer
     /// </remarks>
     public override void BindVertexBuffer(uint bindingindex, GlBufferHandle buffer, nint offset, int stride)
     {
-        vertexBufferBinds.Bind(nameof(BindVertexBuffer), bindingindex, (uint)buffer);
+        var id = (uint)buffer;
+        vertexBufferBinds.RequireCanBind(nameof(BindVertexBuffer), bindingindex, id);
         base.BindVertexBuffer(bindingindex, buffer, offset, stride);
+        vertexBufferBinds.BindKnownFree(bindingindex, id);
     }
 
     /// <inheritdoc/>
@@ -58,11 +67,16 @@ public unsafe partial class GlLayer
     public override void BindBuffersBase(GlBufferTarget target, uint first, int count, nint buffers)
     {
         var ids = (uint*)buffers;
+        var finalId = count > 0 && buffers != 0 ? ids[count - 1] : 0u;
         if (count > 0)
-            bufferBinds.Bind(nameof(BindBuffersBase), target, buffers == 0 ? 0u : ids[count - 1]);
+            bufferBinds.RequireCanBind(nameof(BindBuffersBase), target, finalId);
         for (var i = 0; i < count; i++)
-            indexedBufferBinds.Bind(nameof(BindBuffersBase), (target, first + (uint)i), buffers == 0 ? 0u : ids[i]);
+            indexedBufferBinds.RequireCanBind(nameof(BindBuffersBase), (target, first + (uint)i), buffers == 0 ? 0u : ids[i]);
         base.BindBuffersBase(target, first, count, buffers);
+        if (count > 0)
+            bufferBinds.BindKnownFree(target, finalId);
+        for (var i = 0; i < count; i++)
+            indexedBufferBinds.BindKnownFree((target, first + (uint)i), buffers == 0 ? 0u : ids[i]);
     }
 
     /// <inheritdoc/>
@@ -79,11 +93,16 @@ public unsafe partial class GlLayer
         nint sizes)
     {
         var ids = (uint*)buffers;
+        var finalId = count > 0 && buffers != 0 ? ids[count - 1] : 0u;
         if (count > 0)
-            bufferBinds.Bind(nameof(BindBuffersRange), target, buffers == 0 ? 0u : ids[count - 1]);
+            bufferBinds.RequireCanBind(nameof(BindBuffersRange), target, finalId);
         for (var i = 0; i < count; i++)
-            indexedBufferBinds.Bind(nameof(BindBuffersRange), (target, first + (uint)i), buffers == 0 ? 0u : ids[i]);
+            indexedBufferBinds.RequireCanBind(nameof(BindBuffersRange), (target, first + (uint)i), buffers == 0 ? 0u : ids[i]);
         base.BindBuffersRange(target, first, count, buffers, offsets, sizes);
+        if (count > 0)
+            bufferBinds.BindKnownFree(target, finalId);
+        for (var i = 0; i < count; i++)
+            indexedBufferBinds.BindKnownFree((target, first + (uint)i), buffers == 0 ? 0u : ids[i]);
     }
 
     /// <inheritdoc/>
@@ -95,7 +114,9 @@ public unsafe partial class GlLayer
     {
         var ids = (uint*)buffers;
         for (var i = 0; i < count; i++)
-            vertexBufferBinds.Bind(nameof(BindVertexBuffers), first + (uint)i, buffers == 0 ? 0u : ids[i]);
+            vertexBufferBinds.RequireCanBind(nameof(BindVertexBuffers), first + (uint)i, buffers == 0 ? 0u : ids[i]);
         base.BindVertexBuffers(first, count, buffers, offsets, strides);
+        for (var i = 0; i < count; i++)
+            vertexBufferBinds.BindKnownFree(first + (uint)i, buffers == 0 ? 0u : ids[i]);
     }
 }

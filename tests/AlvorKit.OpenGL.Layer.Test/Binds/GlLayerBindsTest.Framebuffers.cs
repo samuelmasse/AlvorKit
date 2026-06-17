@@ -69,4 +69,16 @@ public partial class GlLayerBindsTest
     {
         Assert.Throws<GlNotBoundException>(() => gl.UnbindFramebuffer(GlFramebufferTarget.Framebuffer));
     }
+
+    /// <summary>A failed combined framebuffer bind leaves the read slot unchanged.</summary>
+    [TestMethod]
+    public void BindFramebuffer_WhenDrawSlotOccupied_DoesNotBindReadSlot()
+    {
+        gl.BindFramebuffer(GlFramebufferTarget.DrawFramebuffer, Framebuffer(1));
+
+        Assert.Throws<GlAlreadyBoundException>(() => gl.BindFramebuffer(GlFramebufferTarget.Framebuffer, Framebuffer(2)));
+
+        gl.UnbindFramebuffer(GlFramebufferTarget.DrawFramebuffer);
+        gl.BindFramebuffer(GlFramebufferTarget.ReadFramebuffer, Framebuffer(3));
+    }
 }

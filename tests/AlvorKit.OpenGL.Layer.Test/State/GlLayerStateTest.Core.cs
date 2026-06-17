@@ -81,4 +81,15 @@ public partial class GlLayerStateTest
         gl.ResetDepthMask();
         gl.DepthMask(true);
     }
+
+    /// <summary>A failed viewport-array reset leaves earlier viewport indices recorded.</summary>
+    [TestMethod]
+    public void ResetViewportArray_WhenLaterIndexUnset_DoesNotResetEarlierIndex()
+    {
+        gl.ViewportIndexedf(0, 0, 0, 800, 600);
+
+        Assert.Throws<GlAlreadyUnsetException>(() => gl.ResetViewportArray(0, 2));
+
+        Assert.Throws<GlAlreadySetException>(() => gl.ViewportIndexedf(0, 0, 0, 1024, 768));
+    }
 }

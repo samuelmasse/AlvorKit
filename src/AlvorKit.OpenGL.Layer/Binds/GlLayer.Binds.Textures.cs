@@ -9,8 +9,9 @@ public unsafe partial class GlLayer
     /// </remarks>
     public override void ActiveTexture(GlTextureUnit texture)
     {
-        activeTexture.Set(nameof(ActiveTexture), texture);
+        activeTexture.RequireCanSet(nameof(ActiveTexture), texture);
         base.ActiveTexture(texture);
+        activeTexture.SetKnownUnset(texture);
     }
 
     /// <inheritdoc/>
@@ -22,9 +23,13 @@ public unsafe partial class GlLayer
     {
         var id = (uint)texture;
         if (id != 0)
-            TrackTextureTarget(nameof(BindTexture), texture, target);
-        textureBinds.Bind(nameof(BindTexture), (GetActiveTextureIndex(nameof(BindTexture)), target), id);
+            RequireTextureTargetCompatible(nameof(BindTexture), texture, target);
+        var key = (GetActiveTextureIndex(nameof(BindTexture)), target);
+        textureBinds.RequireCanBind(nameof(BindTexture), key, id);
         base.BindTexture(target, texture);
+        if (id != 0)
+            CommitTextureTarget(texture, target);
+        textureBinds.BindKnownFree(key, id);
     }
 
     /// <inheritdoc/>
@@ -32,8 +37,9 @@ public unsafe partial class GlLayer
     public override void BindTextureUnit(uint unit, GlTextureHandle texture)
     {
         var target = GetTextureTarget(nameof(BindTextureUnit), texture);
-        textureBinds.Bind(nameof(BindTextureUnit), (unit, target), (uint)texture);
+        textureBinds.RequireCanBind(nameof(BindTextureUnit), (unit, target), (uint)texture);
         base.BindTextureUnit(unit, texture);
+        textureBinds.BindKnownFree((unit, target), (uint)texture);
     }
 
     /// <inheritdoc/>
@@ -44,13 +50,19 @@ public unsafe partial class GlLayer
     public override void BindTextures(uint first, int count, nint textures)
     {
         var ids = (uint*)textures;
+        Span<GlTextureTarget> targets = stackalloc GlTextureTarget[count];
         for (var i = 0; i < count; i++)
         {
             var texture = textures == 0 ? (GlTextureHandle)0u : (GlTextureHandle)ids[i];
-            var target = GetTextureTarget(nameof(BindTextures), texture);
-            textureBinds.Bind(nameof(BindTextures), (first + (uint)i, target), (uint)texture);
+            targets[i] = GetTextureTarget(nameof(BindTextures), texture);
+            textureBinds.RequireCanBind(nameof(BindTextures), (first + (uint)i, targets[i]), (uint)texture);
         }
         base.BindTextures(first, count, textures);
+        for (var i = 0; i < count; i++)
+        {
+            var texture = textures == 0 ? (GlTextureHandle)0u : (GlTextureHandle)ids[i];
+            textureBinds.BindKnownFree((first + (uint)i, targets[i]), (uint)texture);
+        }
     }
 
     /// <summary>
@@ -59,15 +71,22 @@ public unsafe partial class GlLayer
     /// </summary>
     public void UnbindTexture(GlTextureTarget target)
     {
-        textureBinds.Unbind(nameof(BindTexture), (GetActiveTextureIndex(nameof(BindTexture)), target));
+        var key = (GetActiveTextureIndex(nameof(BindTexture)), target);
+        textureBinds.RequireCanUnbind(nameof(BindTexture), key);
         base.BindTexture(target, (GlTextureHandle)0u);
+        textureBinds.UnbindKnownBound(key);
     }
 
     /// <summary>
     /// Layer: Unbinds the texture at unit <paramref name="unit"/>.
     /// Must be paired with exactly one earlier call to <c>glBindTextureUnit</c> for the same unit.
     /// </summary>
-    public void UnbindTextureUnit(uint unit) { ResetTextureUnitBindings(nameof(BindTextureUnit), unit); base.BindTextureUnit(unit, (GlTextureHandle)0u); }
+    public void UnbindTextureUnit(uint unit)
+    {
+        RequireAnyTextureUnitBinding(nameof(BindTextureUnit), unit);
+        base.BindTextureUnit(unit, (GlTextureHandle)0u);
+        ResetTextureUnitBindingsKnownBound(unit);
+    }
 
     /// <summary>
     /// Layer: Unbinds the range of textures bound by <see cref="BindTextures(uint, int, nint)"/>.
@@ -76,9 +95,13 @@ public unsafe partial class GlLayer
     public void UnbindTextures(uint first, int count)
     {
         for (var i = 0; i < count; i++)
-            ResetTextureUnitBindings(nameof(BindTextures), first + (uint)i);
-        uint* textures = stackalloc uint[count];
-        base.BindTextures(first, count, (nint)textures);
+            RequireAnyTextureUnitBinding(nameof(BindTextures), first + (uint)i);
+        Span<uint> textures = stackalloc uint[count];
+        textures.Clear();
+        fixed (uint* p = textures)
+            base.BindTextures(first, count, (nint)p);
+        for (var i = 0; i < count; i++)
+            ResetTextureUnitBindingsKnownBound(first + (uint)i);
     }
 
     /// <summary>
@@ -87,8 +110,9 @@ public unsafe partial class GlLayer
     /// </summary>
     public void ResetActiveTexture()
     {
-        activeTexture.Reset(nameof(ActiveTexture));
+        activeTexture.RequireCanReset(nameof(ActiveTexture));
         base.ActiveTexture(DefaultActiveTexture);
+        activeTexture.ResetKnownSet();
     }
 
     /// <summary>
@@ -99,10 +123,33 @@ public unsafe partial class GlLayer
     /// <param name="target">The texture target family used by the handle.</param>
     private void TrackTextureTarget(string function, GlTextureHandle texture, GlTextureTarget target)
     {
+        RequireTextureTargetCompatible(function, texture, target);
+        CommitTextureTarget(texture, target);
+    }
+
+    /// <summary>
+    /// Ensures a texture handle can be associated with the requested target family.
+    /// </summary>
+    /// <param name="function">The GL function that observed the target.</param>
+    /// <param name="texture">The texture handle to associate.</param>
+    /// <param name="target">The texture target family used by the handle.</param>
+    private void RequireTextureTargetCompatible(string function, GlTextureHandle texture, GlTextureTarget target)
+    {
         if ((uint)texture == 0)
             return;
         if (textureTargets.TryGetValue(texture, out var existing) && existing != target)
             throw new GlBindConflictException(function, $"texture {texture} is already used as {existing}, cannot use it as {target}.");
+    }
+
+    /// <summary>
+    /// Records a validated texture target association.
+    /// </summary>
+    /// <param name="texture">The texture handle to associate.</param>
+    /// <param name="target">The texture target family used by the handle.</param>
+    private void CommitTextureTarget(GlTextureHandle texture, GlTextureTarget target)
+    {
+        if ((uint)texture == 0)
+            return;
         textureTargets[texture] = target;
     }
 

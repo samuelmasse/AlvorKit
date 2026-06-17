@@ -20,8 +20,9 @@ public partial class GlLayer
             if (vertexBufferBinds.HasAny)
                 throw new GlBindConflictException(nameof(BindVertexArray), $"attempted to bind VAO {id}, but vertex buffer bindings are still set.");
         }
-        vertexArray.Bind(nameof(BindVertexArray), id);
+        vertexArray.RequireCanBind(nameof(BindVertexArray), id);
         base.BindVertexArray(array);
+        vertexArray.BindKnownFree(id);
     }
 
     /// <summary>Layer: Unbinds the vertex array. Must be paired with exactly one earlier call to <c>glBindVertexArray</c>.</summary>
@@ -29,10 +30,13 @@ public partial class GlLayer
     {
         if (bufferBinds.TryGet(GlBufferTarget.ArrayBuffer, out var vbo) && vbo != 0)
             throw new GlBindConflictException(nameof(BindVertexArray), $"attempted to unbind VAO, but buffer {vbo} is still bound to ArrayBuffer.");
-        vertexArray.Unbind(nameof(BindVertexArray));
+        vertexArray.RequireCanUnbind(nameof(BindVertexArray));
         if (bufferBinds.TryGet(GlBufferTarget.ElementArrayBuffer, out _))
-            bufferBinds.Unbind(nameof(BindVertexArray), GlBufferTarget.ElementArrayBuffer);
-        vertexBufferBinds.Clear();
+            bufferBinds.RequireCanUnbind(nameof(BindVertexArray), GlBufferTarget.ElementArrayBuffer);
         base.BindVertexArray((GlVertexArrayHandle)0u);
+        vertexArray.UnbindKnownBound();
+        if (bufferBinds.TryGet(GlBufferTarget.ElementArrayBuffer, out _))
+            bufferBinds.UnbindKnownBound(GlBufferTarget.ElementArrayBuffer);
+        vertexBufferBinds.Clear();
     }
 }

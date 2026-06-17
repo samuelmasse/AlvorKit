@@ -68,7 +68,9 @@ public partial class GlLayer
         if (depthRange.IsSet) throw new GlConflictException(nameof(DepthRangeArrayv), nameof(DepthRange));
         var values = (double*)v;
         for (var i = 0; i < count; i++)
-            depthRangeMap.Set(nameof(DepthRangeArrayv), first + (uint)i, (values[i * 2], values[i * 2 + 1]));
+            depthRangeMap.RequireCanSet(nameof(DepthRangeArrayv), first + (uint)i, (values[i * 2], values[i * 2 + 1]));
         base.DepthRangeArrayv(first, count, v);
+        for (var i = 0; i < count; i++)
+            depthRangeMap.SetKnownUnset(first + (uint)i, (values[i * 2], values[i * 2 + 1]));
     }
 }

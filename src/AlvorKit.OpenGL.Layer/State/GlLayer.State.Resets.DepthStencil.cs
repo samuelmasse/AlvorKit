@@ -59,11 +59,13 @@ public partial class GlLayer
     public unsafe void ResetDepthRangeArray(uint first, int count)
     {
         for (var i = 0; i < count; i++)
-            depthRangeMap.Reset(nameof(DepthRangeArrayv), first + (uint)i);
+            depthRangeMap.RequireCanReset(nameof(DepthRangeArrayv), first + (uint)i);
         Span<double> values = stackalloc double[count * 2];
         for (var i = 0; i < count; i++) { values[i * 2] = DefaultDepthRange.Near; values[i * 2 + 1] = DefaultDepthRange.Far; }
         fixed (double* pointer = values)
             base.DepthRangeArrayv(first, count, (nint)pointer);
+        for (var i = 0; i < count; i++)
+            depthRangeMap.ResetKnownSet(first + (uint)i);
     }
 
     /// <summary>

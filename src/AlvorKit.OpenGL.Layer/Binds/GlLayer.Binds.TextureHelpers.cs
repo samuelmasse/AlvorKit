@@ -7,16 +7,20 @@ public unsafe partial class GlLayer
     /// </summary>
     /// <param name="function">The GL function that requested the unbind.</param>
     /// <param name="unit">The texture unit whose target bindings should be cleared.</param>
-    private void ResetTextureUnitBindings(string function, uint unit)
+    private void RequireAnyTextureUnitBinding(string function, uint unit)
     {
-        var removed = false;
-        while (TryFindTextureUnitBinding(unit, out var key))
-        {
-            textureBinds.Unbind(function, key);
-            removed = true;
-        }
-        if (!removed)
+        if (!TryFindTextureUnitBinding(unit, out _))
             throw new GlNotBoundException(function, "attempted to unbind, but nothing is bound.");
+    }
+
+    /// <summary>
+    /// Clears every texture target binding for a unit after the backend unbind succeeded.
+    /// </summary>
+    /// <param name="unit">The texture unit whose target bindings should be cleared.</param>
+    private void ResetTextureUnitBindingsKnownBound(uint unit)
+    {
+        while (TryFindTextureUnitBinding(unit, out var key))
+            textureBinds.UnbindKnownBound(key);
     }
 
     /// <summary>
