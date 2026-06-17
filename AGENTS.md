@@ -181,6 +181,15 @@ snapshot is truly required because the source memory cannot remain valid or the
 collection must be mutated while enumerating, document why the allocation is
 acceptable and keep it outside hot paths whenever possible.
 
+When fixing an allocation-sensitive bug, solve the stated contract directly.
+Keep constants, locals, and validation near the code that needs them unless they
+are reused or express a real shared concept. Do not introduce helper
+abstractions, diagnostic string construction, broader validation policy, or
+extra state while fixing a narrow span, pointer, upload, bind, delete, or
+lifetime contract. For byte-count contracts, prefer reinterpreting existing
+blittable spans with `MemoryMarshal.AsBytes`, validating the byte count, and
+forwarding the resulting span without allocation.
+
 Before finishing low-level runtime changes, scan the touched code for allocation
 constructs and remove accidental allocations from hot paths. Treat teardown and
 delete paths as allocation-sensitive unless the user explicitly says otherwise.

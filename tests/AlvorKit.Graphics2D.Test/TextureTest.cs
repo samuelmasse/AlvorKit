@@ -70,12 +70,42 @@ public sealed class TextureTest
         var (backend, gl) = Graphics2DTestHarness.CreateLayer();
         using var texture = new Texture2D(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
         (byte, byte, byte, byte)[] first = [(1, 2, 3, 4)];
-        (byte, byte, byte, byte)[] second = [(1, 2, 3, 4), (5, 6, 7, 8)];
+        (byte, byte, byte, byte)[] second = [(5, 6, 7, 8)];
 
         texture.Pixels = first;
         texture.Pixels = second;
 
         Assert.AreEqual(2, backend.TexImage2DCalls);
+    }
+
+    /// <summary>Generic byte uploads succeed when the span contains exactly one RGBA8 value per texture pixel.</summary>
+    [TestMethod]
+    public void TexImage2D_WithExactByteCount_UploadsPixels()
+    {
+        var (backend, gl) = Graphics2DTestHarness.CreateLayer();
+        using var texture = new Texture2D(gl, new Vector2(2f, 1f), GlTextureTarget.Texture2D);
+        byte[] pixels = [1, 2, 3, 4, 5, 6, 7, 8];
+
+        texture.TexImage2D(pixels);
+
+        Assert.AreEqual(1, backend.TexImage2DCalls);
+    }
+
+    /// <summary>Pixel uploads reject spans whose byte count does not match the texture size.</summary>
+    [TestMethod]
+    public void SetPixels_WithWrongByteCount_ThrowsBeforeUpload()
+    {
+        var (backend, gl) = Graphics2DTestHarness.CreateLayer();
+        using var texture = new Texture2D(gl, new Vector2(2f, 1f), GlTextureTarget.Texture2D);
+        (byte, byte, byte, byte)[] pixels = [(1, 2, 3, 4)];
+
+        var exception = Assert.ThrowsException<ArgumentException>(() =>
+        {
+            texture.Pixels = pixels;
+        });
+
+        Assert.AreEqual("pixels", exception.ParamName);
+        Assert.AreEqual(0, backend.TexImage2DCalls);
     }
 
     /// <summary>PixelsMipmap uploads pixels and then regenerates texture mipmaps.</summary>
