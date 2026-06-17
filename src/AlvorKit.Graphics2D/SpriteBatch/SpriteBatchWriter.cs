@@ -66,24 +66,4 @@ public partial class SpriteBatchWriter
         SpriteBatchFlip flip) =>
         DrawVertices(texture, position, size, color, subPosition, subSize, rotation, flip);
 
-    /// <summary>Draws a one-pixel white line.</summary>
-    public void DrawLine(Vector2 start, Vector2 end) => DrawLine(texture, start, end, 1f, Vector4.One);
-
-    /// <summary>Draws a tinted line with the default white texture.</summary>
-    public void DrawLine(Vector2 start, Vector2 end, float width, Vector4 color) => DrawLine(texture, start, end, width, color);
-
-    /// <summary>Draws a one-pixel textured line.</summary>
-    public void DrawLine(Texture texture, Vector2 start, Vector2 end) => DrawLine(texture, start, end, 1f, Vector4.One);
-
-    /// <summary>Draws a tinted textured line with the supplied width.</summary>
-    public void DrawLine(Texture texture, Vector2 start, Vector2 end, float width, Vector4 color)
-    {
-        var delta = end - start;
-        var normStart = NormalizePosition(start);
-        var normEnd = NormalizePosition(end);
-        var norm = Vector2.Normalize(new Vector2(-delta.Y, -delta.X));
-        var size = NormalizeSize(new Vector2(width, width));
-
-        DrawQuad(normEnd - (norm * size), normEnd + (norm * size), normStart - (norm * size), normStart + (norm * size), texture, color, Vector2.Zero, texture.Size);
-    }
 }

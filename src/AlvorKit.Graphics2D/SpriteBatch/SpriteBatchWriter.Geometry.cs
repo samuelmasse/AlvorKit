@@ -2,18 +2,6 @@ namespace AlvorKit.Graphics2D;
 
 public partial class SpriteBatchWriter
 {
-    /// <summary>Draws a quad from four normalized positions and a texture subregion.</summary>
-    private void DrawQuad(
-        Vector2 pos1,
-        Vector2 pos2,
-        Vector2 pos3,
-        Vector2 pos4,
-        Texture texture,
-        Vector4 color,
-        Vector2 subPosition,
-        Vector2 subSize) =>
-        DrawQuad(pos1, pos2, pos3, pos4, texture, color, TexCorners(subPosition, subSize, SpriteBatchRotation.None, SpriteBatchFlip.None));
-
     /// <summary>Generates vertices for one sprite, applying clipping, rotation, and flips.</summary>
     private void DrawVertices(
         Texture texture,

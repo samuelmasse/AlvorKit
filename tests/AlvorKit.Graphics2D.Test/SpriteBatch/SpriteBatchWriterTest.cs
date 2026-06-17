@@ -104,6 +104,116 @@ public sealed class SpriteBatchWriterTest
         Assert.AreEqual(4, fixture.Vertices.VertexCount);
     }
 
+    /// <summary>Clipping a line trims the generated geometry to the clip rectangle.</summary>
+    [TestMethod]
+    public void DrawLine_WithClip_ClipsHorizontalLine()
+    {
+        var fixture = CreateWriter();
+        fixture.Writer.Clip = new SpriteBatchClip(25f, 40f, 75f, 60f);
+
+        fixture.Writer.DrawLine(new Vector2(0f, 50f), new Vector2(100f, 50f), 10f, Vector4.One);
+
+        Assert.AreEqual(8, fixture.Vertices.VertexCount);
+        AssertVerticesInsideClip(fixture.Vertices.Vertices, fixture.Writer.Clip.Value);
+        AssertHasCanvasPosition(fixture.Vertices.Vertices, new Vector2(25f, 40f));
+        AssertHasCanvasPosition(fixture.Vertices.Vertices, new Vector2(75f, 60f));
+    }
+
+    /// <summary>Clipping a diagonal line trims the generated polygon to the clip rectangle.</summary>
+    [TestMethod]
+    public void DrawLine_WithClip_ClipsDiagonalLine()
+    {
+        var fixture = CreateWriter();
+        fixture.Writer.Clip = new SpriteBatchClip(40f, 40f, 60f, 60f);
+
+        fixture.Writer.DrawLine(Vector2.Zero, new Vector2(100f, 100f), 5f, Vector4.One);
+
+        Assert.AreEqual(16, fixture.Vertices.VertexCount);
+        AssertVerticesInsideClip(fixture.Vertices.Vertices, fixture.Writer.Clip.Value);
+    }
+
+    /// <summary>Clipping fully outside a line skips vertex generation.</summary>
+    [TestMethod]
+    public void DrawLine_WithClipOutsideLine_SkipsVertices()
+    {
+        var fixture = CreateWriter();
+        fixture.Writer.Clip = new SpriteBatchClip(40f, 40f, 60f, 60f);
+
+        fixture.Writer.DrawLine(new Vector2(0f, 10f), new Vector2(100f, 10f), 5f, Vector4.One);
+
+        Assert.AreEqual(0, fixture.Vertices.VertexCount);
+    }
+
+    /// <summary>Clipping fully to the left of a line skips vertex generation.</summary>
+    [TestMethod]
+    public void DrawLine_WithClipLeftOfLine_SkipsVertices()
+    {
+        var fixture = CreateWriter();
+        fixture.Writer.Clip = new SpriteBatchClip(40f, 0f, 60f, 100f);
+
+        fixture.Writer.DrawLine(new Vector2(0f, 50f), new Vector2(10f, 50f), 5f, Vector4.One);
+
+        Assert.AreEqual(0, fixture.Vertices.VertexCount);
+    }
+
+    /// <summary>Clipping fully to the right of a line skips vertex generation.</summary>
+    [TestMethod]
+    public void DrawLine_WithClipRightOfLine_SkipsVertices()
+    {
+        var fixture = CreateWriter();
+        fixture.Writer.Clip = new SpriteBatchClip(40f, 0f, 60f, 100f);
+
+        fixture.Writer.DrawLine(new Vector2(80f, 50f), new Vector2(100f, 50f), 5f, Vector4.One);
+
+        Assert.AreEqual(0, fixture.Vertices.VertexCount);
+    }
+
+    /// <summary>Clipping fully above a line skips vertex generation.</summary>
+    [TestMethod]
+    public void DrawLine_WithClipAboveLine_SkipsVertices()
+    {
+        var fixture = CreateWriter();
+        fixture.Writer.Clip = new SpriteBatchClip(0f, 40f, 100f, 60f);
+
+        fixture.Writer.DrawLine(new Vector2(0f, 90f), new Vector2(100f, 90f), 5f, Vector4.One);
+
+        Assert.AreEqual(0, fixture.Vertices.VertexCount);
+    }
+
+    /// <summary>Invalid line clips skip vertex generation.</summary>
+    [TestMethod]
+    public void DrawLine_WithInvalidClip_SkipsVertices()
+    {
+        var fixture = CreateWriter();
+        fixture.Writer.Clip = new SpriteBatchClip(60f, 60f, 40f, 40f);
+
+        fixture.Writer.DrawLine(Vector2.Zero, new Vector2(100f, 100f), 5f, Vector4.One);
+
+        Assert.AreEqual(0, fixture.Vertices.VertexCount);
+    }
+
+    /// <summary>Zero-length lines are ignored instead of emitting invalid coordinates.</summary>
+    [TestMethod]
+    public void DrawLine_WithZeroLengthLine_SkipsVertices()
+    {
+        var fixture = CreateWriter();
+
+        fixture.Writer.DrawLine(new Vector2(10f, 10f), new Vector2(10f, 10f), 5f, Vector4.One);
+
+        Assert.AreEqual(0, fixture.Vertices.VertexCount);
+    }
+
+    /// <summary>Non-positive line widths skip vertex generation.</summary>
+    [TestMethod]
+    public void DrawLine_WithNonPositiveWidth_SkipsVertices()
+    {
+        var fixture = CreateWriter();
+
+        fixture.Writer.DrawLine(Vector2.Zero, Vector2.One, 0f, Vector4.One);
+
+        Assert.AreEqual(0, fixture.Vertices.VertexCount);
+    }
+
     /// <summary>Convenience draw overloads forward to the full vertex-generation path.</summary>
     [TestMethod]
     public void Draw_ConvenienceOverloads_EmitQuads()
@@ -153,6 +263,35 @@ public sealed class SpriteBatchWriterTest
         Assert.AreEqual(expected.Z, actual.Z, 0.0001f);
         Assert.AreEqual(expected.W, actual.W, 0.0001f);
     }
+
+    /// <summary>Asserts every generated vertex maps back inside a canvas-space clip rectangle.</summary>
+    private static void AssertVerticesInsideClip(ReadOnlySpan<SpriteBatchVertex> vertices, SpriteBatchClip clip)
+    {
+        foreach (var vertex in vertices)
+        {
+            var position = CanvasPosition(vertex.Position);
+            Assert.IsTrue(position.X >= clip.Min.X - 0.0001f);
+            Assert.IsTrue(position.X <= clip.Max.X + 0.0001f);
+            Assert.IsTrue(position.Y >= clip.Min.Y - 0.0001f);
+            Assert.IsTrue(position.Y <= clip.Max.Y + 0.0001f);
+        }
+    }
+
+    /// <summary>Asserts that at least one generated vertex maps to the supplied canvas-space position.</summary>
+    private static void AssertHasCanvasPosition(ReadOnlySpan<SpriteBatchVertex> vertices, Vector2 expected)
+    {
+        foreach (var vertex in vertices)
+        {
+            var position = CanvasPosition(vertex.Position);
+            if (Vector2.DistanceSquared(position, expected) <= 0.0001f)
+                return;
+        }
+
+        Assert.Fail($"Expected a vertex at canvas position {expected}.");
+    }
+
+    /// <summary>Converts a normalized test vertex position back into the 100 by 100 test canvas.</summary>
+    private static Vector2 CanvasPosition(Vector2 position) => new((position.X + 1f) * 50f, (1f - position.Y) * 50f);
 
     /// <summary>Shared writer test fixture.</summary>
     private sealed record WriterFixture(Texture Texture, SpriteBatchVertices Vertices, SpriteBatchWriter Writer);
