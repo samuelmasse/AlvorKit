@@ -2,13 +2,20 @@
 
     <Folder Name="/Demos/">
         <Project Path="demos/AlvorKit.Demo/AlvorKit.Demo.csproj" />
+        <Project Path="demos/AlvorKit.ECS.Demo/AlvorKit.ECS.Demo.csproj" />
         <Project Path="demos/AlvorKit.Demo.XxHash/AlvorKit.Demo.XxHash.csproj" />
         <Project Path="demos/AlvorKit.Demo.XxHash.Bench/AlvorKit.Demo.XxHash.Bench.csproj" />
         <Project Path="demos/AlvorKit.FreeType.Demo/AlvorKit.FreeType.Demo.csproj" />
+        <Project Path="demos/AlvorKit.Injection.Demo/AlvorKit.Injection.Demo.csproj" />
         <Project Path="demos/AlvorKit.MiniAudio.Demo/AlvorKit.MiniAudio.Demo.csproj" />
+        <Project Path="demos/AlvorKit.Mocking.Demo/AlvorKit.Mocking.Demo.csproj" />
         <Project
             Path="demos/AlvorKit.OpenGL.Demo.HelloTriangle/AlvorKit.OpenGL.Demo.HelloTriangle.csproj" />
         <Project Path="demos/AlvorKit.OpenGL.Demo.TestCube/AlvorKit.OpenGL.Demo.TestCube.csproj" />
+        <Project
+            Path="demos/AlvorKit.Graphics2D.Demo/AlvorKit.Graphics2D.Demo.csproj" />
+        <Project
+            Path="demos/AlvorKit.Graphics2D.Fonts.Demo/AlvorKit.Graphics2D.Fonts.Demo.csproj" />
         <Project Path="demos/AlvorKit.Script.AlvorEye.Demo/AlvorKit.Script.AlvorEye.Demo.csproj" />
     </Folder>
 
@@ -28,11 +35,25 @@
         <Project Path="scripts/AlvorKit.Script.TestCoverage/AlvorKit.Script.TestCoverage.csproj" />
     </Folder>
 
+    <Project Path="src/AlvorKit.ECS/AlvorKit.ECS.csproj" />
+    <Project Path="src/AlvorKit.ECS.Generator/AlvorKit.ECS.Generator.csproj" />
+    <Project Path="src/AlvorKit.Injection/AlvorKit.Injection.csproj" />
+    <Project Path="src/AlvorKit.Mocking/AlvorKit.Mocking.csproj" />
+    <Project Path="src/AlvorKit.Graphics2D/AlvorKit.Graphics2D.csproj" />
+    <Project Path="src/AlvorKit.Graphics2D.Fonts/AlvorKit.Graphics2D.Fonts.csproj" />
     <Project Path="src/AlvorKit.OpenGL.Layer/AlvorKit.OpenGL.Layer.csproj" />
 
     <Folder Name="/Tests/">
         <Project Path="tests/AlvorKit.Testing/AlvorKit.Testing.csproj" />
+        <Project Path="tests/AlvorKit.ECS.Test/AlvorKit.ECS.Test.csproj" />
+        <Project Path="tests/AlvorKit.ECS.Generator.Test/AlvorKit.ECS.Generator.Test.csproj" />
+        <Project Path="tests/AlvorKit.Injection.Test/AlvorKit.Injection.Test.csproj" />
+        <Project Path="tests/AlvorKit.Mocking.Test/AlvorKit.Mocking.Test.csproj" />
         <Project Path="tests/AlvorKit.XxHash.Test/AlvorKit.XxHash.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Graphics2D.Test/AlvorKit.Graphics2D.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Graphics2D.Fonts.Test/AlvorKit.Graphics2D.Fonts.Test.csproj" />
         <Project Path="tests/AlvorKit.OpenGL.Layer.Test/AlvorKit.OpenGL.Layer.Test.csproj" />
         <Project Path="tests/AlvorKit.Script.Workspace.Test/AlvorKit.Script.Workspace.Test.csproj" />
         <Project

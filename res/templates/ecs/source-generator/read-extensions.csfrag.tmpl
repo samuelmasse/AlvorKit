@@ -1,0 +1,10 @@
+{{Access}} static class {{ClassName}}Extensions
+{
+    extension<T>(T ent) where T : IEnt
+    {
+{{HasProperties}}    }
+
+    extension<T>(T ent) where T : IEntRead
+    {
+{{GetProperties}}    }
+}

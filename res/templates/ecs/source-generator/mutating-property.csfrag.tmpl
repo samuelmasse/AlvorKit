@@ -1,0 +1,6 @@
+{{Comment}}        {{Access}} {{Type}} {{AccessorName}}
+        {
+            {{GetPrefix}}get => ent.Get<{{Type}}, {{ClassName}}.{{Name}}>()!;
+            {{SetPrefix}}set => ent.Set<{{Type}}, {{ClassName}}.{{Name}}>(value);
+        }
+

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Lib.Harmony" Version="2.4.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="HarmonyLib" />
+        <Using Include="System.Collections" />
+        <Using Include="System.Reflection.Emit" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Mocking.Proxies" />
+        <InternalsVisibleTo Include="AlvorKit.Mocking.Test" />
+    </ItemGroup>
+
+</Project>

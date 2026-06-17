@@ -1,0 +1,8 @@
+{{Comment}}        {{SetAccess}} EntMutator<T> {{Name}}(in {{Type}} value)
+        {
+            mut.Ent.{{AccessorName}} = value;
+            return mut;
+        }
+
+{{Comment}}        {{GetAccess}} {{Type}} {{Name}}() => mut.Ent.{{AccessorName}};
+

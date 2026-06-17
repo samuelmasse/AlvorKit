@@ -1,0 +1,16 @@
+{{Comment}}        {{Access}} {{Type}} {{AccessorName}}
+        {
+            {{GetPrefix}}get
+            {
+                var value = ent.Get<{{Type}}, {{ClassName}}.{{Name}}>();
+                if (value == null)
+                {
+                    value = new();
+                    ent.Set<{{Type}}, {{ClassName}}.{{Name}}>(value);
+                }
+
+                return value!;
+            }
+            {{SetPrefix}}set => ent.Set<{{Type}}, {{ClassName}}.{{Name}}>(value);
+        }
+
