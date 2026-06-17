@@ -20,6 +20,23 @@ public class EntArenaTest
             arena.Dispose();
     }
 
+    /// <summary>Verifies default EntArena values are invalid and do not disturb reserved allocators.</summary>
+    [TestMethod]
+    public void EntArena_Default_IsDeadAndSafe()
+    {
+        EntArena arena = default;
+        int objectAllocatorGeneration = EntReg.Allocators[0].Generation;
+
+        Assert.IsFalse(arena.IsAlive);
+        Assert.AreEqual(0, arena.Allocated);
+        Assert.ThrowsExactly<EntArenaDisposedException>(() => arena.Alloc());
+
+        arena.Dispose();
+
+        Assert.IsFalse(arena.IsAlive);
+        Assert.AreEqual(objectAllocatorGeneration, EntReg.Allocators[0].Generation);
+    }
+
     /// <summary>Verifies EntArena SingleAlloc Works.</summary>
     [TestMethod]
     public void EntArena_SingleAlloc_Works()

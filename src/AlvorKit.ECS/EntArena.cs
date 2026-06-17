@@ -7,7 +7,7 @@ public readonly struct EntArena : IDisposable
     private readonly int generation;
 
     /// <summary>Returns whether the arena has not been disposed.</summary>
-    public bool IsAlive => EntReg.Allocators[index].Generation == generation;
+    public bool IsAlive => index != 0 && EntReg.Allocators[index].Generation == generation;
 
     /// <summary>Gets the number of currently allocated live entities in this arena.</summary>
     public int Allocated => Capacity - Free;
@@ -46,6 +46,9 @@ public readonly struct EntArena : IDisposable
     /// <summary>Disposes the arena, releases all pages, and invalidates entities allocated from it.</summary>
     public void Dispose()
     {
+        if (!IsAlive)
+            return;
+
         lock (Allocator)
         {
             if (!IsAlive)
