@@ -10,11 +10,11 @@ internal static class FontsTestHarness
         return (backend, new GlLayer(backend));
     }
 
-    /// <summary>Creates a complete font context around a fake OpenGL and FreeType driver pair.</summary>
-    internal static (FontsTestGl Backend, FontsTestDriver Driver, SpriteBatch Batch, FontContext Context) CreateContext()
+    /// <summary>Creates a complete font context around fake OpenGL and FreeType bindings.</summary>
+    internal static (FontsTestGl Backend, FontsTestFt FreeType, SpriteBatch Batch, FontContext Context) CreateContext()
     {
         var (backend, gl) = CreateLayer();
-        var driver = new FontsTestDriver();
+        var driver = new FontsTestFt();
         var batch = new SpriteBatch(gl);
         var context = new FontContext(gl, driver, batch);
         return (backend, driver, batch, context);

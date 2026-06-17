@@ -6,8 +6,8 @@ public sealed class FontContext : IDisposable
     /// <summary>The strict OpenGL layer used by font atlas resources.</summary>
     private readonly GlLayer gl;
 
-    /// <summary>The FreeType call surface used by opened fonts.</summary>
-    private readonly FontDriver driver;
+    /// <summary>The FreeType binding used by opened fonts.</summary>
+    private readonly Ft ft;
 
     /// <summary>The sprite batch used when repacking atlas textures.</summary>
     private readonly SpriteBatch batch;
@@ -19,23 +19,23 @@ public sealed class FontContext : IDisposable
     private readonly FontBuffer buffer;
 
     /// <summary>Creates a context using the generated AlvorKit FreeType backend.</summary>
-    public FontContext(GlLayer gl, SpriteBatch batch) : this(gl, new FontFreeTypeDriver(new FtBackend()), batch) { }
+    public FontContext(GlLayer gl, SpriteBatch batch) : this(gl, new FtBackend(), batch) { }
 
-    /// <summary>Creates a context with a caller-supplied FreeType driver for tests.</summary>
-    internal FontContext(GlLayer gl, FontDriver driver, SpriteBatch batch)
+    /// <summary>Creates a context with a caller-supplied FreeType binding for tests.</summary>
+    internal FontContext(GlLayer gl, Ft ft, SpriteBatch batch)
     {
         this.gl = gl;
-        this.driver = driver;
+        this.ft = ft;
         this.batch = batch;
-        library = new FontLibrary(driver);
+        library = new FontLibrary(ft);
         buffer = new FontBuffer(gl);
     }
 
     /// <summary>Gets the strict OpenGL layer used by font atlas resources.</summary>
     internal GlLayer GL => gl;
 
-    /// <summary>Gets the FreeType call surface used by opened fonts.</summary>
-    internal FontDriver Driver => driver;
+    /// <summary>Gets the FreeType binding used by opened fonts.</summary>
+    internal Ft FreeType => ft;
 
     /// <summary>Gets the sprite batch used when repacking atlas textures.</summary>
     internal SpriteBatch Batch => batch;

@@ -6,7 +6,7 @@ public sealed class FontContextTest
 {
     /// <summary>The public constructor initializes the generated FreeType backend with fake OpenGL resources.</summary>
     [TestMethod]
-    public void PublicConstructor_WithRealFreeTypeDriver_Succeeds()
+    public void PublicConstructor_WithRealFreeTypeBackend_Succeeds()
     {
         var (_, gl) = FontsTestHarness.CreateLayer();
         using var batch = new SpriteBatch(gl);

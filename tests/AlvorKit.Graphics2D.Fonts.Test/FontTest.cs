@@ -11,10 +11,11 @@ public sealed class FontTest
         var (_, driver, batch, context) = FontsTestHarness.CreateContext();
         try
         {
+            ReadOnlySpan<byte> memoryBytes = [1, 2, 3];
             using var fileFont = new Font(context, "Inter.ttf");
-            using var memoryFont = new Font(context, [1, 2, 3]);
+            using var memoryFont = new Font(context, memoryBytes);
             using var defaultOptionsFont = new Font(context, new FontOptions());
-            using var optionsFont = new Font(context, new FontOptions { Data = [4, 5], Index = 2 });
+            using var optionsFont = new Font(context, new FontOptions { Data = new byte[] { 4, 5 }, Index = 2 });
 
             Assert.AreEqual(1, fileFont.Textures.Length);
             Assert.AreEqual(1, memoryFont.Textures.Length);
@@ -23,7 +24,7 @@ public sealed class FontTest
             Assert.AreEqual(1, driver.NewFaceCount);
             Assert.AreEqual(3, driver.NewMemoryFaceCount);
             Assert.AreEqual("Inter.ttf", driver.LastFile);
-            Assert.AreEqual(2, driver.LastMemoryLength);
+            CollectionAssert.AreEqual(new byte[] { 4, 5 }, driver.LastMemoryBytes);
             Assert.AreEqual((nint)2, driver.LastFaceIndex);
         }
         finally
@@ -34,6 +35,33 @@ public sealed class FontTest
         }
 
         Assert.AreEqual(4, driver.DoneFaceCount);
+    }
+
+    /// <summary>Memory face construction releases its native byte copy when FreeType rejects the face.</summary>
+    [TestMethod]
+    public void Constructor_WhenMemoryFaceFails_ThrowsFontException()
+    {
+        var (_, driver, batch, context) = FontsTestHarness.CreateContext();
+        driver.NewMemoryFaceError = 7;
+        try
+        {
+            var exception = Assert.ThrowsException<FontException>(() => CreateMemoryFont(context));
+
+            StringAssert.Contains(exception.Message, nameof(Ft.NewMemoryFace));
+            CollectionAssert.AreEqual(new byte[] { 9, 8, 7 }, driver.LastMemoryBytes);
+        }
+        finally
+        {
+            context.Dispose();
+            batch.Dispose();
+            driver.Dispose();
+        }
+
+        static void CreateMemoryFont(FontContext context)
+        {
+            ReadOnlySpan<byte> memoryBytes = [9, 8, 7];
+            using var font = new Font(context, memoryBytes);
+        }
     }
 
     /// <summary>Repeated size requests share one cache entry while distinct pixel heights get distinct entries.</summary>

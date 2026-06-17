@@ -12,20 +12,23 @@ public sealed class Font : IDisposable
     /// <summary>The cached font sizes by pixel height.</summary>
     private readonly Dictionary<int, FontSize> sizes = [];
 
-    /// <summary>The FreeType driver used to load glyphs.</summary>
-    private readonly FontDriver driver;
+    /// <summary>The FreeType binding used to load glyphs.</summary>
+    private readonly Ft ft;
 
     /// <summary>Creates a font from a file path.</summary>
     public Font(FontContext context, string file) : this(context, new FontOptions { File = file }) { }
 
-    /// <summary>Creates a font from managed bytes that remain pinned while the font is alive.</summary>
-    public Font(FontContext context, byte[] data) : this(context, new FontOptions { Data = data }) { }
+    /// <summary>Creates a font from caller-owned bytes copied into native memory for the font lifetime.</summary>
+    public Font(FontContext context, ReadOnlySpan<byte> data) : this(context, new FontFace(context.FreeType, context.Library, data, 0)) { }
 
     /// <summary>Creates a font from explicit options.</summary>
-    public Font(FontContext context, FontOptions options)
+    public Font(FontContext context, FontOptions options) : this(context, new FontFace(context.FreeType, context.Library, options)) { }
+
+    /// <summary>Creates a font around an opened face.</summary>
+    private Font(FontContext context, FontFace face)
     {
-        driver = context.Driver;
-        face = new FontFace(driver, context.Library, options);
+        ft = context.FreeType;
+        this.face = face;
         atlases = new FontAtlasList(context.GL, context.Batch, context.Buffer);
     }
 
@@ -38,7 +41,7 @@ public sealed class Font : IDisposable
         if (sizes.TryGetValue(size, out var cached))
             return cached;
 
-        var created = new FontSize(driver, face, atlases, size);
+        var created = new FontSize(ft, face, atlases, size);
         sizes.Add(size, created);
         return created;
     }

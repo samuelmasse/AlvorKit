@@ -1,7 +1,7 @@
 namespace AlvorKit.Graphics2D.Fonts.Test;
 
-/// <summary>Deterministic FreeType driver used to feed fake face and glyph slot state to font tests.</summary>
-internal sealed unsafe class FontsTestDriver : FontDriver, IDisposable
+/// <summary>Deterministic FreeType binding used to feed fake face and glyph slot state to font tests.</summary>
+internal sealed unsafe class FontsTestFt : FtNoop, IDisposable
 {
     /// <summary>The fake FreeType library handle.</summary>
     private static readonly nint Library = 0xFEED;
@@ -22,7 +22,7 @@ internal sealed unsafe class FontsTestDriver : FontDriver, IDisposable
     private nint glyphBuffer;
 
     /// <summary>Creates a fake face with active size and glyph pointers.</summary>
-    public FontsTestDriver()
+    public FontsTestFt()
     {
         face->Size = size;
         face->Glyph = glyph;
@@ -49,57 +49,76 @@ internal sealed unsafe class FontsTestDriver : FontDriver, IDisposable
     /// <summary>Gets the number of glyph load calls.</summary>
     public int LoadGlyphCount { get; private set; }
 
-    /// <summary>Gets the most recent file path passed to <see cref="NewFace"/>.</summary>
+    /// <summary>Gets the most recent file path passed to <see cref="NewFace(nint, nint, CLong, out FtFaceRec*)"/>.</summary>
     public string? LastFile { get; private set; }
 
-    /// <summary>Gets the most recent memory font length passed to <see cref="NewMemoryFace"/>.</summary>
-    public int LastMemoryLength { get; private set; }
+    /// <summary>Gets the most recent memory font bytes passed to <see cref="NewMemoryFace"/>.</summary>
+    public byte[] LastMemoryBytes { get; private set; } = [];
 
     /// <summary>Gets the most recent face index passed to a face creation method.</summary>
     public nint LastFaceIndex { get; private set; }
 
+    /// <summary>Gets or sets the FreeType error returned from memory face creation.</summary>
+    public int NewMemoryFaceError { get; set; }
+
     /// <inheritdoc/>
-    internal override nint InitFreeType()
+    public override int InitFreeType(out nint alibrary)
     {
         InitFreeTypeCount++;
-        return Library;
+        alibrary = Library;
+        return 0;
     }
 
     /// <inheritdoc/>
-    internal override void DoneFreeType(nint library) => DoneFreeTypeCount++;
+    public override int DoneFreeType(nint library)
+    {
+        DoneFreeTypeCount++;
+        return 0;
+    }
 
     /// <inheritdoc/>
-    internal override FtFaceRec* NewFace(nint library, string path, nint faceIndex)
+    public override int NewFace(nint library, nint filepathname, CLong faceIndex, out FtFaceRec* aface)
     {
         NewFaceCount++;
-        LastFile = path;
-        LastFaceIndex = faceIndex;
-        return face;
+        LastFile = Marshal.PtrToStringUTF8(filepathname);
+        LastFaceIndex = faceIndex.Value;
+        aface = face;
+        return 0;
     }
 
     /// <inheritdoc/>
-    internal override FtFaceRec* NewMemoryFace(nint library, nint data, int length, nint faceIndex)
+    public override int NewMemoryFace(nint library, nint fileBase, CLong fileSize, CLong faceIndex, out FtFaceRec* aface)
     {
         NewMemoryFaceCount++;
-        LastMemoryLength = length;
-        LastFaceIndex = faceIndex;
-        return face;
+        LastMemoryBytes = ReadBytes(fileBase, checked((int)fileSize.Value));
+        LastFaceIndex = faceIndex.Value;
+        aface = NewMemoryFaceError == 0 ? face : null;
+        return NewMemoryFaceError;
     }
 
     /// <inheritdoc/>
-    internal override void DoneFace(FtFaceRec* face) => DoneFaceCount++;
+    public override int DoneFace(FtFaceRec* face)
+    {
+        DoneFaceCount++;
+        return 0;
+    }
 
     /// <inheritdoc/>
-    internal override void SetPixelSizes(FtFaceRec* face, uint pixelWidth, uint pixelHeight) => SetPixelSizesCount++;
+    public override int SetPixelSizes(FtFaceRec* face, uint pixelWidth, uint pixelHeight)
+    {
+        SetPixelSizesCount++;
+        return 0;
+    }
 
     /// <inheritdoc/>
-    internal override uint GetCharIndex(FtFaceRec* face, uint charCode) => charCode;
+    public override uint GetCharIndex(FtFaceRec* face, CULong charCode) => checked((uint)charCode.Value.ToUInt64());
 
     /// <inheritdoc/>
-    internal override void LoadGlyph(FtFaceRec* face, uint glyphIndex, int loadFlags)
+    public override int LoadGlyph(FtFaceRec* face, uint glyphIndex, int loadFlags)
     {
         LoadGlyphCount++;
         ApplyGlyph(glyphs.GetValueOrDefault(glyphIndex));
+        return 0;
     }
 
     /// <summary>Configures the size metrics reported when a <see cref="FontSize"/> is created.</summary>
@@ -130,6 +149,17 @@ internal sealed unsafe class FontsTestDriver : FontDriver, IDisposable
         NativeMemory.Free(face);
     }
 
+    /// <summary>Copies unmanaged font bytes into a managed assertion buffer.</summary>
+    private static byte[] ReadBytes(nint source, int byteCount)
+    {
+        if (source == 0 || byteCount == 0)
+            return [];
+
+        var bytes = new byte[byteCount];
+        Marshal.Copy(source, bytes, 0, bytes.Length);
+        return bytes;
+    }
+
     /// <summary>Writes configured glyph data into the fake glyph slot.</summary>
     private void ApplyGlyph(GlyphData? data)
     {
@@ -152,7 +182,7 @@ internal sealed unsafe class FontsTestDriver : FontDriver, IDisposable
     }
 
     /// <summary>Converts a pixel value into FreeType 26.6 fixed-point storage.</summary>
-    private static CLong Pixel(float value) => new((nint)MathF.Round(value * FontFreeTypeValue.PixelOne));
+    private static CLong Pixel(float value) => new((nint)MathF.Round(value * FontFreeType.PixelOne));
 
     /// <summary>One configured glyph slot payload.</summary>
     private sealed record GlyphData(int Width, int Height, int Pitch, int BearingX, int BearingY, float Advance, byte[] Alpha)

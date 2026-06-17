@@ -3,8 +3,8 @@ namespace AlvorKit.Graphics2D.Fonts;
 /// <summary>Loads and caches glyphs for one pixel size of a font face.</summary>
 public sealed unsafe class FontSize
 {
-    /// <summary>The FreeType driver used to load glyphs.</summary>
-    private readonly FontDriver driver;
+    /// <summary>The FreeType binding used to load glyphs.</summary>
+    private readonly Ft ft;
 
     /// <summary>The FreeType face whose size is selected before each glyph load.</summary>
     private readonly FontFace face;
@@ -22,19 +22,19 @@ public sealed unsafe class FontSize
     private readonly Dictionary<Rune, FontGlyphSlot> slots = [];
 
     /// <summary>Creates a font-size cache and captures size metrics.</summary>
-    internal FontSize(FontDriver driver, FontFace face, FontAtlasList atlases, int size)
+    internal FontSize(Ft ft, FontFace face, FontAtlasList atlases, int size)
     {
-        this.driver = driver;
+        this.ft = ft;
         this.face = face;
         this.atlases = atlases;
         this.size = size;
 
-        driver.SetPixelSizes(face.Pointer, 0, (uint)size);
+        FontFreeType.Require(ft, nameof(Ft.SetPixelSizes), ft.SetPixelSizes(face.Pointer, 0, (uint)size));
         var ftMetrics = face.Pointer->Size->Metrics;
         metrics = new FontSizeMetrics(
-            FontFreeTypeValue.Pixel26Dot6(ftMetrics.Ascender),
-            FontFreeTypeValue.Pixel26Dot6(ftMetrics.Descender),
-            FontFreeTypeValue.Pixel26Dot6(ftMetrics.Height));
+            FontFreeType.Pixel26Dot6(ftMetrics.Ascender),
+            FontFreeType.Pixel26Dot6(ftMetrics.Descender),
+            FontFreeType.Pixel26Dot6(ftMetrics.Height));
     }
 
     /// <summary>Gets the requested pixel height.</summary>
@@ -49,9 +49,9 @@ public sealed unsafe class FontSize
         if (slots.TryGetValue(character, out var cached))
             return cached;
 
-        driver.SetPixelSizes(face.Pointer, 0, (uint)size);
-        var glyphIndex = driver.GetCharIndex(face.Pointer, (uint)character.Value);
-        driver.LoadGlyph(face.Pointer, glyphIndex, (int)FtLoadFlags.Render);
+        FontFreeType.Require(ft, nameof(Ft.SetPixelSizes), ft.SetPixelSizes(face.Pointer, 0, (uint)size));
+        var glyphIndex = ft.GetCharIndex(face.Pointer, character);
+        FontFreeType.Require(ft, nameof(Ft.LoadGlyph), ft.LoadGlyph(face.Pointer, glyphIndex, FtLoadFlags.Render));
 
         var slot = CreateGlyphSlot(character, *face.Pointer->Glyph);
         slots.Add(character, slot);
@@ -70,7 +70,7 @@ public sealed unsafe class FontSize
             size,
             new Vector2(width, height),
             new Vector2(glyphSlot.BitmapLeft, glyphSlot.BitmapTop),
-            FontFreeTypeValue.Pixel26Dot6(glyphSlot.Advance.X));
+            FontFreeType.Pixel26Dot6(glyphSlot.Advance.X));
         return atlases.FindFitting(glyph).Add(glyph, pixels);
     }
 
