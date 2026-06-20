@@ -58,17 +58,31 @@ Before staging, run `check` for the exact files or globs you intend to stage and
 confirm your current lease still covers them. If overlap is unavoidable, write a
 conflict note; the helper stores it under `out/agents/conflicts/`.
 
-## AlvorEye Visual Automation
+## Visual Automation
 
-Use `scripts/AlvorKit.Script.AlvorEye` when an agent needs to see, drive, or
-verify a desktop visual target such as a game, OpenGL demo, rendering regression,
-or interactive UI workflow. Prefer AlvorEye over ad hoc screenshot scripts when
-the task needs timed captures, keyboard or mouse input, handoff freeze/resume, or
-visual proof that a scene changed.
+Use `scripts/AlvorKit.Script.AlvorSense` first when an agent needs to see, drive,
+or verify an AlvorKit game that is wired through `AgentGlfwWindowHost` from `AlvorKit.Windowing.Agent`.
+AlvorSense is preferred over AlvorEye for those targets because it runs without a
+visible window, does not move the user's real mouse, and gives the agent exact
+control over simulated time, update counts, input, rendering, and screenshots.
+
+Read `docs/AlvorSense.md` before using or extending AlvorSense. That guide
+explains session startup, command batches, screenshot capture, exact-time input
+control, result artifacts, and when to fall back to AlvorEye.
+
+When using AlvorSense, keep the chat user oriented: share important screenshots
+in chat, briefly describe the key input/update batches and observed changes, and
+continue in one live game session whenever practical instead of restarting after
+each observation.
+
+Use `scripts/AlvorKit.Script.AlvorEye` when the visual target is not wired for
+AlvorSense, such as an arbitrary desktop window, external application, or demo
+that still requires real OS-level window discovery and input. Prefer AlvorEye
+over ad hoc screenshot scripts for those desktop targets.
 
 Read `docs/AlvorEye.md` before using or extending AlvorEye. That guide explains
 scenario files, JSONL sessions, result artifacts, handoff behavior, visual
-verification patterns, and the demo game used to practice agent-driven solving.
+verification patterns, and desktop automation gotchas.
 
 ## Line Length
 
@@ -124,21 +138,34 @@ meaningful generated-code changes before handing off. Delete disposable
 `out/bindgen-review/` snapshot directories before finishing the task unless the
 user explicitly asks to keep them for follow-up inspection.
 
-Do not wire bindgen into normal restore or build targets. Local binding mode is
-explicit: create `AlvorKit.Local.props`, run bindgen for the changed library,
-then build. If `UseLocalBindings=true` fails because `out/bindgen` is missing,
-keep that failure and tell the user to run bindgen rather than making builds
-generate code.
+Do not wire bindgen into normal restore or build targets. Run bindgen for the
+changed library, then build; consumers automatically use the exact local
+generated project when it exists under `out/bindgen`, and otherwise use the
+pinned package.
 
 Do not add `LOCAL_BINDINGS` or any other compile-time symbol to distinguish
-local generated bindings from packaged bindings. `UseLocalBindings` may choose
-MSBuild project references instead of package references, but C# source and
-tests must compile the same way in both modes.
+local generated bindings from packaged bindings. C# source and tests must
+compile the same way whether MSBuild selects a project reference or a package
+reference.
+
+## Package Version Properties
+
+Keep version properties in `AlvorKit.Packages.props` limited to generated
+binding packages, generated-package roots, and similarly pinned generated
+inputs. Ordinary hand-authored project dependencies, including script utilities
+and runtime helper packages, should declare their package versions directly in
+the project file unless there is a clear non-generated repo-wide reason to
+centralize them.
 
 ## C# File Placement
 
 A `.cs` file may live directly at the root of its project when that is the
 clearest home. Do not create a subdirectory solely because the file is C#.
+
+Prefer one top-level type per `.cs` file. Do not group multiple records,
+classes, structs, or interfaces in a single protocol, model, command, or
+`Types` file just because they are small. Use a folder with one file per type
+when several related data shapes belong together.
 
 ## C# Using Directives
 
@@ -164,6 +191,40 @@ primary constructor parameters `readonly`; use the parameters directly unless a
 distinct member is needed for validation, transformation, API naming, or real
 mutable state. In partial types, first verify whether the primary constructor
 parameters are already in scope before adding mirror state for another file.
+
+Trust C# nullable reference type analysis for non-null contracts. Do not add
+`ArgumentNullException.ThrowIfNull`, manual `if (x is null)` guards, or
+`Debug.Assert(x is not null)` checks just to recheck a value whose static type is
+non-nullable. Express possible null with `?` and handle it, or let an invalid
+caller fail at the first real use when the static contract says non-null.
+
+Do not silently clamp, coerce, or normalize caller-provided values in property
+setters or state updates. If a value is invalid, reject it with a clear error or
+model the invariant in the type system. If a platform boundary requires clamping,
+perform it explicitly at that boundary and keep the original state contract
+obvious.
+
+Do not create private nested classes for helper composition. Prefer internal
+top-level helper types when a class needs composed collaborators.
+
+Avoid partial classes for hand-authored code. Do not use partial declarations as
+a file organization technique for parser sections, command groups, protocol
+types, or file-size compliance. Use partial only for generated-code integration
+or unavoidable framework/tooling requirements, and mention the reason in handoff.
+
+Avoid Java-style C# design and naming. Do not introduce generic `Factory`,
+`Manager`, `Service`, or similarly broad suffixes when a constructor, static
+`Create`, delegate, or domain-specific type name would express the intent more
+clearly.
+
+## Documentation Voice
+
+Write public documentation for a reader who only sees the published API, tool,
+or document. Avoid meta descriptions that only make sense to the author, an
+agent, or a generator maintainer, such as "generated type", "shared by generated
+types", "this file emits", or "configured scalar family", unless the generation
+process is itself the subject being documented. Prefer domain wording and
+concrete examples of the public things the documentation describes.
 
 ## Runtime Allocation Discipline
 
@@ -267,9 +328,8 @@ dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --binding x
 ```
 
 The binding coverage path reads `native/<library>/conf/bindgen.yml`, measures
-both the generated API project and its `.Backend` project, selects matching test
-projects by package or project reference, and forces `UseLocalBindings=true` so
-Coverlet instruments the generated project assemblies. If this fails because
+both the generated API project and its `.Backend` project, and selects matching
+test projects by package or project reference. If this fails because
 `out/bindgen` is missing, run bindgen for that library first. Inspect the
 reported missing lines and methods; omit `--threshold 0` only when you intend to
 enforce the coverage gate for generated binding modules.

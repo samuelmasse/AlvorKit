@@ -3,7 +3,7 @@
 
     <PropertyGroup>
         <Version>0.1.0</Version>
-        <GeneratePackageOnBuild Condition="'$(UseLocalBindings)' != 'true'">True</GeneratePackageOnBuild>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <TargetFramework>net10.0</TargetFramework>

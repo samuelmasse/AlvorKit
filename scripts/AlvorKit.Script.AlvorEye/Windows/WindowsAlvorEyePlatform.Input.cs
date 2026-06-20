@@ -11,8 +11,17 @@ internal sealed partial class WindowsAlvorEyePlatform
     /// <summary>Keyboard key-up flag.</summary>
     private const uint KeyUp = 0x0002;
 
+    /// <summary>Keyboard extended-key flag required for arrows and other enhanced-keyboard keys.</summary>
+    private const uint KeyExtended = 0x0001;
+
     /// <summary>Keyboard Unicode flag.</summary>
     private const uint KeyUnicode = 0x0004;
+
+    /// <summary>Keyboard hardware scan-code flag.</summary>
+    private const uint KeyScanCode = 0x0008;
+
+    /// <summary>Default key hold duration for press-and-release gestures.</summary>
+    private const int KeyPressMilliseconds = 50;
 
     /// <summary>Left mouse down flag.</summary>
     private const uint MouseLeftDown = 0x0002;
@@ -30,12 +39,16 @@ internal sealed partial class WindowsAlvorEyePlatform
     public void SendKey(TargetWindow window, string key, KeyInputMode mode)
     {
         WindowsNative.SetForegroundWindow(window.Handle);
-        var vk = KeyCode(key);
-        Span<WindowsInputNative.Input> inputs = stackalloc WindowsInputNative.Input[mode == KeyInputMode.Press ? 2 : 1];
-        inputs[0] = KeyInput(vk, mode == KeyInputMode.Up);
+        var keyCode = KeyCode(key);
         if (mode == KeyInputMode.Press)
-            inputs[1] = KeyInput(vk, true);
-        Send(inputs);
+        {
+            SendKeyInput(keyCode, false);
+            Thread.Sleep(KeyPressMilliseconds);
+            SendKeyInput(keyCode, true);
+            return;
+        }
+
+        SendKeyInput(keyCode, mode == KeyInputMode.Up);
     }
 
     /// <inheritdoc/>
@@ -79,9 +92,24 @@ internal sealed partial class WindowsAlvorEyePlatform
             throw new InvalidOperationException("SendInput did not accept every input event.");
     }
 
+    /// <summary>Sends one key input event.</summary>
+    private static void SendKeyInput(WindowsKeyCode key, bool up)
+    {
+        Span<WindowsInputNative.Input> inputs = [KeyInput(key, up)];
+        Send(inputs);
+    }
+
     /// <summary>Creates one virtual-key input event.</summary>
-    private static WindowsInputNative.Input KeyInput(ushort key, bool up) =>
-        new() { Type = InputKeyboard, Data = new() { Keyboard = new() { Vk = key, Flags = up ? KeyUp : 0 } } };
+    internal static WindowsInputNative.Input KeyInput(WindowsKeyCode key, bool up)
+    {
+        var useScanCode = key.ScanCode != 0;
+        var flags = (up ? KeyUp : 0) | (key.Extended ? KeyExtended : 0) | (useScanCode ? KeyScanCode : 0);
+        return new()
+        {
+            Type = InputKeyboard,
+            Data = new() { Keyboard = new() { Vk = useScanCode ? (ushort)0 : key.VirtualKey, Scan = key.ScanCode, Flags = flags } }
+        };
+    }
 
     /// <summary>Creates one Unicode input event.</summary>
     private static WindowsInputNative.Input UnicodeInput(char value, bool up) =>

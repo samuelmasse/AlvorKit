@@ -1,6 +1,3 @@
-CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-
 // Parse a small set of knobs so the same executable can do quick agent checks or slower local sweeps.
 var options = EcsBenchOptions.Parse(args);
 if (options.ShowHelp)

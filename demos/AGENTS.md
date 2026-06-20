@@ -22,6 +22,18 @@ These instructions apply to C# code under `demos/`.
   instead of process-working-directory-relative paths or local repository-root
   walkers.
 
+## Visual Demo Automation
+
+- Prefer AlvorSense for visual verification when a demo creates its window with
+  `AgentGlfwWindowHost` from `AlvorKit.Windowing.Agent`. Read `docs/AlvorSense.md` and use
+  `scripts/AlvorKit.Script.AlvorSense` for exact update counts, input batches,
+  hidden rendering, and screenshots.
+- When using AlvorSense, show important screenshots in chat, summarize the key
+  batches being run, and continue the same live session whenever practical
+  instead of restarting after every observation.
+- Use AlvorEye only when a demo is not wired for AlvorSense or the task needs
+  real desktop window behavior. Read `docs/AlvorEye.md` before doing so.
+
 ## Demo Narrative
 
 - Structure each demo around a clear main path that reads like a step-by-step

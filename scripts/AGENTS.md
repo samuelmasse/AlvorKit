@@ -15,6 +15,17 @@ These instructions apply to C# code under `scripts/` and the matching tests unde
 - Keep changes cohesive, boring, and easy to review; avoid sweeping rewrites that
   do not pay for themselves in clarity, testability, or correctness.
 
+## Visual Automation Scripts
+
+- Prefer `scripts/AlvorKit.Script.AlvorSense` over AlvorEye for games wired with
+  `AgentGlfwWindowHost` from `AlvorKit.Windowing.Agent`. Read `docs/AlvorSense.md` before using or changing
+  that workflow.
+- When using AlvorSense, share important screenshots in chat, summarize the key
+  command batches and visual observations, and continue one live session
+  whenever practical instead of repeatedly restarting the target.
+- Use `scripts/AlvorKit.Script.AlvorEye` for desktop targets that are not wired
+  for AlvorSense. Read `docs/AlvorEye.md` before using or changing AlvorEye.
+
 ## C# Style
 
 - Prefer functional style where it improves clarity: pure helpers, immutable
@@ -49,6 +60,11 @@ These instructions apply to C# code under `scripts/` and the matching tests unde
   scenarios are cohesive.
 - When a touched file is already over 150 lines, split out cohesive helpers or
   data shapes before adding more code.
+- Do not use partial classes solely to satisfy the script source file-size
+  target. If a file grows past the target, first extract cohesive top-level
+  helper types with domain-specific names. If no clean extraction exists, keep
+  the file whole, call out the exception, and avoid spreading one logical type
+  across partial files.
 - If a file cannot reasonably be kept under 150 lines because of generated shape,
   platform-specific glue, or tightly coupled declarations, call that out clearly
   and keep the exception as small as possible.

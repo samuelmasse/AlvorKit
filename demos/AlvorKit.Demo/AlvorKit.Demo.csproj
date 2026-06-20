@@ -15,20 +15,40 @@
         <Using Include="BigGustave" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj')">
         <PackageReference Include="AlvorKit.FreeType.Backend" Version="$(FtBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
         <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(GlfwBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">
         <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="$(MaBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj')">
         <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(GlBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="BigGustave" Version="1.0.6" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj" />
-        <PackageReference Include="BigGustave" Version="1.0.6" />
     </ItemGroup>
 
     <ItemGroup>

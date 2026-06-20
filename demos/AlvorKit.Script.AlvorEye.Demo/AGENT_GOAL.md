@@ -1,8 +1,19 @@
-# AlvorEye Demo Game
+# AlvorSense Demo Game
 
-Use AlvorEye to observe and beat the window titled `AlvorEye demo game`.
+This project is historically named `AlvorKit.Script.AlvorEye.Demo`, but the
+demo can be solved with either AlvorEye or AlvorSense. AlvorSense is suggested
+when you want the engine-native route: use `scripts/AlvorKit.Script.AlvorSense`
+to observe and beat the demo through `AgentGlfwWindowHost`.
 
-The game is intentionally visual. Do not read game state from stdout. Capture frames, compare what changed, and use the visible colored regions to decide the next input.
+When using AlvorSense, start the game with `ALVORKIT_WINDOWING_AGENT=1`, drive
+it with interactive agent commands, and request screenshots with
+`screenshot <path>`. AlvorEye remains a valid choice when practicing desktop
+visual automation or when you specifically want OS-level window/input behavior.
+
+The game is intentionally visual. Capture frames, share important screenshots
+with the chat user, compare what changed, and use the visible colored regions to
+decide the next input. If you use AlvorSense, keep working in the same live game
+session whenever practical instead of restarting after each observation.
 
 Goal:
 
@@ -18,7 +29,7 @@ Controls:
 - Use the mouse to click the yellow button.
 - Use the mouse to drag the cyan slider handle.
 - Send text input for `EYE`.
-- Hold `Escape` briefly to close the game.
+- Send `quit` after visually confirming the win.
 
 Visual verification:
 
@@ -29,15 +40,16 @@ Visual verification:
 
 Result dump:
 
-- When the game exits normally, stdout prints one line starting with `ALVOREYE_DEMO_RESULT ` followed by JSON.
+- When the agent command loop exits, stdout prints one line starting with
+  `ALVOREYE_DEMO_RESULT ` followed by JSON.
 - The result is an audit after the visual solve, not a substitute for screenshots.
-- Hold `Escape` briefly or close the window after visually confirming the win state.
 - If `ALVOREYE_DEMO_RESULT_PATH` is set, the same JSON is also written to that file.
 
-Suggested AlvorEye workflow:
+Suggested AlvorSense workflow:
 
-- Start with `run` or `session` and capture after a one-to-two second wait.
-- Use held key actions with short waits for movement rather than single taps.
+- Start with `render` and `screenshot out\...\00-start.png`.
+- Use `key <name> down`, `updates <count> <delta>`, and `key <name> up` for movement.
+- Use `move`, `mouse Left down`, `update`, and `mouse Left up` for mouse locks.
+- Use `text EYE` for the code lock.
 - Capture after each lock and verify the corresponding progress light changed.
-- Use `handoff` while the scan bar is moving, inspect the frozen frame, then `resume` and continue.
 - If only two lights are green, keep playing; the remaining locks are usually the slider and typed code.

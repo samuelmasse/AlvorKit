@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Windowing.Agent\AlvorKit.Windowing.Agent.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Mocking\AlvorKit.Mocking.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Mocking" />
+        <Using Include="AlvorKit.OpenGL" />
+        <Using Include="AlvorKit.OpenGL.Layer" />
+        <Using Include="AlvorKit.Windowing" />
+        <Using Include="System.Globalization" />
+        <Using Include="System.Numerics" />
+        <Using Include="System.Reflection" />
+    </ItemGroup>
+
+</Project>

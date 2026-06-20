@@ -22,15 +22,8 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Enable local bindings
-        run: |
-          cat > AlvorKit.Local.props <<'EOF'
-          <Project>
-              <PropertyGroup>
-                  <UseLocalBindings>true</UseLocalBindings>
-              </PropertyGroup>
-          </Project>
-          EOF
+      - name: Generate maths primitives
+        run: dotnet run --project scripts/AlvorKit.Script.MathsGen
 
       - name: Generate bindings
         run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- all --strict
@@ -45,7 +38,7 @@ jobs:
         run: dotnet test AlvorKit.slnx --no-build --verbosity normal
 
   non_local_bindings_probe:
-    name: probe build without local bindings
+    name: probe build without local native bindings
     runs-on: ubuntu-24.04
     outputs:
       build_succeeded: ${{ steps.probe.outputs.build_succeeded }}
@@ -57,10 +50,13 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      - name: Generate maths primitives
+        run: dotnet run --project scripts/AlvorKit.Script.MathsGen
+
       # A job that actually runs cannot conclude as skipped, so this probe turns
       # an informational failure into an output. The marker job below is then
-      # skipped when the non-local build does not succeed.
-      - name: Probe build without local bindings
+      # skipped when the non-local native binding build does not succeed.
+      - name: Probe build without local native bindings
         id: probe
         shell: bash
         run: |
@@ -69,11 +65,11 @@ jobs:
 
               echo "build_succeeded=false" >> "$GITHUB_OUTPUT"
               {
-                  echo "### Build without local bindings"
+                  echo "### Build without local native bindings"
                   echo
                   printf '%s\n' "$reason"
                   echo
-                  echo "The visible non-local binding build marker will be skipped."
+                  echo "The visible non-local native binding build marker will be skipped."
               } >> "$GITHUB_STEP_SUMMARY"
           }
 
@@ -82,29 +78,29 @@ jobs:
           dotnet restore AlvorKit.slnx
           restore_status=$?
           if [ "$restore_status" -ne 0 ]; then
-              skip_build "Skipped because \`dotnet restore AlvorKit.slnx\` failed in non-local binding mode."
+              skip_build "Skipped because \`dotnet restore AlvorKit.slnx\` failed without local native bindings."
               exit 0
           fi
 
           dotnet build AlvorKit.slnx --no-restore
           build_status=$?
           if [ "$build_status" -ne 0 ]; then
-              skip_build "Skipped because \`dotnet build AlvorKit.slnx --no-restore\` failed in non-local binding mode."
+              skip_build "Skipped because \`dotnet build AlvorKit.slnx --no-restore\` failed without local native bindings."
               exit 0
           fi
 
           echo "build_succeeded=true" >> "$GITHUB_OUTPUT"
           {
-              echo "### Build without local bindings"
+              echo "### Build without local native bindings"
               echo
-              echo "The solution built successfully without local bindings."
+              echo "The solution built successfully without local native bindings."
           } >> "$GITHUB_STEP_SUMMARY"
 
   non_local_bindings_build:
-    name: build without local bindings
+    name: build without local native bindings
     needs: non_local_bindings_probe
     if: ${{ needs.non_local_bindings_probe.outputs.build_succeeded == 'true' }}
     runs-on: ubuntu-24.04
     steps:
-      - name: Confirm non-local binding build
-        run: echo "The probe job built the solution without local bindings successfully."
+      - name: Confirm non-local native binding build
+        run: echo "The probe job built the solution without local native bindings successfully."

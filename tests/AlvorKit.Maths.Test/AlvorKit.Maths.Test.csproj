@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Maths\AlvorKit.Maths.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Maths" />
+        <Using Include="System.Numerics" />
+    </ItemGroup>
+
+</Project>

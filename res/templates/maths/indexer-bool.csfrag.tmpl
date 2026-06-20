@@ -1,0 +1,33 @@
+    /// <summary>Gets or sets a component by zero-based index.</summary>
+    public bool this[int index]
+    {
+        readonly get
+        {
+            if ((uint)index >= ComponentCount)
+                ThrowIndexOutOfRange(index);
+
+            return Unsafe.AddByteOffset(ref Unsafe.AsRef(in X), (nint)(index * ComponentStrideBytes));
+        }
+        set
+        {
+            if ((uint)index >= ComponentCount)
+                ThrowIndexOutOfRange(index);
+
+            Unsafe.AddByteOffset(ref X, (nint)(index * ComponentStrideBytes)) = value;
+        }
+    }
+
+    /// <summary>Gets a mutable reference to a component by zero-based index.</summary>
+    public static ref bool ComponentRef(ref {{TypeName}} value, int index)
+    {
+        if ((uint)index >= ComponentCount)
+            ThrowIndexOutOfRange(index);
+
+        return ref Unsafe.AddByteOffset(ref value.X, (nint)(index * ComponentStrideBytes));
+    }
+
+    /// <summary>Throws for invalid component indexes on the cold path.</summary>
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowIndexOutOfRange(int index) =>
+        throw new ArgumentOutOfRangeException(nameof(index), index, "Index must be between 0 and {{MaxIndex}}.");

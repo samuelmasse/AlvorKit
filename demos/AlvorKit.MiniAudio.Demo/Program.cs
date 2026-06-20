@@ -1,5 +1,3 @@
-CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-
 const uint SampleRate = 48000;
 const uint Channels = 2;
 const int PreviewFrameCount = 1024;

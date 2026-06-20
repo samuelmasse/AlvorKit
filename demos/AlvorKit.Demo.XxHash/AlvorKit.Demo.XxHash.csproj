@@ -6,11 +6,11 @@
         <ServerGarbageCollection>false</ServerGarbageCollection>
     </PropertyGroup>
 
-    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.XxHash.Backend\AlvorKit.XxHash.Backend.csproj')">
         <PackageReference Include="AlvorKit.XxHash.Backend" Version="$(XxhBindVer)" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.XxHash.Backend\AlvorKit.XxHash.Backend.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.XxHash.Backend\AlvorKit.XxHash.Backend.csproj" />
     </ItemGroup>
 

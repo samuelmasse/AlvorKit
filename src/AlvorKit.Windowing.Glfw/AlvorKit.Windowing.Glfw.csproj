@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+        <IsCoverageSourceProject>false</IsCoverageSourceProject>
+    </PropertyGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
+        <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(GlfwBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.GLFW" />
+        <Using Include="AlvorKit.Windowing" />
+    </ItemGroup>
+
+</Project>

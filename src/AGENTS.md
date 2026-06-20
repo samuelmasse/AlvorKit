@@ -14,6 +14,18 @@ These instructions apply to C# code under `src/` and the matching tests under
 - Preserve existing behavior unless the task asks for a behavior change.
 - Keep changes cohesive, reviewable, and grounded in the existing architecture.
 
+## Visual Runtime Verification
+
+- Prefer AlvorSense when verifying an AlvorKit game or runtime demo that uses
+  `AgentGlfwWindowHost` from `AlvorKit.Windowing.Agent`. Read `docs/AlvorSense.md`; it lets agents drive
+  exact simulated time, input, hidden rendering, and screenshots.
+- When using AlvorSense, share important screenshots in chat, summarize the key
+  input/update batches and visual changes, and keep working in the same live
+  session whenever practical.
+- Use AlvorEye only for visual targets that are not wired for AlvorSense or when
+  the task specifically needs real desktop window/input behavior. Read
+  `docs/AlvorEye.md` before using it.
+
 ## Game-Code Performance
 
 - This is low-level video game/runtime code. Design hot-path code as if it must

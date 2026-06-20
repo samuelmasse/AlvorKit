@@ -1,0 +1,8 @@
+namespace AlvorKit.Windowing;
+
+/// <summary>Exposes the current drawable surface for a window loop.</summary>
+public sealed class WindowCanvas(WindowLoop window)
+{
+    /// <summary>Gets the drawable client size.</summary>
+    public Vector2 Size => window.Physical.Size;
+}

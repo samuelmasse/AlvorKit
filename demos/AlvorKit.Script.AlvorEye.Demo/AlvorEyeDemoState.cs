@@ -48,39 +48,24 @@ public sealed class AlvorEyeDemoState
     /// <summary>Latest mouse y coordinate in client pixels.</summary>
     public float MouseY { get; private set; }
 
-    /// <summary>Advances movement, mouse interactions, and win detection for one frame.</summary>
-    public void Update(GlfwBackend glfw, GlfwWindow window, float elapsedSeconds)
+    /// <summary>Advances movement, mouse interactions, and win detection for one exact windowing frame.</summary>
+    public void Update(Keyboard keyboard, Mouse mouse, float elapsedSeconds)
     {
-        glfw.GetCursorPos(window, out var mouseX, out var mouseY);
-        MouseX = (float)mouseX;
-        MouseY = (float)mouseY;
+        MouseX = mouse.Position.X;
+        MouseY = mouse.Position.Y;
 
-        MoveFromKeys(glfw, window, elapsedSeconds);
-        UpdateMouse(glfw.GetMouseButton(window, 0) == GlfwInputAction.Press);
+        foreach (var rune in keyboard.Text)
+            AcceptCharacter((uint)rune.Value);
+
+        MoveFromKeys(keyboard, elapsedSeconds);
+        UpdateMouse(mouse.IsMainDown(), mouse.IsMainPressed());
         leftPressedSinceLastUpdate = false;
         HasKey |= Overlaps(PlayerX, PlayerY, PlayerSize, PlayerSize, 116f, 96f, 56f, 56f);
         Won |= AllLocksComplete && Overlaps(PlayerX, PlayerY, PlayerSize, PlayerSize, 514f, 84f, 64f, 96f);
     }
 
-    /// <summary>Records mouse button press events so quick clicks are not missed between frames.</summary>
-    public void AcceptMouseButton(GlfwMouseButton button, GlfwInputAction action)
-    {
-        if ((int)button == 0 && action == GlfwInputAction.Press)
-        {
-            leftPressedSinceLastUpdate = true;
-            if (ButtonHit(MouseX, MouseY))
-                ButtonPressed = true;
-            if (SliderTrackHit(MouseY))
-                DraggingSlider = true;
-        }
-        else if ((int)button == 0 && action == GlfwInputAction.Release)
-        {
-            DraggingSlider = false;
-        }
-    }
-
-    /// <summary>Accepts platform text input for the three-letter code lock.</summary>
-    public void AcceptCharacter(uint codepoint)
+    /// <summary>Accepts host text input for the three-letter code lock.</summary>
+    private void AcceptCharacter(uint codepoint)
     {
         if (CodeProgress == 3)
             return;
@@ -90,15 +75,6 @@ public sealed class AlvorEyeDemoState
         CodeProgress = value == code[CodeProgress] ? CodeProgress + 1 : value == 'E' ? 1 : 0;
         if (CodeProgress > 2)
             CodeProgress = 3;
-    }
-
-    /// <summary>Records cursor movement from GLFW so mouse-button callbacks use event-time coordinates.</summary>
-    public void AcceptCursor(double x, double y)
-    {
-        MouseX = (float)x;
-        MouseY = (float)y;
-        if (DraggingSlider && SliderTrackHit(MouseY))
-            SliderValue = Math.Clamp((MouseX - 682f) / 166f, 0f, 1f);
     }
 
     /// <summary>Whether key, button, slider, and text locks are all solved.</summary>
@@ -128,22 +104,31 @@ public sealed class AlvorEyeDemoState
         (HasKey ? 1 : 0) + (ButtonPressed ? 1 : 0) + (SliderComplete ? 1 : 0) + (CodeProgress == 3 ? 1 : 0);
 
     /// <summary>Moves the player using held WASD or arrow keys.</summary>
-    private void MoveFromKeys(GlfwBackend glfw, GlfwWindow window, float elapsedSeconds)
+    private void MoveFromKeys(Keyboard keyboard, float elapsedSeconds)
     {
         const float speed = 245f;
-        var dx = Axis(glfw, window, GlfwKey.D, GlfwKey.Right) - Axis(glfw, window, GlfwKey.A, GlfwKey.Left);
-        var dy = Axis(glfw, window, GlfwKey.S, GlfwKey.Down) - Axis(glfw, window, GlfwKey.W, GlfwKey.Up);
+        var dx = Axis(keyboard, WindowKey.D, WindowKey.Right) - Axis(keyboard, WindowKey.A, WindowKey.Left);
+        var dy = Axis(keyboard, WindowKey.S, WindowKey.Down) - Axis(keyboard, WindowKey.W, WindowKey.Up);
         PlayerX = Math.Clamp(PlayerX + dx * speed * elapsedSeconds, 36f, 574f - PlayerSize);
         PlayerY = Math.Clamp(PlayerY + dy * speed * elapsedSeconds, 76f, 596f - PlayerSize);
     }
 
     /// <summary>Returns one when either of two movement keys is held.</summary>
-    private static float Axis(GlfwBackend glfw, GlfwWindow window, GlfwKey first, GlfwKey second) =>
-        glfw.GetKey(window, first) == GlfwInputAction.Press || glfw.GetKey(window, second) == GlfwInputAction.Press ? 1f : 0f;
+    private static float Axis(Keyboard keyboard, WindowKey first, WindowKey second) =>
+        keyboard.IsKeyDown(first) || keyboard.IsKeyDown(second) ? 1f : 0f;
 
     /// <summary>Updates mouse-only locks using the current cursor coordinate.</summary>
-    private void UpdateMouse(bool leftDown)
+    private void UpdateMouse(bool leftDown, bool leftPressed)
     {
+        if (leftPressed)
+        {
+            leftPressedSinceLastUpdate = true;
+            if (ButtonHit(MouseX, MouseY))
+                ButtonPressed = true;
+            if (SliderTrackHit(MouseY))
+                DraggingSlider = true;
+        }
+
         if ((leftDown || leftPressedSinceLastUpdate) && ButtonHit(MouseX, MouseY))
             ButtonPressed = true;
 

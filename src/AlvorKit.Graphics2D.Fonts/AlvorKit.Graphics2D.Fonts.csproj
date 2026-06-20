@@ -4,11 +4,11 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
-    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj')">
         <PackageReference Include="AlvorKit.FreeType.Backend" Version="$(FtBindVer)" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj" />
     </ItemGroup>
 

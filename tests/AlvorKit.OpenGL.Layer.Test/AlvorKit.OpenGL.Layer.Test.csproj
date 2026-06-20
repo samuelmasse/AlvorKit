@@ -6,7 +6,7 @@
         <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj')">
         <None Include="$(NuGetPackageRoot)alvorkit.opengl\$(GlBindVer)\lib\$(TargetFramework)\AlvorKit.OpenGL.xml"
             CopyToOutputDirectory="PreserveNewest"
             Link="AlvorKit.OpenGL.xml"

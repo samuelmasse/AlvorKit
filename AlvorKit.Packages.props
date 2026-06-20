@@ -1,7 +1,10 @@
 <Project>
     <PropertyGroup>
-        <UseLocalBindings Condition="'$(UseLocalBindings)' == ''">false</UseLocalBindings>
         <BindingsRoot Condition="'$(BindingsRoot)' == ''">$(MSBuildThisFileDirectory)out\bindgen</BindingsRoot>
+        <MathsPrimitivesRoot Condition="'$(MathsPrimitivesRoot)' == ''">$(MSBuildThisFileDirectory)out\mathgen\AlvorKit.Maths.Primitives</MathsPrimitivesRoot>
+        <UseLocalMathsPrimitives
+            Condition="'$(UseLocalMathsPrimitives)' == '' and Exists('$(MathsPrimitivesRoot)\AlvorKit.Maths.Primitives.csproj')">true</UseLocalMathsPrimitives>
+        <UseLocalMathsPrimitives Condition="'$(UseLocalMathsPrimitives)' == ''">false</UseLocalMathsPrimitives>
 
         <FtBindVer>2.14.3.12</FtBindVer>
 
@@ -12,15 +15,14 @@
         <XxhBindVer>0.8.3.12</XxhBindVer>
 
         <GlBindVer>4.6.12</GlBindVer>
+
+        <MathsPrimitivesVer>0.1.0</MathsPrimitivesVer>
     </PropertyGroup>
 
-    <Import Project="$(MSBuildThisFileDirectory)AlvorKit.Local.props"
-        Condition="Exists('$(MSBuildThisFileDirectory)AlvorKit.Local.props')" />
-
-    <Target Name="EnsureGeneratedBindings"
+    <Target Name="EnsureGeneratedMathsPrimitives"
         BeforeTargets="ResolveProjectReferences"
-        Condition="'$(UseLocalBindings)' == 'true'">
-        <Error Condition="!Exists('$(BindingsRoot)')"
-            Text="UseLocalBindings=true but '$(BindingsRoot)' does not exist. Run bindgen or set BindingsRoot in AlvorKit.Local.props." />
+        Condition="'$(UseLocalMathsPrimitives)' == 'true'">
+        <Error Condition="!Exists('$(MathsPrimitivesRoot)\AlvorKit.Maths.Primitives.csproj')"
+            Text="UseLocalMathsPrimitives=true but generated primitives were not found at '$(MathsPrimitivesRoot)'. Run mathsgen or set MathsPrimitivesRoot." />
     </Target>
 </Project>

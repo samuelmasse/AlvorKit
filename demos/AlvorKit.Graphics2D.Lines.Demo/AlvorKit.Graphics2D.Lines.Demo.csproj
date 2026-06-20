@@ -6,13 +6,19 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
-    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
         <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(GlfwBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj')">
         <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(GlBindVer)" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj" />
     </ItemGroup>
 

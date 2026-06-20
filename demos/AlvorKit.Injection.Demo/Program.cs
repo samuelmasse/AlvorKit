@@ -1,5 +1,3 @@
-CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-
 var injector = new Injector();
 
 // The include filter makes this container intentionally local to the demo namespace.

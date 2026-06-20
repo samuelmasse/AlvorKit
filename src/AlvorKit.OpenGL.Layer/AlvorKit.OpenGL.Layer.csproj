@@ -9,11 +9,11 @@
         <InternalsVisibleTo Include="AlvorKit.OpenGL.Layer.Test" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(UseLocalBindings)' != 'true'">
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj')">
         <PackageReference Include="AlvorKit.OpenGL" Version="$(GlBindVer)" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(UseLocalBindings)' == 'true'">
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj" />
     </ItemGroup>
 

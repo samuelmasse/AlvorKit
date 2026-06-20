@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <IsCoverageSourceProject>false</IsCoverageSourceProject>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(UseLocalMathsPrimitives)' != 'true'">
+        <PackageReference Include="AlvorKit.Maths.Primitives" Version="$(MathsPrimitivesVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseLocalMathsPrimitives)' == 'true'">
+        <ProjectReference Include="$(MathsPrimitivesRoot)\AlvorKit.Maths.Primitives.csproj" />
+    </ItemGroup>
+
+</Project>

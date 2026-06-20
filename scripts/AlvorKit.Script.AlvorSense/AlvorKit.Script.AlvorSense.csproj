@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <PackageReference Include="System.CommandLine" Version="2.0.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Script.AlvorSense.Test" />
+        <Using Include="System.CommandLine" />
+        <Using Include="System.CommandLine.Parsing" />
+    </ItemGroup>
+
+</Project>

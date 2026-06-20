@@ -43,6 +43,18 @@ These instructions apply to all test projects under `tests/`.
   identifiers, such as native library names, over generic filenames like
   `bindgen`.
 
+## Visual Test Harnesses
+
+- Prefer direct unit tests for deterministic behavior. When a visual game smoke
+  check is needed and the target is wired with `AgentGlfwWindowHost` from `AlvorKit.Windowing.Agent`, prefer
+  AlvorSense over AlvorEye and read `docs/AlvorSense.md`.
+- When using AlvorSense for a visual smoke check, share important screenshots in
+  chat, summarize the key batches and observed changes, and keep the same live
+  session running whenever practical.
+- Use AlvorEye only for targets that cannot run under AlvorSense or when the
+  test intentionally covers real desktop window/input behavior. Read
+  `docs/AlvorEye.md` before using it.
+
 ## Verification
 
 - For C# test changes, run focused coverage for the affected source project with

@@ -5,7 +5,7 @@ if (!glfw.Init())
 glfw.WindowHint(GlfwWindowHint.ContextVersionMajor, 3);
 glfw.WindowHint(GlfwWindowHint.ContextVersionMinor, 3);
 glfw.WindowHint(GlfwWindowHint.OpenGLProfile, GlfwOpenGLProfile.CoreProfile);
-
+glfw.WindowHint(GlfwWindowHint.Visible, false);
 var window = glfw.CreateWindow(900, 640, "AlvorEye demo game", default, default);
 if (window == default)
 {
@@ -14,55 +14,33 @@ if (window == default)
 }
 
 glfw.MakeContextCurrent(window);
-glfw.SwapInterval(1);
+var gl = new GlLayer(new GlBackend(glfw.GetProcAddress));
+using var host = new AgentGlfwWindowHost(glfw, window, gl)
+{
+    IsVSyncEnabled = true
+};
+using var loop = new WindowLoop(host);
+var canvas = new WindowCanvas(loop);
+var screen = new WindowScreen(loop);
+var keyboard = new Keyboard(loop);
+var mouse = new Mouse(loop);
 
-Gl gl = new GlBackend(glfw.GetProcAddress);
 gl.GetString(GlStringName.Version, out var version);
 gl.GetString(GlStringName.ShadingLanguageVersion, out var glsl);
 Console.WriteLine($"OpenGL {version} (GLSL {glsl}) - read AGENT_GOAL.md and solve the AlvorEye demo game.");
 
 using var renderer = AlvorEyeDemoRenderer.Load(gl);
 var state = new AlvorEyeDemoState();
-var clock = Stopwatch.StartNew();
-var lastFrameSeconds = 0.0;
+double totalSeconds = 0;
 
-// Text input is intentionally handled through the platform text path so AlvorEye's text action can solve one lock.
-glfw.SetCharCallback(window, (_, codepoint) => state.AcceptCharacter(codepoint));
-glfw.SetCursorPosCallback(window, (_, x, y) => state.AcceptCursor(x, y));
-glfw.SetMouseButtonCallback(window, (_, button, action, _) => state.AcceptMouseButton(button, action));
+mouse.Track = true;
+screen.Title = "AlvorEye demo game";
+screen.IsVisible = true;
+loop.Update += Update;
+loop.Render += Render;
+loop.Run();
 
-// Draws one frame while the main loop and resize callback share the same rendering path.
-void RenderFrame(int width, int height)
-{
-    if (width <= 0 || height <= 0)
-        return;
-
-    gl.Viewport(0, 0, width, height);
-    gl.ClearColor(0.055f, 0.065f, 0.075f, 1f);
-    gl.Clear(GlClearBufferMask.ColorBufferBit);
-    renderer.Render(state, (float)clock.Elapsed.TotalSeconds, width, height);
-    glfw.SwapBuffers(window);
-}
-
-// The callback repaints while Windows is inside modal resize loops.
-glfw.SetFramebufferSizeCallback(window, (_, width, height) => RenderFrame(width, height));
-
-while (!glfw.WindowShouldClose(window))
-{
-    glfw.PollEvents();
-    if (glfw.GetKey(window, GlfwKey.Escape) == GlfwInputAction.Press)
-        glfw.SetWindowShouldClose(window, true);
-
-    var now = clock.Elapsed.TotalSeconds;
-    var elapsed = Math.Clamp(now - lastFrameSeconds, 0.0, 0.05);
-    lastFrameSeconds = now;
-    state.Update(glfw, window, (float)elapsed);
-
-    glfw.GetFramebufferSize(window, out var width, out var height);
-    RenderFrame(width, height);
-}
-
-var result = JsonSerializer.Serialize(state.CreateResult(clock.Elapsed));
+var result = JsonSerializer.Serialize(state.CreateResult(TimeSpan.FromSeconds(totalSeconds)));
 Console.WriteLine($"ALVOREYE_DEMO_RESULT {result}");
 if (Environment.GetEnvironmentVariable("ALVOREYE_DEMO_RESULT_PATH") is { Length: > 0 } resultPath)
 {
@@ -70,6 +48,26 @@ if (Environment.GetEnvironmentVariable("ALVOREYE_DEMO_RESULT_PATH") is { Length:
     File.WriteAllText(resultPath, result);
 }
 
-glfw.DestroyWindow(window);
-glfw.Terminate();
 return 0;
+
+// Advances player movement, mouse locks, text locks, and close handling from windowing facades.
+void Update(double elapsedSeconds)
+{
+    totalSeconds += elapsedSeconds;
+
+    if (keyboard.IsKeyPressed(WindowKey.Escape))
+        screen.Close();
+
+    state.Update(keyboard, mouse, (float)elapsedSeconds);
+}
+
+// Draws one game frame through the current agent GLFW host OpenGL context.
+void Render()
+{
+    var width = Math.Max(1, (int)canvas.Size.X);
+    var height = Math.Max(1, (int)canvas.Size.Y);
+    gl.Viewport(0, 0, width, height);
+    gl.ClearColor(0.055f, 0.065f, 0.075f, 1f);
+    gl.Clear(GlClearBufferMask.ColorBufferBit);
+    renderer.Render(state, (float)totalSeconds, width, height);
+}

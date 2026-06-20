@@ -77,6 +77,27 @@ public sealed class ProjectDiscoveryTest
         Assert.AreEqual(0, modules.Count);
     }
 
+    /// <summary>Source assembly discovery skips projects that explicitly opt out of coverage gating.</summary>
+    [TestMethod]
+    public void SourceAssemblyNames_SkipsCoverageOptOutProjects()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.WriteProject("src", "Tool", []);
+        workspace.Write(
+            "src/Facade/Facade.csproj",
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <IsCoverageSourceProject>false</IsCoverageSourceProject>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var modules = ProjectDiscovery.SourceAssemblyNames(workspace.Root);
+
+        CollectionAssert.AreEqual(new[] { "Tool" }, modules.ToArray());
+    }
+
     /// <summary>Source project filters match source project names, files, and directories.</summary>
     [TestMethod]
     public void SourceAssemblyNames_WithFilters_ReturnsMatchingProjects()

@@ -4,27 +4,19 @@ AlvorKit is a C# game development kit
 
 ## Binding development mode
 
-Projects use published binding packages by default. To develop against generated bindings in
-`out/bindgen`, add an ignored `AlvorKit.Local.props` at the repository root:
-
-```xml
-<Project>
-    <PropertyGroup>
-        <UseLocalBindings>true</UseLocalBindings>
-    </PropertyGroup>
-</Project>
-```
-
-Build and restore intentionally do not run bindgen automatically. Generate the
-local project you are changing explicitly with:
+Projects use published binding packages by default. When an exact generated
+project exists under `out/bindgen`, consumers automatically use that local
+project instead of the pinned package for that binding. Build and restore
+intentionally do not run bindgen automatically. Generate the local project you
+are changing explicitly with:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library>
 ```
 
-If `UseLocalBindings=true` and `out/bindgen` is missing, builds fail until the
-generated project is created with that command. Use `all` only when bootstrapping
-every binding project or making a change that intentionally affects them all.
+If the generated project is missing, consumers fall back to the pinned package
+version in `AlvorKit.Packages.props`. Use `all` only when bootstrapping every
+binding project or making a change that intentionally affects them all.
 
 To compare generator changes without overwriting the default local bindings,
 write snapshots under `out/` and diff them:

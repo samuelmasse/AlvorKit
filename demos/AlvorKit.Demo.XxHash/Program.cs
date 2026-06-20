@@ -1,5 +1,3 @@
-CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-
 // The same payload is used as one span and as two chunks so one-shot hashes can be compared with streaming hashes.
 ReadOnlySpan<byte> input = "xxHash is built for very fast, non-cryptographic hashing."u8;
 ReadOnlySpan<byte> firstChunk = input[..28];

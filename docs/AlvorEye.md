@@ -10,6 +10,11 @@ desktop target. Typical examples are OpenGL demos, game prototypes, animation
 checks, visual UI regressions, and workflows where screenshots are the evidence
 that something actually happened.
 
+If the target game is wired through `AgentGlfwWindowHost`, prefer
+AlvorSense instead. Read `docs/AlvorSense.md` and use
+`scripts/AlvorKit.Script.AlvorSense` for exact-time engine-native input,
+hidden rendering, and screenshots without driving the real desktop.
+
 Do not use AlvorEye as a replacement for normal unit tests, static analysis, or
 non-visual command-line verification. It is best when the important facts live
 on screen.
@@ -38,9 +43,9 @@ Current primary platform:
 
 ## When Agents Should Use It
 
-Use AlvorEye when:
+Use AlvorEye when the visual target is not wired for AlvorSense and:
 
-- A user asks whether a game or demo visually works.
+- A user asks whether a desktop game or demo visually works.
 - A rendering change needs screenshot evidence.
 - A demo needs keyboard or mouse input before the useful state is visible.
 - A scene changes over time and must be captured after waits or inputs.

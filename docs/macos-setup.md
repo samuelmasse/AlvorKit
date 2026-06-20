@@ -119,31 +119,20 @@ git config --global user.name "Your Name"
 git config --global user.email "you@example.com"
 ```
 
-## 6. Enable local generated bindings
+## 6. Generate local bindings
 
 The checked-in source can use published binding packages, but active development
-often needs generated bindings under `out/bindgen`. Enable local binding mode
-with an ignored local props file:
-
-```sh
-cat > AlvorKit.Local.props <<'EOF'
-<Project>
-    <PropertyGroup>
-        <UseLocalBindings>true</UseLocalBindings>
-    </PropertyGroup>
-</Project>
-EOF
-```
-
-Generate all local bindings:
+often needs generated bindings under `out/bindgen`. Generate all local bindings:
 
 ```sh
 dotnet run --project scripts/AlvorKit.Script.Bindgen -- all
 ```
 
 This downloads upstream native sources and emits binding projects under
-`out/bindgen`. The bindgen C header parser uses ClangSharp runtime NuGet
-packages, so a separate Homebrew LLVM install should not be necessary.
+`out/bindgen`. Projects automatically use each exact local generated binding
+project when it exists and otherwise fall back to the pinned package. The bindgen
+C header parser uses ClangSharp runtime NuGet packages, so a separate Homebrew
+LLVM install should not be necessary.
 
 ## 7. Build
 

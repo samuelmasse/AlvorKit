@@ -8,10 +8,13 @@
         <Project Path="demos/AlvorKit.Demo.XxHash.Bench/AlvorKit.Demo.XxHash.Bench.csproj" />
         <Project Path="demos/AlvorKit.FreeType.Demo/AlvorKit.FreeType.Demo.csproj" />
         <Project Path="demos/AlvorKit.Injection.Demo/AlvorKit.Injection.Demo.csproj" />
+        <Project Path="demos/AlvorKit.Maths.Demo/AlvorKit.Maths.Demo.csproj" />
         <Project Path="demos/AlvorKit.MiniAudio.Demo/AlvorKit.MiniAudio.Demo.csproj" />
         <Project Path="demos/AlvorKit.Mocking.Demo/AlvorKit.Mocking.Demo.csproj" />
         <Project
             Path="demos/AlvorKit.OpenGL.Demo.HelloTriangle/AlvorKit.OpenGL.Demo.HelloTriangle.csproj" />
+        <Project
+            Path="demos/AlvorKit.OpenGL.Demo.AzureTentacle/AlvorKit.OpenGL.Demo.AzureTentacle.csproj" />
         <Project Path="demos/AlvorKit.OpenGL.Demo.TestCube/AlvorKit.OpenGL.Demo.TestCube.csproj" />
         <Project
             Path="demos/AlvorKit.Graphics2D.Demo/AlvorKit.Graphics2D.Demo.csproj" />
@@ -20,6 +23,7 @@
         <Project
             Path="demos/AlvorKit.Graphics2D.Fonts.Demo/AlvorKit.Graphics2D.Fonts.Demo.csproj" />
         <Project Path="demos/AlvorKit.Script.AlvorEye.Demo/AlvorKit.Script.AlvorEye.Demo.csproj" />
+        <Project Path="demos/AlvorKit.Windowing.Demo/AlvorKit.Windowing.Demo.csproj" />
     </Folder>
 
     <Folder Name="/Script/">
@@ -33,7 +37,10 @@
         <Project Path="scripts/AlvorKit.Script.Bindgen/AlvorKit.Script.Bindgen.csproj" />
         <Project Path="scripts/AlvorKit.Script.BindgenReview/AlvorKit.Script.BindgenReview.csproj" />
         <Project Path="scripts/AlvorKit.Script.AlvorEye/AlvorKit.Script.AlvorEye.csproj" />
+        <Project
+            Path="scripts/AlvorKit.Script.AlvorSense/AlvorKit.Script.AlvorSense.csproj" />
         <Project Path="scripts/AlvorKit.Script.Lint/AlvorKit.Script.Lint.csproj" />
+        <Project Path="scripts/AlvorKit.Script.MathsGen/AlvorKit.Script.MathsGen.csproj" />
         <Project Path="scripts/AlvorKit.Script.NativeBuild/AlvorKit.Script.NativeBuild.csproj" />
         <Project Path="scripts/AlvorKit.Script.TestCoverage/AlvorKit.Script.TestCoverage.csproj" />
     </Folder>
@@ -42,9 +49,13 @@
     <Project Path="src/AlvorKit.ECS.Generator/AlvorKit.ECS.Generator.csproj" />
     <Project Path="src/AlvorKit.Injection/AlvorKit.Injection.csproj" />
     <Project Path="src/AlvorKit.Mocking/AlvorKit.Mocking.csproj" />
+    <Project Path="src/AlvorKit.Maths/AlvorKit.Maths.csproj" />
     <Project Path="src/AlvorKit.Graphics2D/AlvorKit.Graphics2D.csproj" />
     <Project Path="src/AlvorKit.Graphics2D.Fonts/AlvorKit.Graphics2D.Fonts.csproj" />
     <Project Path="src/AlvorKit.OpenGL.Layer/AlvorKit.OpenGL.Layer.csproj" />
+    <Project Path="src/AlvorKit.Windowing/AlvorKit.Windowing.csproj" />
+    <Project Path="src/AlvorKit.Windowing.Agent/AlvorKit.Windowing.Agent.csproj" />
+    <Project Path="src/AlvorKit.Windowing.Glfw/AlvorKit.Windowing.Glfw.csproj" />
 
     <Folder Name="/Tests/">
         <Project Path="tests/AlvorKit.Testing/AlvorKit.Testing.csproj" />
@@ -52,6 +63,7 @@
         <Project Path="tests/AlvorKit.ECS.Generator.Test/AlvorKit.ECS.Generator.Test.csproj" />
         <Project Path="tests/AlvorKit.Injection.Test/AlvorKit.Injection.Test.csproj" />
         <Project Path="tests/AlvorKit.Mocking.Test/AlvorKit.Mocking.Test.csproj" />
+        <Project Path="tests/AlvorKit.Maths.Test/AlvorKit.Maths.Test.csproj" />
         <Project Path="tests/AlvorKit.XxHash.Test/AlvorKit.XxHash.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Graphics2D.Test/AlvorKit.Graphics2D.Test.csproj" />
@@ -64,6 +76,8 @@
         <Project
             Path="tests/AlvorKit.Script.AlvorEye.Test/AlvorKit.Script.AlvorEye.Test.csproj" />
         <Project
+            Path="tests/AlvorKit.Script.AlvorSense.Test/AlvorKit.Script.AlvorSense.Test.csproj" />
+        <Project
             Path="tests/AlvorKit.Script.Bindgen.Core.Test/AlvorKit.Script.Bindgen.Core.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.Bindgen.CHeaders.Test/AlvorKit.Script.Bindgen.CHeaders.Test.csproj" />
@@ -74,9 +88,12 @@
         <Project
             Path="tests/AlvorKit.Script.Lint.Test/AlvorKit.Script.Lint.Test.csproj" />
         <Project
+            Path="tests/AlvorKit.Script.MathsGen.Test/AlvorKit.Script.MathsGen.Test.csproj" />
+        <Project
             Path="tests/AlvorKit.Script.NativeBuild.Test/AlvorKit.Script.NativeBuild.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.TestCoverage.Test/AlvorKit.Script.TestCoverage.Test.csproj" />
+        <Project Path="tests/AlvorKit.Windowing.Test/AlvorKit.Windowing.Test.csproj" />
     </Folder>
 
 </Solution>

@@ -1,5 +1,3 @@
-CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-
 // Build the demo from the upstream-style sweep flags, generated xxHash backend,
 // candidate native entry points, and exact input sizes this run will measure.
 var demo = XxHashBenchDemo.Create(args);

@@ -1,0 +1,10 @@
+    /// <summary>Returns <paramref name="incident"/> refracted through <paramref name="normal"/> using the relative index ratio.</summary>
+    public static {{TypeName}} Refract({{TypeName}} incident, {{TypeName}} normal, {{ScalarType}} indexRatio)
+    {
+        var normalDotIncident = Dot(normal, incident);
+        var k = {{OneLiteral}} - (indexRatio * indexRatio * ({{OneLiteral}} - (normalDotIncident * normalDotIncident)));
+        return k < {{ZeroLiteral}}
+            ? Zero
+            : (indexRatio * incident) - ((indexRatio * normalDotIncident + {{SqrtKExpression}}) * normal);
+    }
+

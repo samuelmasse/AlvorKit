@@ -1,0 +1,10 @@
+    /// <summary>Gets or sets the {{Name}} swizzle.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public {{ReturnType}} {{Name}}
+    {
+        readonly get => new({{GetArguments}});
+        set
+        {
+{{SetAssignments}}
+        }
+    }

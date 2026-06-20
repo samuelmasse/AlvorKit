@@ -43,6 +43,7 @@ internal static class ProjectDiscovery
             .Select(path => Path.Combine(repoRoot, path))
             .Where(Directory.Exists)
             .SelectMany(root => Directory.GetFiles(root, "*.csproj", SearchOption.AllDirectories))
+            .Where(IsCoverageSourceProject)
             .Select(project => new ProjectInfo(Path.GetFullPath(project), Path.GetFileNameWithoutExtension(project)))
             .OrderBy(project => project.Path, StringComparer.Ordinal)
             .ToArray();
@@ -59,6 +60,17 @@ internal static class ProjectDiscovery
     {
         var value = XDocument.Load(project)
             .Descendants("IsTestProject")
+            .Select(element => element.Value.Trim())
+            .LastOrDefault(text => text.Length > 0);
+
+        return !string.Equals(value, "false", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Returns false only for source projects that explicitly opt out of coverage gating.</summary>
+    private static bool IsCoverageSourceProject(string project)
+    {
+        var value = XDocument.Load(project)
+            .Descendants("IsCoverageSourceProject")
             .Select(element => element.Value.Trim())
             .LastOrDefault(text => text.Length > 0);
 

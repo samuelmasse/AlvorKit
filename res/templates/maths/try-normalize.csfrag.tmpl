@@ -1,0 +1,14 @@
+    /// <summary>Attempts to normalize this vector without producing infinities or NaN values for zero-length input.</summary>
+    public readonly bool TryNormalize(out {{TypeName}} result)
+    {
+        var lengthSquared = LengthSquared;
+        if (lengthSquared <= {{ZeroLiteral}})
+        {
+            result = default;
+            return false;
+        }
+
+        result = this / {{SqrtExpression}};
+        return true;
+    }
+
