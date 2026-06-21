@@ -168,7 +168,36 @@ public sealed class CHeaderBindingParserTest
         var group = CHeaderParserHarness.Parse(translationUnit, source, config).Enums.Single(binding => binding.ManagedName == "TestMode");
 
         Assert.IsTrue(group.IsFlags);
+        Assert.AreEqual("Native constants matching <c>test_MODE_*</c>.", group.Documentation);
         CollectionAssert.AreEqual(new[] { "A", "B" }, group.Members.Select(member => member.ManagedName).ToArray());
+        CollectionAssert.AreEqual(new[] { "test_MODE_A", "test_MODE_B" }, group.Members.Select(member => member.NativeName).ToArray());
+    }
+
+    /// <summary>Native enum members keep their original names and parsed comments.</summary>
+    [TestMethod]
+    public void Parse_NativeEnumMembersKeepNativeNamesAndParsedComments()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            typedef enum test_mode {
+                test_MODE_A = 1, /*!< Alpha mode. */
+                test_MODE_B = 2, /*!< Beta mode. */
+                test_MODE_C = 3,
+                test_MODE_D = 4
+            } test_mode;
+            """);
+
+        var members = CHeaderParserHarness.Parse(translationUnit, source)
+            .Enums.Single(binding => binding.NativeName == "test_mode")
+            .Members.ToDictionary(member => member.ManagedName);
+
+        Assert.AreEqual("test_MODE_A", members["ModeA"].NativeName);
+        Assert.AreEqual("test_MODE_B", members["ModeB"].NativeName);
+        Assert.AreEqual("Alpha mode.", members["ModeA"].Documentation);
+        Assert.AreEqual("Beta mode.", members["ModeB"].Documentation);
+        Assert.IsNull(members["ModeC"].Documentation);
+        Assert.IsNull(members["ModeD"].Documentation);
     }
 
     /// <summary>Configured native constants participate in macro evaluation and enum synthesis.</summary>
@@ -204,6 +233,7 @@ public sealed class CHeaderBindingParserTest
         var tokens = model.Enums.Single(binding => binding.ManagedName == "TestEnum");
         var tokenNames = tokens.Members.Select(member => member.ManagedName).ToList();
 
+        Assert.AreEqual("Native macro constants from <c>fixture</c>.", tokens.Documentation);
         Assert.AreEqual(1, members["A"]);
         Assert.AreEqual(2, members["B"]);
         Assert.AreEqual(4, members["C"]);
@@ -215,6 +245,7 @@ public sealed class CHeaderBindingParserTest
         CollectionAssert.DoesNotContain(tokenNames, "Empty");
         CollectionAssert.DoesNotContain(tokenNames, "Bad");
         var modeBDocs = tokens.Members.Single(member => member.ManagedName == "ModeB").Documentation!;
+        StringAssert.StartsWith(modeBDocs, "<c>test_MODE_B</c>.");
         StringAssert.Contains(modeBDocs, "<see cref=\"TestMode\"/>");
     }
 

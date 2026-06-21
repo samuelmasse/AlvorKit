@@ -13,6 +13,7 @@ internal static class CHeaderEnumMembers
                 enumerator.Handle.CommentRange.Start.GetExpansionLocation(out _, out var commentLine, out _, out _);
                 return new EnumMemberRow(
                     new(
+                        enumerator.Name,
                         CSharpName.FromNativeIdentifier(enumerator.Name, config.Prefix, config.DigitNamePrefix),
                         enumerator.Handle.EnumConstantDeclValue,
                         XmlDocComment.Member(enumerator.Handle.RawCommentText.ToString())),

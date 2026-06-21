@@ -19,7 +19,7 @@ internal static class CHeaderCatchAllEnumSynthesizer
             "long",
             IsFlags: false,
             [.. state.ConstantTokens.Select(token => Member(config, state, token))],
-            $"Every {config.NativeLibrary} macro constant selected for the binding.");
+            $"Native macro constants from <c>{config.NativeLibrary}</c>.");
     }
 
     /// <summary>Builds one catch-all enum member with links to narrower generated enum groups.</summary>
@@ -29,7 +29,7 @@ internal static class CHeaderCatchAllEnumSynthesizer
         var membership = groups.Count == 0
             ? ""
             : $" See {string.Join(", ", groups.Select(group => $"<see cref=\"{group}\"/>"))}.";
-        return new(token.ManagedName, token.Value, $"Maps <c>{token.NativeName}</c>.{membership}");
+        return new(token.NativeName, token.ManagedName, token.Value, $"<c>{token.NativeName}</c>.{membership}");
     }
 
     /// <summary>Returns generated enum group names containing the native macro.</summary>

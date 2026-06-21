@@ -10,15 +10,22 @@ internal static class CHeaderEnumGroupSynthesizer
         {
             var members = NativeNames(group, state)
                 .Where(state.ValuesByNativeName.ContainsKey)
-                .Select(native => new BindingEnumMember(MemberName(group, native), state.ValuesByNativeName[native], null))
+                .Select(native => new BindingEnumMember(native, MemberName(group, native), state.ValuesByNativeName[native], null))
                 .ToList();
-            state.EnumByNativeName[enumName] = new(enumName, enumName, "int", group.Flags, members, null);
+            state.EnumByNativeName[enumName] = new(enumName, enumName, "int", group.Flags, members, Documentation(group));
         }
     }
 
     /// <summary>Returns configured members or all discovered constants with the group prefix.</summary>
     private static IEnumerable<string> NativeNames(EnumGroup group, CHeaderParseState state) =>
         group.Members ?? state.NativeNamesInOrder.Where(name => name.StartsWith(group.Prefix) && !group.Exclude.Contains(name));
+
+    /// <summary>Returns XML documentation for one configured macro enum group.</summary>
+    private static string Documentation(EnumGroup group)
+    {
+        var subject = group.Members is null ? "Native constants" : "Selected native constants";
+        return $"{subject} matching <c>{group.Prefix}*</c>.";
+    }
 
     /// <summary>Returns the managed enum member name for a native macro name.</summary>
     private static string MemberName(EnumGroup group, string nativeName)

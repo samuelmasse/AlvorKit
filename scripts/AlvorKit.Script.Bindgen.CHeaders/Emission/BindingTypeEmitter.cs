@@ -11,7 +11,7 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/enum.cs.tmpl",
             ("TypeHeader", TypeHeader()),
-            ("Documentation", enumType.Documentation ?? $"Maps <c>{enumType.NativeName}</c>."),
+            ("Documentation", enumType.Documentation ?? $"Native enum <c>{enumType.NativeName}</c>."),
             ("Flags", enumType.IsFlags ? "[Flags]" + Environment.NewLine : ""),
             ("ManagedName", enumType.ManagedName),
             ("UnderlyingType", enumType.UnderlyingType == "int" ? "" : " : " + enumType.UnderlyingType),
@@ -84,7 +84,7 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
         TemplateResource.Render(
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/enum-member.csfrag.tmpl",
-            ("Documentation", member.Documentation ?? $"Maps <c>{member.ManagedName}</c>."),
+            ("Documentation", member.Documentation ?? $"<c>{member.NativeName}</c>."),
             ("ManagedName", member.ManagedName),
             ("Value", member.Value.ToString()));
 
