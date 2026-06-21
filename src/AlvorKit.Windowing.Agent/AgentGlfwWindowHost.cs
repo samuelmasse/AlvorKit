@@ -13,9 +13,8 @@ public class AgentGlfwWindowHost : GlfwWindowHost
     private readonly AgentWindowScreenshot screenshot;
     private readonly AgentWindowState state = new();
     private readonly bool useAgent;
-    private bool disposed;
 
-    /// <summary>Takes ownership of an existing GLFW window and switches to agent mode when requested.</summary>
+    /// <summary>Wraps an existing GLFW window and switches to agent mode when requested.</summary>
     public AgentGlfwWindowHost(Glfw glfw, GlfwWindow window, GlLayer gl) : base(glfw, window)
     {
         useAgent = IsAgentEnvironmentPresent();
@@ -170,17 +169,6 @@ public class AgentGlfwWindowHost : GlfwWindowHost
         var runner = new AgentWindowCommandRunner(this, output, CapturePng);
         runner.WriteHelp();
         runner.Run(agentInput ?? Console.In);
-    }
-
-    /// <inheritdoc />
-    public override void Dispose()
-    {
-        if (disposed)
-            return;
-
-        disposed = true;
-        screenshot.Dispose();
-        base.Dispose();
     }
 
     /// <inheritdoc />

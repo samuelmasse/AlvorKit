@@ -8,6 +8,7 @@ public class MouseTest
     {
         var (host, loop) = WindowingTestFactory.Create();
         var mouse = new Mouse(loop);
+        var input = new WindowInput(loop);
 
         Assert.AreEqual(MouseButton.Left, mouse.Main);
         Assert.AreEqual(MouseButton.Right, mouse.Secondary);
@@ -17,9 +18,10 @@ public class MouseTest
         Assert.IsTrue(mouse.IsMainUp());
         Assert.IsFalse(mouse.IsMainPressed());
 
-        mouse.CursorMode = CursorMode.Captured;
+        input.CursorMode = CursorMode.Captured;
 
         Assert.AreEqual(CursorMode.Captured, host.CursorMode);
+        Assert.AreEqual(CursorMode.Captured, mouse.CursorMode);
     }
 
     [TestMethod]
@@ -31,7 +33,7 @@ public class MouseTest
         host.RaiseMouseDown(MouseButton.Left);
 
         Assert.IsTrue(mouse.IsMainDown());
-        mouse.Tick();
+        host.RaiseUpdate();
         Assert.IsTrue(mouse.IsMainDown());
     }
 
@@ -44,7 +46,7 @@ public class MouseTest
         host.RaiseMouseDown(MouseButton.Left);
 
         Assert.IsTrue(mouse.IsMainPressed());
-        mouse.Tick();
+        host.RaiseUpdate();
         Assert.IsFalse(mouse.IsMainPressed());
         host.RaiseMouseDown(MouseButton.Left);
         Assert.IsFalse(mouse.IsMainPressed());
@@ -96,7 +98,7 @@ public class MouseTest
         host.RaiseMouseWheel(new(20, 20));
 
         Assert.AreEqual(new Vec2(20, 20), mouse.Wheel);
-        mouse.Tick();
+        host.RaiseUpdate();
         Assert.AreEqual(Vec2.Zero, mouse.Wheel);
     }
 }

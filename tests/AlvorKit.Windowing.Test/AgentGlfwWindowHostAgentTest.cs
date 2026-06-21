@@ -7,8 +7,8 @@ public class AgentGlfwWindowHostAgentTest
     [TestMethod]
     public void AgentGlfwWindowHost_Update_UsesExactDeltasAndTotalTime()
     {
-        using var host = CreateAgent();
-        using var loop = new WindowLoop(host);
+        var host = CreateAgent();
+        var loop = new WindowLoop(host);
         var deltas = new double[2];
         var times = new double[2];
         var count = 0;
@@ -35,8 +35,8 @@ public class AgentGlfwWindowHostAgentTest
     [TestMethod]
     public void AgentGlfwWindowHost_Render_OnlyRunsWhenRequested()
     {
-        using var host = CreateAgent();
-        using var loop = new WindowLoop(host);
+        var host = CreateAgent();
+        var loop = new WindowLoop(host);
         var updates = 0;
         var renders = 0;
         loop.Update += (_) => updates++;
@@ -55,12 +55,13 @@ public class AgentGlfwWindowHostAgentTest
     [TestMethod]
     public void AgentGlfwWindowHost_UpdateWithMouseDelta_PansPerUpdate()
     {
-        using var host = CreateAgent(new(100, 100), "mouse test", false, true);
-        using var loop = new WindowLoop(host);
+        var host = CreateAgent(new(100, 100), "mouse test", false, true);
+        var loop = new WindowLoop(host);
         var mouse = new Mouse(loop);
+        var input = new WindowInput(loop);
 
         host.Agent.Update(0);
-        mouse.Track = true;
+        input.Track = true;
         host.Agent.Advance(2, 0.016, new(2, 3));
 
         Assert.AreEqual(new Vec2(4, 6), mouse.Position);
@@ -71,8 +72,8 @@ public class AgentGlfwWindowHostAgentTest
     [TestMethod]
     public void AgentGlfwWindowHost_KeyPress_LastOneUpdateWithoutRendering()
     {
-        using var host = CreateAgent();
-        using var loop = new WindowLoop(host);
+        var host = CreateAgent();
+        var loop = new WindowLoop(host);
         var keyboard = new Keyboard(loop);
         var pressedDuringFirstUpdate = false;
         var pressedDuringSecondUpdate = true;
@@ -95,8 +96,8 @@ public class AgentGlfwWindowHostAgentTest
     [TestMethod]
     public void AgentGlfwWindowHost_Close_StopsFutureFrames()
     {
-        using var host = CreateAgent();
-        using var loop = new WindowLoop(host);
+        var host = CreateAgent();
+        var loop = new WindowLoop(host);
         var unloads = 0;
         var updates = 0;
         loop.Unload += () => unloads++;
@@ -117,7 +118,7 @@ public class AgentGlfwWindowHostAgentTest
     [TestMethod]
     public void AgentGlfwWindowHost_Properties_Work()
     {
-        using var host = CreateAgent(new(3, 4), "agent", false, false);
+        var host = CreateAgent(new(3, 4), "agent", false, false);
 
         host.IsVisible = true;
         host.ClientSize = new(5, 7);
@@ -126,9 +127,6 @@ public class AgentGlfwWindowHostAgentTest
         host.CursorMode = CursorMode.Disabled;
         host.IsVSyncEnabled = true;
         host.Title = "renamed";
-        host.Dispose();
-        host.Dispose();
-
         Assert.IsTrue(host.IsVisible);
         Assert.IsTrue(host.IsFocused);
         Assert.IsTrue(host.IsFullscreen);
@@ -145,7 +143,7 @@ public class AgentGlfwWindowHostAgentTest
     [TestMethod]
     public void AgentGlfwWindowHost_InputHelpers_RaiseEvents()
     {
-        using var host = CreateAgent();
+        var host = CreateAgent();
         var keyRepeats = 0;
         var keyUps = 0;
         var mouseDowns = 0;
@@ -189,7 +187,7 @@ public class AgentGlfwWindowHostAgentTest
     [TestMethod]
     public void AgentGlfwWindowHost_InvalidControlInputs_Throw()
     {
-        using var host = CreateAgent();
+        var host = CreateAgent();
 
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.Update(-1));
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.Render(double.NaN));
@@ -203,8 +201,8 @@ public class AgentGlfwWindowHostAgentTest
     [TestMethod]
     public void AgentGlfwWindowHost_Step_RunsOneUpdateAndRender()
     {
-        using var host = CreateAgent();
-        using var loop = new WindowLoop(host);
+        var host = CreateAgent();
+        var loop = new WindowLoop(host);
         var updates = 0;
         var renders = 0;
         loop.Update += (_) => updates++;

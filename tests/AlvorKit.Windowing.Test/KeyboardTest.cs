@@ -24,7 +24,7 @@ public class KeyboardTest
         host.RaiseKeyDown(Keys.A);
 
         Assert.IsTrue(keyboard.IsKeyDown(Keys.A));
-        keyboard.Tick();
+        host.RaiseUpdate();
         Assert.IsTrue(keyboard.IsKeyDown(Keys.A));
     }
 
@@ -37,7 +37,7 @@ public class KeyboardTest
         host.RaiseKeyDown(Keys.A);
 
         Assert.IsTrue(keyboard.IsKeyPressed(Keys.A));
-        keyboard.Tick();
+        host.RaiseUpdate();
         Assert.IsFalse(keyboard.IsKeyPressed(Keys.A));
         host.RaiseKeyDown(Keys.A);
         Assert.IsFalse(keyboard.IsKeyPressed(Keys.A));
@@ -51,7 +51,7 @@ public class KeyboardTest
 
         host.RaiseKeyDown(Keys.A);
         Assert.IsTrue(keyboard.IsKeyPressedRepeated(Keys.A));
-        keyboard.Tick();
+        host.RaiseUpdate();
         host.RaiseKeyDown(Keys.A, true);
 
         Assert.IsTrue(keyboard.IsKeyPressedRepeated(Keys.A));
@@ -88,24 +88,20 @@ public class KeyboardTest
     }
 
     [TestMethod]
-    public void Keyboard_TextAndClipboard_Work()
+    public void Keyboard_Text_Works()
     {
         var (host, loop) = WindowingTestFactory.Create();
         var keyboard = new Keyboard(loop);
 
-        host.Clipboard = "bob";
         host.RaiseText(new('a'));
         host.RaiseText(new('z'));
 
-        Assert.AreEqual("bob", keyboard.Clipboard);
         Assert.AreEqual(2, keyboard.Text.Count);
         Assert.AreEqual(new Rune('a'), keyboard.Text[0]);
         Assert.AreEqual(new Rune('z'), keyboard.Text[1]);
 
-        keyboard.Clipboard = "alice";
-        keyboard.Tick();
+        host.RaiseUpdate();
 
-        Assert.AreEqual("alice", host.Clipboard);
         Assert.AreEqual(0, keyboard.Text.Count);
     }
 }

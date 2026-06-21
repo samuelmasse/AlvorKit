@@ -1,26 +1,15 @@
 namespace AlvorKit.Windowing;
 
 /// <summary>Saves agent-host framebuffer captures for visual inspection.</summary>
-/// <param name="gl">The OpenGL layer owned by the agent host after construction.</param>
+/// <param name="gl">The OpenGL layer used to read framebuffer pixels.</param>
 /// <param name="save">Optional save callback for tests that should avoid framebuffer reads.</param>
 [ExcludeFromCodeCoverage(Justification = "Reads a native OpenGL framebuffer and writes a PNG file.")]
-internal sealed class AgentWindowScreenshot(GlLayer gl, Action<GlLayer, Vec2u, string>? save = null) : IDisposable
+internal sealed class AgentWindowScreenshot(GlLayer gl, Action<GlLayer, Vec2u, string>? save = null)
 {
     private readonly Action<GlLayer, Vec2u, string> save = save ?? SaveFramebuffer;
-    private bool disposed;
 
     /// <summary>Reads the current framebuffer and saves it as an RGB PNG.</summary>
     internal void Save(Vec2u size, string path) => save(gl, size, path);
-
-    /// <summary>Disposes the OpenGL layer after the host is done with the window context.</summary>
-    public void Dispose()
-    {
-        if (disposed)
-            return;
-
-        disposed = true;
-        gl.Dispose();
-    }
 
     /// <summary>Reads the current framebuffer and saves it as an RGB PNG.</summary>
     private static unsafe void SaveFramebuffer(GlLayer gl, Vec2u size, string path)

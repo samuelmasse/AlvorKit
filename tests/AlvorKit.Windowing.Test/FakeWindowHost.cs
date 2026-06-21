@@ -31,7 +31,6 @@ internal sealed class FakeWindowHost : IWindowHost
     public int CloseCount { get; private set; }
     public int SwapBuffersCount { get; private set; }
     public int RunCount { get; private set; }
-    public bool Disposed { get; private set; }
 
     public void Close()
     {
@@ -43,8 +42,6 @@ internal sealed class FakeWindowHost : IWindowHost
     public void SwapBuffers() => SwapBuffersCount++;
 
     public void Run() => RunCount++;
-
-    public void Dispose() => Disposed = true;
 
     public nint GetProcAddress(string procname) => procname.Length;
 

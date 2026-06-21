@@ -7,7 +7,7 @@ public class AgentGlfwWindowHostTest
     [TestMethod]
     public void AgentGlfwWindowHost_WhenAgentPresent_DerivesFromGlfwHost()
     {
-        using var host = CreateAgent(new(321, 234), "Game host", true, false);
+        var host = CreateAgent(new(321, 234), "Game host", true, false);
 
         Assert.IsInstanceOfType<GlfwWindowHost>(host);
         Assert.IsTrue(host.IsAgentMode);
@@ -21,7 +21,7 @@ public class AgentGlfwWindowHostTest
     [TestMethod]
     public void AgentGlfwWindowHost_WhenAgentPresent_StoresAgentState()
     {
-        using var host = CreateAgent(new(64, 48));
+        var host = CreateAgent(new(64, 48));
 
         host.IsVisible = true;
         host.ClientSize = new(32, 24);
@@ -58,7 +58,7 @@ public class AgentGlfwWindowHostTest
             quit
             """);
         using var output = new StringWriter(CultureInfo.InvariantCulture);
-        using var host = CreateAgent(new(64, 48), agentInput: input, agentOutput: output);
+        var host = CreateAgent(new(64, 48), agentInput: input, agentOutput: output);
 
         host.Run();
 
@@ -84,7 +84,7 @@ public class AgentGlfwWindowHostTest
         GlLayer? savedGl = null;
         var savedSize = Vec2u.Zero;
         var savedPath = string.Empty;
-        using var host = CreateAgent(
+        var host = CreateAgent(
             new(64, 48),
             gl: gl,
             agentInput: input,

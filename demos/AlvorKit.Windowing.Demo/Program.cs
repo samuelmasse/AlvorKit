@@ -18,17 +18,19 @@ if (window == default)
 
 glfw.MakeContextCurrent(window);
 var gl = new GlLayer(new GlBackend(glfw.GetProcAddress));
-using var host = new AgentGlfwWindowHost(glfw, window, gl)
+var host = new AgentGlfwWindowHost(glfw, window, gl)
 {
     IsVSyncEnabled = true
 };
-using var loop = new WindowLoop(host);
+var loop = new WindowLoop(host);
 var canvas = new WindowCanvas(loop);
 
 gl.GetString(GlStringName.Version, out var version);
 Console.WriteLine($"OpenGL {version} - Esc exits; F11 fullscreen; F12 vsync; arrows, mouse, wheel, and text are tracked.");
 
 RunDemoLoop(loop, canvas, gl);
+glfw.DestroyWindow(window);
+glfw.Terminate();
 return 0;
 
 // Wires the windowing facades, demo controls, update logic, and OpenGL rendering.
@@ -36,6 +38,7 @@ void RunDemoLoop(WindowLoop loop, WindowCanvas canvas, GlLayer gl)
 {
     var mouse = new Mouse(loop);
     var keyboard = new Keyboard(loop);
+    var input = new WindowInput(loop);
     var controls = new Controls(loop);
     var screen = new WindowScreen(loop);
     var index = MaxColorStep / 2;
@@ -46,8 +49,8 @@ void RunDemoLoop(WindowLoop loop, WindowCanvas canvas, GlLayer gl)
     var frameTime = 0d;
 
     BindDemoControls(controls);
-    mouse.Track = true;
-    keyboard.Clipboard = "AlvorKit.Windowing clipboard text";
+    input.Track = true;
+    input.Clipboard = "AlvorKit.Windowing clipboard text";
     loop.Update += Update;
     loop.Frame += (dt) => frameTime = dt;
     loop.Render += Render;
@@ -78,7 +81,7 @@ void RunDemoLoop(WindowLoop loop, WindowCanvas canvas, GlLayer gl)
         if (keyboard.Text.Count > 0)
         {
             foreach (var rune in keyboard.Text)
-                Console.WriteLine($"Text '{rune}', clipboard '{keyboard.Clipboard}'");
+                Console.WriteLine($"Text '{rune}', clipboard '{input.Clipboard}'");
         }
 
         if (screen.IsFullscreen != lastFullscreen || screen.IsVSyncEnabled != lastVSync)

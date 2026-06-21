@@ -7,8 +7,8 @@ public class AgentWindowCommandRunnerTest
     [TestMethod]
     public void AgentWindowCommandRunner_Commands_DriveHost()
     {
-        using var host = CreateAgent();
-        using var loop = new WindowLoop(host);
+        var host = CreateAgent();
+        var loop = new WindowLoop(host);
         var mouse = new Mouse(loop);
         var keyboard = new Keyboard(loop);
         using var output = new StringWriter(CultureInfo.InvariantCulture);
@@ -29,7 +29,7 @@ public class AgentWindowCommandRunnerTest
         Assert.AreEqual(1.25, host.Time);
         Assert.AreEqual(3, host.UpdateCount);
         Assert.AreEqual(1, host.RenderCount);
-        Assert.AreEqual("hello", keyboard.Clipboard);
+        Assert.AreEqual("hello", host.Clipboard);
         StringAssert.Contains(output.ToString(), "updates=3");
     }
 
@@ -37,8 +37,8 @@ public class AgentWindowCommandRunnerTest
     [TestMethod]
     public void AgentWindowCommandRunner_Run_HandlesScript()
     {
-        using var host = CreateAgent();
-        using var loop = new WindowLoop(host);
+        var host = CreateAgent();
+        var loop = new WindowLoop(host);
         var mouse = new Mouse(loop);
         var keyboard = new Keyboard(loop);
         using var output = new StringWriter(CultureInfo.InvariantCulture);
@@ -77,7 +77,7 @@ public class AgentWindowCommandRunnerTest
     [TestMethod]
     public void AgentWindowCommandRunner_Run_InvalidCommandReportsErrorAndContinues()
     {
-        using var host = CreateAgent();
+        var host = CreateAgent();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         using var input = new StringReader("""
             update
@@ -99,7 +99,7 @@ public class AgentWindowCommandRunnerTest
     [TestMethod]
     public void AgentWindowCommandRunner_Exit_ReturnsFalse()
     {
-        using var host = CreateAgent();
+        var host = CreateAgent();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         var runner = new AgentWindowCommandRunner(host, output);
 
@@ -110,7 +110,7 @@ public class AgentWindowCommandRunnerTest
     [TestMethod]
     public void AgentWindowCommandRunner_Help_WritesGeneratedUsage()
     {
-        using var host = CreateAgent();
+        var host = CreateAgent();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         var runner = new AgentWindowCommandRunner(host, output);
 
@@ -129,7 +129,7 @@ public class AgentWindowCommandRunnerTest
     [TestMethod]
     public void AgentWindowCommandRunner_Screenshot_UsesHostCallback()
     {
-        using var host = CreateAgent();
+        var host = CreateAgent();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         var calls = 0;
         var capturedPath = string.Empty;
@@ -149,7 +149,7 @@ public class AgentWindowCommandRunnerTest
     [TestMethod]
     public void AgentWindowCommandRunner_ScreenshotWithoutHost_Throws()
     {
-        using var host = CreateAgent();
+        var host = CreateAgent();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         var runner = new AgentWindowCommandRunner(host, output);
 
@@ -160,7 +160,7 @@ public class AgentWindowCommandRunnerTest
     [TestMethod]
     public void AgentWindowCommandRunner_BomPrefixedCommand_Works()
     {
-        using var host = CreateAgent();
+        var host = CreateAgent();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         var runner = new AgentWindowCommandRunner(host, output);
 
@@ -173,7 +173,7 @@ public class AgentWindowCommandRunnerTest
     [TestMethod]
     public void AgentWindowCommandRunner_ReplacementPrefixedCommand_Works()
     {
-        using var host = CreateAgent();
+        var host = CreateAgent();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         var runner = new AgentWindowCommandRunner(host, output);
 
@@ -186,7 +186,7 @@ public class AgentWindowCommandRunnerTest
     [TestMethod]
     public void AgentWindowCommandRunner_MojibakeBomPrefixedCommand_Works()
     {
-        using var host = CreateAgent();
+        var host = CreateAgent();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         var runner = new AgentWindowCommandRunner(host, output);
 
@@ -200,7 +200,7 @@ public class AgentWindowCommandRunnerTest
     [TestMethod]
     public void AgentWindowCommandRunner_InvalidCommand_Throws()
     {
-        using var host = CreateAgent();
+        var host = CreateAgent();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         var runner = new AgentWindowCommandRunner(host, output);
 
@@ -213,7 +213,7 @@ public class AgentWindowCommandRunnerTest
     [TestMethod]
     public void AgentWindowCommandRunner_InvalidArguments_Throw()
     {
-        using var host = CreateAgent();
+        var host = CreateAgent();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         var runner = new AgentWindowCommandRunner(host, output);
 

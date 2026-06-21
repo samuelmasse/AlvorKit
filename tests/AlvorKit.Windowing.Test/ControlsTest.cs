@@ -113,7 +113,6 @@ public class ControlsTest
     public void Control_EdgeCases_Work()
     {
         var (host, loop) = WindowingTestFactory.Create();
-        var mouse = new Mouse(loop);
         var control = new Controls(loop)["Id"];
         control.Bind(new() { KeyDown = Keys.H });
         control.Bind(new() { KeyPress = Keys.G });
@@ -128,7 +127,7 @@ public class ControlsTest
 
         host.RaiseKeyDown(Keys.G);
         Assert.IsTrue(control.Run());
-        new Keyboard(loop).Tick();
+        host.RaiseUpdate();
         Assert.IsFalse(control.Run());
 
         host.RaiseKeyDown(Keys.J, true);
@@ -136,8 +135,7 @@ public class ControlsTest
 
         host.RaiseMouseWheel(new(0, 1));
         Assert.IsTrue(control.Run());
-        mouse.Tick();
-        new Keyboard(loop).Tick();
+        host.RaiseUpdate();
         host.RaiseMouseWheel(new(0, -1));
         Assert.IsTrue(control.Run());
     }

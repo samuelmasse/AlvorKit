@@ -1,7 +1,7 @@
 namespace AlvorKit.Windowing;
 
 /// <summary>Window session contract used by the AlvorKit window loop.</summary>
-public interface IWindowHost : IDisposable
+public interface IWindowHost
 {
     /// <summary>Raised when the host asks the window to close.</summary>
     event Action? Closing;

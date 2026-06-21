@@ -26,20 +26,6 @@ public partial class GlfwWindowHost
         }
     }
 
-    /// <inheritdoc />
-    public virtual void Dispose()
-    {
-        if (disposed)
-            return;
-
-        disposed = true;
-        if (!HasNativeWindow)
-            return;
-
-        Glfw.DestroyWindow(Window);
-        Glfw.Terminate();
-    }
-
     private void RegisterCallbacks()
     {
         Glfw.SetWindowCloseCallback(Window, (_) => OnClosing());

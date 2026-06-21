@@ -1,7 +1,7 @@
 namespace AlvorKit.Windowing;
 
 /// <summary>Coordinates host window events into AlvorKit update, frame, and render callbacks.</summary>
-public sealed partial class WindowLoop : IDisposable
+public sealed class WindowLoop
 {
     private readonly IWindowHost host;
     private readonly WindowMouse mouse;
@@ -76,9 +76,6 @@ public sealed partial class WindowLoop : IDisposable
     /// <summary>Runs the host event loop until the host exits.</summary>
     public void Run() => host.Run();
 
-    /// <summary>Disposes the host window.</summary>
-    public void Dispose() => host.Dispose();
-
     private bool DrawResizeFrame()
     {
         if (host.IsExiting || updating || rendering)
@@ -112,7 +109,10 @@ public sealed partial class WindowLoop : IDisposable
         if (keyboard.IsKeyPressed(Keys.F12))
             toggle.ToggleVSync();
 
-        TickInputState();
+        mouse.Tick();
+        keyboard.Tick();
+        text.Tick();
+        controls.Tick();
     }
 
     private void OnRenderFrame(WindowFrameEvent e)

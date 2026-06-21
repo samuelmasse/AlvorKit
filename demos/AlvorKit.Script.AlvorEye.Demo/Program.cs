@@ -15,25 +15,26 @@ if (window == default)
 
 glfw.MakeContextCurrent(window);
 var gl = new GlLayer(new GlBackend(glfw.GetProcAddress));
-using var host = new AgentGlfwWindowHost(glfw, window, gl)
+var host = new AgentGlfwWindowHost(glfw, window, gl)
 {
     IsVSyncEnabled = true
 };
-using var loop = new WindowLoop(host);
+var loop = new WindowLoop(host);
 var canvas = new WindowCanvas(loop);
 var screen = new WindowScreen(loop);
 var keyboard = new Keyboard(loop);
 var mouse = new Mouse(loop);
+var input = new WindowInput(loop);
 
 gl.GetString(GlStringName.Version, out var version);
 gl.GetString(GlStringName.ShadingLanguageVersion, out var glsl);
 Console.WriteLine($"OpenGL {version} (GLSL {glsl}) - read AGENT_GOAL.md and solve the AlvorEye demo game.");
 
-using var renderer = AlvorEyeDemoRenderer.Load(gl);
+var renderer = AlvorEyeDemoRenderer.Load(gl);
 var state = new AlvorEyeDemoState();
 double totalSeconds = 0;
 
-mouse.Track = true;
+input.Track = true;
 screen.Title = "AlvorEye demo game";
 screen.IsVisible = true;
 loop.Update += Update;
@@ -48,6 +49,9 @@ if (Environment.GetEnvironmentVariable("ALVOREYE_DEMO_RESULT_PATH") is { Length:
     File.WriteAllText(resultPath, result);
 }
 
+renderer.Dispose();
+glfw.DestroyWindow(window);
+glfw.Terminate();
 return 0;
 
 // Advances player movement, mouse locks, text locks, and close handling from windowing facades.

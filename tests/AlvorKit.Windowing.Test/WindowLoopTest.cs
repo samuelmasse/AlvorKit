@@ -174,14 +174,12 @@ public class WindowLoopTest
     }
 
     [TestMethod]
-    public void WindowLoop_RunAndDispose_ForwardToHost()
+    public void WindowLoop_Run_ForwardsToHost()
     {
         var (host, loop) = WindowingTestFactory.Create();
 
         loop.Run();
-        loop.Dispose();
 
         Assert.AreEqual(1, host.RunCount);
-        Assert.IsTrue(host.Disposed);
     }
 }

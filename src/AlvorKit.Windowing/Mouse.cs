@@ -1,27 +1,22 @@
 namespace AlvorKit.Windowing;
 
 /// <summary>Reads mouse button, wheel, cursor, and motion state from a window loop.</summary>
-public sealed class Mouse(WindowLoop window)
+/// <param name="window">The window loop that owns the mouse state.</param>
+/// <param name="main">The button used by main-button convenience methods.</param>
+/// <param name="secondary">The button used by secondary-button convenience methods.</param>
+public sealed class Mouse(WindowLoop window, MouseButton main = MouseButton.Left, MouseButton secondary = MouseButton.Right)
 {
-    /// <summary>Gets or sets the primary mouse button used by convenience methods.</summary>
-    public MouseButton Main { get; set; } = MouseButton.Left;
+    /// <summary>Gets the primary mouse button used by convenience methods.</summary>
+    public MouseButton Main { get; } = main;
 
-    /// <summary>Gets or sets the secondary mouse button used by convenience methods.</summary>
-    public MouseButton Secondary { get; set; } = MouseButton.Right;
+    /// <summary>Gets the secondary mouse button used by convenience methods.</summary>
+    public MouseButton Secondary { get; } = secondary;
 
-    /// <summary>Gets or sets the cursor capture and visibility mode.</summary>
-    public CursorMode CursorMode
-    {
-        get => window.Mouse.CursorMode;
-        set => window.Mouse.CursorMode = value;
-    }
+    /// <summary>Gets the cursor capture and visibility mode.</summary>
+    public CursorMode CursorMode => window.Mouse.CursorMode;
 
-    /// <summary>Gets or sets the cursor position in window coordinates.</summary>
-    public Vec2 Position
-    {
-        get => window.MousePosition.Position;
-        set => window.MousePosition.Position = value;
-    }
+    /// <summary>Gets the cursor position in window coordinates.</summary>
+    public Vec2 Position => window.MousePosition.Position;
 
     /// <summary>Gets the tracked cursor delta for the current update.</summary>
     public Vec2 Delta => window.MousePosition.Delta;
@@ -29,8 +24,8 @@ public sealed class Mouse(WindowLoop window)
     /// <summary>Gets the mouse wheel offset for the current tick.</summary>
     public Vec2 Wheel => window.Mouse.Wheel;
 
-    /// <summary>Gets or sets whether cursor delta tracking is active.</summary>
-    public ref bool Track => ref window.MousePosition.Track;
+    /// <summary>Gets whether cursor delta tracking is active.</summary>
+    public bool Track => window.MousePosition.Track;
 
     /// <summary>Returns whether a mouse button is currently down.</summary>
     public bool IsButtonDown(MouseButton button) => window.Mouse.IsButtonDown(button);
@@ -58,7 +53,4 @@ public sealed class Mouse(WindowLoop window)
 
     /// <summary>Returns whether the secondary mouse button transitioned down this tick.</summary>
     public bool IsSecondaryPressed() => IsButtonPressed(Secondary);
-
-    /// <summary>Advances mouse state by one tick.</summary>
-    public void Tick() => window.Mouse.Tick();
 }

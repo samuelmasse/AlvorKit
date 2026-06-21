@@ -29,12 +29,14 @@ public class MousePositionTest
     public void Mouse_Position_CanBeSet()
     {
         var (host, loop) = WindowingTestFactory.Create();
-        var mouse = new Mouse(loop)
+        var mouse = new Mouse(loop);
+        var input = new WindowInput(loop)
         {
-            Position = new(50, 50)
+            MousePosition = new(50, 50)
         };
 
         Assert.AreEqual(new Vec2(50, 50), mouse.Position);
+        Assert.AreEqual(new Vec2(50, 50), input.MousePosition);
         Assert.AreEqual(new Vec2(50, 50), host.MousePosition);
     }
 
@@ -43,8 +45,9 @@ public class MousePositionTest
     {
         var (host, loop) = WindowingTestFactory.Create(new(100, 100));
         var mouse = new Mouse(loop);
+        var input = new WindowInput(loop);
         host.IsFocused = true;
-        mouse.Track = true;
+        input.Track = true;
 
         host.RaiseMouseMove(new(10, 10));
         host.RaiseUpdate();
@@ -52,7 +55,7 @@ public class MousePositionTest
         host.RaiseUpdate();
         host.RaiseMouseMove(new(30, 30));
         host.RaiseUpdate();
-        mouse.Position = new(500, 500);
+        input.MousePosition = new(500, 500);
         host.RaiseUpdate();
 
         Assert.AreEqual(Vec2.Zero, mouse.Delta);
@@ -63,11 +66,12 @@ public class MousePositionTest
     {
         var (host, loop) = WindowingTestFactory.Create(new(100, 100));
         var mouse = new Mouse(loop);
+        var input = new WindowInput(loop);
         host.IsFocused = true;
 
         host.RaiseMouseMove(new(40, 40));
         host.RaiseUpdate();
-        mouse.Track = true;
+        input.Track = true;
         host.RaiseMouseMove(new(20, 20));
         host.RaiseUpdate();
         host.RaiseMouseMove(new(25, 25));

@@ -10,7 +10,6 @@ public partial class GlfwWindowHost : IWindowHost
     private string title = string.Empty;
     private bool isVSyncEnabled;
     private bool fullscreen;
-    private bool disposed;
     private int windowedX;
     private int windowedY;
     private int windowedWidth;
@@ -21,7 +20,7 @@ public partial class GlfwWindowHost : IWindowHost
     {
     }
 
-    /// <summary>Takes ownership of an existing GLFW window and registers AlvorKit window callbacks.</summary>
+    /// <summary>Wraps an existing GLFW window and registers AlvorKit window callbacks.</summary>
     public GlfwWindowHost(Glfw glfw, GlfwWindow window)
     {
         ArgumentNullException.ThrowIfNull(glfw);
@@ -71,15 +70,15 @@ public partial class GlfwWindowHost : IWindowHost
     /// <inheritdoc />
     public event Action<WindowTextInputEvent>? TextInput;
 
-    /// <summary>Gets whether this host has an owned native GLFW window.</summary>
+    /// <summary>Gets whether this host has a native GLFW window.</summary>
     protected bool HasNativeWindow => glfw is not null && window != default;
 
-    /// <summary>Gets the owned GLFW API or throws when no native window was supplied.</summary>
-    protected Glfw Glfw => glfw ?? throw new InvalidOperationException("This host does not own a GLFW API.");
+    /// <summary>Gets the GLFW API or throws when no native window was supplied.</summary>
+    protected Glfw Glfw => glfw ?? throw new InvalidOperationException("This host does not have a GLFW API.");
 
-    /// <summary>Gets the owned GLFW window or throws when no native window was supplied.</summary>
+    /// <summary>Gets the GLFW window or throws when no native window was supplied.</summary>
     protected GlfwWindow Window =>
-        window != default ? window : throw new InvalidOperationException("This host does not own a GLFW window.");
+        window != default ? window : throw new InvalidOperationException("This host does not have a GLFW window.");
 
     /// <summary>Raises the close-request event.</summary>
     protected void OnClosing() => Closing?.Invoke();
