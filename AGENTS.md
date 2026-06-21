@@ -258,6 +258,10 @@ concrete examples of the public things the documentation describes.
 
 ## Binding Documentation
 
+Before changing generated C binding documentation, read
+`docs/CBindingDocumentation.md`. Use its audit checklist against generated
+output before handoff.
+
 For generated native bindings, use original upstream documentation whenever it
 exists. Mechanical fallback documentation is acceptable only when the upstream
 symbol has no usable documentation, and it must describe the public API shape
