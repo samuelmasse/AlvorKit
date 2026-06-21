@@ -89,7 +89,7 @@ public partial class GlfwWindowHost
     }
 
     /// <inheritdoc />
-    public virtual WindowCursorMode CursorMode
+    public virtual CursorMode CursorMode
     {
         get => FromGlfwCursorMode((GlfwCursorMode)Glfw.GetInputMode(Window, GlfwInputMode.Cursor));
         set => Glfw.SetInputMode(Window, GlfwInputMode.Cursor, ToGlfwCursorMode(value));

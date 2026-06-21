@@ -9,10 +9,10 @@ public class KeyboardTest
         var (_, loop) = WindowingTestFactory.Create();
         var keyboard = new Keyboard(loop);
 
-        Assert.IsFalse(keyboard.IsKeyDown(WindowKey.A));
-        Assert.IsTrue(keyboard.IsKeyUp(WindowKey.A));
-        Assert.IsFalse(keyboard.IsKeyPressed(WindowKey.A));
-        Assert.IsFalse(keyboard.IsKeyPressedRepeated(WindowKey.A));
+        Assert.IsFalse(keyboard.IsKeyDown(Keys.A));
+        Assert.IsTrue(keyboard.IsKeyUp(Keys.A));
+        Assert.IsFalse(keyboard.IsKeyPressed(Keys.A));
+        Assert.IsFalse(keyboard.IsKeyPressedRepeated(Keys.A));
     }
 
     [TestMethod]
@@ -21,11 +21,11 @@ public class KeyboardTest
         var (host, loop) = WindowingTestFactory.Create();
         var keyboard = new Keyboard(loop);
 
-        host.RaiseKeyDown(WindowKey.A);
+        host.RaiseKeyDown(Keys.A);
 
-        Assert.IsTrue(keyboard.IsKeyDown(WindowKey.A));
+        Assert.IsTrue(keyboard.IsKeyDown(Keys.A));
         keyboard.Tick();
-        Assert.IsTrue(keyboard.IsKeyDown(WindowKey.A));
+        Assert.IsTrue(keyboard.IsKeyDown(Keys.A));
     }
 
     [TestMethod]
@@ -34,13 +34,13 @@ public class KeyboardTest
         var (host, loop) = WindowingTestFactory.Create();
         var keyboard = new Keyboard(loop);
 
-        host.RaiseKeyDown(WindowKey.A);
+        host.RaiseKeyDown(Keys.A);
 
-        Assert.IsTrue(keyboard.IsKeyPressed(WindowKey.A));
+        Assert.IsTrue(keyboard.IsKeyPressed(Keys.A));
         keyboard.Tick();
-        Assert.IsFalse(keyboard.IsKeyPressed(WindowKey.A));
-        host.RaiseKeyDown(WindowKey.A);
-        Assert.IsFalse(keyboard.IsKeyPressed(WindowKey.A));
+        Assert.IsFalse(keyboard.IsKeyPressed(Keys.A));
+        host.RaiseKeyDown(Keys.A);
+        Assert.IsFalse(keyboard.IsKeyPressed(Keys.A));
     }
 
     [TestMethod]
@@ -49,12 +49,12 @@ public class KeyboardTest
         var (host, loop) = WindowingTestFactory.Create();
         var keyboard = new Keyboard(loop);
 
-        host.RaiseKeyDown(WindowKey.A);
-        Assert.IsTrue(keyboard.IsKeyPressedRepeated(WindowKey.A));
+        host.RaiseKeyDown(Keys.A);
+        Assert.IsTrue(keyboard.IsKeyPressedRepeated(Keys.A));
         keyboard.Tick();
-        host.RaiseKeyDown(WindowKey.A, true);
+        host.RaiseKeyDown(Keys.A, true);
 
-        Assert.IsTrue(keyboard.IsKeyPressedRepeated(WindowKey.A));
+        Assert.IsTrue(keyboard.IsKeyPressedRepeated(Keys.A));
     }
 
     [TestMethod]
@@ -63,10 +63,10 @@ public class KeyboardTest
         var (host, loop) = WindowingTestFactory.Create();
         var keyboard = new Keyboard(loop);
 
-        host.RaiseKeyDown(WindowKey.A);
-        host.RaiseKeyUp(WindowKey.A);
+        host.RaiseKeyDown(Keys.A);
+        host.RaiseKeyUp(Keys.A);
 
-        Assert.IsTrue(keyboard.IsKeyUp(WindowKey.A));
+        Assert.IsTrue(keyboard.IsKeyUp(Keys.A));
     }
 
     [TestMethod]
@@ -74,8 +74,8 @@ public class KeyboardTest
     {
         var (host, _) = WindowingTestFactory.Create();
 
-        host.RaiseKeyDown(WindowKey.Unknown);
-        host.RaiseKeyUp(WindowKey.Unknown);
+        host.RaiseKeyDown(Keys.Unknown);
+        host.RaiseKeyUp(Keys.Unknown);
     }
 
     [TestMethod]
@@ -84,7 +84,7 @@ public class KeyboardTest
         var (_, loop) = WindowingTestFactory.Create();
         var keyboard = new Keyboard(loop);
 
-        Assert.ThrowsException<InvalidOperationException>(() => keyboard.IsKeyDown(WindowKey.Unknown));
+        Assert.ThrowsException<InvalidOperationException>(() => keyboard.IsKeyDown(Keys.Unknown));
     }
 
     [TestMethod]

@@ -22,11 +22,11 @@ public class ControlsTest
         var (host, loop) = WindowingTestFactory.Create();
         var controls = new Controls(loop);
         var control = controls["Id"];
-        control.Bind(new() { KeyDown = WindowKey.Space });
+        control.Bind(new() { KeyDown = Keys.Space });
 
         Assert.IsFalse(control.Run());
 
-        host.RaiseKeyDown(WindowKey.Space);
+        host.RaiseKeyDown(Keys.Space);
 
         Assert.IsTrue(control.Run());
     }
@@ -39,11 +39,11 @@ public class ControlsTest
         var jump = controls["Jump"];
         var forward = controls["Forward"];
         var switchWeapon = controls["SwitchWeapon"];
-        jump.Bind(new() { KeyDown = WindowKey.Space });
-        forward.Bind(new() { KeyDown = WindowKey.W });
+        jump.Bind(new() { KeyDown = Keys.Space });
+        forward.Bind(new() { KeyDown = Keys.W });
         switchWeapon.Bind(new() { MouseScroll = MouseScrollDirection.Up });
 
-        host.RaiseKeyDown(WindowKey.W);
+        host.RaiseKeyDown(Keys.W);
         host.RaiseMouseWheel(new(0, 1));
 
         Assert.IsFalse(jump.Run());
@@ -70,7 +70,7 @@ public class ControlsTest
         var control = controls["Id"];
         control.Bind(new() { Alt = KeyModifierState.Any });
 
-        host.RaiseKeyDown(WindowKey.LeftAlt);
+        host.RaiseKeyDown(Keys.LeftAlt);
 
         Assert.IsTrue(control.Run());
     }
@@ -115,23 +115,23 @@ public class ControlsTest
         var (host, loop) = WindowingTestFactory.Create();
         var mouse = new Mouse(loop);
         var control = new Controls(loop)["Id"];
-        control.Bind(new() { KeyDown = WindowKey.H });
-        control.Bind(new() { KeyPress = WindowKey.G });
-        control.Bind(new() { KeyPressRepeat = WindowKey.J });
+        control.Bind(new() { KeyDown = Keys.H });
+        control.Bind(new() { KeyPress = Keys.G });
+        control.Bind(new() { KeyPressRepeat = Keys.J });
         control.Bind(new() { MouseScroll = MouseScrollDirection.Up });
         control.Bind(new() { MouseScroll = MouseScrollDirection.Down });
 
-        host.RaiseKeyDown(WindowKey.H);
+        host.RaiseKeyDown(Keys.H);
         Assert.IsTrue(control.Run());
-        host.RaiseKeyUp(WindowKey.H);
+        host.RaiseKeyUp(Keys.H);
         Assert.IsFalse(control.Run());
 
-        host.RaiseKeyDown(WindowKey.G);
+        host.RaiseKeyDown(Keys.G);
         Assert.IsTrue(control.Run());
         new Keyboard(loop).Tick();
         Assert.IsFalse(control.Run());
 
-        host.RaiseKeyDown(WindowKey.J, true);
+        host.RaiseKeyDown(Keys.J, true);
         Assert.IsTrue(control.Run());
 
         host.RaiseMouseWheel(new(0, 1));
@@ -165,9 +165,9 @@ public class ControlsTest
         Assert.IsFalse(downControl.Run());
         Assert.IsTrue(upControl.Run());
 
-        host.RaiseKeyDown(WindowKey.LeftAlt);
-        host.RaiseKeyDown(WindowKey.LeftShift);
-        host.RaiseKeyDown(WindowKey.LeftControl);
+        host.RaiseKeyDown(Keys.LeftAlt);
+        host.RaiseKeyDown(Keys.LeftShift);
+        host.RaiseKeyDown(Keys.LeftControl);
 
         Assert.IsTrue(downControl.Run());
         Assert.IsFalse(upControl.Run());

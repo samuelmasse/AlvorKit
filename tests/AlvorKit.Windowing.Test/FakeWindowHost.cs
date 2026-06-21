@@ -24,7 +24,7 @@ internal sealed class FakeWindowHost : IWindowHost
     public float MonitorScale { get; set; } = 1f;
     public Vec2 MousePosition { get; set; }
     public WindowState WindowState { get; set; }
-    public WindowCursorMode CursorMode { get; set; }
+    public CursorMode CursorMode { get; set; }
     public bool IsVSyncEnabled { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Clipboard { get; set; } = string.Empty;
@@ -54,17 +54,17 @@ internal sealed class FakeWindowHost : IWindowHost
 
     public void RaiseRender(double time = 0, double totalTime = 0) => RenderFrame?.Invoke(new(time, totalTime));
 
-    public void RaiseMouseDown(WindowMouseButton button) => MouseDown?.Invoke(new(button));
+    public void RaiseMouseDown(MouseButton button) => MouseDown?.Invoke(new(button));
 
-    public void RaiseMouseUp(WindowMouseButton button) => MouseUp?.Invoke(new(button));
+    public void RaiseMouseUp(MouseButton button) => MouseUp?.Invoke(new(button));
 
     public void RaiseMouseWheel(Vec2 offset) => MouseWheel?.Invoke(new(offset));
 
     public void RaiseMouseMove(Vec2 position) => MouseMove?.Invoke(new(position));
 
-    public void RaiseKeyDown(WindowKey key, bool repeat = false) => KeyDown?.Invoke(new(key, repeat));
+    public void RaiseKeyDown(Keys key, bool repeat = false) => KeyDown?.Invoke(new(key, repeat));
 
-    public void RaiseKeyUp(WindowKey key) => KeyUp?.Invoke(new(key, false));
+    public void RaiseKeyUp(Keys key) => KeyUp?.Invoke(new(key, false));
 
     public void RaiseMove(Vec2i position) => Move?.Invoke(new(position));
 

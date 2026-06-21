@@ -12,7 +12,7 @@ internal sealed class WindowMouse
     internal WindowMouse(IWindowHost window)
     {
         this.window = window;
-        var buttons = (int)WindowMouseButton.Last + 1;
+        var buttons = (int)MouseButton.Last + 1;
         down = new bool[buttons];
         previous = new bool[buttons];
         window.MouseDown += OnMouseDown;
@@ -24,7 +24,7 @@ internal sealed class WindowMouse
     internal Vec2 Wheel => wheel;
 
     /// <summary>Gets or sets the cursor capture and visibility mode.</summary>
-    internal WindowCursorMode CursorMode
+    internal CursorMode CursorMode
     {
         get => window.CursorMode;
         set => window.CursorMode = value;
@@ -39,13 +39,13 @@ internal sealed class WindowMouse
     }
 
     /// <summary>Returns whether a button is currently down.</summary>
-    internal bool IsButtonDown(WindowMouseButton button) => Down(button);
+    internal bool IsButtonDown(MouseButton button) => Down(button);
 
     /// <summary>Returns whether a button is currently up.</summary>
-    internal bool IsButtonUp(WindowMouseButton button) => !Down(button);
+    internal bool IsButtonUp(MouseButton button) => !Down(button);
 
     /// <summary>Returns whether a button transitioned down this tick.</summary>
-    internal bool IsButtonPressed(WindowMouseButton button) => !Previous(button) && Down(button);
+    internal bool IsButtonPressed(MouseButton button) => !Previous(button) && Down(button);
 
     private void OnMouseDown(WindowMouseButtonEvent e) => Down(e.Button) = true;
 
@@ -53,19 +53,19 @@ internal sealed class WindowMouse
 
     private void OnMouseWheel(WindowMouseWheelEvent e) => wheel = e.Offset;
 
-    private ref bool Down(WindowMouseButton button)
+    private ref bool Down(MouseButton button)
     {
         ValidateButton(button);
         return ref down[(int)button];
     }
 
-    private ref bool Previous(WindowMouseButton button)
+    private ref bool Previous(MouseButton button)
     {
         ValidateButton(button);
         return ref previous[(int)button];
     }
 
-    private void ValidateButton(WindowMouseButton button)
+    private void ValidateButton(MouseButton button)
     {
         var index = (int)button;
         if ((uint)index >= down.Length)

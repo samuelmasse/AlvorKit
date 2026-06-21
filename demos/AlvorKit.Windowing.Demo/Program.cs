@@ -60,7 +60,7 @@ void RunDemoLoop(WindowLoop loop, WindowCanvas canvas, GlLayer gl)
     // Reads the facade objects so the demo shows the windowing layer rather than raw host calls.
     void Update(double dt)
     {
-        if (keyboard.IsKeyPressed(WindowKey.Escape))
+        if (keyboard.IsKeyPressed(Keys.Escape))
             screen.Close();
 
         if (canvas.Size != lastCanvasSize)
@@ -115,20 +115,20 @@ void RunDemoLoop(WindowLoop loop, WindowCanvas canvas, GlLayer gl)
 void BindDemoControls(Controls controls)
 {
     var previous = controls["Previous"];
-    previous.Bind(new() { KeyPress = WindowKey.Comma });
-    previous.Bind(new() { KeyPressRepeat = WindowKey.Left });
+    previous.Bind(new() { KeyPress = Keys.Comma });
+    previous.Bind(new() { KeyPressRepeat = Keys.Left });
     previous.Bind(new() { MouseScroll = MouseScrollDirection.Up });
 
     var next = controls["Next"];
-    next.Bind(new() { KeyPress = WindowKey.Period });
-    next.Bind(new() { KeyPressRepeat = WindowKey.Right });
+    next.Bind(new() { KeyPress = Keys.Period });
+    next.Bind(new() { KeyPressRepeat = Keys.Right });
     next.Bind(new() { MouseScroll = MouseScrollDirection.Down });
 
     var randomize = controls["Randomize"];
-    randomize.Bind(new() { KeyPress = WindowKey.R });
+    randomize.Bind(new() { KeyPress = Keys.R });
     randomize.Bind(new()
     {
-        KeyDown = WindowKey.E,
+        KeyDown = Keys.E,
         Alt = KeyModifierState.Down,
         Control = KeyModifierState.Down,
         Shift = KeyModifierState.Up

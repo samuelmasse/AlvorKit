@@ -55,7 +55,7 @@ void Update(double elapsedSeconds)
 {
     totalSeconds += elapsedSeconds;
 
-    if (keyboard.IsKeyPressed(WindowKey.Escape))
+    if (keyboard.IsKeyPressed(Keys.Escape))
         screen.Close();
 
     state.Update(keyboard, mouse, (float)elapsedSeconds);

@@ -4,13 +4,13 @@ namespace AlvorKit.Windowing;
 public sealed record class KeyBinding
 {
     /// <summary>Gets the key that activates while held.</summary>
-    public WindowKey? KeyDown { get; init; }
+    public Keys? KeyDown { get; init; }
 
     /// <summary>Gets the key that activates on the initial press.</summary>
-    public WindowKey? KeyPress { get; init; }
+    public Keys? KeyPress { get; init; }
 
     /// <summary>Gets the key that activates on initial press and key-repeat events.</summary>
-    public WindowKey? KeyPressRepeat { get; init; }
+    public Keys? KeyPressRepeat { get; init; }
 
     /// <summary>Gets the mouse wheel direction that activates the binding.</summary>
     public MouseScrollDirection? MouseScroll { get; init; }

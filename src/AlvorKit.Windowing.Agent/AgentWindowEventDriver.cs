@@ -21,19 +21,19 @@ internal sealed class AgentWindowEventDriver(
     internal void Close() { if (state.TryClose()) closing(); }
 
     /// <summary>Injects a key press into the next exact agent-controlled frame.</summary>
-    internal void PressKey(WindowKey key) => keyDown(new(key, false));
+    internal void PressKey(Keys key) => keyDown(new(key, false));
 
     /// <summary>Injects a key repeat into the next exact agent-controlled frame.</summary>
-    internal void RepeatKey(WindowKey key) => keyDown(new(key, true));
+    internal void RepeatKey(Keys key) => keyDown(new(key, true));
 
     /// <summary>Injects a key release into the next exact agent-controlled frame.</summary>
-    internal void ReleaseKey(WindowKey key) => keyUp(new(key, false));
+    internal void ReleaseKey(Keys key) => keyUp(new(key, false));
 
     /// <summary>Injects a mouse button press into the next exact agent-controlled frame.</summary>
-    internal void PressMouse(WindowMouseButton button) => mouseDown(new(button));
+    internal void PressMouse(MouseButton button) => mouseDown(new(button));
 
     /// <summary>Injects a mouse button release into the next exact agent-controlled frame.</summary>
-    internal void ReleaseMouse(WindowMouseButton button) => mouseUp(new(button));
+    internal void ReleaseMouse(MouseButton button) => mouseUp(new(button));
 
     /// <summary>Injects an absolute cursor move in simulated window coordinates.</summary>
     internal void MoveMouse(Vec2 position)

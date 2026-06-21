@@ -1,7 +1,7 @@
 namespace AlvorKit.Windowing;
 
 /// <summary>Mouse buttons exposed by AlvorKit windowing.</summary>
-public enum WindowMouseButton
+public enum MouseButton
 {
     Button1 = 0,
     Button2 = 1,

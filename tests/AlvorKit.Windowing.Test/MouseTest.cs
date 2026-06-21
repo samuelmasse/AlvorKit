@@ -9,17 +9,17 @@ public class MouseTest
         var (host, loop) = WindowingTestFactory.Create();
         var mouse = new Mouse(loop);
 
-        Assert.AreEqual(WindowMouseButton.Left, mouse.Main);
-        Assert.AreEqual(WindowMouseButton.Right, mouse.Secondary);
-        Assert.AreEqual(WindowCursorMode.Normal, mouse.CursorMode);
+        Assert.AreEqual(MouseButton.Left, mouse.Main);
+        Assert.AreEqual(MouseButton.Right, mouse.Secondary);
+        Assert.AreEqual(CursorMode.Normal, mouse.CursorMode);
         Assert.AreEqual(Vec2.Zero, mouse.Wheel);
         Assert.IsFalse(mouse.IsMainDown());
         Assert.IsTrue(mouse.IsMainUp());
         Assert.IsFalse(mouse.IsMainPressed());
 
-        mouse.CursorMode = WindowCursorMode.Captured;
+        mouse.CursorMode = CursorMode.Captured;
 
-        Assert.AreEqual(WindowCursorMode.Captured, host.CursorMode);
+        Assert.AreEqual(CursorMode.Captured, host.CursorMode);
     }
 
     [TestMethod]
@@ -28,7 +28,7 @@ public class MouseTest
         var (host, loop) = WindowingTestFactory.Create();
         var mouse = new Mouse(loop);
 
-        host.RaiseMouseDown(WindowMouseButton.Left);
+        host.RaiseMouseDown(MouseButton.Left);
 
         Assert.IsTrue(mouse.IsMainDown());
         mouse.Tick();
@@ -41,12 +41,12 @@ public class MouseTest
         var (host, loop) = WindowingTestFactory.Create();
         var mouse = new Mouse(loop);
 
-        host.RaiseMouseDown(WindowMouseButton.Left);
+        host.RaiseMouseDown(MouseButton.Left);
 
         Assert.IsTrue(mouse.IsMainPressed());
         mouse.Tick();
         Assert.IsFalse(mouse.IsMainPressed());
-        host.RaiseMouseDown(WindowMouseButton.Left);
+        host.RaiseMouseDown(MouseButton.Left);
         Assert.IsFalse(mouse.IsMainPressed());
     }
 
@@ -56,9 +56,9 @@ public class MouseTest
         var (host, loop) = WindowingTestFactory.Create();
         var mouse = new Mouse(loop);
 
-        host.RaiseMouseDown(WindowMouseButton.Left);
+        host.RaiseMouseDown(MouseButton.Left);
         Assert.IsFalse(mouse.IsMainUp());
-        host.RaiseMouseUp(WindowMouseButton.Left);
+        host.RaiseMouseUp(MouseButton.Left);
 
         Assert.IsTrue(mouse.IsMainUp());
     }
@@ -71,7 +71,7 @@ public class MouseTest
 
         Assert.IsTrue(mouse.IsSecondaryUp());
 
-        host.RaiseMouseDown(WindowMouseButton.Right);
+        host.RaiseMouseDown(MouseButton.Right);
 
         Assert.IsTrue(mouse.IsSecondaryDown());
         Assert.IsTrue(mouse.IsSecondaryPressed());
@@ -83,8 +83,8 @@ public class MouseTest
         var (_, loop) = WindowingTestFactory.Create();
         var mouse = new Mouse(loop);
 
-        Assert.ThrowsException<InvalidOperationException>(() => mouse.IsButtonDown((WindowMouseButton)(-1)));
-        Assert.ThrowsException<InvalidOperationException>(() => mouse.IsButtonDown((WindowMouseButton)int.MaxValue));
+        Assert.ThrowsException<InvalidOperationException>(() => mouse.IsButtonDown((MouseButton)(-1)));
+        Assert.ThrowsException<InvalidOperationException>(() => mouse.IsButtonDown((MouseButton)int.MaxValue));
     }
 
     [TestMethod]

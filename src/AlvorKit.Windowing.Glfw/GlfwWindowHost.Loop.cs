@@ -54,7 +54,7 @@ public partial class GlfwWindowHost
 
     private void AcceptMouseButton(GlfwMouseButton button, GlfwInputAction action)
     {
-        var mapped = (WindowMouseButton)(int)button;
+        var mapped = (MouseButton)(int)button;
 
         if (action == GlfwInputAction.Press)
             OnMouseDown(new(mapped));
@@ -64,7 +64,7 @@ public partial class GlfwWindowHost
 
     private void AcceptKey(GlfwKey key, GlfwInputAction action)
     {
-        var mapped = (WindowKey)(int)key;
+        var mapped = (Keys)(int)key;
 
         if (action == GlfwInputAction.Press || action == GlfwInputAction.Repeat)
             OnKeyDown(new(mapped, action == GlfwInputAction.Repeat));

@@ -107,9 +107,9 @@ public sealed partial class WindowLoop : IDisposable
         if (physical.Skips > 0)
             physical.Skips--;
 
-        if (keyboard.IsKeyPressed(WindowKey.F11))
+        if (keyboard.IsKeyPressed(Keys.F11))
             toggle.ToggleFullscreen();
-        if (keyboard.IsKeyPressed(WindowKey.F12))
+        if (keyboard.IsKeyPressed(Keys.F12))
             toggle.ToggleVSync();
 
         TickInputState();

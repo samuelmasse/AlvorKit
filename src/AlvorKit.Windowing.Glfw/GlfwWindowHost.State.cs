@@ -39,21 +39,21 @@ public partial class GlfwWindowHost
         fullscreen = false;
     }
 
-    private static GlfwCursorMode ToGlfwCursorMode(WindowCursorMode mode) =>
+    private static GlfwCursorMode ToGlfwCursorMode(CursorMode mode) =>
         mode switch
         {
-            WindowCursorMode.Hidden => GlfwCursorMode.Hidden,
-            WindowCursorMode.Disabled => GlfwCursorMode.Disabled,
-            WindowCursorMode.Captured => GlfwCursorMode.Captured,
+            CursorMode.Hidden => GlfwCursorMode.Hidden,
+            CursorMode.Disabled => GlfwCursorMode.Disabled,
+            CursorMode.Captured => GlfwCursorMode.Captured,
             _ => GlfwCursorMode.Normal
         };
 
-    private static WindowCursorMode FromGlfwCursorMode(GlfwCursorMode mode) =>
+    private static CursorMode FromGlfwCursorMode(GlfwCursorMode mode) =>
         mode switch
         {
-            GlfwCursorMode.Hidden => WindowCursorMode.Hidden,
-            GlfwCursorMode.Disabled => WindowCursorMode.Disabled,
-            GlfwCursorMode.Captured => WindowCursorMode.Captured,
-            _ => WindowCursorMode.Normal
+            GlfwCursorMode.Hidden => CursorMode.Hidden,
+            GlfwCursorMode.Disabled => CursorMode.Disabled,
+            GlfwCursorMode.Captured => CursorMode.Captured,
+            _ => CursorMode.Normal
         };
 }

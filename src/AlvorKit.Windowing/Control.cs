@@ -85,11 +85,11 @@ public sealed class Control
         ValidModifier(IsShiftDown(), binding.Shift) &&
         ValidModifier(IsAltDown(), binding.Alt);
 
-    private bool IsControlDown() => keyboard.IsKeyDown(WindowKey.LeftControl) || keyboard.IsKeyDown(WindowKey.RightControl);
+    private bool IsControlDown() => keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl);
 
-    private bool IsShiftDown() => keyboard.IsKeyDown(WindowKey.LeftShift) || keyboard.IsKeyDown(WindowKey.RightShift);
+    private bool IsShiftDown() => keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift);
 
-    private bool IsAltDown() => keyboard.IsKeyDown(WindowKey.LeftAlt) || keyboard.IsKeyDown(WindowKey.RightAlt);
+    private bool IsAltDown() => keyboard.IsKeyDown(Keys.LeftAlt) || keyboard.IsKeyDown(Keys.RightAlt);
 
     private static bool ValidModifier(bool down, KeyModifierState state) =>
         state == KeyModifierState.Any || (state == KeyModifierState.Down ? down : !down);

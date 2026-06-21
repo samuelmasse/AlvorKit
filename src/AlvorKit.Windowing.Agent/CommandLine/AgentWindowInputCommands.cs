@@ -25,7 +25,7 @@ internal static class AgentWindowInputCommands
     /// <returns>The configured command.</returns>
     private static Command CreateKeyCommand(AgentWindowCommandProtocol protocol)
     {
-        var key = AgentWindowCommandArguments.Enum<WindowKey>("name");
+        var key = AgentWindowCommandArguments.Enum<Keys>("name");
         var action = AgentWindowCommandArguments.Enum<AgentWindowKeyCommandAction>("action");
         var command = new Command("key", "Inject key input.");
         command.Arguments.Add(key);
@@ -39,7 +39,7 @@ internal static class AgentWindowInputCommands
     /// <returns>The configured command.</returns>
     private static Command CreateMouseCommand(AgentWindowCommandProtocol protocol)
     {
-        var button = AgentWindowCommandArguments.Enum<WindowMouseButton>("button");
+        var button = AgentWindowCommandArguments.Enum<MouseButton>("button");
         var action = AgentWindowCommandArguments.Enum<AgentWindowMouseCommandAction>("action");
         var command = new Command("mouse", "Inject mouse button input.");
         command.Arguments.Add(button);

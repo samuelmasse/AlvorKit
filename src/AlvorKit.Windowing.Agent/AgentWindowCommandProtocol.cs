@@ -27,7 +27,7 @@ internal class AgentWindowCommandProtocol(AgentGlfwWindowHost host, TextWriter o
 
     internal void Step(double delta) => host.Agent.Step(delta);
 
-    internal void Key(WindowKey key, AgentWindowKeyCommandAction action)
+    internal void Key(Keys key, AgentWindowKeyCommandAction action)
     {
         switch (action)
         {
@@ -43,7 +43,7 @@ internal class AgentWindowCommandProtocol(AgentGlfwWindowHost host, TextWriter o
         }
     }
 
-    internal void Mouse(WindowMouseButton button, AgentWindowMouseCommandAction action)
+    internal void Mouse(MouseButton button, AgentWindowMouseCommandAction action)
     {
         if (action == AgentWindowMouseCommandAction.Down)
             host.Agent.PressMouse(button);

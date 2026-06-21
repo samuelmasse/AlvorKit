@@ -1,7 +1,7 @@
 namespace AlvorKit.Windowing;
 
 /// <summary>Keyboard keys exposed by AlvorKit windowing.</summary>
-public enum WindowKey
+public enum Keys
 {
     Unknown = -1,
     Space = 32,

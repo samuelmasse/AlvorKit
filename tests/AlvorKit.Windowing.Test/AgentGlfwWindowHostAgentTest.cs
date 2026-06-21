@@ -78,17 +78,17 @@ public class AgentGlfwWindowHostAgentTest
         var pressedDuringSecondUpdate = true;
         loop.Update += (_) =>
         {
-            pressedDuringFirstUpdate |= host.UpdateCount == 1 && keyboard.IsKeyPressed(WindowKey.Space);
-            pressedDuringSecondUpdate &= host.UpdateCount != 2 || keyboard.IsKeyPressed(WindowKey.Space);
+            pressedDuringFirstUpdate |= host.UpdateCount == 1 && keyboard.IsKeyPressed(Keys.Space);
+            pressedDuringSecondUpdate &= host.UpdateCount != 2 || keyboard.IsKeyPressed(Keys.Space);
         };
 
-        host.Agent.PressKey(WindowKey.Space);
+        host.Agent.PressKey(Keys.Space);
         host.Agent.Update(0.016);
         host.Agent.Update(0.016);
 
         Assert.IsTrue(pressedDuringFirstUpdate);
         Assert.IsFalse(pressedDuringSecondUpdate);
-        Assert.IsTrue(keyboard.IsKeyDown(WindowKey.Space));
+        Assert.IsTrue(keyboard.IsKeyDown(Keys.Space));
     }
 
     /// <summary>Verifies that closing the agent host is idempotent and stops future frames.</summary>
@@ -123,7 +123,7 @@ public class AgentGlfwWindowHostAgentTest
         host.ClientSize = new(5, 7);
         host.MousePosition = new(5, 6);
         host.WindowState = WindowState.Fullscreen;
-        host.CursorMode = WindowCursorMode.Disabled;
+        host.CursorMode = CursorMode.Disabled;
         host.IsVSyncEnabled = true;
         host.Title = "renamed";
         host.Dispose();
@@ -136,7 +136,7 @@ public class AgentGlfwWindowHostAgentTest
         Assert.AreEqual(new Vec2u(1920u, 1080u), host.MonitorSize);
         Assert.AreEqual(1, host.MonitorScale);
         Assert.AreEqual(new Vec2(5, 6), host.MousePosition);
-        Assert.AreEqual(WindowCursorMode.Disabled, host.CursorMode);
+        Assert.AreEqual(CursorMode.Disabled, host.CursorMode);
         Assert.IsTrue(host.IsVSyncEnabled);
         Assert.AreEqual("renamed", host.Title);
     }
@@ -163,10 +163,10 @@ public class AgentGlfwWindowHostAgentTest
         host.Resize += (e) => resized = e.Size;
         host.Move += (e) => moved = e.Position;
 
-        host.Agent.RepeatKey(WindowKey.A);
-        host.Agent.ReleaseKey(WindowKey.A);
-        host.Agent.PressMouse(WindowMouseButton.Left);
-        host.Agent.ReleaseMouse(WindowMouseButton.Left);
+        host.Agent.RepeatKey(Keys.A);
+        host.Agent.ReleaseKey(Keys.A);
+        host.Agent.PressMouse(MouseButton.Left);
+        host.Agent.ReleaseMouse(MouseButton.Left);
         host.Agent.ScrollMouse(new(1, -1));
         host.Agent.EnterText(new Rune('x'));
         host.Agent.EnterText("yz");

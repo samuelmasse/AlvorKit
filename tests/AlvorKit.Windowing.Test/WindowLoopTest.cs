@@ -161,8 +161,8 @@ public class WindowLoopTest
         var (host, loop) = WindowingTestFactory.Create();
         var screen = new WindowScreen(loop);
 
-        host.RaiseKeyDown(WindowKey.F11);
-        host.RaiseKeyDown(WindowKey.F12);
+        host.RaiseKeyDown(Keys.F11);
+        host.RaiseKeyDown(Keys.F12);
         host.IsFocused = true;
         host.RaiseUpdate();
         host.RaiseRender();

@@ -27,7 +27,7 @@ public class AgentGlfwWindowHostTest
         host.ClientSize = new(32, 24);
         host.MousePosition = new(7, 8);
         host.WindowState = WindowState.Fullscreen;
-        host.CursorMode = WindowCursorMode.Hidden;
+        host.CursorMode = CursorMode.Hidden;
         host.IsVSyncEnabled = false;
         host.Title = "Outer";
         host.Clipboard = "Board";
@@ -40,7 +40,7 @@ public class AgentGlfwWindowHostTest
         Assert.AreEqual(new Vec2u(1920u, 1080u), host.MonitorSize);
         Assert.AreEqual(1, host.MonitorScale);
         Assert.AreEqual(new Vec2(7, 8), host.MousePosition);
-        Assert.AreEqual(WindowCursorMode.Hidden, host.CursorMode);
+        Assert.AreEqual(CursorMode.Hidden, host.CursorMode);
         Assert.IsFalse(host.IsVSyncEnabled);
         Assert.AreEqual("Outer", host.Title);
         Assert.AreEqual("Board", host.Clipboard);

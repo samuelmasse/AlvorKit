@@ -14,16 +14,16 @@ public sealed class Keyboard(WindowLoop window)
     }
 
     /// <summary>Returns whether the key is currently down.</summary>
-    public bool IsKeyDown(WindowKey key) => window.Keyboard.IsKeyDown(key);
+    public bool IsKeyDown(Keys key) => window.Keyboard.IsKeyDown(key);
 
     /// <summary>Returns whether the key is currently up.</summary>
-    public bool IsKeyUp(WindowKey key) => window.Keyboard.IsKeyUp(key);
+    public bool IsKeyUp(Keys key) => window.Keyboard.IsKeyUp(key);
 
     /// <summary>Returns whether the key transitioned to down this tick.</summary>
-    public bool IsKeyPressed(WindowKey key) => window.Keyboard.IsKeyPressed(key);
+    public bool IsKeyPressed(Keys key) => window.Keyboard.IsKeyPressed(key);
 
     /// <summary>Returns whether the key pressed or repeated this tick.</summary>
-    public bool IsKeyPressedRepeated(WindowKey key) => window.Keyboard.IsKeyPressedRepeated(key);
+    public bool IsKeyPressedRepeated(Keys key) => window.Keyboard.IsKeyPressedRepeated(key);
 
     /// <summary>Advances keyboard and text state by one tick.</summary>
     public void Tick()

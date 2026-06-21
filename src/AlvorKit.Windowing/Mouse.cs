@@ -4,13 +4,13 @@ namespace AlvorKit.Windowing;
 public sealed class Mouse(WindowLoop window)
 {
     /// <summary>Gets or sets the primary mouse button used by convenience methods.</summary>
-    public WindowMouseButton Main { get; set; } = WindowMouseButton.Left;
+    public MouseButton Main { get; set; } = MouseButton.Left;
 
     /// <summary>Gets or sets the secondary mouse button used by convenience methods.</summary>
-    public WindowMouseButton Secondary { get; set; } = WindowMouseButton.Right;
+    public MouseButton Secondary { get; set; } = MouseButton.Right;
 
     /// <summary>Gets or sets the cursor capture and visibility mode.</summary>
-    public WindowCursorMode CursorMode
+    public CursorMode CursorMode
     {
         get => window.Mouse.CursorMode;
         set => window.Mouse.CursorMode = value;
@@ -33,13 +33,13 @@ public sealed class Mouse(WindowLoop window)
     public ref bool Track => ref window.MousePosition.Track;
 
     /// <summary>Returns whether a mouse button is currently down.</summary>
-    public bool IsButtonDown(WindowMouseButton button) => window.Mouse.IsButtonDown(button);
+    public bool IsButtonDown(MouseButton button) => window.Mouse.IsButtonDown(button);
 
     /// <summary>Returns whether a mouse button is currently up.</summary>
-    public bool IsButtonUp(WindowMouseButton button) => window.Mouse.IsButtonUp(button);
+    public bool IsButtonUp(MouseButton button) => window.Mouse.IsButtonUp(button);
 
     /// <summary>Returns whether a mouse button transitioned down this tick.</summary>
-    public bool IsButtonPressed(WindowMouseButton button) => window.Mouse.IsButtonPressed(button);
+    public bool IsButtonPressed(MouseButton button) => window.Mouse.IsButtonPressed(button);
 
     /// <summary>Returns whether the main mouse button is currently down.</summary>
     public bool IsMainDown() => IsButtonDown(Main);

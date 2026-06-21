@@ -67,7 +67,7 @@ public interface IWindowHost : IDisposable
     WindowState WindowState { get; set; }
 
     /// <summary>Gets or sets the cursor capture and visibility mode.</summary>
-    WindowCursorMode CursorMode { get; set; }
+    CursorMode CursorMode { get; set; }
 
     /// <summary>Gets or sets whether vertical synchronization is enabled for buffer swaps.</summary>
     bool IsVSyncEnabled { get; set; }

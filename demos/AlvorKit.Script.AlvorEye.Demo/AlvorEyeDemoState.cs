@@ -107,14 +107,14 @@ public sealed class AlvorEyeDemoState
     private void MoveFromKeys(Keyboard keyboard, float elapsedSeconds)
     {
         const float speed = 245f;
-        var dx = Axis(keyboard, WindowKey.D, WindowKey.Right) - Axis(keyboard, WindowKey.A, WindowKey.Left);
-        var dy = Axis(keyboard, WindowKey.S, WindowKey.Down) - Axis(keyboard, WindowKey.W, WindowKey.Up);
+        var dx = Axis(keyboard, Keys.D, Keys.Right) - Axis(keyboard, Keys.A, Keys.Left);
+        var dy = Axis(keyboard, Keys.S, Keys.Down) - Axis(keyboard, Keys.W, Keys.Up);
         PlayerX = Math.Clamp(PlayerX + dx * speed * elapsedSeconds, 36f, 574f - PlayerSize);
         PlayerY = Math.Clamp(PlayerY + dy * speed * elapsedSeconds, 76f, 596f - PlayerSize);
     }
 
     /// <summary>Returns one when either of two movement keys is held.</summary>
-    private static float Axis(Keyboard keyboard, WindowKey first, WindowKey second) =>
+    private static float Axis(Keyboard keyboard, Keys first, Keys second) =>
         keyboard.IsKeyDown(first) || keyboard.IsKeyDown(second) ? 1f : 0f;
 
     /// <summary>Updates mouse-only locks using the current cursor coordinate.</summary>

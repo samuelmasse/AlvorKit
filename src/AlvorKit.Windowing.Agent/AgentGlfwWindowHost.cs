@@ -99,7 +99,7 @@ public class AgentGlfwWindowHost : GlfwWindowHost
     }
 
     /// <inheritdoc />
-    public override WindowCursorMode CursorMode
+    public override CursorMode CursorMode
     {
         get => useAgent ? state.CursorMode : base.CursorMode;
         set { if (useAgent) state.CursorMode = value; else base.CursorMode = value; }
