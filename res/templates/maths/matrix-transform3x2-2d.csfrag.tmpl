@@ -18,10 +18,6 @@
             new {{Vector2Type}}({{ZeroLiteral}}, {{OneLiteral}}),
             translation);
 
-    /// <summary>Creates a compact 2D translation transform.</summary>
-    public static {{TypeName}} CreateTranslation({{ScalarType}} x, {{ScalarType}} y) =>
-        CreateTranslation(new {{Vector2Type}}(x, y));
-
     /// <summary>Applies a compact 2D translation after an existing transform.</summary>
     public static {{TypeName}} Translate({{TypeName}} value, {{Vector2Type}} translation) =>
         new(
@@ -86,10 +82,10 @@
         value * CreateRotation(radians);
 
     /// <summary>Creates a compact 2D skew transform from X and Y skew angles in radians.</summary>
-    public static {{TypeName}} CreateSkew({{ScalarType}} radiansX, {{ScalarType}} radiansY)
+    public static {{TypeName}} CreateSkew({{Vector2Type}} radians)
     {
-        var skewX = ScalarMath.Tan(radiansX);
-        var skewY = ScalarMath.Tan(radiansY);
+        var skewX = ScalarMath.Tan(radians.X);
+        var skewY = ScalarMath.Tan(radians.Y);
         return new(
             new {{Vector2Type}}({{OneLiteral}}, skewY),
             new {{Vector2Type}}(skewX, {{OneLiteral}}),
@@ -97,10 +93,10 @@
     }
 
     /// <summary>Creates a compact 2D skew transform from X and Y skew angles in radians around a center point.</summary>
-    public static {{TypeName}} CreateSkew({{ScalarType}} radiansX, {{ScalarType}} radiansY, {{Vector2Type}} center)
+    public static {{TypeName}} CreateSkew({{Vector2Type}} radians, {{Vector2Type}} center)
     {
-        var skewX = ScalarMath.Tan(radiansX);
-        var skewY = ScalarMath.Tan(radiansY);
+        var skewX = ScalarMath.Tan(radians.X);
+        var skewY = ScalarMath.Tan(radians.Y);
         return new(
             new {{Vector2Type}}({{OneLiteral}}, skewY),
             new {{Vector2Type}}(skewX, {{OneLiteral}}),
@@ -108,8 +104,8 @@
     }
 
     /// <summary>Applies a compact 2D skew after an existing transform.</summary>
-    public static {{TypeName}} Skew({{TypeName}} value, {{ScalarType}} radiansX, {{ScalarType}} radiansY) =>
-        value * CreateSkew(radiansX, radiansY);
+    public static {{TypeName}} Skew({{TypeName}} value, {{Vector2Type}} radians) =>
+        value * CreateSkew(radians);
 
     /// <summary>Composes two compact 2D affine transforms.</summary>
     public static {{TypeName}} Compose({{TypeName}} left, {{TypeName}} right) =>
@@ -163,4 +159,3 @@
     /// <summary>Transforms a 2D direction vector without applying translation.</summary>
     public static {{Vector2Type}} TransformVector({{TypeName}} value, {{Vector2Type}} vector) =>
         (value.Column0 * vector.X) + (value.Column1 * vector.Y);
-

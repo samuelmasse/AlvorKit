@@ -724,37 +724,27 @@
 
     /// <summary>Creates a viewport transform for default OpenGL normalized depth.</summary>
     public static {{TypeName}} CreateViewport(
-        {{ScalarType}} x,
-        {{ScalarType}} y,
-        {{ScalarType}} width,
-        {{ScalarType}} height) =>
-        CreateViewport(x, y, width, height, {{ZeroLiteral}}, {{OneLiteral}}, ProjectionDepthRange.NegativeOneToOne);
-
-    /// <summary>Creates a viewport transform for default OpenGL normalized depth.</summary>
-    public static {{TypeName}} CreateViewport(
         {{Vector4Type}} viewport) =>
-        CreateViewport(viewport.X, viewport.Y, viewport.Z, viewport.W);
+        CreateViewport(viewport, {{ZeroLiteral}}, {{OneLiteral}}, ProjectionDepthRange.NegativeOneToOne);
 
     /// <summary>Creates a viewport transform for default OpenGL normalized depth.</summary>
     public static {{TypeName}} CreateViewport(
-        {{ScalarType}} x,
-        {{ScalarType}} y,
-        {{ScalarType}} width,
-        {{ScalarType}} height,
+        {{Vector4Type}} viewport,
         {{ScalarType}} minDepth,
         {{ScalarType}} maxDepth) =>
-        CreateViewport(x, y, width, height, minDepth, maxDepth, ProjectionDepthRange.NegativeOneToOne);
+        CreateViewport(viewport, minDepth, maxDepth, ProjectionDepthRange.NegativeOneToOne);
 
     /// <summary>Creates a viewport transform for explicit normalized depth conventions.</summary>
     public static {{TypeName}} CreateViewport(
-        {{ScalarType}} x,
-        {{ScalarType}} y,
-        {{ScalarType}} width,
-        {{ScalarType}} height,
+        {{Vector4Type}} viewport,
         {{ScalarType}} minDepth,
         {{ScalarType}} maxDepth,
         ProjectionDepthRange depthRange)
     {
+        var x = viewport.X;
+        var y = viewport.Y;
+        var width = viewport.Z;
+        var height = viewport.W;
         var zScale = depthRange switch
         {
             ProjectionDepthRange.NegativeOneToOne => (maxDepth - minDepth) / {{TwoLiteral}},

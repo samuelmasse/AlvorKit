@@ -19,17 +19,11 @@ public interface IMat3Transform2D<TSelf, TScalar, TVector2, TVector3> :
     /// <summary>Creates a 2D translation matrix.</summary>
     static abstract TSelf CreateTranslation2D(TVector2 translation);
 
-    /// <summary>Creates a 2D translation matrix.</summary>
-    static abstract TSelf CreateTranslation2D(TScalar x, TScalar y);
-
     /// <summary>Applies a 2D translation after an existing transform.</summary>
     static abstract TSelf Translate2D(TSelf value, TVector2 translation);
 
     /// <summary>Creates a 2D scale matrix.</summary>
     static abstract TSelf CreateScale2D(TVector2 scale);
-
-    /// <summary>Creates a 2D scale matrix.</summary>
-    static abstract TSelf CreateScale2D(TScalar x, TScalar y);
 
     /// <summary>Creates a uniform 2D scale matrix.</summary>
     static abstract TSelf CreateScale2D(TScalar scale);
@@ -53,13 +47,13 @@ public interface IMat3Transform2D<TSelf, TScalar, TVector2, TVector3> :
     static abstract TSelf Rotate2D(TSelf value, TScalar radians);
 
     /// <summary>Creates a 2D skew matrix from X and Y skew angles in radians.</summary>
-    static abstract TSelf CreateSkew2D(TScalar radiansX, TScalar radiansY);
+    static abstract TSelf CreateSkew2D(TVector2 radians);
 
     /// <summary>Creates a 2D skew matrix from X and Y skew angles in radians around a center point.</summary>
-    static abstract TSelf CreateSkew2D(TScalar radiansX, TScalar radiansY, TVector2 center);
+    static abstract TSelf CreateSkew2D(TVector2 radians, TVector2 center);
 
     /// <summary>Applies a 2D skew after an existing transform.</summary>
-    static abstract TSelf Skew2D(TSelf value, TScalar radiansX, TScalar radiansY);
+    static abstract TSelf Skew2D(TSelf value, TVector2 radians);
 
     /// <summary>Creates a 2D X shear matrix.</summary>
     static abstract TSelf CreateShearX2D(TScalar y);

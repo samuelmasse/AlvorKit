@@ -21,26 +21,17 @@ public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
     /// <summary>Creates a translation matrix.</summary>
     static abstract TSelf CreateTranslation(TVector3 translation);
 
-    /// <summary>Creates a translation matrix.</summary>
-    static abstract TSelf CreateTranslation(TScalar x, TScalar y, TScalar z);
-
     /// <summary>Applies a translation after an existing transform.</summary>
     static abstract TSelf Translate(TSelf value, TVector3 translation);
 
     /// <summary>Creates a scale matrix.</summary>
     static abstract TSelf CreateScale(TVector3 scale);
 
-    /// <summary>Creates a scale matrix.</summary>
-    static abstract TSelf CreateScale(TScalar x, TScalar y, TScalar z);
-
     /// <summary>Creates a uniform scale matrix.</summary>
     static abstract TSelf CreateScale(TScalar scale);
 
     /// <summary>Creates a scale matrix around a center point.</summary>
     static abstract TSelf CreateScale(TVector3 scale, TVector3 center);
-
-    /// <summary>Creates a scale matrix around a center point.</summary>
-    static abstract TSelf CreateScale(TScalar x, TScalar y, TScalar z, TVector3 center);
 
     /// <summary>Creates a uniform scale matrix around a center point.</summary>
     static abstract TSelf CreateScale(TScalar scale, TVector3 center);
@@ -95,24 +86,6 @@ public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
 
     /// <summary>Applies a shear after an existing transform.</summary>
     static abstract TSelf Shear(TSelf value, TVector3 point, TVector2 x, TVector2 y, TVector2 z);
-
-    /// <summary>Creates a shear matrix that moves Y and Z by X.</summary>
-    static abstract TSelf CreateShearX(TScalar y, TScalar z);
-
-    /// <summary>Creates a shear matrix that moves X and Z by Y.</summary>
-    static abstract TSelf CreateShearY(TScalar x, TScalar z);
-
-    /// <summary>Creates a shear matrix that moves X and Y by Z.</summary>
-    static abstract TSelf CreateShearZ(TScalar x, TScalar y);
-
-    /// <summary>Applies an X-axis shear after an existing transform.</summary>
-    static abstract TSelf ShearX(TSelf value, TScalar y, TScalar z);
-
-    /// <summary>Applies a Y-axis shear after an existing transform.</summary>
-    static abstract TSelf ShearY(TSelf value, TScalar x, TScalar z);
-
-    /// <summary>Applies a Z-axis shear after an existing transform.</summary>
-    static abstract TSelf ShearZ(TSelf value, TScalar x, TScalar y);
 
     /// <summary>Creates a matrix that scales and biases normalized coordinates.</summary>
     static abstract TSelf CreateScaleBias(TScalar scale, TScalar bias);
@@ -325,26 +298,17 @@ public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
     static abstract TSelf PickMatrix(TVector2 center, TVector2 delta, TVector4 viewport);
 
     /// <summary>Creates a viewport transform for default OpenGL normalized depth.</summary>
-    static abstract TSelf CreateViewport(TScalar x, TScalar y, TScalar width, TScalar height);
-
-    /// <summary>Creates a viewport transform for default OpenGL normalized depth.</summary>
     static abstract TSelf CreateViewport(TVector4 viewport);
 
     /// <summary>Creates a viewport transform for default OpenGL normalized depth.</summary>
     static abstract TSelf CreateViewport(
-        TScalar x,
-        TScalar y,
-        TScalar width,
-        TScalar height,
+        TVector4 viewport,
         TScalar minDepth,
         TScalar maxDepth);
 
     /// <summary>Creates a viewport transform for explicit normalized depth conventions.</summary>
     static abstract TSelf CreateViewport(
-        TScalar x,
-        TScalar y,
-        TScalar width,
-        TScalar height,
+        TVector4 viewport,
         TScalar minDepth,
         TScalar maxDepth,
         ProjectionDepthRange depthRange);

@@ -20,7 +20,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="..\..\res\templates\ecs\source-generator\*.tmpl"
+        <EmbeddedResource Include="..\..\res\templates\ecs\source-generator\*.cs.tmpl" WithCulture="false"
+            LogicalName="AlvorKit.ECS.Generator.Templates.%(Filename)%(Extension)" />
+        <EmbeddedResource Include="..\..\res\templates\ecs\source-generator\*.csfrag.tmpl"
             LogicalName="AlvorKit.ECS.Generator.Templates.%(Filename)%(Extension)" />
     </ItemGroup>
 

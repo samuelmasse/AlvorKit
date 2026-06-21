@@ -217,6 +217,11 @@ target vector type is clear. Use constructors when the constructor itself is the
 point, such as scalar splats, composition constructors, conversion tests, or
 expressions where no target vector type is available before an operator runs.
 
+Treat AlvorKit maths types as first-class API shapes. When a value is truly a
+vector, matrix, quaternion, box, or related maths type, accept and pass that
+type instead of adding overloads with multiple scalar arguments or preferring
+scalar parameters at call sites.
+
 Do not silently clamp, coerce, or normalize caller-provided values in property
 setters or state updates. If a value is invalid, reject it with a clear error or
 model the invariant in the type system. If a platform boundary requires clamping,

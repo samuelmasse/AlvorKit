@@ -12,10 +12,6 @@
             new {{Vector3Type}}({{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}),
             new {{Vector3Type}}(translation.X, translation.Y, {{OneLiteral}}));
 
-    /// <summary>Creates a 2D translation matrix.</summary>
-    public static {{TypeName}} CreateTranslation2D({{ScalarType}} x, {{ScalarType}} y) =>
-        CreateTranslation2D(new {{Vector2Type}}(x, y));
-
     /// <summary>Applies a 2D translation after an existing transform.</summary>
     public static {{TypeName}} Translate2D({{TypeName}} value, {{Vector2Type}} translation) =>
         new(
@@ -29,10 +25,6 @@
             new {{Vector3Type}}(scale.X, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector3Type}}({{ZeroLiteral}}, scale.Y, {{ZeroLiteral}}),
             new {{Vector3Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
-
-    /// <summary>Creates a 2D scale matrix.</summary>
-    public static {{TypeName}} CreateScale2D({{ScalarType}} x, {{ScalarType}} y) =>
-        CreateScale2D(new {{Vector2Type}}(x, y));
 
     /// <summary>Creates a uniform 2D scale matrix.</summary>
     public static {{TypeName}} CreateScale2D({{ScalarType}} scale) =>
@@ -93,10 +85,10 @@
     }
 
     /// <summary>Creates a 2D skew matrix from X and Y skew angles in radians.</summary>
-    public static {{TypeName}} CreateSkew2D({{ScalarType}} radiansX, {{ScalarType}} radiansY)
+    public static {{TypeName}} CreateSkew2D({{Vector2Type}} radians)
     {
-        var skewX = ScalarMath.Tan(radiansX);
-        var skewY = ScalarMath.Tan(radiansY);
+        var skewX = ScalarMath.Tan(radians.X);
+        var skewY = ScalarMath.Tan(radians.Y);
         return new(
             new {{Vector3Type}}({{OneLiteral}}, skewY, {{ZeroLiteral}}),
             new {{Vector3Type}}(skewX, {{OneLiteral}}, {{ZeroLiteral}}),
@@ -104,10 +96,10 @@
     }
 
     /// <summary>Creates a 2D skew matrix from X and Y skew angles in radians around a center point.</summary>
-    public static {{TypeName}} CreateSkew2D({{ScalarType}} radiansX, {{ScalarType}} radiansY, {{Vector2Type}} center)
+    public static {{TypeName}} CreateSkew2D({{Vector2Type}} radians, {{Vector2Type}} center)
     {
-        var skewX = ScalarMath.Tan(radiansX);
-        var skewY = ScalarMath.Tan(radiansY);
+        var skewX = ScalarMath.Tan(radians.X);
+        var skewY = ScalarMath.Tan(radians.Y);
         return new(
             new {{Vector3Type}}({{OneLiteral}}, skewY, {{ZeroLiteral}}),
             new {{Vector3Type}}(skewX, {{OneLiteral}}, {{ZeroLiteral}}),
@@ -115,8 +107,8 @@
     }
 
     /// <summary>Applies a 2D skew after an existing transform.</summary>
-    public static {{TypeName}} Skew2D({{TypeName}} value, {{ScalarType}} radiansX, {{ScalarType}} radiansY) =>
-        value * CreateSkew2D(radiansX, radiansY);
+    public static {{TypeName}} Skew2D({{TypeName}} value, {{Vector2Type}} radians) =>
+        value * CreateSkew2D(radians);
 
     /// <summary>Creates a 2D X shear matrix.</summary>
     public static {{TypeName}} CreateShearX2D({{ScalarType}} y) =>

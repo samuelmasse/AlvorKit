@@ -26,12 +26,12 @@ public static class TemplateResource
                 : throw new InvalidOperationException($"Template '{resourcePath}' has no value for placeholder '{match.Value}'."));
     }
 
-    /// <summary>Renders a declaration fragment followed by one declaration-separating blank line.</summary>
+    /// <summary>Renders a declaration fragment with exactly one trailing blank line.</summary>
     /// <param name="anchor">A type from the calling assembly, used to help locate the repository root.</param>
     /// <param name="resourcePath">The repository-style resource path, such as <c>res/templates/bindgen/file.csfrag.tmpl</c>.</param>
     /// <param name="values">Placeholder names and replacement values.</param>
     public static string RenderFragment(Type anchor, string resourcePath, params (string Name, string Value)[] values) =>
-        Render(anchor, resourcePath, values) + Environment.NewLine;
+        Render(anchor, resourcePath, values).TrimEnd('\r', '\n') + Environment.NewLine + Environment.NewLine;
 
     /// <summary>Resolves a repository-root <c>res/</c> path to a concrete template file path.</summary>
     private static string ResolveResPath(Type anchor, string resourcePath)

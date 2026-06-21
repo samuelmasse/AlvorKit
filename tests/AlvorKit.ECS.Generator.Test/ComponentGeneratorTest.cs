@@ -238,6 +238,23 @@ public sealed class ComponentGeneratorTest
         Assert.IsNull(readXmlComment.Invoke(null, [property, CancellationToken.None]));
     }
 
+    /// <summary>Fragment rendering trims template padding and returns one trailing blank line.</summary>
+    [TestMethod]
+    public void TemplateRendering_ForFragment_NormalizesTrailingNewlines()
+    {
+        var output = ComponentTemplate.RenderFragment(
+            "builder-method.csfrag.tmpl",
+            ("Comment", ""),
+            ("SetAccess", "public"),
+            ("GetAccess", "public"),
+            ("Name", "Health"),
+            ("AccessorName", "Health"),
+            ("Type", "int"));
+
+        Assert.IsTrue(output.EndsWith("\n\n", StringComparison.Ordinal));
+        Assert.IsFalse(output.EndsWith("\n\n\n", StringComparison.Ordinal));
+    }
+
     /// <summary>Template rendering fails loudly for missing placeholder values and missing embedded templates.</summary>
     [TestMethod]
     public void TemplateRendering_WhenInvalid_Throws()

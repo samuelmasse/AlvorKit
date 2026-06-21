@@ -89,7 +89,7 @@ public sealed class GeneratedMatrixTest
     [TestMethod]
     public void GeneratedMat4TransformHelpers_Work()
     {
-        var translated = Mat4.CreateTranslation(2f, 3f, 4f) * new Vec4(1f, 2f, 3f, 1f);
+        var translated = Mat4.CreateTranslation(new Vec3(2f, 3f, 4f)) * new Vec4(1f, 2f, 3f, 1f);
         var rotated = Mat4.CreateRotationZ(float.Pi / 2f) * new Vec4(1f, 0f, 0f, 1f);
         var centered = Mat4.CreateRotationZ(float.Pi, new Vec3(1f, 1f, 0f)) * new Vec4(2f, 1f, 0f, 1f);
         var projection = Mat4.CreatePerspectiveFieldOfView(float.Pi / 2f, 1f, 1f, 11f);
@@ -113,7 +113,7 @@ public sealed class GeneratedMatrixTest
     [TestMethod]
     public void GeneratedMat4dTransformHelpers_Work()
     {
-        var translated = Mat4d.CreateTranslation(2d, 3d, 4d) * new Vec4d(1d, 2d, 3d, 1d);
+        var translated = Mat4d.CreateTranslation(new Vec3d(2d, 3d, 4d)) * new Vec4d(1d, 2d, 3d, 1d);
         var rotated = Mat4d.CreateRotationZ(double.Pi / 2d) * new Vec4d(1d, 0d, 0d, 1d);
         var projection = Mat4d.CreatePerspectiveFieldOfView(double.Pi / 2d, 1d, 1d, 11d);
         var lookAt = Mat4d.LookAt(new Vec3d(0d, 0d, 1d), Vec3d.Zero, Vec3d.UnitY);
@@ -134,13 +134,13 @@ public sealed class GeneratedMatrixTest
         var translated = Mat4.Translate(Mat4.Identity, new Vec3(2f, 3f, 4f)) * new Vec4(1f, 2f, 3f, 1f);
         var scaled = Mat4.Scale(Mat4.Identity, new Vec3(2f, 3f, 4f)) * new Vec4(1f, 2f, 3f, 1f);
         var sheared = Mat4.CreateShear(new Vec2(1f, 0f), new Vec2(0f, 0f), new Vec2(0f, 0f)) * new Vec4(2f, 3f, 4f, 1f);
-        var shearX = Mat4.CreateShearX(1f, 2f) * new Vec4(2f, 3f, 4f, 1f);
+        var shearX = Mat4.CreateShear(Vec2.Zero, new Vec2(1f, 0f), new Vec2(2f, 0f)) * new Vec4(2f, 3f, 4f, 1f);
         var scaleBias = Mat4.CreateScaleBias(0.5f, 0.5f) * new Vec4(2f, 4f, 6f, 1f);
         var world = Mat4.CreateWorld(new Vec3(2f, 3f, 4f), Vec3.UnitZ, Vec3.UnitY);
-        var extractedScale = Mat4.CreateScale(2f, 3f, 4f).ExtractScale();
-        var withoutTranslation = Mat4.CreateTranslation(2f, 3f, 4f).WithoutTranslation();
-        var transformedPoint = Mat4.TransformPoint(Mat4.CreateTranslation(2f, 3f, 4f), new Vec3(1f, 2f, 3f));
-        var transformedVector = Mat4.TransformVector(Mat4.CreateTranslation(2f, 3f, 4f), new Vec3(1f, 2f, 3f));
+        var extractedScale = Mat4.CreateScale(new Vec3(2f, 3f, 4f)).ExtractScale();
+        var withoutTranslation = Mat4.CreateTranslation(new Vec3(2f, 3f, 4f)).WithoutTranslation();
+        var transformedPoint = Mat4.TransformPoint(Mat4.CreateTranslation(new Vec3(2f, 3f, 4f)), new Vec3(1f, 2f, 3f));
+        var transformedVector = Mat4.TransformVector(Mat4.CreateTranslation(new Vec3(2f, 3f, 4f)), new Vec3(1f, 2f, 3f));
         var crossed = Mat4.MatrixCross3(new Vec3(1f, 2f, 3f)) * new Vec3(4f, 5f, 6f);
 
         AssertVecClose(new Vec4(0f, 1f, 0f, 1f), axisRotated);
@@ -240,11 +240,11 @@ public sealed class GeneratedMatrixTest
     [TestMethod]
     public void GeneratedMat3Transform2DHelpers_Work()
     {
-        var transformed = Mat3.CreateTranslation2D(4f, 5f) * Mat3.CreateScale2D(new Vec2(2f, 3f)) * new Vec3(1f, 1f, 1f);
+        var transformed = Mat3.CreateTranslation2D(new Vec2(4f, 5f)) * Mat3.CreateScale2D(new Vec2(2f, 3f)) * new Vec3(1f, 1f, 1f);
         var rotated = Mat3.CreateRotation2D(float.Pi / 2f) * new Vec3(1f, 0f, 1f);
         var translated = Mat3.Translate2D(Mat3.Identity, new Vec2(2f, 3f)) * new Vec3(1f, 1f, 1f);
         var centeredRotation = Mat3.CreateRotation2D(float.Pi, new Vec2(1f, 1f)) * new Vec3(2f, 1f, 1f);
-        var skew = Mat3.CreateSkew2D(MathF.Atan(2f), 0f) * new Vec3(3f, 4f, 1f);
+        var skew = Mat3.CreateSkew2D(new Vec2(MathF.Atan(2f), 0f)) * new Vec3(3f, 4f, 1f);
         var shearX = Mat3.CreateShearX2D(2f) * new Vec3(3f, 4f, 1f);
         var shearY = Mat3.CreateShearY2D(2f) * new Vec3(3f, 4f, 1f);
         var mutable = Mat3.Identity;
@@ -266,11 +266,11 @@ public sealed class GeneratedMatrixTest
     [TestMethod]
     public void GeneratedMat3x2Transform2DHelpers_Work()
     {
-        var transform = Mat3x2.CreateTranslation(4f, 5f) * Mat3x2.CreateScale(new Vec2(2f, 3f));
+        var transform = Mat3x2.CreateTranslation(new Vec2(4f, 5f)) * Mat3x2.CreateScale(new Vec2(2f, 3f));
         var transformed = Mat3x2.TransformPoint(transform, new Vec2(1f, 1f));
         var vector = Mat3x2.TransformVector(transform, new Vec2(1f, 1f));
         var centeredRotation = Mat3x2.CreateRotation(float.Pi, new Vec2(1f, 1f));
-        var skew = Mat3x2.CreateSkew(MathF.Atan(2f), 0f);
+        var skew = Mat3x2.CreateSkew(new Vec2(MathF.Atan(2f), 0f));
         var mutable = Mat3x2.AffineIdentity;
         mutable.Translation = new Vec2(2f, 3f);
 
@@ -305,8 +305,8 @@ public sealed class GeneratedMatrixTest
     [TestMethod]
     public void GeneratedAffineInverseHelpers_Work()
     {
-        var transform2D = Mat3.CreateTranslation2D(2f, 3f) * Mat3.CreateScale2D(new Vec2(4f, 5f));
-        var transform3D = Mat4.CreateTranslation(2f, 3f, 4f) * Mat4.CreateScale(new Vec3(5f, 6f, 7f));
+        var transform2D = Mat3.CreateTranslation2D(new Vec2(2f, 3f)) * Mat3.CreateScale2D(new Vec2(4f, 5f));
+        var transform3D = Mat4.CreateTranslation(new Vec3(2f, 3f, 4f)) * Mat4.CreateScale(new Vec3(5f, 6f, 7f));
 
         AssertMatrixClose(Mat3.Identity, transform2D * Mat3.AffineInverse(transform2D));
         AssertMatrixClose(Mat4.Identity, transform3D * Mat4.AffineInverse(transform3D));
@@ -379,7 +379,7 @@ public sealed class GeneratedMatrixTest
         Assert.IsTrue(InvertSquare<Mat2, float, Vec2>(new Mat2(4f, 7f, 2f, 6f), out var inverse));
         AssertMatrixClose(new Mat2(0.6f, -0.7f, -0.2f, 0.4f), inverse);
 
-        var translated = Translation<Mat4, float, Vec2, Vec3, Vec4>(1f, 2f, 3f) * new Vec4(1f, 1f, 1f, 1f);
+        var translated = Translation<Mat4, float, Vec2, Vec3, Vec4>(new Vec3(1f, 2f, 3f)) * new Vec4(1f, 1f, 1f, 1f);
         var system = ToSystemNumerics<Mat4>(Mat4.Identity);
         Assert.AreEqual(new Vec4(2f, 3f, 4f, 1f), translated);
         Assert.AreEqual(1f, system.M11);
@@ -622,12 +622,12 @@ public sealed class GeneratedMatrixTest
         where TColumn : struct, IVec<TColumn, TScalar> =>
         TMatrix.TryInvert(value, out result);
 
-    private static TMatrix Translation<TMatrix, TScalar, TVector2, TVector3, TVector4>(TScalar x, TScalar y, TScalar z)
+    private static TMatrix Translation<TMatrix, TScalar, TVector2, TVector3, TVector4>(TVector3 translation)
         where TMatrix : struct, IMat4Transform<TMatrix, TScalar, TVector2, TVector3, TVector4>
         where TVector2 : struct, IVec2<TVector2, TScalar>
         where TVector3 : struct, IVec3<TVector3, TScalar>
         where TVector4 : struct, IVec4<TVector4, TScalar> =>
-        TMatrix.CreateTranslation(x, y, z);
+        TMatrix.CreateTranslation(translation);
 
     private static System.Numerics.Matrix4x4 ToSystemNumerics<TMatrix>(TMatrix value)
         where TMatrix : struct, IMat4SystemNumerics<TMatrix> =>

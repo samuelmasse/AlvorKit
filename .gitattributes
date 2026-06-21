@@ -1,0 +1,6 @@
+res/templates/**/*.cs.tmpl linguist-language=csharp
+res/templates/**/*.csfrag.tmpl linguist-language=csharp
+res/templates/**/*.csproj.tmpl linguist-language=XML
+res/templates/**/*.props.tmpl linguist-language=XML
+res/templates/**/*.ps1.tmpl linguist-language=PowerShell
+res/templates/**/*.txt.tmpl linguist-language=Text

@@ -68,6 +68,29 @@ Expect(chunk == (3, 2, 0), "Integer vectors should shift each component.");
 Expect(localTile == (3, 2, 7), "Bitwise operators should apply component-wise.");
 Expect(powerOfTwo == (true, false, true), "Integer helper masks should preserve per-component answers.");
 
+Section("Boxes and bounds");
+
+var playfield = Box2.CreateFromCenterSize((0f, 0f), (20f, 12f));
+Vec2 requestedSpawn = (12f, -8f);
+var safeSpawn = playfield.ClosestPoint(requestedSpawn);
+var paddedPlayfield = playfield.Inflated(new Vec2(2f));
+var tileBounds = new Box2i(new Vec2i(0, 0), new Vec2i(16, 9));
+var chunkBounds = new Box3i(new Vec3i(0, 0, 0), new Vec3i(16, 8, 4));
+
+Print("playfield", playfield.ToString("0.###", CultureInfo.InvariantCulture));
+Print("requested spawn", Format2(requestedSpawn));
+Print("safe spawn", Format2(safeSpawn));
+Print("padded size", Format2(paddedPlayfield.Size));
+Print("tile bounds size", Format2i(tileBounds.Size));
+Print("chunk volume", chunkBounds.Volume.ToString(CultureInfo.InvariantCulture));
+
+Expect(!playfield.Contains(requestedSpawn), "Box containment should identify points outside a world bound.");
+Expect(playfield.Contains(safeSpawn), "ClosestPoint should clamp a point into the box.");
+ExpectClose2(safeSpawn, (10f, -6f), "ClosestPoint should clamp each axis independently.");
+ExpectClose2(paddedPlayfield.Size, (24f, 16f), "Inflated should expand both min and max corners.");
+Expect(tileBounds.Area == 144, "Integer boxes should be useful for tile and viewport extents.");
+Expect(chunkBounds.Volume == 512, "3D integer boxes should report chunk volume.");
+
 Section("Span interop");
 
 Span<float> packed = stackalloc float[Vec3.ComponentCount];
@@ -107,7 +130,7 @@ ExpectClose3(blendedBasis.Diagonal, (1.5f, 2f, 2.5f), "Matrix interpolation shou
 Section("2D affine matrices");
 
 Mat3x2 spriteTransform =
-    Mat3x2.CreateTranslation(8f, 3f) *
+    Mat3x2.CreateTranslation((8f, 3f)) *
     Mat3x2.CreateRotation(MathF.PI / 2f) *
     Mat3x2.CreateScale((2f, 1f));
 Vec2 localCorner = (1f, 2f);
@@ -268,6 +291,10 @@ static string FormatMat3(Mat3 value) =>
 
 // Formats an integer vector with invariant tuple-style text.
 static string Format3i(Vec3i value) =>
+    value.ToString(CultureInfo.InvariantCulture);
+
+// Formats an integer 2D vector with invariant tuple-style text.
+static string Format2i(Vec2i value) =>
     value.ToString(CultureInfo.InvariantCulture);
 
 // Formats a Boolean mask with tuple-style text.

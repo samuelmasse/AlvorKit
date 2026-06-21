@@ -6,7 +6,7 @@ internal static class ComponentSourceEmitter
     /// <summary>Renders a complete generated source file.</summary>
     internal static string Emit(InterfaceModel model) =>
         ComponentTemplate.Render(
-            "component-source.tmpl",
+            "component-source.cs.tmpl",
             ("NamespaceBlock", NamespaceBlock(model)),
             ("ComponentGroup", ComponentGroup(model)),
             ("ReadExtensions", ReadExtensions(model)),
@@ -16,7 +16,7 @@ internal static class ComponentSourceEmitter
     private static string NamespaceBlock(InterfaceModel model) =>
         string.IsNullOrEmpty(model.Namespace)
             ? ""
-            : ComponentTemplate.RenderFragment("namespace.csfrag.tmpl", ("Namespace", model.Namespace)) + "\n";
+            : ComponentTemplate.RenderFragment("namespace.csfrag.tmpl", ("Namespace", model.Namespace));
 
     /// <summary>Renders the component marker group and nested component marker classes.</summary>
     private static string ComponentGroup(InterfaceModel model) =>

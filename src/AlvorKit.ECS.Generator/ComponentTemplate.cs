@@ -20,9 +20,9 @@ internal static class ComponentTemplate
                 : throw new InvalidOperationException($"Template '{templateName}' has no value for placeholder '{match.Value}'."));
     }
 
-    /// <summary>Renders a fragment template with one trailing newline.</summary>
+    /// <summary>Renders a fragment template with exactly one trailing blank line.</summary>
     internal static string RenderFragment(string templateName, params (string Name, string Value)[] values) =>
-        Render(templateName, values).TrimEnd('\r', '\n') + "\n";
+        Render(templateName, values).TrimEnd('\r', '\n') + "\n\n";
 
     /// <summary>Reads an embedded template as UTF-8 text.</summary>
     private static string Read(string templateName)

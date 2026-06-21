@@ -13,10 +13,6 @@
             new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}(translation.X, translation.Y, translation.Z, {{OneLiteral}}));
 
-    /// <summary>Creates a translation matrix.</summary>
-    public static {{TypeName}} CreateTranslation({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z) =>
-        CreateTranslation(new {{Vector3Type}}(x, y, z));
-
     /// <summary>Creates a scale matrix.</summary>
     public static {{TypeName}} CreateScale({{Vector3Type}} scale) =>
         new(
@@ -24,10 +20,6 @@
             new {{Vector4Type}}({{ZeroLiteral}}, scale.Y, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, scale.Z, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
-
-    /// <summary>Creates a scale matrix.</summary>
-    public static {{TypeName}} CreateScale({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z) =>
-        CreateScale(new {{Vector3Type}}(x, y, z));
 
     /// <summary>Creates a uniform scale matrix.</summary>
     public static {{TypeName}} CreateScale({{ScalarType}} scale) =>
@@ -44,14 +36,6 @@
                 center.Y * ({{OneLiteral}} - scale.Y),
                 center.Z * ({{OneLiteral}} - scale.Z),
                 {{OneLiteral}}));
-
-    /// <summary>Creates a scale matrix around a center point.</summary>
-    public static {{TypeName}} CreateScale(
-        {{ScalarType}} x,
-        {{ScalarType}} y,
-        {{ScalarType}} z,
-        {{Vector3Type}} center) =>
-        CreateScale(new {{Vector3Type}}(x, y, z), center);
 
     /// <summary>Creates a uniform scale matrix around a center point.</summary>
     public static {{TypeName}} CreateScale({{ScalarType}} scale, {{Vector3Type}} center) =>
@@ -198,42 +182,6 @@
         {{Vector2Type}} y,
         {{Vector2Type}} z) =>
         value * CreateShear(point, x, y, z);
-
-    /// <summary>Creates a shear matrix that moves Y and Z by X.</summary>
-    public static {{TypeName}} CreateShearX({{ScalarType}} y, {{ScalarType}} z) =>
-        new(
-            new {{Vector4Type}}({{OneLiteral}}, y, z, {{ZeroLiteral}}),
-            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
-            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}),
-            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
-
-    /// <summary>Creates a shear matrix that moves X and Z by Y.</summary>
-    public static {{TypeName}} CreateShearY({{ScalarType}} x, {{ScalarType}} z) =>
-        new(
-            new {{Vector4Type}}({{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
-            new {{Vector4Type}}(x, {{OneLiteral}}, z, {{ZeroLiteral}}),
-            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}),
-            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
-
-    /// <summary>Creates a shear matrix that moves X and Y by Z.</summary>
-    public static {{TypeName}} CreateShearZ({{ScalarType}} x, {{ScalarType}} y) =>
-        new(
-            new {{Vector4Type}}({{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
-            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
-            new {{Vector4Type}}(x, y, {{OneLiteral}}, {{ZeroLiteral}}),
-            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
-
-    /// <summary>Applies an X-axis shear after an existing transform.</summary>
-    public static {{TypeName}} ShearX({{TypeName}} value, {{ScalarType}} y, {{ScalarType}} z) =>
-        value * CreateShearX(y, z);
-
-    /// <summary>Applies a Y-axis shear after an existing transform.</summary>
-    public static {{TypeName}} ShearY({{TypeName}} value, {{ScalarType}} x, {{ScalarType}} z) =>
-        value * CreateShearY(x, z);
-
-    /// <summary>Applies a Z-axis shear after an existing transform.</summary>
-    public static {{TypeName}} ShearZ({{TypeName}} value, {{ScalarType}} x, {{ScalarType}} y) =>
-        value * CreateShearZ(x, y);
 
     /// <summary>Creates a matrix that scales and biases normalized coordinates.</summary>
     public static {{TypeName}} CreateScaleBias({{ScalarType}} scale, {{ScalarType}} bias) =>

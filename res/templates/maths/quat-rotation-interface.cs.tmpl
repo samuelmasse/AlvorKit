@@ -34,9 +34,6 @@ public interface IQuatRotation<TSelf, TScalar, TVector3, TMatrix3, TMatrix4>
     static abstract TSelf CreateFromAxisAngle(TVector3 axis, TScalar radians);
 
     /// <summary>Creates a quaternion from pitch, yaw, and roll angles in radians.</summary>
-    static abstract TSelf CreateFromEulerAngles(TScalar pitch, TScalar yaw, TScalar roll);
-
-    /// <summary>Creates a quaternion from pitch, yaw, and roll angles in radians.</summary>
     static abstract TSelf CreateFromEulerAngles(TVector3 angles);
 
     /// <summary>Creates a quaternion from yaw, pitch, and roll angles in radians.</summary>

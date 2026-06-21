@@ -378,12 +378,8 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
     }
 
     /// <summary>Creates a quaternion from pitch, yaw, and roll angles in radians.</summary>
-    public static {{TypeName}} CreateFromEulerAngles({{ScalarType}} pitch, {{ScalarType}} yaw, {{ScalarType}} roll) =>
-        CreateFromYawPitchRoll(yaw, pitch, roll);
-
-    /// <summary>Creates a quaternion from pitch, yaw, and roll angles in radians.</summary>
     public static {{TypeName}} CreateFromEulerAngles({{Vector3Type}} angles) =>
-        CreateFromEulerAngles(angles.X, angles.Y, angles.Z);
+        CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z);
 
     /// <summary>Creates a quaternion from yaw, pitch, and roll angles in radians.</summary>
     public static {{TypeName}} CreateFromYawPitchRoll({{ScalarType}} yaw, {{ScalarType}} pitch, {{ScalarType}} roll)
