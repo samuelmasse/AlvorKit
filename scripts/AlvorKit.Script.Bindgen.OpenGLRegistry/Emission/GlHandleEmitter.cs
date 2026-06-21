@@ -27,8 +27,8 @@ internal sealed class GlHandleEmitter(GlCodeEmissionContext context)
             typeof(GlHandleEmitter),
             "res/templates/bindgen/opengl-registry/csharp/handle.csfrag.tmpl",
             ("Summary", handle == "GlHandle"
-                ? "A strongly-typed handle to any OpenGL object; every specific handle widens to it."
-                : "A strongly-typed OpenGL object handle."),
+                ? "Strongly typed wrapper for any <c>GLuint</c> OpenGL object name from <c>gl.xml</c>; every specific handle widens to it."
+                : "Strongly typed wrapper for a <c>GLuint</c> OpenGL object name from <c>gl.xml</c>."),
             ("Handle", handle),
             ("Widening", widening));
     }

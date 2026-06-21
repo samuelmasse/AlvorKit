@@ -8,6 +8,7 @@ internal static class GlExtensionDocEmitter
     {
         var cref = GlExtensionNames.CoreCref(config, command);
         output.AppendLine($"    /// <inheritdoc cref=\"{cref}\"/>");
-        output.AppendLine($"    /// <remarks>Convenience overload. Calls <see cref=\"{cref}\"/>. {detail}</remarks>");
+        output.AppendLine(
+            $"    /// <remarks>Convenience overload for <c>{command.NativeName}</c>. Calls <see cref=\"{cref}\"/>. {detail}</remarks>");
     }
 }

@@ -36,7 +36,7 @@ public sealed class GlDocParser
             var purpose = Normalize(Flatten(root.Descendants(Db + "refpurpose").FirstOrDefault()));
             var parameters = ParseParameters(root);
             var doc = new XmlDocComment(
-                purpose.Length > 0 ? XmlDocComment.Escape(purpose) : null,
+                purpose.Length > 0 ? GlDocText.Escape(purpose) : null,
                 parameters,
                 Returns: null,
                 Remarks: null);
@@ -81,7 +81,7 @@ public sealed class GlDocParser
                 .Select(parameter => parameter.Value.Trim())
                 .Where(name => name.Length > 0);
             foreach (var name in names)
-                parameters[name] = XmlDocComment.Escape(text);
+                parameters[name] = GlDocText.Escape(text);
         }
         return parameters;
     }

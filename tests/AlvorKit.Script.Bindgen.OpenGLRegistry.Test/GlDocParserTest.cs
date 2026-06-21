@@ -15,7 +15,7 @@ public sealed class GlDocParserTest
             ]>
             <refentry xmlns="http://docbook.org/ns/docbook">
               <refnamediv>
-                <refpurpose>Creates &custom; <parameter>objects</parameter> &amp; buffers.</refpurpose>
+                <refpurpose>Creates GL_TEXTUREi <parameter>objects</parameter> with glBindTexture &amp; buffers.</refpurpose>
               </refnamediv>
               <refsynopsisdiv>
                 <funcsynopsis>
@@ -31,7 +31,8 @@ public sealed class GlDocParserTest
                     <term><parameter>count</parameter></term>
                     <term><parameter>things</parameter></term>
                     <listitem>
-                      <para>Number of <parameter>things</parameter><manvolnum>3</manvolnum>
+                      <para>Number of <parameter>things</parameter><manvolnum>3</manvolnum> for GL_COLOR_ATTACHMENT$m$,
+                      GL_NONE, and glDrawBuffer
                       <inlineequation xmlns:m="http://www.w3.org/1998/Math/MathML"><m:math /></inlineequation>
                       to create.</para>
                     </listitem>
@@ -50,10 +51,16 @@ public sealed class GlDocParserTest
         var docs = new GlDocParser().Parse(workspace.Root);
 
         Assert.AreEqual(2, docs.Count);
-        Assert.AreEqual("Creates objects &amp; buffers.", docs["glCreateThings"].Summary);
+        Assert.AreEqual(
+            "Creates <c>GL_TEXTUREi</c> objects with <c>glBindTexture</c> &amp; buffers.",
+            docs["glCreateThings"].Summary);
         Assert.AreEqual(docs["glCreateThings"], docs["glCreateOtherThings"]);
-        Assert.AreEqual("Number of things to create.", docs["glCreateThings"].Parameters["count"]);
-        Assert.AreEqual("Number of things to create.", docs["glCreateThings"].Parameters["things"]);
+        Assert.AreEqual(
+            "Number of things for <c>GL_COLOR_ATTACHMENTi</c>, <c>GL_NONE</c>, and <c>glDrawBuffer</c> to create.",
+            docs["glCreateThings"].Parameters["count"]);
+        Assert.AreEqual(
+            "Number of things for <c>GL_COLOR_ATTACHMENTi</c>, <c>GL_NONE</c>, and <c>glDrawBuffer</c> to create.",
+            docs["glCreateThings"].Parameters["things"]);
         Assert.IsFalse(docs["glCreateThings"].Parameters.ContainsKey("unused"));
     }
 
@@ -74,11 +81,17 @@ public sealed class GlDocParserTest
               <refnamediv><refpurpose>   </refpurpose></refnamediv>
             </refentry>
             """);
+        workspace.Write("glNoPurpose.xml", """
+            <refentry xmlns="http://docbook.org/ns/docbook">
+              <refsynopsisdiv><function>glNoPurpose</function></refsynopsisdiv>
+            </refentry>
+            """);
 
         var docs = new GlDocParser().Parse(workspace.Root);
 
-        Assert.AreEqual(1, docs.Count);
+        Assert.AreEqual(2, docs.Count);
         Assert.IsNull(docs["glNoParameters"].Summary);
+        Assert.IsNull(docs["glNoPurpose"].Summary);
         Assert.AreEqual(0, docs["glNoParameters"].Parameters.Count);
     }
 }

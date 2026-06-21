@@ -1,10 +1,10 @@
 
 /// <summary>{{Summary}}</summary>
-/// <param name="Handle">Raw OpenGL object name.</param>
+/// <param name="Handle">Raw <c>GLuint</c> OpenGL object name.</param>
 public readonly record struct {{Handle}}(uint Handle)
 {
-{{Widening}}    /// <summary>The raw object name. Explicit: a handle never implicitly becomes an integer.</summary>
+{{Widening}}    /// <summary>The raw <c>GLuint</c> object name. Explicit: a handle never implicitly becomes an integer.</summary>
     public static explicit operator uint({{Handle}} handle) => handle.Handle;
-    /// <summary>Wraps a raw object name. Explicit: an integer is never implicitly a handle.</summary>
+    /// <summary>Wraps a raw <c>GLuint</c> object name. Explicit: an integer is never implicitly a handle.</summary>
     public static explicit operator {{Handle}}(uint handle) => new(handle);
 }

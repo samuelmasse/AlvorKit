@@ -1,7 +1,7 @@
 kind: "gl-registry"
 namespace: "AlvorKit.OpenGL"
 apiClass: "Gl"
-apiSummary: "Modern OpenGL core-profile APIs with typed enum groups, resolved at runtime through a platform proc loader such as Glfw.GetProcAddress."
+apiSummary: "Modern OpenGL core-profile APIs from <c>gl.xml</c> with typed enum groups, resolved at runtime through a platform proc loader such as Glfw.GetProcAddress."
 backendClass: "GlBackend"
 prefix: "GL_"
 digitNamePrefix: "Gl"

@@ -46,7 +46,8 @@ internal static class MatrixValueSemanticsEmitter
             var source = isLast ? LastColumnSource(utf8) : "ref body";
 
             statements.Add("");
-            statements.Add($"        if (!{method}({source}, formatProvider, out var {matrix.ColumnParameters[index]}))");
+            statements.Add(
+                $"        if (!{method}({source}, formatProvider, out {matrix.ColumnTypeName} {matrix.ColumnParameters[index]}))");
             statements.Add("            return false;");
         }
 
@@ -72,28 +73,28 @@ internal static class MatrixValueSemanticsEmitter
     }
 
     private static string TryFormatColumnStatement(string column) =>
-        $"        if (!TryAppendColumn({column}, ref remainder, ref charsWritten, format, formatProvider))" +
-        $"{Environment.NewLine}            return FailFormat(out charsWritten);";
+        $"        if (!MathsFormatHelper.TryAppendFormatted({column}, ref remainder, ref charsWritten, format, formatProvider))" +
+        $"{Environment.NewLine}            return MathsFormatHelper.Fail(out charsWritten);";
 
     private static string TryFormatUtf8ColumnStatement(string column) =>
-        $"        if (!TryAppendUtf8Column({column}, ref remainder, ref bytesWritten, format, formatProvider))" +
-        $"{Environment.NewLine}            return FailFormat(out bytesWritten);";
+        $"        if (!MathsFormatHelper.TryAppendFormatted({column}, ref remainder, ref bytesWritten, format, formatProvider))" +
+        $"{Environment.NewLine}            return MathsFormatHelper.Fail(out bytesWritten);";
 
     private static string TryFormatSeparatorStatement() =>
-        "        if (!TryAppend(\", \".AsSpan(), ref remainder, ref charsWritten))" +
-        $"{Environment.NewLine}            return FailFormat(out charsWritten);";
+        "        if (!MathsFormatHelper.TryAppend(\", \".AsSpan(), ref remainder, ref charsWritten))" +
+        $"{Environment.NewLine}            return MathsFormatHelper.Fail(out charsWritten);";
 
     private static string TryFormatUtf8SeparatorStatement() =>
-        "        if (!TryAppendUtf8(\", \"u8, ref remainder, ref bytesWritten))" +
-        $"{Environment.NewLine}            return FailFormat(out bytesWritten);";
+        "        if (!MathsFormatHelper.TryAppend(\", \"u8, ref remainder, ref bytesWritten))" +
+        $"{Environment.NewLine}            return MathsFormatHelper.Fail(out bytesWritten);";
 
     private static string ParseMethodName(bool utf8, bool isLast) => (utf8, isLast) switch
     {
-        (true, true) => "TryParseUtf8Column",
-        (true, false) => "TryReadUtf8Column",
-        (false, true) => "TryParseColumn",
-        _ => "TryReadColumn",
+        (true, true) => "MathsParseHelper.TryParseComponent",
+        (true, false) => "MathsComponentParseHelper.TryReadNextTopLevelComponent",
+        (false, true) => "MathsParseHelper.TryParseComponent",
+        _ => "MathsComponentParseHelper.TryReadNextTopLevelComponent",
     };
 
-    private static string LastColumnSource(bool utf8) => utf8 ? "TrimAsciiWhitespace(body)" : "body.Trim()";
+    private static string LastColumnSource(bool utf8) => utf8 ? "MathsUtf8TextHelper.TrimAsciiWhitespace(body)" : "body.Trim()";
 }

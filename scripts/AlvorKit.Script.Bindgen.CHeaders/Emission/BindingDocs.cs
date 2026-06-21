@@ -3,6 +3,8 @@ namespace AlvorKit.Script.Bindgen;
 /// <summary>Emits XML documentation for generated methods.</summary>
 internal static class BindingDocs
 {
+    private const int XmlDocTextColumn = 130;
+
     /// <summary>Emits summary, parameter, return, and remark XML docs for a function.</summary>
     public static void Function(StringBuilder output, BindingFunction function)
     {
@@ -29,7 +31,7 @@ internal static class BindingDocs
         if (function.ReturnType != "void")
             output.AppendLine($"    /// <returns>{ReturnText(function)}</returns>");
         if (function.Documentation?.Remarks is { } remarks)
-            output.AppendLine($"    /// <remarks><c>{function.NativeName}</c>: {remarks}</remarks>");
+            Remarks(output, function.NativeName, remarks);
     }
 
     /// <summary>Emits inherited documentation and standard convenience-overload remarks.</summary>
@@ -42,6 +44,13 @@ internal static class BindingDocs
     /// <summary>Emits the standard convenience-overload remarks prefix with operation-specific details.</summary>
     public static void ConvenienceRemarks(StringBuilder output, string nativeName, string details) =>
         output.AppendLine($"    /// <remarks>Managed overload for <c>{nativeName}</c>. {details}</remarks>");
+
+    /// <summary>Returns a wrapped XML documentation summary block.</summary>
+    public static string Summary(string documentation, string indent = "") => Element("summary", documentation, indent);
+
+    /// <summary>Returns a wrapped XML documentation parameter block.</summary>
+    public static string Parameter(string name, string documentation, string indent = "") =>
+        Element($"param name=\"{name}\"", documentation, indent, "param");
 
     /// <summary>Returns a documentation sentence that starts from the native C symbol.</summary>
     public static string NativeSummary(string nativeName, string? original, string fallback) =>
@@ -58,4 +67,64 @@ internal static class BindingDocs
             : function.Documentation?.Returns is { } returns
                 ? $"Return value from <c>{function.NativeName}</c>: {returns}"
                 : $"Return value from <c>{function.NativeName}</c>.";
+
+    /// <summary>Returns a wrapped XML documentation block for one element.</summary>
+    private static string Element(string openElement, string documentation, string indent, string? closeElement = null)
+    {
+        closeElement ??= openElement;
+        var output = new StringBuilder();
+        output.AppendLine($"{indent}/// <{openElement}>");
+        foreach (var line in WrapXmlDocLine(documentation))
+            output.AppendLine($"{indent}/// {line}");
+        output.AppendLine($"{indent}/// </{closeElement}>");
+        return output.ToString();
+    }
+
+    /// <summary>Emits wrapped remark paragraphs so large upstream docs stay readable in generated source.</summary>
+    private static void Remarks(StringBuilder output, string nativeName, string remarks)
+    {
+        output.AppendLine("    /// <remarks>");
+        foreach (var paragraph in RemarkParagraphs(nativeName, remarks))
+        {
+            output.AppendLine("    /// <para>");
+            foreach (var line in WrapXmlDocLine(paragraph))
+                output.AppendLine($"    /// {line}");
+            output.AppendLine("    /// </para>");
+        }
+        output.AppendLine("    /// </remarks>");
+    }
+
+    /// <summary>Returns native-anchored remark paragraphs split at common upstream documentation headings.</summary>
+    private static IEnumerable<string> RemarkParagraphs(string nativeName, string remarks)
+    {
+        var sectioned = Regex.Replace(
+            remarks,
+            @"(^|\s+)(Parameters|Return Value|Thread Safety|Callback Safety|Remarks|See Also|Example \d+)\s+",
+            match => $"{(match.Groups[1].Value.Length == 0 ? "" : Environment.NewLine)}{match.Groups[2].Value}: ");
+        var first = true;
+        foreach (var paragraph in sectioned.Split(
+            Environment.NewLine,
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            yield return first ? $"<c>{nativeName}</c>: {paragraph}" : paragraph;
+            first = false;
+        }
+    }
+
+    /// <summary>Wraps one XML documentation paragraph at whitespace without splitting XML tags.</summary>
+    private static IEnumerable<string> WrapXmlDocLine(string text)
+    {
+        var remaining = text.Trim();
+        while (remaining.Length > XmlDocTextColumn)
+        {
+            var length = Math.Min(XmlDocTextColumn, remaining.Length);
+            var breakAt = remaining.LastIndexOf(' ', length - 1, length);
+            if (breakAt <= 0)
+                breakAt = length;
+            yield return remaining[..breakAt].TrimEnd();
+            remaining = remaining[breakAt..].TrimStart();
+        }
+        if (remaining.Length > 0)
+            yield return remaining;
+    }
 }

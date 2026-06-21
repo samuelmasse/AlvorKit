@@ -26,7 +26,7 @@
     public readonly void CopyTo(Span<{{ScalarType}}> destination)
     {
         if (!TryCopyTo(destination))
-            ThrowDestinationSpanTooShort();
+            MathsThrowHelper.ThrowDestinationSpanTooShort(ComponentCount);
     }
 
     /// <summary>Attempts to copy this vector into a destination span.</summary>
@@ -43,20 +43,7 @@
     private static {{ScalarType}} ComponentFromSpan(ReadOnlySpan<{{ScalarType}}> values, int index)
     {
         if (values.Length < ComponentCount)
-            ThrowSourceSpanTooShort();
+            MathsThrowHelper.ThrowSourceSpanTooShort(ComponentCount);
 
         return values[index];
     }
-
-    /// <summary>Throws when a source span cannot provide every component.</summary>
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowSourceSpanTooShort() =>
-        throw new ArgumentException($"Span must contain at least {ComponentCount} components.", "values");
-
-    /// <summary>Throws when a destination span cannot receive every component.</summary>
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowDestinationSpanTooShort() =>
-        throw new ArgumentException($"Span must contain at least {ComponentCount} components.", "destination");
-

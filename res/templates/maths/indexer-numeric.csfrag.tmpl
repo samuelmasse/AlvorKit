@@ -4,14 +4,14 @@
         readonly get
         {
             if ((uint)index >= ComponentCount)
-                ThrowIndexOutOfRange(index);
+                MathsThrowHelper.ThrowComponentIndexOutOfRange(index, {{MaxIndex}});
 
             return Unsafe.Add(ref Unsafe.AsRef(in X), index);
         }
         set
         {
             if ((uint)index >= ComponentCount)
-                ThrowIndexOutOfRange(index);
+                MathsThrowHelper.ThrowComponentIndexOutOfRange(index, {{MaxIndex}});
 
             Unsafe.Add(ref X, index) = value;
         }
@@ -21,13 +21,7 @@
     public static ref {{ScalarType}} ComponentRef(ref {{TypeName}} value, int index)
     {
         if ((uint)index >= ComponentCount)
-            ThrowIndexOutOfRange(index);
+            MathsThrowHelper.ThrowComponentIndexOutOfRange(index, {{MaxIndex}});
 
         return ref Unsafe.Add(ref value.X, index);
     }
-
-    /// <summary>Throws for invalid component indexes on the cold path.</summary>
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowIndexOutOfRange(int index) =>
-        throw new ArgumentOutOfRangeException(nameof(index), index, "Index must be between 0 and {{MaxIndex}}.");

@@ -79,10 +79,22 @@ public sealed class GeneratedVectorTest
         Assert.AreEqual(6, bytesWritten);
         Assert.AreEqual("(0, 0)", System.Text.Encoding.UTF8.GetString(utf8Destination[..bytesWritten]));
         Assert.AreEqual("(0.0, 0.0)", value.ToString("0.0", formatProvider));
+        StringAssert.StartsWith(
+            new Vec4(1f, 2f, 3f, 4f).ToString("F200", formatProvider),
+            "(1.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
         Assert.IsFalse(value.TryFormat(tooSmall, out var shortCharsWritten, default, formatProvider));
         Assert.AreEqual(0, shortCharsWritten);
         Assert.IsFalse(value.TryFormat(utf8TooSmall, out var shortBytesWritten, default, formatProvider));
         Assert.AreEqual(0, shortBytesWritten);
+        Assert.IsFalse(new Vec2(123f, 0f).TryFormat(stackalloc char[2], out var tinyCharsWritten, default, formatProvider));
+        Assert.AreEqual(0, tinyCharsWritten);
+        Assert.IsFalse(new Vec2(123f, 0f).TryFormat(stackalloc byte[2], out var tinyBytesWritten, default, formatProvider));
+        Assert.AreEqual(0, tinyBytesWritten);
+        Span<byte> boolUtf8Destination = stackalloc byte[13];
+        Assert.IsTrue(new Vec2b(true, false).TryFormat(boolUtf8Destination, out var boolBytesWritten, default, formatProvider));
+        Assert.AreEqual("(True, False)", System.Text.Encoding.UTF8.GetString(boolUtf8Destination[..boolBytesWritten]));
+        Assert.IsFalse(new Vec2b(true, false).TryFormat(stackalloc byte[1], out var shortBoolBytesWritten, default, formatProvider));
+        Assert.AreEqual(0, shortBoolBytesWritten);
     }
 
     /// <summary>Generated parsing accepts tuple-style text from strings, spans, and UTF-8 byte spans.</summary>
@@ -95,10 +107,17 @@ public sealed class GeneratedVectorTest
         Assert.AreEqual(new Vec2i(1, -2), ParseSpan<Vec2i>("(1, -2)".AsSpan()));
         Assert.AreEqual(new Vec2b(true, false), Vec2b.Parse("(true, False)", formatProvider));
         Assert.AreEqual(new Vec2b(true, false), ParseUtf8<Vec2b>("(True, False)"u8));
+        Assert.AreEqual(new Vec2(1f, 2f), ParseUtf8<Vec2>("  (1, 2)  "u8));
         Assert.IsTrue(Vec2.TryParse("(3.5, 4.5)"u8, formatProvider, out var utf8Parsed));
         Assert.AreEqual(new Vec2(3.5f, 4.5f), utf8Parsed);
         Assert.IsFalse(Vec2.TryParse((string?)null, formatProvider, out _));
         Assert.IsFalse(Vec2.TryParse("(1,2)", formatProvider, out _));
+        Assert.IsFalse(Vec2.TryParse("not a vector"u8, formatProvider, out _));
+        Assert.IsFalse(Vec2.TryParse("(1,2)"u8, formatProvider, out _));
+        Assert.IsFalse(Vec2.TryParse("(bad, 2)"u8, formatProvider, out _));
+        Assert.IsFalse(Vec2b.TryParse("(maybe, False)", formatProvider, out _));
+        Assert.IsFalse(Vec2b.TryParse("(maybe, False)"u8, formatProvider, out _));
+        Assert.IsFalse(Vec2b.TryParse("(True, maybe)"u8, formatProvider, out _));
         Assert.ThrowsException<FormatException>(() => Vec2.Parse("(1,2)", formatProvider));
     }
 

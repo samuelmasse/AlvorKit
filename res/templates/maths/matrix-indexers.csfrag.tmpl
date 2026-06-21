@@ -4,14 +4,14 @@
         readonly get
         {
             if ((uint)column >= ColumnCount)
-                ThrowColumnIndexOutOfRange(column);
+                MathsThrowHelper.ThrowColumnIndexOutOfRange(column, {{MaxColumnIndex}});
 
             return Unsafe.Add(ref Unsafe.AsRef(in Column0), column);
         }
         set
         {
             if ((uint)column >= ColumnCount)
-                ThrowColumnIndexOutOfRange(column);
+                MathsThrowHelper.ThrowColumnIndexOutOfRange(column, {{MaxColumnIndex}});
 
             Unsafe.Add(ref Column0, column) = value;
         }
@@ -23,14 +23,14 @@
         readonly get
         {
             if ((uint)column >= ColumnCount)
-                ThrowColumnIndexOutOfRange(column);
+                MathsThrowHelper.ThrowColumnIndexOutOfRange(column, {{MaxColumnIndex}});
 
             return Unsafe.Add(ref Unsafe.AsRef(in Column0), column)[row];
         }
         set
         {
             if ((uint)column >= ColumnCount)
-                ThrowColumnIndexOutOfRange(column);
+                MathsThrowHelper.ThrowColumnIndexOutOfRange(column, {{MaxColumnIndex}});
 
             {{ColumnType}}.ComponentRef(ref Unsafe.Add(ref Column0, column), row) = value;
         }
@@ -40,7 +40,7 @@
     public static ref {{ColumnType}} ColumnRef(ref {{TypeName}} value, int column)
     {
         if ((uint)column >= ColumnCount)
-            ThrowColumnIndexOutOfRange(column);
+            MathsThrowHelper.ThrowColumnIndexOutOfRange(column, {{MaxColumnIndex}});
 
         return ref Unsafe.Add(ref value.Column0, column);
     }
@@ -48,9 +48,3 @@
     /// <summary>Gets a mutable reference to a scalar component by zero-based column and row indexes.</summary>
     public static ref {{ScalarType}} ComponentRef(ref {{TypeName}} value, int column, int row) =>
         ref {{ColumnType}}.ComponentRef(ref ColumnRef(ref value, column), row);
-
-    /// <summary>Throws for invalid column indexes on the cold path.</summary>
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowColumnIndexOutOfRange(int column) =>
-        throw new ArgumentOutOfRangeException(nameof(column), column, "Index must be between 0 and {{MaxColumnIndex}}.");

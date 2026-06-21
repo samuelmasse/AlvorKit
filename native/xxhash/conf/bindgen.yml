@@ -1,6 +1,6 @@
 namespace: "AlvorKit.XxHash"
 apiClass: "Xxh"
-apiSummary: "Fast xxHash APIs for one-shot and streaming XXH32, XXH64 and XXH3 hashing, canonical representations, and secret generation."
+apiSummary: "Fast <c>xxhash.h</c> APIs for one-shot and streaming <c>XXH32</c>, <c>XXH64</c>, and <c>XXH3_*</c> hashing, canonical values, and secret generation."
 backendClass: "XxhBackend"
 nativeClass: "XxhNative"
 nativeLibrary: "xxhash"

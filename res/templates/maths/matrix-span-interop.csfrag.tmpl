@@ -34,14 +34,14 @@
     public readonly void CopyToColumnMajor(Span<{{ScalarType}}> destination)
     {
         if (!TryCopyToColumnMajor(destination))
-            ThrowDestinationSpanTooShort();
+            MathsThrowHelper.ThrowDestinationSpanTooShort(ComponentCount);
     }
 
     /// <summary>Copies this matrix into a destination span in row-major order.</summary>
     public readonly void CopyToRowMajor(Span<{{ScalarType}}> destination)
     {
         if (!TryCopyToRowMajor(destination))
-            ThrowDestinationSpanTooShort();
+            MathsThrowHelper.ThrowDestinationSpanTooShort(ComponentCount);
     }
 
     /// <summary>Attempts to copy this matrix into a destination span in column-major order.</summary>
@@ -72,19 +72,7 @@
     private static {{ScalarType}} ComponentFromSpan(ReadOnlySpan<{{ScalarType}}> values, int index)
     {
         if (values.Length < ComponentCount)
-            ThrowSourceSpanTooShort();
+            MathsThrowHelper.ThrowSourceSpanTooShort(ComponentCount);
 
         return values[index];
     }
-
-    /// <summary>Throws when a source span cannot provide every component.</summary>
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowSourceSpanTooShort() =>
-        throw new ArgumentException($"Span must contain at least {ComponentCount} components.", "values");
-
-    /// <summary>Throws when a destination span cannot receive every component.</summary>
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowDestinationSpanTooShort() =>
-        throw new ArgumentException($"Span must contain at least {ComponentCount} components.", "destination");

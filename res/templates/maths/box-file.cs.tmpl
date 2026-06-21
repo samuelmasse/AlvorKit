@@ -58,14 +58,14 @@ public partial struct {{TypeName}}({{VectorType}} min, {{VectorType}} max)
         readonly get
         {
             if ((uint)index >= ComponentCount)
-                ThrowIndexOutOfRange(index);
+                MathsThrowHelper.ThrowBoxComponentIndexOutOfRange(index, ComponentCount);
 
             return index < Dimension ? Min[index] : Max[index - Dimension];
         }
         set
         {
             if ((uint)index >= ComponentCount)
-                ThrowIndexOutOfRange(index);
+                MathsThrowHelper.ThrowBoxComponentIndexOutOfRange(index, ComponentCount);
 
             if (index < Dimension)
                 Min[index] = value;
@@ -134,7 +134,7 @@ public partial struct {{TypeName}}({{VectorType}} min, {{VectorType}} max)
     public static ref {{ScalarType}} ComponentRef(ref {{TypeName}} value, int index)
     {
         if ((uint)index >= ComponentCount)
-            ThrowIndexOutOfRange(index);
+            MathsThrowHelper.ThrowBoxComponentIndexOutOfRange(index, ComponentCount);
 
         if (index < Dimension)
             return ref {{VectorType}}.ComponentRef(ref value.Min, index);
@@ -153,7 +153,7 @@ public partial struct {{TypeName}}({{VectorType}} min, {{VectorType}} max)
     public readonly void CopyTo(Span<{{ScalarType}}> destination)
     {
         if (!TryCopyTo(destination))
-            ThrowDestinationSpanTooShort();
+            MathsThrowHelper.ThrowDestinationSpanTooShort(ComponentCount);
     }
 
     /// <summary>Attempts to copy the corner components into a caller-owned span, with minimum components first.</summary>
@@ -320,7 +320,7 @@ public partial struct {{TypeName}}({{VectorType}} min, {{VectorType}} max)
         Span<char> destination = stackalloc char[512];
         return TryFormat(destination, out var charsWritten, format.AsSpan(), formatProvider)
             ? new string(destination[..charsWritten])
-            : ToStringSlow(format, formatProvider);
+            : MathsFormatHelper.ToStringSlow(this, format, formatProvider, 1024);
     }
 
     /// <summary>Attempts to format this box into a caller-owned character span.</summary>
@@ -333,16 +333,16 @@ public partial struct {{TypeName}}({{VectorType}} min, {{VectorType}} max)
         charsWritten = 0;
         var remainder = destination;
 
-        if (!TryAppend("(".AsSpan(), ref remainder, ref charsWritten))
-            return FailFormat(out charsWritten);
-        if (!TryAppendVector(Min, ref remainder, ref charsWritten, format, formatProvider))
-            return FailFormat(out charsWritten);
-        if (!TryAppend(", ".AsSpan(), ref remainder, ref charsWritten))
-            return FailFormat(out charsWritten);
-        if (!TryAppendVector(Max, ref remainder, ref charsWritten, format, formatProvider))
-            return FailFormat(out charsWritten);
-        if (!TryAppend(")".AsSpan(), ref remainder, ref charsWritten))
-            return FailFormat(out charsWritten);
+        if (!MathsFormatHelper.TryAppend("(".AsSpan(), ref remainder, ref charsWritten))
+            return MathsFormatHelper.Fail(out charsWritten);
+        if (!MathsFormatHelper.TryAppendFormatted(Min, ref remainder, ref charsWritten, format, formatProvider))
+            return MathsFormatHelper.Fail(out charsWritten);
+        if (!MathsFormatHelper.TryAppend(", ".AsSpan(), ref remainder, ref charsWritten))
+            return MathsFormatHelper.Fail(out charsWritten);
+        if (!MathsFormatHelper.TryAppendFormatted(Max, ref remainder, ref charsWritten, format, formatProvider))
+            return MathsFormatHelper.Fail(out charsWritten);
+        if (!MathsFormatHelper.TryAppend(")".AsSpan(), ref remainder, ref charsWritten))
+            return MathsFormatHelper.Fail(out charsWritten);
 
         return true;
     }
@@ -357,32 +357,18 @@ public partial struct {{TypeName}}({{VectorType}} min, {{VectorType}} max)
         bytesWritten = 0;
         var remainder = utf8Destination;
 
-        if (!TryAppendUtf8("("u8, ref remainder, ref bytesWritten))
-            return FailFormat(out bytesWritten);
-        if (!TryAppendUtf8Vector(Min, ref remainder, ref bytesWritten, format, formatProvider))
-            return FailFormat(out bytesWritten);
-        if (!TryAppendUtf8(", "u8, ref remainder, ref bytesWritten))
-            return FailFormat(out bytesWritten);
-        if (!TryAppendUtf8Vector(Max, ref remainder, ref bytesWritten, format, formatProvider))
-            return FailFormat(out bytesWritten);
-        if (!TryAppendUtf8(")"u8, ref remainder, ref bytesWritten))
-            return FailFormat(out bytesWritten);
+        if (!MathsFormatHelper.TryAppend("("u8, ref remainder, ref bytesWritten))
+            return MathsFormatHelper.Fail(out bytesWritten);
+        if (!MathsFormatHelper.TryAppendFormatted(Min, ref remainder, ref bytesWritten, format, formatProvider))
+            return MathsFormatHelper.Fail(out bytesWritten);
+        if (!MathsFormatHelper.TryAppend(", "u8, ref remainder, ref bytesWritten))
+            return MathsFormatHelper.Fail(out bytesWritten);
+        if (!MathsFormatHelper.TryAppendFormatted(Max, ref remainder, ref bytesWritten, format, formatProvider))
+            return MathsFormatHelper.Fail(out bytesWritten);
+        if (!MathsFormatHelper.TryAppend(")"u8, ref remainder, ref bytesWritten))
+            return MathsFormatHelper.Fail(out bytesWritten);
 
         return true;
-    }
-
-    /// <summary>Returns a formatted string when the stack buffer is too small.</summary>
-    private readonly string ToStringSlow(string? format, IFormatProvider? formatProvider)
-    {
-        var length = 1024;
-        while (true)
-        {
-            var destination = new char[length];
-            if (TryFormat(destination, out var charsWritten, format.AsSpan(), formatProvider))
-                return new string(destination, 0, charsWritten);
-
-            length *= 2;
-        }
     }
 
     /// <summary>Compares this box to another box by minimum corner, then maximum corner.</summary>
@@ -424,10 +410,10 @@ public partial struct {{TypeName}}({{VectorType}} min, {{VectorType}} max)
     public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? formatProvider, out {{TypeName}} result)
     {
         result = default;
-        if (!TryReadBoxBody(s, out var body))
+        if (!MathsParseHelper.TryReadParenthesizedBody(s, out var body))
             return false;
 
-        var separator = FindBoxSeparator(body);
+        var separator = MathsTextSeparatorHelper.FindTopLevelSeparator(body);
         if (separator < 0 ||
             !{{VectorType}}.TryParse(body[..separator].Trim(), formatProvider, out var min) ||
             !{{VectorType}}.TryParse(body[(separator + 1)..].Trim(), formatProvider, out var max))
@@ -449,13 +435,13 @@ public partial struct {{TypeName}}({{VectorType}} min, {{VectorType}} max)
     public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? formatProvider, out {{TypeName}} result)
     {
         result = default;
-        if (!TryReadBoxBody(utf8Text, out var body))
+        if (!MathsParseHelper.TryReadParenthesizedBody(utf8Text, out var body))
             return false;
 
-        var separator = FindBoxSeparator(body);
+        var separator = MathsTextSeparatorHelper.FindTopLevelSeparator(body);
         if (separator < 0 ||
-            !{{VectorType}}.TryParse(TrimAsciiWhitespace(body[..separator]), formatProvider, out var min) ||
-            !{{VectorType}}.TryParse(TrimAsciiWhitespace(body[(separator + 1)..]), formatProvider, out var max))
+            !{{VectorType}}.TryParse(MathsUtf8TextHelper.TrimAsciiWhitespace(body[..separator]), formatProvider, out var min) ||
+            !{{VectorType}}.TryParse(MathsUtf8TextHelper.TrimAsciiWhitespace(body[(separator + 1)..]), formatProvider, out var max))
         {
             return false;
         }
@@ -480,174 +466,8 @@ public partial struct {{TypeName}}({{VectorType}} min, {{VectorType}} max)
     private static {{VectorType}} CreateVector(ReadOnlySpan<{{ScalarType}}> values, int start)
     {
         if (values.Length < ComponentCount)
-            ThrowSourceSpanTooShort();
+            MathsThrowHelper.ThrowSourceSpanTooShort(ComponentCount);
 
         return new {{VectorType}}(values[start..]);
     }
-
-    /// <summary>Attempts to append literal text to the destination span.</summary>
-    private static bool TryAppend(ReadOnlySpan<char> value, ref Span<char> destination, ref int charsWritten)
-    {
-        if (!value.TryCopyTo(destination))
-            return false;
-
-        destination = destination[value.Length..];
-        charsWritten += value.Length;
-        return true;
-    }
-
-    /// <summary>Attempts to append literal UTF-8 text to the destination span.</summary>
-    private static bool TryAppendUtf8(ReadOnlySpan<byte> value, ref Span<byte> destination, ref int bytesWritten)
-    {
-        if (!value.TryCopyTo(destination))
-            return false;
-
-        destination = destination[value.Length..];
-        bytesWritten += value.Length;
-        return true;
-    }
-
-    /// <summary>Attempts to append one vector corner to the destination span.</summary>
-    private static bool TryAppendVector(
-        {{VectorType}} value,
-        ref Span<char> destination,
-        ref int charsWritten,
-        ReadOnlySpan<char> format,
-        IFormatProvider? formatProvider)
-    {
-        if (!value.TryFormat(destination, out var componentCharsWritten, format, formatProvider))
-            return false;
-
-        destination = destination[componentCharsWritten..];
-        charsWritten += componentCharsWritten;
-        return true;
-    }
-
-    /// <summary>Attempts to append one vector corner to the UTF-8 destination span.</summary>
-    private static bool TryAppendUtf8Vector(
-        {{VectorType}} value,
-        ref Span<byte> destination,
-        ref int bytesWritten,
-        ReadOnlySpan<char> format,
-        IFormatProvider? formatProvider)
-    {
-        if (!value.TryFormat(destination, out var componentBytesWritten, format, formatProvider))
-            return false;
-
-        destination = destination[componentBytesWritten..];
-        bytesWritten += componentBytesWritten;
-        return true;
-    }
-
-    /// <summary>Attempts to read the parenthesized box body.</summary>
-    private static bool TryReadBoxBody(ReadOnlySpan<char> source, out ReadOnlySpan<char> body)
-    {
-        source = source.Trim();
-        if (source.Length < 2 || source[0] != '(' || source[^1] != ')')
-        {
-            body = default;
-            return false;
-        }
-
-        body = source[1..^1].Trim();
-        return true;
-    }
-
-    /// <summary>Attempts to read the parenthesized UTF-8 box body.</summary>
-    private static bool TryReadBoxBody(ReadOnlySpan<byte> source, out ReadOnlySpan<byte> body)
-    {
-        source = TrimAsciiWhitespace(source);
-        if (source.Length < 2 || source[0] != (byte)'(' || source[^1] != (byte)')')
-        {
-            body = default;
-            return false;
-        }
-
-        body = TrimAsciiWhitespace(source[1..^1]);
-        return true;
-    }
-
-    /// <summary>Finds the comma-space separator between minimum and maximum vectors.</summary>
-    private static int FindBoxSeparator(ReadOnlySpan<char> source)
-    {
-        var depth = 0;
-        for (var index = 0; index < source.Length - 1; index++)
-        {
-            if (source[index] == '(')
-                depth++;
-            else if (source[index] == ')')
-                depth--;
-            else if (source[index] == ',' && char.IsWhiteSpace(source[index + 1]) && depth == 0)
-                return index;
-        }
-
-        return -1;
-    }
-
-    /// <summary>Finds the UTF-8 comma-space separator between minimum and maximum vectors.</summary>
-    private static int FindBoxSeparator(ReadOnlySpan<byte> source)
-    {
-        var depth = 0;
-        for (var index = 0; index < source.Length - 1; index++)
-        {
-            if (source[index] == (byte)'(')
-                depth++;
-            else if (source[index] == (byte)')')
-                depth--;
-            else if (source[index] == (byte)',' && IsAsciiWhitespace(source[index + 1]) && depth == 0)
-                return index;
-        }
-
-        return -1;
-    }
-
-    /// <summary>Trims ASCII whitespace from both ends of a UTF-8 byte span.</summary>
-    private static ReadOnlySpan<byte> TrimAsciiWhitespace(ReadOnlySpan<byte> source) =>
-        TrimEndAsciiWhitespace(TrimStartAsciiWhitespace(source));
-
-    /// <summary>Trims ASCII whitespace from the start of a UTF-8 byte span.</summary>
-    private static ReadOnlySpan<byte> TrimStartAsciiWhitespace(ReadOnlySpan<byte> source)
-    {
-        while (!source.IsEmpty && IsAsciiWhitespace(source[0]))
-            source = source[1..];
-
-        return source;
-    }
-
-    /// <summary>Trims ASCII whitespace from the end of a UTF-8 byte span.</summary>
-    private static ReadOnlySpan<byte> TrimEndAsciiWhitespace(ReadOnlySpan<byte> source)
-    {
-        while (!source.IsEmpty && IsAsciiWhitespace(source[^1]))
-            source = source[..^1];
-
-        return source;
-    }
-
-    /// <summary>Returns whether a byte is ASCII whitespace.</summary>
-    private static bool IsAsciiWhitespace(byte value) => value is (byte)' ' or (byte)'\t' or (byte)'\r' or (byte)'\n';
-
-    /// <summary>Reports a failed formatting operation with the required written count contract.</summary>
-    private static bool FailFormat(out int written)
-    {
-        written = 0;
-        return false;
-    }
-
-    /// <summary>Throws for invalid component indexes on the cold path.</summary>
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowIndexOutOfRange(int index) =>
-        throw new IndexOutOfRangeException($"Component index {index} is outside 0..{ComponentCount - 1}.");
-
-    /// <summary>Throws when a source span cannot provide every corner component.</summary>
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowSourceSpanTooShort() =>
-        throw new ArgumentException($"Span must contain at least {ComponentCount} components.", "values");
-
-    /// <summary>Throws when a destination span cannot receive every corner component.</summary>
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowDestinationSpanTooShort() =>
-        throw new ArgumentException($"Span must contain at least {ComponentCount} components.", "destination");
 }

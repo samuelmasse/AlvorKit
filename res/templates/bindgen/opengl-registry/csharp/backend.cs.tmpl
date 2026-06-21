@@ -1,7 +1,7 @@
 {{SourceHeader}}namespace {{Namespace}};
 
 /// <summary>
-/// Implements <see cref="{{ApiClass}}"/> over function pointers resolved from the current OpenGL context.
+/// Implements <see cref="{{ApiClass}}"/> over native OpenGL command entry points such as <c>glActiveTexture</c>.
 /// Construct it with a proc loader once the context is current.
 /// </summary>
 public unsafe class {{BackendClass}} : {{ApiClass}}

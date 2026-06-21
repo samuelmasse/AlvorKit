@@ -1,6 +1,6 @@
 namespace: "AlvorKit.FreeType"
 apiClass: "Ft"
-apiSummary: "The FreeType font rendering library: faces, glyph loading and rasterization."
+apiSummary: "The <c>freetype</c> font rendering library: faces, glyph loading and rasterization."
 backendClass: "FtBackend"
 nativeClass: "FtNative"
 nativeLibrary: "freetype"

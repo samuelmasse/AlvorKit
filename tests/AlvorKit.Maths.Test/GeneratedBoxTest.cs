@@ -27,6 +27,7 @@ public sealed class GeneratedBoxTest
         Assert.AreEqual(40f, box.Area);
         Assert.ThrowsException<ArgumentException>(() => _ = Box2.Create(new float[3]));
         Assert.ThrowsException<ArgumentException>(() => box.CopyTo(new float[3]));
+        Assert.ThrowsException<IndexOutOfRangeException>(() => _ = box[4]);
     }
 
     /// <summary>Generated boxes support point containment, box containment, intersections, unions, and overlap boxes.</summary>

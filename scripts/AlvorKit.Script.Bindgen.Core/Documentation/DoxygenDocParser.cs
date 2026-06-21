@@ -13,6 +13,7 @@ internal static class DoxygenDocParser
         var parameters = new Dictionary<string, string>();
         var currentText = summary;
         string? currentParameter = null;
+        var skippingTable = false;
 
         foreach (var rawLine in raw.Split('\n'))
         {
@@ -25,6 +26,16 @@ internal static class DoxygenDocParser
             }
             if (IsGroupMarker(line))
                 continue;
+            if (DoxygenDocTable.IsTableLine(line))
+            {
+                if (!skippingTable)
+                    DoxygenDocTable.DropLeadIn(currentText, parameters, currentParameter);
+                skippingTable = true;
+                continue;
+            }
+            if (skippingTable && DoxygenDocTable.IsTableFootnote(line))
+                continue;
+            skippingTable = false;
 
             if (line.StartsWith("@brief "))
             {
@@ -47,6 +58,8 @@ internal static class DoxygenDocParser
             {
                 // Metadata-only sections are noisy in IntelliSense, and they must not be appended to
                 // the previous return or description section.
+                if (IsCodeBlockStart(line))
+                    DropTrailingCodeExampleLeadIn(currentText, parameters, currentParameter);
                 currentText = discard;
                 currentParameter = null;
                 continue;
@@ -84,4 +97,28 @@ internal static class DoxygenDocParser
         parameters[parameter] = match.Groups[2].Value;
         return parameter;
     }
+
+    /// <summary>Returns whether a Doxygen noise tag begins a block whose prose lead-in should be discarded.</summary>
+    private static bool IsCodeBlockStart(string line) => Regex.IsMatch(line, @"^@(code|verbatim)\b");
+
+    /// <summary>Drops a trailing example lead-in that only introduced a skipped Doxygen code block.</summary>
+    private static void DropTrailingCodeExampleLeadIn(
+        StringBuilder currentText,
+        Dictionary<string, string> parameters,
+        string? currentParameter)
+    {
+        if (currentParameter is not null)
+        {
+            parameters[currentParameter] = DropTrailingCodeExampleLeadIn(parameters[currentParameter]);
+            return;
+        }
+
+        var trimmed = DropTrailingCodeExampleLeadIn(currentText.ToString());
+        currentText.Clear();
+        currentText.Append(trimmed);
+    }
+
+    /// <summary>Removes a final example heading that would otherwise dangle after its code block is discarded.</summary>
+    private static string DropTrailingCodeExampleLeadIn(string text) =>
+        Regex.Replace(text, @"\s*Example\b[^.?!]*:\s*$", "", RegexOptions.CultureInvariant);
 }

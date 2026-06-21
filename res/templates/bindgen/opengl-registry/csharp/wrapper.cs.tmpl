@@ -1,12 +1,12 @@
 {{SourceHeader}}namespace {{Namespace}};
 
 /// <summary>
-/// A <see cref="{{ApiClass}}"/> that forwards every call to an inner instance. Subclass it and
-/// override only the calls you want to intercept; the rest pass straight through.
+/// A <see cref="{{ApiClass}}"/> wrapper for native OpenGL commands from <c>gl.xml</c>.
+/// Subclass it and override only the calls you want to intercept; the rest pass straight through.
 /// </summary>
 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public class {{ApiClass}}Wrapper({{ApiClass}} inner) : {{ApiClass}}
 {
-    /// <summary>The instance each call is forwarded to.</summary>
+    /// <summary>The <c>gl.xml</c> OpenGL API instance each call is forwarded to.</summary>
     protected {{ApiClass}} Inner { get; } = inner ?? throw new ArgumentNullException(nameof(inner));
 {{Methods}}}

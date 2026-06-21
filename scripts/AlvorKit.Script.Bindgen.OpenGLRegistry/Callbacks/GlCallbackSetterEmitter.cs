@@ -35,6 +35,7 @@ internal static class GlCallbackSetterEmitter
             typeof(GlCallbackSetterEmitter),
             "res/templates/bindgen/opengl-registry/csharp/callback-setter.csfrag.tmpl",
             ("Cref", $"{command.ManagedName}({cref})"),
+            ("NativeName", command.NativeName),
             ("ManagedName", command.ManagedName),
             ("Signature", signature),
             ("Arguments", arguments)));

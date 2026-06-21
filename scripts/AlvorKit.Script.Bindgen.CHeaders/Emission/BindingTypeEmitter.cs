@@ -11,7 +11,7 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/enum.cs.tmpl",
             ("TypeHeader", TypeHeader()),
-            ("Documentation", BindingTypeDocs.Enum(enumType)),
+            ("Documentation", BindingDocs.Summary(BindingTypeDocs.Enum(enumType))),
             ("Flags", enumType.IsFlags ? "[Flags]" + Environment.NewLine : ""),
             ("ManagedName", enumType.ManagedName),
             ("UnderlyingType", enumType.UnderlyingType == "int" ? "" : " : " + enumType.UnderlyingType),
@@ -27,10 +27,10 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/struct.cs.tmpl",
             ("TypeHeader", TypeHeader()),
-            ("Documentation", BindingDocs.NativeSummary(
+            ("Documentation", BindingDocs.Summary(BindingDocs.NativeSummary(
                 structType.NativeName,
                 structType.Documentation,
-                $"Native record <c>{structType.NativeName}</c>.")),
+                $"Native record <c>{structType.NativeName}</c>."))),
             ("StructLayout", structType.IsUnion ? "[StructLayout(LayoutKind.Explicit)]" : "[StructLayout(LayoutKind.Sequential)]"),
             ("Unsafe", structType.Fields.Any(field => field.ManagedType.Contains('*')) ? "unsafe " : ""),
             ("ManagedName", structType.ManagedName),
@@ -62,13 +62,14 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
         var parameters = string.Join("", callback.Parameters.Select(parameter => TemplateResource.Render(
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/delegate-param.csfrag.tmpl",
-            ("ManagedName", parameter.ManagedName.TrimStart('@')),
-            ("Documentation", BindingTypeDocs.DelegateParameter(callback, parameter)))));
+            ("Documentation", BindingDocs.Parameter(
+                parameter.ManagedName.TrimStart('@'),
+                BindingTypeDocs.DelegateParameter(callback, parameter))))));
         return TemplateResource.Render(
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/delegate.cs.tmpl",
             ("TypeHeader", TypeHeader()),
-            ("Documentation", BindingTypeDocs.Delegate(callback)),
+            ("Documentation", BindingDocs.Summary(BindingTypeDocs.Delegate(callback))),
             ("Parameters", parameters),
             ("ReturnType", callback.ReturnType),
             ("Unsafe", callback.ReturnType.Contains('*') || callback.Parameters.Any(parameter => parameter.ManagedType.Contains('*')) ? "unsafe " : ""),
@@ -89,7 +90,9 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
         TemplateResource.Render(
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/enum-member.csfrag.tmpl",
-            ("Documentation", BindingDocs.NativeSummary(member.NativeName, member.Documentation, $"<c>{member.NativeName}</c>.")),
+            ("Documentation", BindingDocs.Summary(
+                BindingDocs.NativeSummary(member.NativeName, member.Documentation, $"<c>{member.NativeName}</c>."),
+                "    ")),
             ("ManagedName", member.ManagedName),
             ("Value", member.Value.ToString()));
 
@@ -98,7 +101,7 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
         TemplateResource.Render(
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/struct-field.csfrag.tmpl",
-            ("Documentation", BindingTypeDocs.Field(field)),
+            ("Documentation", BindingDocs.Summary(BindingTypeDocs.Field(field), "    ")),
             ("FieldOffset", structType.IsUnion ? "[FieldOffset(0)] " : ""),
             ("ManagedType", field.ManagedType),
             ("ManagedName", field.ManagedName));
@@ -124,6 +127,7 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
         return TemplateResource.Render(
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/uint128-conversions.csfrag.tmpl",
+            ("NativeName", structType.NativeName),
             ("ManagedName", structType.ManagedName));
     }
 }

@@ -54,23 +54,23 @@ internal static class ValueSemanticsSequenceEmitter
 
     /// <summary>Returns character formatting statements for one component.</summary>
     private static string TryFormatComponentStatement(string component) =>
-        $"        if (!TryAppendComponent({component}, ref remainder, ref charsWritten, format, formatProvider))" +
-        $"{Environment.NewLine}            return FailFormat(out charsWritten);";
+        $"        if (!MathsFormatHelper.TryAppendFormatted({component}, ref remainder, ref charsWritten, format, formatProvider))" +
+        $"{Environment.NewLine}            return MathsFormatHelper.Fail(out charsWritten);";
 
     /// <summary>Returns UTF-8 formatting statements for one component.</summary>
     private static string TryFormatUtf8ComponentStatement(string component) =>
-        $"        if (!TryAppendUtf8Component({component}, ref remainder, ref bytesWritten, format, formatProvider))" +
-        $"{Environment.NewLine}            return FailFormat(out bytesWritten);";
+        $"        if (!MathsFormatHelper.TryAppendFormatted({component}, ref remainder, ref bytesWritten, format, formatProvider))" +
+        $"{Environment.NewLine}            return MathsFormatHelper.Fail(out bytesWritten);";
 
     /// <summary>Returns character separator formatting statements.</summary>
     private static string TryFormatSeparatorStatement() =>
-        "        if (!TryAppend(\", \".AsSpan(), ref remainder, ref charsWritten))" +
-        $"{Environment.NewLine}            return FailFormat(out charsWritten);";
+        "        if (!MathsFormatHelper.TryAppend(\", \".AsSpan(), ref remainder, ref charsWritten))" +
+        $"{Environment.NewLine}            return MathsFormatHelper.Fail(out charsWritten);";
 
     /// <summary>Returns UTF-8 separator formatting statements.</summary>
     private static string TryFormatUtf8SeparatorStatement() =>
-        "        if (!TryAppendUtf8(\", \"u8, ref remainder, ref bytesWritten))" +
-        $"{Environment.NewLine}            return FailFormat(out bytesWritten);";
+        "        if (!MathsFormatHelper.TryAppend(\", \"u8, ref remainder, ref bytesWritten))" +
+        $"{Environment.NewLine}            return MathsFormatHelper.Fail(out bytesWritten);";
 
     /// <summary>Returns component parsing statements for one text encoding.</summary>
     private static string ParseComponents(VectorSpec vector, bool utf8)
@@ -83,7 +83,8 @@ internal static class ValueSemanticsSequenceEmitter
             var source = isLast ? LastComponentSource(utf8) : "ref body";
 
             statements.Add("");
-            statements.Add($"        if (!{method}({source}, formatProvider, out var {vector.Parameters[index]}))");
+            statements.Add(
+                $"        if (!{method}({source}, formatProvider, out {vector.Scalar.CSharpName} {vector.Parameters[index]}))");
             statements.Add("            return false;");
         }
 
@@ -93,12 +94,12 @@ internal static class ValueSemanticsSequenceEmitter
     /// <summary>Returns the parse helper name for one text encoding and component position.</summary>
     private static string ParseMethodName(bool utf8, bool isLast) => (utf8, isLast) switch
     {
-        (true, true) => "TryParseUtf8Component",
-        (true, false) => "TryReadUtf8Component",
-        (false, true) => "TryParseComponent",
-        _ => "TryReadComponent",
+        (true, true) => "MathsParseHelper.TryParseComponent",
+        (true, false) => "MathsComponentParseHelper.TryReadNextComponent",
+        (false, true) => "MathsParseHelper.TryParseComponent",
+        _ => "MathsComponentParseHelper.TryReadNextComponent",
     };
 
     /// <summary>Returns the final component source expression for one text encoding.</summary>
-    private static string LastComponentSource(bool utf8) => utf8 ? "TrimAsciiWhitespace(body)" : "body.Trim()";
+    private static string LastComponentSource(bool utf8) => utf8 ? "MathsUtf8TextHelper.TrimAsciiWhitespace(body)" : "body.Trim()";
 }

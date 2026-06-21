@@ -27,6 +27,7 @@ public sealed class GlExtensionsEmitterTest
         var source = new GlExtensionsEmitter(OpenGlRegistryTestConfig.Create()).Emit(model, Header())!;
 
         StringAssert.Contains(source, "public virtual void BufferData<T>(ReadOnlySpan<T> data) where T : unmanaged");
+        StringAssert.Contains(source, "Convenience overload for <c>glBufferData</c>.");
         StringAssert.Contains(source, "ByteLength<T>(data)");
         StringAssert.Contains(source, "fixed (T* dataPtr = data)");
     }
@@ -208,6 +209,7 @@ public sealed class GlExtensionsEmitterTest
 
         StringAssert.Contains(source, "private Dictionary<int, Delegate>? rootedCallbacks");
         StringAssert.Contains(source, "public virtual void DebugMessageCallback(GlDebugProc? callback, nint userParam)");
+        StringAssert.Contains(source, "Convenience overload for <c>glDebugMessageCallback</c>.");
         StringAssert.Contains(source, "RootCallback(0, callback)");
     }
 

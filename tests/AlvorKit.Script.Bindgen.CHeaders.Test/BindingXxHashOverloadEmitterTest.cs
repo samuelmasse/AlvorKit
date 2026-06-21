@@ -30,6 +30,9 @@ public sealed class BindingXxHashOverloadEmitterTest
 
         var secretSource = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "XxhSecret.cs"));
         var overloads = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "XxhOverloads.cs"));
+        StringAssert.Contains(secretSource, "<c>XXH3_64bits_reset_withSecret</c>");
+        StringAssert.Contains(secretSource, "<c>XXH3_SECRET_SIZE_MIN</c>");
+        StringAssert.Contains(secretSource, "<c>XXH3_generateSecret</c>");
         StringAssert.Contains(secretSource, "public sealed class XxhSecret : IDisposable");
         StringAssert.Contains(secretSource, "public unsafe XxhSecret(nuint size)");
         StringAssert.Contains(secretSource, "if (size < (nuint)(long)XxhEnum.Xxh3SecretSizeMin)");

@@ -22,15 +22,16 @@ public sealed class BindingCodeEmitterCommentsTest
         var backend = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "TestBackend.cs"));
 
         StringAssert.Contains(api, "/// <param name=\"left\">Native <c>left</c> parameter for <c>test_add</c>.</param>");
-        StringAssert.Contains(value, "/// <summary><c>test_value</c> - Value enum.</summary>");
-        StringAssert.Contains(value, "/// <summary><c>test_VALUE_A</c> - Alpha value.</summary>");
-        StringAssert.Contains(value, "/// <summary><c>test_VALUE_B</c>.</summary>");
+        StringAssert.Contains(value, "/// <c>test_value</c> - Value enum.");
+        StringAssert.Contains(value, "/// <c>test_VALUE_A</c> - Alpha value.");
+        StringAssert.Contains(value, "/// <c>test_VALUE_B</c>.");
         Assert.IsFalse(value.Contains("/// <summary><c>A</c>.</summary>", StringComparison.Ordinal));
-        StringAssert.Contains(point, "/// <summary>Native <c>X</c> field at byte offset 0.</summary>");
+        StringAssert.Contains(point, "/// Native <c>X</c> field at byte offset 0.");
         StringAssert.Contains(point, "/// <summary>First native <c>values</c> element storage used by the compiler-expanded inline array.</summary>");
         StringAssert.Contains(handle, "/// <param name=\"Handle\">Native <c>test_handle*</c> pointer value.</param>");
-        StringAssert.Contains(callback, "/// <summary>Native callback typedef <c>test_callback</c>.</summary>");
-        StringAssert.Contains(callback, "/// <param name=\"value\">Native <c>value</c> callback parameter.</param>");
+        StringAssert.Contains(callback, "/// Native callback typedef <c>test_callback</c>.");
+        StringAssert.Contains(callback, "/// <param name=\"value\">");
+        StringAssert.Contains(callback, "/// Native <c>value</c> callback parameter.");
         StringAssert.Contains(native, "/// <summary>Name of the <c>fixture</c> native shared library.</summary>");
         StringAssert.Contains(backend, "/// <inheritdoc/>");
     }

@@ -107,14 +107,14 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
         readonly get
         {
             if ((uint)index >= ComponentCount)
-                ThrowIndexOutOfRange(index);
+                MathsThrowHelper.ThrowComponentIndexOutOfRange(index, ComponentCount - 1);
 
             return Unsafe.Add(ref Unsafe.AsRef(in X), index);
         }
         set
         {
             if ((uint)index >= ComponentCount)
-                ThrowIndexOutOfRange(index);
+                MathsThrowHelper.ThrowComponentIndexOutOfRange(index, ComponentCount - 1);
 
             Unsafe.Add(ref X, index) = value;
         }
@@ -124,16 +124,10 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
     public static ref {{ScalarType}} ComponentRef(ref {{TypeName}} value, int index)
     {
         if ((uint)index >= ComponentCount)
-            ThrowIndexOutOfRange(index);
+            MathsThrowHelper.ThrowComponentIndexOutOfRange(index, ComponentCount - 1);
 
         return ref Unsafe.Add(ref value.X, index);
     }
-
-    /// <summary>Throws for invalid component indexes on the cold path.</summary>
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowIndexOutOfRange(int index) =>
-        throw new ArgumentOutOfRangeException(nameof(index), index, "Index must be between 0 and 3.");
 
     /// <summary>Deconstructs the quaternion into scalar components.</summary>
     public readonly void Deconstruct(
@@ -166,7 +160,7 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
     public readonly void CopyTo(Span<{{ScalarType}}> destination)
     {
         if (!TryCopyTo(destination))
-            ThrowDestinationSpanTooShort();
+            MathsThrowHelper.ThrowDestinationSpanTooShort(ComponentCount);
     }
 
     /// <summary>Attempts to copy this quaternion into a destination span.</summary>
@@ -186,22 +180,10 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
     private static {{ScalarType}} ComponentFromSpan(ReadOnlySpan<{{ScalarType}}> values, int index)
     {
         if (values.Length < ComponentCount)
-            ThrowSourceSpanTooShort();
+            MathsThrowHelper.ThrowSourceSpanTooShort(ComponentCount);
 
         return values[index];
     }
-
-    /// <summary>Throws when a source span cannot provide every component.</summary>
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowSourceSpanTooShort() =>
-        throw new ArgumentException($"Span must contain at least {ComponentCount} components.", "values");
-
-    /// <summary>Throws when a destination span cannot receive every component.</summary>
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowDestinationSpanTooShort() =>
-        throw new ArgumentException($"Destination span must contain at least {ComponentCount} components.", "destination");
 
     /// <summary>Returns the squared quaternion length.</summary>
     public readonly {{ScalarType}} LengthSquared => Dot(this, this);

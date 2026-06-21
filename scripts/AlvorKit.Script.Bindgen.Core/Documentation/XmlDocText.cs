@@ -22,14 +22,24 @@ internal static class XmlDocText
 
     /// <summary>Escapes text so it can be embedded in XML documentation.</summary>
     internal static string Escape(string text) =>
-        text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
+        text.Replace("&", "&amp;")
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;")
+            .Replace(XmlDocCode.Start, "<c>")
+            .Replace(XmlDocCode.End, "</c>");
 
     /// <summary>Removes inline Doxygen and Markdown markup that is noisy in generated C# docs.</summary>
     internal static string StripInlineMarkup(string text)
     {
+        text = Regex.Replace(text, @"\[[^\]]+\]:\s+\S+", "");
         text = Regex.Replace(text, @"\[([^\]]+)\]\([^)]*\)", "$1");
         text = Regex.Replace(text, @"\[([^\]]+)\]\[[^\]]*\]", "$1");
-        text = Regex.Replace(text, @"@(?:ref|p|c|a)\s+(\S+)", "$1");
+        text = Regex.Replace(
+            text,
+            @"@(?:ref|p|c|a)\s+([A-Za-z_][A-Za-z0-9_]*)",
+            match => XmlDocNativeReference.FormatDoxygenReference(match.Groups[1].Value));
+        text = StripMarkdownEmphasis(text);
+        text = CodeNativeSymbolReferences(text);
         const string noiseTags =
             "win32|macos|linux|x11|wayland|egl|wgl|glx|osmesa|nsgl|posix|unix|"
             + "note|remarks?|warning|attention|thread_safety|errors?|sa|see|since|"
@@ -37,7 +47,6 @@ internal static class XmlDocText
         text = Regex.Replace(text,
             @"@(?:" + noiseTags + @")\b\s*",
             "");
-        text = text.Replace("__", "").Replace("`", "");
         return Regex.Replace(text, @"\s{2,}", " ").Trim();
     }
 
@@ -62,8 +71,25 @@ internal static class XmlDocText
     }
 
     /// <summary>Converts FreeType's lightweight markup into plain prose.</summary>
-    internal static string ConvertFreeTypeMarkup(string text) =>
-        Regex.Replace(Regex.Replace(text.Replace('~', ' '), @"@(?=[A-Za-z_])", ""), @"\s{2,}", " ").Trim();
+    internal static string ConvertFreeTypeMarkup(string text)
+    {
+        text = StripMarkdownEmphasis(text.Replace('~', ' '));
+        text = CodeNativeSymbolReferences(text);
+        text = Regex.Replace(text, @"@(?=[A-Za-z_])", "");
+        return Regex.Replace(text, @"\s{2,}", " ").Trim();
+    }
+
+    /// <summary>Removes lightweight Markdown emphasis while preserving native names that contain underscores.</summary>
+    private static string StripMarkdownEmphasis(string text)
+    {
+        text = text.Replace("__", "").Replace("`", "").Replace("**", "");
+        return Regex.Replace(text, @"(?<!\w)_([^_]+)_(?!\w)", "$1");
+    }
+
+    /// <summary>Converts bare FreeType-family Doxygen symbol references into XML code placeholders.</summary>
+    private static string CodeNativeSymbolReferences(string text) =>
+        XmlDocNativeReference.CodeBareReferences(
+            Regex.Replace(text, @"@((?:FT|FT2|FTC|TT|BDF|PS)_[A-Za-z0-9_]+)", match => XmlDocCode.Wrap(match.Groups[1].Value)));
 
     /// <summary>Appends a prose fragment with sentence spacing.</summary>
     internal static void AppendSentence(StringBuilder builder, string text)

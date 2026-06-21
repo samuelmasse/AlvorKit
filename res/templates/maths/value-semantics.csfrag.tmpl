@@ -16,7 +16,7 @@
         Span<char> destination = stackalloc char[256];
         return TryFormat(destination, out var charsWritten, format.AsSpan(), formatProvider)
             ? new string(destination[..charsWritten])
-            : ToStringSlow(format, formatProvider);
+            : MathsFormatHelper.ToStringSlow(this, format, formatProvider, 512);
     }
 
     /// <summary>Attempts to format this vector into a caller-owned character span.</summary>
@@ -29,11 +29,11 @@
         charsWritten = 0;
         var remainder = destination;
 
-        if (!TryAppend("(".AsSpan(), ref remainder, ref charsWritten))
-            return FailFormat(out charsWritten);
+        if (!MathsFormatHelper.TryAppend("(".AsSpan(), ref remainder, ref charsWritten))
+            return MathsFormatHelper.Fail(out charsWritten);
 {{TryFormatComponents}}
-        if (!TryAppend(")".AsSpan(), ref remainder, ref charsWritten))
-            return FailFormat(out charsWritten);
+        if (!MathsFormatHelper.TryAppend(")".AsSpan(), ref remainder, ref charsWritten))
+            return MathsFormatHelper.Fail(out charsWritten);
 
         return true;
     }
@@ -48,27 +48,13 @@
         bytesWritten = 0;
         var remainder = utf8Destination;
 
-        if (!TryAppendUtf8("("u8, ref remainder, ref bytesWritten))
-            return FailFormat(out bytesWritten);
+        if (!MathsFormatHelper.TryAppend("("u8, ref remainder, ref bytesWritten))
+            return MathsFormatHelper.Fail(out bytesWritten);
 {{TryFormatUtf8Components}}
-        if (!TryAppendUtf8(")"u8, ref remainder, ref bytesWritten))
-            return FailFormat(out bytesWritten);
+        if (!MathsFormatHelper.TryAppend(")"u8, ref remainder, ref bytesWritten))
+            return MathsFormatHelper.Fail(out bytesWritten);
 
         return true;
-    }
-
-    /// <summary>Returns a formatted string when the stack buffer is too small.</summary>
-    private readonly string ToStringSlow(string? format, IFormatProvider? formatProvider)
-    {
-        var length = 512;
-        while (true)
-        {
-            var destination = new char[length];
-            if (TryFormat(destination, out var charsWritten, format.AsSpan(), formatProvider))
-                return new string(destination, 0, charsWritten);
-
-            length *= 2;
-        }
     }
 
     /// <summary>Compares this vector to another vector by component order.</summary>
@@ -107,7 +93,7 @@
     public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? formatProvider, out {{TypeName}} result)
     {
         result = default;
-        if (!TryReadVectorBody(s, out var body))
+        if (!MathsParseHelper.TryReadParenthesizedBody(s, out var body))
             return false;
 {{ParseComponents}}
         result = new({{ParsedComponentArguments}});
@@ -124,7 +110,7 @@
     public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? formatProvider, out {{TypeName}} result)
     {
         result = default;
-        if (!TryReadVectorBody(utf8Text, out var body))
+        if (!MathsParseHelper.TryReadParenthesizedBody(utf8Text, out var body))
             return false;
 {{ParseUtf8Components}}
         result = new({{ParsedComponentArguments}});
@@ -146,211 +132,3 @@
     /// <summary>Returns whether two scalar components compare as equal.</summary>
     private static bool EqualScalar({{ScalarType}} left, {{ScalarType}} right) =>
         {{EqualScalarExpression}};
-
-    /// <summary>Attempts to append literal text to the destination span.</summary>
-    private static bool TryAppend(ReadOnlySpan<char> value, ref Span<char> destination, ref int charsWritten)
-    {
-        if (!value.TryCopyTo(destination))
-            return false;
-
-        destination = destination[value.Length..];
-        charsWritten += value.Length;
-        return true;
-    }
-
-    /// <summary>Attempts to append literal UTF-8 text to the destination span.</summary>
-    private static bool TryAppendUtf8(ReadOnlySpan<byte> value, ref Span<byte> destination, ref int bytesWritten)
-    {
-        if (!value.TryCopyTo(destination))
-            return false;
-
-        destination = destination[value.Length..];
-        bytesWritten += value.Length;
-        return true;
-    }
-
-    /// <summary>Attempts to append one scalar component to the destination span.</summary>
-    private static bool TryAppendComponent(
-        {{ScalarType}} value,
-        ref Span<char> destination,
-        ref int charsWritten,
-        ReadOnlySpan<char> format,
-        IFormatProvider? formatProvider)
-    {
-        if (!TryFormatComponent(value, destination, out var componentCharsWritten, format, formatProvider))
-            return false;
-
-        destination = destination[componentCharsWritten..];
-        charsWritten += componentCharsWritten;
-        return true;
-    }
-
-    /// <summary>Attempts to append one scalar component to the UTF-8 destination span.</summary>
-    private static bool TryAppendUtf8Component(
-        {{ScalarType}} value,
-        ref Span<byte> destination,
-        ref int bytesWritten,
-        ReadOnlySpan<char> format,
-        IFormatProvider? formatProvider)
-    {
-        if (!TryFormatUtf8Component(value, destination, out var componentBytesWritten, format, formatProvider))
-            return false;
-
-        destination = destination[componentBytesWritten..];
-        bytesWritten += componentBytesWritten;
-        return true;
-    }
-
-    /// <summary>Attempts to format one scalar component into the destination span.</summary>
-    private static bool TryFormatComponent(
-        {{ScalarType}} value,
-        Span<char> destination,
-        out int charsWritten,
-        ReadOnlySpan<char> format,
-        IFormatProvider? formatProvider)
-    {
-{{TryFormatComponentBody}}
-    }
-
-    /// <summary>Attempts to format one scalar component into the UTF-8 destination span.</summary>
-    private static bool TryFormatUtf8Component(
-        {{ScalarType}} value,
-        Span<byte> destination,
-        out int bytesWritten,
-        ReadOnlySpan<char> format,
-        IFormatProvider? formatProvider)
-    {
-{{TryFormatUtf8ComponentBody}}
-    }
-
-    /// <summary>Attempts to read the parenthesized vector body.</summary>
-    private static bool TryReadVectorBody(ReadOnlySpan<char> source, out ReadOnlySpan<char> body)
-    {
-        source = source.Trim();
-        if (source.Length < 2 || source[0] != '(' || source[^1] != ')')
-        {
-            body = default;
-            return false;
-        }
-
-        body = source[1..^1].Trim();
-        return true;
-    }
-
-    /// <summary>Attempts to read the parenthesized UTF-8 vector body.</summary>
-    private static bool TryReadVectorBody(ReadOnlySpan<byte> source, out ReadOnlySpan<byte> body)
-    {
-        source = TrimAsciiWhitespace(source);
-        if (source.Length < 2 || source[0] != (byte)'(' || source[^1] != (byte)')')
-        {
-            body = default;
-            return false;
-        }
-
-        body = TrimAsciiWhitespace(source[1..^1]);
-        return true;
-    }
-
-    /// <summary>Attempts to parse one component before the next separator.</summary>
-    private static bool TryReadComponent(
-        ref ReadOnlySpan<char> source,
-        IFormatProvider? formatProvider,
-        out {{ScalarType}} value)
-    {
-        value = default;
-        var separator = FindComponentSeparator(source);
-        if (separator < 0 || !TryParseComponent(source[..separator].Trim(), formatProvider, out value))
-            return false;
-
-        source = source[(separator + 1)..].TrimStart();
-        return true;
-    }
-
-    /// <summary>Attempts to parse one UTF-8 component before the next separator.</summary>
-    private static bool TryReadUtf8Component(
-        ref ReadOnlySpan<byte> source,
-        IFormatProvider? formatProvider,
-        out {{ScalarType}} value)
-    {
-        value = default;
-        var separator = FindComponentSeparator(source);
-        if (separator < 0 || !TryParseUtf8Component(TrimAsciiWhitespace(source[..separator]), formatProvider, out value))
-            return false;
-
-        source = TrimStartAsciiWhitespace(source[(separator + 1)..]);
-        return true;
-    }
-
-    /// <summary>Finds the next comma-space component separator.</summary>
-    private static int FindComponentSeparator(ReadOnlySpan<char> source)
-    {
-        for (var index = 0; index < source.Length - 1; index++)
-        {
-            if (source[index] == ',' && char.IsWhiteSpace(source[index + 1]))
-                return index;
-        }
-
-        return -1;
-    }
-
-    /// <summary>Finds the next UTF-8 comma-space component separator.</summary>
-    private static int FindComponentSeparator(ReadOnlySpan<byte> source)
-    {
-        for (var index = 0; index < source.Length - 1; index++)
-        {
-            if (source[index] == (byte)',' && IsAsciiWhitespace(source[index + 1]))
-                return index;
-        }
-
-        return -1;
-    }
-
-    /// <summary>Attempts to parse one scalar component from a character span.</summary>
-    private static bool TryParseComponent(
-        ReadOnlySpan<char> source,
-        IFormatProvider? formatProvider,
-        out {{ScalarType}} value)
-    {
-{{TryParseComponentBody}}
-    }
-
-    /// <summary>Attempts to parse one scalar component from a UTF-8 byte span.</summary>
-    private static bool TryParseUtf8Component(
-        ReadOnlySpan<byte> source,
-        IFormatProvider? formatProvider,
-        out {{ScalarType}} value)
-    {
-{{TryParseUtf8ComponentBody}}
-    }
-
-    /// <summary>Trims ASCII whitespace from both ends of a UTF-8 byte span.</summary>
-    private static ReadOnlySpan<byte> TrimAsciiWhitespace(ReadOnlySpan<byte> source) =>
-        TrimEndAsciiWhitespace(TrimStartAsciiWhitespace(source));
-
-    /// <summary>Trims ASCII whitespace from the start of a UTF-8 byte span.</summary>
-    private static ReadOnlySpan<byte> TrimStartAsciiWhitespace(ReadOnlySpan<byte> source)
-    {
-        while (!source.IsEmpty && IsAsciiWhitespace(source[0]))
-            source = source[1..];
-
-        return source;
-    }
-
-    /// <summary>Trims ASCII whitespace from the end of a UTF-8 byte span.</summary>
-    private static ReadOnlySpan<byte> TrimEndAsciiWhitespace(ReadOnlySpan<byte> source)
-    {
-        while (!source.IsEmpty && IsAsciiWhitespace(source[^1]))
-            source = source[..^1];
-
-        return source;
-    }
-
-    /// <summary>Returns whether a byte is ASCII whitespace.</summary>
-    private static bool IsAsciiWhitespace(byte value) => value is (byte)' ' or (byte)'\t' or (byte)'\r' or (byte)'\n';
-
-    /// <summary>Reports a failed formatting operation with the required written count contract.</summary>
-    private static bool FailFormat(out int charsWritten)
-    {
-        charsWritten = 0;
-        return false;
-    }

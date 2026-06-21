@@ -348,6 +348,9 @@ public sealed class GeneratedMatrixTest
         Assert.AreEqual(new Mat2(5f, 6f, 7f, 8f), parsed);
         Assert.IsFalse(Mat2.TryParse((string?)null, formatProvider, out _));
         Assert.IsFalse(Mat2.TryParse("((1,2), (3, 4))", formatProvider, out _));
+        Assert.IsFalse(Mat2.TryParse("((1, 2) (3, 4))", formatProvider, out _));
+        Assert.IsFalse(Mat2.TryParse("((1, 2) (3, 4))"u8, formatProvider, out _));
+        Assert.IsFalse(Mat2.TryParse("((bad, 2), (3, 4))"u8, formatProvider, out _));
         Assert.ThrowsException<FormatException>(() => Mat2.Parse("((1,2), (3, 4))", formatProvider));
     }
 
@@ -360,6 +363,7 @@ public sealed class GeneratedMatrixTest
         SetColumn<Mat2, float, Vec2, Vec2, Mat2>(ref matrix, 1, new Vec2(5f, 6f));
         SetComponent<Mat2, float, Vec2, Vec2, Mat2>(ref matrix, 0, 1, 9f);
         CopyGeneric<Mat2, float, Vec2, Vec2, Mat2>(matrix, copied);
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => _ = Mat2.ColumnRef(ref matrix, 2));
 
         Assert.AreEqual(2, ColumnCount<Mat2, float, Vec2, Vec2, Mat2>());
         Assert.AreEqual(2, RowCount<Mat2, float, Vec2, Vec2, Mat2>());

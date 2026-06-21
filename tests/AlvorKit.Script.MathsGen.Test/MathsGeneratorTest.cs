@@ -472,11 +472,11 @@ public sealed class MathsGeneratorTest
         StringAssert.Contains(vec3, "public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? formatProvider, out Vec3 result)");
         StringAssert.Contains(vec3, "var xComparison = X.CompareTo(other.X);");
         StringAssert.Contains(vec3, "var zComparison = Z.CompareTo(other.Z);");
-        StringAssert.Contains(vec3, "if (!TryAppendUtf8(\"(\"u8, ref remainder, ref bytesWritten))");
-        StringAssert.Contains(vec3, "return float.TryParse(source, formatProvider, out value);");
+        StringAssert.Contains(vec3, "if (!MathsFormatHelper.TryAppend(\"(\"u8, ref remainder, ref bytesWritten))");
+        StringAssert.Contains(vec3, "MathsParseHelper.TryParseComponent(body.Trim(), formatProvider, out float z)");
         StringAssert.Contains(vec3, "TryFormat(destination, out var charsWritten, format.AsSpan(), formatProvider)");
-        StringAssert.Contains(vec3, "if (!TryAppend(\"(\".AsSpan(), ref remainder, ref charsWritten))");
-        StringAssert.Contains(vec3, "if (!TryAppendComponent(X, ref remainder, ref charsWritten, format, formatProvider))");
+        StringAssert.Contains(vec3, "if (!MathsFormatHelper.TryAppend(\"(\".AsSpan(), ref remainder, ref charsWritten))");
+        StringAssert.Contains(vec3, "if (!MathsFormatHelper.TryAppendFormatted(X, ref remainder, ref charsWritten, format, formatProvider))");
         StringAssert.Contains(vec3, "public static implicit operator Vec3((float X, float Y, float Z) value)");
         StringAssert.Contains(vec3, "public static implicit operator Vec3(System.Numerics.Vector3 value)");
         StringAssert.Contains(vec3, "public static implicit operator System.Numerics.Vector3(Vec3 value)");
@@ -510,9 +510,9 @@ public sealed class MathsGeneratorTest
         Assert.IsFalse(vec3u.Contains("public static Vec3u operator >>>(Vec3u left, Vec3u right)", StringComparison.Ordinal));
         StringAssert.Contains(vec3b, "IVec3Mask<Vec3b>");
         StringAssert.Contains(vec3b, "public static Vec3b operator ~(Vec3b value)");
-        StringAssert.Contains(vec3b, "var text = value ? \"True\" : \"False\";");
-        StringAssert.Contains(vec3b, "var text = value ? \"True\"u8 : \"False\"u8;");
-        StringAssert.Contains(vec3b, "if (source.SequenceEqual(\"True\"u8))");
+        StringAssert.Contains(vec3b, "MathsFormatHelper.TryAppendFormatted(X, ref remainder, ref charsWritten, format, formatProvider)");
+        StringAssert.Contains(vec3b, "MathsFormatHelper.TryAppendFormatted(X, ref remainder, ref bytesWritten, format, formatProvider)");
+        StringAssert.Contains(vec3b, "MathsParseHelper.TryParseComponent(MathsUtf8TextHelper.TrimAsciiWhitespace(body), formatProvider, out bool z)");
         StringAssert.Contains(vec3b, "public static bool operator true(Vec3b value)");
         StringAssert.Contains(vec3b, "public readonly Vec3u128 Select(Vec3u128 whenTrue, Vec3u128 whenFalse)");
         StringAssert.Contains(vec3b, "ScalarMath.Select(X, whenTrue.X, whenFalse.X)");

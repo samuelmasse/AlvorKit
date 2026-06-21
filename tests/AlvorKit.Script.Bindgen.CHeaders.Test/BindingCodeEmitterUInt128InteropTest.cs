@@ -46,6 +46,8 @@ public sealed class BindingCodeEmitterUInt128InteropTest
         var nativeSource = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "TestNative.cs"));
         var backendSource = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "TestBackend.cs"));
 
+        StringAssert.Contains(structSource, "Converts this native <c>test_hash128</c> layout");
+        StringAssert.Contains(structSource, "into native <c>test_hash128</c> layout");
         StringAssert.Contains(structSource, "public readonly UInt128 ToUInt128()");
         StringAssert.Contains(structSource, "public static TestHash128 FromUInt128(UInt128 value)");
         StringAssert.Contains(nativeSource, "public static partial TestHash128 HashData(TestHash128 seed);");

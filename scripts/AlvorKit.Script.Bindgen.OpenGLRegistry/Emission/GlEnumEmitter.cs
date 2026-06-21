@@ -8,10 +8,9 @@ internal sealed class GlEnumEmitter(GlCodeEmissionContext context)
     public string Emit(GlEnumGroup group, bool catchAll)
     {
         var summary = catchAll
-            ? $"Every {context.Config.GlApi} {context.Config.GlVersion} {context.Config.GlProfile} token: " +
-                "the fallback type for parameters without a typed group."
+            ? "Native OpenGL token constants from <c>gl.xml</c> used when a command parameter has no narrower registry group."
             : group.UnderlyingType == "ulong"
-                ? "OpenGL tokens whose values are too wide for the uint-backed catch-all enum."
+                ? "Native OpenGL token constants from <c>gl.xml</c> whose values are too wide for the uint-backed catch-all enum."
             : $"OpenGL tokens from the <c>{group.NativeName}</c> registry group.";
         var includeMembership = catchAll || group.UnderlyingType == "ulong";
         var members = string.Join("", group.Members.Select(member => Member(member, includeMembership)));
@@ -36,7 +35,7 @@ internal sealed class GlEnumEmitter(GlCodeEmissionContext context)
         return TemplateResource.Render(
             typeof(GlEnumEmitter),
             "res/templates/bindgen/opengl-registry/csharp/enum-member.csfrag.tmpl",
-            ("NativeName", member.NativeName),
+            ("NativeName", $"<c>{member.NativeName}</c>"),
             ("Availability", GlCodeEmissionContext.AvailabilityText(member.Availability)),
             ("Membership", membership),
             ("ManagedName", member.ManagedName),

@@ -1,6 +1,6 @@
 namespace: "AlvorKit.MiniAudio"
 apiClass: "Ma"
-apiSummary: "The miniaudio audio library: devices, engines, sounds, waveforms, decoding and node graphs."
+apiSummary: "Managed API surface for <c>miniaudio.h</c>: devices, engines, sounds, waveforms, decoding, and node graphs."
 backendClass: "MaBackend"
 nativeClass: "MaNative"
 nativeLibrary: "miniaudio"

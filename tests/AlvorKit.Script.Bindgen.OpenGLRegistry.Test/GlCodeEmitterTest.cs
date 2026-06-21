@@ -66,7 +66,7 @@ public sealed class GlCodeEmitterTest
                 NativeName: "GLwide",
                 ManagedName: "GlWideEnum",
                 IsFlags: false,
-                Members: [new("TimeoutIgnored", "GL_TIMEOUT_IGNORED", ulong.MaxValue, availability, [])])
+                Members: [new("TimeoutIgnored", "GL_TIMEOUT_IGNORED", ulong.MaxValue, availability, ["GlSpecialNumbers"])])
             { UnderlyingType = "ulong" },
             Commands: [],
             UngroupedEnumUses: [],
@@ -88,7 +88,21 @@ public sealed class GlCodeEmitterTest
 
         var wideEnum = File.ReadAllText(Path.Combine(outputRoot, "Gl", "GlWideEnum.cs"));
         StringAssert.Contains(wideEnum, "public enum GlWideEnum : ulong");
+        StringAssert.Contains(wideEnum, "Native OpenGL token constants from <c>gl.xml</c> whose values are too wide");
+        StringAssert.Contains(wideEnum, "<c>GL_TIMEOUT_IGNORED</c> (GL 1.0). See <see cref=\"GlSpecialNumbers\"/>.");
         StringAssert.Contains(wideEnum, "TimeoutIgnored = 0xFFFFFFFFFFFFFFFF,");
+
+        var catchAllEnum = File.ReadAllText(Path.Combine(outputRoot, "Gl", "GlEnum.cs"));
+        StringAssert.Contains(catchAllEnum, "Native OpenGL token constants from <c>gl.xml</c>");
+        StringAssert.Contains(catchAllEnum, "<c>GL_TEXTURE_2D</c> (GL 1.0).");
+
+        var textureTarget = File.ReadAllText(Path.Combine(outputRoot, "Gl", "TextureTarget.cs"));
+        StringAssert.Contains(textureTarget, "OpenGL tokens from the <c>TextureTarget</c> registry group.");
+        StringAssert.Contains(textureTarget, "<c>GL_TEXTURE_2D</c> (GL 1.0).");
+
+        var handles = File.ReadAllText(Path.Combine(outputRoot, "Gl", "GlHandles.cs"));
+        StringAssert.Contains(handles, "Strongly typed wrapper for any <c>GLuint</c> OpenGL object name from <c>gl.xml</c>");
+        StringAssert.Contains(handles, "Raw <c>GLuint</c> OpenGL object name.");
     }
 
     /// <summary>Generated OpenGL API contract, wrapper, and noop scaffolding are excluded from coverage metrics.</summary>
@@ -110,9 +124,19 @@ public sealed class GlCodeEmitterTest
         new GlCodeEmitter(config, "registry-tag", "doc-tag").Emit(model, workspace.Root, "4.6.3");
 
         var attribute = "[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]";
-        StringAssert.Contains(File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Gl.cs")), attribute);
-        StringAssert.Contains(File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "GlWrapper.cs")), attribute);
-        StringAssert.Contains(File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "GlNoop.cs")), attribute);
+        var api = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Gl.cs"));
+        var wrapper = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "GlWrapper.cs"));
+        var noop = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "GlNoop.cs"));
+        var backend = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "GlBackend.cs"));
+
+        StringAssert.Contains(api, attribute);
+        StringAssert.Contains(api, "native OpenGL commands from <c>gl.xml</c>");
+        StringAssert.Contains(wrapper, attribute);
+        StringAssert.Contains(wrapper, "native OpenGL commands from <c>gl.xml</c>");
+        StringAssert.Contains(wrapper, "The <c>gl.xml</c> OpenGL API instance each call is forwarded to.");
+        StringAssert.Contains(noop, attribute);
+        StringAssert.Contains(noop, "native OpenGL commands from <c>gl.xml</c>");
+        StringAssert.Contains(backend, "native OpenGL command entry points such as <c>glActiveTexture</c>");
     }
 
     /// <summary>Generated C-string span overloads handle null native string pointers.</summary>
