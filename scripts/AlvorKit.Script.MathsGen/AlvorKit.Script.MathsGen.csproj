@@ -5,12 +5,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AlvorKit.Script.Bindgen.Core\AlvorKit.Script.Bindgen.Core.csproj" />
         <ProjectReference Include="..\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Script.Bindgen" />
         <Using Include="AlvorKit.Script.Workspace" />
     </ItemGroup>
 

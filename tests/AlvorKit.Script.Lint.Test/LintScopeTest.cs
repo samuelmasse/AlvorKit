@@ -27,13 +27,14 @@ public sealed class LintScopeTest
     {
         using var workspace = TempWorkspace.Create();
         workspace.Write("AGENTS.md", "# Agents");
+        workspace.Write("res/templates/README.md", "# Templates");
         workspace.Write("scripts/Tool/A.cs", "namespace Tool;");
         workspace.Write(".github/workflows/build.yml", "name: Build");
 
         var scope = LintScope.FromPatterns(workspace.Root, ["**/*"]);
 
         CollectionAssert.AreEqual(new[] { "scripts/Tool/A.cs" }, scope.CSharpFiles.ToArray());
-        CollectionAssert.AreEqual(new[] { ".github/workflows/build.yml", "AGENTS.md" }, scope.PrettierFiles.ToArray());
+        CollectionAssert.AreEqual(new[] { ".github/workflows/build.yml", "AGENTS.md", "res/templates/README.md" }, scope.PrettierFiles.ToArray());
         CollectionAssert.AreEqual(new[] { ".github/workflows/build.yml" }, scope.ActionlintFiles.ToArray());
     }
 

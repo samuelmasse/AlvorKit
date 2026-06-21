@@ -3,6 +3,10 @@ namespace AlvorKit.Script.NativeBuild;
 /// <summary>Runs platform-specific checks against a built native binary.</summary>
 internal static class NativeBuildVerifier
 {
+    /// <summary>Template files for Windows native build verification scripts.</summary>
+    private static readonly RepositoryTemplateSet WindowsTemplates =
+        RepositoryTemplates.ForArea(typeof(NativeBuildVerifier), "native-build/windows");
+
     /// <summary>Runs dependency verification for the target platform.</summary>
     public static async Task VerifyAsync(
         LibraryBuildContext library,
@@ -20,8 +24,8 @@ internal static class NativeBuildVerifier
 
     /// <summary>Generates Windows import-library verification script.</summary>
     internal static string WindowsVerifyScript(LibraryBuildContext library, TargetRid target) =>
-        TemplateResource.Render(
-            "res/templates/native-build/windows/verify.ps1.tmpl",
+        WindowsTemplates.Render(
+            "verify.ps1.tmpl",
             ("VisualStudioDevShell", WindowsBuildScripts.VisualStudioDevShell(target)),
             ("OutputFile", CommandText.PowerShellQuote(library.OutputFile(target))));
 

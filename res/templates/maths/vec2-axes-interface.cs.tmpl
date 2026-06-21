@@ -2,7 +2,10 @@
 #nullable enable
 namespace AlvorKit.Maths;
 
-/// <summary>Applies to all two-component numeric vector types with axis constants, including <see cref="Vec2" />, <see cref="Vec2i" />, and <see cref="Vec2u" />.</summary>
+/// <summary>
+/// Applies to all two-component numeric vector types with axis constants,
+/// including <see cref="Vec2" />, <see cref="Vec2i" />, and <see cref="Vec2u" />.
+/// </summary>
 /// <typeparam name="TSelf">The two-component numeric vector type, such as <see cref="Vec2" /> or <see cref="Vec2i" />.</typeparam>
 public interface IVec2Axes<TSelf>
     where TSelf : struct, IVec2Axes<TSelf>

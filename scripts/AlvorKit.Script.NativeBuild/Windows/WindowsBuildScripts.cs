@@ -3,6 +3,9 @@ namespace AlvorKit.Script.NativeBuild;
 /// <summary>Generates Windows PowerShell build fragments for MSVC-based builds.</summary>
 internal static class WindowsBuildScripts
 {
+    /// <summary>Template files for Windows native build scripts.</summary>
+    private static readonly RepositoryTemplateSet Templates = RepositoryTemplates.ForArea(typeof(WindowsBuildScripts), "native-build/windows");
+
     /// <summary>Generates the Windows direct C compiler PowerShell script.</summary>
     public static string SingleC(LibraryBuildContext library, TargetRid target, PlatformBuildConfig platform)
     {
@@ -12,8 +15,8 @@ internal static class WindowsBuildScripts
         var implFile = CommandText.PowerShellQuote(NativeBuildPlanner.RequiredImplFile(library));
         var linkLibraries = CommandText.PowerShellArgs(platform.LinkLibraries.Select(link => link + ".lib"));
         var buildDirectory = CommandText.PowerShellQuote(library.BuildDirectory(target));
-        return TemplateResource.Render(
-            "res/templates/native-build/windows/single-c.ps1.tmpl",
+        return Templates.Render(
+            "single-c.ps1.tmpl",
             ("VisualStudioDevShell", VisualStudioDevShell(target)),
             ("BuildDirectory", buildDirectory),
             ("SourceDirectory", sourceDirectory),
@@ -28,8 +31,8 @@ internal static class WindowsBuildScripts
         var cmakeOutput = NativeBuildPlanner.RequiredCMakeOutput(library, platform);
         var sourceDirectory = CommandText.PowerShellQuote(library.SourceDirectory);
         var buildDirectory = CommandText.PowerShellQuote(library.BuildDirectory(target));
-        return TemplateResource.Render(
-            "res/templates/native-build/windows/cmake.ps1.tmpl",
+        return Templates.Render(
+            "cmake.ps1.tmpl",
             ("VisualStudioDevShell", VisualStudioDevShell(target)),
             ("SourceDirectory", sourceDirectory),
             ("BuildDirectory", buildDirectory),
@@ -44,8 +47,8 @@ internal static class WindowsBuildScripts
         var toolset = target.Architecture == TargetArchitecture.Arm64
             ? "Microsoft.VisualStudio.Component.VC.Tools.ARM64"
             : "Microsoft.VisualStudio.Component.VC.Tools.x86.x64";
-        return TemplateResource.Render(
-            "res/templates/native-build/windows/dev-shell.ps1.tmpl",
+        return Templates.Render(
+            "dev-shell.ps1.tmpl",
             ("Toolset", CommandText.PowerShellQuote(toolset)),
             ("WindowsArchitecture", target.WindowsArchitecture),
             ("VisualStudioArchitecture", CommandText.PowerShellQuote(target.VisualStudioArchitecture)));

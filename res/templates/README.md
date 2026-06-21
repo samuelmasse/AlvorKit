@@ -37,22 +37,34 @@ Prefer adding or editing templates under this directory instead of embedding
 multi-line generated C#, project XML, scripts, or other emitted output directly
 inside C# string literals.
 
+## Loading
+
+Script tools should load repository-file templates through
+`RepositoryTemplates` in `AlvorKit.Script.Workspace`. Prefer creating an
+area-scoped `RepositoryTemplateSet` for a template family, then render with short
+filenames:
+
+```csharp
+private static readonly RepositoryTemplateSet Templates =
+    RepositoryTemplates.ForArea(typeof(MyEmitter), "native-build/windows");
+
+Templates.Render("verify.ps1.tmpl", ("OutputFile", outputFile));
+```
+
+`RepositoryTemplates` centralizes repository-root discovery, UTF-8 reads,
+placeholder validation, newline normalization, missing-template errors, and
+fragment trailing-newline behavior.
+
+Source generators that must package templates into analyzer assemblies may keep
+their embedded-resource loading path. Keep their rendering behavior aligned with
+the script renderer when practical, but do not add script-tool dependencies to
+analyzer projects just to share template loading.
+
 ## Follow-Up Plan
 
 Use this plan for the remaining template cleanup work.
 
-1. Unify template loading where practical. Bindgen and native-build each carry a
-   similar `TemplateResource`, while ECS uses embedded resources and maths wraps
-   bindgen's renderer. Keep the embedded-resource path for analyzer packaging if
-   needed, but align placeholder validation, newline normalization, and error
-   wording.
-
-2. Extend formatting/lint coverage for templates. At minimum, include
-   `*.cs.tmpl`, `*.csfrag.tmpl`, `*.csproj.tmpl`, `*.props.tmpl`, `*.ps1.tmpl`,
-   and `*.txt.tmpl` in line-length and trailing-whitespace checks where the
-   template syntax makes that practical.
-
-3. Review generated output after future behavior changes. For bindgen changes,
+1. Review generated output after future behavior changes. For bindgen changes,
    use the bindgen review helper. For maths and ECS generator changes, capture
    focused before/after generated files or run the matching generator tests and
    inspect meaningful output diffs.

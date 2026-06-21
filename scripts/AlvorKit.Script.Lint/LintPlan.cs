@@ -6,6 +6,9 @@ internal static class LintPlan
     /// <summary>Repository solution used for full C# formatting checks.</summary>
     private const string SolutionFile = "AlvorKit.slnx";
 
+    /// <summary>Maximum number of scoped files to pass to one EditorConfig checker process.</summary>
+    private const int EditorConfigFileBatchSize = 80;
+
     /// <summary>Creates lint commands that can run before actionlint is available.</summary>
     public static IReadOnlyList<CommandSpec> CommandsBeforeActionlint(string repoRoot, bool fix) =>
     [
@@ -27,7 +30,7 @@ internal static class LintPlan
         if (prettierCommand is not null)
             commands.Add(prettierCommand);
 
-        commands.Add(EditorConfigCommand(repoRoot, scope.AllFiles));
+        commands.AddRange(EditorConfigCommands(repoRoot, scope.AllFiles));
         return commands;
     }
 
@@ -60,6 +63,13 @@ internal static class LintPlan
     /// <summary>Creates the EditorConfig checker command for scoped whitespace and line-length rules.</summary>
     public static CommandSpec EditorConfigCommand(string repoRoot, IReadOnlyList<string> files) =>
         new(ToolExecutable.Npx(), ["--yes", "editorconfig-checker@6.1.1", "-disable-indentation", "-format", "github-actions", .. files], repoRoot, "editorconfig");
+
+    /// <summary>Creates scoped EditorConfig checker commands, batching file arguments for Windows command-line limits.</summary>
+    public static IReadOnlyList<CommandSpec> EditorConfigCommands(string repoRoot, IReadOnlyList<string> files) =>
+        files
+            .Chunk(EditorConfigFileBatchSize)
+            .Select(batch => EditorConfigCommand(repoRoot, batch))
+            .ToArray();
 
     /// <summary>Creates the actionlint command for GitHub Actions workflow files.</summary>
     public static CommandSpec ActionlintCommand(string repoRoot, string actionlintPath, LintScope? scope = null) =>

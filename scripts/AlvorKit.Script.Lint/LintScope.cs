@@ -23,6 +23,7 @@ internal sealed record LintScope(
         "src/**/*.md",
         "scripts/**/*.md",
         "demos/**/*.md",
+        "res/**/*.md",
     ];
 
     /// <summary>GitHub Actions workflow globs owned by actionlint.</summary>

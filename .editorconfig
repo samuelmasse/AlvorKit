@@ -8,6 +8,9 @@ trim_trailing_whitespace = true
 [*.{cs,csproj,props,targets,json,yml,yaml,c,h}]
 max_line_length = 170
 
+[*.{cs.tmpl,csfrag.tmpl,csproj.tmpl,props.tmpl,ps1.tmpl,txt.tmpl}]
+max_line_length = 170
+
 [*.{cs,csproj}]
 indent_style = space
 indent_size = 4

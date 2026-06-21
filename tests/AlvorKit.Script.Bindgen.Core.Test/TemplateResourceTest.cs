@@ -37,6 +37,22 @@ public sealed class TemplateResourceTest
         Assert.IsFalse(output.EndsWith(Environment.NewLine + Environment.NewLine + Environment.NewLine, StringComparison.Ordinal));
     }
 
+    /// <summary>Area-scoped rendering uses short template names under the bindgen template directory.</summary>
+    [TestMethod]
+    public void ForArea_RendersTemplateRelativeToBindgenArea()
+    {
+        var templates = TemplateResource.ForArea(typeof(TemplateResourceTest), "c-headers");
+
+        var output = templates.Render(
+            "api-project.csproj.tmpl",
+            ("XmlBanner", "<!-- generated -->"),
+            ("Version", "1.2.3"),
+            ("UnsafeBlocks", ""));
+
+        StringAssert.Contains(output, "<!-- generated -->");
+        StringAssert.Contains(output, "<Version>1.2.3</Version>");
+    }
+
     /// <summary>Missing placeholder values fail loudly instead of leaking template syntax into generated output.</summary>
     [TestMethod]
     public void Render_MissingPlaceholderValueThrows()

@@ -193,6 +193,7 @@ public sealed class LintPlanTest
         CollectionAssert.Contains(command.Arguments.ToArray(), ".vscode/*.json");
         CollectionAssert.Contains(command.Arguments.ToArray(), "native/**/*.yml");
         CollectionAssert.Contains(command.Arguments.ToArray(), "native/**/*.md");
+        CollectionAssert.Contains(command.Arguments.ToArray(), "res/**/*.md");
         CollectionAssert.Contains(command.Arguments.ToArray(), "*.md");
     }
 
@@ -268,6 +269,19 @@ public sealed class LintPlanTest
 
         CollectionAssert.Contains(command.Arguments.ToArray(), "AGENTS.md");
         CollectionAssert.Contains(command.Arguments.ToArray(), "scripts/Tool/A.cs");
+    }
+
+    /// <summary>Plans multiple scoped EditorConfig commands when file lists are too large for one Windows command line.</summary>
+    [TestMethod]
+    public void EditorConfigCommandsBatchScopedFiles()
+    {
+        var files = Enumerable.Range(0, 81).Select(index => $"res/templates/{index}.cs.tmpl").ToArray();
+
+        var commands = LintPlan.EditorConfigCommands("repo", files);
+
+        Assert.AreEqual(2, commands.Count);
+        CollectionAssert.Contains(commands[0].Arguments.ToArray(), "res/templates/79.cs.tmpl");
+        CollectionAssert.Contains(commands[1].Arguments.ToArray(), "res/templates/80.cs.tmpl");
     }
 
     /// <summary>Plans actionlint with color output enabled.</summary>
