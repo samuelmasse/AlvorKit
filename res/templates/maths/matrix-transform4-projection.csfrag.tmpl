@@ -1,5 +1,5 @@
     /// <summary>Creates a right-handed perspective projection with OpenGL depth from negative one to one.</summary>
-    public static {{TypeName}} CreatePerspectiveFieldOfViewRH_NO(
+    private static {{TypeName}} CreatePerspectiveFieldOfViewRightHandedNegativeOneToOne(
         {{ScalarType}} fovYRadians,
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane,
@@ -22,7 +22,7 @@
     }
 
     /// <summary>Creates a right-handed perspective projection with zero-to-one depth.</summary>
-    public static {{TypeName}} CreatePerspectiveFieldOfViewRH_ZO(
+    private static {{TypeName}} CreatePerspectiveFieldOfViewRightHandedZeroToOne(
         {{ScalarType}} fovYRadians,
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane,
@@ -37,7 +37,7 @@
     }
 
     /// <summary>Creates a left-handed perspective projection with OpenGL depth from negative one to one.</summary>
-    public static {{TypeName}} CreatePerspectiveFieldOfViewLH_NO(
+    private static {{TypeName}} CreatePerspectiveFieldOfViewLeftHandedNegativeOneToOne(
         {{ScalarType}} fovYRadians,
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane,
@@ -60,7 +60,7 @@
     }
 
     /// <summary>Creates a left-handed perspective projection with zero-to-one depth.</summary>
-    public static {{TypeName}} CreatePerspectiveFieldOfViewLH_ZO(
+    private static {{TypeName}} CreatePerspectiveFieldOfViewLeftHandedZeroToOne(
         {{ScalarType}} fovYRadians,
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane,
@@ -99,18 +99,18 @@
         (handedness, depthRange) switch
         {
             (ProjectionHandedness.Right, ProjectionDepthRange.NegativeOneToOne) =>
-                CreatePerspectiveFieldOfViewRH_NO(fovYRadians, aspect, nearPlane, farPlane),
+                CreatePerspectiveFieldOfViewRightHandedNegativeOneToOne(fovYRadians, aspect, nearPlane, farPlane),
             (ProjectionHandedness.Right, ProjectionDepthRange.ZeroToOne) =>
-                CreatePerspectiveFieldOfViewRH_ZO(fovYRadians, aspect, nearPlane, farPlane),
+                CreatePerspectiveFieldOfViewRightHandedZeroToOne(fovYRadians, aspect, nearPlane, farPlane),
             (ProjectionHandedness.Left, ProjectionDepthRange.NegativeOneToOne) =>
-                CreatePerspectiveFieldOfViewLH_NO(fovYRadians, aspect, nearPlane, farPlane),
+                CreatePerspectiveFieldOfViewLeftHandedNegativeOneToOne(fovYRadians, aspect, nearPlane, farPlane),
             (ProjectionHandedness.Left, ProjectionDepthRange.ZeroToOne) =>
-                CreatePerspectiveFieldOfViewLH_ZO(fovYRadians, aspect, nearPlane, farPlane),
+                CreatePerspectiveFieldOfViewLeftHandedZeroToOne(fovYRadians, aspect, nearPlane, farPlane),
             _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported projection convention."),
         };
 
     /// <summary>Creates a right-handed orthographic projection with OpenGL depth from negative one to one.</summary>
-    public static {{TypeName}} CreateOrthographicOffCenterRH_NO(
+    private static {{TypeName}} CreateOrthographicOffCenterRightHandedNegativeOneToOne(
         {{ScalarType}} left,
         {{ScalarType}} right,
         {{ScalarType}} bottom,
@@ -128,7 +128,7 @@
                 {{OneLiteral}}));
 
     /// <summary>Creates a right-handed orthographic projection with zero-to-one depth.</summary>
-    public static {{TypeName}} CreateOrthographicOffCenterRH_ZO(
+    private static {{TypeName}} CreateOrthographicOffCenterRightHandedZeroToOne(
         {{ScalarType}} left,
         {{ScalarType}} right,
         {{ScalarType}} bottom,
@@ -146,7 +146,7 @@
                 {{OneLiteral}}));
 
     /// <summary>Creates a left-handed orthographic projection with OpenGL depth from negative one to one.</summary>
-    public static {{TypeName}} CreateOrthographicOffCenterLH_NO(
+    private static {{TypeName}} CreateOrthographicOffCenterLeftHandedNegativeOneToOne(
         {{ScalarType}} left,
         {{ScalarType}} right,
         {{ScalarType}} bottom,
@@ -164,7 +164,7 @@
                 {{OneLiteral}}));
 
     /// <summary>Creates a left-handed orthographic projection with zero-to-one depth.</summary>
-    public static {{TypeName}} CreateOrthographicOffCenterLH_ZO(
+    private static {{TypeName}} CreateOrthographicOffCenterLeftHandedZeroToOne(
         {{ScalarType}} left,
         {{ScalarType}} right,
         {{ScalarType}} bottom,
@@ -212,13 +212,13 @@
         (handedness, depthRange) switch
         {
             (ProjectionHandedness.Right, ProjectionDepthRange.NegativeOneToOne) =>
-                CreateOrthographicOffCenterRH_NO(left, right, bottom, top, nearPlane, farPlane),
+                CreateOrthographicOffCenterRightHandedNegativeOneToOne(left, right, bottom, top, nearPlane, farPlane),
             (ProjectionHandedness.Right, ProjectionDepthRange.ZeroToOne) =>
-                CreateOrthographicOffCenterRH_ZO(left, right, bottom, top, nearPlane, farPlane),
+                CreateOrthographicOffCenterRightHandedZeroToOne(left, right, bottom, top, nearPlane, farPlane),
             (ProjectionHandedness.Left, ProjectionDepthRange.NegativeOneToOne) =>
-                CreateOrthographicOffCenterLH_NO(left, right, bottom, top, nearPlane, farPlane),
+                CreateOrthographicOffCenterLeftHandedNegativeOneToOne(left, right, bottom, top, nearPlane, farPlane),
             (ProjectionHandedness.Left, ProjectionDepthRange.ZeroToOne) =>
-                CreateOrthographicOffCenterLH_ZO(left, right, bottom, top, nearPlane, farPlane),
+                CreateOrthographicOffCenterLeftHandedZeroToOne(left, right, bottom, top, nearPlane, farPlane),
             _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported projection convention."),
         };
 
@@ -259,7 +259,7 @@
     }
 
     /// <summary>Creates a right-handed frustum projection with OpenGL depth from negative one to one.</summary>
-    public static {{TypeName}} CreateFrustumRH_NO(
+    private static {{TypeName}} CreateFrustumRightHandedNegativeOneToOne(
         {{ScalarType}} left,
         {{ScalarType}} right,
         {{ScalarType}} bottom,
@@ -281,7 +281,7 @@
                 {{ZeroLiteral}}));
 
     /// <summary>Creates a right-handed frustum projection with zero-to-one depth.</summary>
-    public static {{TypeName}} CreateFrustumRH_ZO(
+    private static {{TypeName}} CreateFrustumRightHandedZeroToOne(
         {{ScalarType}} left,
         {{ScalarType}} right,
         {{ScalarType}} bottom,
@@ -303,7 +303,7 @@
                 {{ZeroLiteral}}));
 
     /// <summary>Creates a left-handed frustum projection with OpenGL depth from negative one to one.</summary>
-    public static {{TypeName}} CreateFrustumLH_NO(
+    private static {{TypeName}} CreateFrustumLeftHandedNegativeOneToOne(
         {{ScalarType}} left,
         {{ScalarType}} right,
         {{ScalarType}} bottom,
@@ -325,7 +325,7 @@
                 {{ZeroLiteral}}));
 
     /// <summary>Creates a left-handed frustum projection with zero-to-one depth.</summary>
-    public static {{TypeName}} CreateFrustumLH_ZO(
+    private static {{TypeName}} CreateFrustumLeftHandedZeroToOne(
         {{ScalarType}} left,
         {{ScalarType}} right,
         {{ScalarType}} bottom,
@@ -377,13 +377,13 @@
         (handedness, depthRange) switch
         {
             (ProjectionHandedness.Right, ProjectionDepthRange.NegativeOneToOne) =>
-                CreateFrustumRH_NO(left, right, bottom, top, nearPlane, farPlane),
+                CreateFrustumRightHandedNegativeOneToOne(left, right, bottom, top, nearPlane, farPlane),
             (ProjectionHandedness.Right, ProjectionDepthRange.ZeroToOne) =>
-                CreateFrustumRH_ZO(left, right, bottom, top, nearPlane, farPlane),
+                CreateFrustumRightHandedZeroToOne(left, right, bottom, top, nearPlane, farPlane),
             (ProjectionHandedness.Left, ProjectionDepthRange.NegativeOneToOne) =>
-                CreateFrustumLH_NO(left, right, bottom, top, nearPlane, farPlane),
+                CreateFrustumLeftHandedNegativeOneToOne(left, right, bottom, top, nearPlane, farPlane),
             (ProjectionHandedness.Left, ProjectionDepthRange.ZeroToOne) =>
-                CreateFrustumLH_ZO(left, right, bottom, top, nearPlane, farPlane),
+                CreateFrustumLeftHandedZeroToOne(left, right, bottom, top, nearPlane, farPlane),
             _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported projection convention."),
         };
 
@@ -446,7 +446,7 @@
     }
 
     /// <summary>Creates a right-handed perspective projection from field of view and viewport size.</summary>
-    public static {{TypeName}} CreatePerspectiveFieldOfViewRH_NO(
+    private static {{TypeName}} CreatePerspectiveFieldOfViewRightHandedNegativeOneToOne(
         {{ScalarType}} fovRadians,
         {{ScalarType}} width,
         {{ScalarType}} height,
@@ -471,7 +471,7 @@
     }
 
     /// <summary>Creates a right-handed perspective projection from field of view and viewport size.</summary>
-    public static {{TypeName}} CreatePerspectiveFieldOfViewRH_ZO(
+    private static {{TypeName}} CreatePerspectiveFieldOfViewRightHandedZeroToOne(
         {{ScalarType}} fovRadians,
         {{ScalarType}} width,
         {{ScalarType}} height,
@@ -488,7 +488,7 @@
     }
 
     /// <summary>Creates a left-handed perspective projection from field of view and viewport size.</summary>
-    public static {{TypeName}} CreatePerspectiveFieldOfViewLH_NO(
+    private static {{TypeName}} CreatePerspectiveFieldOfViewLeftHandedNegativeOneToOne(
         {{ScalarType}} fovRadians,
         {{ScalarType}} width,
         {{ScalarType}} height,
@@ -513,7 +513,7 @@
     }
 
     /// <summary>Creates a left-handed perspective projection from field of view and viewport size.</summary>
-    public static {{TypeName}} CreatePerspectiveFieldOfViewLH_ZO(
+    private static {{TypeName}} CreatePerspectiveFieldOfViewLeftHandedZeroToOne(
         {{ScalarType}} fovRadians,
         {{ScalarType}} width,
         {{ScalarType}} height,
@@ -557,18 +557,18 @@
         (handedness, depthRange) switch
         {
             (ProjectionHandedness.Right, ProjectionDepthRange.NegativeOneToOne) =>
-                CreatePerspectiveFieldOfViewRH_NO(fovRadians, width, height, nearPlane, farPlane),
+                CreatePerspectiveFieldOfViewRightHandedNegativeOneToOne(fovRadians, width, height, nearPlane, farPlane),
             (ProjectionHandedness.Right, ProjectionDepthRange.ZeroToOne) =>
-                CreatePerspectiveFieldOfViewRH_ZO(fovRadians, width, height, nearPlane, farPlane),
+                CreatePerspectiveFieldOfViewRightHandedZeroToOne(fovRadians, width, height, nearPlane, farPlane),
             (ProjectionHandedness.Left, ProjectionDepthRange.NegativeOneToOne) =>
-                CreatePerspectiveFieldOfViewLH_NO(fovRadians, width, height, nearPlane, farPlane),
+                CreatePerspectiveFieldOfViewLeftHandedNegativeOneToOne(fovRadians, width, height, nearPlane, farPlane),
             (ProjectionHandedness.Left, ProjectionDepthRange.ZeroToOne) =>
-                CreatePerspectiveFieldOfViewLH_ZO(fovRadians, width, height, nearPlane, farPlane),
+                CreatePerspectiveFieldOfViewLeftHandedZeroToOne(fovRadians, width, height, nearPlane, farPlane),
             _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported projection convention."),
         };
 
     /// <summary>Creates a right-handed infinite perspective projection with OpenGL depth from negative one to one.</summary>
-    public static {{TypeName}} CreateInfinitePerspectiveRH_NO(
+    private static {{TypeName}} CreateInfinitePerspectiveRightHandedNegativeOneToOne(
         {{ScalarType}} fovYRadians,
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane)
@@ -582,7 +582,7 @@
     }
 
     /// <summary>Creates a right-handed infinite perspective projection with zero-to-one depth.</summary>
-    public static {{TypeName}} CreateInfinitePerspectiveRH_ZO(
+    private static {{TypeName}} CreateInfinitePerspectiveRightHandedZeroToOne(
         {{ScalarType}} fovYRadians,
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane)
@@ -596,7 +596,7 @@
     }
 
     /// <summary>Creates a left-handed infinite perspective projection with OpenGL depth from negative one to one.</summary>
-    public static {{TypeName}} CreateInfinitePerspectiveLH_NO(
+    private static {{TypeName}} CreateInfinitePerspectiveLeftHandedNegativeOneToOne(
         {{ScalarType}} fovYRadians,
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane)
@@ -610,7 +610,7 @@
     }
 
     /// <summary>Creates a left-handed infinite perspective projection with zero-to-one depth.</summary>
-    public static {{TypeName}} CreateInfinitePerspectiveLH_ZO(
+    private static {{TypeName}} CreateInfinitePerspectiveLeftHandedZeroToOne(
         {{ScalarType}} fovYRadians,
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane)
@@ -645,18 +645,18 @@
         (handedness, depthRange) switch
         {
             (ProjectionHandedness.Right, ProjectionDepthRange.NegativeOneToOne) =>
-                CreateInfinitePerspectiveRH_NO(fovYRadians, aspect, nearPlane),
+                CreateInfinitePerspectiveRightHandedNegativeOneToOne(fovYRadians, aspect, nearPlane),
             (ProjectionHandedness.Right, ProjectionDepthRange.ZeroToOne) =>
-                CreateInfinitePerspectiveRH_ZO(fovYRadians, aspect, nearPlane),
+                CreateInfinitePerspectiveRightHandedZeroToOne(fovYRadians, aspect, nearPlane),
             (ProjectionHandedness.Left, ProjectionDepthRange.NegativeOneToOne) =>
-                CreateInfinitePerspectiveLH_NO(fovYRadians, aspect, nearPlane),
+                CreateInfinitePerspectiveLeftHandedNegativeOneToOne(fovYRadians, aspect, nearPlane),
             (ProjectionHandedness.Left, ProjectionDepthRange.ZeroToOne) =>
-                CreateInfinitePerspectiveLH_ZO(fovYRadians, aspect, nearPlane),
+                CreateInfinitePerspectiveLeftHandedZeroToOne(fovYRadians, aspect, nearPlane),
             _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported projection convention."),
         };
 
     /// <summary>Creates a tweaked right-handed infinite perspective projection.</summary>
-    public static {{TypeName}} CreateTweakedInfinitePerspectiveRH_NO(
+    private static {{TypeName}} CreateTweakedInfinitePerspectiveRightHandedNegativeOneToOne(
         {{ScalarType}} fovYRadians,
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane,
@@ -671,11 +671,11 @@
     }
 
     /// <summary>Creates a tweaked right-handed infinite perspective projection.</summary>
-    public static {{TypeName}} CreateTweakedInfinitePerspectiveRH_NO(
+    private static {{TypeName}} CreateTweakedInfinitePerspectiveRightHandedNegativeOneToOne(
         {{ScalarType}} fovYRadians,
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane) =>
-        CreateTweakedInfinitePerspectiveRH_NO(fovYRadians, aspect, nearPlane, {{EpsilonLiteral}});
+        CreateTweakedInfinitePerspectiveRightHandedNegativeOneToOne(fovYRadians, aspect, nearPlane, {{EpsilonLiteral}});
 
     /// <summary>Creates a tweaked infinite perspective projection with default OpenGL clip-space conventions.</summary>
     public static {{TypeName}} CreateTweakedInfinitePerspective(
@@ -709,7 +709,7 @@
         (handedness, depthRange) switch
         {
             (ProjectionHandedness.Right, ProjectionDepthRange.NegativeOneToOne) =>
-                CreateTweakedInfinitePerspectiveRH_NO(fovYRadians, aspect, nearPlane, epsilon),
+                CreateTweakedInfinitePerspectiveRightHandedNegativeOneToOne(fovYRadians, aspect, nearPlane, epsilon),
             _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported tweaked infinite projection convention."),
         };
 
@@ -779,7 +779,7 @@
     }
 
     /// <summary>Projects an object-space point to window coordinates with OpenGL depth from negative one to one.</summary>
-    public static {{Vector3Type}} ProjectNO(
+    private static {{Vector3Type}} ProjectNegativeOneToOne(
         {{Vector3Type}} objectPosition,
         {{TypeName}} model,
         {{TypeName}} projection,
@@ -794,7 +794,7 @@
     }
 
     /// <summary>Projects an object-space point to window coordinates with zero-to-one depth.</summary>
-    public static {{Vector3Type}} ProjectZO(
+    private static {{Vector3Type}} ProjectZeroToOne(
         {{Vector3Type}} objectPosition,
         {{TypeName}} model,
         {{TypeName}} projection,
@@ -825,13 +825,13 @@
         ProjectionDepthRange depthRange) =>
         depthRange switch
         {
-            ProjectionDepthRange.NegativeOneToOne => ProjectNO(objectPosition, model, projection, viewport),
-            ProjectionDepthRange.ZeroToOne => ProjectZO(objectPosition, model, projection, viewport),
+            ProjectionDepthRange.NegativeOneToOne => ProjectNegativeOneToOne(objectPosition, model, projection, viewport),
+            ProjectionDepthRange.ZeroToOne => ProjectZeroToOne(objectPosition, model, projection, viewport),
             _ => throw new ArgumentOutOfRangeException(nameof(depthRange), "Unsupported projection depth range."),
         };
 
     /// <summary>Unprojects a window-space point with OpenGL depth from negative one to one.</summary>
-    public static {{Vector3Type}} UnProjectNO(
+    private static {{Vector3Type}} UnProjectNegativeOneToOne(
         {{Vector3Type}} windowPosition,
         {{TypeName}} model,
         {{TypeName}} projection,
@@ -849,7 +849,7 @@
     }
 
     /// <summary>Unprojects a window-space point with zero-to-one depth.</summary>
-    public static {{Vector3Type}} UnProjectZO(
+    private static {{Vector3Type}} UnProjectZeroToOne(
         {{Vector3Type}} windowPosition,
         {{TypeName}} model,
         {{TypeName}} projection,
@@ -883,8 +883,8 @@
         ProjectionDepthRange depthRange) =>
         depthRange switch
         {
-            ProjectionDepthRange.NegativeOneToOne => UnProjectNO(windowPosition, model, projection, viewport),
-            ProjectionDepthRange.ZeroToOne => UnProjectZO(windowPosition, model, projection, viewport),
+            ProjectionDepthRange.NegativeOneToOne => UnProjectNegativeOneToOne(windowPosition, model, projection, viewport),
+            ProjectionDepthRange.ZeroToOne => UnProjectZeroToOne(windowPosition, model, projection, viewport),
             _ => throw new ArgumentOutOfRangeException(nameof(depthRange), "Unsupported projection depth range."),
         };
 

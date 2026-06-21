@@ -68,17 +68,16 @@ Expect(chunk == (3, 2, 0), "Integer vectors should shift each component.");
 Expect(localTile == (3, 2, 7), "Bitwise operators should apply component-wise.");
 Expect(powerOfTwo == (true, false, true), "Integer helper masks should preserve per-component answers.");
 
-Section("Span and System.Numerics interop");
+Section("Span interop");
 
-System.Numerics.Vector3 systemVector = direction;
-Vec3 roundTrip = systemVector;
-Span<float> packed = stackalloc float[3];
-roundTrip.CopyTo(packed);
+Span<float> packed = stackalloc float[Vec3.ComponentCount];
+direction.CopyTo(packed);
+var roundTrip = Vec3.Create(packed);
 
-Print("System.Numerics", systemVector.ToString());
 Print("packed span", $"[{packed[0]:0.###}, {packed[1]:0.###}, {packed[2]:0.###}]");
+Print("span round-trip", Format3(roundTrip));
 
-ExpectClose3(roundTrip, direction, "Vec3 should round-trip through System.Numerics.Vector3.");
+ExpectClose3(roundTrip, direction, "Vec3 should round-trip through a component span.");
 ExpectClose3((packed[0], packed[1], packed[2]), direction, "CopyTo should preserve component order.");
 
 Section("Matrix algebra and layout");
@@ -116,21 +115,20 @@ var worldCorner = Mat3x2.TransformPoint(spriteTransform, localCorner);
 var worldXAxis = Mat3x2.TransformVector(spriteTransform, Vec2.UnitX);
 var affineInverseOk = Mat3x2.TryInvert(spriteTransform, out var inverseSpriteTransform);
 var recoveredCorner = Mat3x2.TransformPoint(inverseSpriteTransform, worldCorner);
-System.Numerics.Matrix3x2 systemAffine = (System.Numerics.Matrix3x2)spriteTransform;
-Mat3x2 affineRoundTrip = (Mat3x2)systemAffine;
+var affineIdentityCheck = spriteTransform * inverseSpriteTransform;
 
 Print("sprite transform", FormatMat3x2(spriteTransform));
 Print("local corner", Format2(localCorner));
 Print("world corner", Format2(worldCorner));
 Print("world x axis", Format2(worldXAxis));
 Print("affine translation", Format2(spriteTransform.Translation));
-Print("Matrix3x2 round-trip", Format2(affineRoundTrip.Translation));
+Print("affine inverse", FormatMat3x2(affineIdentityCheck));
 
 Expect(affineInverseOk, "Affine transforms that scale by non-zero values should be invertible.");
 ExpectClose2(worldCorner, (6f, 5f), "Mat3x2 should compose scale, rotation, and translation for 2D points.");
 ExpectClose2(worldXAxis, (0f, 2f), "TransformVector should ignore translation and preserve linear transform terms.");
 ExpectClose2(recoveredCorner, localCorner, "Affine inverse should recover the original local point.");
-ExpectCloseMat3x2(affineRoundTrip, spriteTransform, "Mat3x2 should round-trip through System.Numerics.Matrix3x2.");
+ExpectCloseMat3x2(affineIdentityCheck, Mat3x2.AffineIdentity, "Affine inverse should compose back to identity.");
 
 Section("3D camera matrices");
 
@@ -154,7 +152,7 @@ var normalizedOrigin = clipOrigin / clipOrigin.W;
 var windowOrigin = Mat4.Project(objectOrigin, modelView, projection, viewport);
 var viewportOrigin = Mat4.CreateViewport(viewport) * new Vec4(normalizedOrigin.X, normalizedOrigin.Y, normalizedOrigin.Z, 1f);
 var unprojectedOrigin = Mat4.UnProject(windowOrigin, modelView, projection, viewport);
-Span<float> modelViewProjectionColumnMajor = stackalloc float[16];
+Span<float> modelViewProjectionColumnMajor = stackalloc float[Mat4.ComponentCount];
 Span<char> projectionText = stackalloc char[256];
 modelViewProjection.CopyToColumnMajor(modelViewProjectionColumnMajor);
 var projectionTextOk = projection.TryFormat(
@@ -186,6 +184,34 @@ ExpectClose3(unprojectedOrigin, objectOrigin, "Project and UnProject should roun
 Expect(projectionTextOk, "Matrix TryFormat should write into caller-owned spans.");
 Expect(parsedProjectionOk, "Matrix TryParse should accept the invariant ToString representation.");
 ExpectCloseMat4(parsedProjection, projection, "Matrix ToString and TryParse should round-trip precise formatted values.");
+
+Section("Quaternion rotations");
+
+Quat zQuarterTurn = Quat.CreateFromAxisAngle(Vec3.UnitZ, MathF.PI / 2f);
+var quaternionRotated = zQuarterTurn * Vec3.UnitX;
+var quaternionMatrix = Mat4.CreateRotation(zQuarterTurn);
+var halfTurn = Quat.Slerp(Quat.Identity, zQuarterTurn, 0.5f);
+var halfTurnVector = halfTurn * Vec3.UnitX;
+var matrixRoundTrip = Quat.CreateFromRotationMatrix(quaternionMatrix);
+Span<char> quaternionText = stackalloc char[128];
+var quaternionTextOk = zQuarterTurn.TryFormat(
+    quaternionText,
+    out var quaternionCharsWritten,
+    "0.###",
+    CultureInfo.InvariantCulture);
+
+Print("quarter turn quat", FormatQuat(zQuarterTurn));
+Print("rotated +X", Format3(quaternionRotated));
+Print("half slerp +X", Format3(halfTurnVector));
+Print("matrix column 0", Format4(quaternionMatrix.Column0));
+Print("matrix round-trip quat", FormatQuat(matrixRoundTrip));
+Print("quaternion span text", quaternionTextOk ? new string(quaternionText[..quaternionCharsWritten]) : "<too small>");
+
+ExpectClose3(quaternionRotated, Vec3.UnitY, "Quaternion axis-angle rotation should match the matrix rotation convention.");
+ExpectClose3(halfTurnVector, (MathF.Sqrt(0.5f), MathF.Sqrt(0.5f), 0f), "Slerp should travel halfway along the rotation arc.");
+ExpectCloseMat4(quaternionMatrix, Mat4.CreateRotation(MathF.PI / 2f, Vec3.UnitZ), "Quat-to-matrix should match Mat4 axis rotation.");
+ExpectClose3(matrixRoundTrip * Vec3.UnitX, Vec3.UnitY, "Quat should round-trip through Mat4 rotation conversion.");
+Expect(quaternionTextOk, "Quaternion TryFormat should write into caller-owned spans.");
 
 Section("Scalar helpers");
 
@@ -226,6 +252,10 @@ static string Format3(Vec3 value) =>
 
 // Formats a four-component floating vector with invariant tuple-style text.
 static string Format4(Vec4 value) =>
+    value.ToString("0.###", CultureInfo.InvariantCulture);
+
+// Formats a quaternion with invariant tuple-style text.
+static string FormatQuat(Quat value) =>
     value.ToString("0.###", CultureInfo.InvariantCulture);
 
 // Formats a compact 2D affine matrix with invariant tuple-style text.

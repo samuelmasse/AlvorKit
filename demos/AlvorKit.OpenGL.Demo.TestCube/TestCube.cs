@@ -93,8 +93,8 @@ public sealed class TestCube : IDisposable
     /// <summary>Draws the cube for the current frame and restores every strict layer binding it touches.</summary>
     public void Render(float elapsedSeconds, int framebufferWidth, int framebufferHeight)
     {
-        Span<float> matrix = stackalloc float[16];
-        WriteModelViewProjection(matrix, elapsedSeconds, framebufferWidth, framebufferHeight);
+        Span<float> matrix = stackalloc float[Mat4.ComponentCount];
+        CreateModelViewProjection(elapsedSeconds, framebufferWidth, framebufferHeight).CopyTo(matrix);
 
         gl.UseProgram(program);
         gl.UniformMatrix4fv(modelViewProjectionLocation, false, matrix);
@@ -238,115 +238,18 @@ public sealed class TestCube : IDisposable
         return pixels;
     }
 
-    /// <summary>Writes the current frame's OpenGL column-major model-view-projection matrix.</summary>
-    private static void WriteModelViewProjection(Span<float> destination, float elapsedSeconds, int framebufferWidth, int framebufferHeight)
+    /// <summary>Creates the current frame's model-view-projection matrix.</summary>
+    private static Mat4 CreateModelViewProjection(float elapsedSeconds, int framebufferWidth, int framebufferHeight)
     {
         var aspect = framebufferWidth / (float)framebufferHeight;
-        Span<float> yaw = stackalloc float[16];
-        Span<float> pitch = stackalloc float[16];
-        Span<float> roll = stackalloc float[16];
-        Span<float> pitchYaw = stackalloc float[16];
-        Span<float> model = stackalloc float[16];
-        Span<float> view = stackalloc float[16];
-        Span<float> projection = stackalloc float[16];
-        Span<float> viewModel = stackalloc float[16];
-
-        WriteRotationY(yaw, -0.55f + (elapsedSeconds * 0.7f));
-        WriteRotationX(pitch, 0.38f + (elapsedSeconds * 0.35f));
-        WriteRotationZ(roll, elapsedSeconds * 0.18f);
-        Multiply(pitch, yaw, pitchYaw);
-        Multiply(roll, pitchYaw, model);
-
-        WriteView(view, 2.8f);
-        WritePerspectiveProjection(projection, MathF.PI / 4f, aspect, 0.1f, 100f);
-        Multiply(view, model, viewModel);
-        Multiply(projection, viewModel, destination);
+        var model =
+            Mat4.CreateRotationZ(elapsedSeconds * 0.18f) *
+            Mat4.CreateRotationX(0.38f + (elapsedSeconds * 0.35f)) *
+            Mat4.CreateRotationY(-0.55f + (elapsedSeconds * 0.7f));
+        var view = Mat4.LookAt((0f, 0f, 2.8f), Vec3.Zero, Vec3.UnitY);
+        var projection = Mat4.CreatePerspectiveFieldOfView(MathF.PI / 4f, aspect, 0.1f, 100f);
+        return projection * view * model;
     }
-
-    /// <summary>Writes an identity matrix into a 16-float column-major span.</summary>
-    private static void WriteIdentity(Span<float> matrix)
-    {
-        matrix.Clear();
-        matrix[MatrixIndex(0, 0)] = 1f;
-        matrix[MatrixIndex(1, 1)] = 1f;
-        matrix[MatrixIndex(2, 2)] = 1f;
-        matrix[MatrixIndex(3, 3)] = 1f;
-    }
-
-    /// <summary>Writes a column-major X-axis rotation matrix.</summary>
-    private static void WriteRotationX(Span<float> matrix, float radians)
-    {
-        WriteIdentity(matrix);
-        var sine = MathF.Sin(radians);
-        var cosine = MathF.Cos(radians);
-        matrix[MatrixIndex(1, 1)] = cosine;
-        matrix[MatrixIndex(1, 2)] = -sine;
-        matrix[MatrixIndex(2, 1)] = sine;
-        matrix[MatrixIndex(2, 2)] = cosine;
-    }
-
-    /// <summary>Writes a column-major Y-axis rotation matrix.</summary>
-    private static void WriteRotationY(Span<float> matrix, float radians)
-    {
-        WriteIdentity(matrix);
-        var sine = MathF.Sin(radians);
-        var cosine = MathF.Cos(radians);
-        matrix[MatrixIndex(0, 0)] = cosine;
-        matrix[MatrixIndex(0, 2)] = sine;
-        matrix[MatrixIndex(2, 0)] = -sine;
-        matrix[MatrixIndex(2, 2)] = cosine;
-    }
-
-    /// <summary>Writes a column-major Z-axis rotation matrix.</summary>
-    private static void WriteRotationZ(Span<float> matrix, float radians)
-    {
-        WriteIdentity(matrix);
-        var sine = MathF.Sin(radians);
-        var cosine = MathF.Cos(radians);
-        matrix[MatrixIndex(0, 0)] = cosine;
-        matrix[MatrixIndex(0, 1)] = -sine;
-        matrix[MatrixIndex(1, 0)] = sine;
-        matrix[MatrixIndex(1, 1)] = cosine;
-    }
-
-    /// <summary>Writes a simple view matrix for a camera looking from positive Z toward the origin.</summary>
-    private static void WriteView(Span<float> matrix, float cameraDistance)
-    {
-        WriteIdentity(matrix);
-        matrix[MatrixIndex(2, 3)] = -cameraDistance;
-    }
-
-    /// <summary>Writes an OpenGL right-handed perspective projection matrix.</summary>
-    private static void WritePerspectiveProjection(Span<float> matrix, float verticalFieldOfView, float aspect, float near, float far)
-    {
-        matrix.Clear();
-        var focalLength = 1f / MathF.Tan(verticalFieldOfView * 0.5f);
-        matrix[MatrixIndex(0, 0)] = focalLength / aspect;
-        matrix[MatrixIndex(1, 1)] = focalLength;
-        matrix[MatrixIndex(2, 2)] = (far + near) / (near - far);
-        matrix[MatrixIndex(2, 3)] = (2f * far * near) / (near - far);
-        matrix[MatrixIndex(3, 2)] = -1f;
-    }
-
-    /// <summary>Multiplies two column-major matrices and writes the result into a separate destination span.</summary>
-    private static void Multiply(ReadOnlySpan<float> left, ReadOnlySpan<float> right, Span<float> destination)
-    {
-        for (var column = 0; column < 4; column++)
-        {
-            for (var row = 0; row < 4; row++)
-            {
-                var value =
-                    (left[MatrixIndex(row, 0)] * right[MatrixIndex(0, column)]) +
-                    (left[MatrixIndex(row, 1)] * right[MatrixIndex(1, column)]) +
-                    (left[MatrixIndex(row, 2)] * right[MatrixIndex(2, column)]) +
-                    (left[MatrixIndex(row, 3)] * right[MatrixIndex(3, column)]);
-                destination[MatrixIndex(row, column)] = value;
-            }
-        }
-    }
-
-    /// <summary>Maps row and column coordinates to a column-major 4x4 matrix span index.</summary>
-    private static int MatrixIndex(int row, int column) => (column * 4) + row;
 
     /// <summary>Compiles both shaders, links them, and deletes the temporary shader objects.</summary>
     private static GlProgramHandle CreateProgram(GlLayer gl)

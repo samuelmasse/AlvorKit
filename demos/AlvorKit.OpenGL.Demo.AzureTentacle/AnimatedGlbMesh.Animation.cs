@@ -20,13 +20,13 @@ internal sealed partial class AnimatedGlbMesh
     private struct NodePose
     {
         /// <summary>The fixed local matrix used by nodes authored with the glTF matrix property.</summary>
-        public readonly float[] Matrix = new float[MatrixFloatCount];
+        public Mat4 Matrix;
 
         /// <summary>The node local translation used for TRS-authored nodes.</summary>
         public Vec3 Translation;
 
         /// <summary>The node local rotation used for TRS-authored nodes.</summary>
-        public Quaternion Rotation;
+        public Quat Rotation;
 
         /// <summary>The node local scale used for TRS-authored nodes.</summary>
         public Vec3 Scale;
@@ -38,7 +38,8 @@ internal sealed partial class AnimatedGlbMesh
         public NodePose()
         {
             Translation = Vec3.Zero;
-            Rotation = Quaternion.Identity;
+            Matrix = Mat4.Identity;
+            Rotation = Quat.Identity;
             Scale = Vec3.One;
         }
 
@@ -75,7 +76,7 @@ internal sealed partial class AnimatedGlbMesh
         private readonly Vec3[]? vectorValues;
 
         /// <summary>The quaternion output values for rotation channels.</summary>
-        private readonly Quaternion[]? rotationValues;
+        private readonly Quat[]? rotationValues;
 
         /// <summary>Whether this channel uses STEP interpolation instead of LINEAR interpolation.</summary>
         private readonly bool step;
@@ -86,7 +87,7 @@ internal sealed partial class AnimatedGlbMesh
             AnimationPath path,
             float[] times,
             Vec3[]? vectorValues,
-            Quaternion[]? rotationValues,
+            Quat[]? rotationValues,
             bool step)
         {
             this.nodeIndex = nodeIndex;
@@ -107,7 +108,7 @@ internal sealed partial class AnimatedGlbMesh
         }
 
         /// <summary>Creates a rotation animation channel.</summary>
-        public static AnimationChannel CreateRotation(int nodeIndex, float[] times, Quaternion[] values, bool step)
+        public static AnimationChannel CreateRotation(int nodeIndex, float[] times, Quat[] values, bool step)
         {
             if (times.Length != values.Length)
                 throw new FormatException("Animation rotation channel input and output counts must match.");
@@ -145,7 +146,7 @@ internal sealed partial class AnimatedGlbMesh
         }
 
         /// <summary>Samples a rotation channel at the requested animation time.</summary>
-        private Quaternion SampleRotation(float seconds)
+        private Quat SampleRotation(float seconds)
         {
             var values = rotationValues ?? throw new InvalidOperationException("Rotation channel is missing rotation values.");
             var frame = FindKeyframe(seconds);
@@ -154,7 +155,7 @@ internal sealed partial class AnimatedGlbMesh
 
             var nextFrame = frame + 1;
             var amount = (seconds - times[frame]) / (times[nextFrame] - times[frame]);
-            return Quaternion.Normalize(Quaternion.Slerp(values[frame], values[nextFrame], Math.Clamp(amount, 0f, 1f)));
+            return Quat.Slerp(values[frame], values[nextFrame], Math.Clamp(amount, 0f, 1f)).Normalized;
         }
 
         /// <summary>Finds the keyframe at or immediately before the supplied animation time.</summary>

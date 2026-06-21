@@ -120,23 +120,11 @@ public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
     /// <summary>Applies a scale-bias matrix after an existing transform.</summary>
     static abstract TSelf ScaleBias(TSelf value, TScalar scale, TScalar bias);
 
-    /// <summary>Creates a right-handed look-at view matrix.</summary>
-    static abstract TSelf LookAtRH(TVector3 eye, TVector3 target, TVector3 up);
-
-    /// <summary>Creates a left-handed look-at view matrix.</summary>
-    static abstract TSelf LookAtLH(TVector3 eye, TVector3 target, TVector3 up);
-
     /// <summary>Creates a look-at view matrix with default OpenGL view-space conventions.</summary>
     static abstract TSelf LookAt(TVector3 eye, TVector3 target, TVector3 up);
 
     /// <summary>Creates a look-at view matrix with explicit view-space handedness.</summary>
     static abstract TSelf LookAt(TVector3 eye, TVector3 target, TVector3 up, ProjectionHandedness handedness);
-
-    /// <summary>Creates a right-handed look-to view matrix.</summary>
-    static abstract TSelf LookToRH(TVector3 eye, TVector3 direction, TVector3 up);
-
-    /// <summary>Creates a left-handed look-to view matrix.</summary>
-    static abstract TSelf LookToLH(TVector3 eye, TVector3 direction, TVector3 up);
 
     /// <summary>Creates a look-to view matrix with default OpenGL view-space conventions.</summary>
     static abstract TSelf LookTo(TVector3 eye, TVector3 direction, TVector3 up);
@@ -159,18 +147,6 @@ public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
     /// <summary>Transforms a 3D direction vector without applying translation.</summary>
     static abstract TVector3 TransformVector(TSelf value, TVector3 vector);
 
-    /// <summary>Creates a right-handed perspective projection with OpenGL depth from negative one to one.</summary>
-    static abstract TSelf CreatePerspectiveFieldOfViewRH_NO(TScalar fovYRadians, TScalar aspect, TScalar nearPlane, TScalar farPlane);
-
-    /// <summary>Creates a right-handed perspective projection with zero-to-one depth.</summary>
-    static abstract TSelf CreatePerspectiveFieldOfViewRH_ZO(TScalar fovYRadians, TScalar aspect, TScalar nearPlane, TScalar farPlane);
-
-    /// <summary>Creates a left-handed perspective projection with OpenGL depth from negative one to one.</summary>
-    static abstract TSelf CreatePerspectiveFieldOfViewLH_NO(TScalar fovYRadians, TScalar aspect, TScalar nearPlane, TScalar farPlane);
-
-    /// <summary>Creates a left-handed perspective projection with zero-to-one depth.</summary>
-    static abstract TSelf CreatePerspectiveFieldOfViewLH_ZO(TScalar fovYRadians, TScalar aspect, TScalar nearPlane, TScalar farPlane);
-
     /// <summary>Creates a perspective projection with default OpenGL clip-space conventions.</summary>
     static abstract TSelf CreatePerspectiveFieldOfView(TScalar fovYRadians, TScalar aspect, TScalar nearPlane, TScalar farPlane);
 
@@ -182,38 +158,6 @@ public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
         TScalar farPlane,
         ProjectionHandedness handedness,
         ProjectionDepthRange depthRange);
-
-    /// <summary>Creates a right-handed perspective projection from field of view and viewport size.</summary>
-    static abstract TSelf CreatePerspectiveFieldOfViewRH_NO(
-        TScalar fovRadians,
-        TScalar width,
-        TScalar height,
-        TScalar nearPlane,
-        TScalar farPlane);
-
-    /// <summary>Creates a right-handed perspective projection from field of view and viewport size.</summary>
-    static abstract TSelf CreatePerspectiveFieldOfViewRH_ZO(
-        TScalar fovRadians,
-        TScalar width,
-        TScalar height,
-        TScalar nearPlane,
-        TScalar farPlane);
-
-    /// <summary>Creates a left-handed perspective projection from field of view and viewport size.</summary>
-    static abstract TSelf CreatePerspectiveFieldOfViewLH_NO(
-        TScalar fovRadians,
-        TScalar width,
-        TScalar height,
-        TScalar nearPlane,
-        TScalar farPlane);
-
-    /// <summary>Creates a left-handed perspective projection from field of view and viewport size.</summary>
-    static abstract TSelf CreatePerspectiveFieldOfViewLH_ZO(
-        TScalar fovRadians,
-        TScalar width,
-        TScalar height,
-        TScalar nearPlane,
-        TScalar farPlane);
 
     /// <summary>Creates a perspective projection from field of view and viewport size with default OpenGL clip-space conventions.</summary>
     static abstract TSelf CreatePerspectiveFieldOfView(
@@ -232,42 +176,6 @@ public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
         TScalar farPlane,
         ProjectionHandedness handedness,
         ProjectionDepthRange depthRange);
-
-    /// <summary>Creates a right-handed frustum projection with OpenGL depth from negative one to one.</summary>
-    static abstract TSelf CreateFrustumRH_NO(
-        TScalar left,
-        TScalar right,
-        TScalar bottom,
-        TScalar top,
-        TScalar nearPlane,
-        TScalar farPlane);
-
-    /// <summary>Creates a right-handed frustum projection with zero-to-one depth.</summary>
-    static abstract TSelf CreateFrustumRH_ZO(
-        TScalar left,
-        TScalar right,
-        TScalar bottom,
-        TScalar top,
-        TScalar nearPlane,
-        TScalar farPlane);
-
-    /// <summary>Creates a left-handed frustum projection with OpenGL depth from negative one to one.</summary>
-    static abstract TSelf CreateFrustumLH_NO(
-        TScalar left,
-        TScalar right,
-        TScalar bottom,
-        TScalar top,
-        TScalar nearPlane,
-        TScalar farPlane);
-
-    /// <summary>Creates a left-handed frustum projection with zero-to-one depth.</summary>
-    static abstract TSelf CreateFrustumLH_ZO(
-        TScalar left,
-        TScalar right,
-        TScalar bottom,
-        TScalar top,
-        TScalar nearPlane,
-        TScalar farPlane);
 
     /// <summary>Creates a frustum projection with default OpenGL clip-space conventions.</summary>
     static abstract TSelf CreateFrustum(
@@ -321,18 +229,6 @@ public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
         ProjectionHandedness handedness,
         ProjectionDepthRange depthRange);
 
-    /// <summary>Creates a right-handed infinite perspective projection with OpenGL depth from negative one to one.</summary>
-    static abstract TSelf CreateInfinitePerspectiveRH_NO(TScalar fovYRadians, TScalar aspect, TScalar nearPlane);
-
-    /// <summary>Creates a right-handed infinite perspective projection with zero-to-one depth.</summary>
-    static abstract TSelf CreateInfinitePerspectiveRH_ZO(TScalar fovYRadians, TScalar aspect, TScalar nearPlane);
-
-    /// <summary>Creates a left-handed infinite perspective projection with OpenGL depth from negative one to one.</summary>
-    static abstract TSelf CreateInfinitePerspectiveLH_NO(TScalar fovYRadians, TScalar aspect, TScalar nearPlane);
-
-    /// <summary>Creates a left-handed infinite perspective projection with zero-to-one depth.</summary>
-    static abstract TSelf CreateInfinitePerspectiveLH_ZO(TScalar fovYRadians, TScalar aspect, TScalar nearPlane);
-
     /// <summary>Creates an infinite perspective projection with default OpenGL clip-space conventions.</summary>
     static abstract TSelf CreateInfinitePerspective(TScalar fovYRadians, TScalar aspect, TScalar nearPlane);
 
@@ -343,16 +239,6 @@ public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
         TScalar nearPlane,
         ProjectionHandedness handedness,
         ProjectionDepthRange depthRange);
-
-    /// <summary>Creates a tweaked right-handed infinite perspective projection.</summary>
-    static abstract TSelf CreateTweakedInfinitePerspectiveRH_NO(
-        TScalar fovYRadians,
-        TScalar aspect,
-        TScalar nearPlane,
-        TScalar epsilon);
-
-    /// <summary>Creates a tweaked right-handed infinite perspective projection.</summary>
-    static abstract TSelf CreateTweakedInfinitePerspectiveRH_NO(TScalar fovYRadians, TScalar aspect, TScalar nearPlane);
 
     /// <summary>Creates a tweaked infinite perspective projection with default OpenGL clip-space conventions.</summary>
     static abstract TSelf CreateTweakedInfinitePerspective(
@@ -380,42 +266,6 @@ public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
         TScalar nearPlane,
         ProjectionHandedness handedness,
         ProjectionDepthRange depthRange);
-
-    /// <summary>Creates a right-handed orthographic projection with OpenGL depth from negative one to one.</summary>
-    static abstract TSelf CreateOrthographicOffCenterRH_NO(
-        TScalar left,
-        TScalar right,
-        TScalar bottom,
-        TScalar top,
-        TScalar nearPlane,
-        TScalar farPlane);
-
-    /// <summary>Creates a right-handed orthographic projection with zero-to-one depth.</summary>
-    static abstract TSelf CreateOrthographicOffCenterRH_ZO(
-        TScalar left,
-        TScalar right,
-        TScalar bottom,
-        TScalar top,
-        TScalar nearPlane,
-        TScalar farPlane);
-
-    /// <summary>Creates a left-handed orthographic projection with OpenGL depth from negative one to one.</summary>
-    static abstract TSelf CreateOrthographicOffCenterLH_NO(
-        TScalar left,
-        TScalar right,
-        TScalar bottom,
-        TScalar top,
-        TScalar nearPlane,
-        TScalar farPlane);
-
-    /// <summary>Creates a left-handed orthographic projection with zero-to-one depth.</summary>
-    static abstract TSelf CreateOrthographicOffCenterLH_ZO(
-        TScalar left,
-        TScalar right,
-        TScalar bottom,
-        TScalar top,
-        TScalar nearPlane,
-        TScalar farPlane);
 
     /// <summary>Creates an orthographic projection with default OpenGL clip-space conventions.</summary>
     static abstract TSelf CreateOrthographicOffCenter(
@@ -449,12 +299,6 @@ public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
         ProjectionHandedness handedness,
         ProjectionDepthRange depthRange);
 
-    /// <summary>Projects an object-space point to window coordinates with OpenGL depth from negative one to one.</summary>
-    static abstract TVector3 ProjectNO(TVector3 objectPosition, TSelf model, TSelf projection, TVector4 viewport);
-
-    /// <summary>Projects an object-space point to window coordinates with zero-to-one depth.</summary>
-    static abstract TVector3 ProjectZO(TVector3 objectPosition, TSelf model, TSelf projection, TVector4 viewport);
-
     /// <summary>Projects an object-space point to window coordinates with default OpenGL depth conventions.</summary>
     static abstract TVector3 Project(TVector3 objectPosition, TSelf model, TSelf projection, TVector4 viewport);
 
@@ -465,12 +309,6 @@ public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
         TSelf projection,
         TVector4 viewport,
         ProjectionDepthRange depthRange);
-
-    /// <summary>Unprojects a window-space point with OpenGL depth from negative one to one.</summary>
-    static abstract TVector3 UnProjectNO(TVector3 windowPosition, TSelf model, TSelf projection, TVector4 viewport);
-
-    /// <summary>Unprojects a window-space point with zero-to-one depth.</summary>
-    static abstract TVector3 UnProjectZO(TVector3 windowPosition, TSelf model, TSelf projection, TVector4 viewport);
 
     /// <summary>Unprojects a window-space point with default OpenGL depth conventions.</summary>
     static abstract TVector3 UnProject(TVector3 windowPosition, TSelf model, TSelf projection, TVector4 viewport);

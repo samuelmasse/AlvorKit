@@ -1,0 +1,12 @@
+    /// <summary>Creates a 3D rotation matrix from a quaternion.</summary>
+    public static {{TypeName}} CreateRotation({{QuaternionType}} rotation) =>
+        rotation.ToMat4();
+
+    /// <summary>Creates a 3D rotation matrix from a quaternion around a center point.</summary>
+    public static {{TypeName}} CreateRotation({{QuaternionType}} rotation, {{Vector3Type}} center) =>
+        CreateTranslation(center) * CreateRotation(rotation) * CreateTranslation(-center);
+
+    /// <summary>Applies a quaternion rotation after an existing transform.</summary>
+    public static {{TypeName}} Rotate({{TypeName}} value, {{QuaternionType}} rotation) =>
+        value * CreateRotation(rotation);
+

@@ -18,6 +18,7 @@ internal static class MatrixFileEmitter
         MatrixTransform2DEmitter.Emit(matrix, members);
         MatrixTransform3x2Emitter.Emit(matrix, members);
         MatrixTransformEmitter.Emit(matrix, members);
+        MatrixQuaternionEmitter.Emit(matrix, members);
 
         return MathsTemplate.Render(
             "matrix-file.cs.tmpl",
@@ -45,6 +46,9 @@ internal static class MatrixFileEmitter
         {
             interfaces.Add($"IMat4Transform<{matrix.TypeName}, {matrix.Scalar.CSharpName}, " +
                 $"{matrix.Scalar.VectorName(2)}, {matrix.Scalar.VectorName(3)}, {matrix.Scalar.VectorName(4)}>");
+            interfaces.Add($"IMat4QuaternionRotation<{matrix.TypeName}, {matrix.Scalar.CSharpName}, " +
+                $"{matrix.Scalar.VectorName(3)}, {matrix.Scalar.VectorName(4)}, {matrix.Scalar.QuaternionName()}, " +
+                $"{matrix.Scalar.MatrixName(3, 3)}>");
             if (matrix.Scalar.Kind == ScalarKind.Float)
                 interfaces.Add($"IMat4SystemNumerics<{matrix.TypeName}>");
         }
@@ -64,6 +68,8 @@ internal static class MatrixFileEmitter
         {
             interfaces.Add($"IMat3Transform2D<{matrix.TypeName}, {matrix.Scalar.CSharpName}, " +
                 $"{matrix.Scalar.VectorName(2)}, {matrix.Scalar.VectorName(3)}>");
+            interfaces.Add($"IMat3QuaternionRotation<{matrix.TypeName}, {matrix.Scalar.CSharpName}, " +
+                $"{matrix.Scalar.VectorName(3)}, {matrix.Scalar.QuaternionName()}, {matrix.Scalar.MatrixName(4, 4)}>");
         }
 
         return string.Join($",{Environment.NewLine}      ", interfaces);

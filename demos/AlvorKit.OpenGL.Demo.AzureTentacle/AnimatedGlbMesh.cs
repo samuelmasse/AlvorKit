@@ -36,9 +36,6 @@ internal sealed partial class AnimatedGlbMesh
     /// <summary>The node index used when no skinned mesh node has been found yet.</summary>
     private const int MissingNode = -1;
 
-    /// <summary>The number of floats that represent one 4x4 matrix.</summary>
-    private const int MatrixFloatCount = 16;
-
     /// <summary>The fixed crossfade time used when switching between selectable animation slots.</summary>
     private const float AnimationTransitionDurationSeconds = 0.2f;
 
@@ -58,22 +55,22 @@ internal sealed partial class AnimatedGlbMesh
     private readonly int[] jointNodes;
 
     /// <summary>The inverse bind matrices stored by the GLB skin, packed as column-major matrices.</summary>
-    private readonly float[] inverseBindMatrices;
+    private readonly Mat4[] inverseBindMatrices;
 
     /// <summary>All animation clips loaded from the GLB.</summary>
     private readonly AnimationClip[] animations;
 
     /// <summary>The current local matrices for every node, rebuilt from <see cref="sampledPose"/>.</summary>
-    private readonly float[] nodeLocalMatrices;
+    private readonly Mat4[] nodeLocalMatrices;
 
     /// <summary>The current global matrices for every node, rebuilt through <see cref="nodeParents"/>.</summary>
-    private readonly float[] nodeGlobalMatrices;
+    private readonly Mat4[] nodeGlobalMatrices;
 
     /// <summary>Tracks which node global matrices are already valid during the current pose rebuild.</summary>
     private readonly bool[] nodeGlobalReady;
 
     /// <summary>The current skinning palette uploaded to the vertex shader each frame.</summary>
-    private readonly float[] jointMatrices;
+    private readonly Mat4[] jointMatrices;
 
     /// <summary>The currently selected animation slot, including the synthetic base-pose slot.</summary>
     private int selectedAnimationSlotIndex;
@@ -97,7 +94,7 @@ internal sealed partial class AnimatedGlbMesh
         NodePose[] bindPose,
         int[] nodeParents,
         int[] jointNodes,
-        float[] inverseBindMatrices,
+        Mat4[] inverseBindMatrices,
         AnimationClip[] animations,
         int selectedAnimationIndex)
     {
@@ -114,10 +111,10 @@ internal sealed partial class AnimatedGlbMesh
         selectedAnimationSlotIndex = selectedAnimationIndex + FirstClipAnimationSlot;
         sampledPose = new NodePose[bindPose.Length];
         transitionFromPose = new NodePose[bindPose.Length];
-        nodeLocalMatrices = new float[bindPose.Length * MatrixFloatCount];
-        nodeGlobalMatrices = new float[bindPose.Length * MatrixFloatCount];
+        nodeLocalMatrices = new Mat4[bindPose.Length];
+        nodeGlobalMatrices = new Mat4[bindPose.Length];
         nodeGlobalReady = new bool[bindPose.Length];
-        jointMatrices = new float[jointNodes.Length * MatrixFloatCount];
+        jointMatrices = new Mat4[jointNodes.Length];
         UpdateAnimation(0f);
     }
 
@@ -161,7 +158,7 @@ internal sealed partial class AnimatedGlbMesh
     private bool BasePoseSelected => selectedAnimationSlotIndex == BasePoseAnimationSlot;
 
     /// <summary>Gets the current skinning palette as packed column-major matrices.</summary>
-    public ReadOnlySpan<float> JointMatrices => jointMatrices;
+    public ReadOnlySpan<float> JointMatrices => MemoryMarshal.Cast<Mat4, float>(jointMatrices);
 
     /// <summary>Loads the first skinned triangle primitive from a GLB 2.0 file and selects the walking clip when present.</summary>
     public static AnimatedGlbMesh Load(string path)
@@ -296,8 +293,7 @@ internal sealed partial class AnimatedGlbMesh
         {
             var pose = NodePose.Identity;
             pose.HasMatrix = true;
-            for (var index = 0; index < MatrixFloatCount; index++)
-                pose.Matrix[index] = matrix[index].GetSingle();
+            pose.Matrix = ReadMat4Property(matrix);
 
             return pose;
         }
@@ -305,7 +301,7 @@ internal sealed partial class AnimatedGlbMesh
         return new NodePose
         {
             Translation = ReadVector3Property(node, "translation", Vec3.Zero),
-            Rotation = ReadQuaternionProperty(node, "rotation", Quaternion.Identity),
+            Rotation = ReadQuaternionProperty(node, "rotation", Quat.Identity),
             Scale = ReadVector3Property(node, "scale", Vec3.One),
         };
     }
@@ -323,7 +319,7 @@ internal sealed partial class AnimatedGlbMesh
     }
 
     /// <summary>Reads the skin inverse bind matrix accessor as packed column-major matrices.</summary>
-    private static float[] ReadInverseBindMatrices(GlbDocument document, JsonElement skin, int jointCount)
+    private static Mat4[] ReadInverseBindMatrices(GlbDocument document, JsonElement skin, int jointCount)
     {
         var accessorIndex = GlbDocument.RequiredProperty(skin, "inverseBindMatrices").GetInt32();
         var accessor = document.Accessor(accessorIndex);
@@ -515,37 +511,32 @@ internal sealed partial class AnimatedGlbMesh
     }
 
     /// <summary>Reads a VEC4 float accessor into a quaternion keyframe array.</summary>
-    private static Quaternion[] ReadQuaternionArray(GlbDocument document, int accessorIndex)
+    private static Quat[] ReadQuaternionArray(GlbDocument document, int accessorIndex)
     {
         var accessor = document.Accessor(accessorIndex);
         ValidateAccessor(accessor, "VEC4", FloatComponentType, accessorIndex);
         var count = GlbDocument.RequiredProperty(accessor, "count").GetInt32();
-        var values = new Quaternion[count];
+        var values = new Quat[count];
 
         for (var index = 0; index < count; index++)
         {
             var value = ReadVec4(document, accessorIndex, index);
-            values[index] = Quaternion.Normalize(new Quaternion(value.X, value.Y, value.Z, value.W));
+            values[index] = new Quat(value.X, value.Y, value.Z, value.W).Normalized;
         }
 
         return values;
     }
 
     /// <summary>Reads a MAT4 float accessor into packed column-major matrices.</summary>
-    private static float[] ReadMat4Array(GlbDocument document, int accessorIndex)
+    private static Mat4[] ReadMat4Array(GlbDocument document, int accessorIndex)
     {
         var accessor = document.Accessor(accessorIndex);
         ValidateAccessor(accessor, "MAT4", FloatComponentType, accessorIndex);
         var count = GlbDocument.RequiredProperty(accessor, "count").GetInt32();
-        var matrices = new float[count * MatrixFloatCount];
+        var matrices = new Mat4[count];
 
         for (var matrixIndex = 0; matrixIndex < count; matrixIndex++)
-        {
-            var source = document.AccessorElementOffset(accessor, matrixIndex, MatrixFloatCount * sizeof(float));
-            var destination = matrixIndex * MatrixFloatCount;
-            for (var element = 0; element < MatrixFloatCount; element++)
-                matrices[destination + element] = document.ReadSingle(source + (element * sizeof(float)));
-        }
+            matrices[matrixIndex] = ReadMat4(document, accessor, matrixIndex);
 
         return matrices;
     }
@@ -572,79 +563,62 @@ internal sealed partial class AnimatedGlbMesh
         return (values[0].GetSingle(), values[1].GetSingle(), values[2].GetSingle());
     }
 
-    /// <summary>Reads a Quaternion node property or returns the supplied default value.</summary>
-    private static Quaternion ReadQuaternionProperty(JsonElement node, string name, Quaternion defaultValue)
+    /// <summary>Reads a Quat node property or returns the supplied default value.</summary>
+    private static Quat ReadQuaternionProperty(JsonElement node, string name, Quat defaultValue)
     {
         if (!node.TryGetProperty(name, out var values))
             return defaultValue;
 
-        return Quaternion.Normalize(new Quaternion(
+        return new Quat(
             values[0].GetSingle(),
             values[1].GetSingle(),
             values[2].GetSingle(),
-            values[3].GetSingle()));
+            values[3].GetSingle()).Normalized;
     }
 
-    /// <summary>Writes a node's local matrix from either its fixed matrix value or TRS components.</summary>
-    private static void WriteLocalMatrix(NodePose pose, Span<float> matrix)
+    /// <summary>Builds a node's local matrix from either its fixed matrix value or TRS components.</summary>
+    private static Mat4 LocalMatrix(NodePose pose)
     {
         if (pose.HasMatrix)
-        {
-            pose.Matrix.CopyTo(matrix);
-            return;
-        }
+            return pose.Matrix;
 
-        var rotation = Quaternion.Normalize(pose.Rotation);
-        var x = rotation.X;
-        var y = rotation.Y;
-        var z = rotation.Z;
-        var w = rotation.W;
-        var xx = x * x * 2f;
-        var yy = y * y * 2f;
-        var zz = z * z * 2f;
-        var xy = x * y * 2f;
-        var xz = x * z * 2f;
-        var yz = y * z * 2f;
-        var wx = w * x * 2f;
-        var wy = w * y * 2f;
-        var wz = w * z * 2f;
-
-        matrix.Clear();
-        matrix[MatrixIndex(0, 0)] = (1f - yy - zz) * pose.Scale.X;
-        matrix[MatrixIndex(1, 0)] = (xy + wz) * pose.Scale.X;
-        matrix[MatrixIndex(2, 0)] = (xz - wy) * pose.Scale.X;
-        matrix[MatrixIndex(0, 1)] = (xy - wz) * pose.Scale.Y;
-        matrix[MatrixIndex(1, 1)] = (1f - xx - zz) * pose.Scale.Y;
-        matrix[MatrixIndex(2, 1)] = (yz + wx) * pose.Scale.Y;
-        matrix[MatrixIndex(0, 2)] = (xz + wy) * pose.Scale.Z;
-        matrix[MatrixIndex(1, 2)] = (yz - wx) * pose.Scale.Z;
-        matrix[MatrixIndex(2, 2)] = (1f - xx - yy) * pose.Scale.Z;
-        matrix[MatrixIndex(0, 3)] = pose.Translation.X;
-        matrix[MatrixIndex(1, 3)] = pose.Translation.Y;
-        matrix[MatrixIndex(2, 3)] = pose.Translation.Z;
-        matrix[MatrixIndex(3, 3)] = 1f;
+        return Mat4.CreateTranslation(pose.Translation) *
+            Mat4.CreateRotation(pose.Rotation.Normalized) *
+            Mat4.CreateScale(pose.Scale);
     }
 
-    /// <summary>Multiplies two column-major matrices and writes the result into a separate destination span.</summary>
-    private static void Multiply(ReadOnlySpan<float> left, ReadOnlySpan<float> right, Span<float> destination)
+    /// <summary>Reads one MAT4 accessor element into the demo's column-major matrix type.</summary>
+    private static Mat4 ReadMat4(GlbDocument document, JsonElement accessor, int elementIndex)
     {
-        Span<float> result = stackalloc float[MatrixFloatCount];
-        for (var column = 0; column < 4; column++)
-        {
-            for (var row = 0; row < 4; row++)
-            {
-                result[MatrixIndex(row, column)] =
-                    (left[MatrixIndex(row, 0)] * right[MatrixIndex(0, column)]) +
-                    (left[MatrixIndex(row, 1)] * right[MatrixIndex(1, column)]) +
-                    (left[MatrixIndex(row, 2)] * right[MatrixIndex(2, column)]) +
-                    (left[MatrixIndex(row, 3)] * right[MatrixIndex(3, column)]);
-            }
-        }
-
-        result.CopyTo(destination);
+        var offset = document.AccessorElementOffset(accessor, elementIndex, Mat4.ComponentCount * sizeof(float));
+        return new Mat4(
+            ReadVec4(document, offset),
+            ReadVec4(document, offset + (4 * sizeof(float))),
+            ReadVec4(document, offset + (8 * sizeof(float))),
+            ReadVec4(document, offset + (12 * sizeof(float))));
     }
 
-    /// <summary>Maps row and column coordinates to a column-major 4x4 matrix span index.</summary>
-    private static int MatrixIndex(int row, int column) => (column * 4) + row;
+    /// <summary>Reads one glTF matrix property into the demo's column-major matrix type.</summary>
+    private static Mat4 ReadMat4Property(JsonElement matrix) =>
+        new(
+            ReadJsonVec4(matrix, 0),
+            ReadJsonVec4(matrix, 4),
+            ReadJsonVec4(matrix, 8),
+            ReadJsonVec4(matrix, 12));
 
+    /// <summary>Reads one column vector from a packed binary matrix.</summary>
+    private static Vec4 ReadVec4(GlbDocument document, int offset) =>
+        new(
+            document.ReadSingle(offset),
+            document.ReadSingle(offset + sizeof(float)),
+            document.ReadSingle(offset + (2 * sizeof(float))),
+            document.ReadSingle(offset + (3 * sizeof(float))));
+
+    /// <summary>Reads one column vector from a JSON matrix array.</summary>
+    private static Vec4 ReadJsonVec4(JsonElement values, int offset) =>
+        new(
+            values[offset].GetSingle(),
+            values[offset + 1].GetSingle(),
+            values[offset + 2].GetSingle(),
+            values[offset + 3].GetSingle());
 }

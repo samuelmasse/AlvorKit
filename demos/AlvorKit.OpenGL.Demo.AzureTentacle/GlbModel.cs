@@ -190,17 +190,16 @@ public sealed class GlbModel : IDisposable
     public float GetAnimationDuration(int animationIndex) => mesh.GetAnimationDuration(animationIndex);
 
     /// <summary>Draws the animated model through the supplied camera view and restores transient strict-layer bindings.</summary>
-    public void Render(int framebufferWidth, int framebufferHeight, ReadOnlySpan<float> view)
+    public void Render(int framebufferWidth, int framebufferHeight, Mat4 view)
     {
-        Span<float> model = stackalloc float[16];
-        Span<float> projection = stackalloc float[16];
-        Span<float> viewModel = stackalloc float[16];
-        Span<float> modelViewProjection = stackalloc float[16];
-
-        WriteModelMatrix(model, boundsCenter, modelScale);
-        WritePerspectiveProjection(projection, MathF.PI / 4f, framebufferWidth / (float)framebufferHeight, 0.1f, 100f);
-        Multiply(view, model, viewModel);
-        Multiply(projection, viewModel, modelViewProjection);
+        Span<float> modelViewProjection = stackalloc float[Mat4.ComponentCount];
+        var model = CreateModelMatrix(boundsCenter, modelScale);
+        var projection = Mat4.CreatePerspectiveFieldOfView(
+            MathF.PI / 4f,
+            framebufferWidth / (float)framebufferHeight,
+            0.1f,
+            100f);
+        (projection * view * model).CopyTo(modelViewProjection);
 
         gl.UseProgram(program);
         gl.UniformMatrix4fv(modelViewProjectionLocation, false, modelViewProjection);
@@ -306,59 +305,9 @@ public sealed class GlbModel : IDisposable
         return pixels;
     }
 
-    /// <summary>Writes a column-major model matrix that centers, scales, and turns the mesh into a static three-quarter pose.</summary>
-    private static void WriteModelMatrix(Span<float> matrix, Vec3 center, float scale)
-    {
-        var yaw = -0.35f;
-        var cosine = MathF.Cos(yaw);
-        var sine = MathF.Sin(yaw);
-        var scaledX = center.X * scale;
-        var scaledY = center.Y * scale;
-        var scaledZ = center.Z * scale;
-
-        matrix.Clear();
-        matrix[MatrixIndex(0, 0)] = cosine * scale;
-        matrix[MatrixIndex(0, 2)] = sine * scale;
-        matrix[MatrixIndex(1, 1)] = scale;
-        matrix[MatrixIndex(2, 0)] = -sine * scale;
-        matrix[MatrixIndex(2, 2)] = cosine * scale;
-        matrix[MatrixIndex(3, 3)] = 1f;
-        matrix[MatrixIndex(0, 3)] = (-cosine * scaledX) - (sine * scaledZ);
-        matrix[MatrixIndex(1, 3)] = -scaledY;
-        matrix[MatrixIndex(2, 3)] = (sine * scaledX) - (cosine * scaledZ);
-    }
-
-    /// <summary>Writes an OpenGL right-handed perspective projection matrix.</summary>
-    private static void WritePerspectiveProjection(Span<float> matrix, float verticalFieldOfView, float aspect, float near, float far)
-    {
-        matrix.Clear();
-        var focalLength = 1f / MathF.Tan(verticalFieldOfView * 0.5f);
-        matrix[MatrixIndex(0, 0)] = focalLength / aspect;
-        matrix[MatrixIndex(1, 1)] = focalLength;
-        matrix[MatrixIndex(2, 2)] = (far + near) / (near - far);
-        matrix[MatrixIndex(2, 3)] = (2f * far * near) / (near - far);
-        matrix[MatrixIndex(3, 2)] = -1f;
-    }
-
-    /// <summary>Multiplies two column-major matrices and writes the result into a separate destination span.</summary>
-    private static void Multiply(ReadOnlySpan<float> left, ReadOnlySpan<float> right, Span<float> destination)
-    {
-        for (var column = 0; column < 4; column++)
-        {
-            for (var row = 0; row < 4; row++)
-            {
-                var value =
-                    (left[MatrixIndex(row, 0)] * right[MatrixIndex(0, column)]) +
-                    (left[MatrixIndex(row, 1)] * right[MatrixIndex(1, column)]) +
-                    (left[MatrixIndex(row, 2)] * right[MatrixIndex(2, column)]) +
-                    (left[MatrixIndex(row, 3)] * right[MatrixIndex(3, column)]);
-                destination[MatrixIndex(row, column)] = value;
-            }
-        }
-    }
-
-    /// <summary>Maps row and column coordinates to a column-major 4x4 matrix span index.</summary>
-    private static int MatrixIndex(int row, int column) => (column * 4) + row;
+    /// <summary>Creates a model matrix that centers, scales, and turns the mesh into a static three-quarter pose.</summary>
+    private static Mat4 CreateModelMatrix(Vec3 center, float scale) =>
+        Mat4.CreateRotationY(-0.35f) * Mat4.CreateScale(scale) * Mat4.CreateTranslation(-center);
 
     /// <summary>Compiles both shaders, links them, and deletes the temporary shader objects.</summary>
     private static GlProgramHandle CreateProgram(GlLayer gl)

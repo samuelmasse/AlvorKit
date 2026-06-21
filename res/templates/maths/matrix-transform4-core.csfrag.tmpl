@@ -263,7 +263,7 @@
             new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}));
 
     /// <summary>Creates a right-handed look-at view matrix.</summary>
-    public static {{TypeName}} LookAtRH({{Vector3Type}} eye, {{Vector3Type}} target, {{Vector3Type}} up)
+    private static {{TypeName}} CreateLookAtRightHanded({{Vector3Type}} eye, {{Vector3Type}} target, {{Vector3Type}} up)
     {
         var forward = {{Vector3Type}}.Normalize(target - eye);
         var side = {{Vector3Type}}.Normalize({{Vector3Type}}.Cross(forward, up));
@@ -280,7 +280,7 @@
     }
 
     /// <summary>Creates a left-handed look-at view matrix.</summary>
-    public static {{TypeName}} LookAtLH({{Vector3Type}} eye, {{Vector3Type}} target, {{Vector3Type}} up)
+    private static {{TypeName}} CreateLookAtLeftHanded({{Vector3Type}} eye, {{Vector3Type}} target, {{Vector3Type}} up)
     {
         var forward = {{Vector3Type}}.Normalize(target - eye);
         var side = {{Vector3Type}}.Normalize({{Vector3Type}}.Cross(up, forward));
@@ -308,18 +308,18 @@
         ProjectionHandedness handedness) =>
         handedness switch
         {
-            ProjectionHandedness.Right => LookAtRH(eye, target, up),
-            ProjectionHandedness.Left => LookAtLH(eye, target, up),
+            ProjectionHandedness.Right => CreateLookAtRightHanded(eye, target, up),
+            ProjectionHandedness.Left => CreateLookAtLeftHanded(eye, target, up),
             _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported view-space handedness."),
         };
 
     /// <summary>Creates a right-handed look-to view matrix.</summary>
-    public static {{TypeName}} LookToRH({{Vector3Type}} eye, {{Vector3Type}} direction, {{Vector3Type}} up) =>
-        LookAtRH(eye, eye + direction, up);
+    private static {{TypeName}} CreateLookToRightHanded({{Vector3Type}} eye, {{Vector3Type}} direction, {{Vector3Type}} up) =>
+        CreateLookAtRightHanded(eye, eye + direction, up);
 
     /// <summary>Creates a left-handed look-to view matrix.</summary>
-    public static {{TypeName}} LookToLH({{Vector3Type}} eye, {{Vector3Type}} direction, {{Vector3Type}} up) =>
-        LookAtLH(eye, eye + direction, up);
+    private static {{TypeName}} CreateLookToLeftHanded({{Vector3Type}} eye, {{Vector3Type}} direction, {{Vector3Type}} up) =>
+        CreateLookAtLeftHanded(eye, eye + direction, up);
 
     /// <summary>Creates a look-to view matrix with default OpenGL view-space conventions.</summary>
     public static {{TypeName}} LookTo({{Vector3Type}} eye, {{Vector3Type}} direction, {{Vector3Type}} up) =>
@@ -333,8 +333,8 @@
         ProjectionHandedness handedness) =>
         handedness switch
         {
-            ProjectionHandedness.Right => LookToRH(eye, direction, up),
-            ProjectionHandedness.Left => LookToLH(eye, direction, up),
+            ProjectionHandedness.Right => CreateLookToRightHanded(eye, direction, up),
+            ProjectionHandedness.Left => CreateLookToLeftHanded(eye, direction, up),
             _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported view-space handedness."),
         };
 

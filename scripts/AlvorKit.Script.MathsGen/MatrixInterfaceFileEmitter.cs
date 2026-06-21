@@ -17,9 +17,11 @@ internal static class MatrixInterfaceFileEmitter
             ("IMatQuery.g.cs", MathsTemplate.Render("matrix-query-interface.cs.tmpl")),
             ("IMatSquare.g.cs", MathsTemplate.Render("matrix-square-interface.cs.tmpl")),
             ("IMat3Transform2D.g.cs", MathsTemplate.Render("matrix3-transform2d-interface.cs.tmpl")),
+            ("IMat3QuaternionRotation.g.cs", MathsTemplate.Render("matrix3-quaternion-rotation-interface.cs.tmpl")),
             ("IMat3x2Transform2D.g.cs", MathsTemplate.Render("matrix3x2-transform2d-interface.cs.tmpl")),
             ("IMat3x2SystemNumerics.g.cs", MathsTemplate.Render("matrix3x2-system-numerics-interface.cs.tmpl")),
             ("IMat4Transform.g.cs", MathsTemplate.Render("matrix4-transform-interface.cs.tmpl")),
+            ("IMat4QuaternionRotation.g.cs", MathsTemplate.Render("matrix4-quaternion-rotation-interface.cs.tmpl")),
             ("IMat4SystemNumerics.g.cs", MathsTemplate.Render("matrix4-system-numerics-interface.cs.tmpl")),
         };
 

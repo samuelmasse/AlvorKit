@@ -19,12 +19,15 @@ public sealed class MathsGeneratorTest
 
         var vecDirectory = Path.Combine(project, MathsGenerator.VecDirectoryName);
         var matDirectory = Path.Combine(project, MathsGenerator.MatDirectoryName);
+        var quatDirectory = Path.Combine(project, MathsGenerator.QuatDirectoryName);
         string VecFile(string fileName) => Path.Combine(vecDirectory, fileName);
         string MatFile(string fileName) => Path.Combine(matDirectory, fileName);
+        string QuatFile(string fileName) => Path.Combine(quatDirectory, fileName);
         Assert.IsFalse(File.Exists(staleFile));
         Assert.IsFalse(Directory.Exists(Path.Combine(project, "Generated")));
         Assert.AreEqual(124, Directory.GetFiles(vecDirectory, "*.cs").Length);
-        Assert.AreEqual(40, Directory.GetFiles(matDirectory, "*.cs").Length);
+        Assert.AreEqual(42, Directory.GetFiles(matDirectory, "*.cs").Length);
+        Assert.AreEqual(6, Directory.GetFiles(quatDirectory, "*.cs").Length);
         Assert.IsTrue(File.Exists(Path.Combine(project, "AlvorKit.Maths.Primitives.csproj")));
         Assert.IsTrue(File.Exists(Path.Combine(project, "ScalarMath.g.cs")));
         Assert.IsTrue(File.Exists(VecFile("IVec.g.cs")));
@@ -82,9 +85,11 @@ public sealed class MathsGeneratorTest
         Assert.IsTrue(File.Exists(MatFile("IMatQuery.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("IMatSquare.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("IMat3Transform2D.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMat3QuaternionRotation.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("IMat3x2Transform2D.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("IMat3x2SystemNumerics.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("IMat4Transform.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMat4QuaternionRotation.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("IMat4SystemNumerics.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("Mat2.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("Mat2d.g.cs")));
@@ -93,14 +98,77 @@ public sealed class MathsGeneratorTest
         Assert.IsTrue(File.Exists(MatFile("Mat4d.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("Mat2x3.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("Mat4x3d.g.cs")));
+        Assert.IsTrue(File.Exists(QuatFile("IQuat.g.cs")));
+        Assert.IsTrue(File.Exists(QuatFile("IQuatRotation.g.cs")));
+        Assert.IsTrue(File.Exists(QuatFile("IQuatInterpolation.g.cs")));
+        Assert.IsTrue(File.Exists(QuatFile("IQuatSystemNumerics.g.cs")));
+        Assert.IsTrue(File.Exists(QuatFile("Quat.g.cs")));
+        Assert.IsTrue(File.Exists(QuatFile("Quatd.g.cs")));
         Assert.IsFalse(File.Exists(MatFile("Mat2x2.g.cs")));
         Assert.IsFalse(File.Exists(MatFile("Mat3x3.g.cs")));
         Assert.IsFalse(File.Exists(MatFile("Mat4x4.g.cs")));
+        Assert.IsFalse(File.Exists(QuatFile("Quath.g.cs")));
         Assert.IsFalse(File.Exists(MatFile("Mat2i.g.cs")));
         Assert.IsFalse(File.Exists(MatFile("Mat4x3u128.g.cs")));
         StringAssert.Contains(File.ReadAllText(Path.Combine(project, "AlvorKit.Maths.Primitives.csproj")), "<Version>9.8.7</Version>");
         StringAssert.Contains(File.ReadAllText(Path.Combine(project, "AlvorKit.Maths.Primitives.csproj")),
             "<Using Include=\"System.Diagnostics\" />");
+    }
+
+    /// <summary>Generated source includes quaternions, rotation helpers, interpolation, and System.Numerics interop.</summary>
+    [TestMethod]
+    public void GenerateTo_EmitsExpectedQuaternionFeatures()
+    {
+        using var workspace = TempWorkspace.Create();
+        var outputRoot = workspace.CreateDirectory("generated");
+
+        MathsGenerator.GenerateTo(outputRoot, "9.8.7");
+
+        var projectDirectory = Path.Combine(outputRoot, MathsGenerator.PrimitivesProjectName);
+        var quatDirectory = Path.Combine(projectDirectory, MathsGenerator.QuatDirectoryName);
+        var quatInterface = File.ReadAllText(Path.Combine(quatDirectory, "IQuat.g.cs"));
+        var rotationInterface = File.ReadAllText(Path.Combine(quatDirectory, "IQuatRotation.g.cs"));
+        var interpolationInterface = File.ReadAllText(Path.Combine(quatDirectory, "IQuatInterpolation.g.cs"));
+        var systemInterface = File.ReadAllText(Path.Combine(quatDirectory, "IQuatSystemNumerics.g.cs"));
+        var quat = File.ReadAllText(Path.Combine(quatDirectory, "Quat.g.cs"));
+        var quatd = File.ReadAllText(Path.Combine(quatDirectory, "Quatd.g.cs"));
+        var matDirectory = Path.Combine(projectDirectory, MathsGenerator.MatDirectoryName);
+        var matrix3QuaternionInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat3QuaternionRotation.g.cs"));
+        var matrix4QuaternionInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat4QuaternionRotation.g.cs"));
+        var mat4 = File.ReadAllText(Path.Combine(matDirectory, "Mat4.g.cs"));
+        var mat3 = File.ReadAllText(Path.Combine(matDirectory, "Mat3.g.cs"));
+        var mat4d = File.ReadAllText(Path.Combine(matDirectory, "Mat4d.g.cs"));
+        var mat3d = File.ReadAllText(Path.Combine(projectDirectory, MathsGenerator.MatDirectoryName, "Mat3d.g.cs"));
+
+        StringAssert.Contains(quatInterface, "public interface IQuat<TSelf, TScalar, TVector3, TVector4, TMask, TMatrix3, TMatrix4>");
+        StringAssert.Contains(quatInterface, "IUtf8SpanParsable<TSelf>");
+        StringAssert.Contains(quatInterface, "static abstract ref TScalar ComponentRef(ref TSelf value, int index);");
+        StringAssert.Contains(rotationInterface, "public interface IQuatRotation<TSelf, TScalar, TVector3, TMatrix3, TMatrix4>");
+        StringAssert.Contains(rotationInterface, "static abstract TSelf LookRotation(TVector3 direction, TVector3 up);");
+        StringAssert.Contains(interpolationInterface, "static abstract TSelf Slerp(TSelf from, TSelf to, TScalar amount);");
+        StringAssert.Contains(interpolationInterface, "static abstract TSelf Exp(TSelf value);");
+        StringAssert.Contains(systemInterface, "System.Numerics.Quaternion");
+        StringAssert.Contains(matrix3QuaternionInterface,
+            "public interface IMat3QuaternionRotation<TSelf, TScalar, TVector3, TQuaternion, TMatrix4>");
+        StringAssert.Contains(matrix4QuaternionInterface,
+            "public interface IMat4QuaternionRotation<TSelf, TScalar, TVector3, TVector4, TQuaternion, TMatrix3>");
+        StringAssert.Contains(quat, "public struct Quat(float x, float y, float z, float w)");
+        StringAssert.Contains(quat, "IQuat<Quat, float, Vec3, Vec4, Vec4b, Mat3, Mat4>");
+        StringAssert.Contains(quat, "IQuatSystemNumerics<Quat>");
+        StringAssert.Contains(quat, "public static Quat Identity => new(0f, 0f, 0f, 1f);");
+        StringAssert.Contains(quat, "public static Quat CreateFromAxisAngle(Vec3 axis, float radians)");
+        StringAssert.Contains(quat, "public static Quat CreateFromRotationMatrix(Mat4 matrix)");
+        StringAssert.Contains(quat, "public static Vec3 TransformVector(Quat rotation, Vec3 vector)");
+        StringAssert.Contains(quat, "public static Quat Slerp(Quat from, Quat to, float amount)");
+        StringAssert.Contains(quat, "public static explicit operator System.Numerics.Quaternion(Quat value)");
+        StringAssert.Contains(quat, "public static implicit operator Quatd(Quat value)");
+        StringAssert.Contains(quatd, "IQuat<Quatd, double, Vec3d, Vec4d, Vec4b, Mat3d, Mat4d>");
+        StringAssert.Contains(quatd, "public static explicit operator Quat(Quatd value)");
+        Assert.IsFalse(quatd.Contains("IQuatSystemNumerics<Quatd>", StringComparison.Ordinal));
+        StringAssert.Contains(mat3, "IMat3QuaternionRotation<Mat3, float, Vec3, Quat, Mat4>");
+        StringAssert.Contains(mat4, "public static Mat4 CreateRotation(Quat rotation)");
+        StringAssert.Contains(mat4d, "IMat4QuaternionRotation<Mat4d, double, Vec3d, Vec4d, Quatd, Mat3d>");
+        StringAssert.Contains(mat3d, "public static Mat3d CreateRotation(Quatd rotation)");
     }
 
     /// <summary>Generated source includes column-major matrix layout, algebra, and interop helpers.</summary>
@@ -192,10 +260,8 @@ public sealed class MathsGeneratorTest
         StringAssert.Contains(mat4, "public static Mat4 CreateRotation(float radians, Vec3 axis)");
         StringAssert.Contains(mat4, "public static Mat4 CreateShearX(float y, float z)");
         StringAssert.Contains(mat4, "public static Mat4 CreateScaleBias(float scale, float bias)");
-        StringAssert.Contains(mat4, "public static Mat4 CreateFrustumRH_NO");
         StringAssert.Contains(mat4, "public static Mat4 CreatePerspective(");
         StringAssert.Contains(mat4, "public static Mat4 CreatePerspectiveOffCenter(");
-        StringAssert.Contains(mat4, "public static Mat4 CreateInfinitePerspectiveRH_NO");
         StringAssert.Contains(mat4, "public static Mat4 CreatePerspectiveFieldOfView(");
         StringAssert.Contains(mat4, "ProjectionHandedness.Right");
         StringAssert.Contains(mat4, "ProjectionDepthRange.NegativeOneToOne");
@@ -204,20 +270,30 @@ public sealed class MathsGeneratorTest
         StringAssert.Contains(mat4, "public static Mat4 CreateFrustum(");
         StringAssert.Contains(mat4, "public static Mat4 CreateInfinitePerspective(");
         StringAssert.Contains(mat4, "public static Mat4 CreateTweakedInfinitePerspective(");
-        StringAssert.Contains(mat4, "public static Vec3 ProjectNO");
         StringAssert.Contains(mat4, "public static Vec3 Project(");
         StringAssert.Contains(mat4, "public static Vec3 UnProject(");
         StringAssert.Contains(mat4, "public static Mat4 PickMatrix");
         StringAssert.Contains(mat4, "public static Mat4 CreateViewport");
-        StringAssert.Contains(mat4, "public static Mat4 LookAtRH(Vec3 eye, Vec3 target, Vec3 up)");
         StringAssert.Contains(mat4, "public static Mat4 LookAt(Vec3 eye, Vec3 target, Vec3 up)");
         StringAssert.Contains(mat4, "public static Mat4 LookTo(Vec3 eye, Vec3 direction, Vec3 up)");
         StringAssert.Contains(mat4, "public static Mat4 CreateWorld(Vec3 position, Vec3 forward, Vec3 up)");
         StringAssert.Contains(mat4, "public readonly Vec3 ExtractScale()");
-        StringAssert.Contains(mat4, "public static Mat4 CreatePerspectiveFieldOfViewRH_NO");
         StringAssert.Contains(mat4d, "IMat4Transform<Mat4d, double, Vec2d, Vec3d, Vec4d>");
         StringAssert.Contains(mat4d, "public static Mat4d CreateTranslation(Vec3d translation)");
-        StringAssert.Contains(mat4d, "public static Mat4d CreatePerspectiveFieldOfViewRH_NO");
+        Assert.IsFalse(matrixTransformInterface.Contains("RH_NO", StringComparison.Ordinal));
+        Assert.IsFalse(matrixTransformInterface.Contains("RH_ZO", StringComparison.Ordinal));
+        Assert.IsFalse(matrixTransformInterface.Contains("LH_NO", StringComparison.Ordinal));
+        Assert.IsFalse(matrixTransformInterface.Contains("LH_ZO", StringComparison.Ordinal));
+        Assert.IsFalse(matrixTransformInterface.Contains("LookAtRH", StringComparison.Ordinal));
+        Assert.IsFalse(matrixTransformInterface.Contains("LookToRH", StringComparison.Ordinal));
+        Assert.IsFalse(mat4.Contains("public static Mat4 CreateFrustumRH_NO", StringComparison.Ordinal));
+        Assert.IsFalse(mat4.Contains("public static Mat4 CreatePerspectiveFieldOfViewRH_NO", StringComparison.Ordinal));
+        Assert.IsFalse(mat4.Contains("public static Mat4 CreateInfinitePerspectiveRH_NO", StringComparison.Ordinal));
+        Assert.IsFalse(mat4.Contains("public static Mat4 CreateTweakedInfinitePerspectiveRH_NO", StringComparison.Ordinal));
+        Assert.IsFalse(mat4.Contains("public static Vec3 ProjectNO", StringComparison.Ordinal));
+        Assert.IsFalse(mat4.Contains("public static Vec3 UnProjectNO", StringComparison.Ordinal));
+        Assert.IsFalse(mat4.Contains("public static Mat4 LookAtRH", StringComparison.Ordinal));
+        Assert.IsFalse(mat4d.Contains("public static Mat4d CreatePerspectiveFieldOfViewRH_NO", StringComparison.Ordinal));
     }
 
     /// <summary>Generated source includes tuple conversions, cross-scalar conversions, and read/write swizzles.</summary>

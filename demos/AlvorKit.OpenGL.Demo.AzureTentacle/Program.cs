@@ -72,8 +72,7 @@ void RenderFrame(int width, int height)
     gl.ClearDepth(1.0);
     gl.Clear(GlClearBufferMask.ColorBufferBit | GlClearBufferMask.DepthBufferBit);
 
-    Span<float> view = stackalloc float[16];
-    camera.WriteViewMatrix(view);
+    var view = camera.CreateViewMatrix();
     model.Render(width, height, view);
 
     DrawOverlay(width, height);

@@ -12,6 +12,9 @@ internal static class MathsGenerator
     /// <summary>The project subdirectory that contains generated matrix source files.</summary>
     public const string MatDirectoryName = "Mat";
 
+    /// <summary>The project subdirectory that contains generated quaternion source files.</summary>
+    public const string QuatDirectoryName = "Quat";
+
     /// <summary>Regenerates the generated primitives project under <paramref name="outputRoot"/>.</summary>
     public static void GenerateTo(string outputRoot, string packageVersion)
     {
@@ -23,16 +26,20 @@ internal static class MathsGenerator
         var projectDirectory = Path.Combine(outputRoot, PrimitivesProjectName);
         var vecDirectory = Path.Combine(projectDirectory, VecDirectoryName);
         var matDirectory = Path.Combine(projectDirectory, MatDirectoryName);
+        var quatDirectory = Path.Combine(projectDirectory, QuatDirectoryName);
         var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         RecreateDirectory(projectDirectory);
         File.WriteAllText(ProjectFile(projectDirectory), ProjectSource(packageVersion), encoding);
         File.WriteAllText(Path.Combine(projectDirectory, "ScalarMath.g.cs"), ScalarMathSource(), encoding);
         Directory.CreateDirectory(vecDirectory);
         Directory.CreateDirectory(matDirectory);
+        Directory.CreateDirectory(quatDirectory);
         foreach (var (fileName, source) in VectorInterfaceFileEmitter.EmitAll())
             File.WriteAllText(Path.Combine(vecDirectory, fileName), source, encoding);
         foreach (var (fileName, source) in MatrixInterfaceFileEmitter.EmitAll())
             File.WriteAllText(Path.Combine(matDirectory, fileName), source, encoding);
+        foreach (var (fileName, source) in QuaternionInterfaceFileEmitter.EmitAll())
+            File.WriteAllText(Path.Combine(quatDirectory, fileName), source, encoding);
 
         foreach (var vector in VectorCatalog.Vectors)
         {
@@ -47,6 +54,12 @@ internal static class MathsGenerator
         {
             var source = MatrixFileEmitter.Emit(matrix);
             File.WriteAllText(Path.Combine(matDirectory, $"{matrix.TypeName}.g.cs"), source, encoding);
+        }
+
+        foreach (var quaternion in QuaternionCatalog.Quaternions)
+        {
+            var source = QuaternionFileEmitter.Emit(quaternion);
+            File.WriteAllText(Path.Combine(quatDirectory, $"{quaternion.TypeName}.g.cs"), source, encoding);
         }
     }
 

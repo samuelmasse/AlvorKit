@@ -1,0 +1,8 @@
+    /// <summary>Converts a {{SourceType}} to a {{TargetType}}.</summary>
+    public static {{Keyword}} operator {{TargetType}}({{SourceType}} value) =>
+        new(
+            ({{TargetScalarType}})value.X,
+            ({{TargetScalarType}})value.Y,
+            ({{TargetScalarType}})value.Z,
+            ({{TargetScalarType}})value.W);
+

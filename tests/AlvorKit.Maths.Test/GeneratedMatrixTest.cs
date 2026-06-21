@@ -92,7 +92,7 @@ public sealed class GeneratedMatrixTest
         var translated = Mat4.CreateTranslation(2f, 3f, 4f) * new Vec4(1f, 2f, 3f, 1f);
         var rotated = Mat4.CreateRotationZ(float.Pi / 2f) * new Vec4(1f, 0f, 0f, 1f);
         var centered = Mat4.CreateRotationZ(float.Pi, new Vec3(1f, 1f, 0f)) * new Vec4(2f, 1f, 0f, 1f);
-        var projection = Mat4.CreatePerspectiveFieldOfViewRH_NO(float.Pi / 2f, 1f, 1f, 11f);
+        var projection = Mat4.CreatePerspectiveFieldOfView(float.Pi / 2f, 1f, 1f, 11f);
         var lookAt = Mat4.LookAt(new Vec3(0f, 0f, 1f), Vec3.Zero, Vec3.UnitY);
         var lookTo = Mat4.LookTo(new Vec3(0f, 0f, 1f), new Vec3(0f, 0f, -1f), Vec3.UnitY);
         var mutable = Mat4.Identity;
@@ -101,7 +101,7 @@ public sealed class GeneratedMatrixTest
         AssertVecClose(new Vec4(3f, 5f, 7f, 1f), translated);
         AssertVecClose(new Vec4(0f, 1f, 0f, 1f), rotated);
         AssertVecClose(new Vec4(0f, 1f, 0f, 1f), centered);
-        AssertMatrixClose(Mat4.LookAtRH(new Vec3(0f, 0f, 1f), Vec3.Zero, Vec3.UnitY), lookAt);
+        AssertMatrixClose(Mat4.LookAt(new Vec3(0f, 0f, 1f), Vec3.Zero, Vec3.UnitY, ProjectionHandedness.Right), lookAt);
         AssertMatrixClose(lookAt, lookTo);
         Assert.AreEqual(new Vec3(2f, 3f, 4f), mutable.Translation);
         Assert.AreEqual(-1f, projection[2, 3]);
@@ -115,12 +115,12 @@ public sealed class GeneratedMatrixTest
     {
         var translated = Mat4d.CreateTranslation(2d, 3d, 4d) * new Vec4d(1d, 2d, 3d, 1d);
         var rotated = Mat4d.CreateRotationZ(double.Pi / 2d) * new Vec4d(1d, 0d, 0d, 1d);
-        var projection = Mat4d.CreatePerspectiveFieldOfViewRH_NO(double.Pi / 2d, 1d, 1d, 11d);
+        var projection = Mat4d.CreatePerspectiveFieldOfView(double.Pi / 2d, 1d, 1d, 11d);
         var lookAt = Mat4d.LookAt(new Vec3d(0d, 0d, 1d), Vec3d.Zero, Vec3d.UnitY);
 
         AssertVecClose(new Vec4d(3d, 5d, 7d, 1d), translated);
         AssertVecClose(new Vec4d(0d, 1d, 0d, 1d), rotated);
-        AssertMatrixClose(Mat4d.LookAtRH(new Vec3d(0d, 0d, 1d), Vec3d.Zero, Vec3d.UnitY), lookAt);
+        AssertMatrixClose(Mat4d.LookAt(new Vec3d(0d, 0d, 1d), Vec3d.Zero, Vec3d.UnitY, ProjectionHandedness.Right), lookAt);
         Assert.AreEqual(-1d, projection[2, 3]);
         AssertClose(-1.2d, projection[2, 2]);
         AssertClose(-2.2d, projection[3, 2]);
@@ -161,7 +161,7 @@ public sealed class GeneratedMatrixTest
     [TestMethod]
     public void GeneratedMat4ProjectionUtilities_Work()
     {
-        var perspective = Mat4.CreatePerspectiveFieldOfViewRH_NO(float.Pi / 2f, 1f, 1f, 11f);
+        var perspective = Mat4.CreatePerspectiveFieldOfView(float.Pi / 2f, 1f, 1f, 11f);
         var defaultPerspective = Mat4.CreatePerspectiveFieldOfView(float.Pi / 2f, 1f, 1f, 11f);
         var explicitPerspective = Mat4.CreatePerspectiveFieldOfView(
             float.Pi / 2f,
@@ -170,20 +170,20 @@ public sealed class GeneratedMatrixTest
             11f,
             ProjectionHandedness.Left,
             ProjectionDepthRange.ZeroToOne);
-        var frustum = Mat4.CreateFrustumRH_NO(-1f, 1f, -1f, 1f, 1f, 11f);
+        var frustum = Mat4.CreateFrustum(-1f, 1f, -1f, 1f, 1f, 11f);
         var defaultFrustum = Mat4.CreateFrustum(-1f, 1f, -1f, 1f, 1f, 11f);
         var perspectiveFromSize = Mat4.CreatePerspective(2f, 2f, 1f, 11f);
         var perspectiveOffCenter = Mat4.CreatePerspectiveOffCenter(-1f, 1f, -1f, 1f, 1f, 11f);
-        var fovBySize = Mat4.CreatePerspectiveFieldOfViewRH_NO(float.Pi / 2f, 2f, 2f, 1f, 11f);
+        var fovBySize = Mat4.CreatePerspectiveFieldOfView(float.Pi / 2f, 2f, 2f, 1f, 11f);
         var defaultFovBySize = Mat4.CreatePerspectiveFieldOfView(float.Pi / 2f, 2f, 2f, 1f, 11f);
         var orthographic = Mat4.CreateOrthographic(2f, 2f, 1f, 11f);
         var defaultOrthographic = Mat4.CreateOrthographicOffCenter(-1f, 1f, -1f, 1f, 1f, 11f);
-        var infinite = Mat4.CreateInfinitePerspectiveRH_NO(float.Pi / 2f, 1f, 1f);
+        var infinite = Mat4.CreateInfinitePerspective(float.Pi / 2f, 1f, 1f);
         var defaultInfinite = Mat4.CreateInfinitePerspective(float.Pi / 2f, 1f, 1f);
-        var tweaked = Mat4.CreateTweakedInfinitePerspectiveRH_NO(float.Pi / 2f, 1f, 1f, 0.001f);
+        var tweaked = Mat4.CreateTweakedInfinitePerspective(float.Pi / 2f, 1f, 1f, 0.001f);
         var defaultTweaked = Mat4.CreateTweakedInfinitePerspective(float.Pi / 2f, 1f, 1f, 0.001f);
         var viewport = new Vec4(0f, 0f, 100f, 100f);
-        var projectedNO = Mat4.ProjectNO(new Vec3(0.25f, -0.25f, 0.5f), Mat4.Identity, Mat4.Identity, viewport);
+        var projectedNO = Mat4.Project(new Vec3(0.25f, -0.25f, 0.5f), Mat4.Identity, Mat4.Identity, viewport);
         var projectedDefault = Mat4.Project(new Vec3(0.25f, -0.25f, 0.5f), Mat4.Identity, Mat4.Identity, viewport);
         var projectedZO = Mat4.Project(
             new Vec3(0.25f, -0.25f, 0.5f),
@@ -191,14 +191,16 @@ public sealed class GeneratedMatrixTest
             Mat4.Identity,
             viewport,
             ProjectionDepthRange.ZeroToOne);
-        var unprojectedNO = Mat4.UnProjectNO(projectedNO, Mat4.Identity, Mat4.Identity, viewport);
+        var unprojectedNO = Mat4.UnProject(projectedNO, Mat4.Identity, Mat4.Identity, viewport);
         var unprojectedDefault = Mat4.UnProject(projectedNO, Mat4.Identity, Mat4.Identity, viewport);
         var unprojectedZO = Mat4.UnProject(projectedZO, Mat4.Identity, Mat4.Identity, viewport, ProjectionDepthRange.ZeroToOne);
         var viewportTransform = Mat4.CreateViewport(viewport) * new Vec4(0.25f, -0.25f, 0.5f, 1f);
         var pick = Mat4.PickMatrix(new Vec2(50f, 50f), new Vec2(50f, 50f), viewport);
 
         AssertMatrixClose(perspective, defaultPerspective);
-        AssertMatrixClose(Mat4.CreatePerspectiveFieldOfViewLH_ZO(float.Pi / 2f, 1f, 1f, 11f), explicitPerspective);
+        Assert.AreEqual(1f, explicitPerspective[2, 3]);
+        AssertClose(1.1f, explicitPerspective[2, 2]);
+        AssertClose(-1.1f, explicitPerspective[3, 2]);
         AssertMatrixClose(perspective, frustum);
         AssertMatrixClose(frustum, defaultFrustum);
         AssertMatrixClose(frustum, perspectiveFromSize);
@@ -206,7 +208,17 @@ public sealed class GeneratedMatrixTest
         AssertMatrixClose(perspective, fovBySize);
         AssertMatrixClose(fovBySize, defaultFovBySize);
         AssertMatrixClose(defaultOrthographic, orthographic);
-        AssertMatrixClose(Mat4.CreateOrthographicOffCenterRH_NO(-1f, 1f, -1f, 1f, 1f, 11f), defaultOrthographic);
+        AssertMatrixClose(
+            Mat4.CreateOrthographicOffCenter(
+                -1f,
+                1f,
+                -1f,
+                1f,
+                1f,
+                11f,
+                ProjectionHandedness.Right,
+                ProjectionDepthRange.NegativeOneToOne),
+            defaultOrthographic);
         AssertMatrixClose(infinite, defaultInfinite);
         AssertMatrixClose(tweaked, defaultTweaked);
         Assert.AreEqual(-1f, infinite[2, 2]);

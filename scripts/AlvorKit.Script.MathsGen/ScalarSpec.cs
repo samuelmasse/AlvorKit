@@ -69,4 +69,7 @@ internal sealed record ScalarSpec(
     /// <summary>Gets the matrix type name for this scalar and shape.</summary>
     public string MatrixName(int columns, int rows) =>
         columns == rows ? $"Mat{columns}{Suffix}" : $"Mat{columns}x{rows}{Suffix}";
+
+    /// <summary>Gets the quaternion type name for this scalar.</summary>
+    public string QuaternionName() => $"Quat{Suffix}";
 }

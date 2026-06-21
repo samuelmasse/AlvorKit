@@ -108,7 +108,7 @@ internal sealed partial class AnimatedGlbMesh
 
         var clampedAmount = Math.Clamp(amount, 0f, 1f);
         destination.Translation = Vec3.Lerp(from.Translation, to.Translation, clampedAmount);
-        destination.Rotation = Quaternion.Normalize(Quaternion.Slerp(from.Rotation, to.Rotation, clampedAmount));
+        destination.Rotation = Quat.Slerp(from.Rotation, to.Rotation, clampedAmount).Normalized;
         destination.Scale = Vec3.Lerp(from.Scale, to.Scale, clampedAmount);
     }
 
@@ -116,7 +116,7 @@ internal sealed partial class AnimatedGlbMesh
     private void RebuildNodeLocalMatrices()
     {
         for (var nodeIndex = 0; nodeIndex < sampledPose.Length; nodeIndex++)
-            WriteLocalMatrix(sampledPose[nodeIndex], nodeLocalMatrices.AsSpan(nodeIndex * MatrixFloatCount, MatrixFloatCount));
+            nodeLocalMatrices[nodeIndex] = LocalMatrix(sampledPose[nodeIndex]);
     }
 
     /// <summary>Rebuilds node global matrices in hierarchy order through a small recursive cache.</summary>
@@ -133,19 +133,16 @@ internal sealed partial class AnimatedGlbMesh
         if (nodeGlobalReady[nodeIndex])
             return;
 
-        var local = nodeLocalMatrices.AsSpan(nodeIndex * MatrixFloatCount, MatrixFloatCount);
-        var global = nodeGlobalMatrices.AsSpan(nodeIndex * MatrixFloatCount, MatrixFloatCount);
         var parentIndex = nodeParents[nodeIndex];
 
         if (parentIndex == NoParent)
         {
-            local.CopyTo(global);
+            nodeGlobalMatrices[nodeIndex] = nodeLocalMatrices[nodeIndex];
         }
         else
         {
             EnsureNodeGlobalMatrix(parentIndex);
-            var parent = nodeGlobalMatrices.AsSpan(parentIndex * MatrixFloatCount, MatrixFloatCount);
-            Multiply(parent, local, global);
+            nodeGlobalMatrices[nodeIndex] = nodeGlobalMatrices[parentIndex] * nodeLocalMatrices[nodeIndex];
         }
 
         nodeGlobalReady[nodeIndex] = true;
@@ -156,10 +153,7 @@ internal sealed partial class AnimatedGlbMesh
     {
         for (var jointIndex = 0; jointIndex < jointNodes.Length; jointIndex++)
         {
-            var global = nodeGlobalMatrices.AsSpan(jointNodes[jointIndex] * MatrixFloatCount, MatrixFloatCount);
-            var inverseBind = inverseBindMatrices.AsSpan(jointIndex * MatrixFloatCount, MatrixFloatCount);
-            var joint = jointMatrices.AsSpan(jointIndex * MatrixFloatCount, MatrixFloatCount);
-            Multiply(global, inverseBind, joint);
+            jointMatrices[jointIndex] = nodeGlobalMatrices[jointNodes[jointIndex]] * inverseBindMatrices[jointIndex];
         }
     }
 }
