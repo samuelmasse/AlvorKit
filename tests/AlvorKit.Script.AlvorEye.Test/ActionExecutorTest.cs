@@ -188,7 +188,12 @@ public sealed class ActionExecutorTest
     /// <summary>Builds a minimal session run context.</summary>
     private static RunContext Context(string root, FakeAlvorEyePlatform platform)
     {
-        var scenario = new AlvorEyeScenario { Window = new() { Title = "window" }, Output = new() };
+        var scenario = new AlvorEyeScenario
+        {
+            Window = new() { Title = "window" },
+            Output = new(),
+            Freeze = new() { ResumeSettle = TimeSpan.Zero }
+        };
         var manifest = new RunManifest { RunId = "s1", SessionId = "s1", RunDirectory = root };
         var context = new RunContext(root, scenario, platform, new(root), manifest, Path.Combine(root, "frames"))
         {

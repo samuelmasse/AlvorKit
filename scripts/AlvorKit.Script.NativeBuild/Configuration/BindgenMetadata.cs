@@ -6,7 +6,7 @@ internal sealed class BindgenMetadata
     /// <summary>Native library base name used by .NET runtime probing.</summary>
     public required string NativeLibrary { get; init; }
 
-    /// <summary>User-profile work directory that caches downloaded upstream source.</summary>
+    /// <summary>Repository-local work directory that caches downloaded upstream source.</summary>
     public required string WorkDir { get; init; }
 
     /// <summary>Directory name created by extracting the upstream source archive.</summary>

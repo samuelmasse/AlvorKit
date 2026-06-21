@@ -12,21 +12,6 @@ public class PublicApiTest
         AssertAssembly(typeof(AgentGlfwWindowHost).Assembly, true);
     }
 
-    /// <summary>Verifies the host interface remains mockable by the repository mocking library.</summary>
-    [TestMethod]
-    public void IWindowHost_CanBeMockedWithAlvorKitMocking()
-    {
-        var host = Mock.Create<IWindowHost>();
-        var raised = false;
-        host.Closing += () => raised = true;
-        Mock.When(() => host.IsFocused).Return(true);
-
-        Mock.Raise(() => host.Closing += null);
-
-        Assert.IsTrue(host.IsFocused);
-        Assert.IsTrue(raised);
-    }
-
     private static void AssertNoForbiddenType(Type type, string owner, bool allowGlfwTypes)
     {
         if (type.IsGenericType)

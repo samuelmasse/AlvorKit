@@ -1,0 +1,68 @@
+
+    /// <summary>Creates a matrix that reflects points across a plane.</summary>
+    public static {{TypeName}} CreateReflection({{Plane3Type}} plane)
+    {
+        var normalized = plane.Normalized;
+        var normal = normalized.Normal;
+        var x = normal.X;
+        var y = normal.Y;
+        var z = normal.Z;
+        var offset = normalized.Offset;
+        var negativeTwo = -{{TwoLiteral}};
+
+        return new(
+            new {{Vector4Type}}(
+                {{OneLiteral}} + (negativeTwo * x * x),
+                negativeTwo * y * x,
+                negativeTwo * z * x,
+                {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                negativeTwo * x * y,
+                {{OneLiteral}} + (negativeTwo * y * y),
+                negativeTwo * z * y,
+                {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                negativeTwo * x * z,
+                negativeTwo * y * z,
+                {{OneLiteral}} + (negativeTwo * z * z),
+                {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                negativeTwo * offset * x,
+                negativeTwo * offset * y,
+                negativeTwo * offset * z,
+                {{OneLiteral}}));
+    }
+
+    /// <summary>Creates a directional shadow projection matrix onto a plane.</summary>
+    public static {{TypeName}} CreateShadow({{Vector3Type}} lightDirection, {{Plane3Type}} plane)
+    {
+        var normalized = plane.Normalized;
+        var normal = normalized.Normal;
+        var dot = {{Vector3Type}}.Dot(normal, lightDirection);
+        var x = lightDirection.X;
+        var y = lightDirection.Y;
+        var z = lightDirection.Z;
+        var offset = normalized.Offset;
+
+        return new(
+            new {{Vector4Type}}(
+                dot - (x * normal.X),
+                -(y * normal.X),
+                -(z * normal.X),
+                {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                -(x * normal.Y),
+                dot - (y * normal.Y),
+                -(z * normal.Y),
+                {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                -(x * normal.Z),
+                -(y * normal.Z),
+                dot - (z * normal.Z),
+                {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                -(x * offset),
+                -(y * offset),
+                -(z * offset),
+                dot));
+    }

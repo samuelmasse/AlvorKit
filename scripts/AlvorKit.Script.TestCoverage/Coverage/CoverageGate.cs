@@ -7,8 +7,10 @@ internal static class CoverageGate
     public static bool Passes(
         IReadOnlyList<TestProjectResult> testResults,
         CoverageSummary summary,
-        CoverageThresholds thresholds) =>
+        CoverageThresholds thresholds,
+        TestTimingSummary? timing = null) =>
         testResults.All(result => result.ExitCode == 0)
         && summary.MeetsThreshold(thresholds)
-        && (thresholds.IsDisabled || summary.UnmeasuredModules.Count == 0);
+        && (thresholds.IsDisabled || summary.UnmeasuredModules.Count == 0)
+        && (timing?.Passes ?? true);
 }

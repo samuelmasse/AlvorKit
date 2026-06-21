@@ -11,6 +11,7 @@ internal static class MatrixTransformEmitter
 
         var values = Values(matrix);
         members.Append(MathsTemplate.Fragment("matrix-transform4-core.csfrag.tmpl", values));
+        members.Append(MathsTemplate.Fragment("matrix-plane-transform4.csfrag.tmpl", values));
         members.Append(MathsTemplate.Fragment("matrix-transform4-projection.csfrag.tmpl", values));
     }
 
@@ -22,6 +23,7 @@ internal static class MatrixTransformEmitter
         ("Vector2Type", matrix.Scalar.VectorName(2)),
         ("Vector3Type", matrix.Scalar.VectorName(3)),
         ("Vector4Type", matrix.Scalar.VectorName(4)),
+        ("Plane3Type", matrix.Scalar.PlaneName()),
         ("ZeroLiteral", matrix.Scalar.ZeroLiteral),
         ("OneLiteral", matrix.Scalar.OneLiteral),
         ("TwoLiteral", matrix.Scalar.TwoLiteral),

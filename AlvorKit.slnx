@@ -43,6 +43,7 @@
         <Project Path="scripts/AlvorKit.Script.MathsGen/AlvorKit.Script.MathsGen.csproj" />
         <Project Path="scripts/AlvorKit.Script.NativeBuild/AlvorKit.Script.NativeBuild.csproj" />
         <Project Path="scripts/AlvorKit.Script.TestCoverage/AlvorKit.Script.TestCoverage.csproj" />
+        <Project Path="scripts/AlvorKit.Script.TestTiming/AlvorKit.Script.TestTiming.csproj" />
     </Folder>
 
     <Project Path="src/AlvorKit.ECS/AlvorKit.ECS.csproj" />
@@ -94,6 +95,8 @@
             Path="tests/AlvorKit.Script.NativeBuild.Test/AlvorKit.Script.NativeBuild.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.TestCoverage.Test/AlvorKit.Script.TestCoverage.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Script.TestTiming.Test/AlvorKit.Script.TestTiming.Test.csproj" />
         <Project Path="tests/AlvorKit.Windowing.Test/AlvorKit.Windowing.Test.csproj" />
     </Folder>
 

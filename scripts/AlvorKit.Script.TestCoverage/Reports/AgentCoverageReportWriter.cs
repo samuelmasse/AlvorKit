@@ -12,7 +12,8 @@ internal static class AgentCoverageReportWriter
         CoverageOptions options,
         bool passed,
         CoverageSummary summary,
-        IReadOnlyList<TestProjectResult> testResults)
+        IReadOnlyList<TestProjectResult> testResults,
+        TestTimingSummary? testTiming = null)
     {
         var artifacts = CoverageArtifactPaths.Create(repoRoot, output, options);
         var report = new
@@ -31,6 +32,7 @@ internal static class AgentCoverageReportWriter
             unmeasuredModules = summary.UnmeasuredModules,
             files = summary.Files,
             testProjects = testResults,
+            testTiming = TestTimingJson(repoRoot, testTiming),
             artifacts = new
             {
                 agent = artifacts.Agent,
@@ -46,5 +48,30 @@ internal static class AgentCoverageReportWriter
         };
 
         File.WriteAllText(output.AgentReport, JsonSerializer.Serialize(report, CoverageJson.Options));
+    }
+
+    /// <summary>Builds the agent-readable test timing section.</summary>
+    private static object? TestTimingJson(string repoRoot, TestTimingSummary? testTiming)
+    {
+        if (testTiming is null)
+            return null;
+
+        return new
+        {
+            complete = testTiming.IsComplete,
+            warnOnly = testTiming.WarnOnly,
+            maxDurationSeconds = Math.Round(testTiming.MaxDuration.TotalSeconds, 3),
+            totalCount = testTiming.TotalCount,
+            slowCount = testTiming.SlowResults.Count,
+            markdown = RepositoryPaths.Relative(repoRoot, testTiming.MarkdownPath),
+            csv = RepositoryPaths.Relative(repoRoot, testTiming.CsvPath),
+            slowTests = testTiming.SlowResults.Select(result => new
+            {
+                durationSeconds = Math.Round(result.Duration.TotalSeconds, 3),
+                result.Outcome,
+                result.TestName,
+                sourcePath = RepositoryPaths.Relative(repoRoot, result.SourcePath),
+            }),
+        };
     }
 }

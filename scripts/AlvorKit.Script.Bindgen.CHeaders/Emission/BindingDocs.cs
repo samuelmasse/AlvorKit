@@ -31,7 +31,7 @@ internal static class BindingDocs
         if (function.ReturnType != "void")
             output.AppendLine($"    /// <returns>{ReturnText(function)}</returns>");
         if (function.Documentation?.Remarks is { } remarks)
-            Remarks(output, function.NativeName, remarks);
+            Remarks(output, remarks);
     }
 
     /// <summary>Emits inherited documentation and standard convenience-overload remarks.</summary>
@@ -81,10 +81,10 @@ internal static class BindingDocs
     }
 
     /// <summary>Emits wrapped remark paragraphs so large upstream docs stay readable in generated source.</summary>
-    private static void Remarks(StringBuilder output, string nativeName, string remarks)
+    private static void Remarks(StringBuilder output, string remarks)
     {
         output.AppendLine("    /// <remarks>");
-        foreach (var paragraph in RemarkParagraphs(nativeName, remarks))
+        foreach (var paragraph in RemarkParagraphs(remarks))
         {
             output.AppendLine("    /// <para>");
             foreach (var line in WrapXmlDocLine(paragraph))
@@ -94,20 +94,18 @@ internal static class BindingDocs
         output.AppendLine("    /// </remarks>");
     }
 
-    /// <summary>Returns native-anchored remark paragraphs split at common upstream documentation headings.</summary>
-    private static IEnumerable<string> RemarkParagraphs(string nativeName, string remarks)
+    /// <summary>Returns remark paragraphs split at common upstream documentation headings.</summary>
+    private static IEnumerable<string> RemarkParagraphs(string remarks)
     {
         var sectioned = Regex.Replace(
             remarks,
             @"(^|\s+)(Parameters|Return Value|Thread Safety|Callback Safety|Remarks|See Also|Example \d+)\s+",
             match => $"{(match.Groups[1].Value.Length == 0 ? "" : Environment.NewLine)}{match.Groups[2].Value}: ");
-        var first = true;
         foreach (var paragraph in sectioned.Split(
             Environment.NewLine,
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            yield return first ? $"<c>{nativeName}</c>: {paragraph}" : paragraph;
-            first = false;
+            yield return paragraph;
         }
     }
 

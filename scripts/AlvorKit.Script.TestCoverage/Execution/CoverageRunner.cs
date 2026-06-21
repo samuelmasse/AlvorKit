@@ -2,6 +2,7 @@ namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Coordinates project discovery, test execution, coverage aggregation, and report writing.</summary>
 /// <param name="options">Validated command-line options for this run.</param>
+[ExcludeFromCodeCoverage(Justification = "Coordinates external dotnet and report-generation processes; collaborators are covered by unit tests.")]
 internal sealed class CoverageRunner(CoverageOptions options)
 {
     /// <summary>Runs the full coverage workflow and returns an executable-style exit code.</summary>
@@ -28,6 +29,7 @@ internal sealed class CoverageRunner(CoverageOptions options)
 
         var testExecutions = await RunTestProjectsAsync(testRunner, selection.TestProjects, output.ProjectsRoot, noBuildTests);
         var testResults = testExecutions.Select(execution => execution.Result).ToArray();
+        var testTiming = CoverageTestTimingReporter.Write(output, options);
 
         foreach (var result in testResults)
         {
@@ -35,7 +37,7 @@ internal sealed class CoverageRunner(CoverageOptions options)
                 coverage.AddCoverletJson(Path.Combine(repoRoot, result.CoverageJsonPath), repoRoot);
         }
 
-        return await CompleteAsync(repoRoot, output, started, coverage, selection.SourceModules, testResults);
+        return await CompleteAsync(repoRoot, output, started, coverage, selection.SourceModules, testResults, testTiming);
     }
 
     /// <summary>Returns true when a separate build lets parallel tests avoid shared file-copy work.</summary>
@@ -113,21 +115,23 @@ internal sealed class CoverageRunner(CoverageOptions options)
         DateTimeOffset started,
         CoverageAccumulator coverage,
         IReadOnlyCollection<string> sourceModules,
-        IReadOnlyList<TestProjectResult> testResults)
+        IReadOnlyList<TestProjectResult> testResults,
+        TestTimingSummary? testTiming = null)
     {
         var summary = coverage.BuildSummary(sourceModules);
-        var passed = CoverageGate.Passes(testResults, summary, options.Thresholds);
+        var passed = CoverageGate.Passes(testResults, summary, options.Thresholds, testTiming);
 
         var generatedAt = DateTimeOffset.UtcNow;
-        CoverageReportWriter.Write(repoRoot, output, started, generatedAt, options, passed, summary, testResults);
+        CoverageReportWriter.Write(repoRoot, output, started, generatedAt, options, passed, summary, testResults, testTiming);
         var htmlReportGenerated = false;
 
         if (options.GenerateHtmlReport)
             htmlReportGenerated = await ReportGeneratorRunner.RunAsync(repoRoot, output, testResults);
 
         LatestCoverageRunWriter.Write(repoRoot, output, generatedAt, options, passed);
-        ConsoleSummary.Write(repoRoot, output, passed, summary, htmlReportGenerated, options.GenerateHtmlReport);
+        ConsoleSummary.Write(repoRoot, output, passed, summary, htmlReportGenerated, options.GenerateHtmlReport, testTiming);
 
         return passed && (!options.GenerateHtmlReport || htmlReportGenerated) ? 0 : 1;
     }
+
 }

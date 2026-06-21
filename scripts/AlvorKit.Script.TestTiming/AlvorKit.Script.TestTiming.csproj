@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Script.TestTiming.Test" />
+        <InternalsVisibleTo Include="AlvorKit.Script.TestCoverage" />
+        <InternalsVisibleTo Include="AlvorKit.Script.TestCoverage.Test" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Script.Workspace" />
+    </ItemGroup>
+
+</Project>

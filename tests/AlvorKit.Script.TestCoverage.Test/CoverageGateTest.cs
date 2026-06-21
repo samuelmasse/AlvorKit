@@ -45,9 +45,44 @@ public sealed class CoverageGateTest
         Assert.IsFalse(CoverageGate.Passes([failedProject], Summary([]), CoverageThresholds.All(0)));
     }
 
+    /// <summary>Slow test timings fail the gate after tests and coverage otherwise pass.</summary>
+    [TestMethod]
+    public void Passes_SlowTiming_ReturnsFalse()
+    {
+        var timing = Timing(warnOnly: false, isComplete: true, slowResults: [SlowTest()]);
+
+        Assert.IsFalse(CoverageGate.Passes([PassedProject()], Summary([]), CoverageThresholds.All(0), timing));
+    }
+
+    /// <summary>Warn-only timing keeps exploratory coverage reports from failing on known slow tests.</summary>
+    [TestMethod]
+    public void Passes_WarnOnlySlowTiming_ReturnsTrue()
+    {
+        var timing = Timing(warnOnly: true, isComplete: true, slowResults: [SlowTest()]);
+
+        Assert.IsTrue(CoverageGate.Passes([PassedProject()], Summary([]), CoverageThresholds.All(0), timing));
+    }
+
+    /// <summary>Missing timing data fails the gate because the coverage run did not prove the test budget.</summary>
+    [TestMethod]
+    public void Passes_MissingTiming_ReturnsFalse()
+    {
+        var timing = Timing(warnOnly: false, isComplete: false, slowResults: []);
+
+        Assert.IsFalse(CoverageGate.Passes([PassedProject()], Summary([]), CoverageThresholds.All(0), timing));
+    }
+
     /// <summary>Creates a passing test project result.</summary>
     private static TestProjectResult PassedProject() =>
         new("Tool.Test", "tests/Tool.Test/Tool.Test.csproj", 0, TimeSpan.Zero, "log", "coverage.json", "coverage.xml", "coverage.info");
+
+    /// <summary>Creates a timing summary for gate tests.</summary>
+    private static TestTimingSummary Timing(bool warnOnly, bool isComplete, IReadOnlyList<TestTimingResult> slowResults) =>
+        new(TimeSpan.FromMilliseconds(100), warnOnly, isComplete, 1, slowResults, "timing.md", "timing.csv");
+
+    /// <summary>Creates a slow timing result for gate tests.</summary>
+    private static TestTimingResult SlowTest() =>
+        new("Slow", "Passed", TimeSpan.FromMilliseconds(150), "run.trx");
 
     /// <summary>Creates a fully covered summary with configurable unmeasured modules.</summary>
     private static CoverageSummary Summary(IReadOnlyList<string> unmeasuredModules) =>

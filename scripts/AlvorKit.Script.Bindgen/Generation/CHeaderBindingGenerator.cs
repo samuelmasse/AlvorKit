@@ -22,32 +22,39 @@ internal sealed class CHeaderBindingGenerator(BindgenOptions options)
     {
         await sourceResolver.EnsureSourceAsync(library);
         var translationUnitPath = translationUnitWriter.Write(library);
-        EnsureShimFileExists(library);
+        try
+        {
+            EnsureShimFileExists(library);
 
-        Console.WriteLine(
-            $"Parsing {library.Config.ImplFile ?? "tu"} + {library.Config.Header} " +
-            $"({library.Config.NativeLibrary} {library.Tag})");
-        var model = ParsePrimaryModel(library, translationUnitPath);
-        model = UpdateSizeofShimIfNeeded(library, translationUnitPath, model);
+            Console.WriteLine(
+                $"Parsing {library.Config.ImplFile ?? "tu"} + {library.Config.Header} " +
+                $"({library.Config.NativeLibrary} {library.Tag})");
+            var model = ParsePrimaryModel(library, translationUnitPath);
+            model = UpdateSizeofShimIfNeeded(library, translationUnitPath, model);
 
-        Console.WriteLine(
-            $"Model: {model.Functions.Count} functions, {model.Enums.Count} enums, " +
-            $"{model.Structs.Count} structs, {model.SkippedFunctions.Count} skipped");
-        CHeaderLayoutTargetVerifier.ValidateAllTargets(library, translationUnitPath, model);
+            Console.WriteLine(
+                $"Model: {model.Functions.Count} functions, {model.Enums.Count} enums, " +
+                $"{model.Structs.Count} structs, {model.SkippedFunctions.Count} skipped");
+            CHeaderLayoutTargetVerifier.ValidateAllTargets(library, translationUnitPath, model);
 
-        new BindingCodeEmitter(library.Config, library.Tag).Emit(
-            model,
-            library.RepositoryRoot,
-            outputRoot,
-            library.BindingVersion,
-            library.NativeVersion);
-        Console.WriteLine(
-            $"Emitted {library.Config.ApiProject} and {library.Config.BackendProject} " +
-            $"({library.BindingVersion}, native {library.NativeVersion})");
+            new BindingCodeEmitter(library.Config, library.Tag).Emit(
+                model,
+                library.RepositoryRoot,
+                outputRoot,
+                library.BindingVersion,
+                library.NativeVersion);
+            Console.WriteLine(
+                $"Emitted {library.Config.ApiProject} and {library.Config.BackendProject} " +
+                $"({library.BindingVersion}, native {library.NativeVersion})");
 
-        await exportVerifier.VerifyAsync(library, model);
-        SkippedFunctionReporter.Print(model.SkippedFunctions);
-        Console.WriteLine();
+            await exportVerifier.VerifyAsync(library, model);
+            SkippedFunctionReporter.Print(model.SkippedFunctions);
+            Console.WriteLine();
+        }
+        finally
+        {
+            TranslationUnitWriter.Delete(translationUnitPath);
+        }
     }
 
     /// <summary>Parses the primary target model that drives managed code emission.</summary>

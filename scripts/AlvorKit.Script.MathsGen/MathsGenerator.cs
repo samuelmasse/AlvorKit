@@ -1,6 +1,7 @@
 namespace AlvorKit.Script.MathsGen;
 
 /// <summary>Coordinates vector source generation and filesystem output.</summary>
+[ExcludeFromCodeCoverage(Justification = "Coordinates full generated-project filesystem output; focused emitter tests cover generation logic.")]
 internal static class MathsGenerator
 {
     /// <summary>The generated primitives project and package name.</summary>
@@ -14,6 +15,9 @@ internal static class MathsGenerator
 
     /// <summary>The project subdirectory that contains generated quaternion source files.</summary>
     public const string QuatDirectoryName = "Quat";
+
+    /// <summary>The project subdirectory that contains generated plane source files.</summary>
+    public const string PlaneDirectoryName = "Plane";
 
     /// <summary>The project subdirectory that contains generated box source files.</summary>
     public const string BoxDirectoryName = "Box";
@@ -30,6 +34,7 @@ internal static class MathsGenerator
         var vecDirectory = Path.Combine(projectDirectory, VecDirectoryName);
         var matDirectory = Path.Combine(projectDirectory, MatDirectoryName);
         var quatDirectory = Path.Combine(projectDirectory, QuatDirectoryName);
+        var planeDirectory = Path.Combine(projectDirectory, PlaneDirectoryName);
         var boxDirectory = Path.Combine(projectDirectory, BoxDirectoryName);
         var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         RecreateDirectory(projectDirectory);
@@ -37,6 +42,7 @@ internal static class MathsGenerator
         Directory.CreateDirectory(vecDirectory);
         Directory.CreateDirectory(matDirectory);
         Directory.CreateDirectory(quatDirectory);
+        Directory.CreateDirectory(planeDirectory);
         Directory.CreateDirectory(boxDirectory);
         foreach (var (fileName, source) in VectorInterfaceFileEmitter.EmitAll())
             File.WriteAllText(Path.Combine(vecDirectory, fileName), source, encoding);
@@ -60,6 +66,12 @@ internal static class MathsGenerator
         {
             var source = QuaternionFileEmitter.Emit(quaternion);
             File.WriteAllText(Path.Combine(quatDirectory, $"{quaternion.TypeName}.g.cs"), source, encoding);
+        }
+
+        foreach (var plane in PlaneCatalog.Planes)
+        {
+            var source = PlaneFileEmitter.Emit(plane);
+            File.WriteAllText(Path.Combine(planeDirectory, $"{plane.TypeName}.g.cs"), source, encoding);
         }
 
         foreach (var box in BoxCatalog.Boxes)

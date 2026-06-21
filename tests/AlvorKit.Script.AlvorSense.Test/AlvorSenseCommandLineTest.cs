@@ -104,28 +104,29 @@ public sealed class AlvorSenseCommandLineTest
     [TestMethod]
     public void Parse_SendCommandFromFile_ReturnsCommands()
     {
-        using var workspace = TempWorkspace.Create();
-        var commandsFile = workspace.Write("commands.txt", "render\nscreenshot out/shot.png\n");
+        var fileCommands = ParseFileCommands("--commands", "render\nscreenshot out/shot.png\n").Commands;
 
-        var command = (AlvorSenseSendCommand)AlvorSenseCommandLine.Parse(
-            ["send", "--id", "game-1", "--commands", commandsFile],
-            new StringReader("ignored"));
-
-        CollectionAssert.AreEqual(new[] { "render", "screenshot out/shot.png" }, command.Commands);
+        CollectionAssert.AreEqual(new[] { "render", "screenshot out/shot.png" }, fileCommands.ToArray());
     }
 
     /// <summary>Send commands accept --file as a clearer alias for command files.</summary>
     [TestMethod]
     public void Parse_SendCommandFromFileAlias_ReturnsCommands()
     {
+        var fileAliasCommands = ParseFileCommands("--file", "render\nstate\n").Commands;
+
+        CollectionAssert.AreEqual(new[] { "render", "state" }, fileAliasCommands.ToArray());
+    }
+
+    /// <summary>Parses send commands from a temporary command file.</summary>
+    private static AlvorSenseSendCommand ParseFileCommands(string option, string contents)
+    {
         using var workspace = TempWorkspace.Create();
-        var commandsFile = workspace.Write("commands.txt", "render\nstate\n");
+        var commandsFile = workspace.Write("commands.txt", contents);
 
-        var command = (AlvorSenseSendCommand)AlvorSenseCommandLine.Parse(
-            ["send", "--id", "game-1", "--file", commandsFile],
+        return (AlvorSenseSendCommand)AlvorSenseCommandLine.Parse(
+            ["send", "--id", "game-1", option, commandsFile],
             new StringReader("ignored"));
-
-        CollectionAssert.AreEqual(new[] { "render", "state" }, command.Commands);
     }
 
     /// <summary>Stop commands parse the session id and timeout.</summary>

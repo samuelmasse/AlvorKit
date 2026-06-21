@@ -3,7 +3,7 @@ namespace AlvorKit.Script.Bindgen;
 /// <summary>Resolved bindgen filesystem paths and package names for one native library.</summary>
 public sealed partial class NativeLibraryBinding
 {
-    /// <summary>Workspace root under the current user's profile for downloaded sources.</summary>
+    /// <summary>Repository-local workspace root for downloaded sources.</summary>
     public string WorkRoot { get; }
 
     /// <summary>Resolved source directory after version token replacement.</summary>

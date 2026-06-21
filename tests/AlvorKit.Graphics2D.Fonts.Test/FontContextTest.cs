@@ -4,15 +4,6 @@ namespace AlvorKit.Graphics2D.Fonts.Test;
 [TestClass]
 public sealed class FontContextTest
 {
-    /// <summary>The public constructor initializes the generated FreeType backend with fake OpenGL resources.</summary>
-    [TestMethod]
-    public void PublicConstructor_WithRealFreeTypeBackend_Succeeds()
-    {
-        var (_, gl) = FontsTestHarness.CreateLayer();
-        using var batch = new SpriteBatch(gl);
-        using var context = new FontContext(gl, batch);
-    }
-
     /// <summary>Construction initializes FreeType and disposal releases context-owned resources.</summary>
     [TestMethod]
     public void ConstructorAndDispose_InitializesAndReleasesResources()

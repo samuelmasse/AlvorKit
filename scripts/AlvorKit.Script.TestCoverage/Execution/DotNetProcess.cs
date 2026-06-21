@@ -1,6 +1,7 @@
 namespace AlvorKit.Script.TestCoverage;
 
 /// <summary>Executes dotnet commands and captures combined process output.</summary>
+[ExcludeFromCodeCoverage(Justification = "Thin external process boundary for dotnet CLI execution.")]
 internal static class DotNetProcess
 {
     /// <summary>Runs dotnet with the supplied arguments from the repository root.</summary>

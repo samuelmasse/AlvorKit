@@ -77,7 +77,7 @@ internal static class VectorFileEmitter
         if (vector.Scalar.IsBool)
             return $"{vector.Dimension}-component Boolean vector used for component masks and comparison results.";
 
-        return $"{vector.Dimension}-component {vector.Scalar.Description} vector for game math and graphics APIs.";
+        return $"{vector.Dimension}-component {vector.Scalar.Description} vector.";
     }
 
     /// <summary>Returns XML documentation for primary constructor parameters.</summary>

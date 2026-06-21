@@ -208,6 +208,30 @@ Expect(projectionTextOk, "Matrix TryFormat should write into caller-owned spans.
 Expect(parsedProjectionOk, "Matrix TryParse should accept the invariant ToString representation.");
 ExpectCloseMat4(parsedProjection, projection, "Matrix ToString and TryParse should round-trip precise formatted values.");
 
+Section("Planes and shadows");
+
+var floorPlane = Plane3.CreateFromPointNormal((0f, 1f, 0f), Vec3.UnitY);
+Vec3 floatingPoint = (2f, 4f, -3f);
+var pointOnFloor = floorPlane.ProjectPoint(floatingPoint);
+var mirroredPoint = floorPlane.ReflectPoint(floatingPoint);
+var reflectedByMatrix = Mat4.TransformPoint(Mat4.CreateReflection(floorPlane), floatingPoint);
+var shadowPoint = Mat4.TransformPoint(Mat4.CreateShadow(new Vec3(0f, -1f, 0f), floorPlane), floatingPoint);
+Span<char> planeText = stackalloc char[64];
+var planeTextOk = floorPlane.TryFormat(planeText, out var planeCharsWritten, "0.###", CultureInfo.InvariantCulture);
+
+Print("floor plane", FormatPlane(floorPlane));
+Print("floating point", Format3(floatingPoint));
+Print("closest floor point", Format3(pointOnFloor));
+Print("mirrored point", Format3(mirroredPoint));
+Print("shadow point", Format3(shadowPoint));
+Print("plane span text", planeTextOk ? new string(planeText[..planeCharsWritten]) : "<too small>");
+
+ExpectClose(floorPlane.Evaluate(pointOnFloor), 0f, "Plane projection should land back on the plane.");
+ExpectClose3(pointOnFloor, (2f, 1f, -3f), "Plane ProjectPoint should move along the normal.");
+ExpectClose3(mirroredPoint, reflectedByMatrix, "CreateReflection should match Plane3.ReflectPoint.");
+ExpectClose3(shadowPoint, pointOnFloor, "Directional shadow projection should land on the plane.");
+Expect(planeTextOk, "Plane TryFormat should write into caller-owned spans.");
+
 Section("Quaternion rotations");
 
 Quat zQuarterTurn = Quat.CreateFromAxisAngle(Vec3.UnitZ, MathF.PI / 2f);
@@ -279,6 +303,10 @@ static string Format4(Vec4 value) =>
 
 // Formats a quaternion with invariant tuple-style text.
 static string FormatQuat(Quat value) =>
+    value.ToString("0.###", CultureInfo.InvariantCulture);
+
+// Formats a 3D plane with invariant coefficient text.
+static string FormatPlane(Plane3 value) =>
     value.ToString("0.###", CultureInfo.InvariantCulture);
 
 // Formats a compact 2D affine matrix with invariant tuple-style text.

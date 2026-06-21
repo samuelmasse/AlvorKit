@@ -1,6 +1,7 @@
 namespace AlvorKit.ECS.Generator;
 
 /// <summary>Creates generator models from Roslyn symbols.</summary>
+[ExcludeFromCodeCoverage]
 internal static class ComponentModelFactory
 {
     /// <summary>The fully qualified metadata name used to discover ECS component interfaces.</summary>

@@ -79,6 +79,27 @@ internal sealed record TestProjectResult(
     string CoverageCoberturaPath,
     string CoverageLcovPath);
 
+/// <summary>Per-test timing summary collected from TRX results emitted during coverage runs.</summary>
+/// <param name="MaxDuration">Maximum allowed duration for one test case.</param>
+/// <param name="WarnOnly">Whether slow tests should warn without failing coverage.</param>
+/// <param name="IsComplete">Whether TRX timing data was found for the run.</param>
+/// <param name="TotalCount">Total number of parsed test cases.</param>
+/// <param name="SlowResults">Test cases that exceeded the timing budget.</param>
+/// <param name="MarkdownPath">Absolute path to the human-readable timing report.</param>
+/// <param name="CsvPath">Absolute path to the machine-readable timing report.</param>
+internal sealed record TestTimingSummary(
+    TimeSpan MaxDuration,
+    bool WarnOnly,
+    bool IsComplete,
+    int TotalCount,
+    IReadOnlyList<TestTimingResult> SlowResults,
+    string MarkdownPath,
+    string CsvPath)
+{
+    /// <summary>Returns whether timing data satisfies the configured gate.</summary>
+    public bool Passes => IsComplete && (WarnOnly || SlowResults.Count == 0);
+}
+
 /// <summary>Captured process output and report metadata for a build or test project process.</summary>
 /// <param name="Result">Execution metadata written to coverage reports when relevant.</param>
 /// <param name="Output">Combined standard output and error produced by the process.</param>

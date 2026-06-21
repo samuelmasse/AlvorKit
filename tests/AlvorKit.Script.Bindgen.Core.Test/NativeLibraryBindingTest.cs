@@ -11,7 +11,7 @@ public sealed class NativeLibraryBindingTest
         using var workspace = TempWorkspace.Create();
         var repository = CreateRepository(workspace);
         CreateLibrary(repository, "fixture", tag: "1.2.3", revision: "4");
-        var config = TestConfig(workspace);
+        var config = TestConfig();
         config.SourceDir = "src-{tag}-{tagDashes}";
         config.IncludeSubdir = "include";
         config.SizeofShim = "src/shim.c";
@@ -26,8 +26,9 @@ public sealed class NativeLibraryBindingTest
         Assert.AreEqual("1.2.3.4", binding.BindingVersion);
         Assert.AreEqual("4", binding.NativeRevision);
         Assert.AreEqual("4", binding.BindingRevision);
-        Assert.AreEqual(config.WorkDir, binding.WorkRoot);
-        Assert.AreEqual(Path.Combine(config.WorkDir, "src-1.2.3-1-2-3"), binding.SourceDirectory);
+        var expectedWorkRoot = Path.Combine(repository.Root, "out", "native-work", config.WorkDir);
+        Assert.AreEqual(expectedWorkRoot, binding.WorkRoot);
+        Assert.AreEqual(Path.Combine(expectedWorkRoot, "src-1.2.3-1-2-3"), binding.SourceDirectory);
         Assert.AreEqual(Path.Combine(binding.SourceDirectory, "include"), binding.IncludeDirectory);
         Assert.AreEqual(Path.Combine(binding.SourceDirectory, "fixture.h"), binding.HeaderPath);
         Assert.AreEqual(Path.Combine(binding.Directory, "src", "shim.c"), binding.SizeofShimPath);
@@ -41,7 +42,7 @@ public sealed class NativeLibraryBindingTest
         using var workspace = TempWorkspace.Create();
         var repository = CreateRepository(workspace);
         CreateLibrary(repository, "opengl", bindingRevision: "7", writeTag: false);
-        var config = TestConfig(workspace);
+        var config = TestConfig();
         config.Kind = BindgenConfig.GlRegistryKind;
         config.NativeClass = "";
         config.NativeLibrary = "";
@@ -60,9 +61,10 @@ public sealed class NativeLibraryBindingTest
         Assert.AreEqual("4.6", binding.NativeVersion);
         Assert.AreEqual("", binding.NativeRevision);
         Assert.AreEqual("7", binding.BindingRevision);
-        Assert.AreEqual(Path.Combine(config.WorkDir, "registry-abc123"), binding.SourceDirectory);
-        Assert.AreEqual(Path.Combine(config.WorkDir, "docs-doc.1"), binding.DocDirectory);
-        Assert.AreEqual(Path.Combine(config.WorkDir, "docs-doc.1", "gl4"), binding.DocReadDirectory);
+        var expectedWorkRoot = Path.Combine(repository.Root, "out", "native-work", config.WorkDir);
+        Assert.AreEqual(Path.Combine(expectedWorkRoot, "registry-abc123"), binding.SourceDirectory);
+        Assert.AreEqual(Path.Combine(expectedWorkRoot, "docs-doc.1"), binding.DocDirectory);
+        Assert.AreEqual(Path.Combine(expectedWorkRoot, "docs-doc.1", "gl4"), binding.DocReadDirectory);
         Assert.AreEqual("abc123", binding.ReplaceVersionTokens("{tag}"));
         Assert.AreEqual("abc123", binding.ReplaceVersionTokens("{tagDashes}"));
         Assert.AreEqual("doc.1", binding.ReplaceVersionTokens("{docTag}"));
@@ -75,7 +77,7 @@ public sealed class NativeLibraryBindingTest
         using var workspace = TempWorkspace.Create();
         var repository = CreateRepository(workspace);
         CreateLibrary(repository, "fixture", tag: "1.2.3", revision: "4", bindingRevision: "9");
-        var config = TestConfig(workspace);
+        var config = TestConfig();
         WriteConfig(repository, "fixture", config);
 
         var binding = NativeLibraryBinding.Load(repository, "fixture");
@@ -107,6 +109,7 @@ public sealed class NativeLibraryBindingTest
             config.GlVersion = "4.6";
             config.DocUrl = "https://example.test/docs.tar.gz";
         }, "docTag is missing");
+        AssertInvalid("escaped-workdir", config => config.WorkDir = "../escape", "workDir must resolve inside out/native-work");
     }
 
     /// <summary>Creates a minimal repository layout that RepositoryLayout can discover.</summary>
@@ -165,8 +168,8 @@ public sealed class NativeLibraryBindingTest
             ("apiProject", config.ApiProject),
             ("backendProject", config.BackendProject));
 
-    /// <summary>Creates a valid C-header config with test-local work directories.</summary>
-    private static BindgenConfig TestConfig(TempWorkspace workspace) => new()
+    /// <summary>Creates a valid C-header config with a repo-local work directory name.</summary>
+    private static BindgenConfig TestConfig() => new()
     {
         Namespace = "Fixture",
         ApiClass = "FixtureApi",
@@ -175,7 +178,7 @@ public sealed class NativeLibraryBindingTest
         NativeClass = "FixtureNative",
         NativeLibrary = "fixture",
         Prefix = "fixture_",
-        WorkDir = workspace.CreateDirectory("work"),
+        WorkDir = "work",
         SourceDir = "source",
         Header = "fixture.h",
         ApiProject = "generated/Fixture",
@@ -188,7 +191,7 @@ public sealed class NativeLibraryBindingTest
         using var workspace = TempWorkspace.Create();
         var repository = CreateRepository(workspace);
         CreateLibrary(repository, name);
-        var config = TestConfig(workspace);
+        var config = TestConfig();
         mutate(config);
         WriteConfig(repository, name, config);
 

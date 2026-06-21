@@ -148,6 +148,11 @@ local generated bindings from packaged bindings. C# source and tests must
 compile the same way whether MSBuild selects a project reference or a package
 reference.
 
+Native package builds are intended for CI. Agents must NEVER run
+`scripts/AlvorKit.Script.NativeBuild`, invoke native runtime package builds, or
+install native build dependencies on a developer machine unless the user
+explicitly asks for that work and grants permission for that run.
+
 ## Generated Native Test Doubles
 
 Generated native binding API projects emit an abstract API class plus
@@ -337,6 +342,26 @@ because it may include other agents' changes. Run the repo-wide linter only for
 broad cross-repo changes, CI parity checks, or when explicitly requested. If
 scoped lint passes but repo-wide lint fails on unrelated files, report that
 instead of fixing unrelated work.
+
+## Unit Test Timing
+
+Direct agent-run unit test commands must go through the timing guard so per-test
+TRX durations are checked against the repository budget:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.TestTiming -- --max-duration-ms 1000 -- AlvorKit.slnx --no-build --no-restore
+```
+
+Pass the normal `dotnet test` target and options after the timing guard options.
+The guard adds a TRX logger, writes `slowest-tests.md` and `slowest-tests.csv`
+under `out/test-timing/runs/<run-id>/`, prints `WARNING AVKTESTTIMING` lines for
+tests slower than the budget, and exits nonzero when tests fail or any test
+exceeds the one-second budget. Use `--warn-only` only for temporary measurement while
+finding existing offenders; do not hand off with slow-test warnings unresolved.
+
+The coverage tool already runs tests and enforces the same timing budget from
+its own TRX output, so do not run a separate timing-guard pass after coverage
+unless the user asks for an independent non-instrumented timing check.
 
 ## Code Coverage
 

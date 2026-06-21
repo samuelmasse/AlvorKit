@@ -7,14 +7,18 @@ public sealed class BindingApiEmitterTest
     [TestMethod]
     public void Emit_DoesNotEmitConstantFields()
     {
-        using var workspace = TempWorkspace.Create();
+        var api = EmitApi();
+
+        StringAssert.Contains(api, "public partial class Test");
+        Assert.IsFalse(api.Contains("public const", StringComparison.Ordinal));
+    }
+
+    /// <summary>Emits the minimal API contract used by tests.</summary>
+    private static string EmitApi()
+    {
         var config = CHeaderTestConfig.Create();
         var model = new BindingModel([], [], [], [], [], [], []);
 
-        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
-
-        var api = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Test.cs"));
-        StringAssert.Contains(api, "public partial class Test");
-        Assert.IsFalse(api.Contains("public const", StringComparison.Ordinal));
+        return new BindingApiEmitter(new(config, "1.0.0")).ApiContract(model);
     }
 }

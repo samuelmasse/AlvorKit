@@ -30,7 +30,7 @@ public sealed partial class NativeLibraryBinding
         BindingVersion = VersionWithRevision(versionBase, bindingRevision);
         Version = BindingVersion;
 
-        WorkRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), config.WorkDir);
+        WorkRoot = ResolveWorkRoot(repositoryRoot, config.WorkDir);
         SourceDirectory = ResolvePath(WorkRoot, ReplaceVersionTokens(config.SourceDir));
     }
 
@@ -120,7 +120,29 @@ public sealed partial class NativeLibraryBinding
     private static string VersionWithRevision(string versionBase, string revision) =>
         revision.Length > 0 ? $"{versionBase}.{revision}" : versionBase;
 
+    /// <summary>Resolves the library workspace under the repository's local native work directory.</summary>
+    private static string ResolveWorkRoot(string repositoryRoot, string workDir)
+    {
+        var nativeWorkRoot = Path.GetFullPath(Path.Combine(repositoryRoot, "out", "native-work"));
+        var resolved = ResolvePath(nativeWorkRoot, workDir);
+        if (!IsInsideOrEqual(resolved, nativeWorkRoot))
+            throw new InvalidOperationException("workDir must resolve inside out/native-work.");
+
+        return resolved;
+    }
+
     /// <summary>Combines repo/config paths and normalizes separators for the host platform.</summary>
     private static string ResolvePath(string root, string relative) =>
         Path.GetFullPath(Path.Combine(root, relative));
+
+    /// <summary>Returns true when a resolved path is the expected directory or one of its descendants.</summary>
+    private static bool IsInsideOrEqual(string path, string directory)
+    {
+        var relative = Path.GetRelativePath(directory, path);
+        return relative == "."
+            || (relative != ".."
+                && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                && !relative.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
+                && !Path.IsPathRooted(relative));
+    }
 }

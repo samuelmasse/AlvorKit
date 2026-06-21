@@ -30,7 +30,7 @@ internal static class BoxFileEmitter
             ("ImplementedInterfaces", $"IBox{box.Dimension}<{box.TypeName}, {box.Scalar.CSharpName}, {box.VectorTypeName}>"));
 
     private static string TypeSummary(BoxSpec box) =>
-        $"Axis-aligned {box.Dimension}D {box.Scalar.Description} bounding box for spatial queries and game math.";
+        $"Axis-aligned {box.Dimension}D {box.Scalar.Description} bounding box for spatial queries.";
 
     private static string ExtremeVector(BoxSpec box, bool high)
     {

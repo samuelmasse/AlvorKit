@@ -48,7 +48,7 @@ internal static class QuaternionFileEmitter
     }
 
     private static string TypeSummary(QuaternionSpec quaternion) =>
-        $"{quaternion.Scalar.Description} quaternion for 3D rotations and orientation interpolation.";
+        $"{Capitalized(quaternion.Scalar.Description)} quaternion for 3D rotations and orientation interpolation.";
 
     private static string CrossScalarConversions(QuaternionSpec quaternion)
     {
@@ -75,38 +75,15 @@ internal static class QuaternionFileEmitter
             ? MathsTemplate.Fragment("quat-system-numerics.csfrag.tmpl", ("TypeName", quaternion.TypeName))
             : string.Empty;
 
-    private static string HalfLiteral(ScalarSpec scalar) => scalar.Kind switch
-    {
-        ScalarKind.Float => "0.5f",
-        ScalarKind.Double => "0.5d",
-        _ => "0.5",
-    };
+    private static string HalfLiteral(ScalarSpec scalar) => scalar.Kind == ScalarKind.Float ? "0.5f" : "0.5d";
 
-    private static string QuarterLiteral(ScalarSpec scalar) => scalar.Kind switch
-    {
-        ScalarKind.Float => "0.25f",
-        ScalarKind.Double => "0.25d",
-        _ => "0.25",
-    };
+    private static string QuarterLiteral(ScalarSpec scalar) => scalar.Kind == ScalarKind.Float ? "0.25f" : "0.25d";
 
-    private static string FourLiteral(ScalarSpec scalar) => scalar.Kind switch
-    {
-        ScalarKind.Float => "4f",
-        ScalarKind.Double => "4d",
-        _ => "4",
-    };
+    private static string FourLiteral(ScalarSpec scalar) => scalar.Kind == ScalarKind.Float ? "4f" : "4d";
 
-    private static string MinusOneLiteral(ScalarSpec scalar) => scalar.Kind switch
-    {
-        ScalarKind.Float => "-1f",
-        ScalarKind.Double => "-1d",
-        _ => "-1",
-    };
+    private static string MinusOneLiteral(ScalarSpec scalar) => scalar.Kind == ScalarKind.Float ? "-1f" : "-1d";
 
-    private static string ToleranceLiteral(ScalarSpec scalar) => scalar.Kind switch
-    {
-        ScalarKind.Float => "1e-6f",
-        ScalarKind.Double => "1e-12d",
-        _ => "0",
-    };
+    private static string ToleranceLiteral(ScalarSpec scalar) => scalar.Kind == ScalarKind.Float ? "1e-6f" : "1e-12d";
+
+    private static string Capitalized(string value) => char.ToUpperInvariant(value[0]) + value[1..];
 }

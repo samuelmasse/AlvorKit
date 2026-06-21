@@ -49,6 +49,8 @@ internal static class MatrixFileEmitter
             interfaces.Add($"IMat4QuaternionRotation<{matrix.TypeName}, {matrix.Scalar.CSharpName}, " +
                 $"{matrix.Scalar.VectorName(3)}, {matrix.Scalar.VectorName(4)}, {matrix.Scalar.QuaternionName()}, " +
                 $"{matrix.Scalar.MatrixName(3, 3)}>");
+            interfaces.Add($"IMat4PlaneTransform<{matrix.TypeName}, {matrix.Scalar.CSharpName}, " +
+                $"{matrix.Scalar.VectorName(3)}, {matrix.Scalar.VectorName(4)}, {matrix.Scalar.PlaneName()}>");
             if (matrix.Scalar.Kind == ScalarKind.Float)
                 interfaces.Add($"IMat4SystemNumerics<{matrix.TypeName}>");
         }
@@ -83,7 +85,7 @@ internal static class MatrixFileEmitter
     private static string TypeSummary(MatrixSpec matrix)
     {
         var shape = matrix.IsSquare ? $"{matrix.Columns}x{matrix.Rows}" : $"{matrix.Columns}-column, {matrix.Rows}-row";
-        return $"Column-major {shape} {matrix.Scalar.Description} matrix for game math and graphics APIs.";
+        return $"Column-major {shape} {matrix.Scalar.Description} matrix.";
     }
 
     private static string ConstructorParameters(MatrixSpec matrix)

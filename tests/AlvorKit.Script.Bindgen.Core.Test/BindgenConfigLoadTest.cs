@@ -9,21 +9,8 @@ public sealed class BindgenConfigLoadTest
     public void Load_LoadsConfigCaseInsensitively()
     {
         using var workspace = TempWorkspace.Create();
-        var conf = Path.Combine(workspace.Root, "conf");
-        Directory.CreateDirectory(conf);
-        File.WriteAllText(Path.Combine(conf, "bindgen.yml"), """
+        WriteMinimalConfig(workspace.Root, """
             NAMESPACE: Fixture.Native
-            apiClass: FixtureApi
-            apiSummary: Fixture API.
-            backendClass: FixtureBackend
-            nativeClass: FixtureNative
-            nativeLibrary: fixture
-            prefix: fixture_
-            workDir: fixture-work
-            sourceDir: fixture-source
-            header: fixture.h
-            apiProject: generated/Fixture
-            backendProject: generated/Fixture.Backend
             """);
 
         var config = BindgenConfig.Load(workspace.Root);
@@ -107,5 +94,26 @@ public sealed class BindgenConfigLoadTest
         Assert.AreEqual("count", config.CountedSpanParams["fixture_icons"]["images"]);
         CollectionAssert.AreEqual(new[] { "fixture_raw" }, config.AdvancedFunctions);
         Assert.IsTrue(config.XxHashConvenience);
+    }
+
+    /// <summary>Writes a complete config file with caller-provided leading entries.</summary>
+    private static void WriteMinimalConfig(string root, string prefix)
+    {
+        var conf = Path.Combine(root, "conf");
+        Directory.CreateDirectory(conf);
+        File.WriteAllText(Path.Combine(conf, "bindgen.yml"), $$"""
+            {{prefix}}
+            apiClass: FixtureApi
+            apiSummary: Fixture API.
+            backendClass: FixtureBackend
+            nativeClass: FixtureNative
+            nativeLibrary: fixture
+            prefix: fixture_
+            workDir: fixture-work
+            sourceDir: fixture-source
+            header: fixture.h
+            apiProject: generated/Fixture
+            backendProject: generated/Fixture.Backend
+            """);
     }
 }

@@ -20,8 +20,8 @@ internal sealed record LibraryBuildContext(
     /// <summary>Package version formed from version/TAG and version/REVISION.</summary>
     public string NativeVersion => NativeRevision.Length > 0 ? $"{Tag}.{NativeRevision}" : Tag;
 
-    /// <summary>User-profile work root for cached source and build directories.</summary>
-    public string WorkRoot => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Metadata.WorkDir);
+    /// <summary>Repository-local work root for cached source and build directories.</summary>
+    public string WorkRoot => ResolvePath(Path.Combine(RepositoryRoot, "out", "native-work"), Metadata.WorkDir);
 
     /// <summary>Directory where the upstream source archive is extracted.</summary>
     public string SourceDirectory => Path.Combine(WorkRoot, ReplaceVersionTokens(Metadata.SourceDir));
@@ -63,4 +63,26 @@ internal sealed record LibraryBuildContext(
     /// <summary>Returns a CMake-produced file path under the target build directory.</summary>
     public string BuildFile(TargetRid target, string relativePath) =>
         Path.Combine([BuildDirectory(target), .. relativePath.Split('/')]);
+
+    /// <summary>Combines and normalizes a root-relative path that must stay under the root.</summary>
+    private static string ResolvePath(string root, string relative)
+    {
+        var normalizedRoot = Path.GetFullPath(root);
+        var resolved = Path.GetFullPath(Path.Combine(normalizedRoot, relative));
+        if (!IsInsideOrEqual(resolved, normalizedRoot))
+            throw new InvalidOperationException("workDir must resolve inside out/native-work.");
+
+        return resolved;
+    }
+
+    /// <summary>Returns true when a resolved path is the expected directory or one of its descendants.</summary>
+    private static bool IsInsideOrEqual(string path, string directory)
+    {
+        var relative = Path.GetRelativePath(directory, path);
+        return relative == "."
+            || (relative != ".."
+                && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                && !relative.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
+                && !Path.IsPathRooted(relative));
+    }
 }

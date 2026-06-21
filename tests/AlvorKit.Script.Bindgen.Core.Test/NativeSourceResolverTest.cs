@@ -71,7 +71,7 @@ public sealed class NativeSourceResolverTest
         Directory.CreateDirectory(version);
         File.WriteAllText(Path.Combine(version, "TAG"), "1.0.0");
         var repository = RepositoryLayout.FindFrom(workspace.Root);
-        var config = TestConfig(workspace);
+        var config = TestConfig();
         configure?.Invoke(config);
         WriteConfig(conf, config);
         return NativeLibraryBinding.Load(repository, "fixture");
@@ -98,7 +98,7 @@ public sealed class NativeSourceResolverTest
             ("docSubdir", config.DocSubdir));
 
     /// <summary>Creates a valid C-header config for resolver tests.</summary>
-    private static BindgenConfig TestConfig(TempWorkspace workspace) => new()
+    private static BindgenConfig TestConfig() => new()
     {
         Namespace = "Fixture",
         ApiClass = "FixtureApi",
@@ -107,7 +107,7 @@ public sealed class NativeSourceResolverTest
         NativeClass = "FixtureNative",
         NativeLibrary = "fixture",
         Prefix = "fixture_",
-        WorkDir = workspace.CreateDirectory("work"),
+        WorkDir = "work",
         SourceDir = "source",
         Header = "fixture.h",
         ApiProject = "generated/Fixture",

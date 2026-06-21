@@ -30,7 +30,7 @@ public sealed partial class BindgenConfig
     /// <summary>Managed prefix applied to identifiers that would otherwise start with a digit.</summary>
     public string DigitNamePrefix { get; set; } = "Num";
 
-    /// <summary>Workspace directory under the current user's profile for downloaded sources.</summary>
+    /// <summary>Workspace directory under the repository-local native work root for downloaded sources.</summary>
     public required string WorkDir { get; set; }
 
     /// <summary>Source directory path relative to <see cref="WorkDir"/> after version token replacement.</summary>

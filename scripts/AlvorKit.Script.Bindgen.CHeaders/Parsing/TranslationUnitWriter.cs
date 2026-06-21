@@ -11,11 +11,19 @@ public sealed class TranslationUnitWriter
             ? ImplementationFileWithoutHeaderOnlySwitch(library)
             : string.Join('\n', library.Config.TuLines);
 
-        var directory = Path.Combine(Path.GetTempPath(), "AlvorKit.Bindgen", $"{library.Name}-{Guid.NewGuid():N}");
+        var directory = Path.Combine(library.WorkRoot, "translation-units", $"{library.Name}-{Guid.NewGuid():N}");
         Directory.CreateDirectory(directory);
         var path = Path.Combine(directory, "bindgen.c");
         File.WriteAllText(path, content);
         return path;
+    }
+
+    /// <summary>Deletes a generated translation unit directory after parsing is complete.</summary>
+    public static void Delete(string translationUnitPath)
+    {
+        var directory = Path.GetDirectoryName(translationUnitPath);
+        if (directory is not null && Directory.Exists(directory))
+            Directory.Delete(directory, recursive: true);
     }
 
     /// <summary>Returns implementation-file content with header-only implementation switches removed.</summary>

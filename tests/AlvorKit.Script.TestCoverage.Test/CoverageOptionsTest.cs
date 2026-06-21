@@ -23,6 +23,8 @@ public sealed class CoverageOptionsTest
         Assert.IsTrue(options.GenerateLcovReport);
         Assert.IsNull(options.OutputRoot);
         Assert.IsNull(options.RunId);
+        Assert.AreEqual(TimeSpan.FromSeconds(1), options.MaxTestDuration);
+        Assert.IsFalse(options.TestTimingWarnOnly);
     }
 
     /// <summary>Short options override configuration and all metric thresholds.</summary>
@@ -90,6 +92,16 @@ public sealed class CoverageOptionsTest
         var options = CoverageOptions.Parse(["--max-parallel", "2"]);
 
         Assert.AreEqual(2, options.MaxParallel);
+    }
+
+    /// <summary>Test timing options configure the per-test duration budget.</summary>
+    [TestMethod]
+    public void Parse_TestTimingOptions_ReturnsValues()
+    {
+        var options = CoverageOptions.Parse(["--max-test-duration-ms", "25.5", "--test-timing-warn-only"]);
+
+        Assert.AreEqual(TimeSpan.FromMilliseconds(25.5), options.MaxTestDuration);
+        Assert.IsTrue(options.TestTimingWarnOnly);
     }
 
     /// <summary>Output routing options select a parent directory and stable run directory name.</summary>
@@ -189,5 +201,12 @@ public sealed class CoverageOptionsTest
     public void Parse_OutOfRangeMaxParallel_Throws()
     {
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => CoverageOptions.Parse(["--max-parallel", "0"]));
+    }
+
+    /// <summary>Test timing thresholds must be positive.</summary>
+    [TestMethod]
+    public void Parse_OutOfRangeMaxTestDuration_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => CoverageOptions.Parse(["--max-test-duration-ms", "0"]));
     }
 }

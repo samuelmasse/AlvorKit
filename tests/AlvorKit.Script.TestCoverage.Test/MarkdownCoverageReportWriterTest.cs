@@ -19,14 +19,32 @@ public sealed class MarkdownCoverageReportWriterTest
         {
             new TestProjectResult("Tool.Test", "tests/Tool.Test/Tool.Test.csproj", 1, TimeSpan.FromSeconds(1.25), "log", "json", "xml", "info")
         };
+        var timing = new TestTimingSummary(
+            TimeSpan.FromMilliseconds(100),
+            WarnOnly: false,
+            IsComplete: true,
+            TotalCount: 2,
+            SlowResults: [new("Slow|Test", "Passed", TimeSpan.FromMilliseconds(150), workspace.PathFor("run.trx"))],
+            MarkdownPath: Path.Combine(workspace.Root, "test-output", "slowest-tests.md"),
+            CsvPath: Path.Combine(workspace.Root, "test-output", "slowest-tests.csv"));
 
         var options = new CoverageOptions("Debug", CoverageThresholds.Default, ["Tool.Test"], ["Tool"], ["xxhash"], 1, true, true, true);
         var output = OutputPaths(workspace.Root, path);
 
-        MarkdownCoverageReportWriter.Write(workspace.Root, output, DateTimeOffset.Parse("2026-06-15T00:00:00Z"), options, false, summary, results);
+        MarkdownCoverageReportWriter.Write(
+            workspace.Root,
+            output,
+            DateTimeOffset.Parse("2026-06-15T00:00:00Z"),
+            options,
+            false,
+            summary,
+            results,
+            timing);
         var markdown = File.ReadAllText(path);
 
         StringAssert.Contains(markdown, "## Totals");
+        StringAssert.Contains(markdown, "## Test Timing");
+        StringAssert.Contains(markdown, "Slow\\|Test");
         StringAssert.Contains(markdown, "Thresholds: 95% line, 85% branch, and 95% method coverage");
         StringAssert.Contains(markdown, "Test project filter: `Tool.Test`");
         StringAssert.Contains(markdown, "Source project filter: `Tool`");
@@ -80,6 +98,37 @@ public sealed class MarkdownCoverageReportWriterTest
 
         StringAssert.Contains(markdown, "| Tool.Test | PASS | 1.0s | `log` |");
         Assert.IsFalse(markdown.Contains("scripts/Tool/Source.cs", StringComparison.Ordinal));
+    }
+
+    /// <summary>The report calls out missing timing data when TRX output was not found.</summary>
+    [TestMethod]
+    public void Write_MissingTiming_WritesTimingWarning()
+    {
+        using var workspace = TempWorkspace.Create();
+        var path = workspace.PathFor("coverage-summary.md");
+        var summary = new CoverageSummary(new(new(1, 1), new(1, 1), new(1, 1)), [], [], []);
+        var timing = new TestTimingSummary(
+            TimeSpan.FromMilliseconds(100),
+            WarnOnly: false,
+            IsComplete: false,
+            TotalCount: 0,
+            SlowResults: [],
+            MarkdownPath: Path.Combine(workspace.Root, "timing.md"),
+            CsvPath: Path.Combine(workspace.Root, "timing.csv"));
+        var options = new CoverageOptions("Debug", CoverageThresholds.Default, [], [], [], 1, false, false, false);
+        var output = OutputPaths(workspace.Root, path);
+
+        MarkdownCoverageReportWriter.Write(
+            workspace.Root,
+            output,
+            DateTimeOffset.Parse("2026-06-15T00:00:00Z"),
+            options,
+            false,
+            summary,
+            [],
+            timing);
+
+        StringAssert.Contains(File.ReadAllText(path), "No TRX timing data was found for this run.");
     }
 
     /// <summary>Builds output paths whose human report is controlled by the test.</summary>

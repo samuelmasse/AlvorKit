@@ -24,7 +24,8 @@ public sealed class BindingDocsTest
         StringAssert.Contains(docs, "<param name=\"input\"><c>input</c> - Input value.</param>");
         StringAssert.Contains(docs, "<returns>Return value from <c>test_value</c>: The value.</returns>");
         StringAssert.Contains(docs, "/// <remarks>");
-        StringAssert.Contains(docs, "/// <c>test_value</c>: Important.");
+        StringAssert.Contains(docs, "/// Important.");
+        Assert.IsFalse(docs.Contains("/// <c>test_value</c>: Important.", StringComparison.Ordinal));
         StringAssert.Contains(docs, "/// </remarks>");
     }
 
@@ -44,24 +45,46 @@ public sealed class BindingDocsTest
                 [],
                 null,
                 "Starts with a long explanation that should be wrapped across several XML documentation lines " +
-                "without losing the exact native anchor. Parameters handle The native handle. " +
+                "without losing the section breaks. Parameters handle The native handle. " +
                 "Return Value Nothing. Thread Safety Unsafe. See Also test_close()"));
 
         BindingDocs.Function(output, function);
 
         var docs = output.ToString();
-        StringAssert.Contains(docs, "/// <c>test_open</c>: Starts with a long explanation");
+        StringAssert.Contains(docs, "/// Starts with a long explanation");
         StringAssert.Contains(docs, "/// Parameters: handle The native handle.");
         StringAssert.Contains(docs, "/// Return Value: Nothing.");
         StringAssert.Contains(docs, "/// Thread Safety: Unsafe.");
         StringAssert.Contains(docs, "/// See Also: test_close()");
-        Assert.IsFalse(docs.Contains("<remarks><c>test_open</c>", StringComparison.Ordinal));
+        Assert.IsFalse(docs.Contains("<c>test_open</c>: Starts", StringComparison.Ordinal));
         Assert.IsTrue(docs.Split(Environment.NewLine).All(line => line.Length <= 170));
     }
 
-    /// <summary>Function remarks that begin with a section heading keep the native anchor on that first paragraph.</summary>
+    /// <summary>Long unbroken remark text wraps at the configured column without exceeding repository line length.</summary>
     [TestMethod]
-    public void Function_HeadingFirstRemarks_KeepsAnchorWithFirstParagraph()
+    public void Function_LongUnbrokenRemarks_WrapsAtColumn()
+    {
+        var output = new StringBuilder();
+        var longWord = new string('x', 150);
+        var function = new BindingFunction(
+            NativeName: "test_wrap",
+            ManagedName: "Wrap",
+            ReturnType: "void",
+            ReturnInteropType: "void",
+            Parameters: [],
+            Documentation: new("wraps text", [], null, longWord));
+
+        BindingDocs.Function(output, function);
+
+        var docs = output.ToString();
+        StringAssert.Contains(docs, $"/// {longWord[..130]}");
+        StringAssert.Contains(docs, $"/// {longWord[130..]}");
+        Assert.IsTrue(docs.Split(Environment.NewLine).All(line => line.Length <= 170));
+    }
+
+    /// <summary>Function remarks that begin with a section heading do not repeat the summary's native anchor.</summary>
+    [TestMethod]
+    public void Function_HeadingFirstRemarks_DoesNotRepeatNativeAnchor()
     {
         var output = new StringBuilder();
         var function = new BindingFunction(
@@ -75,7 +98,8 @@ public sealed class BindingDocsTest
         BindingDocs.Function(output, function);
 
         var docs = output.ToString();
-        StringAssert.Contains(docs, "/// <c>test_query</c>: Parameters: handle The native handle.");
+        StringAssert.Contains(docs, "/// Parameters: handle The native handle.");
+        Assert.IsFalse(docs.Contains("/// <c>test_query</c>: Parameters", StringComparison.Ordinal));
         StringAssert.Contains(docs, "/// Return Value: A result.");
     }
 
@@ -98,6 +122,25 @@ public sealed class BindingDocsTest
         StringAssert.Contains(parameter, "    /// Native <c>value</c> parameter documentation");
         StringAssert.Contains(parameter, "    /// </param>");
         Assert.IsTrue((summary + parameter).Split(Environment.NewLine).All(line => line.Length <= 170));
+    }
+
+    /// <summary>Standalone summary docs wrap spaced text and still emit an empty element for empty input.</summary>
+    [TestMethod]
+    public void Summary_LongSpacedAndEmptyText_EmitExpectedBlocks()
+    {
+        var longSpaced = string.Join(' ', new[]
+        {
+            "Native", "documentation", "with", "many", "short", "words", "that", "should", "wrap", "at", "a", "space",
+            "instead", "of", "falling", "back", "to", "the", "hard", "column", "split", "used", "for", "unbroken", "text.",
+        });
+
+        var summary = BindingDocs.Summary(longSpaced, "    ");
+        var emptySummary = BindingDocs.Summary("", "    ");
+
+        StringAssert.Contains(summary, "    /// Native documentation with many short words");
+        StringAssert.Contains(emptySummary, "    /// <summary>");
+        StringAssert.Contains(emptySummary, "    /// </summary>");
+        Assert.IsTrue((summary + emptySummary).Split(Environment.NewLine).All(line => line.Length <= 170));
     }
 
     /// <summary>Function docs fall back for missing native text and describe bool interop projections.</summary>

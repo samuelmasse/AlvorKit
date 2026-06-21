@@ -1,0 +1,59 @@
+namespace AlvorKit.Script.TestTiming;
+
+/// <summary>Options that describe one guarded unit test timing run.</summary>
+/// <param name="repoRoot">Repository root used as the <c>dotnet test</c> working directory.</param>
+/// <param name="resultsDirectory">Directory where TRX files and timing reports are written.</param>
+/// <param name="maxDuration">Maximum allowed duration for one test case.</param>
+/// <param name="warnOnly">Whether slow tests should warn without changing the exit code.</param>
+/// <param name="trxPath">Existing TRX file to inspect instead of running tests.</param>
+/// <param name="dotNetTestArguments">Arguments forwarded after <c>dotnet test</c>.</param>
+/// <param name="isHelp">Whether these options represent a help request.</param>
+internal sealed class TestTimingOptions(
+    string repoRoot,
+    string resultsDirectory,
+    TimeSpan maxDuration,
+    bool warnOnly,
+    string? trxPath,
+    IEnumerable<string> dotNetTestArguments,
+    bool isHelp = false)
+{
+    /// <summary>The default maximum allowed duration for one test case.</summary>
+    public static readonly TimeSpan DefaultMaxDuration = TimeSpan.FromSeconds(1);
+
+    /// <summary>The default <c>dotnet test</c> arguments used when callers do not provide their own target.</summary>
+    public static IReadOnlyList<string> DefaultDotNetTestArguments { get; } =
+        ["AlvorKit.slnx", "--no-restore", "--verbosity", "minimal"];
+
+    /// <summary>Repository root used as the <c>dotnet test</c> working directory.</summary>
+    public string RepoRoot { get; } = repoRoot;
+
+    /// <summary>Directory where TRX files and timing reports are written.</summary>
+    public string ResultsDirectory { get; } = resultsDirectory;
+
+    /// <summary>Maximum allowed duration for one test case.</summary>
+    public TimeSpan MaxDuration { get; } = maxDuration;
+
+    /// <summary>Whether slow tests should warn without changing the exit code.</summary>
+    public bool WarnOnly { get; } = warnOnly;
+
+    /// <summary>Existing TRX file to inspect instead of running tests.</summary>
+    public string? TrxPath { get; } = trxPath;
+
+    /// <summary>Arguments forwarded after <c>dotnet test</c>.</summary>
+    public IReadOnlyList<string> DotNetTestArguments { get; } = dotNetTestArguments.ToArray();
+
+    /// <summary>Whether these options represent a help request.</summary>
+    public bool IsHelp { get; } = isHelp;
+
+    /// <summary>Creates a help sentinel without requiring the runner to execute.</summary>
+    /// <param name="repoRoot">Repository root discovered by the parser.</param>
+    public static TestTimingOptions Help(string repoRoot) =>
+        new(
+            repoRoot,
+            Path.Combine(repoRoot, "out", "test-timing", "runs", "help"),
+            DefaultMaxDuration,
+            warnOnly: true,
+            trxPath: null,
+            dotNetTestArguments: [],
+            isHelp: true);
+}

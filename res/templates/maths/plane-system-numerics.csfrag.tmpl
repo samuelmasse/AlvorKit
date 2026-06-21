@@ -1,0 +1,8 @@
+
+    /// <summary>Converts a {{TypeName}} to <see cref="System.Numerics.Plane" />.</summary>
+    public static explicit operator System.Numerics.Plane({{TypeName}} value) =>
+        new(value.Normal, value.Offset);
+
+    /// <summary>Converts a <see cref="System.Numerics.Plane" /> to a {{TypeName}}.</summary>
+    public static explicit operator {{TypeName}}(System.Numerics.Plane value) =>
+        new(value.Normal, value.D);

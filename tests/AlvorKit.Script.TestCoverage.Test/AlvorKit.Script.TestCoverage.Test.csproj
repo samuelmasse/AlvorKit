@@ -4,4 +4,8 @@
         <ProjectReference Include="..\..\scripts\AlvorKit.Script.TestCoverage\AlvorKit.Script.TestCoverage.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="AlvorKit.Script.TestTiming" />
+    </ItemGroup>
+
 </Project>

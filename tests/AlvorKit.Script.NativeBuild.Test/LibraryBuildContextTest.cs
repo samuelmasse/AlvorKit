@@ -16,6 +16,7 @@ public sealed class LibraryBuildContextTest
 
             Assert.AreEqual(root, context.RepositoryRoot);
             Assert.AreEqual("1.2.3.2", context.NativeVersion);
+            Assert.AreEqual(Path.Combine(root, "out", "native-work", workDir), context.WorkRoot);
             StringAssert.EndsWith(context.SourceDirectory, Path.Combine(workDir, "src-1.2.3"));
             StringAssert.EndsWith(context.OutputFile(TargetRid.Parse("linux-x64")), Path.Combine("runtimes", "linux-x64", "native", "libsample.so"));
             StringAssert.EndsWith(context.BuildFile(TargetRid.Parse("linux-x64"), "bin/libsample.so"), Path.Combine("build-linux-x64", "bin", "libsample.so"));
@@ -34,6 +35,25 @@ public sealed class LibraryBuildContextTest
         try
         {
             Assert.AreEqual("sample", string.Join(",", new RepositoryLayout(root).NativeBuildLibraries()));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    /// <summary>Native build work directories must stay under the repository native work root.</summary>
+    [TestMethod]
+    public void WorkRoot_EscapedWorkDir_Throws()
+    {
+        var root = TestRepositoryFactory.CreateSingleCLibrary("sample", "../escape");
+        try
+        {
+            var context = LibraryBuildContext.Load(new(root), "sample");
+
+            StringAssert.Contains(
+                Assert.ThrowsException<InvalidOperationException>(() => _ = context.WorkRoot).Message,
+                "workDir must resolve inside out/native-work");
         }
         finally
         {

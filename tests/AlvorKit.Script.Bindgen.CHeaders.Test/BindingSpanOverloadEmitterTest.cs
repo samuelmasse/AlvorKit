@@ -7,7 +7,6 @@ public sealed class BindingSpanOverloadEmitterTest
     [TestMethod]
     public void Emit_HandlesConfiguredPointerShapes()
     {
-        using var workspace = TempWorkspace.Create();
         var config = CHeaderTestConfig.Create();
         config.SpanOverloads = true;
         config.SpanParams = new() { ["test_mix"] = ["userdata"] };
@@ -38,9 +37,7 @@ public sealed class BindingSpanOverloadEmitterTest
             [],
             []);
 
-        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
-
-        var overloads = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestOverloads.cs"));
+        var overloads = new BindingOverloadEmitter(new(config, "1.0.0")).Overloads(model)!;
         Assert.IsFalse(overloads.Contains("Plain<", StringComparison.Ordinal));
         Assert.IsFalse(overloads.Contains("Raw<", StringComparison.Ordinal));
         Assert.IsFalse(overloads.Contains("Skip<", StringComparison.Ordinal));
@@ -63,7 +60,6 @@ public sealed class BindingSpanOverloadEmitterTest
     [TestMethod]
     public void Emit_AddsConfiguredCountedSpanOverload()
     {
-        using var workspace = TempWorkspace.Create();
         var config = CHeaderTestConfig.Create();
         config.CountedSpanParams = new()
         {
@@ -115,9 +111,7 @@ public sealed class BindingSpanOverloadEmitterTest
             [],
             []);
 
-        new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
-
-        var overloads = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestOverloads.cs"));
+        var overloads = new BindingOverloadEmitter(new(config, "1.0.0")).Overloads(model)!;
         StringAssert.Contains(overloads, "public void Icons(TestWindow window, ReadOnlySpan<TestImage> images)");
         StringAssert.Contains(overloads, "fixed (TestImage* imagesPtr = images)");
         StringAssert.Contains(overloads, "Icons(window, images.Length, imagesPtr);");

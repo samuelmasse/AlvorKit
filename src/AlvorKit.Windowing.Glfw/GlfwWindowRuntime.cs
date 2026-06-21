@@ -59,7 +59,7 @@ internal sealed class GlfwWindowRuntime
     internal CursorMode CursorMode
     {
         get => cursorModes.FromGlfw((GlfwCursorMode)glfw.GetInputMode(window, GlfwInputMode.Cursor));
-        set => glfw.SetInputMode(window, GlfwInputMode.Cursor, cursorModes.ToGlfw(value));
+        set => SetCursorMode(value);
     }
 
     /// <summary>Gets or sets the last requested swap interval state.</summary>
@@ -102,6 +102,14 @@ internal sealed class GlfwWindowRuntime
     {
         glfw.GetCursorPos(window, out var x, out var y);
         return new((float)x, (float)y);
+    }
+
+    /// <summary>Applies cursor mode and raw mouse motion state for mouselook-style capture.</summary>
+    private void SetCursorMode(CursorMode value)
+    {
+        glfw.SetInputMode(window, GlfwInputMode.Cursor, cursorModes.ToGlfw(value));
+        if (glfw.RawMouseMotionSupported())
+            glfw.SetInputMode(window, GlfwInputMode.RawMouseMotion, value == CursorMode.Disabled);
     }
 
     /// <summary>Applies the requested visibility through GLFW show and hide calls.</summary>

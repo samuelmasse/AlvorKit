@@ -4,6 +4,7 @@ namespace AlvorKit.Script.TestCoverage;
 /// <param name="repoRoot">Repository root used as the process working directory.</param>
 /// <param name="options">Validated command-line options for dotnet test.</param>
 /// <param name="sourceModules">Source assembly names included in coverage measurement.</param>
+[ExcludeFromCodeCoverage(Justification = "Builds and runs external dotnet processes; coverage workflow collaborators are tested directly.")]
 internal sealed class TestProjectRunner(string repoRoot, CoverageOptions options, IReadOnlyList<string> sourceModules)
 {
     /// <summary>Builds one test project before a later no-build coverage run.</summary>
@@ -33,7 +34,7 @@ internal sealed class TestProjectRunner(string repoRoot, CoverageOptions options
         var outputPrefix = Path.Combine(projectCoverageRoot, "coverage");
         var logPath = Path.Combine(projectCoverageRoot, "dotnet-test.log");
         var started = DateTimeOffset.UtcNow;
-        var result = await DotNetProcess.RunAsync(repoRoot, BuildTestArguments(testProject, outputPrefix, noBuild));
+        var result = await DotNetProcess.RunAsync(repoRoot, BuildTestArguments(testProject, outputPrefix, projectCoverageRoot, noBuild));
 
         await File.WriteAllTextAsync(logPath, result.Output);
 
@@ -59,7 +60,7 @@ internal sealed class TestProjectRunner(string repoRoot, CoverageOptions options
     }
 
     /// <summary>Builds the dotnet test command-line for one project.</summary>
-    private IReadOnlyList<string> BuildTestArguments(string testProject, string outputPrefix, bool noBuild)
+    private IReadOnlyList<string> BuildTestArguments(string testProject, string outputPrefix, string projectCoverageRoot, bool noBuild)
     {
         var arguments = new List<string>
         {
@@ -79,6 +80,10 @@ internal sealed class TestProjectRunner(string repoRoot, CoverageOptions options
 
         arguments.AddRange(
         [
+            "--logger",
+            "trx;LogFilePrefix=test-timing",
+            "--results-directory",
+            projectCoverageRoot,
             "/p:CollectCoverage=true",
             $"/p:CoverletOutput={outputPrefix}",
             $"/p:CoverletOutputFormat={string.Join("%2c", options.CoverletOutputFormats())}",

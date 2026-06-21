@@ -12,6 +12,10 @@ internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsV
     public int MaximizeWindowCalls { get; private set; }
     public int RestoreWindowCalls { get; private set; }
     public GlfwCursorMode LastCursorMode { get; private set; }
+    public bool IsRawMouseMotionSupported { get; set; }
+    public bool LastRawMouseMotion { get; private set; }
+    public int RawMouseMotionSupportedCalls { get; private set; }
+    public List<(GlfwInputMode Mode, int Value)> InputModeCalls { get; } = [];
 
     public override void GetWindowPos(GlfwWindow window, out int xpos, out int ypos)
     {
@@ -55,9 +59,23 @@ internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsV
 
     public override void HideWindow(GlfwWindow window) => isVisible = false;
 
-    public override void SetInputMode(GlfwWindow window, int mode, int value) => LastCursorMode = (GlfwCursorMode)value;
+    public override void SetInputMode(GlfwWindow window, int mode, int value)
+    {
+        InputModeCalls.Add(((GlfwInputMode)mode, value));
+        if (mode == (int)GlfwInputMode.Cursor)
+            LastCursorMode = (GlfwCursorMode)value;
+        else if (mode == (int)GlfwInputMode.RawMouseMotion)
+            LastRawMouseMotion = value != 0;
+    }
 
-    public override int GetInputMode(GlfwWindow window, int mode) => (int)LastCursorMode;
+    public override int GetInputMode(GlfwWindow window, int mode) =>
+        mode == (int)GlfwInputMode.RawMouseMotion ? LastRawMouseMotion ? 1 : 0 : (int)LastCursorMode;
+
+    public override bool RawMouseMotionSupported()
+    {
+        RawMouseMotionSupportedCalls++;
+        return IsRawMouseMotionSupported;
+    }
 
     public override void IconifyWindow(GlfwWindow window) => IconifyWindowCalls++;
 

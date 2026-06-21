@@ -12,9 +12,10 @@ internal static class CoverageReportWriter
         CoverageOptions options,
         bool passed,
         CoverageSummary summary,
-        IReadOnlyList<TestProjectResult> testResults)
+        IReadOnlyList<TestProjectResult> testResults,
+        TestTimingSummary? testTiming = null)
     {
-        AgentCoverageReportWriter.Write(repoRoot, output, started, generatedAt, options, passed, summary, testResults);
-        MarkdownCoverageReportWriter.Write(repoRoot, output, generatedAt, options, passed, summary, testResults);
+        AgentCoverageReportWriter.Write(repoRoot, output, started, generatedAt, options, passed, summary, testResults, testTiming);
+        MarkdownCoverageReportWriter.Write(repoRoot, output, generatedAt, options, passed, summary, testResults, testTiming);
     }
 }

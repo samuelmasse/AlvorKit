@@ -420,7 +420,7 @@ public sealed class GeneratedVectorTest
         Assert.IsFalse(none ? true : false);
     }
 
-    /// <summary>Generated two-component vectors include planar helpers common in game math APIs.</summary>
+    /// <summary>Generated two-component vectors include planar geometry helpers.</summary>
     [TestMethod]
     public void GeneratedPlanarHelpers_Work()
     {

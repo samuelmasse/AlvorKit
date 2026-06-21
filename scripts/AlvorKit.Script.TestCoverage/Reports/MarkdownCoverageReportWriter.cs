@@ -11,13 +11,15 @@ internal static class MarkdownCoverageReportWriter
         CoverageOptions options,
         bool passed,
         CoverageSummary summary,
-        IReadOnlyList<TestProjectResult> testResults)
+        IReadOnlyList<TestProjectResult> testResults,
+        TestTimingSummary? testTiming = null)
     {
         var builder = new StringBuilder();
         WriteHeader(builder, generatedAt, options, passed);
         WriteTotals(builder, summary.Totals);
         WriteModules(builder, summary);
         WriteTestProjects(builder, testResults);
+        MarkdownTestTimingSectionWriter.Write(builder, repoRoot, testTiming);
         WriteFiles(builder, summary.Files);
         WriteArtifacts(builder, CoverageArtifactPaths.Create(repoRoot, output, options));
         File.WriteAllText(output.HumanReport, builder.ToString());

@@ -73,6 +73,9 @@ internal sealed record ScalarSpec(
     /// <summary>Gets the quaternion type name for this scalar.</summary>
     public string QuaternionName() => $"Quat{Suffix}";
 
+    /// <summary>Gets the plane type name for this scalar.</summary>
+    public string PlaneName() => $"Plane3{Suffix}";
+
     /// <summary>Gets the box type name for this scalar and dimension.</summary>
     public string BoxName(int dimension) => $"Box{dimension}{Suffix}";
 }
