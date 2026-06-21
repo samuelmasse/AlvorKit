@@ -1,0 +1,56 @@
+    /// <summary>Gets or sets a column vector by zero-based index.</summary>
+    public {{ColumnType}} this[int column]
+    {
+        readonly get
+        {
+            if ((uint)column >= ColumnCount)
+                ThrowColumnIndexOutOfRange(column);
+
+            return Unsafe.Add(ref Unsafe.AsRef(in Column0), column);
+        }
+        set
+        {
+            if ((uint)column >= ColumnCount)
+                ThrowColumnIndexOutOfRange(column);
+
+            Unsafe.Add(ref Column0, column) = value;
+        }
+    }
+
+    /// <summary>Gets or sets a scalar component by zero-based column and row indexes.</summary>
+    public {{ScalarType}} this[int column, int row]
+    {
+        readonly get
+        {
+            if ((uint)column >= ColumnCount)
+                ThrowColumnIndexOutOfRange(column);
+
+            return Unsafe.Add(ref Unsafe.AsRef(in Column0), column)[row];
+        }
+        set
+        {
+            if ((uint)column >= ColumnCount)
+                ThrowColumnIndexOutOfRange(column);
+
+            {{ColumnType}}.ComponentRef(ref Unsafe.Add(ref Column0, column), row) = value;
+        }
+    }
+
+    /// <summary>Gets a mutable reference to a column by zero-based index.</summary>
+    public static ref {{ColumnType}} ColumnRef(ref {{TypeName}} value, int column)
+    {
+        if ((uint)column >= ColumnCount)
+            ThrowColumnIndexOutOfRange(column);
+
+        return ref Unsafe.Add(ref value.Column0, column);
+    }
+
+    /// <summary>Gets a mutable reference to a scalar component by zero-based column and row indexes.</summary>
+    public static ref {{ScalarType}} ComponentRef(ref {{TypeName}} value, int column, int row) =>
+        ref {{ColumnType}}.ComponentRef(ref ColumnRef(ref value, column), row);
+
+    /// <summary>Throws for invalid column indexes on the cold path.</summary>
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowColumnIndexOutOfRange(int column) =>
+        throw new ArgumentOutOfRangeException(nameof(column), column, "Index must be between 0 and {{MaxColumnIndex}}.");

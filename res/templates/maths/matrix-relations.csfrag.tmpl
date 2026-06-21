@@ -1,0 +1,43 @@
+    /// <summary>Returns a mask containing exact equality results for each column.</summary>
+    public static {{ColumnMaskType}} Equal({{TypeName}} left, {{TypeName}} right) =>
+        new(
+            {{ExactEqualColumns}});
+
+    /// <summary>Returns a mask containing component-wise epsilon equality results for each column.</summary>
+    public static {{ColumnMaskType}} Equal({{TypeName}} left, {{TypeName}} right, {{ScalarType}} epsilon) =>
+        new(
+            {{EpsilonEqualColumns}});
+
+    /// <summary>Returns a mask containing component-wise epsilon equality results for each column.</summary>
+    public static {{ColumnMaskType}} Equal({{TypeName}} left, {{TypeName}} right, {{TypeName}} epsilon) =>
+        new(
+            {{MatrixEpsilonEqualColumns}});
+
+    /// <summary>Returns a mask containing exact inequality results for each column.</summary>
+    public static {{ColumnMaskType}} NotEqual({{TypeName}} left, {{TypeName}} right) =>
+        ~Equal(left, right);
+
+    /// <summary>Returns a mask containing component-wise epsilon inequality results for each column.</summary>
+    public static {{ColumnMaskType}} NotEqual({{TypeName}} left, {{TypeName}} right, {{ScalarType}} epsilon) =>
+        ~Equal(left, right, epsilon);
+
+    /// <summary>Returns a mask containing component-wise epsilon inequality results for each column.</summary>
+    public static {{ColumnMaskType}} NotEqual({{TypeName}} left, {{TypeName}} right, {{TypeName}} epsilon) =>
+        ~Equal(left, right, epsilon);
+
+    /// <summary>Returns whether every component is within epsilon of zero.</summary>
+    public static bool IsNull({{TypeName}} value, {{ScalarType}} epsilon) =>
+        {{NullColumns}};
+
+    /// <summary>Returns whether every component is within epsilon of zero.</summary>
+    public readonly bool IsNull({{ScalarType}} epsilon) =>
+        IsNull(this, epsilon);
+
+    /// <summary>Returns whether this matrix has identity components within epsilon.</summary>
+    public static bool IsIdentity({{TypeName}} value, {{ScalarType}} epsilon) =>
+        {{IdentityExpression}};
+
+    /// <summary>Returns whether this matrix has identity components within epsilon.</summary>
+    public readonly bool IsIdentity({{ScalarType}} epsilon) =>
+        IsIdentity(this, epsilon);
+

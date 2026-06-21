@@ -1,0 +1,17 @@
+    /// <summary>Gets this matrix with orthonormalized columns.</summary>
+    public readonly {{TypeName}} Orthonormalized =>
+        Orthonormalize(this);
+
+    /// <summary>Returns a matrix with orthonormalized columns.</summary>
+    public static {{TypeName}} Orthonormalize({{TypeName}} value)
+    {
+        var column0 = {{Vector3Type}}.Normalize(value.Column0);
+        var column1 = value.Column1 - (column0 * {{Vector3Type}}.Dot(column0, value.Column1));
+        column1 = {{Vector3Type}}.Normalize(column1);
+        var column2 = value.Column2 -
+            (column0 * {{Vector3Type}}.Dot(column0, value.Column2)) -
+            (column1 * {{Vector3Type}}.Dot(column1, value.Column2));
+        column2 = {{Vector3Type}}.Normalize(column2);
+        return new {{TypeName}}(column0, column1, column2);
+    }
+

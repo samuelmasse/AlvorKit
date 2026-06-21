@@ -148,6 +148,19 @@ local generated bindings from packaged bindings. C# source and tests must
 compile the same way whether MSBuild selects a project reference or a package
 reference.
 
+## Generated Native Test Doubles
+
+Generated native binding API projects emit an abstract API class plus
+`<ApiClass>Noop` and a forwarding `<ApiClass>Wrapper`. For tests that need a
+native library double, subclass the generated noop and override only the calls
+the test observes or that construction needs. Use the wrapper when most calls
+should forward to a real backend and only a few need interception or recording.
+
+Keep native-library test doubles in tests. Do not add alternate runtime
+constructors, ownership flags, or native-free special cases to product classes
+just to avoid native calls in tests. Use the generated backend only when the
+test intentionally exercises the real native library.
+
 ## Package Version Properties
 
 Keep version properties in `AlvorKit.Packages.props` limited to generated
@@ -222,6 +235,12 @@ Avoid Java-style C# design and naming. Do not introduce generic `Factory`,
 `Manager`, `Service`, or similarly broad suffixes when a constructor, static
 `Create`, delegate, or domain-specific type name would express the intent more
 clearly.
+
+Generally avoid static helper types and static helper methods in hand-authored
+code. Prefer small instance collaborators with explicit dependencies, even when
+they are stateless today. Reserve static members for constants, operators,
+pure domain functions with no collaborator dependency, and framework-required
+entry points.
 
 ## Documentation Voice
 

@@ -6,11 +6,10 @@ public class AgentGlfwWindowHost : GlfwWindowHost
 {
     /// <summary>The environment variable whose presence selects deterministic agent mode.</summary>
     public const string AgentEnvironmentVariable = "ALVORKIT_WINDOWING_AGENT";
-
-    private readonly TextReader? agentInput;
-    private readonly TextWriter? agentOutput;
+    /// <summary>Raises deterministic input and frame events for this host.</summary>
     private readonly AgentWindowEventDriver agent;
-    private readonly AgentWindowScreenshot screenshot;
+    /// <summary>Runs scripted agent input and optional screenshot capture for this host.</summary>
+    private readonly AgentWindowCommandLoop commandLoop;
     private readonly AgentWindowState state = new();
     private readonly bool useAgent;
 
@@ -22,11 +21,13 @@ public class AgentGlfwWindowHost : GlfwWindowHost
         agent = CreateEventDriver();
         if (useAgent)
             base.IsVisible = false;
-        screenshot = new(gl);
+        commandLoop = new(this, gl);
     }
 
-    /// <summary>Creates a native-free deterministic agent host for tests.</summary>
+    /// <summary>Creates a deterministic agent host for tests.</summary>
     internal AgentGlfwWindowHost(
+        Glfw glfw,
+        GlfwWindow window,
         GlLayer gl,
         Vec2u clientSize,
         string title = "AlvorKit.Windowing",
@@ -34,14 +35,12 @@ public class AgentGlfwWindowHost : GlfwWindowHost
         bool isVSyncEnabled = true,
         TextReader? agentInput = null,
         TextWriter? agentOutput = null,
-        Action<GlLayer, Vec2u, string>? screenshotSave = null) : base()
+        Action<GlLayer, Vec2u, string>? screenshotSave = null) : base(glfw, window)
     {
         useAgent = true;
         state.Initialize(clientSize, title, isVisible, isVSyncEnabled);
         agent = CreateEventDriver();
-        this.agentInput = agentInput;
-        this.agentOutput = agentOutput;
-        screenshot = new(gl, screenshotSave);
+        commandLoop = new(this, gl, agentInput, agentOutput, screenshotSave);
     }
 
     /// <summary>Gets whether this host currently runs deterministic agent behavior.</summary>
@@ -85,31 +84,19 @@ public class AgentGlfwWindowHost : GlfwWindowHost
 
     /// <inheritdoc />
     public override Vec2 MousePosition
-    {
-        get => useAgent ? state.MousePosition : base.MousePosition;
-        set { if (useAgent) state.MousePosition = value; else base.MousePosition = value; }
-    }
+    { get => useAgent ? state.MousePosition : base.MousePosition; set { if (useAgent) state.MousePosition = value; else base.MousePosition = value; } }
 
     /// <inheritdoc />
     public override WindowState WindowState
-    {
-        get => useAgent ? state.WindowState : base.WindowState;
-        set { if (useAgent) state.WindowState = value; else base.WindowState = value; }
-    }
+    { get => useAgent ? state.WindowState : base.WindowState; set { if (useAgent) state.WindowState = value; else base.WindowState = value; } }
 
     /// <inheritdoc />
     public override CursorMode CursorMode
-    {
-        get => useAgent ? state.CursorMode : base.CursorMode;
-        set { if (useAgent) state.CursorMode = value; else base.CursorMode = value; }
-    }
+    { get => useAgent ? state.CursorMode : base.CursorMode; set { if (useAgent) state.CursorMode = value; else base.CursorMode = value; } }
 
     /// <inheritdoc />
     public override bool IsVSyncEnabled
-    {
-        get => useAgent ? state.IsVSyncEnabled : base.IsVSyncEnabled;
-        set { if (useAgent) state.IsVSyncEnabled = value; else base.IsVSyncEnabled = value; }
-    }
+    { get => useAgent ? state.IsVSyncEnabled : base.IsVSyncEnabled; set { if (useAgent) state.IsVSyncEnabled = value; else base.IsVSyncEnabled = value; } }
 
     /// <inheritdoc />
     public override string Title { get => useAgent ? state.Title : base.Title; set { if (useAgent) state.Title = value; else base.Title = value; } }
@@ -119,67 +106,16 @@ public class AgentGlfwWindowHost : GlfwWindowHost
 
     /// <inheritdoc />
     public override Vec2u ClientSize
-    {
-        get => useAgent ? state.ClientSize : base.ClientSize;
-        set
-        {
-            if (!useAgent)
-            {
-                base.ClientSize = value;
-                return;
-            }
-
-            SetAgentClientSize(value);
-        }
-    }
+    { get => useAgent ? state.ClientSize : base.ClientSize; set { if (useAgent) SetAgentClientSize(value); else base.ClientSize = value; } }
 
     /// <inheritdoc />
-    public override void Close()
-    {
-        if (!useAgent)
-            base.Close();
-        else agent.Close();
-    }
+    public override void Close() { if (useAgent) agent.Close(); else base.Close(); }
 
     /// <inheritdoc />
-    public override void SwapBuffers()
-    {
-        if (!useAgent)
-        {
-            base.SwapBuffers();
-            return;
-        }
-
-        state.SwapBuffersCount++;
-        if (HasNativeWindow)
-            base.SwapBuffers();
-    }
+    public override void SwapBuffers() { if (useAgent) state.SwapBuffersCount++; base.SwapBuffers(); }
 
     /// <inheritdoc />
-    public override void Run()
-    {
-        if (!useAgent)
-        {
-            base.Run();
-            return;
-        }
-
-        state.RunCount++;
-        var output = agentOutput ?? Console.Out;
-        var runner = new AgentWindowCommandRunner(this, output, CapturePng);
-        runner.WriteHelp();
-        runner.Run(agentInput ?? Console.In);
-    }
-
-    /// <inheritdoc />
-    public override nint GetProcAddress(string procname) => HasNativeWindow ? base.GetProcAddress(procname) : procname.Length;
-
-    /// <summary>Renders the current agent frame and writes the selected framebuffer to a PNG file.</summary>
-    private void CapturePng(string path)
-    {
-        agent.Render();
-        screenshot.Save(ClientSize, path);
-    }
+    public override void Run() { if (!useAgent) base.Run(); else { state.RunCount++; commandLoop.Run(); } }
 
     /// <summary>Creates the composed driver that raises protected host events.</summary>
     /// <returns>The configured event driver.</returns>
@@ -200,13 +136,12 @@ public class AgentGlfwWindowHost : GlfwWindowHost
             OnMove,
             SetAgentClientSize);
 
-    /// <summary>Applies an agent-mode client size to local state and the hidden native window, when present.</summary>
+    /// <summary>Applies an agent-mode client size to local state and the underlying GLFW window.</summary>
     /// <param name="size">Requested client size.</param>
     private void SetAgentClientSize(Vec2u size)
     {
         state.ClientSize = size;
-        if (HasNativeWindow)
-            base.ClientSize = state.ClientSize;
+        base.ClientSize = state.ClientSize;
     }
 
     private static bool IsAgentEnvironmentPresent() => Environment.GetEnvironmentVariable(AgentEnvironmentVariable) is not null;

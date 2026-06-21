@@ -81,6 +81,112 @@ Print("packed span", $"[{packed[0]:0.###}, {packed[1]:0.###}, {packed[2]:0.###}]
 ExpectClose3(roundTrip, direction, "Vec3 should round-trip through System.Numerics.Vector3.");
 ExpectClose3((packed[0], packed[1], packed[2]), direction, "CopyTo should preserve component order.");
 
+Section("Matrix algebra and layout");
+
+Mat3 scaleBasis = Mat3.CreateDiagonal((2f, 3f, 4f));
+var orthonormalBasis = scaleBasis.Orthonormalized;
+var outerProduct = Mat3.CreateOuterProduct((1f, 2f, 3f), (4f, 5f, 6f));
+var blendedBasis = Mat3.Lerp(Mat3.Identity, scaleBasis, 0.5f);
+Span<float> basisColumnMajor = stackalloc float[9];
+scaleBasis.CopyToColumnMajor(basisColumnMajor);
+
+Print("scale basis", FormatMat3(scaleBasis));
+Print("basis diagonal", Format3(scaleBasis.Diagonal));
+Print("basis trace", scaleBasis.Trace.ToString("0.###", CultureInfo.InvariantCulture));
+Print("basis determinant", scaleBasis.Determinant.ToString("0.###", CultureInfo.InvariantCulture));
+Print("outer product row 1", Format3(outerProduct.Row1));
+Print("lerped diagonal", Format3(blendedBasis.Diagonal));
+Print("packed first column", $"[{basisColumnMajor[0]:0.###}, {basisColumnMajor[1]:0.###}, {basisColumnMajor[2]:0.###}]");
+
+ExpectClose3(scaleBasis.Diagonal, (2f, 3f, 4f), "Matrix diagonal helpers should expose the primary scale terms.");
+ExpectClose(scaleBasis.Trace, 9f, "Matrix trace should add the square diagonal.");
+ExpectClose(scaleBasis.Determinant, 24f, "Diagonal matrix determinant should multiply the diagonal terms.");
+ExpectCloseMat3(orthonormalBasis, Mat3.Identity, "Orthonormalized should turn scaled basis vectors back into unit axes.");
+ExpectClose3(outerProduct.Row1, (8f, 10f, 12f), "Outer products should combine a column vector with a row vector.");
+ExpectClose3(blendedBasis.Diagonal, (1.5f, 2f, 2.5f), "Matrix interpolation should lerp each component.");
+
+Section("2D affine matrices");
+
+Mat3x2 spriteTransform =
+    Mat3x2.CreateTranslation(8f, 3f) *
+    Mat3x2.CreateRotation(MathF.PI / 2f) *
+    Mat3x2.CreateScale((2f, 1f));
+Vec2 localCorner = (1f, 2f);
+var worldCorner = Mat3x2.TransformPoint(spriteTransform, localCorner);
+var worldXAxis = Mat3x2.TransformVector(spriteTransform, Vec2.UnitX);
+var affineInverseOk = Mat3x2.TryInvert(spriteTransform, out var inverseSpriteTransform);
+var recoveredCorner = Mat3x2.TransformPoint(inverseSpriteTransform, worldCorner);
+System.Numerics.Matrix3x2 systemAffine = (System.Numerics.Matrix3x2)spriteTransform;
+Mat3x2 affineRoundTrip = (Mat3x2)systemAffine;
+
+Print("sprite transform", FormatMat3x2(spriteTransform));
+Print("local corner", Format2(localCorner));
+Print("world corner", Format2(worldCorner));
+Print("world x axis", Format2(worldXAxis));
+Print("affine translation", Format2(spriteTransform.Translation));
+Print("Matrix3x2 round-trip", Format2(affineRoundTrip.Translation));
+
+Expect(affineInverseOk, "Affine transforms that scale by non-zero values should be invertible.");
+ExpectClose2(worldCorner, (6f, 5f), "Mat3x2 should compose scale, rotation, and translation for 2D points.");
+ExpectClose2(worldXAxis, (0f, 2f), "TransformVector should ignore translation and preserve linear transform terms.");
+ExpectClose2(recoveredCorner, localCorner, "Affine inverse should recover the original local point.");
+ExpectCloseMat3x2(affineRoundTrip, spriteTransform, "Mat3x2 should round-trip through System.Numerics.Matrix3x2.");
+
+Section("3D camera matrices");
+
+Mat4 model = Mat4.CreateWorld((1f, 2f, 0f), Vec3.UnitZ, Vec3.UnitY);
+Mat4 view = Mat4.LookAt((0f, 0f, 5f), Vec3.Zero, Vec3.UnitY);
+Mat4 projection = Mat4.CreatePerspectiveFieldOfView(MathF.PI / 3f, 16f / 9f, 0.1f, 100f);
+Mat4 explicitProjection = Mat4.CreatePerspectiveFieldOfView(
+    MathF.PI / 3f,
+    16f / 9f,
+    0.1f,
+    100f,
+    ProjectionHandedness.Right,
+    ProjectionDepthRange.NegativeOneToOne);
+Mat4 modelView = view * model;
+Mat4 modelViewProjection = projection * modelView;
+Vec4 viewport = (0f, 0f, 1920f, 1080f);
+Vec3 objectOrigin = Vec3.Zero;
+var worldOrigin = Mat4.TransformPoint(model, objectOrigin);
+var clipOrigin = modelViewProjection * new Vec4(objectOrigin, 1f);
+var normalizedOrigin = clipOrigin / clipOrigin.W;
+var windowOrigin = Mat4.Project(objectOrigin, modelView, projection, viewport);
+var viewportOrigin = Mat4.CreateViewport(viewport) * new Vec4(normalizedOrigin.X, normalizedOrigin.Y, normalizedOrigin.Z, 1f);
+var unprojectedOrigin = Mat4.UnProject(windowOrigin, modelView, projection, viewport);
+Span<float> modelViewProjectionColumnMajor = stackalloc float[16];
+Span<char> projectionText = stackalloc char[256];
+modelViewProjection.CopyToColumnMajor(modelViewProjectionColumnMajor);
+var projectionTextOk = projection.TryFormat(
+    projectionText,
+    out var projectionCharsWritten,
+    "0.###",
+    CultureInfo.InvariantCulture);
+var parsedProjectionOk = Mat4.TryParse(
+    projection.ToString("G9", CultureInfo.InvariantCulture),
+    CultureInfo.InvariantCulture,
+    out var parsedProjection);
+
+Print("model translation", Format3(model.Translation));
+Print("world origin", Format3(worldOrigin));
+Print("window origin", Format3(windowOrigin));
+Print("viewport origin", Format3((viewportOrigin.X, viewportOrigin.Y, viewportOrigin.Z)));
+Print("mvp first column", Format4((
+    modelViewProjectionColumnMajor[0],
+    modelViewProjectionColumnMajor[1],
+    modelViewProjectionColumnMajor[2],
+    modelViewProjectionColumnMajor[3])));
+Print("projection span text", projectionTextOk ? new string(projectionText[..projectionCharsWritten]) : "<too small>");
+
+ExpectCloseMat4(projection, explicitProjection, "Default projection overloads should use OpenGL-style right-handed depth.");
+ExpectClose3(model.Translation, (1f, 2f, 0f), "Mat4.Translation should expose the transform translation column.");
+ExpectClose3(worldOrigin, (1f, 2f, 0f), "CreateWorld should place the local origin at the requested position.");
+ExpectClose3((viewportOrigin.X, viewportOrigin.Y, viewportOrigin.Z), windowOrigin, "CreateViewport should match Project after perspective divide.");
+ExpectClose3(unprojectedOrigin, objectOrigin, "Project and UnProject should round-trip object-space points.");
+Expect(projectionTextOk, "Matrix TryFormat should write into caller-owned spans.");
+Expect(parsedProjectionOk, "Matrix TryParse should accept the invariant ToString representation.");
+ExpectCloseMat4(parsedProjection, projection, "Matrix ToString and TryParse should round-trip precise formatted values.");
+
 Section("Scalar helpers");
 
 var wrapped = ScalarMath.Modulo(-1.25f, 1f);
@@ -122,6 +228,14 @@ static string Format3(Vec3 value) =>
 static string Format4(Vec4 value) =>
     value.ToString("0.###", CultureInfo.InvariantCulture);
 
+// Formats a compact 2D affine matrix with invariant tuple-style text.
+static string FormatMat3x2(Mat3x2 value) =>
+    value.ToString("0.###", CultureInfo.InvariantCulture);
+
+// Formats a 3x3 matrix with invariant tuple-style text.
+static string FormatMat3(Mat3 value) =>
+    value.ToString("0.###", CultureInfo.InvariantCulture);
+
 // Formats an integer vector with invariant tuple-style text.
 static string Format3i(Vec3i value) =>
     value.ToString(CultureInfo.InvariantCulture);
@@ -148,12 +262,32 @@ static void ExpectClose2(Vec2 actual, Vec2 expected, string message)
     ExpectClose(actual.Y, expected.Y, message);
 }
 
+// Compares compact 2D affine matrices with a small tolerance for cross-platform math.
+static void ExpectCloseMat3x2(Mat3x2 actual, Mat3x2 expected, string message)
+{
+    for (var column = 0; column < Mat3x2.ColumnCount; column++)
+    {
+        for (var row = 0; row < Mat3x2.RowCount; row++)
+            ExpectClose(actual[column, row], expected[column, row], message);
+    }
+}
+
 // Compares three-component floating vectors with a small tolerance for cross-platform math.
 static void ExpectClose3(Vec3 actual, Vec3 expected, string message)
 {
     ExpectClose(actual.X, expected.X, message);
     ExpectClose(actual.Y, expected.Y, message);
     ExpectClose(actual.Z, expected.Z, message);
+}
+
+// Compares 3x3 matrices with a small tolerance for cross-platform math.
+static void ExpectCloseMat3(Mat3 actual, Mat3 expected, string message)
+{
+    for (var column = 0; column < Mat3.ColumnCount; column++)
+    {
+        for (var row = 0; row < Mat3.RowCount; row++)
+            ExpectClose(actual[column, row], expected[column, row], message);
+    }
 }
 
 // Compares four-component floating vectors with a small tolerance for cross-platform math.
@@ -163,4 +297,14 @@ static void ExpectClose4(Vec4 actual, Vec4 expected, string message)
     ExpectClose(actual.Y, expected.Y, message);
     ExpectClose(actual.Z, expected.Z, message);
     ExpectClose(actual.W, expected.W, message);
+}
+
+// Compares 4x4 matrices with a small tolerance for cross-platform math.
+static void ExpectCloseMat4(Mat4 actual, Mat4 expected, string message)
+{
+    for (var column = 0; column < Mat4.ColumnCount; column++)
+    {
+        for (var row = 0; row < Mat4.RowCount; row++)
+            ExpectClose(actual[column, row], expected[column, row], message);
+    }
 }

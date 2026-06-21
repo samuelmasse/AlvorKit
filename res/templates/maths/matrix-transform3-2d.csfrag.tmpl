@@ -1,0 +1,155 @@
+    /// <summary>Gets or sets the 2D translation component.</summary>
+    public {{Vector2Type}} Translation2D
+    {
+        readonly get => new(Column2.X, Column2.Y);
+        set => Column2 = new {{Vector3Type}}(value, Column2.Z);
+    }
+
+    /// <summary>Creates a 2D translation matrix.</summary>
+    public static {{TypeName}} CreateTranslation2D({{Vector2Type}} translation) =>
+        new(
+            new {{Vector3Type}}({{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector3Type}}({{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}),
+            new {{Vector3Type}}(translation.X, translation.Y, {{OneLiteral}}));
+
+    /// <summary>Creates a 2D translation matrix.</summary>
+    public static {{TypeName}} CreateTranslation2D({{ScalarType}} x, {{ScalarType}} y) =>
+        CreateTranslation2D(new {{Vector2Type}}(x, y));
+
+    /// <summary>Applies a 2D translation after an existing transform.</summary>
+    public static {{TypeName}} Translate2D({{TypeName}} value, {{Vector2Type}} translation) =>
+        new(
+            value.Column0,
+            value.Column1,
+            (value.Column0 * translation.X) + (value.Column1 * translation.Y) + value.Column2);
+
+    /// <summary>Creates a 2D scale matrix.</summary>
+    public static {{TypeName}} CreateScale2D({{Vector2Type}} scale) =>
+        new(
+            new {{Vector3Type}}(scale.X, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector3Type}}({{ZeroLiteral}}, scale.Y, {{ZeroLiteral}}),
+            new {{Vector3Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+
+    /// <summary>Creates a 2D scale matrix.</summary>
+    public static {{TypeName}} CreateScale2D({{ScalarType}} x, {{ScalarType}} y) =>
+        CreateScale2D(new {{Vector2Type}}(x, y));
+
+    /// <summary>Creates a uniform 2D scale matrix.</summary>
+    public static {{TypeName}} CreateScale2D({{ScalarType}} scale) =>
+        CreateScale2D(new {{Vector2Type}}(scale));
+
+    /// <summary>Creates a 2D scale matrix around a center point.</summary>
+    public static {{TypeName}} CreateScale2D({{Vector2Type}} scale, {{Vector2Type}} center) =>
+        new(
+            new {{Vector3Type}}(scale.X, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector3Type}}({{ZeroLiteral}}, scale.Y, {{ZeroLiteral}}),
+            new {{Vector3Type}}(
+                center.X * ({{OneLiteral}} - scale.X),
+                center.Y * ({{OneLiteral}} - scale.Y),
+                {{OneLiteral}}));
+
+    /// <summary>Creates a uniform 2D scale matrix around a center point.</summary>
+    public static {{TypeName}} CreateScale2D({{ScalarType}} scale, {{Vector2Type}} center) =>
+        CreateScale2D(new {{Vector2Type}}(scale), center);
+
+    /// <summary>Applies a 2D scale after an existing transform.</summary>
+    public static {{TypeName}} Scale2D({{TypeName}} value, {{Vector2Type}} scale) =>
+        new(value.Column0 * scale.X, value.Column1 * scale.Y, value.Column2);
+
+    /// <summary>Creates a 2D rotation matrix.</summary>
+    public static {{TypeName}} CreateRotation2D({{ScalarType}} radians)
+    {
+        var c = ScalarMath.Cos(radians);
+        var s = ScalarMath.Sin(radians);
+        return new(
+            new {{Vector3Type}}(c, s, {{ZeroLiteral}}),
+            new {{Vector3Type}}(-s, c, {{ZeroLiteral}}),
+            new {{Vector3Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+    }
+
+    /// <summary>Creates a 2D rotation matrix around a center point.</summary>
+    public static {{TypeName}} CreateRotation2D({{ScalarType}} radians, {{Vector2Type}} center)
+    {
+        var c = ScalarMath.Cos(radians);
+        var s = ScalarMath.Sin(radians);
+        return new(
+            new {{Vector3Type}}(c, s, {{ZeroLiteral}}),
+            new {{Vector3Type}}(-s, c, {{ZeroLiteral}}),
+            new {{Vector3Type}}(
+                (({{OneLiteral}} - c) * center.X) + (s * center.Y),
+                (-s * center.X) + (({{OneLiteral}} - c) * center.Y),
+                {{OneLiteral}}));
+    }
+
+    /// <summary>Applies a 2D rotation after an existing transform.</summary>
+    public static {{TypeName}} Rotate2D({{TypeName}} value, {{ScalarType}} radians)
+    {
+        var c = ScalarMath.Cos(radians);
+        var s = ScalarMath.Sin(radians);
+        return new(
+            (value.Column0 * c) + (value.Column1 * s),
+            (value.Column0 * -s) + (value.Column1 * c),
+            value.Column2);
+    }
+
+    /// <summary>Creates a 2D skew matrix from X and Y skew angles in radians.</summary>
+    public static {{TypeName}} CreateSkew2D({{ScalarType}} radiansX, {{ScalarType}} radiansY)
+    {
+        var skewX = ScalarMath.Tan(radiansX);
+        var skewY = ScalarMath.Tan(radiansY);
+        return new(
+            new {{Vector3Type}}({{OneLiteral}}, skewY, {{ZeroLiteral}}),
+            new {{Vector3Type}}(skewX, {{OneLiteral}}, {{ZeroLiteral}}),
+            new {{Vector3Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+    }
+
+    /// <summary>Creates a 2D skew matrix from X and Y skew angles in radians around a center point.</summary>
+    public static {{TypeName}} CreateSkew2D({{ScalarType}} radiansX, {{ScalarType}} radiansY, {{Vector2Type}} center)
+    {
+        var skewX = ScalarMath.Tan(radiansX);
+        var skewY = ScalarMath.Tan(radiansY);
+        return new(
+            new {{Vector3Type}}({{OneLiteral}}, skewY, {{ZeroLiteral}}),
+            new {{Vector3Type}}(skewX, {{OneLiteral}}, {{ZeroLiteral}}),
+            new {{Vector3Type}}(-skewX * center.Y, -skewY * center.X, {{OneLiteral}}));
+    }
+
+    /// <summary>Applies a 2D skew after an existing transform.</summary>
+    public static {{TypeName}} Skew2D({{TypeName}} value, {{ScalarType}} radiansX, {{ScalarType}} radiansY) =>
+        value * CreateSkew2D(radiansX, radiansY);
+
+    /// <summary>Creates a 2D X shear matrix.</summary>
+    public static {{TypeName}} CreateShearX2D({{ScalarType}} y) =>
+        new(
+            new {{Vector3Type}}({{OneLiteral}}, y, {{ZeroLiteral}}),
+            new {{Vector3Type}}({{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}),
+            new {{Vector3Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+
+    /// <summary>Applies a 2D X shear after an existing transform.</summary>
+    public static {{TypeName}} ShearX2D({{TypeName}} value, {{ScalarType}} y) =>
+        value * CreateShearX2D(y);
+
+    /// <summary>Creates a 2D Y shear matrix.</summary>
+    public static {{TypeName}} CreateShearY2D({{ScalarType}} x) =>
+        new(
+            new {{Vector3Type}}({{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector3Type}}(x, {{OneLiteral}}, {{ZeroLiteral}}),
+            new {{Vector3Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+
+    /// <summary>Applies a 2D Y shear after an existing transform.</summary>
+    public static {{TypeName}} ShearY2D({{TypeName}} value, {{ScalarType}} x) =>
+        value * CreateShearY2D(x);
+
+    /// <summary>Transforms a 2D point using the homogeneous transform.</summary>
+    public static {{Vector2Type}} TransformPoint2D({{TypeName}} value, {{Vector2Type}} point)
+    {
+        var transformed = value * new {{Vector3Type}}(point, {{OneLiteral}});
+        return new {{Vector2Type}}(transformed.X, transformed.Y);
+    }
+
+    /// <summary>Transforms a 2D direction vector without applying translation.</summary>
+    public static {{Vector2Type}} TransformVector2D({{TypeName}} value, {{Vector2Type}} vector)
+    {
+        var transformed = value * new {{Vector3Type}}(vector, {{ZeroLiteral}});
+        return new {{Vector2Type}}(transformed.X, transformed.Y);
+    }

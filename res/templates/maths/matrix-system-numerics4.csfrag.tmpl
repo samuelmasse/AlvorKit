@@ -1,0 +1,15 @@
+    /// <summary>Explicitly converts a column-major matrix to a row-vector System.Numerics matrix.</summary>
+    public static explicit operator System.Numerics.Matrix4x4(Mat4 value) =>
+        new(
+            value[0, 0], value[1, 0], value[2, 0], value[3, 0],
+            value[0, 1], value[1, 1], value[2, 1], value[3, 1],
+            value[0, 2], value[1, 2], value[2, 2], value[3, 2],
+            value[0, 3], value[1, 3], value[2, 3], value[3, 3]);
+
+    /// <summary>Explicitly converts a row-vector System.Numerics matrix to a column-major matrix.</summary>
+    public static explicit operator Mat4(System.Numerics.Matrix4x4 value) =>
+        new(
+            new Vec4(value.M11, value.M21, value.M31, value.M41),
+            new Vec4(value.M12, value.M22, value.M32, value.M42),
+            new Vec4(value.M13, value.M23, value.M33, value.M43),
+            new Vec4(value.M14, value.M24, value.M34, value.M44));

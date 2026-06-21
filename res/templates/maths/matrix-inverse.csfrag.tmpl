@@ -1,0 +1,69 @@
+    /// <summary>Gets the inverse of this matrix.</summary>
+    public readonly {{TypeName}} Inverted =>
+        Invert(this);
+
+    /// <summary>Returns the inverse of a matrix.</summary>
+    public static {{TypeName}} Invert({{TypeName}} value) =>
+        TryInvert(value, out var result)
+            ? result
+            : throw new InvalidOperationException("Matrix is singular and cannot be inverted.");
+
+    /// <summary>Attempts to invert a matrix.</summary>
+    public static bool TryInvert({{TypeName}} value, out {{TypeName}} result)
+    {
+        Span<{{ScalarType}}> work = stackalloc {{ScalarType}}[{{WorkLength}}];
+{{InitializeWork}}
+        for (var pivotIndex = 0; pivotIndex < {{Dimension}}; pivotIndex++)
+        {
+            var pivotRow = pivotIndex;
+            var pivotAbs = ScalarMath.Abs(work[(pivotRow * {{Width}}) + pivotIndex]);
+            for (var row = pivotIndex + 1; row < {{Dimension}}; row++)
+            {
+                var candidateAbs = ScalarMath.Abs(work[(row * {{Width}}) + pivotIndex]);
+                if (candidateAbs > pivotAbs)
+                {
+                    pivotAbs = candidateAbs;
+                    pivotRow = row;
+                }
+            }
+
+            var pivotValue = work[(pivotRow * {{Width}}) + pivotIndex];
+            if (pivotValue == {{ZeroLiteral}})
+            {
+                result = default;
+                return false;
+            }
+
+            if (pivotRow != pivotIndex)
+            {
+                for (var column = 0; column < {{Width}}; column++)
+                {
+                    var swap = work[(pivotIndex * {{Width}}) + column];
+                    work[(pivotIndex * {{Width}}) + column] = work[(pivotRow * {{Width}}) + column];
+                    work[(pivotRow * {{Width}}) + column] = swap;
+                }
+            }
+
+            var pivotOffset = pivotIndex * {{Width}};
+            pivotValue = work[pivotOffset + pivotIndex];
+            for (var column = 0; column < {{Width}}; column++)
+                work[pivotOffset + column] = work[pivotOffset + column] / pivotValue;
+
+            for (var row = 0; row < {{Dimension}}; row++)
+            {
+                if (row == pivotIndex)
+                    continue;
+
+                var rowOffset = row * {{Width}};
+                var factor = work[rowOffset + pivotIndex];
+                if (factor == {{ZeroLiteral}})
+                    continue;
+
+                for (var column = 0; column < {{Width}}; column++)
+                    work[rowOffset + column] = work[rowOffset + column] - (factor * work[pivotOffset + column]);
+            }
+        }
+
+        result = {{ResultArguments}};
+        return true;
+    }

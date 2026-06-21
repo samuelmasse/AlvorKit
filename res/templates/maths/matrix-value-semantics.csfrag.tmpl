@@ -1,0 +1,338 @@
+    /// <summary>Returns a string representation of this matrix.</summary>
+    public override readonly string ToString() =>
+        ToString(null, null);
+
+    /// <summary>Returns a formatted string representation of this matrix.</summary>
+    public readonly string ToString(string? format) =>
+        ToString(format, null);
+
+    /// <summary>Returns a culture-aware string representation of this matrix.</summary>
+    public readonly string ToString(IFormatProvider? formatProvider) =>
+        ToString(null, formatProvider);
+
+    /// <summary>Returns a formatted, culture-aware string representation of this matrix.</summary>
+    public readonly string ToString(string? format, IFormatProvider? formatProvider)
+    {
+        Span<char> destination = stackalloc char[512];
+        return TryFormat(destination, out var charsWritten, format.AsSpan(), formatProvider)
+            ? new string(destination[..charsWritten])
+            : ToStringSlow(format, formatProvider);
+    }
+
+    /// <summary>Attempts to format this matrix into a caller-owned character span.</summary>
+    public readonly bool TryFormat(
+        Span<char> destination,
+        out int charsWritten,
+        ReadOnlySpan<char> format,
+        IFormatProvider? formatProvider)
+    {
+        charsWritten = 0;
+        var remainder = destination;
+
+        if (!TryAppend("(".AsSpan(), ref remainder, ref charsWritten))
+            return FailFormat(out charsWritten);
+{{TryFormatColumns}}
+        if (!TryAppend(")".AsSpan(), ref remainder, ref charsWritten))
+            return FailFormat(out charsWritten);
+
+        return true;
+    }
+
+    /// <summary>Attempts to format this matrix into a caller-owned UTF-8 byte span.</summary>
+    public readonly bool TryFormat(
+        Span<byte> utf8Destination,
+        out int bytesWritten,
+        ReadOnlySpan<char> format,
+        IFormatProvider? formatProvider)
+    {
+        bytesWritten = 0;
+        var remainder = utf8Destination;
+
+        if (!TryAppendUtf8("("u8, ref remainder, ref bytesWritten))
+            return FailFormat(out bytesWritten);
+{{TryFormatUtf8Columns}}
+        if (!TryAppendUtf8(")"u8, ref remainder, ref bytesWritten))
+            return FailFormat(out bytesWritten);
+
+        return true;
+    }
+
+    /// <summary>Returns a formatted string when the stack buffer is too small.</summary>
+    private readonly string ToStringSlow(string? format, IFormatProvider? formatProvider)
+    {
+        var length = 1024;
+        while (true)
+        {
+            var destination = new char[length];
+            if (TryFormat(destination, out var charsWritten, format.AsSpan(), formatProvider))
+                return new string(destination, 0, charsWritten);
+
+            length *= 2;
+        }
+    }
+
+    /// <summary>Compares this matrix to another matrix by column-major component order.</summary>
+    public readonly int CompareTo({{TypeName}} other)
+    {
+{{CompareColumns}}
+        return 0;
+    }
+
+    /// <summary>Parses a matrix from a string.</summary>
+    public static {{TypeName}} Parse(string s, IFormatProvider? formatProvider)
+    {
+        ArgumentNullException.ThrowIfNull(s);
+        return Parse(s.AsSpan(), formatProvider);
+    }
+
+    /// <summary>Attempts to parse a matrix from a string.</summary>
+    public static bool TryParse(string? s, IFormatProvider? formatProvider, out {{TypeName}} result)
+    {
+        if (s is null)
+        {
+            result = default;
+            return false;
+        }
+
+        return TryParse(s.AsSpan(), formatProvider, out result);
+    }
+
+    /// <summary>Parses a matrix from a character span.</summary>
+    public static {{TypeName}} Parse(ReadOnlySpan<char> s, IFormatProvider? formatProvider) =>
+        TryParse(s, formatProvider, out var result)
+            ? result
+            : throw new FormatException("Input matrix text was not in a correct format.");
+
+    /// <summary>Attempts to parse a matrix from a character span.</summary>
+    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? formatProvider, out {{TypeName}} result)
+    {
+        result = default;
+        if (!TryReadMatrixBody(s, out var body))
+            return false;
+{{ParseColumns}}
+        result = new({{ParsedColumnArguments}});
+        return true;
+    }
+
+    /// <summary>Parses a matrix from a UTF-8 byte span.</summary>
+    public static {{TypeName}} Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? formatProvider) =>
+        TryParse(utf8Text, formatProvider, out var result)
+            ? result
+            : throw new FormatException("Input matrix text was not in a correct format.");
+
+    /// <summary>Attempts to parse a matrix from a UTF-8 byte span.</summary>
+    public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? formatProvider, out {{TypeName}} result)
+    {
+        result = default;
+        if (!TryReadMatrixBody(utf8Text, out var body))
+            return false;
+{{ParseUtf8Columns}}
+        result = new({{ParsedColumnArguments}});
+        return true;
+    }
+
+    /// <summary>Returns whether this matrix has the same components as another matrix.</summary>
+    public readonly bool Equals({{TypeName}} other) =>
+        {{EqualityExpression}};
+
+    /// <summary>Returns whether this matrix has the same components as an object.</summary>
+    public override readonly bool Equals(object? obj) =>
+        obj is {{TypeName}} other && Equals(other);
+
+    /// <summary>Returns a hash code for this matrix.</summary>
+    public override readonly int GetHashCode() =>
+        HashCode.Combine({{Columns}});
+
+    /// <summary>Attempts to append literal text to the destination span.</summary>
+    private static bool TryAppend(ReadOnlySpan<char> value, ref Span<char> destination, ref int charsWritten)
+    {
+        if (!value.TryCopyTo(destination))
+            return false;
+
+        destination = destination[value.Length..];
+        charsWritten += value.Length;
+        return true;
+    }
+
+    /// <summary>Attempts to append literal UTF-8 text to the destination span.</summary>
+    private static bool TryAppendUtf8(ReadOnlySpan<byte> value, ref Span<byte> destination, ref int bytesWritten)
+    {
+        if (!value.TryCopyTo(destination))
+            return false;
+
+        destination = destination[value.Length..];
+        bytesWritten += value.Length;
+        return true;
+    }
+
+    /// <summary>Attempts to append one column vector to the destination span.</summary>
+    private static bool TryAppendColumn(
+        {{ColumnType}} value,
+        ref Span<char> destination,
+        ref int charsWritten,
+        ReadOnlySpan<char> format,
+        IFormatProvider? formatProvider)
+    {
+        if (!value.TryFormat(destination, out var columnCharsWritten, format, formatProvider))
+            return false;
+
+        destination = destination[columnCharsWritten..];
+        charsWritten += columnCharsWritten;
+        return true;
+    }
+
+    /// <summary>Attempts to append one column vector to the UTF-8 destination span.</summary>
+    private static bool TryAppendUtf8Column(
+        {{ColumnType}} value,
+        ref Span<byte> destination,
+        ref int bytesWritten,
+        ReadOnlySpan<char> format,
+        IFormatProvider? formatProvider)
+    {
+        if (!value.TryFormat(destination, out var columnBytesWritten, format, formatProvider))
+            return false;
+
+        destination = destination[columnBytesWritten..];
+        bytesWritten += columnBytesWritten;
+        return true;
+    }
+
+    /// <summary>Attempts to read the parenthesized matrix body.</summary>
+    private static bool TryReadMatrixBody(ReadOnlySpan<char> source, out ReadOnlySpan<char> body)
+    {
+        source = source.Trim();
+        if (source.Length < 2 || source[0] != '(' || source[^1] != ')')
+        {
+            body = default;
+            return false;
+        }
+
+        body = source[1..^1].Trim();
+        return true;
+    }
+
+    /// <summary>Attempts to read the parenthesized UTF-8 matrix body.</summary>
+    private static bool TryReadMatrixBody(ReadOnlySpan<byte> source, out ReadOnlySpan<byte> body)
+    {
+        source = TrimAsciiWhitespace(source);
+        if (source.Length < 2 || source[0] != (byte)'(' || source[^1] != (byte)')')
+        {
+            body = default;
+            return false;
+        }
+
+        body = TrimAsciiWhitespace(source[1..^1]);
+        return true;
+    }
+
+    /// <summary>Attempts to parse one column vector before the next matrix separator.</summary>
+    private static bool TryReadColumn(
+        ref ReadOnlySpan<char> source,
+        IFormatProvider? formatProvider,
+        out {{ColumnType}} value)
+    {
+        value = default;
+        var separator = FindColumnSeparator(source);
+        if (separator < 0 || !TryParseColumn(source[..separator].Trim(), formatProvider, out value))
+            return false;
+
+        source = source[(separator + 1)..].TrimStart();
+        return true;
+    }
+
+    /// <summary>Attempts to parse one UTF-8 column vector before the next matrix separator.</summary>
+    private static bool TryReadUtf8Column(
+        ref ReadOnlySpan<byte> source,
+        IFormatProvider? formatProvider,
+        out {{ColumnType}} value)
+    {
+        value = default;
+        var separator = FindColumnSeparator(source);
+        if (separator < 0 || !TryParseUtf8Column(TrimAsciiWhitespace(source[..separator]), formatProvider, out value))
+            return false;
+
+        source = TrimStartAsciiWhitespace(source[(separator + 1)..]);
+        return true;
+    }
+
+    /// <summary>Finds the next comma-space separator between nested column vectors.</summary>
+    private static int FindColumnSeparator(ReadOnlySpan<char> source)
+    {
+        var depth = 0;
+        for (var index = 0; index < source.Length - 1; index++)
+        {
+            if (source[index] == '(')
+                depth++;
+            else if (source[index] == ')')
+                depth--;
+            else if (depth == 0 && source[index] == ',' && char.IsWhiteSpace(source[index + 1]))
+                return index;
+        }
+
+        return -1;
+    }
+
+    /// <summary>Finds the next UTF-8 comma-space separator between nested column vectors.</summary>
+    private static int FindColumnSeparator(ReadOnlySpan<byte> source)
+    {
+        var depth = 0;
+        for (var index = 0; index < source.Length - 1; index++)
+        {
+            if (source[index] == (byte)'(')
+                depth++;
+            else if (source[index] == (byte)')')
+                depth--;
+            else if (depth == 0 && source[index] == (byte)',' && IsAsciiWhitespace(source[index + 1]))
+                return index;
+        }
+
+        return -1;
+    }
+
+    /// <summary>Attempts to parse one column vector from a character span.</summary>
+    private static bool TryParseColumn(ReadOnlySpan<char> source, IFormatProvider? formatProvider, out {{ColumnType}} value) =>
+        {{ColumnType}}.TryParse(source, formatProvider, out value);
+
+    /// <summary>Attempts to parse one column vector from a UTF-8 byte span.</summary>
+    private static bool TryParseUtf8Column(ReadOnlySpan<byte> source, IFormatProvider? formatProvider, out {{ColumnType}} value) =>
+        {{ColumnType}}.TryParse(source, formatProvider, out value);
+
+    /// <summary>Trims ASCII whitespace from both ends of a UTF-8 byte span.</summary>
+    private static ReadOnlySpan<byte> TrimAsciiWhitespace(ReadOnlySpan<byte> source) =>
+        TrimEndAsciiWhitespace(TrimStartAsciiWhitespace(source));
+
+    /// <summary>Trims ASCII whitespace from the start of a UTF-8 byte span.</summary>
+    private static ReadOnlySpan<byte> TrimStartAsciiWhitespace(ReadOnlySpan<byte> source)
+    {
+        while (!source.IsEmpty && IsAsciiWhitespace(source[0]))
+            source = source[1..];
+
+        return source;
+    }
+
+    /// <summary>Trims ASCII whitespace from the end of a UTF-8 byte span.</summary>
+    private static ReadOnlySpan<byte> TrimEndAsciiWhitespace(ReadOnlySpan<byte> source)
+    {
+        while (!source.IsEmpty && IsAsciiWhitespace(source[^1]))
+            source = source[..^1];
+
+        return source;
+    }
+
+    /// <summary>Returns whether a byte is ASCII whitespace.</summary>
+    private static bool IsAsciiWhitespace(byte value) => value is (byte)' ' or (byte)'\t' or (byte)'\r' or (byte)'\n';
+
+    /// <summary>Reports a failed formatting operation with the required written count contract.</summary>
+    private static bool FailFormat(out int charsWritten)
+    {
+        charsWritten = 0;
+        return false;
+    }
+
+    /// <summary>Returns whether two matrices have identical components.</summary>
+    public static bool operator ==({{TypeName}} left, {{TypeName}} right) =>
+        left.Equals(right);
+
+    /// <summary>Returns whether two matrices have any different component.</summary>
+    public static bool operator !=({{TypeName}} left, {{TypeName}} right) =>
+        !left.Equals(right);

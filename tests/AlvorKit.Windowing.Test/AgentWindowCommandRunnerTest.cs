@@ -240,5 +240,10 @@ public class AgentWindowCommandRunnerTest
         Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("text"));
     }
 
-    private static AgentGlfwWindowHost CreateAgent() => new(new(new GlNoop()), new(800, 600));
+    private AgentGlfwWindowHost CreateAgent()
+    {
+        var size = new Vec2u(800, 600);
+        var glfw = new WindowingTestGlfw(size);
+        return new(glfw, glfw.Window, new(new GlNoop()), size);
+    }
 }

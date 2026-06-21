@@ -65,4 +65,8 @@ internal sealed record ScalarSpec(
 
     /// <summary>Gets the vector type name for this scalar and dimension.</summary>
     public string VectorName(int dimension) => $"Vec{dimension}{Suffix}";
+
+    /// <summary>Gets the matrix type name for this scalar and shape.</summary>
+    public string MatrixName(int columns, int rows) =>
+        columns == rows ? $"Mat{columns}{Suffix}" : $"Mat{columns}x{rows}{Suffix}";
 }

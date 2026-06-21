@@ -1,0 +1,382 @@
+    /// <summary>Gets or sets the translation component.</summary>
+    public {{Vector3Type}} Translation
+    {
+        readonly get => new(Column3.X, Column3.Y, Column3.Z);
+        set => Column3 = new {{Vector4Type}}(value, Column3.W);
+    }
+
+    /// <summary>Creates a translation matrix.</summary>
+    public static {{TypeName}} CreateTranslation({{Vector3Type}} translation) =>
+        new(
+            new {{Vector4Type}}({{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(translation.X, translation.Y, translation.Z, {{OneLiteral}}));
+
+    /// <summary>Creates a translation matrix.</summary>
+    public static {{TypeName}} CreateTranslation({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z) =>
+        CreateTranslation(new {{Vector3Type}}(x, y, z));
+
+    /// <summary>Creates a scale matrix.</summary>
+    public static {{TypeName}} CreateScale({{Vector3Type}} scale) =>
+        new(
+            new {{Vector4Type}}(scale.X, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, scale.Y, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, scale.Z, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+
+    /// <summary>Creates a scale matrix.</summary>
+    public static {{TypeName}} CreateScale({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z) =>
+        CreateScale(new {{Vector3Type}}(x, y, z));
+
+    /// <summary>Creates a uniform scale matrix.</summary>
+    public static {{TypeName}} CreateScale({{ScalarType}} scale) =>
+        CreateScale(new {{Vector3Type}}(scale));
+
+    /// <summary>Creates a scale matrix around a center point.</summary>
+    public static {{TypeName}} CreateScale({{Vector3Type}} scale, {{Vector3Type}} center) =>
+        new(
+            new {{Vector4Type}}(scale.X, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, scale.Y, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, scale.Z, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                center.X * ({{OneLiteral}} - scale.X),
+                center.Y * ({{OneLiteral}} - scale.Y),
+                center.Z * ({{OneLiteral}} - scale.Z),
+                {{OneLiteral}}));
+
+    /// <summary>Creates a scale matrix around a center point.</summary>
+    public static {{TypeName}} CreateScale(
+        {{ScalarType}} x,
+        {{ScalarType}} y,
+        {{ScalarType}} z,
+        {{Vector3Type}} center) =>
+        CreateScale(new {{Vector3Type}}(x, y, z), center);
+
+    /// <summary>Creates a uniform scale matrix around a center point.</summary>
+    public static {{TypeName}} CreateScale({{ScalarType}} scale, {{Vector3Type}} center) =>
+        CreateScale(new {{Vector3Type}}(scale), center);
+
+    /// <summary>Creates a rotation matrix around the X axis.</summary>
+    public static {{TypeName}} CreateRotationX({{ScalarType}} radians)
+    {
+        var c = ScalarMath.Cos(radians);
+        var s = ScalarMath.Sin(radians);
+        return new(
+            new {{Vector4Type}}({{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, c, s, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, -s, c, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+    }
+
+    /// <summary>Creates a rotation matrix around the X axis and a center point.</summary>
+    public static {{TypeName}} CreateRotationX({{ScalarType}} radians, {{Vector3Type}} center) =>
+        CreateTranslation(center) * CreateRotationX(radians) * CreateTranslation(-center);
+
+    /// <summary>Creates a rotation matrix around the Y axis.</summary>
+    public static {{TypeName}} CreateRotationY({{ScalarType}} radians)
+    {
+        var c = ScalarMath.Cos(radians);
+        var s = ScalarMath.Sin(radians);
+        return new(
+            new {{Vector4Type}}(c, {{ZeroLiteral}}, -s, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(s, {{ZeroLiteral}}, c, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+    }
+
+    /// <summary>Creates a rotation matrix around the Y axis and a center point.</summary>
+    public static {{TypeName}} CreateRotationY({{ScalarType}} radians, {{Vector3Type}} center) =>
+        CreateTranslation(center) * CreateRotationY(radians) * CreateTranslation(-center);
+
+    /// <summary>Creates a rotation matrix around the Z axis.</summary>
+    public static {{TypeName}} CreateRotationZ({{ScalarType}} radians)
+    {
+        var c = ScalarMath.Cos(radians);
+        var s = ScalarMath.Sin(radians);
+        return new(
+            new {{Vector4Type}}(c, s, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(-s, c, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+    }
+
+    /// <summary>Creates a rotation matrix around the Z axis and a center point.</summary>
+    public static {{TypeName}} CreateRotationZ({{ScalarType}} radians, {{Vector3Type}} center) =>
+        CreateTranslation(center) * CreateRotationZ(radians) * CreateTranslation(-center);
+
+    /// <summary>Creates a rotation matrix around an axis.</summary>
+    public static {{TypeName}} CreateRotation({{ScalarType}} radians, {{Vector3Type}} axis)
+    {
+        var normalizedAxis = {{Vector3Type}}.Normalize(axis);
+        var c = ScalarMath.Cos(radians);
+        var s = ScalarMath.Sin(radians);
+        var temp = ({{OneLiteral}} - c) * normalizedAxis;
+        return new(
+            new {{Vector4Type}}(
+                c + (temp.X * normalizedAxis.X),
+                (temp.X * normalizedAxis.Y) + (s * normalizedAxis.Z),
+                (temp.X * normalizedAxis.Z) - (s * normalizedAxis.Y),
+                {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                (temp.Y * normalizedAxis.X) - (s * normalizedAxis.Z),
+                c + (temp.Y * normalizedAxis.Y),
+                (temp.Y * normalizedAxis.Z) + (s * normalizedAxis.X),
+                {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                (temp.Z * normalizedAxis.X) + (s * normalizedAxis.Y),
+                (temp.Z * normalizedAxis.Y) - (s * normalizedAxis.X),
+                c + (temp.Z * normalizedAxis.Z),
+                {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+    }
+
+    /// <summary>Creates a rotation matrix around an axis and a center point.</summary>
+    public static {{TypeName}} CreateRotation({{ScalarType}} radians, {{Vector3Type}} axis, {{Vector3Type}} center) =>
+        CreateTranslation(center) * CreateRotation(radians, axis) * CreateTranslation(-center);
+
+    /// <summary>Applies a translation after an existing transform.</summary>
+    public static {{TypeName}} Translate({{TypeName}} value, {{Vector3Type}} translation) =>
+        new(
+            value.Column0,
+            value.Column1,
+            value.Column2,
+            (value.Column0 * translation.X) + (value.Column1 * translation.Y) + (value.Column2 * translation.Z) + value.Column3);
+
+    /// <summary>Applies a scale after an existing transform.</summary>
+    public static {{TypeName}} Scale({{TypeName}} value, {{Vector3Type}} scale) =>
+        new(value.Column0 * scale.X, value.Column1 * scale.Y, value.Column2 * scale.Z, value.Column3);
+
+    /// <summary>Applies a uniform scale after an existing transform.</summary>
+    public static {{TypeName}} Scale({{TypeName}} value, {{ScalarType}} scale) =>
+        Scale(value, new {{Vector3Type}}(scale));
+
+    /// <summary>Applies an axis rotation after an existing transform.</summary>
+    public static {{TypeName}} Rotate({{TypeName}} value, {{ScalarType}} radians, {{Vector3Type}} axis) =>
+        value * CreateRotation(radians, axis);
+
+    /// <summary>Applies an X-axis rotation after an existing transform.</summary>
+    public static {{TypeName}} RotateX({{TypeName}} value, {{ScalarType}} radians) =>
+        value * CreateRotationX(radians);
+
+    /// <summary>Applies a Y-axis rotation after an existing transform.</summary>
+    public static {{TypeName}} RotateY({{TypeName}} value, {{ScalarType}} radians) =>
+        value * CreateRotationY(radians);
+
+    /// <summary>Applies a Z-axis rotation after an existing transform.</summary>
+    public static {{TypeName}} RotateZ({{TypeName}} value, {{ScalarType}} radians) =>
+        value * CreateRotationZ(radians);
+
+    /// <summary>Creates a shear matrix around a point.</summary>
+    public static {{TypeName}} CreateShear(
+        {{Vector3Type}} point,
+        {{Vector2Type}} x,
+        {{Vector2Type}} y,
+        {{Vector2Type}} z)
+    {
+        var pointLambda = new {{Vector3Type}}(x.X + x.Y, y.X + y.Y, z.X + z.Y);
+        return new(
+            new {{Vector4Type}}({{OneLiteral}}, y.X, z.X, {{ZeroLiteral}}),
+            new {{Vector4Type}}(x.X, {{OneLiteral}}, z.Y, {{ZeroLiteral}}),
+            new {{Vector4Type}}(x.Y, y.Y, {{OneLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                -pointLambda.X * point.X,
+                -pointLambda.Y * point.Y,
+                -pointLambda.Z * point.Z,
+                {{OneLiteral}}));
+    }
+
+    /// <summary>Creates a shear matrix around the origin.</summary>
+    public static {{TypeName}} CreateShear({{Vector2Type}} x, {{Vector2Type}} y, {{Vector2Type}} z) =>
+        CreateShear({{Vector3Type}}.Zero, x, y, z);
+
+    /// <summary>Applies a shear after an existing transform.</summary>
+    public static {{TypeName}} Shear(
+        {{TypeName}} value,
+        {{Vector3Type}} point,
+        {{Vector2Type}} x,
+        {{Vector2Type}} y,
+        {{Vector2Type}} z) =>
+        value * CreateShear(point, x, y, z);
+
+    /// <summary>Creates a shear matrix that moves Y and Z by X.</summary>
+    public static {{TypeName}} CreateShearX({{ScalarType}} y, {{ScalarType}} z) =>
+        new(
+            new {{Vector4Type}}({{OneLiteral}}, y, z, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+
+    /// <summary>Creates a shear matrix that moves X and Z by Y.</summary>
+    public static {{TypeName}} CreateShearY({{ScalarType}} x, {{ScalarType}} z) =>
+        new(
+            new {{Vector4Type}}({{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(x, {{OneLiteral}}, z, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+
+    /// <summary>Creates a shear matrix that moves X and Y by Z.</summary>
+    public static {{TypeName}} CreateShearZ({{ScalarType}} x, {{ScalarType}} y) =>
+        new(
+            new {{Vector4Type}}({{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(x, y, {{OneLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
+
+    /// <summary>Applies an X-axis shear after an existing transform.</summary>
+    public static {{TypeName}} ShearX({{TypeName}} value, {{ScalarType}} y, {{ScalarType}} z) =>
+        value * CreateShearX(y, z);
+
+    /// <summary>Applies a Y-axis shear after an existing transform.</summary>
+    public static {{TypeName}} ShearY({{TypeName}} value, {{ScalarType}} x, {{ScalarType}} z) =>
+        value * CreateShearY(x, z);
+
+    /// <summary>Applies a Z-axis shear after an existing transform.</summary>
+    public static {{TypeName}} ShearZ({{TypeName}} value, {{ScalarType}} x, {{ScalarType}} y) =>
+        value * CreateShearZ(x, y);
+
+    /// <summary>Creates a matrix that scales and biases normalized coordinates.</summary>
+    public static {{TypeName}} CreateScaleBias({{ScalarType}} scale, {{ScalarType}} bias) =>
+        new(
+            new {{Vector4Type}}(scale, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, scale, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, scale, {{ZeroLiteral}}),
+            new {{Vector4Type}}(bias, bias, bias, {{OneLiteral}}));
+
+    /// <summary>Applies a scale-bias matrix after an existing transform.</summary>
+    public static {{TypeName}} ScaleBias({{TypeName}} value, {{ScalarType}} scale, {{ScalarType}} bias) =>
+        value * CreateScaleBias(scale, bias);
+
+    /// <summary>Creates a 3x3 cross-product matrix.</summary>
+    public static Mat3{{Suffix}} MatrixCross3({{Vector3Type}} value) =>
+        new(
+            new {{Vector3Type}}({{ZeroLiteral}}, value.Z, -value.Y),
+            new {{Vector3Type}}(-value.Z, {{ZeroLiteral}}, value.X),
+            new {{Vector3Type}}(value.Y, -value.X, {{ZeroLiteral}}));
+
+    /// <summary>Creates a 4x4 cross-product matrix.</summary>
+    public static {{TypeName}} MatrixCross4({{Vector3Type}} value) =>
+        new(
+            new {{Vector4Type}}({{ZeroLiteral}}, value.Z, -value.Y, {{ZeroLiteral}}),
+            new {{Vector4Type}}(-value.Z, {{ZeroLiteral}}, value.X, {{ZeroLiteral}}),
+            new {{Vector4Type}}(value.Y, -value.X, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}));
+
+    /// <summary>Creates a right-handed look-at view matrix.</summary>
+    public static {{TypeName}} LookAtRH({{Vector3Type}} eye, {{Vector3Type}} target, {{Vector3Type}} up)
+    {
+        var forward = {{Vector3Type}}.Normalize(target - eye);
+        var side = {{Vector3Type}}.Normalize({{Vector3Type}}.Cross(forward, up));
+        var actualUp = {{Vector3Type}}.Cross(side, forward);
+        return new(
+            new {{Vector4Type}}(side.X, actualUp.X, -forward.X, {{ZeroLiteral}}),
+            new {{Vector4Type}}(side.Y, actualUp.Y, -forward.Y, {{ZeroLiteral}}),
+            new {{Vector4Type}}(side.Z, actualUp.Z, -forward.Z, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                -{{Vector3Type}}.Dot(side, eye),
+                -{{Vector3Type}}.Dot(actualUp, eye),
+                {{Vector3Type}}.Dot(forward, eye),
+                {{OneLiteral}}));
+    }
+
+    /// <summary>Creates a left-handed look-at view matrix.</summary>
+    public static {{TypeName}} LookAtLH({{Vector3Type}} eye, {{Vector3Type}} target, {{Vector3Type}} up)
+    {
+        var forward = {{Vector3Type}}.Normalize(target - eye);
+        var side = {{Vector3Type}}.Normalize({{Vector3Type}}.Cross(up, forward));
+        var actualUp = {{Vector3Type}}.Cross(forward, side);
+        return new(
+            new {{Vector4Type}}(side.X, actualUp.X, forward.X, {{ZeroLiteral}}),
+            new {{Vector4Type}}(side.Y, actualUp.Y, forward.Y, {{ZeroLiteral}}),
+            new {{Vector4Type}}(side.Z, actualUp.Z, forward.Z, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                -{{Vector3Type}}.Dot(side, eye),
+                -{{Vector3Type}}.Dot(actualUp, eye),
+                -{{Vector3Type}}.Dot(forward, eye),
+                {{OneLiteral}}));
+    }
+
+    /// <summary>Creates a look-at view matrix with default OpenGL view-space conventions.</summary>
+    public static {{TypeName}} LookAt({{Vector3Type}} eye, {{Vector3Type}} target, {{Vector3Type}} up) =>
+        LookAt(eye, target, up, ProjectionHandedness.Right);
+
+    /// <summary>Creates a look-at view matrix with explicit view-space handedness.</summary>
+    public static {{TypeName}} LookAt(
+        {{Vector3Type}} eye,
+        {{Vector3Type}} target,
+        {{Vector3Type}} up,
+        ProjectionHandedness handedness) =>
+        handedness switch
+        {
+            ProjectionHandedness.Right => LookAtRH(eye, target, up),
+            ProjectionHandedness.Left => LookAtLH(eye, target, up),
+            _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported view-space handedness."),
+        };
+
+    /// <summary>Creates a right-handed look-to view matrix.</summary>
+    public static {{TypeName}} LookToRH({{Vector3Type}} eye, {{Vector3Type}} direction, {{Vector3Type}} up) =>
+        LookAtRH(eye, eye + direction, up);
+
+    /// <summary>Creates a left-handed look-to view matrix.</summary>
+    public static {{TypeName}} LookToLH({{Vector3Type}} eye, {{Vector3Type}} direction, {{Vector3Type}} up) =>
+        LookAtLH(eye, eye + direction, up);
+
+    /// <summary>Creates a look-to view matrix with default OpenGL view-space conventions.</summary>
+    public static {{TypeName}} LookTo({{Vector3Type}} eye, {{Vector3Type}} direction, {{Vector3Type}} up) =>
+        LookTo(eye, direction, up, ProjectionHandedness.Right);
+
+    /// <summary>Creates a look-to view matrix with explicit view-space handedness.</summary>
+    public static {{TypeName}} LookTo(
+        {{Vector3Type}} eye,
+        {{Vector3Type}} direction,
+        {{Vector3Type}} up,
+        ProjectionHandedness handedness) =>
+        handedness switch
+        {
+            ProjectionHandedness.Right => LookToRH(eye, direction, up),
+            ProjectionHandedness.Left => LookToLH(eye, direction, up),
+            _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported view-space handedness."),
+        };
+
+    /// <summary>Creates a world transform from position, forward, and up directions.</summary>
+    public static {{TypeName}} CreateWorld({{Vector3Type}} position, {{Vector3Type}} forward, {{Vector3Type}} up)
+    {
+        var actualForward = {{Vector3Type}}.Normalize(forward);
+        var right = {{Vector3Type}}.Normalize({{Vector3Type}}.Cross(up, actualForward));
+        var actualUp = {{Vector3Type}}.Cross(actualForward, right);
+        return new(
+            new {{Vector4Type}}(right, {{ZeroLiteral}}),
+            new {{Vector4Type}}(actualUp, {{ZeroLiteral}}),
+            new {{Vector4Type}}(actualForward, {{ZeroLiteral}}),
+            new {{Vector4Type}}(position, {{OneLiteral}}));
+    }
+
+    /// <summary>Gets the scale of the first three columns.</summary>
+    public readonly {{Vector3Type}} ExtractScale() =>
+        new(
+            new {{Vector3Type}}(Column0.X, Column0.Y, Column0.Z).Length,
+            new {{Vector3Type}}(Column1.X, Column1.Y, Column1.Z).Length,
+            new {{Vector3Type}}(Column2.X, Column2.Y, Column2.Z).Length);
+
+    /// <summary>Returns this transform with its translation cleared.</summary>
+    public readonly {{TypeName}} WithoutTranslation() =>
+        new(
+            Column0,
+            Column1,
+            Column2,
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, Column3.W));
+
+    /// <summary>Transforms a 3D point using the homogeneous transform.</summary>
+    public static {{Vector3Type}} TransformPoint({{TypeName}} value, {{Vector3Type}} point)
+    {
+        var transformed = value * new {{Vector4Type}}(point, {{OneLiteral}});
+        transformed /= transformed.W;
+        return new {{Vector3Type}}(transformed.X, transformed.Y, transformed.Z);
+    }
+
+    /// <summary>Transforms a 3D direction vector without applying translation.</summary>
+    public static {{Vector3Type}} TransformVector({{TypeName}} value, {{Vector3Type}} vector)
+    {
+        var transformed = value * new {{Vector4Type}}(vector, {{ZeroLiteral}});
+        return new {{Vector3Type}}(transformed.X, transformed.Y, transformed.Z);
+    }

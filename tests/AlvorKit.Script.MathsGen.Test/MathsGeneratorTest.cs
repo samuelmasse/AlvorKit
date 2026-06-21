@@ -1,10 +1,10 @@
 namespace AlvorKit.Script.MathsGen.Test;
 
-/// <summary>Tests generated vector source planning and filesystem output.</summary>
+/// <summary>Tests generated math source planning and filesystem output.</summary>
 [TestClass]
 public sealed class MathsGeneratorTest
 {
-    /// <summary>Generation recreates the output directory and emits every configured scalar/dimension vector.</summary>
+    /// <summary>Generation recreates the output directory and emits every configured vector and matrix.</summary>
     [TestMethod]
     public void GenerateTo_RecreatesOutputAndEmitsConfiguredVectors()
     {
@@ -18,10 +18,13 @@ public sealed class MathsGeneratorTest
         MathsGenerator.GenerateTo(outputRoot, "9.8.7");
 
         var vecDirectory = Path.Combine(project, MathsGenerator.VecDirectoryName);
+        var matDirectory = Path.Combine(project, MathsGenerator.MatDirectoryName);
         string VecFile(string fileName) => Path.Combine(vecDirectory, fileName);
+        string MatFile(string fileName) => Path.Combine(matDirectory, fileName);
         Assert.IsFalse(File.Exists(staleFile));
         Assert.IsFalse(Directory.Exists(Path.Combine(project, "Generated")));
         Assert.AreEqual(124, Directory.GetFiles(vecDirectory, "*.cs").Length);
+        Assert.AreEqual(40, Directory.GetFiles(matDirectory, "*.cs").Length);
         Assert.IsTrue(File.Exists(Path.Combine(project, "AlvorKit.Maths.Primitives.csproj")));
         Assert.IsTrue(File.Exists(Path.Combine(project, "ScalarMath.g.cs")));
         Assert.IsTrue(File.Exists(VecFile("IVec.g.cs")));
@@ -68,9 +71,153 @@ public sealed class MathsGeneratorTest
         Assert.IsTrue(File.Exists(VecFile("Vec2.Swizzles.g.cs")));
         Assert.IsTrue(File.Exists(VecFile("Vec4u128.g.cs")));
         Assert.IsTrue(File.Exists(VecFile("Vec4u128.Swizzles.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMat.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("ProjectionHandedness.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("ProjectionDepthRange.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMat2.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMat2x3.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMatNumeric.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMatScalarArithmeticOperators.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMatRelationalOperators.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMatQuery.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMatSquare.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMat3Transform2D.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMat3x2Transform2D.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMat3x2SystemNumerics.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMat4Transform.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("IMat4SystemNumerics.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("Mat2.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("Mat2d.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("Mat3.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("Mat4.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("Mat4d.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("Mat2x3.g.cs")));
+        Assert.IsTrue(File.Exists(MatFile("Mat4x3d.g.cs")));
+        Assert.IsFalse(File.Exists(MatFile("Mat2x2.g.cs")));
+        Assert.IsFalse(File.Exists(MatFile("Mat3x3.g.cs")));
+        Assert.IsFalse(File.Exists(MatFile("Mat4x4.g.cs")));
+        Assert.IsFalse(File.Exists(MatFile("Mat2i.g.cs")));
+        Assert.IsFalse(File.Exists(MatFile("Mat4x3u128.g.cs")));
         StringAssert.Contains(File.ReadAllText(Path.Combine(project, "AlvorKit.Maths.Primitives.csproj")), "<Version>9.8.7</Version>");
         StringAssert.Contains(File.ReadAllText(Path.Combine(project, "AlvorKit.Maths.Primitives.csproj")),
             "<Using Include=\"System.Diagnostics\" />");
+    }
+
+    /// <summary>Generated source includes column-major matrix layout, algebra, and interop helpers.</summary>
+    [TestMethod]
+    public void GenerateTo_EmitsExpectedMatrixFeatures()
+    {
+        using var workspace = TempWorkspace.Create();
+        var outputRoot = workspace.CreateDirectory("generated");
+
+        MathsGenerator.GenerateTo(outputRoot, "9.8.7");
+
+        var matDirectory = Path.Combine(outputRoot, MathsGenerator.PrimitivesProjectName, MathsGenerator.MatDirectoryName);
+        var mat2 = File.ReadAllText(Path.Combine(matDirectory, "Mat2.g.cs"));
+        var mat2x3 = File.ReadAllText(Path.Combine(matDirectory, "Mat2x3.g.cs"));
+        var mat3x2 = File.ReadAllText(Path.Combine(matDirectory, "Mat3x2.g.cs"));
+        var mat4 = File.ReadAllText(Path.Combine(matDirectory, "Mat4.g.cs"));
+        var mat4d = File.ReadAllText(Path.Combine(matDirectory, "Mat4d.g.cs"));
+        var projectionHandedness = File.ReadAllText(Path.Combine(matDirectory, "ProjectionHandedness.g.cs"));
+        var projectionDepthRange = File.ReadAllText(Path.Combine(matDirectory, "ProjectionDepthRange.g.cs"));
+        var matrixInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat.g.cs"));
+        var matrixSquareInterface = File.ReadAllText(Path.Combine(matDirectory, "IMatSquare.g.cs"));
+        var matrixRelationalInterface = File.ReadAllText(Path.Combine(matDirectory, "IMatRelationalOperators.g.cs"));
+        var matrixQueryInterface = File.ReadAllText(Path.Combine(matDirectory, "IMatQuery.g.cs"));
+        var matrixTransform2DInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat3Transform2D.g.cs"));
+        var matrix3x2Transform2DInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat3x2Transform2D.g.cs"));
+        var matrix3x2SystemInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat3x2SystemNumerics.g.cs"));
+        var matrixTransformInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat4Transform.g.cs"));
+        StringAssert.Contains(projectionHandedness, "public enum ProjectionHandedness");
+        StringAssert.Contains(projectionHandedness, "Right");
+        StringAssert.Contains(projectionDepthRange, "public enum ProjectionDepthRange");
+        StringAssert.Contains(projectionDepthRange, "NegativeOneToOne");
+        StringAssert.Contains(matrixInterface, "public interface IMat<TSelf, TScalar, TColumn, TRow, TTranspose>");
+        StringAssert.Contains(matrixInterface, "ISpanFormattable");
+        StringAssert.Contains(matrixInterface, "IUtf8SpanParsable<TSelf>");
+        StringAssert.Contains(matrixInterface, "static abstract ref TScalar ComponentRef(ref TSelf value, int column, int row);");
+        StringAssert.Contains(matrixInterface, "static abstract TSelf CreateOuterProduct(TColumn columnVector, TRow rowVector);");
+        StringAssert.Contains(matrixInterface, "static abstract TSelf Lerp(TSelf from, TSelf to, TScalar amount);");
+        StringAssert.Contains(matrixSquareInterface, "public interface IMatSquare<TSelf, TScalar, TColumn>");
+        StringAssert.Contains(matrixSquareInterface, "IMultiplicativeIdentity<TSelf, TSelf>");
+        StringAssert.Contains(matrixSquareInterface, "static abstract TSelf Adjugate(TSelf value);");
+        StringAssert.Contains(matrixSquareInterface, "static abstract TSelf InverseTranspose(TSelf value);");
+        StringAssert.Contains(matrixSquareInterface, "TScalar Trace { get; }");
+        StringAssert.Contains(matrixRelationalInterface, "public interface IMatRelationalOperators<TSelf, TScalar, TMask>");
+        StringAssert.Contains(matrixQueryInterface, "public interface IMatQuery<TSelf, TScalar>");
+        StringAssert.Contains(matrixTransform2DInterface, "public interface IMat3Transform2D<TSelf, TScalar, TVector2, TVector3>");
+        StringAssert.Contains(matrix3x2Transform2DInterface,
+            "public interface IMat3x2Transform2D<TSelf, TScalar, TVector2, TVector3, TTranspose>");
+        StringAssert.Contains(matrix3x2SystemInterface, "public interface IMat3x2SystemNumerics<TSelf>");
+        StringAssert.Contains(matrixTransformInterface, "public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4>");
+        StringAssert.Contains(mat2, "public struct Mat2(Vec2 column0, Vec2 column1)");
+        StringAssert.Contains(mat2, "IMat2<Mat2, float, Vec2, Vec2, Mat2>");
+        StringAssert.Contains(mat2, "IMatScalarArithmeticOperators<Mat2, float>");
+        StringAssert.Contains(mat2, "IMatRelationalOperators<Mat2, float, Vec2b>");
+        StringAssert.Contains(mat2, "public Mat2(float m00, float m01, float m10, float m11)");
+        StringAssert.Contains(mat2, "public static Mat2 Identity => new(1f);");
+        StringAssert.Contains(mat2, "public static Mat2 CreateDiagonal(Vec2 diagonal)");
+        StringAssert.Contains(mat2, "public Vec2 Diagonal");
+        StringAssert.Contains(mat2, "public static Mat2 CreateOuterProduct(Vec2 columnVector, Vec2 rowVector)");
+        StringAssert.Contains(mat2, "public static Mat2 Lerp(Mat2 from, Mat2 to, float amount)");
+        StringAssert.Contains(mat2, "public readonly float Trace");
+        StringAssert.Contains(mat2, "public readonly float Determinant");
+        StringAssert.Contains(mat2, "public static bool TryInvert(Mat2 value, out Mat2 result)");
+        StringAssert.Contains(mat2, "public static Mat2 Adjugate(Mat2 value)");
+        StringAssert.Contains(mat2, "public static Mat2 InverseTranspose(Mat2 value)");
+        StringAssert.Contains(mat2, "public static Vec2b Equal(Mat2 left, Mat2 right, float epsilon)");
+        StringAssert.Contains(mat2, "public static bool IsIdentity(Mat2 value, float epsilon)");
+        StringAssert.Contains(mat2, "public readonly bool TryFormat(");
+        StringAssert.Contains(mat2, "public static Mat2 Parse(ReadOnlySpan<char> s, IFormatProvider? formatProvider)");
+        StringAssert.Contains(mat2, "public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? formatProvider, out Mat2 result)");
+        StringAssert.Contains(mat2, "public static Vec2 operator *(Mat2 left, Vec2 right)");
+        StringAssert.Contains(mat2, "public static Mat3x2 operator *(Mat2 left, Mat3x2 right)");
+        StringAssert.Contains(mat2, "public static Mat2 ComponentMultiply(Mat2 left, Mat2 right)");
+        StringAssert.Contains(mat2x3, "public struct Mat2x3(Vec3 column0, Vec3 column1)");
+        StringAssert.Contains(mat2x3, "public Vec2 Row0");
+        StringAssert.Contains(mat2x3, "public static Mat2x3 CreateDiagonal(Vec2 diagonal)");
+        StringAssert.Contains(mat2x3, "public readonly Mat3x2 Transposed");
+        StringAssert.Contains(mat3x2, "IMat3x2SystemNumerics<Mat3x2>");
+        StringAssert.Contains(mat3x2, "IMat3x2Transform2D<Mat3x2, float, Vec2, Vec3, Mat2x3>");
+        StringAssert.Contains(mat3x2, "public static Mat3x2 AffineIdentity");
+        StringAssert.Contains(mat3x2, "public static Mat3x2 CreateSkew(float radiansX, float radiansY)");
+        StringAssert.Contains(mat3x2, "public static bool TryInvert(Mat3x2 value, out Mat3x2 result)");
+        StringAssert.Contains(mat3x2, "public static explicit operator System.Numerics.Matrix3x2(Mat3x2 value)");
+        Assert.IsFalse(mat2x3.Contains("public static Mat2x3 Identity", StringComparison.Ordinal));
+        StringAssert.Contains(mat4, "public static explicit operator System.Numerics.Matrix4x4(Mat4 value)");
+        StringAssert.Contains(mat4, "public static Mat4 CreateTranslation(Vec3 translation)");
+        StringAssert.Contains(mat4, "public Vec3 Translation");
+        StringAssert.Contains(mat4, "public static Mat4 CreateScale(float x, float y, float z)");
+        StringAssert.Contains(mat4, "public static Mat4 CreateRotationZ(float radians, Vec3 center)");
+        StringAssert.Contains(mat4, "public static Mat4 CreateRotation(float radians, Vec3 axis)");
+        StringAssert.Contains(mat4, "public static Mat4 CreateShearX(float y, float z)");
+        StringAssert.Contains(mat4, "public static Mat4 CreateScaleBias(float scale, float bias)");
+        StringAssert.Contains(mat4, "public static Mat4 CreateFrustumRH_NO");
+        StringAssert.Contains(mat4, "public static Mat4 CreatePerspective(");
+        StringAssert.Contains(mat4, "public static Mat4 CreatePerspectiveOffCenter(");
+        StringAssert.Contains(mat4, "public static Mat4 CreateInfinitePerspectiveRH_NO");
+        StringAssert.Contains(mat4, "public static Mat4 CreatePerspectiveFieldOfView(");
+        StringAssert.Contains(mat4, "ProjectionHandedness.Right");
+        StringAssert.Contains(mat4, "ProjectionDepthRange.NegativeOneToOne");
+        StringAssert.Contains(mat4, "public static Mat4 CreateOrthographicOffCenter(");
+        StringAssert.Contains(mat4, "public static Mat4 CreateOrthographic(");
+        StringAssert.Contains(mat4, "public static Mat4 CreateFrustum(");
+        StringAssert.Contains(mat4, "public static Mat4 CreateInfinitePerspective(");
+        StringAssert.Contains(mat4, "public static Mat4 CreateTweakedInfinitePerspective(");
+        StringAssert.Contains(mat4, "public static Vec3 ProjectNO");
+        StringAssert.Contains(mat4, "public static Vec3 Project(");
+        StringAssert.Contains(mat4, "public static Vec3 UnProject(");
+        StringAssert.Contains(mat4, "public static Mat4 PickMatrix");
+        StringAssert.Contains(mat4, "public static Mat4 CreateViewport");
+        StringAssert.Contains(mat4, "public static Mat4 LookAtRH(Vec3 eye, Vec3 target, Vec3 up)");
+        StringAssert.Contains(mat4, "public static Mat4 LookAt(Vec3 eye, Vec3 target, Vec3 up)");
+        StringAssert.Contains(mat4, "public static Mat4 LookTo(Vec3 eye, Vec3 direction, Vec3 up)");
+        StringAssert.Contains(mat4, "public static Mat4 CreateWorld(Vec3 position, Vec3 forward, Vec3 up)");
+        StringAssert.Contains(mat4, "public readonly Vec3 ExtractScale()");
+        StringAssert.Contains(mat4, "public static Mat4 CreatePerspectiveFieldOfViewRH_NO");
+        StringAssert.Contains(mat4d, "IMat4Transform<Mat4d, double, Vec2d, Vec3d, Vec4d>");
+        StringAssert.Contains(mat4d, "public static Mat4d CreateTranslation(Vec3d translation)");
+        StringAssert.Contains(mat4d, "public static Mat4d CreatePerspectiveFieldOfViewRH_NO");
     }
 
     /// <summary>Generated source includes tuple conversions, cross-scalar conversions, and read/write swizzles.</summary>

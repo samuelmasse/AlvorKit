@@ -1,0 +1,166 @@
+    /// <summary>Gets the compact affine identity transform.</summary>
+    public static {{TypeName}} AffineIdentity => new(
+        new {{Vector2Type}}({{OneLiteral}}, {{ZeroLiteral}}),
+        new {{Vector2Type}}({{ZeroLiteral}}, {{OneLiteral}}),
+        {{Vector2Type}}.Zero);
+
+    /// <summary>Gets or sets the translation component.</summary>
+    public {{Vector2Type}} Translation
+    {
+        readonly get => Column2;
+        set => Column2 = value;
+    }
+
+    /// <summary>Creates a compact 2D translation transform.</summary>
+    public static {{TypeName}} CreateTranslation({{Vector2Type}} translation) =>
+        new(
+            new {{Vector2Type}}({{OneLiteral}}, {{ZeroLiteral}}),
+            new {{Vector2Type}}({{ZeroLiteral}}, {{OneLiteral}}),
+            translation);
+
+    /// <summary>Creates a compact 2D translation transform.</summary>
+    public static {{TypeName}} CreateTranslation({{ScalarType}} x, {{ScalarType}} y) =>
+        CreateTranslation(new {{Vector2Type}}(x, y));
+
+    /// <summary>Applies a compact 2D translation after an existing transform.</summary>
+    public static {{TypeName}} Translate({{TypeName}} value, {{Vector2Type}} translation) =>
+        new(
+            value.Column0,
+            value.Column1,
+            (value.Column0 * translation.X) + (value.Column1 * translation.Y) + value.Column2);
+
+    /// <summary>Creates a compact 2D scale transform.</summary>
+    public static {{TypeName}} CreateScale({{Vector2Type}} scale) =>
+        new(
+            new {{Vector2Type}}(scale.X, {{ZeroLiteral}}),
+            new {{Vector2Type}}({{ZeroLiteral}}, scale.Y),
+            {{Vector2Type}}.Zero);
+
+    /// <summary>Creates a compact uniform 2D scale transform.</summary>
+    public static {{TypeName}} CreateScale({{ScalarType}} scale) =>
+        CreateScale(new {{Vector2Type}}(scale));
+
+    /// <summary>Creates a compact 2D scale transform around a center point.</summary>
+    public static {{TypeName}} CreateScale({{Vector2Type}} scale, {{Vector2Type}} center) =>
+        new(
+            new {{Vector2Type}}(scale.X, {{ZeroLiteral}}),
+            new {{Vector2Type}}({{ZeroLiteral}}, scale.Y),
+            new {{Vector2Type}}(
+                center.X * ({{OneLiteral}} - scale.X),
+                center.Y * ({{OneLiteral}} - scale.Y)));
+
+    /// <summary>Creates a compact uniform 2D scale transform around a center point.</summary>
+    public static {{TypeName}} CreateScale({{ScalarType}} scale, {{Vector2Type}} center) =>
+        CreateScale(new {{Vector2Type}}(scale), center);
+
+    /// <summary>Applies a compact 2D scale after an existing transform.</summary>
+    public static {{TypeName}} Scale({{TypeName}} value, {{Vector2Type}} scale) =>
+        new(value.Column0 * scale.X, value.Column1 * scale.Y, value.Column2);
+
+    /// <summary>Creates a compact 2D rotation transform.</summary>
+    public static {{TypeName}} CreateRotation({{ScalarType}} radians)
+    {
+        var c = ScalarMath.Cos(radians);
+        var s = ScalarMath.Sin(radians);
+        return new(
+            new {{Vector2Type}}(c, s),
+            new {{Vector2Type}}(-s, c),
+            {{Vector2Type}}.Zero);
+    }
+
+    /// <summary>Creates a compact 2D rotation transform around a center point.</summary>
+    public static {{TypeName}} CreateRotation({{ScalarType}} radians, {{Vector2Type}} center)
+    {
+        var c = ScalarMath.Cos(radians);
+        var s = ScalarMath.Sin(radians);
+        return new(
+            new {{Vector2Type}}(c, s),
+            new {{Vector2Type}}(-s, c),
+            new {{Vector2Type}}(
+                (({{OneLiteral}} - c) * center.X) + (s * center.Y),
+                (-s * center.X) + (({{OneLiteral}} - c) * center.Y)));
+    }
+
+    /// <summary>Applies a compact 2D rotation after an existing transform.</summary>
+    public static {{TypeName}} Rotate({{TypeName}} value, {{ScalarType}} radians) =>
+        value * CreateRotation(radians);
+
+    /// <summary>Creates a compact 2D skew transform from X and Y skew angles in radians.</summary>
+    public static {{TypeName}} CreateSkew({{ScalarType}} radiansX, {{ScalarType}} radiansY)
+    {
+        var skewX = ScalarMath.Tan(radiansX);
+        var skewY = ScalarMath.Tan(radiansY);
+        return new(
+            new {{Vector2Type}}({{OneLiteral}}, skewY),
+            new {{Vector2Type}}(skewX, {{OneLiteral}}),
+            {{Vector2Type}}.Zero);
+    }
+
+    /// <summary>Creates a compact 2D skew transform from X and Y skew angles in radians around a center point.</summary>
+    public static {{TypeName}} CreateSkew({{ScalarType}} radiansX, {{ScalarType}} radiansY, {{Vector2Type}} center)
+    {
+        var skewX = ScalarMath.Tan(radiansX);
+        var skewY = ScalarMath.Tan(radiansY);
+        return new(
+            new {{Vector2Type}}({{OneLiteral}}, skewY),
+            new {{Vector2Type}}(skewX, {{OneLiteral}}),
+            new {{Vector2Type}}(-skewX * center.Y, -skewY * center.X));
+    }
+
+    /// <summary>Applies a compact 2D skew after an existing transform.</summary>
+    public static {{TypeName}} Skew({{TypeName}} value, {{ScalarType}} radiansX, {{ScalarType}} radiansY) =>
+        value * CreateSkew(radiansX, radiansY);
+
+    /// <summary>Composes two compact 2D affine transforms.</summary>
+    public static {{TypeName}} Compose({{TypeName}} left, {{TypeName}} right) =>
+        new(
+            (left.Column0 * right.Column0.X) + (left.Column1 * right.Column0.Y),
+            (left.Column0 * right.Column1.X) + (left.Column1 * right.Column1.Y),
+            (left.Column0 * right.Column2.X) + (left.Column1 * right.Column2.Y) + left.Column2);
+
+    /// <summary>Composes two compact 2D affine transforms.</summary>
+    public static {{TypeName}} operator *({{TypeName}} left, {{TypeName}} right) =>
+        Compose(left, right);
+
+    /// <summary>Gets the linear 2D determinant.</summary>
+    public readonly {{ScalarType}} Determinant =>
+        (Column0.X * Column1.Y) - (Column1.X * Column0.Y);
+
+    /// <summary>Gets the inverted compact affine transform.</summary>
+    public readonly {{TypeName}} Inverted =>
+        Invert(this);
+
+    /// <summary>Inverts a compact 2D affine transform.</summary>
+    public static {{TypeName}} Invert({{TypeName}} value) =>
+        TryInvert(value, out var result)
+            ? result
+            : throw new InvalidOperationException("Matrix is singular.");
+
+    /// <summary>Attempts to invert a compact 2D affine transform.</summary>
+    public static bool TryInvert({{TypeName}} value, out {{TypeName}} result)
+    {
+        var det = value.Determinant;
+        if (det == {{ZeroLiteral}})
+        {
+            result = default;
+            return false;
+        }
+
+        var invDet = {{OneLiteral}} / det;
+        result = new {{TypeName}}(
+            new {{Vector2Type}}(value.Column1.Y * invDet, -value.Column0.Y * invDet),
+            new {{Vector2Type}}(-value.Column1.X * invDet, value.Column0.X * invDet),
+            new {{Vector2Type}}(
+                ((value.Column1.X * value.Column2.Y) - (value.Column1.Y * value.Column2.X)) * invDet,
+                ((value.Column0.Y * value.Column2.X) - (value.Column0.X * value.Column2.Y)) * invDet));
+        return true;
+    }
+
+    /// <summary>Transforms a 2D point using the compact affine transform.</summary>
+    public static {{Vector2Type}} TransformPoint({{TypeName}} value, {{Vector2Type}} point) =>
+        (value.Column0 * point.X) + (value.Column1 * point.Y) + value.Column2;
+
+    /// <summary>Transforms a 2D direction vector without applying translation.</summary>
+    public static {{Vector2Type}} TransformVector({{TypeName}} value, {{Vector2Type}} vector) =>
+        (value.Column0 * vector.X) + (value.Column1 * vector.Y);
+

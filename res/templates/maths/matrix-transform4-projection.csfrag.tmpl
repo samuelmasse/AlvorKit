@@ -1,0 +1,903 @@
+    /// <summary>Creates a right-handed perspective projection with OpenGL depth from negative one to one.</summary>
+    public static {{TypeName}} CreatePerspectiveFieldOfViewRH_NO(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane)
+    {
+        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        return new(
+            new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                {{ZeroLiteral}},
+                {{ZeroLiteral}},
+                -(farPlane + nearPlane) / (farPlane - nearPlane),
+                -{{OneLiteral}}),
+            new {{Vector4Type}}(
+                {{ZeroLiteral}},
+                {{ZeroLiteral}},
+                -({{TwoLiteral}} * farPlane * nearPlane) / (farPlane - nearPlane),
+                {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates a right-handed perspective projection with zero-to-one depth.</summary>
+    public static {{TypeName}} CreatePerspectiveFieldOfViewRH_ZO(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane)
+    {
+        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        return new(
+            new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, farPlane / (nearPlane - farPlane), -{{OneLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, -(farPlane * nearPlane) / (farPlane - nearPlane), {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates a left-handed perspective projection with OpenGL depth from negative one to one.</summary>
+    public static {{TypeName}} CreatePerspectiveFieldOfViewLH_NO(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane)
+    {
+        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        return new(
+            new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                {{ZeroLiteral}},
+                {{ZeroLiteral}},
+                (farPlane + nearPlane) / (farPlane - nearPlane),
+                {{OneLiteral}}),
+            new {{Vector4Type}}(
+                {{ZeroLiteral}},
+                {{ZeroLiteral}},
+                -({{TwoLiteral}} * farPlane * nearPlane) / (farPlane - nearPlane),
+                {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates a left-handed perspective projection with zero-to-one depth.</summary>
+    public static {{TypeName}} CreatePerspectiveFieldOfViewLH_ZO(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane)
+    {
+        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        return new(
+            new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, farPlane / (farPlane - nearPlane), {{OneLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, -(farPlane * nearPlane) / (farPlane - nearPlane), {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates a perspective projection with default OpenGL clip-space conventions.</summary>
+    public static {{TypeName}} CreatePerspectiveFieldOfView(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        CreatePerspectiveFieldOfView(
+            fovYRadians,
+            aspect,
+            nearPlane,
+            farPlane,
+            ProjectionHandedness.Right,
+            ProjectionDepthRange.NegativeOneToOne);
+
+    /// <summary>Creates a perspective projection with explicit clip-space conventions.</summary>
+    public static {{TypeName}} CreatePerspectiveFieldOfView(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange) =>
+        (handedness, depthRange) switch
+        {
+            (ProjectionHandedness.Right, ProjectionDepthRange.NegativeOneToOne) =>
+                CreatePerspectiveFieldOfViewRH_NO(fovYRadians, aspect, nearPlane, farPlane),
+            (ProjectionHandedness.Right, ProjectionDepthRange.ZeroToOne) =>
+                CreatePerspectiveFieldOfViewRH_ZO(fovYRadians, aspect, nearPlane, farPlane),
+            (ProjectionHandedness.Left, ProjectionDepthRange.NegativeOneToOne) =>
+                CreatePerspectiveFieldOfViewLH_NO(fovYRadians, aspect, nearPlane, farPlane),
+            (ProjectionHandedness.Left, ProjectionDepthRange.ZeroToOne) =>
+                CreatePerspectiveFieldOfViewLH_ZO(fovYRadians, aspect, nearPlane, farPlane),
+            _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported projection convention."),
+        };
+
+    /// <summary>Creates a right-handed orthographic projection with OpenGL depth from negative one to one.</summary>
+    public static {{TypeName}} CreateOrthographicOffCenterRH_NO(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        new(
+            new {{Vector4Type}}({{TwoLiteral}} / (right - left), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{TwoLiteral}} / (top - bottom), {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, -{{TwoLiteral}} / (farPlane - nearPlane), {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                -(right + left) / (right - left),
+                -(top + bottom) / (top - bottom),
+                -(farPlane + nearPlane) / (farPlane - nearPlane),
+                {{OneLiteral}}));
+
+    /// <summary>Creates a right-handed orthographic projection with zero-to-one depth.</summary>
+    public static {{TypeName}} CreateOrthographicOffCenterRH_ZO(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        new(
+            new {{Vector4Type}}({{TwoLiteral}} / (right - left), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{TwoLiteral}} / (top - bottom), {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, -{{OneLiteral}} / (farPlane - nearPlane), {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                -(right + left) / (right - left),
+                -(top + bottom) / (top - bottom),
+                -nearPlane / (farPlane - nearPlane),
+                {{OneLiteral}}));
+
+    /// <summary>Creates a left-handed orthographic projection with OpenGL depth from negative one to one.</summary>
+    public static {{TypeName}} CreateOrthographicOffCenterLH_NO(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        new(
+            new {{Vector4Type}}({{TwoLiteral}} / (right - left), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{TwoLiteral}} / (top - bottom), {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{TwoLiteral}} / (farPlane - nearPlane), {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                -(right + left) / (right - left),
+                -(top + bottom) / (top - bottom),
+                -(farPlane + nearPlane) / (farPlane - nearPlane),
+                {{OneLiteral}}));
+
+    /// <summary>Creates a left-handed orthographic projection with zero-to-one depth.</summary>
+    public static {{TypeName}} CreateOrthographicOffCenterLH_ZO(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        new(
+            new {{Vector4Type}}({{TwoLiteral}} / (right - left), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{TwoLiteral}} / (top - bottom), {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}} / (farPlane - nearPlane), {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                -(right + left) / (right - left),
+                -(top + bottom) / (top - bottom),
+                -nearPlane / (farPlane - nearPlane),
+                {{OneLiteral}}));
+
+    /// <summary>Creates an orthographic projection with default OpenGL clip-space conventions.</summary>
+    public static {{TypeName}} CreateOrthographicOffCenter(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        CreateOrthographicOffCenter(
+            left,
+            right,
+            bottom,
+            top,
+            nearPlane,
+            farPlane,
+            ProjectionHandedness.Right,
+            ProjectionDepthRange.NegativeOneToOne);
+
+    /// <summary>Creates an orthographic projection with explicit clip-space conventions.</summary>
+    public static {{TypeName}} CreateOrthographicOffCenter(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange) =>
+        (handedness, depthRange) switch
+        {
+            (ProjectionHandedness.Right, ProjectionDepthRange.NegativeOneToOne) =>
+                CreateOrthographicOffCenterRH_NO(left, right, bottom, top, nearPlane, farPlane),
+            (ProjectionHandedness.Right, ProjectionDepthRange.ZeroToOne) =>
+                CreateOrthographicOffCenterRH_ZO(left, right, bottom, top, nearPlane, farPlane),
+            (ProjectionHandedness.Left, ProjectionDepthRange.NegativeOneToOne) =>
+                CreateOrthographicOffCenterLH_NO(left, right, bottom, top, nearPlane, farPlane),
+            (ProjectionHandedness.Left, ProjectionDepthRange.ZeroToOne) =>
+                CreateOrthographicOffCenterLH_ZO(left, right, bottom, top, nearPlane, farPlane),
+            _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported projection convention."),
+        };
+
+    /// <summary>Creates a centered orthographic projection with default OpenGL clip-space conventions.</summary>
+    public static {{TypeName}} CreateOrthographic(
+        {{ScalarType}} width,
+        {{ScalarType}} height,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        CreateOrthographic(
+            width,
+            height,
+            nearPlane,
+            farPlane,
+            ProjectionHandedness.Right,
+            ProjectionDepthRange.NegativeOneToOne);
+
+    /// <summary>Creates a centered orthographic projection with explicit clip-space conventions.</summary>
+    public static {{TypeName}} CreateOrthographic(
+        {{ScalarType}} width,
+        {{ScalarType}} height,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange)
+    {
+        var halfWidth = width / {{TwoLiteral}};
+        var halfHeight = height / {{TwoLiteral}};
+        return CreateOrthographicOffCenter(
+            -halfWidth,
+            halfWidth,
+            -halfHeight,
+            halfHeight,
+            nearPlane,
+            farPlane,
+            handedness,
+            depthRange);
+    }
+
+    /// <summary>Creates a right-handed frustum projection with OpenGL depth from negative one to one.</summary>
+    public static {{TypeName}} CreateFrustumRH_NO(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        new(
+            new {{Vector4Type}}(({{TwoLiteral}} * nearPlane) / (right - left), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, ({{TwoLiteral}} * nearPlane) / (top - bottom), {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                (right + left) / (right - left),
+                (top + bottom) / (top - bottom),
+                -(farPlane + nearPlane) / (farPlane - nearPlane),
+                -{{OneLiteral}}),
+            new {{Vector4Type}}(
+                {{ZeroLiteral}},
+                {{ZeroLiteral}},
+                -({{TwoLiteral}} * farPlane * nearPlane) / (farPlane - nearPlane),
+                {{ZeroLiteral}}));
+
+    /// <summary>Creates a right-handed frustum projection with zero-to-one depth.</summary>
+    public static {{TypeName}} CreateFrustumRH_ZO(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        new(
+            new {{Vector4Type}}(({{TwoLiteral}} * nearPlane) / (right - left), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, ({{TwoLiteral}} * nearPlane) / (top - bottom), {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                (right + left) / (right - left),
+                (top + bottom) / (top - bottom),
+                farPlane / (nearPlane - farPlane),
+                -{{OneLiteral}}),
+            new {{Vector4Type}}(
+                {{ZeroLiteral}},
+                {{ZeroLiteral}},
+                -(farPlane * nearPlane) / (farPlane - nearPlane),
+                {{ZeroLiteral}}));
+
+    /// <summary>Creates a left-handed frustum projection with OpenGL depth from negative one to one.</summary>
+    public static {{TypeName}} CreateFrustumLH_NO(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        new(
+            new {{Vector4Type}}(({{TwoLiteral}} * nearPlane) / (right - left), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, ({{TwoLiteral}} * nearPlane) / (top - bottom), {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                -(right + left) / (right - left),
+                -(top + bottom) / (top - bottom),
+                (farPlane + nearPlane) / (farPlane - nearPlane),
+                {{OneLiteral}}),
+            new {{Vector4Type}}(
+                {{ZeroLiteral}},
+                {{ZeroLiteral}},
+                -({{TwoLiteral}} * farPlane * nearPlane) / (farPlane - nearPlane),
+                {{ZeroLiteral}}));
+
+    /// <summary>Creates a left-handed frustum projection with zero-to-one depth.</summary>
+    public static {{TypeName}} CreateFrustumLH_ZO(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        new(
+            new {{Vector4Type}}(({{TwoLiteral}} * nearPlane) / (right - left), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, ({{TwoLiteral}} * nearPlane) / (top - bottom), {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                -(right + left) / (right - left),
+                -(top + bottom) / (top - bottom),
+                farPlane / (farPlane - nearPlane),
+                {{OneLiteral}}),
+            new {{Vector4Type}}(
+                {{ZeroLiteral}},
+                {{ZeroLiteral}},
+                -(farPlane * nearPlane) / (farPlane - nearPlane),
+                {{ZeroLiteral}}));
+
+    /// <summary>Creates a frustum projection with default OpenGL clip-space conventions.</summary>
+    public static {{TypeName}} CreateFrustum(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        CreateFrustum(
+            left,
+            right,
+            bottom,
+            top,
+            nearPlane,
+            farPlane,
+            ProjectionHandedness.Right,
+            ProjectionDepthRange.NegativeOneToOne);
+
+    /// <summary>Creates a frustum projection with explicit clip-space conventions.</summary>
+    public static {{TypeName}} CreateFrustum(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange) =>
+        (handedness, depthRange) switch
+        {
+            (ProjectionHandedness.Right, ProjectionDepthRange.NegativeOneToOne) =>
+                CreateFrustumRH_NO(left, right, bottom, top, nearPlane, farPlane),
+            (ProjectionHandedness.Right, ProjectionDepthRange.ZeroToOne) =>
+                CreateFrustumRH_ZO(left, right, bottom, top, nearPlane, farPlane),
+            (ProjectionHandedness.Left, ProjectionDepthRange.NegativeOneToOne) =>
+                CreateFrustumLH_NO(left, right, bottom, top, nearPlane, farPlane),
+            (ProjectionHandedness.Left, ProjectionDepthRange.ZeroToOne) =>
+                CreateFrustumLH_ZO(left, right, bottom, top, nearPlane, farPlane),
+            _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported projection convention."),
+        };
+
+    /// <summary>Creates an off-center perspective projection with default OpenGL clip-space conventions.</summary>
+    public static {{TypeName}} CreatePerspectiveOffCenter(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        CreateFrustum(left, right, bottom, top, nearPlane, farPlane);
+
+    /// <summary>Creates an off-center perspective projection with explicit clip-space conventions.</summary>
+    public static {{TypeName}} CreatePerspectiveOffCenter(
+        {{ScalarType}} left,
+        {{ScalarType}} right,
+        {{ScalarType}} bottom,
+        {{ScalarType}} top,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange) =>
+        CreateFrustum(left, right, bottom, top, nearPlane, farPlane, handedness, depthRange);
+
+    /// <summary>Creates a centered perspective projection from near-plane dimensions with default OpenGL clip-space conventions.</summary>
+    public static {{TypeName}} CreatePerspective(
+        {{ScalarType}} width,
+        {{ScalarType}} height,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        CreatePerspective(
+            width,
+            height,
+            nearPlane,
+            farPlane,
+            ProjectionHandedness.Right,
+            ProjectionDepthRange.NegativeOneToOne);
+
+    /// <summary>Creates a centered perspective projection from near-plane dimensions with explicit clip-space conventions.</summary>
+    public static {{TypeName}} CreatePerspective(
+        {{ScalarType}} width,
+        {{ScalarType}} height,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange)
+    {
+        var halfWidth = width / {{TwoLiteral}};
+        var halfHeight = height / {{TwoLiteral}};
+        return CreateFrustum(
+            -halfWidth,
+            halfWidth,
+            -halfHeight,
+            halfHeight,
+            nearPlane,
+            farPlane,
+            handedness,
+            depthRange);
+    }
+
+    /// <summary>Creates a right-handed perspective projection from field of view and viewport size.</summary>
+    public static {{TypeName}} CreatePerspectiveFieldOfViewRH_NO(
+        {{ScalarType}} fovRadians,
+        {{ScalarType}} width,
+        {{ScalarType}} height,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane)
+    {
+        var h = ScalarMath.Cos(fovRadians / {{TwoLiteral}}) / ScalarMath.Sin(fovRadians / {{TwoLiteral}});
+        var w = h * height / width;
+        return new(
+            new {{Vector4Type}}(w, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, h, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                {{ZeroLiteral}},
+                {{ZeroLiteral}},
+                -(farPlane + nearPlane) / (farPlane - nearPlane),
+                -{{OneLiteral}}),
+            new {{Vector4Type}}(
+                {{ZeroLiteral}},
+                {{ZeroLiteral}},
+                -({{TwoLiteral}} * farPlane * nearPlane) / (farPlane - nearPlane),
+                {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates a right-handed perspective projection from field of view and viewport size.</summary>
+    public static {{TypeName}} CreatePerspectiveFieldOfViewRH_ZO(
+        {{ScalarType}} fovRadians,
+        {{ScalarType}} width,
+        {{ScalarType}} height,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane)
+    {
+        var h = ScalarMath.Cos(fovRadians / {{TwoLiteral}}) / ScalarMath.Sin(fovRadians / {{TwoLiteral}});
+        var w = h * height / width;
+        return new(
+            new {{Vector4Type}}(w, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, h, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, farPlane / (nearPlane - farPlane), -{{OneLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, -(farPlane * nearPlane) / (farPlane - nearPlane), {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates a left-handed perspective projection from field of view and viewport size.</summary>
+    public static {{TypeName}} CreatePerspectiveFieldOfViewLH_NO(
+        {{ScalarType}} fovRadians,
+        {{ScalarType}} width,
+        {{ScalarType}} height,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane)
+    {
+        var h = ScalarMath.Cos(fovRadians / {{TwoLiteral}}) / ScalarMath.Sin(fovRadians / {{TwoLiteral}});
+        var w = h * height / width;
+        return new(
+            new {{Vector4Type}}(w, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, h, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                {{ZeroLiteral}},
+                {{ZeroLiteral}},
+                (farPlane + nearPlane) / (farPlane - nearPlane),
+                {{OneLiteral}}),
+            new {{Vector4Type}}(
+                {{ZeroLiteral}},
+                {{ZeroLiteral}},
+                -({{TwoLiteral}} * farPlane * nearPlane) / (farPlane - nearPlane),
+                {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates a left-handed perspective projection from field of view and viewport size.</summary>
+    public static {{TypeName}} CreatePerspectiveFieldOfViewLH_ZO(
+        {{ScalarType}} fovRadians,
+        {{ScalarType}} width,
+        {{ScalarType}} height,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane)
+    {
+        var h = ScalarMath.Cos(fovRadians / {{TwoLiteral}}) / ScalarMath.Sin(fovRadians / {{TwoLiteral}});
+        var w = h * height / width;
+        return new(
+            new {{Vector4Type}}(w, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, h, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, farPlane / (farPlane - nearPlane), {{OneLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, -(farPlane * nearPlane) / (farPlane - nearPlane), {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates a perspective projection from field of view and viewport size with default OpenGL clip-space conventions.</summary>
+    public static {{TypeName}} CreatePerspectiveFieldOfView(
+        {{ScalarType}} fovRadians,
+        {{ScalarType}} width,
+        {{ScalarType}} height,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane) =>
+        CreatePerspectiveFieldOfView(
+            fovRadians,
+            width,
+            height,
+            nearPlane,
+            farPlane,
+            ProjectionHandedness.Right,
+            ProjectionDepthRange.NegativeOneToOne);
+
+    /// <summary>Creates a perspective projection from field of view and viewport size with explicit clip-space conventions.</summary>
+    public static {{TypeName}} CreatePerspectiveFieldOfView(
+        {{ScalarType}} fovRadians,
+        {{ScalarType}} width,
+        {{ScalarType}} height,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange) =>
+        (handedness, depthRange) switch
+        {
+            (ProjectionHandedness.Right, ProjectionDepthRange.NegativeOneToOne) =>
+                CreatePerspectiveFieldOfViewRH_NO(fovRadians, width, height, nearPlane, farPlane),
+            (ProjectionHandedness.Right, ProjectionDepthRange.ZeroToOne) =>
+                CreatePerspectiveFieldOfViewRH_ZO(fovRadians, width, height, nearPlane, farPlane),
+            (ProjectionHandedness.Left, ProjectionDepthRange.NegativeOneToOne) =>
+                CreatePerspectiveFieldOfViewLH_NO(fovRadians, width, height, nearPlane, farPlane),
+            (ProjectionHandedness.Left, ProjectionDepthRange.ZeroToOne) =>
+                CreatePerspectiveFieldOfViewLH_ZO(fovRadians, width, height, nearPlane, farPlane),
+            _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported projection convention."),
+        };
+
+    /// <summary>Creates a right-handed infinite perspective projection with OpenGL depth from negative one to one.</summary>
+    public static {{TypeName}} CreateInfinitePerspectiveRH_NO(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane)
+    {
+        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        return new(
+            new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, -{{OneLiteral}}, -{{OneLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, -{{TwoLiteral}} * nearPlane, {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates a right-handed infinite perspective projection with zero-to-one depth.</summary>
+    public static {{TypeName}} CreateInfinitePerspectiveRH_ZO(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane)
+    {
+        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        return new(
+            new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, -{{OneLiteral}}, -{{OneLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, -nearPlane, {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates a left-handed infinite perspective projection with OpenGL depth from negative one to one.</summary>
+    public static {{TypeName}} CreateInfinitePerspectiveLH_NO(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane)
+    {
+        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        return new(
+            new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}, {{OneLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, -{{TwoLiteral}} * nearPlane, {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates a left-handed infinite perspective projection with zero-to-one depth.</summary>
+    public static {{TypeName}} CreateInfinitePerspectiveLH_ZO(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane)
+    {
+        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        return new(
+            new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}, {{OneLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, -nearPlane, {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates an infinite perspective projection with default OpenGL clip-space conventions.</summary>
+    public static {{TypeName}} CreateInfinitePerspective(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane) =>
+        CreateInfinitePerspective(
+            fovYRadians,
+            aspect,
+            nearPlane,
+            ProjectionHandedness.Right,
+            ProjectionDepthRange.NegativeOneToOne);
+
+    /// <summary>Creates an infinite perspective projection with explicit clip-space conventions.</summary>
+    public static {{TypeName}} CreateInfinitePerspective(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange) =>
+        (handedness, depthRange) switch
+        {
+            (ProjectionHandedness.Right, ProjectionDepthRange.NegativeOneToOne) =>
+                CreateInfinitePerspectiveRH_NO(fovYRadians, aspect, nearPlane),
+            (ProjectionHandedness.Right, ProjectionDepthRange.ZeroToOne) =>
+                CreateInfinitePerspectiveRH_ZO(fovYRadians, aspect, nearPlane),
+            (ProjectionHandedness.Left, ProjectionDepthRange.NegativeOneToOne) =>
+                CreateInfinitePerspectiveLH_NO(fovYRadians, aspect, nearPlane),
+            (ProjectionHandedness.Left, ProjectionDepthRange.ZeroToOne) =>
+                CreateInfinitePerspectiveLH_ZO(fovYRadians, aspect, nearPlane),
+            _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported projection convention."),
+        };
+
+    /// <summary>Creates a tweaked right-handed infinite perspective projection.</summary>
+    public static {{TypeName}} CreateTweakedInfinitePerspectiveRH_NO(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} epsilon)
+    {
+        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        return new(
+            new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, epsilon - {{OneLiteral}}, -{{OneLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, (epsilon - {{TwoLiteral}}) * nearPlane, {{ZeroLiteral}}));
+    }
+
+    /// <summary>Creates a tweaked right-handed infinite perspective projection.</summary>
+    public static {{TypeName}} CreateTweakedInfinitePerspectiveRH_NO(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane) =>
+        CreateTweakedInfinitePerspectiveRH_NO(fovYRadians, aspect, nearPlane, {{EpsilonLiteral}});
+
+    /// <summary>Creates a tweaked infinite perspective projection with default OpenGL clip-space conventions.</summary>
+    public static {{TypeName}} CreateTweakedInfinitePerspective(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} epsilon) =>
+        CreateTweakedInfinitePerspective(
+            fovYRadians,
+            aspect,
+            nearPlane,
+            epsilon,
+            ProjectionHandedness.Right,
+            ProjectionDepthRange.NegativeOneToOne);
+
+    /// <summary>Creates a tweaked infinite perspective projection with default OpenGL clip-space conventions.</summary>
+    public static {{TypeName}} CreateTweakedInfinitePerspective(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane) =>
+        CreateTweakedInfinitePerspective(fovYRadians, aspect, nearPlane, {{EpsilonLiteral}});
+
+    /// <summary>Creates a tweaked infinite perspective projection with explicit clip-space conventions.</summary>
+    public static {{TypeName}} CreateTweakedInfinitePerspective(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane,
+        {{ScalarType}} epsilon,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange) =>
+        (handedness, depthRange) switch
+        {
+            (ProjectionHandedness.Right, ProjectionDepthRange.NegativeOneToOne) =>
+                CreateTweakedInfinitePerspectiveRH_NO(fovYRadians, aspect, nearPlane, epsilon),
+            _ => throw new ArgumentOutOfRangeException(nameof(handedness), "Unsupported tweaked infinite projection convention."),
+        };
+
+    /// <summary>Creates a tweaked infinite perspective projection with explicit clip-space conventions.</summary>
+    public static {{TypeName}} CreateTweakedInfinitePerspective(
+        {{ScalarType}} fovYRadians,
+        {{ScalarType}} aspect,
+        {{ScalarType}} nearPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange) =>
+        CreateTweakedInfinitePerspective(fovYRadians, aspect, nearPlane, {{EpsilonLiteral}}, handedness, depthRange);
+
+    /// <summary>Creates a viewport transform for default OpenGL normalized depth.</summary>
+    public static {{TypeName}} CreateViewport(
+        {{ScalarType}} x,
+        {{ScalarType}} y,
+        {{ScalarType}} width,
+        {{ScalarType}} height) =>
+        CreateViewport(x, y, width, height, {{ZeroLiteral}}, {{OneLiteral}}, ProjectionDepthRange.NegativeOneToOne);
+
+    /// <summary>Creates a viewport transform for default OpenGL normalized depth.</summary>
+    public static {{TypeName}} CreateViewport(
+        {{Vector4Type}} viewport) =>
+        CreateViewport(viewport.X, viewport.Y, viewport.Z, viewport.W);
+
+    /// <summary>Creates a viewport transform for default OpenGL normalized depth.</summary>
+    public static {{TypeName}} CreateViewport(
+        {{ScalarType}} x,
+        {{ScalarType}} y,
+        {{ScalarType}} width,
+        {{ScalarType}} height,
+        {{ScalarType}} minDepth,
+        {{ScalarType}} maxDepth) =>
+        CreateViewport(x, y, width, height, minDepth, maxDepth, ProjectionDepthRange.NegativeOneToOne);
+
+    /// <summary>Creates a viewport transform for explicit normalized depth conventions.</summary>
+    public static {{TypeName}} CreateViewport(
+        {{ScalarType}} x,
+        {{ScalarType}} y,
+        {{ScalarType}} width,
+        {{ScalarType}} height,
+        {{ScalarType}} minDepth,
+        {{ScalarType}} maxDepth,
+        ProjectionDepthRange depthRange)
+    {
+        var zScale = depthRange switch
+        {
+            ProjectionDepthRange.NegativeOneToOne => (maxDepth - minDepth) / {{TwoLiteral}},
+            ProjectionDepthRange.ZeroToOne => maxDepth - minDepth,
+            _ => throw new ArgumentOutOfRangeException(nameof(depthRange), "Unsupported viewport depth range."),
+        };
+        var zOffset = depthRange switch
+        {
+            ProjectionDepthRange.NegativeOneToOne => (minDepth + maxDepth) / {{TwoLiteral}},
+            ProjectionDepthRange.ZeroToOne => minDepth,
+            _ => throw new ArgumentOutOfRangeException(nameof(depthRange), "Unsupported viewport depth range."),
+        };
+        return new(
+            new {{Vector4Type}}(width / {{TwoLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, height / {{TwoLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
+            new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, zScale, {{ZeroLiteral}}),
+            new {{Vector4Type}}(
+                x + (width / {{TwoLiteral}}),
+                y + (height / {{TwoLiteral}}),
+                zOffset,
+                {{OneLiteral}}));
+    }
+
+    /// <summary>Projects an object-space point to window coordinates with OpenGL depth from negative one to one.</summary>
+    public static {{Vector3Type}} ProjectNO(
+        {{Vector3Type}} objectPosition,
+        {{TypeName}} model,
+        {{TypeName}} projection,
+        {{Vector4Type}} viewport)
+    {
+        var clip = projection * (model * new {{Vector4Type}}(objectPosition, {{OneLiteral}}));
+        var normalized = clip / clip.W;
+        return new {{Vector3Type}}(
+            viewport.X + (((normalized.X + {{OneLiteral}}) / {{TwoLiteral}}) * viewport.Z),
+            viewport.Y + (((normalized.Y + {{OneLiteral}}) / {{TwoLiteral}}) * viewport.W),
+            (normalized.Z + {{OneLiteral}}) / {{TwoLiteral}});
+    }
+
+    /// <summary>Projects an object-space point to window coordinates with zero-to-one depth.</summary>
+    public static {{Vector3Type}} ProjectZO(
+        {{Vector3Type}} objectPosition,
+        {{TypeName}} model,
+        {{TypeName}} projection,
+        {{Vector4Type}} viewport)
+    {
+        var clip = projection * (model * new {{Vector4Type}}(objectPosition, {{OneLiteral}}));
+        var normalized = clip / clip.W;
+        return new {{Vector3Type}}(
+            viewport.X + (((normalized.X + {{OneLiteral}}) / {{TwoLiteral}}) * viewport.Z),
+            viewport.Y + (((normalized.Y + {{OneLiteral}}) / {{TwoLiteral}}) * viewport.W),
+            normalized.Z);
+    }
+
+    /// <summary>Projects an object-space point to window coordinates with default OpenGL depth conventions.</summary>
+    public static {{Vector3Type}} Project(
+        {{Vector3Type}} objectPosition,
+        {{TypeName}} model,
+        {{TypeName}} projection,
+        {{Vector4Type}} viewport) =>
+        Project(objectPosition, model, projection, viewport, ProjectionDepthRange.NegativeOneToOne);
+
+    /// <summary>Projects an object-space point to window coordinates with explicit depth conventions.</summary>
+    public static {{Vector3Type}} Project(
+        {{Vector3Type}} objectPosition,
+        {{TypeName}} model,
+        {{TypeName}} projection,
+        {{Vector4Type}} viewport,
+        ProjectionDepthRange depthRange) =>
+        depthRange switch
+        {
+            ProjectionDepthRange.NegativeOneToOne => ProjectNO(objectPosition, model, projection, viewport),
+            ProjectionDepthRange.ZeroToOne => ProjectZO(objectPosition, model, projection, viewport),
+            _ => throw new ArgumentOutOfRangeException(nameof(depthRange), "Unsupported projection depth range."),
+        };
+
+    /// <summary>Unprojects a window-space point with OpenGL depth from negative one to one.</summary>
+    public static {{Vector3Type}} UnProjectNO(
+        {{Vector3Type}} windowPosition,
+        {{TypeName}} model,
+        {{TypeName}} projection,
+        {{Vector4Type}} viewport)
+    {
+        var inverse = Invert(projection * model);
+        var normalized = new {{Vector4Type}}(
+            (((windowPosition.X - viewport.X) / viewport.Z) * {{TwoLiteral}}) - {{OneLiteral}},
+            (((windowPosition.Y - viewport.Y) / viewport.W) * {{TwoLiteral}}) - {{OneLiteral}},
+            (windowPosition.Z * {{TwoLiteral}}) - {{OneLiteral}},
+            {{OneLiteral}});
+        var objectPosition = inverse * normalized;
+        objectPosition /= objectPosition.W;
+        return new {{Vector3Type}}(objectPosition.X, objectPosition.Y, objectPosition.Z);
+    }
+
+    /// <summary>Unprojects a window-space point with zero-to-one depth.</summary>
+    public static {{Vector3Type}} UnProjectZO(
+        {{Vector3Type}} windowPosition,
+        {{TypeName}} model,
+        {{TypeName}} projection,
+        {{Vector4Type}} viewport)
+    {
+        var inverse = Invert(projection * model);
+        var normalized = new {{Vector4Type}}(
+            (((windowPosition.X - viewport.X) / viewport.Z) * {{TwoLiteral}}) - {{OneLiteral}},
+            (((windowPosition.Y - viewport.Y) / viewport.W) * {{TwoLiteral}}) - {{OneLiteral}},
+            windowPosition.Z,
+            {{OneLiteral}});
+        var objectPosition = inverse * normalized;
+        objectPosition /= objectPosition.W;
+        return new {{Vector3Type}}(objectPosition.X, objectPosition.Y, objectPosition.Z);
+    }
+
+    /// <summary>Unprojects a window-space point with default OpenGL depth conventions.</summary>
+    public static {{Vector3Type}} UnProject(
+        {{Vector3Type}} windowPosition,
+        {{TypeName}} model,
+        {{TypeName}} projection,
+        {{Vector4Type}} viewport) =>
+        UnProject(windowPosition, model, projection, viewport, ProjectionDepthRange.NegativeOneToOne);
+
+    /// <summary>Unprojects a window-space point with explicit depth conventions.</summary>
+    public static {{Vector3Type}} UnProject(
+        {{Vector3Type}} windowPosition,
+        {{TypeName}} model,
+        {{TypeName}} projection,
+        {{Vector4Type}} viewport,
+        ProjectionDepthRange depthRange) =>
+        depthRange switch
+        {
+            ProjectionDepthRange.NegativeOneToOne => UnProjectNO(windowPosition, model, projection, viewport),
+            ProjectionDepthRange.ZeroToOne => UnProjectZO(windowPosition, model, projection, viewport),
+            _ => throw new ArgumentOutOfRangeException(nameof(depthRange), "Unsupported projection depth range."),
+        };
+
+    /// <summary>Creates a picking matrix for a window-space selection rectangle.</summary>
+    public static {{TypeName}} PickMatrix({{Vector2Type}} center, {{Vector2Type}} delta, {{Vector4Type}} viewport)
+    {
+        if (delta.X <= {{ZeroLiteral}} || delta.Y <= {{ZeroLiteral}})
+            return Identity;
+
+        var translation = new {{Vector3Type}}(
+            (viewport.Z - ({{TwoLiteral}} * (center.X - viewport.X))) / delta.X,
+            (viewport.W - ({{TwoLiteral}} * (center.Y - viewport.Y))) / delta.Y,
+            {{ZeroLiteral}});
+        var scale = new {{Vector3Type}}(viewport.Z / delta.X, viewport.W / delta.Y, {{OneLiteral}});
+        return Scale(Translate(Identity, translation), scale);
+    }

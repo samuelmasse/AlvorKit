@@ -58,6 +58,10 @@ These instructions apply to C# code under `src/` and the matching tests under
   properties, and operators when it improves readability. Use block bodies when
   the member has multiple statements, meaningful control flow, comments, or
   side effects that benefit from being visually emphasized.
+- In game and runtime source, avoid auto-properties for object-owned state.
+  Use explicit private fields so the type's owned state is visible in one place;
+  immutable handles and dependencies should be private readonly fields, with
+  read-only properties as simple accessors over those fields when needed.
 - Prefer file-scoped namespaces, nullable-aware code, collection expressions, and
   the style already enforced by `.editorconfig`.
 - Avoid new production dependencies unless the task clearly needs them and the

@@ -2,83 +2,115 @@ namespace AlvorKit.Windowing;
 
 /// <summary>GLFW-backed implementation of the AlvorKit window host contract.</summary>
 [ExcludeFromCodeCoverage]
-public partial class GlfwWindowHost : IWindowHost
+public class GlfwWindowHost : IWindowHost
 {
-    private readonly Glfw? glfw;
-    private readonly GlfwWindow window;
-    private readonly Stopwatch clock = new();
-    private string title = string.Empty;
-    private bool isVSyncEnabled;
-    private bool fullscreen;
-    private int windowedX;
-    private int windowedY;
-    private int windowedWidth;
-    private int windowedHeight;
+    /// <summary>Performs direct GLFW operations for this host.</summary>
+    private readonly GlfwWindowRuntime runtime;
 
-    /// <summary>Creates a non-native host shell for derived automation hosts.</summary>
-    protected GlfwWindowHost()
-    {
-    }
+    /// <summary>Routes GLFW callback delegates into host events.</summary>
+    private readonly GlfwWindowCallbacks callbacks;
 
     /// <summary>Wraps an existing GLFW window and registers AlvorKit window callbacks.</summary>
     public GlfwWindowHost(Glfw glfw, GlfwWindow window)
     {
-        ArgumentNullException.ThrowIfNull(glfw);
-        if (window == default)
-            throw new ArgumentException("A valid GLFW window is required.", nameof(window));
-
-        this.glfw = glfw;
-        this.window = window;
-        glfw.GetWindowPos(window, out windowedX, out windowedY);
-        glfw.GetWindowSize(window, out windowedWidth, out windowedHeight);
-        RegisterCallbacks();
+        runtime = new(glfw, window);
+        callbacks = new(
+            runtime.Glfw,
+            runtime.Window,
+            OnClosing,
+            OnMove,
+            OnResize,
+            OnMouseMove,
+            OnMouseWheel,
+            OnMouseDown,
+            OnMouseUp,
+            OnKeyDown,
+            OnKeyUp,
+            OnTextInput);
+        callbacks.Register();
     }
 
     /// <inheritdoc />
     public event Action? Closing;
-
     /// <inheritdoc />
     public event Action<WindowFrameEvent>? UpdateFrame;
-
     /// <inheritdoc />
     public event Action<WindowFrameEvent>? RenderFrame;
-
     /// <inheritdoc />
     public event Action<WindowMouseButtonEvent>? MouseDown;
-
     /// <inheritdoc />
     public event Action<WindowMouseButtonEvent>? MouseUp;
-
     /// <inheritdoc />
     public event Action<WindowMouseWheelEvent>? MouseWheel;
-
     /// <inheritdoc />
     public event Action<WindowMouseMoveEvent>? MouseMove;
-
     /// <inheritdoc />
     public event Action<WindowKeyEvent>? KeyDown;
-
     /// <inheritdoc />
     public event Action<WindowKeyEvent>? KeyUp;
-
     /// <inheritdoc />
     public event Action<WindowPositionEvent>? Move;
-
     /// <inheritdoc />
     public event Action<WindowResizeEvent>? Resize;
-
     /// <inheritdoc />
     public event Action<WindowTextInputEvent>? TextInput;
 
-    /// <summary>Gets whether this host has a native GLFW window.</summary>
-    protected bool HasNativeWindow => glfw is not null && window != default;
+    /// <summary>Gets the GLFW API supplied to this host.</summary>
+    protected Glfw Glfw => runtime.Glfw;
 
-    /// <summary>Gets the GLFW API or throws when no native window was supplied.</summary>
-    protected Glfw Glfw => glfw ?? throw new InvalidOperationException("This host does not have a GLFW API.");
+    /// <summary>Gets the GLFW window supplied to this host.</summary>
+    protected GlfwWindow Window => runtime.Window;
 
-    /// <summary>Gets the GLFW window or throws when no native window was supplied.</summary>
-    protected GlfwWindow Window =>
-        window != default ? window : throw new InvalidOperationException("This host does not have a GLFW window.");
+    /// <inheritdoc />
+    public virtual bool IsExiting => runtime.IsExiting;
+
+    /// <inheritdoc />
+    public virtual bool IsFocused => runtime.IsFocused;
+
+    /// <inheritdoc />
+    public virtual bool IsFullscreen => runtime.IsFullscreen;
+
+    /// <inheritdoc />
+    public virtual bool IsVisible { get => runtime.IsVisible; set => runtime.IsVisible = value; }
+
+    /// <inheritdoc />
+    public virtual Vec2u ClientSize { get => runtime.ClientSize; set => runtime.ClientSize = value; }
+
+    /// <inheritdoc />
+    public virtual Vec2u MonitorSize => runtime.MonitorSize;
+
+    /// <inheritdoc />
+    public virtual float MonitorScale => runtime.MonitorScale;
+
+    /// <inheritdoc />
+    public virtual Vec2 MousePosition { get => runtime.MousePosition; set => runtime.MousePosition = value; }
+
+    /// <inheritdoc />
+    public virtual WindowState WindowState { get => runtime.WindowState; set => runtime.WindowState = value; }
+
+    /// <inheritdoc />
+    public virtual CursorMode CursorMode { get => runtime.CursorMode; set => runtime.CursorMode = value; }
+
+    /// <inheritdoc />
+    public virtual bool IsVSyncEnabled { get => runtime.IsVSyncEnabled; set => runtime.IsVSyncEnabled = value; }
+
+    /// <inheritdoc />
+    public virtual string Title { get => runtime.Title; set => runtime.Title = value; }
+
+    /// <inheritdoc />
+    public virtual string Clipboard { get => runtime.Clipboard; set => runtime.Clipboard = value; }
+
+    /// <inheritdoc />
+    public virtual void Close() => runtime.Close();
+
+    /// <inheritdoc />
+    public virtual void SwapBuffers() => runtime.SwapBuffers();
+
+    /// <summary>Returns an OpenGL procedure address from the current GLFW context.</summary>
+    public virtual nint GetProcAddress(string procname) => runtime.GetProcAddress(procname);
+
+    /// <inheritdoc />
+    public virtual void Run() => runtime.Run(OnUpdateFrame, OnRenderFrame);
 
     /// <summary>Raises the close-request event.</summary>
     protected void OnClosing() => Closing?.Invoke();

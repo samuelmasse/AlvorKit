@@ -1,0 +1,17 @@
+    /// <summary>Explicitly converts a column-major matrix to a row-vector System.Numerics matrix.</summary>
+    public static explicit operator System.Numerics.Matrix3x2(Mat3x2 value) =>
+        new(
+            value[0, 0],
+            value[0, 1],
+            value[1, 0],
+            value[1, 1],
+            value[2, 0],
+            value[2, 1]);
+
+    /// <summary>Explicitly converts a row-vector System.Numerics matrix to a column-major matrix.</summary>
+    public static explicit operator Mat3x2(System.Numerics.Matrix3x2 value) =>
+        new(
+            new Vec2(value.M11, value.M12),
+            new Vec2(value.M21, value.M22),
+            new Vec2(value.M31, value.M32));
+

@@ -1,0 +1,17 @@
+    /// <summary>Returns whether every row and column has unit length within epsilon.</summary>
+    public static bool IsNormalized({{TypeName}} value, {{ScalarType}} epsilon) =>
+        {{NormalizedColumnsAndRows}};
+
+    /// <summary>Returns whether every row and column has unit length within epsilon.</summary>
+    public readonly bool IsNormalized({{ScalarType}} epsilon) =>
+        IsNormalized(this, epsilon);
+
+    /// <summary>Returns whether every row and column is normalized and mutually perpendicular within epsilon.</summary>
+    public static bool IsOrthogonal({{TypeName}} value, {{ScalarType}} epsilon) =>
+        IsNormalized(value, epsilon) &&
+        {{OrthogonalColumnsAndRows}};
+
+    /// <summary>Returns whether every row and column is normalized and mutually perpendicular within epsilon.</summary>
+    public readonly bool IsOrthogonal({{ScalarType}} epsilon) =>
+        IsOrthogonal(this, epsilon);
+

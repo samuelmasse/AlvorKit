@@ -183,7 +183,7 @@ public class AgentGlfwWindowHostAgentTest
         Assert.AreEqual(new Vec2i(9, 10), moved);
     }
 
-    /// <summary>Verifies validation and native-free GL lookup fallback paths.</summary>
+    /// <summary>Verifies validation and generated GLFW noop lookup paths.</summary>
     [TestMethod]
     public void AgentGlfwWindowHost_InvalidControlInputs_Throw()
     {
@@ -194,7 +194,7 @@ public class AgentGlfwWindowHostAgentTest
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.Advance(-1, 0));
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.ClientSize = (0u, 1u));
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.ResizeWindow((1u, 0u)));
-        Assert.AreEqual(3, host.GetProcAddress("abc"));
+        Assert.AreEqual((nint)123, host.GetProcAddress("abc"));
     }
 
     /// <summary>Verifies the convenience step method runs exactly one update and render.</summary>
@@ -215,10 +215,14 @@ public class AgentGlfwWindowHostAgentTest
         Assert.AreEqual(0.125, host.Time);
     }
 
-    private static AgentGlfwWindowHost CreateAgent(
+    private AgentGlfwWindowHost CreateAgent(
         Vec2u? clientSize = null,
         string title = "AlvorKit.Windowing",
         bool isVisible = false,
-        bool isVSyncEnabled = true) =>
-        new(new(new GlNoop()), clientSize ?? new(800, 600), title, isVisible, isVSyncEnabled);
+        bool isVSyncEnabled = true)
+    {
+        var size = clientSize ?? new(800, 600);
+        var glfw = new WindowingTestGlfw(size, isVisible);
+        return new(glfw, glfw.Window, new(new GlNoop()), size, title, isVisible, isVSyncEnabled);
+    }
 }

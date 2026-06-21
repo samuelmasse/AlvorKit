@@ -45,7 +45,7 @@ public class AgentGlfwWindowHostTest
         Assert.AreEqual("Outer", host.Title);
         Assert.AreEqual("Board", host.Clipboard);
         Assert.AreEqual(1, host.SwapBuffersCount);
-        Assert.AreEqual(4, host.GetProcAddress("Draw"));
+        Assert.AreEqual((nint)123, host.GetProcAddress("Draw"));
     }
 
     /// <summary>Verifies that selected agent mode runs the interactive command loop.</summary>
@@ -106,7 +106,7 @@ public class AgentGlfwWindowHostTest
         Assert.AreEqual("out\\frame.png", savedPath);
     }
 
-    private static AgentGlfwWindowHost CreateAgent(
+    private AgentGlfwWindowHost CreateAgent(
         Vec2u clientSize,
         string title = "AlvorKit.Windowing",
         bool isVisible = false,
@@ -114,8 +114,21 @@ public class AgentGlfwWindowHostTest
         GlLayer? gl = null,
         TextReader? agentInput = null,
         TextWriter? agentOutput = null,
-        Action<GlLayer, Vec2u, string>? screenshotSave = null) =>
-        new(gl ?? CreateGl(), clientSize, title, isVisible, isVSyncEnabled, agentInput, agentOutput, screenshotSave);
+        Action<GlLayer, Vec2u, string>? screenshotSave = null)
+    {
+        var glfw = new WindowingTestGlfw(clientSize, isVisible);
+        return new(
+            glfw,
+            glfw.Window,
+            gl ?? CreateGl(),
+            clientSize,
+            title,
+            isVisible,
+            isVSyncEnabled,
+            agentInput,
+            agentOutput,
+            screenshotSave);
+    }
 
-    private static GlLayer CreateGl() => new(new GlNoop());
+    private GlLayer CreateGl() => new(new GlNoop());
 }

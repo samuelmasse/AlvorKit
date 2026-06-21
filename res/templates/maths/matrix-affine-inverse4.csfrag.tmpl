@@ -1,0 +1,26 @@
+    /// <summary>Gets the affine inverse, assuming the last row is <c>(0, 0, 0, 1)</c>.</summary>
+    public readonly {{TypeName}} AffineInverted =>
+        AffineInverse(this);
+
+    /// <summary>Returns the affine inverse, assuming the last row is <c>(0, 0, 0, 1)</c>.</summary>
+    public static {{TypeName}} AffineInverse({{TypeName}} value)
+    {
+        var linear = new {{LinearType}}(
+            value[0, 0],
+            value[0, 1],
+            value[0, 2],
+            value[1, 0],
+            value[1, 1],
+            value[1, 2],
+            value[2, 0],
+            value[2, 1],
+            value[2, 2]);
+        var inverseLinear = {{LinearType}}.Invert(linear);
+        var inverseTranslation = -(inverseLinear * new {{Vector3Type}}(value[3, 0], value[3, 1], value[3, 2]));
+        return new(
+            new {{Vector4Type}}(inverseLinear.Column0, {{ZeroLiteral}}),
+            new {{Vector4Type}}(inverseLinear.Column1, {{ZeroLiteral}}),
+            new {{Vector4Type}}(inverseLinear.Column2, {{ZeroLiteral}}),
+            new {{Vector4Type}}(inverseTranslation, {{OneLiteral}}));
+    }
+

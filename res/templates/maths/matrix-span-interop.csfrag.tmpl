@@ -1,0 +1,90 @@
+    /// <summary>Initializes components from the first <see cref="ComponentCount" /> values in a column-major span.</summary>
+    public {{TypeName}}(ReadOnlySpan<{{ScalarType}}> values)
+        : this({{ColumnMajorArguments}})
+    {
+    }
+
+    /// <summary>Creates a matrix from the first <see cref="ComponentCount" /> values in a column-major span.</summary>
+    public static {{TypeName}} FromColumnMajor(ReadOnlySpan<{{ScalarType}}> values) =>
+        new(values);
+
+    /// <summary>Creates a matrix from the first <see cref="ComponentCount" /> values in a row-major span.</summary>
+    public static {{TypeName}} FromRowMajor(ReadOnlySpan<{{ScalarType}}> values) =>
+        new({{RowMajorArguments}});
+
+    /// <summary>Copies this matrix into an array in column-major order.</summary>
+    public readonly void CopyTo({{ScalarType}}[] array)
+    {
+        ArgumentNullException.ThrowIfNull(array);
+        CopyTo(array.AsSpan());
+    }
+
+    /// <summary>Copies this matrix into an array in column-major order starting at <paramref name="index" />.</summary>
+    public readonly void CopyTo({{ScalarType}}[] array, int index)
+    {
+        ArgumentNullException.ThrowIfNull(array);
+        CopyTo(array.AsSpan(index));
+    }
+
+    /// <summary>Copies this matrix into a destination span in column-major order.</summary>
+    public readonly void CopyTo(Span<{{ScalarType}}> destination) =>
+        CopyToColumnMajor(destination);
+
+    /// <summary>Copies this matrix into a destination span in column-major order.</summary>
+    public readonly void CopyToColumnMajor(Span<{{ScalarType}}> destination)
+    {
+        if (!TryCopyToColumnMajor(destination))
+            ThrowDestinationSpanTooShort();
+    }
+
+    /// <summary>Copies this matrix into a destination span in row-major order.</summary>
+    public readonly void CopyToRowMajor(Span<{{ScalarType}}> destination)
+    {
+        if (!TryCopyToRowMajor(destination))
+            ThrowDestinationSpanTooShort();
+    }
+
+    /// <summary>Attempts to copy this matrix into a destination span in column-major order.</summary>
+    public readonly bool TryCopyTo(Span<{{ScalarType}}> destination) =>
+        TryCopyToColumnMajor(destination);
+
+    /// <summary>Attempts to copy this matrix into a destination span in column-major order.</summary>
+    public readonly bool TryCopyToColumnMajor(Span<{{ScalarType}}> destination)
+    {
+        if (destination.Length < ComponentCount)
+            return false;
+
+{{ColumnMajorAssignments}}
+        return true;
+    }
+
+    /// <summary>Attempts to copy this matrix into a destination span in row-major order.</summary>
+    public readonly bool TryCopyToRowMajor(Span<{{ScalarType}}> destination)
+    {
+        if (destination.Length < ComponentCount)
+            return false;
+
+{{RowMajorAssignments}}
+        return true;
+    }
+
+    /// <summary>Reads one constructor component after validating span length.</summary>
+    private static {{ScalarType}} ComponentFromSpan(ReadOnlySpan<{{ScalarType}}> values, int index)
+    {
+        if (values.Length < ComponentCount)
+            ThrowSourceSpanTooShort();
+
+        return values[index];
+    }
+
+    /// <summary>Throws when a source span cannot provide every component.</summary>
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowSourceSpanTooShort() =>
+        throw new ArgumentException($"Span must contain at least {ComponentCount} components.", "values");
+
+    /// <summary>Throws when a destination span cannot receive every component.</summary>
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowDestinationSpanTooShort() =>
+        throw new ArgumentException($"Span must contain at least {ComponentCount} components.", "destination");
