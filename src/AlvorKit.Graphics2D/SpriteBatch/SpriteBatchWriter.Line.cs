@@ -18,10 +18,10 @@ public partial class SpriteBatchWriter
         if (width <= 0f || delta.LengthSquared <= 0f)
             return;
 
-        var normal = Vec2.Normalize(new Vec2(-delta.Y, delta.X));
+        var normal = Vec2.Normalize((-delta.Y, delta.X));
         var endLeft = new LineVertex(end - (normal * width), Vec2.Zero);
-        var endRight = new LineVertex(end + (normal * width), new Vec2(texture.Size.X, 0f));
-        var startLeft = new LineVertex(start - (normal * width), new Vec2(0f, texture.Size.Y));
+        var endRight = new LineVertex(end + (normal * width), (texture.Size.X, 0f));
+        var startLeft = new LineVertex(start - (normal * width), (0f, texture.Size.Y));
         var startRight = new LineVertex(start + (normal * width), texture.Size);
 
         if (!clip.HasValue)

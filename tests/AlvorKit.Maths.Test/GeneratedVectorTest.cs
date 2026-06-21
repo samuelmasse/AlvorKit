@@ -9,11 +9,9 @@ public sealed class GeneratedVectorTest
     public void GeneratedDimensions_Work()
     {
         Vec2 fromTuple = (1f, 2f);
-        var vec4 = new Vec4(1f, 2f, 3f, 4f)
-        {
-            A = 5f,
-            Q = 6f,
-        };
+        Vec4 vec4 = (1f, 2f, 3f, 4f);
+        vec4.A = 5f;
+        vec4.Q = 6f;
         vec4[0] = 7f;
 
         Assert.AreEqual(new Vec2(3f, 4f), fromTuple + Vec2.One * 2f);
@@ -27,11 +25,11 @@ public sealed class GeneratedVectorTest
     [TestMethod]
     public void GeneratedComponentRefs_Work()
     {
-        var value = new Vec3(1f, 2f, 3f);
+        Vec3 value = (1f, 2f, 3f);
         ref var y = ref Vec3.ComponentRef(ref value, 1);
         y = 9f;
 
-        var mask = new Vec3b(false, false, false);
+        Vec3b mask = (false, false, false);
         ref var z = ref Vec3b.ComponentRef(ref mask, 2);
         z = true;
 
@@ -68,7 +66,7 @@ public sealed class GeneratedVectorTest
     public void GeneratedFormatting_UsesTupleStyleAndSpanDestination()
     {
         var formatProvider = System.Globalization.CultureInfo.InvariantCulture;
-        var value = new Vec2(0f, 0f);
+        Vec2 value = (0f, 0f);
         Span<char> destination = stackalloc char[6];
         Span<char> tooSmall = stackalloc char[5];
         Span<byte> utf8Destination = stackalloc byte[6];
@@ -160,12 +158,10 @@ public sealed class GeneratedVectorTest
     [TestMethod]
     public void GeneratedSwizzles_Work()
     {
-        var value = new Vec3(1f, 2f, 3f)
-        {
-            YX = new Vec2(8f, 9f),
-        };
+        Vec3 value = (1f, 2f, 3f);
+        value.YX = (8f, 9f);
         var afterYx = value.XY;
-        value.BGR = new Vec3(4f, 5f, 6f);
+        value.BGR = (4f, 5f, 6f);
 
         Assert.AreEqual(new Vec2(9f, 8f), afterYx);
         Assert.AreEqual(new Vec3(6f, 5f, 4f), value.RGB);
@@ -200,8 +196,7 @@ public sealed class GeneratedVectorTest
         var unsigned16 = new Vec3u16(1, 2, 3) << 2;
         var shiftedByVector = new Vec3u16(8, 16, 32) >> new Vec3i(0, 1, 2);
         var unsignedRightShift = new Vec3i(-2, -4, -8) >>> 1;
-        var big = new Vec3u128((UInt128)1, (UInt128)2, (UInt128)4);
-
+        Vec3u128 big = ((UInt128)1, (UInt128)2, (UInt128)4);
         Assert.AreEqual(new Vec3h((Half)2, (Half)3, (Half)4), half);
         Assert.AreEqual(new Vec3i(260, 3, 5), promotedByte);
         Assert.AreEqual(new Vec3i8(-1, -2, -3), signedByte);
@@ -396,11 +391,10 @@ public sealed class GeneratedVectorTest
     [TestMethod]
     public void GeneratedBooleanConditionalOperators_Work()
     {
-        var left = new Vec3b(true, false, false);
-        var right = new Vec3b(false, true, true);
-        var all = new Vec3b(true, true, true);
-        var none = new Vec3b(false, false, false);
-
+        Vec3b left = (true, false, false);
+        Vec3b right = (false, true, true);
+        Vec3b all = (true, true, true);
+        Vec3b none = (false, false, false);
         Assert.AreEqual(new Vec3b(false, false, false), left && right);
         Assert.AreEqual(new Vec3b(true, true, true), left || right);
         Assert.IsTrue(all ? true : false);
@@ -411,8 +405,7 @@ public sealed class GeneratedVectorTest
     [TestMethod]
     public void GeneratedPlanarHelpers_Work()
     {
-        var value = new Vec2(2f, 3f);
-
+        Vec2 value = (2f, 3f);
         Assert.AreEqual(new Vec2(-3f, 2f), value.PerpendicularLeft);
         Assert.AreEqual(new Vec2(3f, -2f), value.PerpendicularRight);
         Assert.AreEqual(1f, Vec2.Cross(Vec2.UnitX, Vec2.UnitY));

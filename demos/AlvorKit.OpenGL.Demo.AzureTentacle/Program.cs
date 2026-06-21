@@ -40,7 +40,7 @@ Console.WriteLine("Mouse look, WASD to move, Space up, Control down, Shift faste
 var model = GlbModel.Load(gl);
 var modelInfoLines = CreateModelInfoLines();
 var animationLines = CreateAnimationLines();
-var camera = new FlyCamera(new Vec3(0f, 0.08f, 4f), 0f, 0f);
+var camera = new FlyCamera((0f, 0.08f, 4f), 0f, 0f);
 var clock = Stopwatch.StartNew();
 var previousSeconds = 0.0;
 var rawMouseSupported = glfw.RawMouseMotionSupported();
@@ -151,8 +151,7 @@ void PrepareOverlayGlyphs()
 // Draws the model stats, animation list, selected clip highlight, and FPS through the shared sprite batch.
 void DrawOverlay(int framebufferWidth, int framebufferHeight)
 {
-    var clientSize = new Vec2(framebufferWidth, framebufferHeight);
-
+    Vec2 clientSize = (framebufferWidth, framebufferHeight);
     gl.Disable(GlEnableCap.CullFace);
     gl.Disable(GlEnableCap.DepthTest);
     gl.Enable(GlEnableCap.Blend);
@@ -173,12 +172,11 @@ void DrawOverlay(int framebufferWidth, int framebufferHeight)
 void DrawModelInfo()
 {
     var lineHeight = overlaySize.Metrics.Height;
-    var position = new Vec2(10f, 8f + overlaySize.Metrics.Ascender + overlaySize.Metrics.Descender);
-    var infoColor = new Vec4(0.78f, 0.86f, 0.95f, 1f);
-    var headerColor = new Vec4(0.45f, 0.95f, 1f, 1f);
-    var animationColor = new Vec4(0.62f, 0.68f, 0.76f, 1f);
-    var selectedAnimationColor = new Vec4(1f, 0.86f, 0.18f, 1f);
-
+    Vec2 position = (10f, 8f + overlaySize.Metrics.Ascender + overlaySize.Metrics.Descender);
+    Vec4 infoColor = (0.78f, 0.86f, 0.95f, 1f);
+    Vec4 headerColor = (0.45f, 0.95f, 1f, 1f);
+    Vec4 animationColor = (0.62f, 0.68f, 0.76f, 1f);
+    Vec4 selectedAnimationColor = (1f, 0.86f, 0.18f, 1f);
     for (var index = 0; index < modelInfoLines.Length; index++)
     {
         sprites.Writer.Write(overlaySize, modelInfoLines[index], position, infoColor);
@@ -204,10 +202,10 @@ void DrawFps(Vec2 clientSize)
         return;
 
     var fpsWidth = sprites.Writer.Measure(fpsSize, fpsText);
-    var fpsPosition = new Vec2(
+    Vec2 fpsPosition = (
         clientSize.X - fpsWidth - 10f,
         fpsSize.Metrics.Ascender + fpsSize.Metrics.Descender);
-    sprites.Writer.Write(fpsSize, fpsText, fpsPosition, new Vec4(0f, 1f, 0f, 1f));
+    sprites.Writer.Write(fpsSize, fpsText, fpsPosition, (0f, 1f, 0f, 1f));
 }
 
 // Reads edge-triggered animation cycling controls from the arrow keys.

@@ -194,8 +194,8 @@ public class AgentGlfwWindowHostAgentTest
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.Update(-1));
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.Render(double.NaN));
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.Advance(-1, 0));
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.ClientSize = new Vec2u(0u, 1u));
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.ResizeWindow(new Vec2u(1u, 0u)));
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.ClientSize = (0u, 1u));
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.ResizeWindow((1u, 0u)));
         Assert.AreEqual(3, host.GetProcAddress("abc"));
     }
 

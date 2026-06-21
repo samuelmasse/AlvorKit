@@ -58,9 +58,8 @@ public sealed class Vec3iTest
     [TestMethod]
     public void ArithmeticOperators_Work()
     {
-        var left = new Vec3i(6, 8, 10);
-        var right = new Vec3i(2, 4, 5);
-
+        Vec3i left = (6, 8, 10);
+        Vec3i right = (2, 4, 5);
         Assert.AreEqual(new Vec3i(8, 12, 15), left + right);
         Assert.AreEqual(new Vec3i(4, 4, 5), left - right);
         Assert.AreEqual(new Vec3i(12, 32, 50), left * right);
@@ -80,7 +79,7 @@ public sealed class Vec3iTest
         Assert.AreEqual(new Vec3i(7, 9, 11), ++left);
         Assert.AreEqual(new Vec3i(6, 8, 10), --left);
         Assert.AreEqual(new Vec3i(-7, -9, -11), ~left);
-        Assert.IsTrue(left == new Vec3i(6, 8, 10));
+        Assert.IsTrue(left == (6, 8, 10));
         Assert.IsTrue(left != right);
     }
 
@@ -88,9 +87,8 @@ public sealed class Vec3iTest
     [TestMethod]
     public void BitwiseOperators_Work()
     {
-        var left = new Vec3i(0b1100, 0b1010, 0b0110);
-        var right = new Vec3i(0b1010, 0b0011, 0b0101);
-
+        Vec3i left = (0b1100, 0b1010, 0b0110);
+        Vec3i right = (0b1010, 0b0011, 0b0101);
         Assert.AreEqual(new Vec3i(0b1000, 0b0010, 0b0100), left & right);
         Assert.AreEqual(new Vec3i(0b1000, 0b1010, 0b0010), left & 0b1010);
         Assert.AreEqual(new Vec3i(0b1000, 0b1010, 0b0010), 0b1010 & left);
@@ -108,8 +106,7 @@ public sealed class Vec3iTest
     [TestMethod]
     public void Helpers_Work()
     {
-        var value = new Vec3i(3, 4, 0);
-
+        Vec3i value = (3, 4, 0);
         Assert.AreEqual(25, value.LengthSquared);
         Assert.AreEqual(5f, value.Length);
         Assert.AreEqual(32, Vec3i.Dot(new Vec3i(1, 2, 3), new Vec3i(4, 5, 6)));
@@ -132,8 +129,7 @@ public sealed class Vec3iTest
     public void BitHelpers_Work()
     {
         var highBit = unchecked((int)0x80000000);
-        var value = new Vec3i(0b1011, 0, highBit);
-
+        Vec3i value = (0b1011, 0, highBit);
         Assert.AreEqual(new Vec3i(3, 0, 1), Vec3i.BitCount(value));
         Assert.AreEqual(new Vec3i(28, 32, 0), Vec3i.LeadingZeroCount(value));
         Assert.AreEqual(new Vec3i(0, 32, 31), Vec3i.TrailingZeroCount(value));
@@ -147,8 +143,7 @@ public sealed class Vec3iTest
     [TestMethod]
     public void ValueSemantics_Work()
     {
-        var value = new Vec3i(1, 2, 3);
-
+        Vec3i value = (1, 2, 3);
         Assert.IsTrue(value.Equals((object)new Vec3i(1, 2, 3)));
         Assert.IsFalse(value.Equals(new object()));
         Assert.AreEqual(value.GetHashCode(), new Vec3i(1, 2, 3).GetHashCode());

@@ -68,8 +68,8 @@ public sealed unsafe class FontSize
         var glyph = new FontGlyph(
             character,
             size,
-            new Vec2u(checked((uint)width), checked((uint)height)),
-            new Vec2i(glyphSlot.BitmapLeft, glyphSlot.BitmapTop),
+            (checked((uint)width), checked((uint)height)),
+            (glyphSlot.BitmapLeft, glyphSlot.BitmapTop),
             FontFreeType.Pixel26Dot6(glyphSlot.Advance.X));
         return atlases.FindFitting(glyph).Add(glyph, pixels);
     }

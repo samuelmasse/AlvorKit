@@ -45,7 +45,7 @@ public partial class SpriteBatchWriter
         var top = normPosition.Y;
         var bottom = top - normSize.Y;
 
-        DrawQuad(new Vec2(left, top), new Vec2(right, top), new Vec2(left, bottom), new Vec2(right, bottom), texture, color, texCoords);
+        DrawQuad((left, top), (right, top), (left, bottom), (right, bottom), texture, color, texCoords);
     }
 
     /// <summary>Emits four vertices for one normalized quad.</summary>
@@ -59,10 +59,14 @@ public partial class SpriteBatchWriter
 
     /// <summary>Converts a texture-space pixel coordinate into a normalized sampler coordinate.</summary>
     private static Vec2 TexCoord(Texture texture, Vec2 position) =>
-        new(position.X / texture.Size.X, 1f - (position.Y / texture.Size.Y));
+        (position.X / texture.Size.X, 1f - (position.Y / texture.Size.Y));
 
     /// <summary>Normalizes a canvas pixel coordinate into clip space.</summary>
-    private Vec2 NormalizePosition(Vec2 position) => (position * new Vec2(1f, -1f) / (canvas.Size / 2f)) - new Vec2(1f, -1f);
+    private Vec2 NormalizePosition(Vec2 position)
+    {
+        Vec2 yFlip = (1f, -1f);
+        return (position * yFlip / (canvas.Size / 2f)) - yFlip;
+    }
 
     /// <summary>Normalizes a canvas pixel size into clip-space dimensions.</summary>
     private Vec2 NormalizeSize(Vec2 size) => size / (canvas.Size / 2f);

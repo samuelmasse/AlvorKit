@@ -15,30 +15,29 @@ const float RailDotSize = 3f;
 const float EndpointSize = 11f;
 const float DigitScale = 1.6f;
 
-var okColor = new Vec4(0.2f, 0.86f, 0.42f, 0.9f);
-var guideColor = new Vec4(0.9f, 0.95f, 1f, 0.58f);
-var railColor = new Vec4(0.74f, 0.82f, 0.9f, 0.55f);
-var startColor = new Vec4(0.18f, 0.58f, 1f, 1f);
-var endColor = new Vec4(0.95f, 0.98f, 1f, 1f);
-
+Vec4 okColor = (0.2f, 0.86f, 0.42f, 0.9f);
+Vec4 guideColor = (0.9f, 0.95f, 1f, 0.58f);
+Vec4 railColor = (0.74f, 0.82f, 0.9f, 0.55f);
+Vec4 startColor = (0.18f, 0.58f, 1f, 1f);
+Vec4 endColor = (0.95f, 0.98f, 1f, 1f);
 (string Name, Vec2 Direction, Vec4 Color, string Description, int Mode)[] lineCases =
 [
-    ("horizontal right", new Vec2(1f, 0f), okColor, "axis-aligned line", DirectionCase),
-    ("horizontal left", new Vec2(-1f, 0f), okColor, "axis-aligned line", DirectionCase),
-    ("vertical down", new Vec2(0f, 1f), okColor, "axis-aligned line", DirectionCase),
-    ("vertical up", new Vec2(0f, -1f), okColor, "axis-aligned line", DirectionCase),
-    ("45 down-right", new Vec2(1f, 1f), okColor, "exact diagonal line", DirectionCase),
-    ("45 up-left", new Vec2(-1f, -1f), okColor, "exact diagonal line", DirectionCase),
-    ("45 up-right", new Vec2(1f, -1f), okColor, "exact diagonal line", DirectionCase),
-    ("45 down-left", new Vec2(-1f, 1f), okColor, "exact diagonal line", DirectionCase),
-    ("shallow positive", new Vec2(2f, 1f), okColor, "off-axis diagonal line", DirectionCase),
-    ("steep positive", new Vec2(1f, 2f), okColor, "off-axis diagonal line", DirectionCase),
-    ("shallow negative", new Vec2(2f, -1f), okColor, "off-axis diagonal line", DirectionCase),
-    ("steep negative", new Vec2(1f, -2f), okColor, "off-axis diagonal line", DirectionCase),
+    ("horizontal right", (1f, 0f), okColor, "axis-aligned line", DirectionCase),
+    ("horizontal left", (-1f, 0f), okColor, "axis-aligned line", DirectionCase),
+    ("vertical down", (0f, 1f), okColor, "axis-aligned line", DirectionCase),
+    ("vertical up", (0f, -1f), okColor, "axis-aligned line", DirectionCase),
+    ("45 down-right", (1f, 1f), okColor, "exact diagonal line", DirectionCase),
+    ("45 up-left", (-1f, -1f), okColor, "exact diagonal line", DirectionCase),
+    ("45 up-right", (1f, -1f), okColor, "exact diagonal line", DirectionCase),
+    ("45 down-left", (-1f, 1f), okColor, "exact diagonal line", DirectionCase),
+    ("shallow positive", (2f, 1f), okColor, "off-axis diagonal line", DirectionCase),
+    ("steep positive", (1f, 2f), okColor, "off-axis diagonal line", DirectionCase),
+    ("shallow negative", (2f, -1f), okColor, "off-axis diagonal line", DirectionCase),
+    ("steep negative", (1f, -2f), okColor, "off-axis diagonal line", DirectionCase),
     ("zero length", Vec2.Zero, okColor, "zero-length no-op", DirectionCase),
-    ("thick horizontal", new Vec2(1f, 0f), okColor, "wide line sample", ThickCase),
-    ("clipped horizontal", new Vec2(1f, 0f), okColor, "clip rectangle sample", ClipHorizontalCase),
-    ("clipped diagonal", new Vec2(1f, 1f), okColor, "clip rectangle sample", ClipDiagonalCase)
+    ("thick horizontal", (1f, 0f), okColor, "wide line sample", ThickCase),
+    ("clipped horizontal", (1f, 0f), okColor, "clip rectangle sample", ClipHorizontalCase),
+    ("clipped diagonal", (1f, 1f), okColor, "clip rectangle sample", ClipDiagonalCase)
 ];
 
 var glfw = new GlfwBackend();
@@ -76,8 +75,7 @@ void RenderFrame(int framebufferWidth, int framebufferHeight)
     if (framebufferWidth <= 0 || framebufferHeight <= 0)
         return;
 
-    var canvasSize = new Vec2(framebufferWidth, framebufferHeight);
-
+    Vec2 canvasSize = (framebufferWidth, framebufferHeight);
     gl.Viewport(0, 0, framebufferWidth, framebufferHeight);
     gl.ClearColor(0.055f, 0.065f, 0.08f, 1f);
     gl.Clear(GlClearBufferMask.ColorBufferBit);
@@ -98,13 +96,14 @@ void RenderFrame(int framebufferWidth, int framebufferHeight)
 // Draws the full line-case matrix, using independent dotted guides for the expected geometry.
 void DrawLineCaseBoard(Vec2 canvasSize)
 {
-    var cellSize = canvasSize / new Vec2(Columns, Rows);
+    Vec2 boardSize = (Columns, Rows);
+    var cellSize = canvasSize / boardSize;
 
     for (var i = 0; i < lineCases.Length; i++)
     {
         var column = i % Columns;
         var row = i / Columns;
-        var cellMin = new Vec2(column * cellSize.X, row * cellSize.Y);
+        Vec2 cellMin = (column * cellSize.X, row * cellSize.Y);
         DrawLineCase(i + 1, lineCases[i], cellMin, cellSize);
     }
 }
@@ -112,10 +111,12 @@ void DrawLineCaseBoard(Vec2 canvasSize)
 // Draws one numbered cell with background, expected rails, actual DrawLine output, and endpoint markers.
 void DrawLineCase(int number, (string Name, Vec2 Direction, Vec4 Color, string Description, int Mode) lineCase, Vec2 cellMin, Vec2 cellSize)
 {
-    var panelColor = new Vec4(lineCase.Color.X * 0.08f, lineCase.Color.Y * 0.08f, lineCase.Color.Z * 0.08f, 0.55f);
-    sprites.Writer.Draw(cellMin + new Vec2(8f, 8f), cellSize - new Vec2(16f, 16f), panelColor);
-    sprites.Writer.Draw(cellMin + new Vec2(8f, 8f), new Vec2(cellSize.X - 16f, 5f), lineCase.Color);
-    DrawCaseNumber(cellMin + new Vec2(22f, 24f), number, lineCase.Color);
+    Vec2 cellInset = (8f, 8f);
+    Vec2 numberOffset = (22f, 24f);
+    Vec4 panelColor = (lineCase.Color.X * 0.08f, lineCase.Color.Y * 0.08f, lineCase.Color.Z * 0.08f, 0.55f);
+    sprites.Writer.Draw(cellMin + cellInset, cellSize - (cellInset * 2f), panelColor);
+    sprites.Writer.Draw(cellMin + cellInset, (cellSize.X - 16f, 5f), lineCase.Color);
+    DrawCaseNumber(cellMin + numberOffset, number, lineCase.Color);
 
     if (lineCase.Direction == Vec2.Zero)
     {
@@ -137,7 +138,7 @@ void DrawLineCase(int number, (string Name, Vec2 Direction, Vec4 Color, string D
 
     var direction = Vec2.Normalize(lineCase.Direction);
     var length = MathF.Min(cellSize.X, cellSize.Y) - (CellPadding * 2f);
-    var center = cellMin + (cellSize * 0.5f) + new Vec2(0f, 14f);
+    var center = CaseCenter(cellMin, cellSize);
     var start = center - (direction * length * 0.5f);
     var end = center + (direction * length * 0.5f);
 
@@ -151,10 +152,10 @@ void DrawLineCase(int number, (string Name, Vec2 Direction, Vec4 Color, string D
 // Shows the zero-length no-op behavior with a center marker.
 void DrawZeroLengthCase(Vec2 cellMin, Vec2 cellSize, Vec4 color)
 {
-    var center = cellMin + (cellSize * 0.5f) + new Vec2(0f, 14f);
+    var center = CaseCenter(cellMin, cellSize);
     var expectedSize = CaseLineHalfWidth * 2f;
 
-    DrawSquare(center, expectedSize, new Vec4(0.75f, 0.82f, 0.9f, 0.45f));
+    DrawSquare(center, expectedSize, (0.75f, 0.82f, 0.9f, 0.45f));
     sprites.Writer.DrawLine(center, center, CaseLineHalfWidth, color);
     DrawSquare(center, EndpointSize, startColor);
 }
@@ -162,10 +163,11 @@ void DrawZeroLengthCase(Vec2 cellMin, Vec2 cellSize, Vec4 color)
 // Shows a deliberately wider horizontal line.
 void DrawThickLineCase(Vec2 cellMin, Vec2 cellSize, Vec4 color)
 {
-    var center = cellMin + (cellSize * 0.5f) + new Vec2(0f, 14f);
+    var center = CaseCenter(cellMin, cellSize);
     var length = MathF.Min(cellSize.X, cellSize.Y) - (CellPadding * 2f);
-    var start = center - new Vec2(length * 0.5f, 0f);
-    var end = center + new Vec2(length * 0.5f, 0f);
+    Vec2 halfLength = (length * 0.5f, 0f);
+    var start = center - halfLength;
+    var end = center + halfLength;
 
     DrawExpectedLane(start, end, CaseLineHalfWidth);
     sprites.Writer.DrawLine(start, end, CaseLineHalfWidth, color);
@@ -177,17 +179,18 @@ void DrawThickLineCase(Vec2 cellMin, Vec2 cellSize, Vec4 color)
 // Shows line clipping against a rectangular sprite-batch clip.
 void DrawClipCase(Vec2 cellMin, Vec2 cellSize, Vec4 color, bool diagonal)
 {
-    var center = cellMin + (cellSize * 0.5f) + new Vec2(0f, 14f);
+    var center = CaseCenter(cellMin, cellSize);
     var length = MathF.Min(cellSize.X, cellSize.Y) - (CellPadding * 2f);
-    var fullDirection = diagonal ? Vec2.Normalize(new Vec2(1f, 1f)) : new Vec2(1f, 0f);
+    var fullDirection = diagonal ? Vec2.Normalize((1f, 1f)) : Vec2.UnitX;
     var fullStart = center - (fullDirection * length * 0.62f);
     var fullEnd = center + (fullDirection * length * 0.62f);
-    var clipMin = center - new Vec2(length * 0.22f, length * 0.22f);
-    var clipMax = center + new Vec2(length * 0.22f, length * 0.22f);
+    Vec2 clipExtent = (length * 0.22f, length * 0.22f);
+    var clipMin = center - clipExtent;
+    var clipMax = center + clipExtent;
     var clippedStart = center - (fullDirection * length * 0.22f);
     var clippedEnd = center + (fullDirection * length * 0.22f);
 
-    DrawRectOutline(clipMin, clipMax - clipMin, new Vec4(0.85f, 0.9f, 1f, 0.65f));
+    DrawRectOutline(clipMin, clipMax - clipMin, (0.85f, 0.9f, 1f, 0.65f));
     DrawExpectedLane(clippedStart, clippedEnd, CaseLineHalfWidth);
 
     sprites.Writer.Clip = new SpriteBatchClip(clipMin, clipMax);
@@ -212,10 +215,12 @@ void DrawRectOutline(Vec2 position, Vec2 size, Vec4 color)
 {
     const float thickness = 3f;
 
-    sprites.Writer.Draw(position, new Vec2(size.X, thickness), color);
-    sprites.Writer.Draw(position + new Vec2(0f, size.Y - thickness), new Vec2(size.X, thickness), color);
-    sprites.Writer.Draw(position, new Vec2(thickness, size.Y), color);
-    sprites.Writer.Draw(position + new Vec2(size.X - thickness, 0f), new Vec2(thickness, size.Y), color);
+    Vec2 bottomOffset = (0f, size.Y - thickness);
+    Vec2 rightOffset = (size.X - thickness, 0f);
+    sprites.Writer.Draw(position, (size.X, thickness), color);
+    sprites.Writer.Draw(position + bottomOffset, (size.X, thickness), color);
+    sprites.Writer.Draw(position, (thickness, size.Y), color);
+    sprites.Writer.Draw(position + rightOffset, (thickness, size.Y), color);
 }
 
 // Draws evenly spaced square dots along a segment without using DrawLine.
@@ -232,15 +237,16 @@ void DrawDottedSegment(Vec2 start, Vec2 end, float size, Vec4 color)
 
 // Draws a square centered on a point.
 void DrawSquare(Vec2 center, float size, Vec4 color) =>
-    sprites.Writer.Draw(center - new Vec2(size * 0.5f, size * 0.5f), new Vec2(size, size), color);
+    sprites.Writer.Draw(center - HalfSize(size), (size, size), color);
 
 // Draws a compact seven-segment case number so screenshots can be mapped back to console legend rows.
 void DrawCaseNumber(Vec2 position, int number, Vec4 color)
 {
     if (number >= 10)
     {
+        Vec2 secondDigitOffset = (15f * DigitScale, 0f);
         DrawDigit(position, 1, color);
-        DrawDigit(position + new Vec2(15f * DigitScale, 0f), number - 10, color);
+        DrawDigit(position + secondDigitOffset, number - 10, color);
         return;
     }
 
@@ -282,28 +288,40 @@ void DrawDigitSegment(Vec2 position, int segment, Vec4 color)
     switch (segment)
     {
         case 0:
-            sprites.Writer.Draw(position, new Vec2(width, stroke), color);
+            sprites.Writer.Draw(position, (width, stroke), color);
             break;
         case 1:
-            sprites.Writer.Draw(position + new Vec2(width - stroke, 0f), new Vec2(stroke, half), color);
+            DrawSegment((width - stroke, 0f), (stroke, half));
             break;
         case 2:
-            sprites.Writer.Draw(position + new Vec2(width - stroke, half), new Vec2(stroke, half), color);
+            DrawSegment((width - stroke, half), (stroke, half));
             break;
         case 3:
-            sprites.Writer.Draw(position + new Vec2(0f, height - stroke), new Vec2(width, stroke), color);
+            DrawSegment((0f, height - stroke), (width, stroke));
             break;
         case 4:
-            sprites.Writer.Draw(position + new Vec2(0f, half), new Vec2(stroke, half), color);
+            DrawSegment((0f, half), (stroke, half));
             break;
         case 5:
-            sprites.Writer.Draw(position, new Vec2(stroke, half), color);
+            sprites.Writer.Draw(position, (stroke, half), color);
             break;
         default:
-            sprites.Writer.Draw(position + new Vec2(0f, half - (stroke * 0.5f)), new Vec2(width, stroke), color);
+            DrawSegment((0f, half - (stroke * 0.5f)), (width, stroke));
             break;
     }
+
+    void DrawSegment(Vec2 offset, Vec2 size) => sprites.Writer.Draw(position + offset, size, color);
 }
+
+// Returns the common center used by every numbered line-case cell.
+static Vec2 CaseCenter(Vec2 cellMin, Vec2 cellSize)
+{
+    Vec2 centerOffset = (0f, 14f);
+    return cellMin + (cellSize * 0.5f) + centerOffset;
+}
+
+// Returns a square half-size vector for centering a drawn marker.
+static Vec2 HalfSize(float size) => (size * 0.5f, size * 0.5f);
 
 // Prints the exact cell ordering for the visual board.
 void PrintCaseLegend()
@@ -313,7 +331,7 @@ void PrintCaseLegend()
 }
 
 // Computes the perpendicular normal the DrawLine implementation should use for a screen-space direction.
-static Vec2 CorrectLineNormal(Vec2 direction) => Vec2.Normalize(new Vec2(-direction.Y, direction.X));
+static Vec2 CorrectLineNormal(Vec2 direction) => Vec2.Normalize((-direction.Y, direction.X));
 
 // The callback repaints while the platform is inside modal resize loops.
 glfw.SetFramebufferSizeCallback(window, (_, width, height) => RenderFrame(width, height));

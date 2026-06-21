@@ -30,9 +30,9 @@ public sealed class SpriteBatchTest
     {
         using var spriteBatch = CreateSpriteBatch();
 
-        spriteBatch.Begin(new Vec2(100f, 100f));
+        spriteBatch.Begin((100f, 100f));
         spriteBatch.End();
-        spriteBatch.Begin(new Vec2(100f, 100f));
+        spriteBatch.Begin((100f, 100f));
         spriteBatch.End();
     }
 
@@ -65,8 +65,8 @@ public sealed class SpriteBatchTest
         var (backend, spriteBatch) = CreateSpriteBatchWithBackend();
         using (spriteBatch)
         {
-            spriteBatch.Begin(new Vec2(100f, 100f));
-            spriteBatch.Writer.Draw(Vec2.Zero, new Vec2(10f, 10f));
+            spriteBatch.Begin((100f, 100f));
+            spriteBatch.Writer.Draw(Vec2.Zero, (10f, 10f));
             spriteBatch.End();
         }
 
@@ -81,7 +81,7 @@ public sealed class SpriteBatchTest
 
         for (var pass = 0; pass < 2; pass++)
         {
-            spriteBatch.Begin(new Vec2(100f, 100f));
+            spriteBatch.Begin((100f, 100f));
             for (var i = 0; i < 128; i++)
                 spriteBatch.Writer.Draw(Vec2.Zero, Vec2.One);
             spriteBatch.End();

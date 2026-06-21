@@ -48,7 +48,7 @@ void RenderFrame(int framebufferWidth, int framebufferHeight)
     UpdateFps();
     Input();
 
-    var clientSize = new Vec2(framebufferWidth, framebufferHeight);
+    Vec2 clientSize = (framebufferWidth, framebufferHeight);
     gl.Viewport(0, 0, framebufferWidth, framebufferHeight);
     gl.ClearColor(0.2f, 0.05f, 0.3f, 0f);
     gl.Clear(GlClearBufferMask.ColorBufferBit);
@@ -72,34 +72,34 @@ void Draw(Vec2 clientSize)
 {
     var titleSize = font.Size(60);
     var titleMetrics = titleSize.Metrics;
-    sprites.Writer.Write(titleSize, WindowTitle, new Vec2(0f, titleMetrics.Ascender + titleMetrics.Descender), new Vec4(1f, 1f, 0f, 0.5f));
+    sprites.Writer.Write(titleSize, WindowTitle, (0f, titleMetrics.Ascender + titleMetrics.Descender), (1f, 1f, 0f, 0.5f));
 
     var fpsSize = font.Size(30);
     var fpsWidth = sprites.Writer.Measure(fpsSize, fpsText);
-    var fpsPosition = new Vec2(clientSize.X - fpsWidth - 10f, fpsSize.Metrics.Ascender + fpsSize.Metrics.Descender);
-    sprites.Writer.Write(fpsSize, fpsText, fpsPosition, new Vec4(0f, 1f, 0f, 1f));
+    Vec2 fpsPosition = (clientSize.X - fpsWidth - 10f, fpsSize.Metrics.Ascender + fpsSize.Metrics.Descender);
+    sprites.Writer.Write(fpsSize, fpsText, fpsPosition, (0f, 1f, 0f, 1f));
 
     var freeTextFontSize = font.Size(120);
-    var freeTextStart = new Vec2(20f, 200f);
-
+    Vec2 freeTextStart = (20f, 200f);
+    Vec2 freeTextLineAdvance = (0f, freeTextFontSize.Metrics.Height);
     for (var i = 0; i < freeText.Count; i++)
     {
-        var position = freeTextStart + i * new Vec2(0f, freeTextFontSize.Metrics.Height);
-        sprites.Writer.Write(freeTextFontSize, freeText[i], position, new Vec4(1f, 0f, 0f, 1f));
+        var position = freeTextStart + i * freeTextLineAdvance;
+        sprites.Writer.Write(freeTextFontSize, freeText[i], position, (1f, 0f, 0f, 1f));
     }
 
     sprites.Writer.Draw(
-        new Vec2(0f, clientSize.Y - AtlasPreviewSize),
-        new Vec2(clientSize.X, AtlasPreviewSize),
-        new Vec4(0f, 0f, 0f, 1f));
+        (0f, clientSize.Y - AtlasPreviewSize),
+        (clientSize.X, AtlasPreviewSize),
+        (0f, 0f, 0f, 1f));
 
     var textures = font.Textures;
     for (var i = 0; i < textures.Length; i++)
     {
         sprites.Writer.Draw(
             textures[i],
-            new Vec2(i * AtlasPreviewSize, clientSize.Y - AtlasPreviewSize),
-            new Vec2(AtlasPreviewSize, AtlasPreviewSize));
+            (i * AtlasPreviewSize, clientSize.Y - AtlasPreviewSize),
+            (AtlasPreviewSize, AtlasPreviewSize));
     }
 }
 

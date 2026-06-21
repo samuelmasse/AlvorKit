@@ -63,9 +63,8 @@ public sealed class Vec3Test
     [TestMethod]
     public void ArithmeticOperators_Work()
     {
-        var left = new Vec3(6f, 8f, 10f);
-        var right = new Vec3(2f, 4f, 5f);
-
+        Vec3 left = (6f, 8f, 10f);
+        Vec3 right = (2f, 4f, 5f);
         Assert.AreEqual(new Vec3(8f, 12f, 15f), left + right);
         Assert.AreEqual(new Vec3(4f, 4f, 5f), left - right);
         Assert.AreEqual(new Vec3(12f, 32f, 50f), left * right);
@@ -80,7 +79,7 @@ public sealed class Vec3Test
         Assert.AreEqual(left, +left);
         Assert.AreEqual(new Vec3(7f, 9f, 11f), ++left);
         Assert.AreEqual(new Vec3(6f, 8f, 10f), --left);
-        Assert.IsTrue(left == new Vec3(6f, 8f, 10f));
+        Assert.IsTrue(left == (6f, 8f, 10f));
         Assert.IsTrue(left != right);
     }
 
@@ -88,8 +87,7 @@ public sealed class Vec3Test
     [TestMethod]
     public void GeometryHelpers_Work()
     {
-        var value = new Vec3(3f, 4f, 0f);
-
+        Vec3 value = (3f, 4f, 0f);
         Assert.AreEqual(25f, value.LengthSquared);
         Assert.AreEqual(5f, value.Length);
         Assert.AreEqual(new Vec3(0.6f, 0.8f, 0f), value.Normalized);
@@ -119,7 +117,7 @@ public sealed class Vec3Test
     [TestMethod]
     public void CommonHelpers_Work()
     {
-        var value = new Vec3(1.25f, -1.25f, 2.5f);
+        Vec3 value = (1.25f, -1.25f, 2.5f);
         var angles = Vec3.Atan2(new Vec3(0f, 1f, 1f), new Vec3(1f, 1f, 0f));
 
         Assert.AreEqual(new Vec3(1f, -2f, 2f), Vec3.Floor(value));
@@ -149,8 +147,7 @@ public sealed class Vec3Test
     [TestMethod]
     public void ValueSemantics_Work()
     {
-        var value = new Vec3(1f, 2f, 3f);
-
+        Vec3 value = (1f, 2f, 3f);
         Assert.IsTrue(value.Equals((object)new Vec3(1f, 2f, 3f)));
         Assert.IsFalse(value.Equals(new object()));
         Assert.AreEqual(value.GetHashCode(), new Vec3(1f, 2f, 3f).GetHashCode());
@@ -161,9 +158,8 @@ public sealed class Vec3Test
     [TestMethod]
     public void ComparisonHelpers_ReturnMasks()
     {
-        var left = new Vec3(1f, 3f, 5f);
-        var right = new Vec3(2f, 3f, 4f);
-
+        Vec3 left = (1f, 3f, 5f);
+        Vec3 right = (2f, 3f, 4f);
         Assert.AreEqual(new Vec3b(true, false, false), Vec3.LessThan(left, right));
         Assert.AreEqual(new Vec3b(true, true, false), Vec3.LessThanOrEqual(left, right));
         Assert.AreEqual(new Vec3b(false, false, true), Vec3.GreaterThan(left, right));
@@ -183,8 +179,7 @@ public sealed class Vec3Test
     [TestMethod]
     public void IntegerRoundingHelpers_Work()
     {
-        var value = new Vec3(1.2f, -1.7f, 2.5f);
-
+        Vec3 value = (1.2f, -1.7f, 2.5f);
         Assert.AreEqual(new Vec3i(1, -1, 2), value.TruncateToVec3i());
         Assert.AreEqual(new Vec3i(1, -2, 2), value.FloorToVec3i());
         Assert.AreEqual(new Vec3i(2, -1, 3), value.CeilingToVec3i());

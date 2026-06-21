@@ -64,7 +64,7 @@ internal sealed partial class FontAtlas : IDisposable
         Advance(glyph, x, y);
         packed = false;
 
-        var slot = new FontGlyphSlot(glyph, tablet.Texture, new Vec2u(checked((uint)x), checked((uint)y)));
+        var slot = new FontGlyphSlot(glyph, tablet.Texture, (checked((uint)x), checked((uint)y)));
         slots.Add(slot);
         return slot;
     }

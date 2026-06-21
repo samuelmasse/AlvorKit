@@ -436,7 +436,7 @@ internal sealed partial class AnimatedGlbMesh
         var accessor = document.Accessor(accessorIndex);
         ValidateAccessor(accessor, "VEC3", FloatComponentType, accessorIndex);
         var offset = document.AccessorElementOffset(accessor, elementIndex, 12);
-        return new Vec3(document.ReadSingle(offset), document.ReadSingle(offset + 4), document.ReadSingle(offset + 8));
+        return (document.ReadSingle(offset), document.ReadSingle(offset + 4), document.ReadSingle(offset + 8));
     }
 
     /// <summary>Reads a two-float vector from a glTF accessor entry.</summary>
@@ -445,7 +445,7 @@ internal sealed partial class AnimatedGlbMesh
         var accessor = document.Accessor(accessorIndex);
         ValidateAccessor(accessor, "VEC2", FloatComponentType, accessorIndex);
         var offset = document.AccessorElementOffset(accessor, elementIndex, 8);
-        return new Vec2(document.ReadSingle(offset), document.ReadSingle(offset + 4));
+        return (document.ReadSingle(offset), document.ReadSingle(offset + 4));
     }
 
     /// <summary>Reads a four-float vector from a glTF accessor entry.</summary>
@@ -454,7 +454,7 @@ internal sealed partial class AnimatedGlbMesh
         var accessor = document.Accessor(accessorIndex);
         ValidateAccessor(accessor, "VEC4", FloatComponentType, accessorIndex);
         var offset = document.AccessorElementOffset(accessor, elementIndex, 16);
-        return new Vec4(
+        return (
             document.ReadSingle(offset),
             document.ReadSingle(offset + 4),
             document.ReadSingle(offset + 8),
@@ -478,8 +478,8 @@ internal sealed partial class AnimatedGlbMesh
 
         var offset = document.AccessorElementOffset(accessor, elementIndex, componentSize * 4);
         return componentType == UnsignedByteComponentType
-            ? new Vec4u(document.Binary[offset], document.Binary[offset + 1], document.Binary[offset + 2], document.Binary[offset + 3])
-            : new Vec4u(
+            ? (document.Binary[offset], document.Binary[offset + 1], document.Binary[offset + 2], document.Binary[offset + 3])
+            : (
                 BinaryPrimitives.ReadUInt16LittleEndian(document.Binary.Slice(offset, 2)),
                 BinaryPrimitives.ReadUInt16LittleEndian(document.Binary.Slice(offset + 2, 2)),
                 BinaryPrimitives.ReadUInt16LittleEndian(document.Binary.Slice(offset + 4, 2)),
@@ -569,7 +569,7 @@ internal sealed partial class AnimatedGlbMesh
         if (!node.TryGetProperty(name, out var values))
             return defaultValue;
 
-        return new Vec3(values[0].GetSingle(), values[1].GetSingle(), values[2].GetSingle());
+        return (values[0].GetSingle(), values[1].GetSingle(), values[2].GetSingle());
     }
 
     /// <summary>Reads a Quaternion node property or returns the supplied default value.</summary>

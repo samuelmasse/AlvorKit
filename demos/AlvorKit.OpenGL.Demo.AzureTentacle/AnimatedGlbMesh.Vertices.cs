@@ -14,8 +14,8 @@ internal sealed partial class AnimatedGlbMesh
         var vertexCount = document.Accessor(positionAccessor).GetProperty("count").GetInt32();
         var vertices = new float[vertexCount * 13];
 
-        boundsMin = new Vec3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
-        boundsMax = new Vec3(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
+        boundsMin = (float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+        boundsMax = (float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
 
         for (var vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++)
         {

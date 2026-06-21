@@ -59,7 +59,8 @@ public static partial class FontSpriteBatchExtensions
             var x = position.X + Snap(relativeX, snap);
             var y = position.Y + Snap(relativeY, snap);
 
-            sprites.Draw(slot.Texture, new Vec2(x, y) / scale, slot.Glyph.Box / scale, slot.Position, slot.Glyph.Box, color);
+            Vec2 glyphPosition = (x, y);
+            sprites.Draw(slot.Texture, glyphPosition / scale, slot.Glyph.Box / scale, slot.Position, slot.Glyph.Box, color);
             pen += slot.Glyph.Advance;
             first = false;
         }

@@ -198,6 +198,12 @@ Trust C# nullable reference type analysis for non-null contracts. Do not add
 non-nullable. Express possible null with `?` and handle it, or let an invalid
 caller fail at the first real use when the static contract says non-null.
 
+Prefer tuple literals when declaring or assigning repository vector types such
+as `Vec2`, `Vec3`, `Vec4`, and their scalar-family variants, as long as the
+target vector type is clear. Use constructors when the constructor itself is the
+point, such as scalar splats, composition constructors, conversion tests, or
+expressions where no target vector type is available before an operator runs.
+
 Do not silently clamp, coerce, or normalize caller-provided values in property
 setters or state updates. If a value is invalid, reject it with a clear error or
 model the invariant in the type system. If a platform boundary requires clamping,

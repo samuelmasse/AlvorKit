@@ -41,7 +41,7 @@ public class SpriteBatch : IDisposable
     {
         gl.GetIntegerv(GlGetPName.MaxTextureImageUnits, out var textureSlots);
 
-        texture = new Texture2D(gl, new Vec2u(1u, 1u)) { Pixels = [(0xFF, 0xFF, 0xFF, 0xFF)] };
+        texture = new Texture2D(gl, (1u, 1u)) { Pixels = [(0xFF, 0xFF, 0xFF, 0xFF)] };
         canvas = new SpriteBatchCanvas();
         vertices = new SpriteBatchVertices(textureSlots);
         writer = new SpriteBatchWriter(texture, canvas, vertices);

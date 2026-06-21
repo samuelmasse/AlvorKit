@@ -17,10 +17,10 @@ public partial class SpriteBatchWriter
             (top, bottom) = (bottom, top);
 
         var corners = new QuadCorners(
-            new Vec2(left, top),
-            new Vec2(right, top),
-            new Vec2(left, bottom),
-            new Vec2(right, bottom));
+            (left, top),
+            (right, top),
+            (left, bottom),
+            (right, bottom));
 
         return rotation switch
         {

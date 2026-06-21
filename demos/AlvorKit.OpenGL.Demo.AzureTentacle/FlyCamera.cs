@@ -115,7 +115,7 @@ public sealed class FlyCamera(Vec3 initialPosition, float initialYaw, float init
         var yawCos = MathF.Cos(yaw);
         var pitchSin = MathF.Sin(pitch);
         var pitchCos = MathF.Cos(pitch);
-        return Vec3.Normalize(new Vec3(yawSin * pitchCos, pitchSin, -yawCos * pitchCos));
+        return Vec3.Normalize((yawSin * pitchCos, pitchSin, -yawCos * pitchCos));
     }
 
     /// <summary>Gets the camera's horizontal forward vector for Minecraft-style walking.</summary>
@@ -123,7 +123,7 @@ public sealed class FlyCamera(Vec3 initialPosition, float initialYaw, float init
     {
         var yawSin = MathF.Sin(yaw);
         var yawCos = MathF.Cos(yaw);
-        return Vec3.Normalize(new Vec3(yawSin, 0f, -yawCos));
+        return Vec3.Normalize((yawSin, 0f, -yawCos));
     }
 
     /// <summary>Gets the camera's horizontal right vector for strafing.</summary>
@@ -131,7 +131,7 @@ public sealed class FlyCamera(Vec3 initialPosition, float initialYaw, float init
     {
         var yawSin = MathF.Sin(yaw);
         var yawCos = MathF.Cos(yaw);
-        return Vec3.Normalize(new Vec3(yawCos, 0f, yawSin));
+        return Vec3.Normalize((yawCos, 0f, yawSin));
     }
 
     /// <summary>Returns one when the supplied key is currently held.</summary>

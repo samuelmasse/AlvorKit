@@ -11,15 +11,15 @@ public sealed class SpriteBatchWriterTest
         var fixture = CreateWriter();
         fixture.Writer.Clip = new SpriteBatchClip(10f, 10f, 30f, 30f);
 
-        fixture.Writer.Draw(fixture.Texture, Vec2.Zero, new Vec2(40f, 40f));
+        fixture.Writer.Draw(fixture.Texture, Vec2.Zero, (40f, 40f));
 
         Assert.AreEqual(4, fixture.Vertices.VertexCount);
         Assert.AreEqual(1, fixture.Vertices.Sections.Length);
         Assert.AreSame(fixture.Texture, fixture.Vertices.SectionTextures(0)[0]);
-        AssertVertex(fixture.Vertices.Vertices[0], new Vec2(-0.8f, 0.8f), new Vec2(0.25f, 0.75f));
-        AssertVertex(fixture.Vertices.Vertices[1], new Vec2(-0.4f, 0.8f), new Vec2(0.75f, 0.75f));
-        AssertVertex(fixture.Vertices.Vertices[2], new Vec2(-0.8f, 0.4f), new Vec2(0.25f, 0.25f));
-        AssertVertex(fixture.Vertices.Vertices[3], new Vec2(-0.4f, 0.4f), new Vec2(0.75f, 0.25f));
+        AssertVertex(fixture.Vertices.Vertices[0], (-0.8f, 0.8f), (0.25f, 0.75f));
+        AssertVertex(fixture.Vertices.Vertices[1], (-0.4f, 0.8f), (0.75f, 0.75f));
+        AssertVertex(fixture.Vertices.Vertices[2], (-0.8f, 0.4f), (0.25f, 0.25f));
+        AssertVertex(fixture.Vertices.Vertices[3], (-0.4f, 0.4f), (0.75f, 0.25f));
     }
 
     /// <summary>Clipping outside the draw rectangle skips vertex generation.</summary>
@@ -29,7 +29,7 @@ public sealed class SpriteBatchWriterTest
         var fixture = CreateWriter();
         fixture.Writer.Clip = new SpriteBatchClip(50f, 50f, 60f, 60f);
 
-        fixture.Writer.Draw(fixture.Texture, Vec2.Zero, new Vec2(40f, 40f));
+        fixture.Writer.Draw(fixture.Texture, Vec2.Zero, (40f, 40f));
 
         Assert.AreEqual(0, fixture.Vertices.VertexCount);
         Assert.AreEqual(0, fixture.Vertices.Sections.Length);
@@ -45,17 +45,17 @@ public sealed class SpriteBatchWriterTest
         fixture.Writer.Draw(
             fixture.Texture,
             Vec2.Zero,
-            new Vec2(40f, 40f),
+            (40f, 40f),
             Vec2.Zero,
-            new Vec2(40f, 40f),
+            (40f, 40f),
             Vec4.One,
             SpriteBatchRotation.None,
             SpriteBatchFlip.Horizontal);
 
-        AssertVertex(fixture.Vertices.Vertices[0], new Vec2(-1f, 1f), new Vec2(1f, 1f));
-        AssertVertex(fixture.Vertices.Vertices[1], new Vec2(-0.6f, 1f), new Vec2(0.5f, 1f));
-        AssertVertex(fixture.Vertices.Vertices[2], new Vec2(-1f, 0.2f), new Vec2(1f, 0f));
-        AssertVertex(fixture.Vertices.Vertices[3], new Vec2(-0.6f, 0.2f), new Vec2(0.5f, 0f));
+        AssertVertex(fixture.Vertices.Vertices[0], (-1f, 1f), (1f, 1f));
+        AssertVertex(fixture.Vertices.Vertices[1], (-0.6f, 1f), (0.5f, 1f));
+        AssertVertex(fixture.Vertices.Vertices[2], (-1f, 0.2f), (1f, 0f));
+        AssertVertex(fixture.Vertices.Vertices[3], (-0.6f, 0.2f), (0.5f, 0f));
     }
 
     /// <summary>Right-angle rotation preserves texture-coordinate corner mapping.</summary>
@@ -67,17 +67,17 @@ public sealed class SpriteBatchWriterTest
         fixture.Writer.Draw(
             fixture.Texture,
             Vec2.Zero,
-            new Vec2(40f, 40f),
+            (40f, 40f),
             Vec2.Zero,
-            new Vec2(40f, 40f),
+            (40f, 40f),
             Vec4.One,
             SpriteBatchRotation.Clockwise90,
             SpriteBatchFlip.None);
 
-        AssertVertex(fixture.Vertices.Vertices[0], new Vec2(-1f, 1f), new Vec2(0f, 0f));
-        AssertVertex(fixture.Vertices.Vertices[1], new Vec2(-0.2f, 1f), new Vec2(0f, 1f));
-        AssertVertex(fixture.Vertices.Vertices[2], new Vec2(-1f, 0.2f), new Vec2(1f, 0f));
-        AssertVertex(fixture.Vertices.Vertices[3], new Vec2(-0.2f, 0.2f), new Vec2(1f, 1f));
+        AssertVertex(fixture.Vertices.Vertices[0], (-1f, 1f), (0f, 0f));
+        AssertVertex(fixture.Vertices.Vertices[1], (-0.2f, 1f), (0f, 1f));
+        AssertVertex(fixture.Vertices.Vertices[2], (-1f, 0.2f), (1f, 0f));
+        AssertVertex(fixture.Vertices.Vertices[3], (-0.2f, 0.2f), (1f, 1f));
     }
 
     /// <summary>Zero or negative destination and source sizes skip vertex generation.</summary>
@@ -87,7 +87,7 @@ public sealed class SpriteBatchWriterTest
         var fixture = CreateWriter();
 
         fixture.Writer.Draw(fixture.Texture, Vec2.Zero, Vec2.Zero);
-        fixture.Writer.Draw(fixture.Texture, Vec2.Zero, new Vec2(-1f, 1f));
+        fixture.Writer.Draw(fixture.Texture, Vec2.Zero, (-1f, 1f));
         fixture.Writer.Draw(fixture.Texture, Vec2.Zero, Vec2.One, Vec2.Zero, Vec2.Zero);
 
         Assert.AreEqual(0, fixture.Vertices.VertexCount);
@@ -99,7 +99,7 @@ public sealed class SpriteBatchWriterTest
     {
         var fixture = CreateWriter();
 
-        fixture.Writer.DrawLine(Vec2.Zero, new Vec2(100f, 0f), 10f, Vec4.One);
+        fixture.Writer.DrawLine(Vec2.Zero, (100f, 0f), 10f, Vec4.One);
 
         Assert.AreEqual(4, fixture.Vertices.VertexCount);
     }
@@ -111,12 +111,12 @@ public sealed class SpriteBatchWriterTest
         var fixture = CreateWriter();
         fixture.Writer.Clip = new SpriteBatchClip(25f, 40f, 75f, 60f);
 
-        fixture.Writer.DrawLine(new Vec2(0f, 50f), new Vec2(100f, 50f), 10f, Vec4.One);
+        fixture.Writer.DrawLine((0f, 50f), (100f, 50f), 10f, Vec4.One);
 
         Assert.AreEqual(8, fixture.Vertices.VertexCount);
         AssertVerticesInsideClip(fixture.Vertices.Vertices, fixture.Writer.Clip.Value);
-        AssertHasCanvasPosition(fixture.Vertices.Vertices, new Vec2(25f, 40f));
-        AssertHasCanvasPosition(fixture.Vertices.Vertices, new Vec2(75f, 60f));
+        AssertHasCanvasPosition(fixture.Vertices.Vertices, (25f, 40f));
+        AssertHasCanvasPosition(fixture.Vertices.Vertices, (75f, 60f));
     }
 
     /// <summary>Clipping a diagonal line trims the generated polygon to the clip rectangle.</summary>
@@ -126,7 +126,7 @@ public sealed class SpriteBatchWriterTest
         var fixture = CreateWriter();
         fixture.Writer.Clip = new SpriteBatchClip(40f, 40f, 60f, 60f);
 
-        fixture.Writer.DrawLine(Vec2.Zero, new Vec2(100f, 100f), 5f, Vec4.One);
+        fixture.Writer.DrawLine(Vec2.Zero, (100f, 100f), 5f, Vec4.One);
 
         Assert.AreEqual(16, fixture.Vertices.VertexCount);
         AssertVerticesInsideClip(fixture.Vertices.Vertices, fixture.Writer.Clip.Value);
@@ -139,7 +139,7 @@ public sealed class SpriteBatchWriterTest
         var fixture = CreateWriter();
         fixture.Writer.Clip = new SpriteBatchClip(40f, 40f, 60f, 60f);
 
-        fixture.Writer.DrawLine(new Vec2(0f, 10f), new Vec2(100f, 10f), 5f, Vec4.One);
+        fixture.Writer.DrawLine((0f, 10f), (100f, 10f), 5f, Vec4.One);
 
         Assert.AreEqual(0, fixture.Vertices.VertexCount);
     }
@@ -151,7 +151,7 @@ public sealed class SpriteBatchWriterTest
         var fixture = CreateWriter();
         fixture.Writer.Clip = new SpriteBatchClip(40f, 0f, 60f, 100f);
 
-        fixture.Writer.DrawLine(new Vec2(0f, 50f), new Vec2(10f, 50f), 5f, Vec4.One);
+        fixture.Writer.DrawLine((0f, 50f), (10f, 50f), 5f, Vec4.One);
 
         Assert.AreEqual(0, fixture.Vertices.VertexCount);
     }
@@ -163,7 +163,7 @@ public sealed class SpriteBatchWriterTest
         var fixture = CreateWriter();
         fixture.Writer.Clip = new SpriteBatchClip(40f, 0f, 60f, 100f);
 
-        fixture.Writer.DrawLine(new Vec2(80f, 50f), new Vec2(100f, 50f), 5f, Vec4.One);
+        fixture.Writer.DrawLine((80f, 50f), (100f, 50f), 5f, Vec4.One);
 
         Assert.AreEqual(0, fixture.Vertices.VertexCount);
     }
@@ -175,7 +175,7 @@ public sealed class SpriteBatchWriterTest
         var fixture = CreateWriter();
         fixture.Writer.Clip = new SpriteBatchClip(0f, 40f, 100f, 60f);
 
-        fixture.Writer.DrawLine(new Vec2(0f, 90f), new Vec2(100f, 90f), 5f, Vec4.One);
+        fixture.Writer.DrawLine((0f, 90f), (100f, 90f), 5f, Vec4.One);
 
         Assert.AreEqual(0, fixture.Vertices.VertexCount);
     }
@@ -187,7 +187,7 @@ public sealed class SpriteBatchWriterTest
         var fixture = CreateWriter();
         fixture.Writer.Clip = new SpriteBatchClip(60f, 60f, 40f, 40f);
 
-        fixture.Writer.DrawLine(Vec2.Zero, new Vec2(100f, 100f), 5f, Vec4.One);
+        fixture.Writer.DrawLine(Vec2.Zero, (100f, 100f), 5f, Vec4.One);
 
         Assert.AreEqual(0, fixture.Vertices.VertexCount);
     }
@@ -198,7 +198,7 @@ public sealed class SpriteBatchWriterTest
     {
         var fixture = CreateWriter();
 
-        fixture.Writer.DrawLine(new Vec2(10f, 10f), new Vec2(10f, 10f), 5f, Vec4.One);
+        fixture.Writer.DrawLine((10f, 10f), (10f, 10f), 5f, Vec4.One);
 
         Assert.AreEqual(0, fixture.Vertices.VertexCount);
     }
@@ -234,8 +234,8 @@ public sealed class SpriteBatchWriterTest
     private static WriterFixture CreateWriter()
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
-        var texture = new Texture(gl, new Vec2u(40u, 40u), GlTextureTarget.Texture2D);
-        var canvas = new SpriteBatchCanvas { Size = new Vec2(100f, 100f) };
+        var texture = new Texture(gl, (40u, 40u), GlTextureTarget.Texture2D);
+        var canvas = new SpriteBatchCanvas { Size = (100f, 100f) };
         var vertices = new SpriteBatchVertices(16);
         return new WriterFixture(texture, vertices, new SpriteBatchWriter(texture, canvas, vertices));
     }

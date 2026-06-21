@@ -7,7 +7,7 @@ public readonly record struct SpriteBatchClip(Vec2 Min, Vec2 Max)
 {
     /// <summary>Creates a clip rectangle from scalar bounds.</summary>
     public SpriteBatchClip(float minX, float minY, float maxX, float maxY)
-        : this(new Vec2(minX, minY), new Vec2(maxX, maxY))
+        : this((minX, minY), (maxX, maxY))
     {
     }
 

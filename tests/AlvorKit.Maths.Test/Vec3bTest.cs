@@ -58,9 +58,8 @@ public sealed class Vec3bTest
     [TestMethod]
     public void LogicalOperators_Work()
     {
-        var left = new Vec3b(true, false, true);
-        var right = new Vec3b(true, true, false);
-
+        Vec3b left = (true, false, true);
+        Vec3b right = (true, true, false);
         Assert.AreEqual(new Vec3b(false, true, false), !left);
         Assert.AreEqual(new Vec3b(true, false, false), left & right);
         Assert.AreEqual(new Vec3b(true, false, true), true & left);
@@ -72,7 +71,7 @@ public sealed class Vec3bTest
         Assert.AreEqual(new Vec3b(true, true, true), true | left);
         Assert.AreEqual(new Vec3b(true, false, false), Vec3b.Equal(left, right));
         Assert.AreEqual(new Vec3b(false, true, true), Vec3b.NotEqual(left, right));
-        Assert.IsTrue(left == new Vec3b(true, false, true));
+        Assert.IsTrue(left == (true, false, true));
         Assert.IsTrue(left != right);
     }
 
@@ -80,9 +79,8 @@ public sealed class Vec3bTest
     [TestMethod]
     public void Select_ChoosesComponents()
     {
-        var mask = new Vec3b(true, false, true);
-        var inverse = new Vec3b(false, true, false);
-
+        Vec3b mask = (true, false, true);
+        Vec3b inverse = (false, true, false);
         Assert.AreEqual(new Vec3(1f, 20f, 3f), mask.Select(new Vec3(1f, 2f, 3f), new Vec3(10f, 20f, 30f)));
         Assert.AreEqual(new Vec3d(1d, 20d, 3d), mask.Select(new Vec3d(1d, 2d, 3d), new Vec3d(10d, 20d, 30d)));
         Assert.AreEqual(new Vec3i(1, 20, 3), mask.Select(new Vec3i(1, 2, 3), new Vec3i(10, 20, 30)));
@@ -100,8 +98,7 @@ public sealed class Vec3bTest
     [TestMethod]
     public void ValueSemantics_Work()
     {
-        var value = new Vec3b(true, false, true);
-
+        Vec3b value = (true, false, true);
         Assert.IsTrue(value.Equals((object)new Vec3b(true, false, true)));
         Assert.IsFalse(value.Equals(new object()));
         Assert.AreEqual(value.GetHashCode(), new Vec3b(true, false, true).GetHashCode());
