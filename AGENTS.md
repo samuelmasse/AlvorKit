@@ -256,6 +256,24 @@ types", "this file emits", or "configured scalar family", unless the generation
 process is itself the subject being documented. Prefer domain wording and
 concrete examples of the public things the documentation describes.
 
+## Binding Documentation
+
+For generated native bindings, use original upstream documentation whenever it
+exists. Mechanical fallback documentation is acceptable only when the upstream
+symbol has no usable documentation, and it must describe the public API shape
+rather than the generator or selection process.
+
+Every public binding documentation comment must reference the original C symbol
+it represents, such as a function, macro constant, typedef, struct, union, field,
+or callback. Use exact native names in `<c>...</c>` so a reader can find the
+source API. For managed convenience overloads or helpers, inherit or point back
+to the native-shaped member and keep the underlying C symbol visible.
+
+For enum groups synthesized from macros, document the public grouping rule or
+native API use, such as constants matching `<c>GLFW_CURSOR_*</c>` accepted by
+`<c>glfwSetInputMode</c>`. Do not describe groups as constants "selected for
+the binding" unless the generation process itself is what the docs are about.
+
 ## Runtime Allocation Discipline
 
 Avoid managed allocations in runtime, render-loop, resource lifetime, validation,
