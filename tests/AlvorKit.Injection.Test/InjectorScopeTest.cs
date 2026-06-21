@@ -203,4 +203,45 @@ public class InjectorScopeTest
         Assert.AreSame(scopeService1.ServiceE, scopeService2.ServiceE);
         Assert.AreSame(scopeService2.ServiceE, serviceE);
     }
+
+    /// <summary>Run receives the concrete scope type and returns the original scope instance.</summary>
+    [TestMethod]
+    public void Run_InvokesActionWithConcreteScopeAndReturnsScope()
+    {
+        var injector = new Injector();
+        var scope = injector.Scope<ValidScope>();
+        ValidScope? actionScope = null;
+
+        var returned = scope.Run(x => actionScope = x);
+
+        Assert.AreSame(scope, actionScope);
+        Assert.AreSame(scope, returned);
+    }
+
+    /// <summary>With adds an existing instance to the current scope and returns the original scope instance.</summary>
+    [TestMethod]
+    public void With_Instance_AddsInstanceAndReturnsScope()
+    {
+        var injector = new Injector();
+        var scope = injector.Scope<ValidScope>();
+        var service = new ScopedService(injector.Get<ServiceE>());
+
+        var returned = scope.With(service);
+
+        Assert.AreSame(scope, returned);
+        Assert.AreSame(service, scope.Get<ScopedService>());
+    }
+
+    /// <summary>With creates an instance from the concrete scope, adds it to that scope, and returns the original scope instance.</summary>
+    [TestMethod]
+    public void With_Factory_AddsCreatedInstanceAndReturnsScope()
+    {
+        var injector = new Injector();
+        var scope = injector.Scope<ValidScope>();
+
+        var returned = scope.With(x => new SeededScopedService(x.Get<ScopedService>()));
+
+        Assert.AreSame(scope, returned);
+        Assert.AreSame(scope.Get<ScopedService>(), scope.Get<SeededScopedService>().ScopedService);
+    }
 }

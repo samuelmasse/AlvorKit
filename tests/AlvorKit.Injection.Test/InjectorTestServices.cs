@@ -134,6 +134,9 @@ public class ValidScope : InjectorScope<ValidAttribute> { }
 public record class ScopedService(ServiceE ServiceE);
 
 [Valid]
+public record class SeededScopedService(ScopedService ScopedService);
+
+[Valid]
 public record class InvalidScopedService(SubScopedService SubScopedService);
 
 [SubValid]

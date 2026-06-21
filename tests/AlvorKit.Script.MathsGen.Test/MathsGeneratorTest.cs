@@ -13,6 +13,8 @@ public sealed class MathsGeneratorTest
         var quaternionNames = QuaternionCatalog.Quaternions.Select(quaternion => quaternion.TypeName).ToArray();
         var planeNames = PlaneCatalog.Planes.Select(plane => plane.TypeName).ToArray();
         var frustumNames = FrustumCatalog.Frustums.Select(frustum => frustum.TypeName).ToArray();
+        var intervalNames = IntervalCatalog.Intervals.Select(interval => interval.TypeName).ToArray();
+        var rayNames = RayCatalog.Rays.Select(ray => ray.TypeName).ToArray();
         var boxNames = BoxCatalog.Boxes.Select(box => box.TypeName).ToArray();
 
         Assert.AreEqual(42, vectorNames.Length);
@@ -20,6 +22,8 @@ public sealed class MathsGeneratorTest
         Assert.AreEqual(2, quaternionNames.Length);
         Assert.AreEqual(2, planeNames.Length);
         Assert.AreEqual(2, frustumNames.Length);
+        Assert.AreEqual(2, intervalNames.Length);
+        Assert.AreEqual(2, rayNames.Length);
         Assert.AreEqual(6, boxNames.Length);
         CollectionAssert.Contains(vectorNames, "Vec3h");
         CollectionAssert.Contains(vectorNames, "Vec4u128");
@@ -28,6 +32,8 @@ public sealed class MathsGeneratorTest
         CollectionAssert.Contains(quaternionNames, "Quatd");
         CollectionAssert.Contains(planeNames, "Plane3d");
         CollectionAssert.Contains(frustumNames, "Frustum3d");
+        CollectionAssert.Contains(intervalNames, "Intervald");
+        CollectionAssert.Contains(rayNames, "Ray3d");
         CollectionAssert.Contains(boxNames, "Box3i");
     }
 
@@ -63,6 +69,10 @@ public sealed class MathsGeneratorTest
         Assert.AreEqual("Plane3d", VectorCatalog.Double.PlaneName());
         Assert.AreEqual("Frustum3", VectorCatalog.Float.FrustumName());
         Assert.AreEqual("Frustum3d", VectorCatalog.Double.FrustumName());
+        Assert.AreEqual("Intervalf", VectorCatalog.Float.IntervalName());
+        Assert.AreEqual("Intervald", VectorCatalog.Double.IntervalName());
+        Assert.AreEqual("Ray3", VectorCatalog.Float.RayName());
+        Assert.AreEqual("Ray3d", VectorCatalog.Double.RayName());
         Assert.AreEqual("Box3i", VectorCatalog.Int.BoxName(3));
         Assert.AreEqual("(sbyte)(x + y)", VectorCatalog.Scalars.Single(scalar => scalar.Kind == ScalarKind.Int8).CastArithmetic("x + y"));
         Assert.AreEqual("x + y", VectorCatalog.Int.CastArithmetic("x + y"));
@@ -217,14 +227,19 @@ public sealed class MathsGeneratorTest
         StringAssert.Contains(frustum, "/// <summary>Single-precision floating-point 3D frustum volume.");
         StringAssert.Contains(frustum, "public struct Frustum3(");
         StringAssert.Contains(frustum, "IFrustum3Transform<Frustum3, float, Vec3, Vec4, Mat4, Plane3, Box3>");
+        StringAssert.Contains(frustum, "public static Frustum3 CreateFromPlanes(ReadOnlySpan<Plane3> planes)");
         StringAssert.Contains(frustum, "public static Frustum3 CreateFromClipTransform(Mat4 clipFromSource)");
         StringAssert.Contains(frustum, "ProjectionDepthRange.NegativeOneToOne");
+        StringAssert.Contains(frustum, "Left, Right, Bottom, Top, Near, Far order");
+        StringAssert.Contains(frustum, "Near bottom-left, Near bottom-right, Near top-left, Near top-right");
+        StringAssert.Contains(frustum, "conservative culling test");
         StringAssert.Contains(frustum, "public readonly bool Contains(Vec3 point)");
         StringAssert.Contains(frustum, "public readonly ContainmentKind Classify(Box3 box)");
         StringAssert.Contains(frustum, "public readonly bool TryCopyCornersTo(Span<Vec3> destination)");
         StringAssert.Contains(frustum, "public static implicit operator Frustum3d(Frustum3 value)");
         StringAssert.Contains(frustumd, "/// <summary>Double-precision floating-point 3D frustum volume.");
         StringAssert.Contains(frustumd, "IFrustum3Transform<Frustum3d, double, Vec3d, Vec4d, Mat4d, Plane3d, Box3d>");
+        StringAssert.Contains(frustumd, "public static Frustum3d CreateFromPlanes(ReadOnlySpan<Plane3d> planes)");
         Assert.IsFalse(frustum.Contains("public Frustum3(float", StringComparison.Ordinal));
         Assert.IsFalse(frustum.Contains("public static Frustum3 Create(float", StringComparison.Ordinal));
     }
@@ -292,6 +307,8 @@ public sealed class MathsGeneratorTest
         yield return ("Plane3d.g.cs", PlaneFileEmitter.Emit(new(VectorCatalog.Double)));
         yield return ("Frustum3.g.cs", FrustumFileEmitter.Emit(new(VectorCatalog.Float)));
         yield return ("Frustum3d.g.cs", FrustumFileEmitter.Emit(new(VectorCatalog.Double)));
+        yield return ("Intervalf.g.cs", IntervalFileEmitter.Emit(new(VectorCatalog.Float)));
+        yield return ("Ray3.g.cs", RayFileEmitter.Emit(new(VectorCatalog.Float)));
         yield return ("Box3i.g.cs", BoxFileEmitter.Emit(new(3, VectorCatalog.Int)));
     }
 

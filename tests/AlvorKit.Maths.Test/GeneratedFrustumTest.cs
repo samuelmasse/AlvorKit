@@ -13,6 +13,7 @@ public sealed class GeneratedFrustumTest
         Span<Plane3> planes = stackalloc Plane3[Frustum3.PlaneCount];
         frustum.CopyTo(copied);
         frustum.CopyPlanesTo(planes);
+        var fromPlanes = Frustum3.CreateFromPlanes(planes);
         Frustum3.ComponentRef(ref frustum, 0) = 2f;
         frustum[23] = 12f;
         var fromSpan = Frustum3.Create(copied);
@@ -27,8 +28,13 @@ public sealed class GeneratedFrustumTest
         Assert.AreEqual(new Plane3(new Vec3(2f, 0f, 0f), 1f), frustum.Left);
         Assert.AreEqual(new Plane3(new Vec3(0f, 0f, -1f), 12f), frustum.Far);
         Assert.AreEqual(SampleFrustum(), fromSpan);
+        Assert.AreEqual(SampleFrustum(), fromPlanes);
+        Assert.IsTrue(Frustum3.TryCreateFromPlanes(planes, out var tryFromPlanes));
+        Assert.AreEqual(SampleFrustum(), tryFromPlanes);
         Assert.AreEqual(SampleFrustum().Near, planes[4]);
         Assert.ThrowsException<ArgumentException>(() => _ = Frustum3.Create(new float[23]));
+        Assert.ThrowsException<ArgumentException>(() => _ = Frustum3.CreateFromPlanes(new Plane3[5]));
+        Assert.IsFalse(Frustum3.TryCreateFromPlanes(new Plane3[5], out _));
         Assert.ThrowsException<ArgumentException>(() => frustum.CopyTo(new float[23]));
         Assert.ThrowsException<ArgumentException>(() => frustum.CopyPlanesTo(new Plane3[5]));
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => _ = frustum[24]);
@@ -72,6 +78,42 @@ public sealed class GeneratedFrustumTest
         Assert.IsFalse(frustum.Contains(intersecting));
         Assert.IsTrue(frustum.Intersects(intersecting));
         Assert.IsFalse(frustum.Intersects(disjoint));
+    }
+
+    /// <summary>Generated frustum box classification stays conservative for edge-separated rotated boxes.</summary>
+    [TestMethod]
+    public void GeneratedFrustumBoxQueries_AreConservative()
+    {
+        var axis0 = new Vec3(-0.246228f, 0.605907f, -0.756471f);
+        var axis1 = new Vec3(0.919872f, 0.391949f, 0.014523f);
+        var axis2 = new Vec3(0.305298f, -0.692281f, -0.653866f);
+        var frustum = Frustum3.CreateFromPlanes(
+            [
+                new Plane3(axis0, 1f),
+                new Plane3(-axis0, 1f),
+                new Plane3(axis1, 1f),
+                new Plane3(-axis1, 1f),
+                new Plane3(axis2, 1f),
+                new Plane3(-axis2, 1f),
+            ]);
+        var center = new Vec3(-1.211842f, 1.569418f, -0.25205f);
+        var halfSize = new Vec3(0.526339f, 0.238428f, 0.360451f);
+        var box = new Box3(center - halfSize, center + halfSize);
+        var separatingAxis = new Vec3(-0.39199f, 0.919969f, 0f);
+
+        var projectedDistance = MathF.Abs(Vec3.Dot(center, separatingAxis));
+        var boxRadius =
+            (halfSize.X * MathF.Abs(separatingAxis.X)) +
+            (halfSize.Y * MathF.Abs(separatingAxis.Y)) +
+            (halfSize.Z * MathF.Abs(separatingAxis.Z));
+        var frustumRadius =
+            MathF.Abs(Vec3.Dot(axis0, separatingAxis)) +
+            MathF.Abs(Vec3.Dot(axis1, separatingAxis)) +
+            MathF.Abs(Vec3.Dot(axis2, separatingAxis));
+
+        Assert.IsTrue(projectedDistance > boxRadius + frustumRadius);
+        Assert.AreEqual(ContainmentKind.Intersects, frustum.Classify(box));
+        Assert.IsTrue(frustum.Intersects(box));
     }
 
     /// <summary>Generated frustum corner helpers reconstruct finite corners and reject infinite frustums.</summary>
@@ -153,9 +195,12 @@ public sealed class GeneratedFrustumTest
     {
         var frustum = Frustum3d.CreateFromClipTransform(Mat4d.Identity);
         Span<Vec3d> corners = stackalloc Vec3d[Frustum3d.CornerCount];
+        Span<Plane3d> planes = stackalloc Plane3d[Frustum3d.PlaneCount];
+        frustum.CopyPlanesTo(planes);
 
         Assert.IsTrue(frustum.Contains(Vec3d.Zero));
         Assert.IsTrue(frustum.TryCopyCornersTo(corners));
+        Assert.AreEqual(frustum, Frustum3d.CreateFromPlanes(planes));
         AssertVecClose(new Vec3d(-1d, -1d, -1d), corners[0]);
         Assert.AreEqual(frustum, Frustum3d.Parse(frustum.ToString(System.Globalization.CultureInfo.InvariantCulture), null));
     }
@@ -185,7 +230,24 @@ public sealed class GeneratedFrustumTest
         where TMatrix4 : struct
         where TPlane3 : struct, IPlane3<TPlane3, TScalar, TVector3, TVector4>
         where TBox3 : struct, IBox3<TBox3, TScalar, TVector3> =>
-        TFrustum.CreateFromClipTransform(clipFromSource).Contains(point);
+        ContainsCopiedGeneric<TFrustum, TScalar, TVector3, TVector4, TMatrix4, TPlane3, TBox3>(clipFromSource, point);
+
+    private static bool ContainsCopiedGeneric<TFrustum, TScalar, TVector3, TVector4, TMatrix4, TPlane3, TBox3>(
+        TMatrix4 clipFromSource,
+        TVector3 point)
+        where TFrustum : struct, IFrustum3Transform<TFrustum, TScalar, TVector3, TVector4, TMatrix4, TPlane3, TBox3>
+        where TVector3 : struct, IVec3<TVector3, TScalar>
+        where TVector4 : struct, IVec4<TVector4, TScalar>
+        where TMatrix4 : struct
+        where TPlane3 : struct, IPlane3<TPlane3, TScalar, TVector3, TVector4>
+        where TBox3 : struct, IBox3<TBox3, TScalar, TVector3>
+    {
+        var frustum = TFrustum.CreateFromClipTransform(clipFromSource);
+        var planes = new TPlane3[TFrustum.PlaneCount];
+        frustum.CopyPlanesTo(planes);
+
+        return TFrustum.TryCreateFromPlanes(planes, out var copied) && copied.Contains(point);
+    }
 
     private static void AssertVecClose(Vec3 expected, Vec3 actual)
     {

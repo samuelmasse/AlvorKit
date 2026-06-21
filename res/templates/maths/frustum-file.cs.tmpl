@@ -51,7 +51,7 @@ public struct {{TypeName}}(
     /// <summary>The far clipping plane.</summary>
     public {{Plane3Type}} Far = far;
 
-    /// <summary>Initializes planes from the first <see cref="ComponentCount" /> scalar values in a span.</summary>
+    /// <summary>Initializes planes from the first <see cref="ComponentCount" /> scalar values in Left, Right, Bottom, Top, Near, Far plane order.</summary>
     public {{TypeName}}(ReadOnlySpan<{{ScalarType}}> values)
         : this(
             CreatePlane(values, 0),
@@ -71,7 +71,7 @@ public struct {{TypeName}}(
     static int IFrustum3<{{TypeName}}, {{ScalarType}}, {{Vector3Type}}, {{Vector4Type}}, {{Plane3Type}}, {{Box3Type}}>.CornerCount =>
         CornerCount;
 
-    /// <summary>Gets the number of scalar components.</summary>
+    /// <summary>Gets the number of scalar components stored by the six planes.</summary>
     static int IFrustum3<{{TypeName}}, {{ScalarType}}, {{Vector3Type}}, {{Vector4Type}}, {{Plane3Type}}, {{Box3Type}}>.ComponentCount =>
         ComponentCount;
 
@@ -117,7 +117,7 @@ public struct {{TypeName}}(
         set => Far = value;
     }
 
-    /// <summary>Creates a frustum from six inward-facing planes.</summary>
+    /// <summary>Creates a frustum from six inward-facing planes in Left, Right, Bottom, Top, Near, Far order.</summary>
     public static {{TypeName}} Create(
         {{Plane3Type}} left,
         {{Plane3Type}} right,
@@ -127,7 +127,29 @@ public struct {{TypeName}}(
         {{Plane3Type}} far) =>
         new(left, right, bottom, top, near, far);
 
-    /// <summary>Creates a frustum from the first <see cref="ComponentCount" /> scalar values in a span.</summary>
+    /// <summary>Creates a frustum from the first six inward-facing planes in Left, Right, Bottom, Top, Near, Far order.</summary>
+    public static {{TypeName}} CreateFromPlanes(ReadOnlySpan<{{Plane3Type}}> planes)
+    {
+        if (!TryCreateFromPlanes(planes, out var result))
+            ThrowPlaneSourceTooShort();
+
+        return result;
+    }
+
+    /// <summary>Attempts to create a frustum from the first six inward-facing planes in Left, Right, Bottom, Top, Near, Far order.</summary>
+    public static bool TryCreateFromPlanes(ReadOnlySpan<{{Plane3Type}}> planes, out {{TypeName}} result)
+    {
+        if (planes.Length < PlaneCount)
+        {
+            result = default;
+            return false;
+        }
+
+        result = new(planes[0], planes[1], planes[2], planes[3], planes[4], planes[5]);
+        return true;
+    }
+
+    /// <summary>Creates a frustum from the first <see cref="ComponentCount" /> scalar values in Left, Right, Bottom, Top, Near, Far plane order.</summary>
     public static {{TypeName}} Create(ReadOnlySpan<{{ScalarType}}> values) =>
         new(values);
 
@@ -232,14 +254,14 @@ public struct {{TypeName}}(
         far = Far;
     }
 
-    /// <summary>Copies the scalar components into a caller-owned span.</summary>
+    /// <summary>Copies scalar components into a caller-owned span in Left, Right, Bottom, Top, Near, Far plane order.</summary>
     public readonly void CopyTo(Span<{{ScalarType}}> destination)
     {
         if (!TryCopyTo(destination))
             MathsThrowHelper.ThrowDestinationSpanTooShort(ComponentCount);
     }
 
-    /// <summary>Attempts to copy the scalar components into a caller-owned span.</summary>
+    /// <summary>Attempts to copy scalar components into a caller-owned span in Left, Right, Bottom, Top, Near, Far plane order.</summary>
     public readonly bool TryCopyTo(Span<{{ScalarType}}> destination)
     {
         if (destination.Length < ComponentCount)
@@ -254,14 +276,14 @@ public struct {{TypeName}}(
         return true;
     }
 
-    /// <summary>Copies the six planes into a caller-owned span in left, right, bottom, top, near, far order.</summary>
+    /// <summary>Copies the six planes into a caller-owned span in Left, Right, Bottom, Top, Near, Far order.</summary>
     public readonly void CopyPlanesTo(Span<{{Plane3Type}}> destination)
     {
         if (!TryCopyPlanesTo(destination))
             ThrowPlaneDestinationTooShort();
     }
 
-    /// <summary>Attempts to copy the six planes into a caller-owned span in left, right, bottom, top, near, far order.</summary>
+    /// <summary>Attempts to copy the six planes into a caller-owned span in Left, Right, Bottom, Top, Near, Far order.</summary>
     public readonly bool TryCopyPlanesTo(Span<{{Plane3Type}}> destination)
     {
         if (destination.Length < PlaneCount)
@@ -276,7 +298,10 @@ public struct {{TypeName}}(
         return true;
     }
 
-    /// <summary>Copies finite corners into a caller-owned span in near-plane order followed by far-plane order.</summary>
+    /// <summary>
+    /// Copies finite corners into a caller-owned span in Near bottom-left, Near bottom-right, Near top-left, Near top-right,
+    /// Far bottom-left, Far bottom-right, Far top-left, Far top-right order.
+    /// </summary>
     public readonly void CopyCornersTo(Span<{{Vector3Type}}> destination)
     {
         if (destination.Length < CornerCount)
@@ -285,7 +310,10 @@ public struct {{TypeName}}(
             throw new InvalidOperationException("Frustum planes do not define eight finite corners.");
     }
 
-    /// <summary>Attempts to copy finite corners into a caller-owned span.</summary>
+    /// <summary>
+    /// Attempts to copy finite corners into a caller-owned span in Near bottom-left, Near bottom-right, Near top-left,
+    /// Near top-right, Far bottom-left, Far bottom-right, Far top-left, Far top-right order.
+    /// </summary>
     public readonly bool TryCopyCornersTo(Span<{{Vector3Type}}> destination)
     {
         if (destination.Length < CornerCount)
@@ -315,11 +343,14 @@ public struct {{TypeName}}(
     public readonly bool Contains({{Box3Type}} box) =>
         Classify(box) == ContainmentKind.Contains;
 
-    /// <summary>Returns whether the frustum intersects <paramref name="box" />.</summary>
+    /// <summary>Returns whether the frustum may intersect <paramref name="box" /> using a conservative culling test.</summary>
     public readonly bool Intersects({{Box3Type}} box) =>
         Classify(box) != ContainmentKind.Disjoint;
 
-    /// <summary>Classifies how the frustum relates to <paramref name="box" />.</summary>
+    /// <summary>
+    /// Classifies how the frustum relates to <paramref name="box" />; <see cref="ContainmentKind.Intersects" /> is conservative
+    /// and can be returned for boxes outside the finite frustum.
+    /// </summary>
     public readonly ContainmentKind Classify({{Box3Type}} box)
     {
         if (box.IsEmpty)
@@ -708,6 +739,11 @@ public struct {{TypeName}}(
     [DoesNotReturn]
     private static void ThrowPlaneDestinationTooShort() =>
         throw new ArgumentException($"Span must contain at least {PlaneCount} planes.", "destination");
+
+    /// <summary>Throws when a plane source span is too short.</summary>
+    [DoesNotReturn]
+    private static void ThrowPlaneSourceTooShort() =>
+        throw new ArgumentException($"Span must contain at least {PlaneCount} planes.", "planes");
 
     /// <summary>Throws when a corner destination span is too short.</summary>
     [DoesNotReturn]

@@ -48,10 +48,16 @@ public interface IFrustum3<TSelf, TScalar, TVector3, TVector4, TPlane3, TBox3> :
     /// <summary>Gets the far clipping plane.</summary>
     TPlane3 Far { get; set; }
 
-    /// <summary>Creates a frustum from six inward-facing planes.</summary>
+    /// <summary>Creates a frustum from six inward-facing planes in Left, Right, Bottom, Top, Near, Far order.</summary>
     static abstract TSelf Create(TPlane3 left, TPlane3 right, TPlane3 bottom, TPlane3 top, TPlane3 near, TPlane3 far);
 
-    /// <summary>Creates a frustum from the first <see cref="ComponentCount" /> scalar values in a span.</summary>
+    /// <summary>Creates a frustum from the first six inward-facing planes in Left, Right, Bottom, Top, Near, Far order.</summary>
+    static abstract TSelf CreateFromPlanes(ReadOnlySpan<TPlane3> planes);
+
+    /// <summary>Attempts to create a frustum from the first six inward-facing planes in Left, Right, Bottom, Top, Near, Far order.</summary>
+    static abstract bool TryCreateFromPlanes(ReadOnlySpan<TPlane3> planes, out TSelf result);
+
+    /// <summary>Creates a frustum from the first <see cref="ComponentCount" /> scalar values in Left, Right, Bottom, Top, Near, Far plane order.</summary>
     static abstract TSelf Create(ReadOnlySpan<TScalar> values);
 
     /// <summary>Gets a mutable reference to a scalar component by zero-based index.</summary>
@@ -60,22 +66,28 @@ public interface IFrustum3<TSelf, TScalar, TVector3, TVector4, TPlane3, TBox3> :
     /// <summary>Gets or sets a scalar component by zero-based index.</summary>
     TScalar this[int index] { get; set; }
 
-    /// <summary>Copies the scalar components into a caller-owned span.</summary>
+    /// <summary>Copies scalar components into a caller-owned span in Left, Right, Bottom, Top, Near, Far plane order.</summary>
     void CopyTo(Span<TScalar> destination);
 
-    /// <summary>Attempts to copy the scalar components into a caller-owned span.</summary>
+    /// <summary>Attempts to copy scalar components into a caller-owned span in Left, Right, Bottom, Top, Near, Far plane order.</summary>
     bool TryCopyTo(Span<TScalar> destination);
 
-    /// <summary>Copies the six planes into a caller-owned span in left, right, bottom, top, near, far order.</summary>
+    /// <summary>Copies the six planes into a caller-owned span in Left, Right, Bottom, Top, Near, Far order.</summary>
     void CopyPlanesTo(Span<TPlane3> destination);
 
-    /// <summary>Attempts to copy the six planes into a caller-owned span in left, right, bottom, top, near, far order.</summary>
+    /// <summary>Attempts to copy the six planes into a caller-owned span in Left, Right, Bottom, Top, Near, Far order.</summary>
     bool TryCopyPlanesTo(Span<TPlane3> destination);
 
-    /// <summary>Copies finite corners into a caller-owned span in near-plane order followed by far-plane order.</summary>
+    /// <summary>
+    /// Copies finite corners into a caller-owned span in Near bottom-left, Near bottom-right, Near top-left, Near top-right,
+    /// Far bottom-left, Far bottom-right, Far top-left, Far top-right order.
+    /// </summary>
     void CopyCornersTo(Span<TVector3> destination);
 
-    /// <summary>Attempts to copy finite corners into a caller-owned span.</summary>
+    /// <summary>
+    /// Attempts to copy finite corners into a caller-owned span in Near bottom-left, Near bottom-right, Near top-left,
+    /// Near top-right, Far bottom-left, Far bottom-right, Far top-left, Far top-right order.
+    /// </summary>
     bool TryCopyCornersTo(Span<TVector3> destination);
 
     /// <summary>Returns whether the frustum contains <paramref name="point" />.</summary>
@@ -84,9 +96,12 @@ public interface IFrustum3<TSelf, TScalar, TVector3, TVector4, TPlane3, TBox3> :
     /// <summary>Returns whether the frustum fully contains <paramref name="box" />.</summary>
     bool Contains(TBox3 box);
 
-    /// <summary>Returns whether the frustum intersects <paramref name="box" />.</summary>
+    /// <summary>Returns whether the frustum may intersect <paramref name="box" /> using a conservative culling test.</summary>
     bool Intersects(TBox3 box);
 
-    /// <summary>Classifies how the frustum relates to <paramref name="box" />.</summary>
+    /// <summary>
+    /// Classifies how the frustum relates to <paramref name="box" />; <see cref="ContainmentKind.Intersects" /> is conservative
+    /// and can be returned for boxes outside the finite frustum.
+    /// </summary>
     ContainmentKind Classify(TBox3 box);
 }

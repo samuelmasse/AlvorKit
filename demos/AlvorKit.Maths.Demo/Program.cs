@@ -91,6 +91,33 @@ ExpectClose2(paddedPlayfield.Size, (24f, 16f), "Inflated should expand both min 
 Expect(tileBounds.Area == 144, "Integer boxes should be useful for tile and viewport extents.");
 Expect(chunkBounds.Volume == 512, "3D integer boxes should report chunk volume.");
 
+Section("Spheres and intervals");
+
+var detectionSphere = new Sphere3(Vec3.Zero, 5f);
+var lootBounds = Box3.CreateFromCenterSize((3f, 0f, 0f), (2f, 2f, 2f));
+var lootSphere = Sphere3.CreateFromBox(lootBounds);
+Vec3 signalPoint = (8f, 0f, 0f);
+var closestSignalPoint = detectionSphere.ClosestPoint(signalPoint);
+var patrolRange = new Intervalf(2f, 8f);
+var rayHitRange = Intervalf.CreateFromEndpoints(6f, 3f);
+var visibleRange = Intervalf.Intersection(patrolRange, rayHitRange);
+
+Print("detection sphere", FormatSphere(detectionSphere));
+Print("loot sphere from box", FormatSphere(lootSphere));
+Print("signal closest point", Format3(closestSignalPoint));
+Print("signal distance", detectionSphere.DistanceTo(signalPoint).ToString("0.###", CultureInfo.InvariantCulture));
+Print("patrol range", FormatInterval(patrolRange));
+Print("ray hit range", FormatInterval(rayHitRange));
+Print("visible range", FormatInterval(visibleRange));
+
+Expect(detectionSphere.Contains(lootSphere), "Sphere containment should account for the contained sphere radius.");
+ExpectClose(lootSphere.Radius, MathF.Sqrt(3f), "CreateFromBox should produce a centered sphere containing all box corners.");
+ExpectClose3(closestSignalPoint, (5f, 0f, 0f), "Sphere ClosestPoint should clamp to the sphere surface.");
+ExpectClose(detectionSphere.DistanceTo(signalPoint), 3f, "Sphere DistanceTo should report zero inside and positive distance outside.");
+Expect(rayHitRange == new Intervalf(3f, 6f), "CreateFromEndpoints should sort interval endpoints.");
+Expect(visibleRange == new Intervalf(3f, 6f), "Interval intersection should keep only the overlapping distances.");
+Expect(patrolRange.Contains(visibleRange), "Interval containment should work for nested ranges.");
+
 Section("Span interop");
 
 Span<float> packed = stackalloc float[Vec3.ComponentCount];
@@ -208,6 +235,51 @@ Expect(projectionTextOk, "Matrix TryFormat should write into caller-owned spans.
 Expect(parsedProjectionOk, "Matrix TryParse should accept the invariant ToString representation.");
 ExpectCloseMat4(parsedProjection, projection, "Matrix ToString and TryParse should round-trip precise formatted values.");
 
+Section("Frustums and rays");
+
+Span<Plane3> boxFrustumPlanes =
+[
+    Plane3.Create(Vec3.UnitX, 1f),
+    Plane3.Create(-Vec3.UnitX, 1f),
+    Plane3.Create(Vec3.UnitY, 1f),
+    Plane3.Create(-Vec3.UnitY, 1f),
+    Plane3.Create(Vec3.UnitZ, 0f),
+    Plane3.Create(-Vec3.UnitZ, 10f),
+];
+var boxFrustum = Frustum3.CreateFromPlanes(boxFrustumPlanes);
+var pickRay = new Ray3(new Vec3(0f, 0f, -2f), new Vec3(0f, 0f, 2f));
+var missedRay = new Ray3(new Vec3(2f, 0f, -2f), Vec3.UnitZ);
+var targetBox = new Box3(new Vec3(-0.5f, -0.5f, 2f), new Vec3(0.5f, 0.5f, 4f));
+var targetSphere = new Sphere3(new Vec3(0f, 0f, 6f), 1f);
+var normalizedPickRayOk = pickRay.TryNormalize(out var normalizedPickRay);
+var frustumHit = pickRay.TryIntersect(boxFrustum, out var frustumDistances);
+Intervalf boxDistances;
+var boxHit = pickRay.TryIntersect(targetBox, out boxDistances);
+var sphereHit = pickRay.TryIntersect(targetSphere, out var sphereDistance);
+var nearPlaneHit = pickRay.TryIntersect(boxFrustum.Near, out var nearPlaneDistance);
+
+Print("box frustum near", FormatPlane(boxFrustum.Near));
+Print("pick ray", FormatRay(pickRay));
+Print("normalized ray", FormatRay(normalizedPickRay));
+Print("ray point at 2", Format3(pickRay.PointAt(2f)));
+Print("frustum hit range", frustumHit ? FormatInterval(frustumDistances) : "<miss>");
+Print("box hit range", boxHit ? FormatInterval(boxDistances) : "<miss>");
+Print("sphere hit distance", sphereHit ? sphereDistance.ToString("0.###", CultureInfo.InvariantCulture) : "<miss>");
+Print("missed frustum", missedRay.Intersects(boxFrustum).ToString());
+
+Expect(normalizedPickRayOk, "Ray TryNormalize should succeed for nonzero directions.");
+ExpectClose3(normalizedPickRay.Direction, Vec3.UnitZ, "Ray normalization should keep the origin and unit-length direction.");
+ExpectClose3(pickRay.PointAt(2f), (0f, 0f, 2f), "Ray PointAt should use the stored, non-normalized direction.");
+Expect(frustumHit, "A ray through the center should intersect the six-plane frustum.");
+Expect(frustumDistances == new Intervalf(1f, 6f), "Ray/frustum intersections should return entry and exit distances.");
+Expect(boxHit, "A ray through the center should intersect the target box.");
+Expect(boxDistances == new Intervalf(2f, 3f), "Ray/box slab tests should return the clipped distance interval.");
+Expect(sphereHit, "A ray through the center should intersect the target sphere.");
+ExpectClose(sphereDistance, 3.5f, "Ray/sphere intersections should return the nearest nonnegative distance.");
+Expect(nearPlaneHit, "The same ray should hit the frustum near plane.");
+ExpectClose(nearPlaneDistance, 1f, "Plane intersection should respect non-normalized ray direction distances.");
+Expect(!missedRay.Intersects(boxFrustum), "A ray outside the side planes should miss the frustum.");
+
 Section("Planes and shadows");
 
 var floorPlane = Plane3.CreateFromPointNormal((0f, 1f, 0f), Vec3.UnitY);
@@ -303,6 +375,18 @@ static string Format4(Vec4 value) =>
 
 // Formats a quaternion with invariant tuple-style text.
 static string FormatQuat(Quat value) =>
+    value.ToString("0.###", CultureInfo.InvariantCulture);
+
+// Formats an interval with invariant endpoint text.
+static string FormatInterval(Intervalf value) =>
+    value.ToString("0.###", CultureInfo.InvariantCulture);
+
+// Formats a 3D sphere with invariant center and radius text.
+static string FormatSphere(Sphere3 value) =>
+    value.ToString("0.###", CultureInfo.InvariantCulture);
+
+// Formats a 3D ray with invariant origin and direction text.
+static string FormatRay(Ray3 value) =>
     value.ToString("0.###", CultureInfo.InvariantCulture);
 
 // Formats a 3D plane with invariant coefficient text.

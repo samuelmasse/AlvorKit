@@ -48,6 +48,13 @@ paths and globs such as `src/Foo.cs`, `scripts/AlvorKit.Script.Lint/**`,
 checks to be useful. Valid modes are `write`, `generate`, `format`, `test`,
 `cleanup`, and `review`.
 
+For generated or review artifacts under `out/`, claim the exact artifact
+directory once it is known, such as `out/bindgen-review/<case>-<suffix>/**` or
+`out/coverage/runs/<run-id>/**`. Do not claim shared output roots such as
+`out/bindgen-review/**` or `out/coverage/**` when agents can work in separate
+run directories. If a tool prints the directory after startup, begin with the
+source paths and then refresh the lease with the concrete output path.
+
 Leases expire five minutes after their last update by default. Refresh your lease
 before editing again after any long-running command, and refresh it once in a
 while during longer work. Use `--timeout-minutes <n>` when a longer-running

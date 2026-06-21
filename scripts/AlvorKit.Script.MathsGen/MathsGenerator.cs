@@ -22,6 +22,15 @@ internal static class MathsGenerator
     /// <summary>The project subdirectory that contains generated frustum source files.</summary>
     public const string FrustumDirectoryName = "Frustum";
 
+    /// <summary>The project subdirectory that contains generated sphere source files.</summary>
+    public const string SphereDirectoryName = "Sphere";
+
+    /// <summary>The project subdirectory that contains generated interval source files.</summary>
+    public const string IntervalDirectoryName = "Interval";
+
+    /// <summary>The project subdirectory that contains generated ray source files.</summary>
+    public const string RayDirectoryName = "Ray";
+
     /// <summary>The project subdirectory that contains generated box source files.</summary>
     public const string BoxDirectoryName = "Box";
 
@@ -39,6 +48,9 @@ internal static class MathsGenerator
         var quatDirectory = Path.Combine(projectDirectory, QuatDirectoryName);
         var planeDirectory = Path.Combine(projectDirectory, PlaneDirectoryName);
         var frustumDirectory = Path.Combine(projectDirectory, FrustumDirectoryName);
+        var sphereDirectory = Path.Combine(projectDirectory, SphereDirectoryName);
+        var intervalDirectory = Path.Combine(projectDirectory, IntervalDirectoryName);
+        var rayDirectory = Path.Combine(projectDirectory, RayDirectoryName);
         var boxDirectory = Path.Combine(projectDirectory, BoxDirectoryName);
         var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         RecreateDirectory(projectDirectory);
@@ -48,6 +60,9 @@ internal static class MathsGenerator
         Directory.CreateDirectory(quatDirectory);
         Directory.CreateDirectory(planeDirectory);
         Directory.CreateDirectory(frustumDirectory);
+        Directory.CreateDirectory(sphereDirectory);
+        Directory.CreateDirectory(intervalDirectory);
+        Directory.CreateDirectory(rayDirectory);
         Directory.CreateDirectory(boxDirectory);
         foreach (var (fileName, source) in VectorInterfaceFileEmitter.EmitAll())
             File.WriteAllText(Path.Combine(vecDirectory, fileName), source, encoding);
@@ -83,6 +98,24 @@ internal static class MathsGenerator
         {
             var source = FrustumFileEmitter.Emit(frustum);
             File.WriteAllText(Path.Combine(frustumDirectory, $"{frustum.TypeName}.g.cs"), source, encoding);
+        }
+
+        foreach (var sphere in SphereCatalog.Spheres)
+        {
+            var source = SphereFileEmitter.Emit(sphere);
+            File.WriteAllText(Path.Combine(sphereDirectory, $"{sphere.TypeName}.g.cs"), source, encoding);
+        }
+
+        foreach (var interval in IntervalCatalog.Intervals)
+        {
+            var source = IntervalFileEmitter.Emit(interval);
+            File.WriteAllText(Path.Combine(intervalDirectory, $"{interval.TypeName}.g.cs"), source, encoding);
+        }
+
+        foreach (var ray in RayCatalog.Rays)
+        {
+            var source = RayFileEmitter.Emit(ray);
+            File.WriteAllText(Path.Combine(rayDirectory, $"{ray.TypeName}.g.cs"), source, encoding);
         }
 
         foreach (var box in BoxCatalog.Boxes)

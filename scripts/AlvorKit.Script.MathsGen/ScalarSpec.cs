@@ -79,6 +79,15 @@ internal sealed record ScalarSpec(
     /// <summary>Gets the frustum type name for this scalar.</summary>
     public string FrustumName() => $"Frustum3{Suffix}";
 
+    /// <summary>Gets the sphere type name for this scalar.</summary>
+    public string SphereName() => $"Sphere3{Suffix}";
+
+    /// <summary>Gets the interval type name for this scalar.</summary>
+    public string IntervalName() => Kind == ScalarKind.Float ? "Intervalf" : $"Interval{Suffix}";
+
+    /// <summary>Gets the ray type name for this scalar.</summary>
+    public string RayName() => $"Ray3{Suffix}";
+
     /// <summary>Gets the box type name for this scalar and dimension.</summary>
     public string BoxName(int dimension) => $"Box{dimension}{Suffix}";
 }
