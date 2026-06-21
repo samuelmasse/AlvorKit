@@ -10,12 +10,14 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
         <ProjectReference Include="..\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing.Glfw\AlvorKit.Windowing.Glfw.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.Windowing.Test" />
+        <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.Windowing" />
         <Using Include="AlvorKit.GLFW" />
         <Using Include="AlvorKit.OpenGL" />

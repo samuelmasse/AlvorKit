@@ -64,8 +64,8 @@ void Update(double elapsedSeconds)
 // Draws one game frame through the current agent GLFW host OpenGL context.
 void Render()
 {
-    var width = Math.Max(1, (int)canvas.Size.X);
-    var height = Math.Max(1, (int)canvas.Size.Y);
+    var width = checked((int)canvas.Size.X);
+    var height = checked((int)canvas.Size.Y);
     gl.Viewport(0, 0, width, height);
     gl.ClearColor(0.055f, 0.065f, 0.075f, 1f);
     gl.Clear(GlClearBufferMask.ColorBufferBit);

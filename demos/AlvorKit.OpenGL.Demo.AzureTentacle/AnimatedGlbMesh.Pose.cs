@@ -107,9 +107,9 @@ internal sealed partial class AnimatedGlbMesh
             return;
 
         var clampedAmount = Math.Clamp(amount, 0f, 1f);
-        destination.Translation = Vector3.Lerp(from.Translation, to.Translation, clampedAmount);
+        destination.Translation = Vec3.Lerp(from.Translation, to.Translation, clampedAmount);
         destination.Rotation = Quaternion.Normalize(Quaternion.Slerp(from.Rotation, to.Rotation, clampedAmount));
-        destination.Scale = Vector3.Lerp(from.Scale, to.Scale, clampedAmount);
+        destination.Scale = Vec3.Lerp(from.Scale, to.Scale, clampedAmount);
     }
 
     /// <summary>Rebuilds node local matrices from the sampled pose.</summary>

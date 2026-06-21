@@ -32,13 +32,13 @@ gl.GetString(GlStringName.ShadingLanguageVersion, out var glsl);
 Console.WriteLine("OpenGL {0} (GLSL {1}) - Esc exits. G/O/T/Y/C toggle draw modes; arrows rotate; H/V flip; F11 fullscreen.", version, glsl);
 
 var sprites = new SpriteBatch(gl);
-var texture = new Texture2D(gl, "grid-noise", new Vector2(SmallTextureSize, SmallTextureSize))
+var texture = new Texture2D(gl, "grid-noise", new Vec2u(SmallTextureSize, SmallTextureSize))
 {
     PixelsMipmap = Noise.Generate(SmallTextureSize),
     MinFilter = GlTextureMinFilter.LinearMipmapLinear,
     MagFilter = GlTextureMagFilter.Linear
 };
-var bigTexture = new Texture2D(gl, "large-noise", new Vector2(BigTextureSize, BigTextureSize))
+var bigTexture = new Texture2D(gl, "large-noise", new Vec2u(BigTextureSize, BigTextureSize))
 {
     PixelsMipmap = Noise.Generate(BigTextureSize),
     MinFilter = GlTextureMinFilter.LinearMipmapLinear,
@@ -67,7 +67,7 @@ void RenderFrame(int framebufferWidth, int framebufferHeight)
         return;
 
     glfw.GetWindowSize(window, out var windowWidth, out var windowHeight);
-    var canvasSize = new Vector2(framebufferWidth, framebufferHeight);
+    var canvasSize = new Vec2(framebufferWidth, framebufferHeight);
     var mousePosition = MousePosition(framebufferWidth, framebufferHeight, windowWidth, windowHeight);
 
     gl.Viewport(0, 0, framebufferWidth, framebufferHeight);
@@ -88,7 +88,7 @@ void RenderFrame(int framebufferWidth, int framebufferHeight)
 }
 
 // Draws the grid, large transformed texture, overlay, and guide lines.
-void DrawSprites(Vector2 canvasSize, Vector2 mousePosition)
+void DrawSprites(Vec2 canvasSize, Vec2 mousePosition)
 {
     var grid = (float)GridCells;
     var unit = canvasSize / grid;
@@ -97,9 +97,9 @@ void DrawSprites(Vector2 canvasSize, Vector2 mousePosition)
     if (enableGrid)
         DrawGrid(canvasSize, mousePosition, unit, grid);
 
-    var bigBox = new Vector2(canvasSize.Y * 0.5f, canvasSize.Y * 0.5f);
-    var sourcePosition = Vector2.Zero;
-    var sourceSize = bigTexture.Size;
+    var bigBox = new Vec2(canvasSize.Y * 0.5f, canvasSize.Y * 0.5f);
+    var sourcePosition = Vec2.Zero;
+    Vec2 sourceSize = bigTexture.Size;
 
     if (textureOffset)
     {
@@ -116,25 +116,25 @@ void DrawSprites(Vector2 canvasSize, Vector2 mousePosition)
         bigBox,
         sourcePosition,
         sourceSize,
-        new Vector4(1f, 1f, 1f, 0.25f),
+        new Vec4(1f, 1f, 1f, 0.25f),
         rotation,
         flip);
 
     if (enableOverlay)
-        sprites.Writer.Draw(texture, Vector2.Zero, canvasSize, new Vector4(1f, 1f, 1f, 0.1f));
+        sprites.Writer.Draw(texture, Vec2.Zero, canvasSize, new Vec4(1f, 1f, 1f, 0.1f));
 
-    sprites.Writer.DrawLine(Vector2.Zero, mousePosition);
-    sprites.Writer.DrawLine(canvasSize * 0.5f, mousePosition, 20f, new Vector4(1f, 0f, 0f, 1f));
+    sprites.Writer.DrawLine(Vec2.Zero, mousePosition);
+    sprites.Writer.DrawLine(canvasSize * 0.5f, mousePosition, 20f, new Vec4(1f, 0f, 0f, 1f));
 }
 
 // Draws the coloured cell grid that makes clipping, alpha, batching, and texture reuse visible.
-void DrawGrid(Vector2 canvasSize, Vector2 mousePosition, Vector2 unit, float grid)
+void DrawGrid(Vec2 canvasSize, Vec2 mousePosition, Vec2 unit, float grid)
 {
     for (var y = 0; y < GridCells; y++)
     {
         for (var x = 0; x < GridCells; x++)
         {
-            var start = new Vector2(x, y) * unit;
+            var start = new Vec2(x, y) * unit;
             var end = start + unit;
             var brightness = 1f;
 
@@ -143,7 +143,7 @@ void DrawGrid(Vector2 canvasSize, Vector2 mousePosition, Vector2 unit, float gri
             if (mousePosition.Y >= start.Y && mousePosition.Y <= end.Y)
                 brightness -= 0.25f;
 
-            sprites.Writer.Draw(texture, start, unit, new Vector4(y / grid, x / grid, brightness, 1f));
+            sprites.Writer.Draw(texture, start, unit, new Vec4(y / grid, x / grid, brightness, 1f));
         }
     }
 }
@@ -207,12 +207,12 @@ void ToggleFullscreen()
 }
 
 // Converts GLFW content-area cursor coordinates into framebuffer pixels for high-DPI windows.
-Vector2 MousePosition(int framebufferWidth, int framebufferHeight, int windowWidth, int windowHeight)
+Vec2 MousePosition(int framebufferWidth, int framebufferHeight, int windowWidth, int windowHeight)
 {
     glfw.GetCursorPos(window, out var mouseX, out var mouseY);
     var scaleX = windowWidth <= 0 ? 1f : framebufferWidth / (float)windowWidth;
     var scaleY = windowHeight <= 0 ? 1f : framebufferHeight / (float)windowHeight;
-    return new Vector2((float)mouseX * scaleX, (float)mouseY * scaleY);
+    return new Vec2((float)mouseX * scaleX, (float)mouseY * scaleY);
 }
 
 // Rotates texture coordinates one quarter-turn counter-clockwise.

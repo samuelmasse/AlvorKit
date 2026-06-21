@@ -3,19 +3,23 @@ namespace AlvorKit.Windowing;
 /// <summary>Stores deterministic window state owned by an agent-mode GLFW host.</summary>
 internal sealed class AgentWindowState
 {
-    private readonly Vector2 monitorSize = new(1920, 1080);
+    private readonly Vec2u monitorSize = new(1920u, 1080u);
     private readonly float monitorScale = 1f;
-    private Vector2 clientSize;
+    private Vec2u clientSize;
 
-    /// <summary>Gets or sets the simulated client size, clamped to at least one pixel per axis.</summary>
-    internal Vector2 ClientSize
+    /// <summary>Gets or sets the simulated client size.</summary>
+    internal Vec2u ClientSize
     {
         get => clientSize;
-        set => clientSize = new(Math.Max(1, value.X), Math.Max(1, value.Y));
+        set
+        {
+            ValidateClientSize(value);
+            clientSize = value;
+        }
     }
 
     /// <summary>Gets the simulated monitor size.</summary>
-    internal Vector2 MonitorSize => monitorSize;
+    internal Vec2u MonitorSize => monitorSize;
 
     /// <summary>Gets the simulated monitor scale.</summary>
     internal float MonitorScale => monitorScale;
@@ -33,7 +37,7 @@ internal sealed class AgentWindowState
     internal bool IsVisible { get; set; }
 
     /// <summary>Gets or sets the simulated mouse position.</summary>
-    internal Vector2 MousePosition { get; set; }
+    internal Vec2 MousePosition { get; set; }
 
     /// <summary>Gets or sets the simulated window state.</summary>
     internal WindowState WindowState { get; set; }
@@ -66,7 +70,7 @@ internal sealed class AgentWindowState
     internal int RunCount { get; set; }
 
     /// <summary>Initializes state from the native window values observed when the host was created.</summary>
-    internal void Initialize(Vector2 initialClientSize, string initialTitle, bool initialIsVisible, bool initialIsVSyncEnabled)
+    internal void Initialize(Vec2u initialClientSize, string initialTitle, bool initialIsVisible, bool initialIsVSyncEnabled)
     {
         ClientSize = initialClientSize;
         Title = initialTitle;
@@ -120,5 +124,15 @@ internal sealed class AgentWindowState
     {
         if (!double.IsFinite(deltaSeconds) || deltaSeconds < 0)
             throw new ArgumentOutOfRangeException(nameof(deltaSeconds), "Frame delta must be a finite non-negative value.");
+    }
+
+    /// <summary>Rejects drawable client sizes that cannot produce a usable framebuffer.</summary>
+    private static void ValidateClientSize(Vec2u size)
+    {
+        if (size.X == 0 || size.Y == 0)
+            throw new ArgumentOutOfRangeException(nameof(size), "Client size must be positive on both axes.");
+
+        if (size.X > int.MaxValue || size.Y > int.MaxValue)
+            throw new ArgumentOutOfRangeException(nameof(size), "Client size must fit the native signed 32-bit window API.");
     }
 }

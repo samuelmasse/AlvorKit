@@ -39,8 +39,8 @@ void RunDemoLoop(WindowLoop loop, WindowCanvas canvas, GlLayer gl)
     var controls = new Controls(loop);
     var screen = new WindowScreen(loop);
     var index = MaxColorStep / 2;
-    var lastCanvasSize = Vector2.Zero;
-    var lastMousePosition = Vector2.Zero;
+    var lastCanvasSize = Vec2u.Zero;
+    var lastMousePosition = Vec2.Zero;
     var lastFullscreen = false;
     var lastVSync = true;
     var frameTime = 0d;
@@ -103,7 +103,7 @@ void RunDemoLoop(WindowLoop loop, WindowCanvas canvas, GlLayer gl)
     {
         var step = Math.Abs(index % MaxColorStep) / (float)MaxColorStep;
         var pulse = Math.Clamp((float)frameTime * 60f, 0f, 1f);
-        gl.Viewport(0, 0, Math.Max(1, (int)canvas.Size.X), Math.Max(1, (int)canvas.Size.Y));
+        gl.Viewport(0, 0, checked((int)canvas.Size.X), checked((int)canvas.Size.Y));
         gl.ClearColor(0.05f + pulse * 0.05f, step, 0.12f, 1f);
         gl.Clear(GlClearBufferMask.ColorBufferBit);
         gl.ResetClearColor();

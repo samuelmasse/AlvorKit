@@ -41,7 +41,7 @@ public class SpriteBatch : IDisposable
     {
         gl.GetIntegerv(GlGetPName.MaxTextureImageUnits, out var textureSlots);
 
-        texture = new Texture2D(gl, new Vector2(1f, 1f)) { Pixels = [(0xFF, 0xFF, 0xFF, 0xFF)] };
+        texture = new Texture2D(gl, new Vec2u(1u, 1u)) { Pixels = [(0xFF, 0xFF, 0xFF, 0xFF)] };
         canvas = new SpriteBatchCanvas();
         vertices = new SpriteBatchVertices(textureSlots);
         writer = new SpriteBatchWriter(texture, canvas, vertices);
@@ -64,7 +64,7 @@ public class SpriteBatch : IDisposable
     }
 
     /// <summary>Begins collecting draw calls for a canvas with the supplied pixel size.</summary>
-    public void Begin(Vector2 size)
+    public void Begin(Vec2 size)
     {
         if (started)
             throw new InvalidOperationException("Cannot begin sprite batch when it is already started.");

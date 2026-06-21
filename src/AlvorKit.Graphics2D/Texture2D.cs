@@ -4,16 +4,16 @@ namespace AlvorKit.Graphics2D;
 public class Texture2D : Texture
 {
     /// <summary>Creates an unlabeled texture using <see cref="GlTextureTarget.Texture2D"/>.</summary>
-    public Texture2D(GlLayer gl, Vector2 size) : base(gl, null, size, GlTextureTarget.Texture2D) { }
+    public Texture2D(GlLayer gl, Vec2u size) : base(gl, null, size, GlTextureTarget.Texture2D) { }
 
     /// <summary>Creates an unlabeled texture using the supplied two-dimensional target.</summary>
-    public Texture2D(GlLayer gl, Vector2 size, GlTextureTarget target) : base(gl, null, size, target) { }
+    public Texture2D(GlLayer gl, Vec2u size, GlTextureTarget target) : base(gl, null, size, target) { }
 
     /// <summary>Creates a labeled texture using <see cref="GlTextureTarget.Texture2D"/>.</summary>
-    public Texture2D(GlLayer gl, string? label, Vector2 size) : base(gl, label, size, GlTextureTarget.Texture2D) { }
+    public Texture2D(GlLayer gl, string? label, Vec2u size) : base(gl, label, size, GlTextureTarget.Texture2D) { }
 
     /// <summary>Creates a labeled texture using the supplied two-dimensional target.</summary>
-    public Texture2D(GlLayer gl, string? label, Vector2 size, GlTextureTarget target) : base(gl, label, size, target) { }
+    public Texture2D(GlLayer gl, string? label, Vec2u size, GlTextureTarget target) : base(gl, label, size, target) { }
 
     /// <summary>Uploads RGBA byte pixels into texture level zero.</summary>
     public ReadOnlySpan<(byte Red, byte Green, byte Blue, byte Alpha)> Pixels { set => TexImage2D(value); }
@@ -37,8 +37,8 @@ public class Texture2D : Texture
     {
         const int bytesPerPixel = 4;
 
-        var width = (int)size.X;
-        var height = (int)size.Y;
+        var width = checked((int)size.X);
+        var height = checked((int)size.Y);
         var pixelBytes = MemoryMarshal.AsBytes(pixels);
         var expectedBytes = (long)width * height * bytesPerPixel;
         if (pixelBytes.Length != expectedBytes)

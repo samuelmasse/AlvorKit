@@ -11,7 +11,7 @@ public class AgentGlfwWindowHostTest
 
         Assert.IsInstanceOfType<GlfwWindowHost>(host);
         Assert.IsTrue(host.IsAgentMode);
-        Assert.AreEqual(new Vector2(321, 234), host.ClientSize);
+        Assert.AreEqual(new Vec2u(321u, 234u), host.ClientSize);
         Assert.AreEqual("Game host", host.Title);
         Assert.IsTrue(host.IsVisible);
         Assert.IsFalse(host.IsVSyncEnabled);
@@ -24,7 +24,7 @@ public class AgentGlfwWindowHostTest
         using var host = CreateAgent(new(64, 48));
 
         host.IsVisible = true;
-        host.ClientSize = new(-4, 0);
+        host.ClientSize = new(32, 24);
         host.MousePosition = new(7, 8);
         host.WindowState = WindowState.Fullscreen;
         host.CursorMode = WindowCursorMode.Hidden;
@@ -36,10 +36,10 @@ public class AgentGlfwWindowHostTest
         Assert.IsTrue(host.IsVisible);
         Assert.IsTrue(host.IsFocused);
         Assert.IsTrue(host.IsFullscreen);
-        Assert.AreEqual(new Vector2(1, 1), host.ClientSize);
-        Assert.AreEqual(new Vector2(1920, 1080), host.MonitorSize);
+        Assert.AreEqual(new Vec2u(32u, 24u), host.ClientSize);
+        Assert.AreEqual(new Vec2u(1920u, 1080u), host.MonitorSize);
         Assert.AreEqual(1, host.MonitorScale);
-        Assert.AreEqual(new Vector2(7, 8), host.MousePosition);
+        Assert.AreEqual(new Vec2(7, 8), host.MousePosition);
         Assert.AreEqual(WindowCursorMode.Hidden, host.CursorMode);
         Assert.IsFalse(host.IsVSyncEnabled);
         Assert.AreEqual("Outer", host.Title);
@@ -64,7 +64,7 @@ public class AgentGlfwWindowHostTest
 
         Assert.AreEqual(1, host.RunCount);
         Assert.AreEqual(2, host.UpdateCount);
-        Assert.AreEqual(new Vector2(6, 8), host.MousePosition);
+        Assert.AreEqual(new Vec2(6, 8), host.MousePosition);
         var text = output.ToString();
         StringAssert.Contains(text, "Usage:");
         StringAssert.Contains(text, "updates=2");
@@ -82,7 +82,7 @@ public class AgentGlfwWindowHostTest
         var gl = CreateGl();
         var saved = 0;
         GlLayer? savedGl = null;
-        var savedSize = Vector2.Zero;
+        var savedSize = Vec2u.Zero;
         var savedPath = string.Empty;
         using var host = CreateAgent(
             new(64, 48),
@@ -102,19 +102,19 @@ public class AgentGlfwWindowHostTest
         Assert.AreEqual(1, host.RenderCount);
         Assert.AreEqual(1, saved);
         Assert.AreSame(gl, savedGl);
-        Assert.AreEqual(new Vector2(64, 48), savedSize);
+        Assert.AreEqual(new Vec2u(64u, 48u), savedSize);
         Assert.AreEqual("out\\frame.png", savedPath);
     }
 
     private static AgentGlfwWindowHost CreateAgent(
-        Vector2 clientSize,
+        Vec2u clientSize,
         string title = "AlvorKit.Windowing",
         bool isVisible = false,
         bool isVSyncEnabled = true,
         GlLayer? gl = null,
         TextReader? agentInput = null,
         TextWriter? agentOutput = null,
-        Action<GlLayer, Vector2, string>? screenshotSave = null) =>
+        Action<GlLayer, Vec2u, string>? screenshotSave = null) =>
         new(gl ?? CreateGl(), clientSize, title, isVisible, isVSyncEnabled, agentInput, agentOutput, screenshotSave);
 
     private static GlLayer CreateGl() => new(new GlNoop());

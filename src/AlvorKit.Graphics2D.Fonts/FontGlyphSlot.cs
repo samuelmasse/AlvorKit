@@ -4,7 +4,7 @@ namespace AlvorKit.Graphics2D.Fonts;
 /// <param name="glyph">The glyph metrics for this slot.</param>
 /// <param name="texture">The atlas texture that stores the bitmap.</param>
 /// <param name="position">The top-left atlas pixel coordinate of the glyph bitmap.</param>
-public class FontGlyphSlot(FontGlyph glyph, Texture texture, Vector2 position)
+public class FontGlyphSlot(FontGlyph glyph, Texture texture, Vec2u position)
 {
     /// <summary>Gets the glyph metrics for this slot.</summary>
     public FontGlyph Glyph => glyph;
@@ -13,5 +13,5 @@ public class FontGlyphSlot(FontGlyph glyph, Texture texture, Vector2 position)
     public Texture Texture { get; internal set; } = texture;
 
     /// <summary>Gets the top-left atlas pixel coordinate of the glyph bitmap.</summary>
-    public Vector2 Position { get; internal set; } = position;
+    public Vec2u Position { get; internal set; } = position;
 }

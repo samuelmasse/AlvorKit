@@ -4,7 +4,7 @@ namespace AlvorKit.OpenGL.Demo.AzureTentacle;
 internal sealed partial class AnimatedGlbMesh
 {
     /// <summary>Reads position, texture coordinate, joint, and weight accessors into one interleaved float array.</summary>
-    private static float[] ReadVertices(GlbDocument document, JsonElement primitive, out Vector3 boundsMin, out Vector3 boundsMax)
+    private static float[] ReadVertices(GlbDocument document, JsonElement primitive, out Vec3 boundsMin, out Vec3 boundsMax)
     {
         var attributes = GlbDocument.RequiredProperty(primitive, "attributes");
         var positionAccessor = GlbDocument.RequiredProperty(attributes, "POSITION").GetInt32();
@@ -14,8 +14,8 @@ internal sealed partial class AnimatedGlbMesh
         var vertexCount = document.Accessor(positionAccessor).GetProperty("count").GetInt32();
         var vertices = new float[vertexCount * 13];
 
-        boundsMin = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
-        boundsMax = new Vector3(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
+        boundsMin = new Vec3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+        boundsMax = new Vec3(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
 
         for (var vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++)
         {
@@ -39,8 +39,8 @@ internal sealed partial class AnimatedGlbMesh
             vertices[offset + 11] = weights.Z;
             vertices[offset + 12] = weights.W;
 
-            boundsMin = Vector3.Min(boundsMin, position);
-            boundsMax = Vector3.Max(boundsMax, position);
+            boundsMin = Vec3.Min(boundsMin, position);
+            boundsMax = Vec3.Max(boundsMax, position);
         }
 
         return vertices;

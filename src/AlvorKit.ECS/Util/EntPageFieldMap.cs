@@ -33,7 +33,7 @@ internal class EntPageFieldMap
         {
             if (pageIndex >= fields.Length)
             {
-                int newSize = (int)BitOperations.RoundUpToPowerOf2((uint)pageIndex + 1);
+                int newSize = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)pageIndex + 1);
                 Array.Resize(ref fields, newSize);
             }
 

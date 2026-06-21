@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Maths\AlvorKit.Maths.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="System.Numerics" />
+        <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.Graphics2D" />
         <Using Include="AlvorKit.OpenGL.Layer" />

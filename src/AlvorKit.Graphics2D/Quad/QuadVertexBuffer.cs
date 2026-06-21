@@ -25,7 +25,7 @@ internal class QuadVertexBuffer<T>(GlLayer gl, int vertexSize) : IDisposable
 
         if (capacity <= data.Length)
         {
-            var newCapacity = (int)BitOperations.RoundUpToPowerOf2((uint)data.Length + 1u);
+            var newCapacity = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)data.Length + 1u);
             gl.BufferData(GlBufferTarget.ArrayBuffer, newCapacity * vertexSize, 0, GlBufferUsage.DynamicDraw);
             capacity = newCapacity;
         }

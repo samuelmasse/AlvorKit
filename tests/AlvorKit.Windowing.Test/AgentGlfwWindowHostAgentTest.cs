@@ -63,8 +63,8 @@ public class AgentGlfwWindowHostAgentTest
         mouse.Track = true;
         host.Agent.Advance(2, 0.016, new(2, 3));
 
-        Assert.AreEqual(new Vector2(4, 6), mouse.Position);
-        Assert.AreEqual(new Vector2(2, 3), mouse.Delta);
+        Assert.AreEqual(new Vec2(4, 6), mouse.Position);
+        Assert.AreEqual(new Vec2(2, 3), mouse.Delta);
     }
 
     /// <summary>Verifies that press transitions advance per update even when no render is requested.</summary>
@@ -120,7 +120,7 @@ public class AgentGlfwWindowHostAgentTest
         using var host = CreateAgent(new(3, 4), "agent", false, false);
 
         host.IsVisible = true;
-        host.ClientSize = new(-1, 0);
+        host.ClientSize = new(5, 7);
         host.MousePosition = new(5, 6);
         host.WindowState = WindowState.Fullscreen;
         host.CursorMode = WindowCursorMode.Disabled;
@@ -132,10 +132,10 @@ public class AgentGlfwWindowHostAgentTest
         Assert.IsTrue(host.IsVisible);
         Assert.IsTrue(host.IsFocused);
         Assert.IsTrue(host.IsFullscreen);
-        Assert.AreEqual(new Vector2(1, 1), host.ClientSize);
-        Assert.AreEqual(new Vector2(1920, 1080), host.MonitorSize);
+        Assert.AreEqual(new Vec2u(5u, 7u), host.ClientSize);
+        Assert.AreEqual(new Vec2u(1920u, 1080u), host.MonitorSize);
         Assert.AreEqual(1, host.MonitorScale);
-        Assert.AreEqual(new Vector2(5, 6), host.MousePosition);
+        Assert.AreEqual(new Vec2(5, 6), host.MousePosition);
         Assert.AreEqual(WindowCursorMode.Disabled, host.CursorMode);
         Assert.IsTrue(host.IsVSyncEnabled);
         Assert.AreEqual("renamed", host.Title);
@@ -151,9 +151,9 @@ public class AgentGlfwWindowHostAgentTest
         var mouseDowns = 0;
         var mouseUps = 0;
         var textInputs = 0;
-        var resized = Vector2.Zero;
-        var moved = Vector2.Zero;
-        var wheel = Vector2.Zero;
+        var resized = Vec2u.Zero;
+        var moved = Vec2i.Zero;
+        var wheel = Vec2.Zero;
         host.KeyDown += (e) => keyRepeats += e.IsRepeat ? 1 : 0;
         host.KeyUp += (_) => keyUps++;
         host.MouseDown += (_) => mouseDowns++;
@@ -178,11 +178,11 @@ public class AgentGlfwWindowHostAgentTest
         Assert.AreEqual(1, keyUps);
         Assert.AreEqual(1, mouseDowns);
         Assert.AreEqual(1, mouseUps);
-        Assert.AreEqual(new Vector2(1, -1), wheel);
+        Assert.AreEqual(new Vec2(1, -1), wheel);
         Assert.AreEqual(3, textInputs);
         Assert.IsFalse(host.IsFocused);
-        Assert.AreEqual(new Vector2(7, 8), resized);
-        Assert.AreEqual(new Vector2(9, 10), moved);
+        Assert.AreEqual(new Vec2u(7u, 8u), resized);
+        Assert.AreEqual(new Vec2i(9, 10), moved);
     }
 
     /// <summary>Verifies validation and native-free GL lookup fallback paths.</summary>
@@ -194,6 +194,8 @@ public class AgentGlfwWindowHostAgentTest
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.Update(-1));
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.Render(double.NaN));
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.Advance(-1, 0));
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.ClientSize = new Vec2u(0u, 1u));
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.ResizeWindow(new Vec2u(1u, 0u)));
         Assert.AreEqual(3, host.GetProcAddress("abc"));
     }
 
@@ -216,7 +218,7 @@ public class AgentGlfwWindowHostAgentTest
     }
 
     private static AgentGlfwWindowHost CreateAgent(
-        Vector2? clientSize = null,
+        Vec2u? clientSize = null,
         string title = "AlvorKit.Windowing",
         bool isVisible = false,
         bool isVSyncEnabled = true) =>

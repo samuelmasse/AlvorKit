@@ -63,10 +63,10 @@ public sealed class FontSpriteBatchExtensionsTest
         {
             using var font = new Font(context, "Inter.ttf");
             var fontSize = font.Size(12);
-            var color = new Vector4(0.1f, 0.2f, 0.3f, 0.4f);
+            var color = new Vec4(0.1f, 0.2f, 0.3f, 0.4f);
 
-            batch.Begin(new Vector2(100f, 100f));
-            batch.Writer.Write(fontSize, "A", new Vector2(20f, 30f), color);
+            batch.Begin(new Vec2(100f, 100f));
+            batch.Writer.Write(fontSize, "A", new Vec2(20f, 30f), color);
             batch.End();
 
             Assert.AreEqual(1, backend.DrawElementsCalls);
@@ -98,17 +98,17 @@ public sealed class FontSpriteBatchExtensionsTest
             using var font = new Font(context, "Inter.ttf");
             var fontSize = font.Size(12);
             var text = "AB";
-            var color = new Vector4(1f, 0f, 0f, 1f);
+            var color = new Vec4(1f, 0f, 0f, 1f);
 
-            batch.Begin(new Vector2(100f, 100f));
-            batch.Writer.Write(fontSize, text, Vector2.Zero);
-            batch.Writer.Write(fontSize, text, Vector2.Zero, color);
-            batch.Writer.Write(fontSize, text, Vector2.Zero, color, 2f);
-            batch.Writer.Write(fontSize, text, Vector2.Zero, color, 2f, 1f);
-            batch.Writer.Write(fontSize, text.AsSpan(), Vector2.Zero);
-            batch.Writer.Write(fontSize, text.AsSpan(), Vector2.Zero, color);
-            batch.Writer.Write(fontSize, text.AsSpan(), Vector2.Zero, color, 2f);
-            batch.Writer.Write(fontSize, text.AsSpan(), Vector2.Zero, color, 2f, 1f);
+            batch.Begin(new Vec2(100f, 100f));
+            batch.Writer.Write(fontSize, text, Vec2.Zero);
+            batch.Writer.Write(fontSize, text, Vec2.Zero, color);
+            batch.Writer.Write(fontSize, text, Vec2.Zero, color, 2f);
+            batch.Writer.Write(fontSize, text, Vec2.Zero, color, 2f, 1f);
+            batch.Writer.Write(fontSize, text.AsSpan(), Vec2.Zero);
+            batch.Writer.Write(fontSize, text.AsSpan(), Vec2.Zero, color);
+            batch.Writer.Write(fontSize, text.AsSpan(), Vec2.Zero, color, 2f);
+            batch.Writer.Write(fontSize, text.AsSpan(), Vec2.Zero, color, 2f, 1f);
             batch.End();
         }
         finally

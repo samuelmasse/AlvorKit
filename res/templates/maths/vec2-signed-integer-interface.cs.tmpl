@@ -8,13 +8,14 @@ namespace AlvorKit.Maths;
 /// <typeparam name="TMask">The two-component Boolean mask type returned by comparisons, such as <see cref="Vec2b" />.</typeparam>
 /// <typeparam name="TCount">The two-component signed integer vector type returned by bit-count methods, such as <see cref="Vec2i" />.</typeparam>
 /// <typeparam name="TLength">The length and distance type, such as <see cref="float" /> or <see cref="double" />.</typeparam>
-public interface IVec2SignedInteger<TSelf, TScalar, TMask, TCount, TLength> :
+/// <typeparam name="TArithmetic">The two-component vector type returned by component-wise arithmetic.</typeparam>
+public interface IVec2SignedInteger<TSelf, TScalar, TMask, TCount, TLength, TArithmetic> :
     IVec2<TSelf, TScalar>,
-    IVecSignedNumeric<TSelf, TScalar, TMask, TLength>,
-    IVecInteger<TSelf, TScalar, TMask, TCount, TLength>,
+    IVecSignedNumeric<TSelf, TScalar, TMask, TLength, TArithmetic>,
+    IVecInteger<TSelf, TScalar, TMask, TCount, TLength, TArithmetic>,
     IVec2Axes<TSelf>,
     IVec2Planar<TSelf, TScalar>
-    where TSelf : struct, IVec2SignedInteger<TSelf, TScalar, TMask, TCount, TLength>
+    where TSelf : struct, IVec2SignedInteger<TSelf, TScalar, TMask, TCount, TLength, TArithmetic>
     where TMask : struct, IVec2Mask<TMask>
     where TCount : struct, IVec2<TCount, int>
 {

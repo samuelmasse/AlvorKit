@@ -14,10 +14,12 @@
 
     <ItemGroup>
         <ProjectReference Include="..\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
+        <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
         <ProjectReference Include="..\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.FreeType" />
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.Graphics2D" />

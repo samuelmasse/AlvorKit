@@ -5,10 +5,10 @@ internal sealed class WindowMousePosition
 {
     private readonly IWindowHost window;
     private readonly WindowPhysical physical;
-    private Vector2 position;
-    private Vector2 delta;
-    private Vector2 lastWindowSize;
-    private Vector2 lastPosition;
+    private Vec2 position;
+    private Vec2 delta;
+    private Vec2u lastWindowSize;
+    private Vec2 lastPosition;
     private int skips;
     private bool track;
 
@@ -22,7 +22,7 @@ internal sealed class WindowMousePosition
     }
 
     /// <summary>Gets or sets the cursor position in window coordinates.</summary>
-    internal Vector2 Position
+    internal Vec2 Position
     {
         get => position;
         set
@@ -34,7 +34,7 @@ internal sealed class WindowMousePosition
     }
 
     /// <summary>Gets the tracked cursor delta.</summary>
-    internal Vector2 Delta => delta;
+    internal Vec2 Delta => delta;
 
     /// <summary>Gets or sets whether delta tracking is active.</summary>
     internal ref bool Track => ref track;
@@ -54,7 +54,7 @@ internal sealed class WindowMousePosition
         {
             delta = skips == 0 ? dp : default;
 
-            if (skips > 0 && dp != Vector2.Zero)
+            if (skips > 0 && dp != Vec2.Zero)
                 skips--;
         }
         else

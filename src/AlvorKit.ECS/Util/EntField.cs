@@ -23,7 +23,7 @@ internal class EntField<T, N> : EntField
     internal override void ResetPage(int pageIndex) => EntStorage<T, N>.Sparse[pageIndex] = null;
     internal override void ExpandCapacity()
     {
-        int size = (int)BitOperations.RoundUpToPowerOf2((uint)EntReg.NextPage);
+        int size = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)EntReg.NextPage);
         ref var sparse = ref EntStorage<T, N>.Sparse;
 
         if (sparse.Length < size)

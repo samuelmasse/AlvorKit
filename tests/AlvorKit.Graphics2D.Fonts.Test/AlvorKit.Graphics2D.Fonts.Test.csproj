@@ -1,16 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Maths\AlvorKit.Maths.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.FreeType" />
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.Graphics2D" />
         <Using Include="AlvorKit.Graphics2D.Fonts" />
         <Using Include="AlvorKit.OpenGL.Layer" />
-        <Using Include="System.Numerics" />
     </ItemGroup>
 
 </Project>

@@ -9,11 +9,11 @@ public sealed class TextureTest
     public void Constructor_SetsProperties()
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
-        using var texture = new Texture(gl, "diffuse", new Vector2(12f, 24f), GlTextureTarget.Texture2D);
+        using var texture = new Texture(gl, "diffuse", new Vec2u(12u, 24u), GlTextureTarget.Texture2D);
 
         Assert.AreNotEqual(default, texture.Id);
         Assert.AreEqual("diffuse", texture.Label);
-        Assert.AreEqual(new Vector2(12f, 24f), texture.Size);
+        Assert.AreEqual(new Vec2u(12u, 24u), texture.Size);
         Assert.AreEqual(GlTextureTarget.Texture2D, texture.Target);
     }
 
@@ -22,7 +22,7 @@ public sealed class TextureTest
     public void Dispose_WhenUnbound_DeletesTexture()
     {
         var (backend, gl) = Graphics2DTestHarness.CreateLayer();
-        var texture = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
+        var texture = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
         var id = (uint)texture.Id;
 
         texture.Dispose();
@@ -35,7 +35,7 @@ public sealed class TextureTest
     public void Unbind_WhenNotBound_Throws()
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
-        using var texture = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
+        using var texture = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
 
         Assert.Throws<GlNotBoundException>(() => texture.Unbind(GlTextureUnit.Texture0));
     }
@@ -45,7 +45,7 @@ public sealed class TextureTest
     public void Bind_WhenAlreadyBound_Throws()
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
-        var texture = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
+        var texture = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
 
         texture.Bind(GlTextureUnit.Texture0);
 
@@ -57,7 +57,7 @@ public sealed class TextureTest
     public void BindAndUnbind_Succeeds()
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
-        using var texture = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
+        using var texture = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
 
         texture.Bind(GlTextureUnit.Texture0);
         texture.Unbind(GlTextureUnit.Texture0);
@@ -68,7 +68,7 @@ public sealed class TextureTest
     public void SetPixels_MultipleTimes_UploadsBothSpans()
     {
         var (backend, gl) = Graphics2DTestHarness.CreateLayer();
-        using var texture = new Texture2D(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
+        using var texture = new Texture2D(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
         (byte, byte, byte, byte)[] first = [(1, 2, 3, 4)];
         (byte, byte, byte, byte)[] second = [(5, 6, 7, 8)];
 
@@ -83,7 +83,7 @@ public sealed class TextureTest
     public void TexImage2D_WithExactByteCount_UploadsPixels()
     {
         var (backend, gl) = Graphics2DTestHarness.CreateLayer();
-        using var texture = new Texture2D(gl, new Vector2(2f, 1f), GlTextureTarget.Texture2D);
+        using var texture = new Texture2D(gl, new Vec2u(2u, 1u), GlTextureTarget.Texture2D);
         byte[] pixels = [1, 2, 3, 4, 5, 6, 7, 8];
 
         texture.TexImage2D(pixels);
@@ -96,7 +96,7 @@ public sealed class TextureTest
     public void SetPixels_WithWrongByteCount_ThrowsBeforeUpload()
     {
         var (backend, gl) = Graphics2DTestHarness.CreateLayer();
-        using var texture = new Texture2D(gl, new Vector2(2f, 1f), GlTextureTarget.Texture2D);
+        using var texture = new Texture2D(gl, new Vec2u(2u, 1u), GlTextureTarget.Texture2D);
         (byte, byte, byte, byte)[] pixels = [(1, 2, 3, 4)];
 
         var exception = Assert.ThrowsException<ArgumentException>(() =>
@@ -113,7 +113,7 @@ public sealed class TextureTest
     public void SetPixelsMipmap_UploadsAndGeneratesMipmap()
     {
         var (backend, gl) = Graphics2DTestHarness.CreateLayer();
-        using var texture = new Texture2D(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
+        using var texture = new Texture2D(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
         (byte, byte, byte, byte)[] pixels = [(0xFF, 0xFF, 0xFF, 0xFF)];
 
         texture.PixelsMipmap = pixels;
@@ -127,7 +127,7 @@ public sealed class TextureTest
     public void FilterAndWrapProperties_SetTextureParameters()
     {
         var (backend, gl) = Graphics2DTestHarness.CreateLayer();
-        using var texture = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D)
+        using var texture = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D)
         {
             MinFilter = GlTextureMinFilter.LinearMipmapLinear,
             MagFilter = GlTextureMagFilter.Linear,
@@ -143,12 +143,12 @@ public sealed class TextureTest
     public void Texture2D_LabelConstructors_SetProperties()
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
-        using var defaultTarget = new Texture2D(gl, "default", new Vector2(2f, 2f));
-        using var explicitTarget = new Texture2D(gl, "explicit", new Vector2(3f, 3f), GlTextureTarget.Texture2D);
+        using var defaultTarget = new Texture2D(gl, "default", new Vec2u(2u, 2u));
+        using var explicitTarget = new Texture2D(gl, "explicit", new Vec2u(3u, 3u), GlTextureTarget.Texture2D);
 
         Assert.AreEqual("default", defaultTarget.Label);
         Assert.AreEqual(GlTextureTarget.Texture2D, defaultTarget.Target);
         Assert.AreEqual("explicit", explicitTarget.Label);
-        Assert.AreEqual(new Vector2(3f, 3f), explicitTarget.Size);
+        Assert.AreEqual(new Vec2u(3u, 3u), explicitTarget.Size);
     }
 }

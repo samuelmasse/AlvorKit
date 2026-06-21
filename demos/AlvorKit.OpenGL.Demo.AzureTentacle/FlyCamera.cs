@@ -1,7 +1,7 @@
 namespace AlvorKit.OpenGL.Demo.AzureTentacle;
 
 /// <summary>Tracks a Minecraft-style free camera for inspecting the static GLB model.</summary>
-public sealed class FlyCamera(Vector3 initialPosition, float initialYaw, float initialPitch)
+public sealed class FlyCamera(Vec3 initialPosition, float initialYaw, float initialPitch)
 {
     /// <summary>The normal movement speed in world units per second.</summary>
     private const float MoveSpeed = 2.4f;
@@ -16,7 +16,7 @@ public sealed class FlyCamera(Vector3 initialPosition, float initialYaw, float i
     private const float MaxPitch = (MathF.PI * 0.5f) - 0.02f;
 
     /// <summary>The current camera position in world space.</summary>
-    private Vector3 position = initialPosition;
+    private Vec3 position = initialPosition;
 
     /// <summary>The current camera yaw angle in radians.</summary>
     private float yaw = initialYaw;
@@ -54,22 +54,22 @@ public sealed class FlyCamera(Vector3 initialPosition, float initialYaw, float i
     {
         var forward = Forward();
         var right = Right();
-        var up = Vector3.Cross(right, forward);
+        var up = Vec3.Cross(right, forward);
         var back = -forward;
 
         matrix.Clear();
         matrix[MatrixIndex(0, 0)] = right.X;
         matrix[MatrixIndex(0, 1)] = right.Y;
         matrix[MatrixIndex(0, 2)] = right.Z;
-        matrix[MatrixIndex(0, 3)] = -Vector3.Dot(right, position);
+        matrix[MatrixIndex(0, 3)] = -Vec3.Dot(right, position);
         matrix[MatrixIndex(1, 0)] = up.X;
         matrix[MatrixIndex(1, 1)] = up.Y;
         matrix[MatrixIndex(1, 2)] = up.Z;
-        matrix[MatrixIndex(1, 3)] = -Vector3.Dot(up, position);
+        matrix[MatrixIndex(1, 3)] = -Vec3.Dot(up, position);
         matrix[MatrixIndex(2, 0)] = back.X;
         matrix[MatrixIndex(2, 1)] = back.Y;
         matrix[MatrixIndex(2, 2)] = back.Z;
-        matrix[MatrixIndex(2, 3)] = -Vector3.Dot(back, position);
+        matrix[MatrixIndex(2, 3)] = -Vec3.Dot(back, position);
         matrix[MatrixIndex(3, 3)] = 1f;
     }
 
@@ -99,39 +99,39 @@ public sealed class FlyCamera(Vector3 initialPosition, float initialYaw, float i
         var movement =
             forward * (Axis(glfw, window, GlfwKey.W) - Axis(glfw, window, GlfwKey.S)) +
             right * (Axis(glfw, window, GlfwKey.D) - Axis(glfw, window, GlfwKey.A)) +
-            Vector3.UnitY * (Axis(glfw, window, GlfwKey.Space) - ControlAxis(glfw, window));
+            Vec3.UnitY * (Axis(glfw, window, GlfwKey.Space) - ControlAxis(glfw, window));
 
-        if (movement.LengthSquared() <= 0f)
+        if (movement.LengthSquared <= 0f)
             return;
 
         var speed = ShiftAxis(glfw, window) > 0f ? FastMoveSpeed : MoveSpeed;
-        position += Vector3.Normalize(movement) * speed * MathF.Max(0f, elapsedSeconds);
+        position += Vec3.Normalize(movement) * speed * MathF.Max(0f, elapsedSeconds);
     }
 
     /// <summary>Gets the camera's full forward vector, including pitch.</summary>
-    private Vector3 Forward()
+    private Vec3 Forward()
     {
         var yawSin = MathF.Sin(yaw);
         var yawCos = MathF.Cos(yaw);
         var pitchSin = MathF.Sin(pitch);
         var pitchCos = MathF.Cos(pitch);
-        return Vector3.Normalize(new Vector3(yawSin * pitchCos, pitchSin, -yawCos * pitchCos));
+        return Vec3.Normalize(new Vec3(yawSin * pitchCos, pitchSin, -yawCos * pitchCos));
     }
 
     /// <summary>Gets the camera's horizontal forward vector for Minecraft-style walking.</summary>
-    private Vector3 ForwardOnGround()
+    private Vec3 ForwardOnGround()
     {
         var yawSin = MathF.Sin(yaw);
         var yawCos = MathF.Cos(yaw);
-        return Vector3.Normalize(new Vector3(yawSin, 0f, -yawCos));
+        return Vec3.Normalize(new Vec3(yawSin, 0f, -yawCos));
     }
 
     /// <summary>Gets the camera's horizontal right vector for strafing.</summary>
-    private Vector3 Right()
+    private Vec3 Right()
     {
         var yawSin = MathF.Sin(yaw);
         var yawCos = MathF.Cos(yaw);
-        return Vector3.Normalize(new Vector3(yawCos, 0f, yawSin));
+        return Vec3.Normalize(new Vec3(yawCos, 0f, yawSin));
     }
 
     /// <summary>Returns one when the supplied key is currently held.</summary>

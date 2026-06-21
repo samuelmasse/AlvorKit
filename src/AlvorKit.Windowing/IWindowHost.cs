@@ -52,16 +52,16 @@ public interface IWindowHost : IDisposable
     bool IsVisible { get; set; }
 
     /// <summary>Gets or sets the drawable client size.</summary>
-    Vector2 ClientSize { get; set; }
+    Vec2u ClientSize { get; set; }
 
     /// <summary>Gets the primary monitor work-area size.</summary>
-    Vector2 MonitorSize { get; }
+    Vec2u MonitorSize { get; }
 
     /// <summary>Gets the primary monitor horizontal content scale.</summary>
     float MonitorScale { get; }
 
     /// <summary>Gets or sets the current cursor position in window coordinates.</summary>
-    Vector2 MousePosition { get; set; }
+    Vec2 MousePosition { get; set; }
 
     /// <summary>Gets or sets the high-level window state.</summary>
     WindowState WindowState { get; set; }

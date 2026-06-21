@@ -6,4 +6,4 @@ namespace AlvorKit.Graphics2D.Fonts;
 /// <param name="Box">The bitmap size in pixels.</param>
 /// <param name="Bearing">The glyph bearing relative to the pen baseline.</param>
 /// <param name="Advance">The horizontal pen advance in pixels.</param>
-public sealed record FontGlyph(Rune Char, int Size, Vector2 Box, Vector2 Bearing, float Advance);
+public sealed record FontGlyph(Rune Char, int Size, Vec2u Box, Vec2i Bearing, float Advance);

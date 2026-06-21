@@ -5,11 +5,11 @@ public partial class SpriteBatchWriter
     /// <summary>Generates vertices for one sprite, applying clipping, rotation, and flips.</summary>
     private void DrawVertices(
         Texture texture,
-        Vector2 position,
-        Vector2 size,
-        Vector4 color,
-        Vector2 subPosition,
-        Vector2 subSize,
+        Vec2 position,
+        Vec2 size,
+        Vec4 color,
+        Vec2 subPosition,
+        Vec2 subSize,
         SpriteBatchRotation rotation,
         SpriteBatchFlip flip)
     {
@@ -21,8 +21,8 @@ public partial class SpriteBatchWriter
 
         if (clip.HasValue)
         {
-            var clippedMin = Vector2.Max(unclipped.Min, clip.Value.Min);
-            var clippedMax = Vector2.Min(unclipped.Max, clip.Value.Max);
+            var clippedMin = Vec2.Max(unclipped.Min, clip.Value.Min);
+            var clippedMax = Vec2.Min(unclipped.Max, clip.Value.Max);
 
             if (clippedMin.X >= clippedMax.X || clippedMin.Y >= clippedMax.Y)
                 return;
@@ -45,11 +45,11 @@ public partial class SpriteBatchWriter
         var top = normPosition.Y;
         var bottom = top - normSize.Y;
 
-        DrawQuad(new Vector2(left, top), new Vector2(right, top), new Vector2(left, bottom), new Vector2(right, bottom), texture, color, texCoords);
+        DrawQuad(new Vec2(left, top), new Vec2(right, top), new Vec2(left, bottom), new Vec2(right, bottom), texture, color, texCoords);
     }
 
     /// <summary>Emits four vertices for one normalized quad.</summary>
-    private void DrawQuad(Vector2 pos1, Vector2 pos2, Vector2 pos3, Vector2 pos4, Texture texture, Vector4 color, QuadCorners texCoords)
+    private void DrawQuad(Vec2 pos1, Vec2 pos2, Vec2 pos3, Vec2 pos4, Texture texture, Vec4 color, QuadCorners texCoords)
     {
         vertices.Add(texture, new SpriteBatchVertex(pos1, color, TexCoord(texture, texCoords.TopLeft)));
         vertices.Add(texture, new SpriteBatchVertex(pos2, color, TexCoord(texture, texCoords.TopRight)));
@@ -58,12 +58,12 @@ public partial class SpriteBatchWriter
     }
 
     /// <summary>Converts a texture-space pixel coordinate into a normalized sampler coordinate.</summary>
-    private static Vector2 TexCoord(Texture texture, Vector2 position) =>
+    private static Vec2 TexCoord(Texture texture, Vec2 position) =>
         new(position.X / texture.Size.X, 1f - (position.Y / texture.Size.Y));
 
     /// <summary>Normalizes a canvas pixel coordinate into clip space.</summary>
-    private Vector2 NormalizePosition(Vector2 position) => (position * new Vector2(1f, -1f) / (canvas.Size / 2f)) - new Vector2(1f, -1f);
+    private Vec2 NormalizePosition(Vec2 position) => (position * new Vec2(1f, -1f) / (canvas.Size / 2f)) - new Vec2(1f, -1f);
 
     /// <summary>Normalizes a canvas pixel size into clip-space dimensions.</summary>
-    private Vector2 NormalizeSize(Vector2 size) => size / (canvas.Size / 2f);
+    private Vec2 NormalizeSize(Vec2 size) => size / (canvas.Size / 2f);
 }

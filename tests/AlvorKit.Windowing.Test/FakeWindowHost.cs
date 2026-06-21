@@ -19,10 +19,10 @@ internal sealed class FakeWindowHost : IWindowHost
     public bool IsFocused { get; set; }
     public bool IsFullscreen { get; set; }
     public bool IsVisible { get; set; }
-    public Vector2 ClientSize { get; set; }
-    public Vector2 MonitorSize { get; set; } = new(1920, 1080);
+    public Vec2u ClientSize { get; set; }
+    public Vec2u MonitorSize { get; set; } = new(1920u, 1080u);
     public float MonitorScale { get; set; } = 1f;
-    public Vector2 MousePosition { get; set; }
+    public Vec2 MousePosition { get; set; }
     public WindowState WindowState { get; set; }
     public WindowCursorMode CursorMode { get; set; }
     public bool IsVSyncEnabled { get; set; }
@@ -58,17 +58,17 @@ internal sealed class FakeWindowHost : IWindowHost
 
     public void RaiseMouseUp(WindowMouseButton button) => MouseUp?.Invoke(new(button));
 
-    public void RaiseMouseWheel(Vector2 offset) => MouseWheel?.Invoke(new(offset));
+    public void RaiseMouseWheel(Vec2 offset) => MouseWheel?.Invoke(new(offset));
 
-    public void RaiseMouseMove(Vector2 position) => MouseMove?.Invoke(new(position));
+    public void RaiseMouseMove(Vec2 position) => MouseMove?.Invoke(new(position));
 
     public void RaiseKeyDown(WindowKey key, bool repeat = false) => KeyDown?.Invoke(new(key, repeat));
 
     public void RaiseKeyUp(WindowKey key) => KeyUp?.Invoke(new(key, false));
 
-    public void RaiseMove(Vector2 position) => Move?.Invoke(new(position));
+    public void RaiseMove(Vec2i position) => Move?.Invoke(new(position));
 
-    public void RaiseResize(Vector2 size) => Resize?.Invoke(new(size));
+    public void RaiseResize(Vec2u size) => Resize?.Invoke(new(size));
 
     public void RaiseText(Rune rune) => TextInput?.Invoke(new(rune));
 }

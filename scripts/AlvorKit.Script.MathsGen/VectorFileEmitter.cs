@@ -44,18 +44,27 @@ internal static class VectorFileEmitter
         var scalar = vector.Scalar.CSharpName;
         var mask = vector.BoolTypeName;
         var length = NumericFunctionsEmitter.LengthType(vector);
+        var arithmetic = ArithmeticType(vector);
         if (vector.Scalar.IsFloating)
             interfaces.Add($"IVec{vector.Dimension}Floating<{type}, {scalar}, {mask}>");
         else if (vector.Scalar.IsSigned)
-            interfaces.Add($"IVec{vector.Dimension}SignedInteger<{type}, {scalar}, {mask}, {vector.IntTypeName}, {length}>");
+            interfaces.Add($"IVec{vector.Dimension}SignedInteger<{type}, {scalar}, {mask}, {vector.IntTypeName}, {length}, {arithmetic}>");
         else
-            interfaces.Add($"IVec{vector.Dimension}UnsignedInteger<{type}, {scalar}, {mask}, {vector.IntTypeName}, {length}>");
+            interfaces.Add($"IVec{vector.Dimension}UnsignedInteger<{type}, {scalar}, {mask}, {vector.IntTypeName}, {length}, {arithmetic}>");
 
-        interfaces.Add($"IVecScalarArithmeticOperators<{type}, {scalar}>");
+        interfaces.Add($"IVecScalarArithmeticOperators<{type}, {scalar}, {arithmetic}>");
         if (vector.Scalar.IsInteger)
-            interfaces.Add($"IVecScalarIntegerOperators<{type}, {scalar}>");
+            interfaces.Add($"IVecScalarIntegerOperators<{type}, {scalar}, {arithmetic}>");
+
         if (vector.Scalar.Kind == ScalarKind.Float)
             interfaces.Add($"IVec{vector.Dimension}SystemNumerics<{type}>");
+    }
+
+    /// <summary>Returns the vector type produced by same-scalar arithmetic operators.</summary>
+    private static string ArithmeticType(VectorSpec vector)
+    {
+        var resultScalar = ScalarPromotion.BinaryNumericResult(vector.Scalar, vector.Scalar) ?? vector.Scalar;
+        return (vector with { Scalar = resultScalar }).TypeName;
     }
 
     /// <summary>Adds the mask family interface for one Boolean vector type.</summary>

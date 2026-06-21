@@ -12,7 +12,7 @@ public class MouseTest
         Assert.AreEqual(WindowMouseButton.Left, mouse.Main);
         Assert.AreEqual(WindowMouseButton.Right, mouse.Secondary);
         Assert.AreEqual(WindowCursorMode.Normal, mouse.CursorMode);
-        Assert.AreEqual(Vector2.Zero, mouse.Wheel);
+        Assert.AreEqual(Vec2.Zero, mouse.Wheel);
         Assert.IsFalse(mouse.IsMainDown());
         Assert.IsTrue(mouse.IsMainUp());
         Assert.IsFalse(mouse.IsMainPressed());
@@ -95,8 +95,8 @@ public class MouseTest
 
         host.RaiseMouseWheel(new(20, 20));
 
-        Assert.AreEqual(new Vector2(20, 20), mouse.Wheel);
+        Assert.AreEqual(new Vec2(20, 20), mouse.Wheel);
         mouse.Tick();
-        Assert.AreEqual(Vector2.Zero, mouse.Wheel);
+        Assert.AreEqual(Vec2.Zero, mouse.Wheel);
     }
 }

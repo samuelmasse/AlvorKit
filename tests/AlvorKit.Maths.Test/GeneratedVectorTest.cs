@@ -195,7 +195,7 @@ public sealed class GeneratedVectorTest
     public void GeneratedExpandedScalarFamilies_Work()
     {
         var half = new Vec3h((Half)1, (Half)2, (Half)3) + new Vec3h((Half)1);
-        var wrappedByte = new Vec3u8(250, 1, 2) + new Vec3u8(10, 2, 3);
+        var promotedByte = new Vec3u8(250, 1, 2) + new Vec3u8(10, 2, 3);
         var signedByte = -new Vec3i8(1, 2, 3);
         var unsigned16 = new Vec3u16(1, 2, 3) << 2;
         var shiftedByVector = new Vec3u16(8, 16, 32) >> new Vec3i(0, 1, 2);
@@ -203,7 +203,7 @@ public sealed class GeneratedVectorTest
         var big = new Vec3u128((UInt128)1, (UInt128)2, (UInt128)4);
 
         Assert.AreEqual(new Vec3h((Half)2, (Half)3, (Half)4), half);
-        Assert.AreEqual(new Vec3u8(4, 3, 5), wrappedByte);
+        Assert.AreEqual(new Vec3i(260, 3, 5), promotedByte);
         Assert.AreEqual(new Vec3i8(-1, -2, -3), signedByte);
         Assert.AreEqual(new Vec3u16(4, 8, 12), unsigned16);
         Assert.AreEqual(new Vec3u16(8, 8, 8), shiftedByVector);
@@ -231,21 +231,21 @@ public sealed class GeneratedVectorTest
             new Vec4h((Half)6, (Half)8, (Half)10, (Half)12),
             new Vec4h((Half)1, (Half)2, (Half)3, (Half)4) + new Vec4h((Half)5, (Half)6, (Half)7, (Half)8));
 
-        Assert.AreEqual(new Vec2i8(4, 6), new Vec2i8(1, 2) + new Vec2i8(3, 4));
-        Assert.AreEqual(new Vec3i8(5, 7, 9), new Vec3i8(1, 2, 3) + new Vec3i8(4, 5, 6));
-        Assert.AreEqual(new Vec4i8(6, 8, 10, 12), new Vec4i8(1, 2, 3, 4) + new Vec4i8(5, 6, 7, 8));
+        Assert.AreEqual(new Vec2i(4, 6), new Vec2i8(1, 2) + new Vec2i8(3, 4));
+        Assert.AreEqual(new Vec3i(5, 7, 9), new Vec3i8(1, 2, 3) + new Vec3i8(4, 5, 6));
+        Assert.AreEqual(new Vec4i(6, 8, 10, 12), new Vec4i8(1, 2, 3, 4) + new Vec4i8(5, 6, 7, 8));
 
-        Assert.AreEqual(new Vec2u8(4, 6), new Vec2u8(1, 2) + new Vec2u8(3, 4));
-        Assert.AreEqual(new Vec3u8(5, 7, 9), new Vec3u8(1, 2, 3) + new Vec3u8(4, 5, 6));
-        Assert.AreEqual(new Vec4u8(6, 8, 10, 12), new Vec4u8(1, 2, 3, 4) + new Vec4u8(5, 6, 7, 8));
+        Assert.AreEqual(new Vec2i(4, 6), new Vec2u8(1, 2) + new Vec2u8(3, 4));
+        Assert.AreEqual(new Vec3i(5, 7, 9), new Vec3u8(1, 2, 3) + new Vec3u8(4, 5, 6));
+        Assert.AreEqual(new Vec4i(6, 8, 10, 12), new Vec4u8(1, 2, 3, 4) + new Vec4u8(5, 6, 7, 8));
 
-        Assert.AreEqual(new Vec2i16(4, 6), new Vec2i16(1, 2) + new Vec2i16(3, 4));
-        Assert.AreEqual(new Vec3i16(5, 7, 9), new Vec3i16(1, 2, 3) + new Vec3i16(4, 5, 6));
-        Assert.AreEqual(new Vec4i16(6, 8, 10, 12), new Vec4i16(1, 2, 3, 4) + new Vec4i16(5, 6, 7, 8));
+        Assert.AreEqual(new Vec2i(4, 6), new Vec2i16(1, 2) + new Vec2i16(3, 4));
+        Assert.AreEqual(new Vec3i(5, 7, 9), new Vec3i16(1, 2, 3) + new Vec3i16(4, 5, 6));
+        Assert.AreEqual(new Vec4i(6, 8, 10, 12), new Vec4i16(1, 2, 3, 4) + new Vec4i16(5, 6, 7, 8));
 
-        Assert.AreEqual(new Vec2u16(4, 6), new Vec2u16(1, 2) + new Vec2u16(3, 4));
-        Assert.AreEqual(new Vec3u16(5, 7, 9), new Vec3u16(1, 2, 3) + new Vec3u16(4, 5, 6));
-        Assert.AreEqual(new Vec4u16(6, 8, 10, 12), new Vec4u16(1, 2, 3, 4) + new Vec4u16(5, 6, 7, 8));
+        Assert.AreEqual(new Vec2i(4, 6), new Vec2u16(1, 2) + new Vec2u16(3, 4));
+        Assert.AreEqual(new Vec3i(5, 7, 9), new Vec3u16(1, 2, 3) + new Vec3u16(4, 5, 6));
+        Assert.AreEqual(new Vec4i(6, 8, 10, 12), new Vec4u16(1, 2, 3, 4) + new Vec4u16(5, 6, 7, 8));
 
         Assert.AreEqual(new Vec2i(4, 6), new Vec2i(1, 2) + new Vec2i(3, 4));
         Assert.AreEqual(new Vec3i(5, 7, 9), new Vec3i(1, 2, 3) + new Vec3i(4, 5, 6));
@@ -282,6 +282,36 @@ public sealed class GeneratedVectorTest
         Assert.AreEqual(
             new Vec4u128((UInt128)6, (UInt128)8, (UInt128)10, (UInt128)12),
             new Vec4u128((UInt128)1, (UInt128)2, (UInt128)3, (UInt128)4) + new Vec4u128((UInt128)5, (UInt128)6, (UInt128)7, (UInt128)8));
+    }
+
+    /// <summary>Generated numeric vectors follow C# scalar promotion rules for cross-scalar arithmetic.</summary>
+    [TestMethod]
+    public void GeneratedPromotedArithmeticOperators_FollowScalarPromotion()
+    {
+        Assert.AreEqual(new Vec2i64(11L, 21L), new Vec2u(10u, 20u) + 1);
+        Assert.AreEqual(new Vec2i64(9L, 18L), new Vec2u(10u, 20u) - new Vec2i(1, 2));
+        Assert.AreEqual(new Vec2(5f, 10f), new Vec2u(10u, 20u) * 0.5f);
+        Assert.AreEqual(new Vec2(6f, 3f), 12f / new Vec2u(2u, 4u));
+        Assert.AreEqual(new Vec3(2.5f, 3.5f, 4.5f), new Vec3u(1u, 2u, 3u) + 1.5f);
+        Assert.AreEqual(new Vec3(8f, 6f, 4f), 9f - new Vec3u(1u, 3u, 5u));
+        Assert.AreEqual(new Vec3(-1.5f, 3f, -4.5f), new Vec3i(-1, 2, -3) * 1.5f);
+        Assert.AreEqual(new Vec3d(0.5d, 1.5d, 2.5d), new Vec3(1f, 2f, 3f) - 0.5d);
+        Assert.AreEqual(new Vec3d(5d, 10d, 15d), new Vec3u(10u, 20u, 30u) / 2d);
+        Assert.AreEqual(new Vec4d(0.5d, 1d, 1.5d, 2d), new Vec4(1f, 2f, 3f, 4f) * 0.5d);
+        Assert.AreEqual(new Vec4d(8d, 4d, 2d, 1d), 8d / new Vec4(1f, 2f, 4f, 8f));
+        Assert.AreEqual(new Vec2i(2, 3), new Vec2u8(4, 6) / (byte)2);
+    }
+
+    /// <summary>Generated numeric vector comparisons follow C# scalar promotion rules for mixed scalar families.</summary>
+    [TestMethod]
+    public void GeneratedPromotedRelationalOperators_FollowScalarPromotion()
+    {
+        Assert.AreEqual(new Vec2b(true, false), new Vec2u(10u, 20u) < 15);
+        Assert.AreEqual(new Vec2b(false, true), 12f < new Vec2u(10u, 20u));
+        Assert.AreEqual(new Vec2b(false, true), new Vec2u8(1, 250) < new Vec2i(-1, 300));
+        Assert.AreEqual(new Vec3b(true, false, true), Vec3u.GreaterThanOrEqual(12, new Vec3u(10u, 20u, 5u)));
+        Assert.AreEqual(new Vec3b(true, false, true), Vec3u8.Equal(new Vec3u8(1, 2, 3), new Vec3i(1, 3, 3)));
+        Assert.AreEqual(new Vec3b(true, true, false), Vec3h.LessThan(new Vec3h((Half)1, (Half)2, (Half)3), (byte)3));
     }
 
     /// <summary>Generated Boolean vector masks are present for every size even though masks intentionally do not support addition.</summary>
@@ -325,27 +355,29 @@ public sealed class GeneratedVectorTest
         Assert.AreEqual(new Vec3b(true, false, true), EqualMask<Vec3, Vec3b>(components, new Vec3(1f, 0f, 3f)));
         Assert.IsTrue(EqualBaseVector<Vec3, float>(components, components));
         Assert.AreEqual(new Vec3i(0, 1, 2), Modulo<Vec3i, int>(new Vec3i(3, 4, 5), 3));
-        Assert.AreEqual(new Vec3i(2, 4, 8), ShiftSelf<Vec3i, int, Vec3b, Vec3i, float>(new Vec3i(1, 1, 1), new Vec3i(1, 2, 3)));
-        Assert.AreEqual(new Vec3u(2u, 4u, 8u), ShiftCount<Vec3u, Vec3i>(new Vec3u(1u, 1u, 1u), new Vec3i(1, 2, 3)));
+        Assert.AreEqual(new Vec3i(2, 4, 8), ShiftCount<Vec3i, Vec3i, Vec3i>(new Vec3i(1, 1, 1), new Vec3i(1, 2, 3)));
+        Assert.AreEqual(new Vec3u(2u, 4u, 8u), ShiftCount<Vec3u, Vec3i, Vec3u>(new Vec3u(1u, 1u, 1u), new Vec3i(1, 2, 3)));
         Assert.AreEqual(
             new Vec3i(int.MaxValue, 2147483646, 1073741822),
-            UnsignedShiftSelf<Vec3i, int, Vec3b, Vec3i, float>(new Vec3i(-2, -4, -8), new Vec3i(1, 1, 2)));
-        Assert.AreEqual(new Vec3u(4u, 4u, 4u), UnsignedShiftCount<Vec3u, Vec3i>(new Vec3u(8u, 16u, 32u), new Vec3i(1, 2, 3)));
+            UnsignedShiftCount<Vec3i, Vec3i, Vec3i>(new Vec3i(-2, -4, -8), new Vec3i(1, 1, 2)));
+        Assert.AreEqual(new Vec3u(4u, 4u, 4u), UnsignedShiftCount<Vec3u, Vec3i, Vec3u>(new Vec3u(8u, 16u, 32u), new Vec3i(1, 2, 3)));
         Assert.AreEqual(new Vec3i(0b1000, 0b1010, 0b0010), BitwiseAnd<Vec3i, int>(new Vec3i(0b1100, 0b1010, 0b0110), 0b1010));
         Assert.AreEqual(new Vec3b(false, true, false), BitwiseComplementMask(mask));
         Assert.IsTrue(EqualVector(new Vec3b(true, false, true), mask));
-        Assert.AreEqual(Vec3.Zero, Zero<Vec3, float, Vec3b, float>());
-        Assert.AreEqual(new Vec3(3f), AddNumeric<Vec3, float, Vec3b, float>(scalar, Vec3.One));
-        Assert.AreEqual(new Vec3(3f), AddScalarLeft<Vec3, float>(1f, scalar));
-        Assert.AreEqual(new Vec3(1f, 4f, 9f), ClampNumeric<Vec3, float, Vec3b, float>(new Vec3(-1f, 4f, 12f), Vec3.One, new Vec3(9f)));
-        Assert.AreEqual(new Vec3(1f, 4f, 9f), ClampScalar<Vec3, float>(new Vec3(-1f, 4f, 12f), 1f, 9f));
+        Assert.AreEqual(Vec3.Zero, Zero<Vec3, float, Vec3b, float, Vec3>());
+        Assert.AreEqual(new Vec3(3f), AddNumeric<Vec3, float, Vec3b, float, Vec3>(scalar, Vec3.One));
+        Assert.AreEqual(new Vec3(3f), AddScalarLeft<Vec3, float, Vec3>(1f, scalar));
+        Assert.AreEqual(
+            new Vec3(1f, 4f, 9f),
+            ClampNumeric<Vec3, float, Vec3b, float, Vec3>(new Vec3(-1f, 4f, 12f), Vec3.One, new Vec3(9f)));
+        Assert.AreEqual(new Vec3(1f, 4f, 9f), ClampScalar<Vec3, float, Vec3>(new Vec3(-1f, 4f, 12f), 1f, 9f));
         Assert.AreEqual(91f, DotMetric<Vec3, float, float>(components, components));
         Assert.AreEqual(91f, LengthSquaredMetric<Vec3, float, float>(components));
         Assert.AreEqual(new Vec3(0f, -3f, 9f), CrossGeneric<Vec3, float>(Vec3.UnitX, components));
         Assert.AreEqual(1f, PerpDotPlanar<Vec2, float>(Vec2.UnitX, Vec2.UnitY));
-        Assert.AreEqual(new Vec3i(1, 2, 3), AbsSigned<Vec3i, int, Vec3b, float>(new Vec3i(-1, -2, -3)));
-        Assert.AreEqual(new Vec3i(2, 0, 1), BitCountGeneric<Vec3u, uint, Vec3b, Vec3i, float>(new Vec3u(3u, 0u, 8u)));
-        Assert.AreEqual(new Vec3u(1u, 0u, 2u), BitwiseScalarLeft<Vec3u, uint>(3u, new Vec3u(5u, 8u, 6u)));
+        Assert.AreEqual(new Vec3i(1, 2, 3), AbsSigned<Vec3i, int, Vec3b, float, Vec3i>(new Vec3i(-1, -2, -3)));
+        Assert.AreEqual(new Vec3i(2, 0, 1), BitCountGeneric<Vec3u, uint, Vec3b, Vec3i, float, Vec3u>(new Vec3u(3u, 0u, 8u)));
+        Assert.AreEqual(new Vec3u(1u, 0u, 2u), BitwiseScalarLeft<Vec3u, uint, Vec3u>(3u, new Vec3u(5u, 8u, 6u)));
         Assert.AreEqual(new Vec3(2f, 2f, 3f), FloorFloating<Vec3, float, Vec3b>(new Vec3(2.75f, 2.25f, 3.5f)));
         Assert.AreEqual(new Vec3(2f, 1f, 0f), ModScalarFloating<Vec3, float>(new Vec3(5f, 4f, 3f), 3f));
         Assert.AreEqual(new Vec3(4f, 9f, 16f), PowScalarFloating<Vec3, float>(new Vec3(2f, 3f, 4f), 2f));
@@ -479,25 +511,13 @@ public sealed class GeneratedVectorTest
         where TVector : IModulusOperators<TVector, TValue, TVector> =>
         left % right;
 
-    private static TVector ShiftSelf<TVector, TScalar, TMask, TCount, TLength>(TVector left, TVector right)
-        where TVector : struct, IVecInteger<TVector, TScalar, TMask, TCount, TLength>
-        where TMask : struct, IVecMask<TMask>
+    private static TResult ShiftCount<TVector, TCount, TResult>(TVector left, TCount right)
+        where TVector : struct, IVecIntegerCountShiftOperators<TVector, TCount, TResult>
         where TCount : struct, IVec<TCount, int> =>
         left << right;
 
-    private static TVector ShiftCount<TVector, TCount>(TVector left, TCount right)
-        where TVector : struct, IVecIntegerCountShiftOperators<TVector, TCount>
-        where TCount : struct, IVec<TCount, int> =>
-        left << right;
-
-    private static TVector UnsignedShiftSelf<TVector, TScalar, TMask, TCount, TLength>(TVector left, TVector right)
-        where TVector : struct, IVecInteger<TVector, TScalar, TMask, TCount, TLength>
-        where TMask : struct, IVecMask<TMask>
-        where TCount : struct, IVec<TCount, int> =>
-        left >>> right;
-
-    private static TVector UnsignedShiftCount<TVector, TCount>(TVector left, TCount right)
-        where TVector : struct, IVecIntegerCountShiftOperators<TVector, TCount>
+    private static TResult UnsignedShiftCount<TVector, TCount, TResult>(TVector left, TCount right)
+        where TVector : struct, IVecIntegerCountShiftOperators<TVector, TCount, TResult>
         where TCount : struct, IVec<TCount, int> =>
         left >>> right;
 
@@ -513,26 +533,26 @@ public sealed class GeneratedVectorTest
         where TVector : IEqualityOperators<TVector, TVector, bool> =>
         left == right;
 
-    private static TVector Zero<TVector, TScalar, TMask, TLength>()
-        where TVector : struct, IVecNumeric<TVector, TScalar, TMask, TLength>
+    private static TVector Zero<TVector, TScalar, TMask, TLength, TArithmetic>()
+        where TVector : struct, IVecNumeric<TVector, TScalar, TMask, TLength, TArithmetic>
         where TMask : struct, IVecMask<TMask> =>
         TVector.Zero;
 
-    private static TVector AddNumeric<TVector, TScalar, TMask, TLength>(TVector left, TVector right)
-        where TVector : struct, IVecNumeric<TVector, TScalar, TMask, TLength>
+    private static TArithmetic AddNumeric<TVector, TScalar, TMask, TLength, TArithmetic>(TVector left, TVector right)
+        where TVector : struct, IVecNumeric<TVector, TScalar, TMask, TLength, TArithmetic>
         where TMask : struct, IVecMask<TMask> =>
         left + right;
 
-    private static TVector AddScalarLeft<TVector, TScalar>(TScalar left, TVector right)
-        where TVector : struct, IVecScalarArithmeticOperators<TVector, TScalar> =>
+    private static TResult AddScalarLeft<TVector, TScalar, TResult>(TScalar left, TVector right)
+        where TVector : struct, IVecScalarArithmeticOperators<TVector, TScalar, TResult> =>
         left + right;
 
-    private static TVector ClampScalar<TVector, TScalar>(TVector value, TScalar min, TScalar max)
-        where TVector : struct, IVecScalarArithmeticOperators<TVector, TScalar> =>
+    private static TVector ClampScalar<TVector, TScalar, TResult>(TVector value, TScalar min, TScalar max)
+        where TVector : struct, IVecScalarArithmeticOperators<TVector, TScalar, TResult> =>
         TVector.Clamp(value, min, max);
 
-    private static TVector ClampNumeric<TVector, TScalar, TMask, TLength>(TVector value, TVector min, TVector max)
-        where TVector : struct, IVecNumeric<TVector, TScalar, TMask, TLength>
+    private static TVector ClampNumeric<TVector, TScalar, TMask, TLength, TArithmetic>(TVector value, TVector min, TVector max)
+        where TVector : struct, IVecNumeric<TVector, TScalar, TMask, TLength, TArithmetic>
         where TMask : struct, IVecMask<TMask> =>
         TVector.Clamp(value, min, max);
 
@@ -552,19 +572,19 @@ public sealed class GeneratedVectorTest
         where TVector : struct, IVec2Planar<TVector, TScalar> =>
         TVector.PerpDot(left, right);
 
-    private static TVector AbsSigned<TVector, TScalar, TMask, TLength>(TVector value)
-        where TVector : struct, IVecSignedNumeric<TVector, TScalar, TMask, TLength>
+    private static TVector AbsSigned<TVector, TScalar, TMask, TLength, TArithmetic>(TVector value)
+        where TVector : struct, IVecSignedNumeric<TVector, TScalar, TMask, TLength, TArithmetic>
         where TMask : struct, IVecMask<TMask> =>
         TVector.Abs(value);
 
-    private static TCount BitCountGeneric<TVector, TScalar, TMask, TCount, TLength>(TVector value)
-        where TVector : struct, IVecInteger<TVector, TScalar, TMask, TCount, TLength>
+    private static TCount BitCountGeneric<TVector, TScalar, TMask, TCount, TLength, TArithmetic>(TVector value)
+        where TVector : struct, IVecInteger<TVector, TScalar, TMask, TCount, TLength, TArithmetic>
         where TMask : struct, IVecMask<TMask>
         where TCount : struct, IVec<TCount, int> =>
         TVector.BitCount(value);
 
-    private static TVector BitwiseScalarLeft<TVector, TScalar>(TScalar left, TVector right)
-        where TVector : struct, IVecScalarIntegerOperators<TVector, TScalar> =>
+    private static TResult BitwiseScalarLeft<TVector, TScalar, TResult>(TScalar left, TVector right)
+        where TVector : struct, IVecScalarIntegerOperators<TVector, TScalar, TResult> =>
         left & right;
 
     private static TVector FloorFloating<TVector, TScalar, TMask>(TVector value)

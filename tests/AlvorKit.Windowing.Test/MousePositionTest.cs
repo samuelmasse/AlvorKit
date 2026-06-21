@@ -9,8 +9,8 @@ public class MousePositionTest
         var (_, loop) = WindowingTestFactory.Create();
         var mouse = new Mouse(loop);
 
-        Assert.AreEqual(Vector2.Zero, mouse.Position);
-        Assert.AreEqual(Vector2.Zero, mouse.Delta);
+        Assert.AreEqual(Vec2.Zero, mouse.Position);
+        Assert.AreEqual(Vec2.Zero, mouse.Delta);
         Assert.IsFalse(mouse.Track);
     }
 
@@ -22,7 +22,7 @@ public class MousePositionTest
 
         host.RaiseMouseMove(new(40, 40));
 
-        Assert.AreEqual(new Vector2(40, 40), mouse.Position);
+        Assert.AreEqual(new Vec2(40, 40), mouse.Position);
     }
 
     [TestMethod]
@@ -34,8 +34,8 @@ public class MousePositionTest
             Position = new(50, 50)
         };
 
-        Assert.AreEqual(new Vector2(50, 50), mouse.Position);
-        Assert.AreEqual(new Vector2(50, 50), host.MousePosition);
+        Assert.AreEqual(new Vec2(50, 50), mouse.Position);
+        Assert.AreEqual(new Vec2(50, 50), host.MousePosition);
     }
 
     [TestMethod]
@@ -55,7 +55,7 @@ public class MousePositionTest
         mouse.Position = new(500, 500);
         host.RaiseUpdate();
 
-        Assert.AreEqual(Vector2.Zero, mouse.Delta);
+        Assert.AreEqual(Vec2.Zero, mouse.Delta);
     }
 
     [TestMethod]
@@ -75,19 +75,19 @@ public class MousePositionTest
         host.RaiseMouseMove(new(100, 100));
         host.RaiseUpdate();
 
-        Assert.AreEqual(new Vector2(75, 75), mouse.Delta);
+        Assert.AreEqual(new Vec2(75, 75), mouse.Delta);
 
         host.RaiseResize(new(200, 200));
         host.RaiseMouseMove(new(235, 235));
         host.RaiseUpdate();
 
-        Assert.AreEqual(Vector2.Zero, mouse.Delta);
+        Assert.AreEqual(Vec2.Zero, mouse.Delta);
 
         host.RaiseMouseMove(new(74, 74));
         host.RaiseUpdate();
         host.RaiseMouseMove(new(30, 30));
         host.RaiseUpdate();
 
-        Assert.AreEqual(new Vector2(-44, -44), mouse.Delta);
+        Assert.AreEqual(new Vec2(-44, -44), mouse.Delta);
     }
 }

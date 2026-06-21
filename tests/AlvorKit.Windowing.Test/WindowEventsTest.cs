@@ -8,6 +8,6 @@ public class WindowEventsTest
     {
         var e = new WindowPositionEvent(new(12, 34));
 
-        Assert.AreEqual(new Vector2(12, 34), e.Position);
+        Assert.AreEqual(new Vec2i(12, 34), e.Position);
     }
 }

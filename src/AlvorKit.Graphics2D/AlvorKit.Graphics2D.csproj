@@ -5,10 +5,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
         <ProjectReference Include="..\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.OpenGL.Layer" />
         <InternalsVisibleTo Include="AlvorKit.Graphics2D.Test" />

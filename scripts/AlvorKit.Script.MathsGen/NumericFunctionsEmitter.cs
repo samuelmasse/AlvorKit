@@ -38,7 +38,7 @@ internal static class NumericFunctionsEmitter
             EmitPlanarHelpers(vector, members);
 
         members.Append(Method("Returns the squared distance between two points.", "static", vector.Scalar.CSharpName, "DistanceSquared",
-            $"{vector.TypeName} left, {vector.TypeName} right", "(left - right).LengthSquared"));
+            $"{vector.TypeName} left, {vector.TypeName} right", vector.Scalar.CastArithmetic("(left - right).LengthSquared")));
         members.Append(Method("Returns the distance between two points.", "static", LengthType(vector), "Distance",
             $"{vector.TypeName} left, {vector.TypeName} right", "(left - right).Length"));
     }

@@ -24,24 +24,28 @@ public partial class GlfwWindowHost
     }
 
     /// <inheritdoc />
-    public virtual Vector2 ClientSize
+    public virtual Vec2u ClientSize
     {
         get
         {
             Glfw.GetFramebufferSize(Window, out var width, out var height);
-            return new(width, height);
+            return new(checked((uint)width), checked((uint)height));
         }
-        set => Glfw.SetWindowSize(Window, Math.Max(1, (int)value.X), Math.Max(1, (int)value.Y));
+        set
+        {
+            ValidateClientSize(value);
+            Glfw.SetWindowSize(Window, checked((int)value.X), checked((int)value.Y));
+        }
     }
 
     /// <inheritdoc />
-    public virtual Vector2 MonitorSize
+    public virtual Vec2u MonitorSize
     {
         get
         {
             var monitor = Glfw.GetPrimaryMonitor();
             Glfw.GetMonitorWorkarea(monitor, out _, out _, out var width, out var height);
-            return new(width, height);
+            return new(checked((uint)width), checked((uint)height));
         }
     }
 
@@ -57,7 +61,7 @@ public partial class GlfwWindowHost
     }
 
     /// <inheritdoc />
-    public virtual Vector2 MousePosition
+    public virtual Vec2 MousePosition
     {
         get
         {
@@ -126,4 +130,14 @@ public partial class GlfwWindowHost
 
     /// <summary>Returns an OpenGL procedure address from the current GLFW context.</summary>
     public virtual nint GetProcAddress(string procname) => Glfw.GetProcAddress(procname);
+
+    /// <summary>Rejects drawable client sizes that cannot produce a usable framebuffer.</summary>
+    internal static void ValidateClientSize(Vec2u size)
+    {
+        if (size.X == 0 || size.Y == 0)
+            throw new ArgumentOutOfRangeException(nameof(size), "Client size must be positive on both axes.");
+
+        if (size.X > int.MaxValue || size.Y > int.MaxValue)
+            throw new ArgumentOutOfRangeException(nameof(size), "Client size must fit the native signed 32-bit window API.");
+    }
 }

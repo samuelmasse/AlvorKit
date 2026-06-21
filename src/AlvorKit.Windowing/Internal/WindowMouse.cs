@@ -4,7 +4,7 @@ namespace AlvorKit.Windowing;
 internal sealed class WindowMouse
 {
     private readonly IWindowHost window;
-    private Vector2 wheel;
+    private Vec2 wheel;
     private bool[] down;
     private bool[] previous;
 
@@ -21,7 +21,7 @@ internal sealed class WindowMouse
     }
 
     /// <summary>Gets the mouse wheel offset for the current tick.</summary>
-    internal Vector2 Wheel => wheel;
+    internal Vec2 Wheel => wheel;
 
     /// <summary>Gets or sets the cursor capture and visibility mode.</summary>
     internal WindowCursorMode CursorMode

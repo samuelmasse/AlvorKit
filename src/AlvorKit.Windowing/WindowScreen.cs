@@ -43,13 +43,13 @@ public sealed class WindowScreen(WindowLoop window)
     }
 
     /// <summary>Sets the drawable client size.</summary>
-    public Vector2 Size
+    public Vec2u Size
     {
         set => window.Physical.Size = value;
     }
 
     /// <summary>Gets the primary monitor work-area size.</summary>
-    public Vector2 MonitorSize => window.Physical.MonitorSize;
+    public Vec2u MonitorSize => window.Physical.MonitorSize;
 
     /// <summary>Gets the primary monitor horizontal content scale.</summary>
     public float MonitorScale => window.Physical.MonitorScale;

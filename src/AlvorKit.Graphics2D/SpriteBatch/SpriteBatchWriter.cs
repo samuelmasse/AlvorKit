@@ -27,41 +27,41 @@ public partial class SpriteBatchWriter
     }
 
     /// <summary>Draws a solid quad with the default white texture.</summary>
-    public void Draw(Vector2 position, Vector2 size) =>
-        Draw(texture, position, size, Vector2.Zero, texture.Size, Vector4.One, SpriteBatchRotation.None, SpriteBatchFlip.None);
+    public void Draw(Vec2 position, Vec2 size) =>
+        Draw(texture, position, size, Vec2.Zero, texture.Size, Vec4.One, SpriteBatchRotation.None, SpriteBatchFlip.None);
 
     /// <summary>Draws a tinted quad with the default white texture.</summary>
-    public void Draw(Vector2 position, Vector2 size, Vector4 color) =>
-        Draw(texture, position, size, Vector2.Zero, texture.Size, color, SpriteBatchRotation.None, SpriteBatchFlip.None);
+    public void Draw(Vec2 position, Vec2 size, Vec4 color) =>
+        Draw(texture, position, size, Vec2.Zero, texture.Size, color, SpriteBatchRotation.None, SpriteBatchFlip.None);
 
     /// <summary>Draws a texture at its natural size.</summary>
-    public void Draw(Texture texture, Vector2 position) =>
-        Draw(texture, position, texture.Size, Vector2.Zero, texture.Size, Vector4.One, SpriteBatchRotation.None, SpriteBatchFlip.None);
+    public void Draw(Texture texture, Vec2 position) =>
+        Draw(texture, position, texture.Size, Vec2.Zero, texture.Size, Vec4.One, SpriteBatchRotation.None, SpriteBatchFlip.None);
 
     /// <summary>Draws a texture stretched to the supplied size.</summary>
-    public void Draw(Texture texture, Vector2 position, Vector2 size) =>
-        Draw(texture, position, size, Vector2.Zero, texture.Size, Vector4.One, SpriteBatchRotation.None, SpriteBatchFlip.None);
+    public void Draw(Texture texture, Vec2 position, Vec2 size) =>
+        Draw(texture, position, size, Vec2.Zero, texture.Size, Vec4.One, SpriteBatchRotation.None, SpriteBatchFlip.None);
 
     /// <summary>Draws a tinted texture stretched to the supplied size.</summary>
-    public void Draw(Texture texture, Vector2 position, Vector2 size, Vector4 color) =>
-        Draw(texture, position, size, Vector2.Zero, texture.Size, color, SpriteBatchRotation.None, SpriteBatchFlip.None);
+    public void Draw(Texture texture, Vec2 position, Vec2 size, Vec4 color) =>
+        Draw(texture, position, size, Vec2.Zero, texture.Size, color, SpriteBatchRotation.None, SpriteBatchFlip.None);
 
     /// <summary>Draws a subregion of a texture stretched to the supplied size.</summary>
-    public void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 subPosition, Vector2 subSize) =>
-        Draw(texture, position, size, subPosition, subSize, Vector4.One, SpriteBatchRotation.None, SpriteBatchFlip.None);
+    public void Draw(Texture texture, Vec2 position, Vec2 size, Vec2 subPosition, Vec2 subSize) =>
+        Draw(texture, position, size, subPosition, subSize, Vec4.One, SpriteBatchRotation.None, SpriteBatchFlip.None);
 
     /// <summary>Draws a tinted subregion of a texture stretched to the supplied size.</summary>
-    public void Draw(Texture texture, Vector2 position, Vector2 size, Vector2 subPosition, Vector2 subSize, Vector4 color) =>
+    public void Draw(Texture texture, Vec2 position, Vec2 size, Vec2 subPosition, Vec2 subSize, Vec4 color) =>
         Draw(texture, position, size, subPosition, subSize, color, SpriteBatchRotation.None, SpriteBatchFlip.None);
 
     /// <summary>Draws a tinted, rotated, and flipped texture subregion.</summary>
     public void Draw(
         Texture texture,
-        Vector2 position,
-        Vector2 size,
-        Vector2 subPosition,
-        Vector2 subSize,
-        Vector4 color,
+        Vec2 position,
+        Vec2 size,
+        Vec2 subPosition,
+        Vec2 subSize,
+        Vec4 color,
         SpriteBatchRotation rotation,
         SpriteBatchFlip flip) =>
         DrawVertices(texture, position, size, color, subPosition, subSize, rotation, flip);

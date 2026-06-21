@@ -5,7 +5,7 @@ internal sealed partial class FontAtlas
     /// <summary>Finds the next skyline slot for a glyph without mutating the atlas.</summary>
     private (int X, int Y) NextSlot(FontGlyph glyph)
     {
-        var width = (int)glyph.Box.X;
+        var width = checked((int)glyph.Box.X);
         var x = cursor;
 
         if (cursor + width > tablet.Size)
@@ -21,9 +21,9 @@ internal sealed partial class FontAtlas
     /// <summary>Marks the atlas skyline region consumed by a glyph.</summary>
     private void Advance(FontGlyph glyph, int x, int y)
     {
-        var width = (int)glyph.Box.X;
+        var width = checked((int)glyph.Box.X);
         for (var dx = 0; dx < width; dx++)
-            used[x + dx] = y + (int)glyph.Box.Y + 1;
+            used[x + dx] = y + checked((int)glyph.Box.Y) + 1;
 
         cursor = x + width + 1;
     }
@@ -31,8 +31,8 @@ internal sealed partial class FontAtlas
     /// <summary>Uploads a glyph bitmap into its final atlas position.</summary>
     private void Upload(FontGlyph glyph, ReadOnlySpan<(byte Red, byte Green, byte Blue, byte Alpha)> pixels, int x, int y)
     {
-        var width = (int)glyph.Box.X;
-        var height = (int)glyph.Box.Y;
+        var width = checked((int)glyph.Box.X);
+        var height = checked((int)glyph.Box.Y);
         if (width == 0 || height == 0)
             return;
 

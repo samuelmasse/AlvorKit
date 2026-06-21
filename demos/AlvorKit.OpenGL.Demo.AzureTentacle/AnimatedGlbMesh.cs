@@ -92,8 +92,8 @@ internal sealed partial class AnimatedGlbMesh
         float[] vertices,
         uint[] indices,
         byte[] textureBytes,
-        Vector3 boundsMin,
-        Vector3 boundsMax,
+        Vec3 boundsMin,
+        Vec3 boundsMax,
         NodePose[] bindPose,
         int[] nodeParents,
         int[] jointNodes,
@@ -131,10 +131,10 @@ internal sealed partial class AnimatedGlbMesh
     public byte[] TextureBytes { get; }
 
     /// <summary>Gets the minimum model-space position in the loaded mesh.</summary>
-    public Vector3 BoundsMin { get; }
+    public Vec3 BoundsMin { get; }
 
     /// <summary>Gets the maximum model-space position in the loaded mesh.</summary>
-    public Vector3 BoundsMax { get; }
+    public Vec3 BoundsMax { get; }
 
     /// <summary>Gets the selected animation clip name for display or diagnostics.</summary>
     public string AnimationName => GetAnimationName(selectedAnimationSlotIndex);
@@ -304,9 +304,9 @@ internal sealed partial class AnimatedGlbMesh
 
         return new NodePose
         {
-            Translation = ReadVector3Property(node, "translation", Vector3.Zero),
+            Translation = ReadVector3Property(node, "translation", Vec3.Zero),
             Rotation = ReadQuaternionProperty(node, "rotation", Quaternion.Identity),
-            Scale = ReadVector3Property(node, "scale", Vector3.One),
+            Scale = ReadVector3Property(node, "scale", Vec3.One),
         };
     }
 
@@ -431,38 +431,38 @@ internal sealed partial class AnimatedGlbMesh
     }
 
     /// <summary>Reads a three-float vector from a glTF accessor entry.</summary>
-    private static Vector3 ReadVec3(GlbDocument document, int accessorIndex, int elementIndex)
+    private static Vec3 ReadVec3(GlbDocument document, int accessorIndex, int elementIndex)
     {
         var accessor = document.Accessor(accessorIndex);
         ValidateAccessor(accessor, "VEC3", FloatComponentType, accessorIndex);
         var offset = document.AccessorElementOffset(accessor, elementIndex, 12);
-        return new Vector3(document.ReadSingle(offset), document.ReadSingle(offset + 4), document.ReadSingle(offset + 8));
+        return new Vec3(document.ReadSingle(offset), document.ReadSingle(offset + 4), document.ReadSingle(offset + 8));
     }
 
     /// <summary>Reads a two-float vector from a glTF accessor entry.</summary>
-    private static Vector2 ReadVec2(GlbDocument document, int accessorIndex, int elementIndex)
+    private static Vec2 ReadVec2(GlbDocument document, int accessorIndex, int elementIndex)
     {
         var accessor = document.Accessor(accessorIndex);
         ValidateAccessor(accessor, "VEC2", FloatComponentType, accessorIndex);
         var offset = document.AccessorElementOffset(accessor, elementIndex, 8);
-        return new Vector2(document.ReadSingle(offset), document.ReadSingle(offset + 4));
+        return new Vec2(document.ReadSingle(offset), document.ReadSingle(offset + 4));
     }
 
     /// <summary>Reads a four-float vector from a glTF accessor entry.</summary>
-    private static Vector4 ReadVec4(GlbDocument document, int accessorIndex, int elementIndex)
+    private static Vec4 ReadVec4(GlbDocument document, int accessorIndex, int elementIndex)
     {
         var accessor = document.Accessor(accessorIndex);
         ValidateAccessor(accessor, "VEC4", FloatComponentType, accessorIndex);
         var offset = document.AccessorElementOffset(accessor, elementIndex, 16);
-        return new Vector4(
+        return new Vec4(
             document.ReadSingle(offset),
             document.ReadSingle(offset + 4),
             document.ReadSingle(offset + 8),
             document.ReadSingle(offset + 12));
     }
 
-    /// <summary>Reads a four-component joint-index accessor and widens it to floats for the shader attribute.</summary>
-    private static Vector4 ReadJointVec4(GlbDocument document, int accessorIndex, int elementIndex)
+    /// <summary>Reads a four-component unsigned joint-index accessor.</summary>
+    private static Vec4u ReadJointVec4(GlbDocument document, int accessorIndex, int elementIndex)
     {
         var accessor = document.Accessor(accessorIndex);
         var componentType = GlbDocument.RequiredProperty(accessor, "componentType").GetInt32();
@@ -478,8 +478,8 @@ internal sealed partial class AnimatedGlbMesh
 
         var offset = document.AccessorElementOffset(accessor, elementIndex, componentSize * 4);
         return componentType == UnsignedByteComponentType
-            ? new Vector4(document.Binary[offset], document.Binary[offset + 1], document.Binary[offset + 2], document.Binary[offset + 3])
-            : new Vector4(
+            ? new Vec4u(document.Binary[offset], document.Binary[offset + 1], document.Binary[offset + 2], document.Binary[offset + 3])
+            : new Vec4u(
                 BinaryPrimitives.ReadUInt16LittleEndian(document.Binary.Slice(offset, 2)),
                 BinaryPrimitives.ReadUInt16LittleEndian(document.Binary.Slice(offset + 2, 2)),
                 BinaryPrimitives.ReadUInt16LittleEndian(document.Binary.Slice(offset + 4, 2)),
@@ -501,12 +501,12 @@ internal sealed partial class AnimatedGlbMesh
     }
 
     /// <summary>Reads a VEC3 float accessor into a vector keyframe array.</summary>
-    private static Vector3[] ReadVec3Array(GlbDocument document, int accessorIndex)
+    private static Vec3[] ReadVec3Array(GlbDocument document, int accessorIndex)
     {
         var accessor = document.Accessor(accessorIndex);
         ValidateAccessor(accessor, "VEC3", FloatComponentType, accessorIndex);
         var count = GlbDocument.RequiredProperty(accessor, "count").GetInt32();
-        var values = new Vector3[count];
+        var values = new Vec3[count];
 
         for (var index = 0; index < count; index++)
             values[index] = ReadVec3(document, accessorIndex, index);
@@ -563,13 +563,13 @@ internal sealed partial class AnimatedGlbMesh
         }
     }
 
-    /// <summary>Reads a Vector3 node property or returns the supplied default value.</summary>
-    private static Vector3 ReadVector3Property(JsonElement node, string name, Vector3 defaultValue)
+    /// <summary>Reads a Vec3 node property or returns the supplied default value.</summary>
+    private static Vec3 ReadVector3Property(JsonElement node, string name, Vec3 defaultValue)
     {
         if (!node.TryGetProperty(name, out var values))
             return defaultValue;
 
-        return new Vector3(values[0].GetSingle(), values[1].GetSingle(), values[2].GetSingle());
+        return new Vec3(values[0].GetSingle(), values[1].GetSingle(), values[2].GetSingle());
     }
 
     /// <summary>Reads a Quaternion node property or returns the supplied default value.</summary>

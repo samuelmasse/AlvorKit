@@ -19,9 +19,9 @@ internal class AgentWindowCommandProtocol(AgentGlfwWindowHost host, TextWriter o
             throw new InvalidOperationException(executionError);
     }
 
-    internal void Update(double delta, Vector2 mouseDelta) => host.Agent.Update(delta, mouseDelta);
+    internal void Update(double delta, Vec2 mouseDelta) => host.Agent.Update(delta, mouseDelta);
 
-    internal void Advance(int count, double delta, Vector2 mouseDelta) => host.Agent.Advance(count, delta, mouseDelta);
+    internal void Advance(int count, double delta, Vec2 mouseDelta) => host.Agent.Advance(count, delta, mouseDelta);
 
     internal void Render(double delta) => host.Agent.Render(delta);
 
@@ -50,13 +50,13 @@ internal class AgentWindowCommandProtocol(AgentGlfwWindowHost host, TextWriter o
         else host.Agent.ReleaseMouse(button);
     }
 
-    internal void MoveMouse(Vector2 position) => host.Agent.MoveMouse(position);
+    internal void MoveMouse(Vec2 position) => host.Agent.MoveMouse(position);
 
-    internal void PanMouse(Vector2 delta) => host.Agent.PanMouse(delta);
+    internal void PanMouse(Vec2 delta) => host.Agent.PanMouse(delta);
 
-    internal void ScrollMouse(Vector2 delta) => host.Agent.ScrollMouse(delta);
+    internal void ScrollMouse(Vec2 delta) => host.Agent.ScrollMouse(delta);
 
-    internal void ResizeWindow(Vector2 size) => host.Agent.ResizeWindow(size);
+    internal void ResizeWindow(Vec2u size) => host.Agent.ResizeWindow(size);
 
     internal void Text(string[]? words) => host.Agent.EnterText(JoinedWords(words));
 
@@ -94,7 +94,7 @@ internal class AgentWindowCommandProtocol(AgentGlfwWindowHost host, TextWriter o
             mouse.Y));
     }
 
-    internal bool TryOptionalVector(float? x, float? y, out Vector2 value)
+    internal bool TryOptionalVector(float? x, float? y, out Vec2 value)
     {
         if (!x.HasValue && !y.HasValue)
         {

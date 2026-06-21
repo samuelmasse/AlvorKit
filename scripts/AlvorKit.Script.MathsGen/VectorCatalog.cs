@@ -31,8 +31,32 @@ internal static class VectorCatalog
     /// <summary>The generated Boolean scalar spec.</summary>
     public static ScalarSpec Bool { get; } = Scalars.Single(scalar => scalar.Kind == ScalarKind.Bool);
 
+    /// <summary>The generated 32-bit floating-point scalar spec.</summary>
+    public static ScalarSpec Float { get; } = Scalars.Single(scalar => scalar.Kind == ScalarKind.Float);
+
+    /// <summary>The generated 64-bit floating-point scalar spec.</summary>
+    public static ScalarSpec Double { get; } = Scalars.Single(scalar => scalar.Kind == ScalarKind.Double);
+
+    /// <summary>The generated 16-bit floating-point scalar spec.</summary>
+    public static ScalarSpec Half { get; } = Scalars.Single(scalar => scalar.Kind == ScalarKind.Half);
+
     /// <summary>The generated 32-bit integer scalar spec.</summary>
     public static ScalarSpec Int { get; } = Scalars.Single(scalar => scalar.Kind == ScalarKind.Int);
+
+    /// <summary>The generated 32-bit unsigned integer scalar spec.</summary>
+    public static ScalarSpec UInt { get; } = Scalars.Single(scalar => scalar.Kind == ScalarKind.UInt);
+
+    /// <summary>The generated 64-bit integer scalar spec.</summary>
+    public static ScalarSpec Int64 { get; } = Scalars.Single(scalar => scalar.Kind == ScalarKind.Int64);
+
+    /// <summary>The generated 64-bit unsigned integer scalar spec.</summary>
+    public static ScalarSpec UInt64 { get; } = Scalars.Single(scalar => scalar.Kind == ScalarKind.UInt64);
+
+    /// <summary>The generated 128-bit integer scalar spec.</summary>
+    public static ScalarSpec Int128 { get; } = Scalars.Single(scalar => scalar.Kind == ScalarKind.Int128);
+
+    /// <summary>The generated 128-bit unsigned integer scalar spec.</summary>
+    public static ScalarSpec UInt128 { get; } = Scalars.Single(scalar => scalar.Kind == ScalarKind.UInt128);
 
     /// <summary>All vector specifications emitted by the generator.</summary>
     public static IReadOnlyList<VectorSpec> Vectors { get; } =
@@ -46,6 +70,7 @@ internal static class VectorCatalog
             (ScalarKind.Int8, ScalarKind.Int) or
             (ScalarKind.Int8, ScalarKind.Int64) or
             (ScalarKind.Int8, ScalarKind.Int128) or
+            (ScalarKind.Int8, ScalarKind.Half) or
             (ScalarKind.Int8, ScalarKind.Float) or
             (ScalarKind.Int8, ScalarKind.Double) or
             (ScalarKind.UInt8, ScalarKind.Int16) or
@@ -56,6 +81,7 @@ internal static class VectorCatalog
             (ScalarKind.UInt8, ScalarKind.UInt64) or
             (ScalarKind.UInt8, ScalarKind.Int128) or
             (ScalarKind.UInt8, ScalarKind.UInt128) or
+            (ScalarKind.UInt8, ScalarKind.Half) or
             (ScalarKind.UInt8, ScalarKind.Float) or
             (ScalarKind.UInt8, ScalarKind.Double) or
             (ScalarKind.Int16, ScalarKind.Int) or

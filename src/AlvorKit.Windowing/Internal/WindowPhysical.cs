@@ -5,7 +5,7 @@ internal sealed class WindowPhysical
 {
     private readonly IWindowHost window;
     private readonly Func<bool> callback;
-    private Vector2 size;
+    private Vec2u size;
     private int skips;
 
     /// <summary>Creates a physical-size tracker for a host window.</summary>
@@ -19,14 +19,14 @@ internal sealed class WindowPhysical
     }
 
     /// <summary>Gets or sets the drawable client size.</summary>
-    internal Vector2 Size
+    internal Vec2u Size
     {
         get => size;
         set => window.ClientSize = value;
     }
 
     /// <summary>Gets the primary monitor work-area size.</summary>
-    internal Vector2 MonitorSize => window.MonitorSize;
+    internal Vec2u MonitorSize => window.MonitorSize;
 
     /// <summary>Gets the primary monitor horizontal content scale.</summary>
     internal float MonitorScale => window.MonitorScale;
@@ -36,7 +36,7 @@ internal sealed class WindowPhysical
 
     private void OnResize(WindowResizeEvent e)
     {
-        if (e.Size == Vector2.Zero)
+        if (e.Size == Vec2u.Zero)
             return;
 
         size = e.Size;

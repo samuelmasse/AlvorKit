@@ -3,25 +3,25 @@ namespace AlvorKit.Graphics2D;
 public partial class SpriteBatchWriter
 {
     /// <summary>Draws a one-pixel white line.</summary>
-    public void DrawLine(Vector2 start, Vector2 end) => DrawLine(texture, start, end, 1f, Vector4.One);
+    public void DrawLine(Vec2 start, Vec2 end) => DrawLine(texture, start, end, 1f, Vec4.One);
 
     /// <summary>Draws a tinted line with the default white texture.</summary>
-    public void DrawLine(Vector2 start, Vector2 end, float width, Vector4 color) => DrawLine(texture, start, end, width, color);
+    public void DrawLine(Vec2 start, Vec2 end, float width, Vec4 color) => DrawLine(texture, start, end, width, color);
 
     /// <summary>Draws a one-pixel textured line.</summary>
-    public void DrawLine(Texture texture, Vector2 start, Vector2 end) => DrawLine(texture, start, end, 1f, Vector4.One);
+    public void DrawLine(Texture texture, Vec2 start, Vec2 end) => DrawLine(texture, start, end, 1f, Vec4.One);
 
     /// <summary>Draws a tinted textured line with the supplied edge offset.</summary>
-    public void DrawLine(Texture texture, Vector2 start, Vector2 end, float width, Vector4 color)
+    public void DrawLine(Texture texture, Vec2 start, Vec2 end, float width, Vec4 color)
     {
         var delta = end - start;
-        if (width <= 0f || delta.LengthSquared() <= 0f)
+        if (width <= 0f || delta.LengthSquared <= 0f)
             return;
 
-        var normal = Vector2.Normalize(new Vector2(-delta.Y, delta.X));
-        var endLeft = new LineVertex(end - (normal * width), Vector2.Zero);
-        var endRight = new LineVertex(end + (normal * width), new Vector2(texture.Size.X, 0f));
-        var startLeft = new LineVertex(start - (normal * width), new Vector2(0f, texture.Size.Y));
+        var normal = Vec2.Normalize(new Vec2(-delta.Y, delta.X));
+        var endLeft = new LineVertex(end - (normal * width), Vec2.Zero);
+        var endRight = new LineVertex(end + (normal * width), new Vec2(texture.Size.X, 0f));
+        var startLeft = new LineVertex(start - (normal * width), new Vec2(0f, texture.Size.Y));
         var startRight = new LineVertex(start + (normal * width), texture.Size);
 
         if (!clip.HasValue)
@@ -49,7 +49,7 @@ public partial class SpriteBatchWriter
     }
 
     /// <summary>Emits one line quad in the vertex order expected by the shared quad index buffer.</summary>
-    private void DrawLineQuad(Texture texture, Vector4 color, LineVertex endLeft, LineVertex endRight, LineVertex startLeft, LineVertex startRight)
+    private void DrawLineQuad(Texture texture, Vec4 color, LineVertex endLeft, LineVertex endRight, LineVertex startLeft, LineVertex startRight)
     {
         AddLineVertex(texture, color, endLeft);
         AddLineVertex(texture, color, endRight);
@@ -58,7 +58,7 @@ public partial class SpriteBatchWriter
     }
 
     /// <summary>Emits one clipped triangle as a degenerate quad so the existing quad index buffer can draw it.</summary>
-    private void DrawLineTriangle(Texture texture, Vector4 color, LineVertex a, LineVertex b, LineVertex c)
+    private void DrawLineTriangle(Texture texture, Vec4 color, LineVertex a, LineVertex b, LineVertex c)
     {
         AddLineVertex(texture, color, a);
         AddLineVertex(texture, color, a);
@@ -67,6 +67,6 @@ public partial class SpriteBatchWriter
     }
 
     /// <summary>Adds one line vertex after converting canvas pixels and texture pixels to shader coordinates.</summary>
-    private void AddLineVertex(Texture texture, Vector4 color, LineVertex vertex) =>
+    private void AddLineVertex(Texture texture, Vec4 color, LineVertex vertex) =>
         vertices.Add(texture, new SpriteBatchVertex(NormalizePosition(vertex.Position), color, TexCoord(texture, vertex.TexCoord)));
 }

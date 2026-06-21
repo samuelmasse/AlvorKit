@@ -4,5 +4,5 @@ namespace AlvorKit.Windowing;
 public sealed class WindowCanvas(WindowLoop window)
 {
     /// <summary>Gets the drawable client size.</summary>
-    public Vector2 Size => window.Physical.Size;
+    public Vec2u Size => window.Physical.Size;
 }

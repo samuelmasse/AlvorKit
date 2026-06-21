@@ -21,6 +21,12 @@ internal static class AgentWindowCommandArguments
     internal static Argument<int> NonNegativeInt(string name) =>
         new(name) { CustomParser = result => ParseInt(result, name, true) };
 
+    /// <summary>Creates a positive integer argument.</summary>
+    /// <param name="name">Argument name used in help and validation errors.</param>
+    /// <returns>The configured argument.</returns>
+    internal static Argument<int> PositiveInt(string name) =>
+        new(name) { CustomParser = result => ParseInt(result, name, false) };
+
     /// <summary>Creates a finite single-precision argument.</summary>
     /// <param name="name">Argument name used in help and validation errors.</param>
     /// <returns>The configured argument.</returns>
@@ -92,7 +98,7 @@ internal static class AgentWindowCommandArguments
     }
 
     /// <summary>Parses a required integer token.</summary>
-    private static int ParseInt(ArgumentResult result, string name, bool nonNegative)
+    private static int ParseInt(ArgumentResult result, string name, bool allowZero)
     {
         var token = AgentWindowCommandArgumentText.RequiredToken(result, name);
         if (token is null)
@@ -104,9 +110,9 @@ internal static class AgentWindowCommandArguments
             return 0;
         }
 
-        if (nonNegative && value < 0)
+        if (allowZero ? value < 0 : value <= 0)
         {
-            result.AddError($"{name} must be non-negative.");
+            result.AddError(allowZero ? $"{name} must be non-negative." : $"{name} must be positive.");
             return 0;
         }
 

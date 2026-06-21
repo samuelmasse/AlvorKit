@@ -5,7 +5,7 @@ namespace AlvorKit.Graphics2D;
 /// <param name="label">Optional diagnostic label used by callers when reporting texture ownership.</param>
 /// <param name="size">The logical pixel size associated with the texture.</param>
 /// <param name="target">The OpenGL texture target used by this texture handle.</param>
-public class Texture(GlLayer gl, string? label, Vector2 size, GlTextureTarget target) : IDisposable
+public class Texture(GlLayer gl, string? label, Vec2u size, GlTextureTarget target) : IDisposable
 {
     /// <summary>The strict OpenGL command surface that owns this texture.</summary>
     protected readonly GlLayer gl = gl;
@@ -17,7 +17,7 @@ public class Texture(GlLayer gl, string? label, Vector2 size, GlTextureTarget ta
     protected readonly GlTextureTarget target = target;
 
     /// <summary>The logical pixel size associated with this texture.</summary>
-    protected Vector2 size = size;
+    protected Vec2u size = size;
 
     /// <summary>Gets the optional diagnostic label supplied by the caller.</summary>
     public string? Label => label;
@@ -26,7 +26,7 @@ public class Texture(GlLayer gl, string? label, Vector2 size, GlTextureTarget ta
     public GlTextureHandle Id => id;
 
     /// <summary>Gets the logical pixel size associated with the texture.</summary>
-    public Vector2 Size => size;
+    public Vec2u Size => size;
 
     /// <summary>Gets the OpenGL target used for this texture handle.</summary>
     public GlTextureTarget Target => target;
@@ -47,7 +47,7 @@ public class Texture(GlLayer gl, string? label, Vector2 size, GlTextureTarget ta
     /// <param name="gl">The strict OpenGL layer that owns the texture handle.</param>
     /// <param name="size">The logical pixel size associated with the texture.</param>
     /// <param name="target">The OpenGL texture target used by this texture handle.</param>
-    public Texture(GlLayer gl, Vector2 size, GlTextureTarget target) : this(gl, null, size, target) { }
+    public Texture(GlLayer gl, Vec2u size, GlTextureTarget target) : this(gl, null, size, target) { }
 
     /// <summary>Binds this texture to the requested texture unit.</summary>
     /// <param name="unit">The texture unit that should receive the texture binding.</param>

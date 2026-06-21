@@ -18,8 +18,8 @@ public sealed class FontSizeTest
             var second = fontSize.GlyphSlot(new Rune('A'));
 
             Assert.AreSame(first, second);
-            Assert.AreEqual(Vector2.Zero, first.Position);
-            Assert.AreEqual(Vector2.Zero, first.Glyph.Box);
+            Assert.AreEqual(Vec2u.Zero, first.Position);
+            Assert.AreEqual(Vec2u.Zero, first.Glyph.Box);
             Assert.AreSame(font.Textures[0], first.Texture);
             Assert.AreEqual(1, driver.LoadGlyphCount);
             Assert.AreEqual(0, backend.TexSubImage2DCalls);
@@ -51,9 +51,9 @@ public sealed class FontSizeTest
 
             Assert.AreNotSame(smallA, smallB);
             Assert.AreNotSame(smallA, largeA);
-            Assert.AreEqual(new Vector2(0f, 0f), smallA.Position);
-            Assert.AreEqual(new Vector2(2f, 0f), smallB.Position);
-            Assert.AreEqual(new Vector2(4f, 0f), largeA.Position);
+            Assert.AreEqual(new Vec2u(0u, 0u), smallA.Position);
+            Assert.AreEqual(new Vec2u(2u, 0u), smallB.Position);
+            Assert.AreEqual(new Vec2u(4u, 0u), largeA.Position);
         }
         finally
         {
@@ -74,8 +74,8 @@ public sealed class FontSizeTest
             using var font = new Font(context, "Inter.ttf");
             var slot = font.Size(12).GlyphSlot(new Rune('A'));
 
-            Assert.AreEqual(new Vector2(2f, 2f), slot.Glyph.Box);
-            Assert.AreEqual(new Vector2(1f, 3f), slot.Glyph.Bearing);
+            Assert.AreEqual(new Vec2u(2u, 2u), slot.Glyph.Box);
+            Assert.AreEqual(new Vec2i(1, 3), slot.Glyph.Bearing);
             Assert.AreEqual(6.5f, slot.Glyph.Advance);
             Assert.AreEqual((0, 2046, 2, 2), backend.LastTexSubImage);
             CollectionAssert.AreEqual(
@@ -114,7 +114,7 @@ public sealed class FontSizeTest
             Assert.AreEqual(2, font.Textures.Length);
             Assert.AreSame(font.Textures[0], first.Texture);
             Assert.AreSame(font.Textures[1], second.Texture);
-            Assert.AreEqual(Vector2.Zero, second.Position);
+            Assert.AreEqual(Vec2u.Zero, second.Position);
         }
         finally
         {
@@ -142,9 +142,9 @@ public sealed class FontSizeTest
 
             font.ForcePack();
 
-            Assert.AreEqual(new Vector2(7f, 0f), first.Position);
-            Assert.AreEqual(new Vector2(4f, 0f), second.Position);
-            Assert.AreEqual(new Vector2(0f, 0f), third.Position);
+            Assert.AreEqual(new Vec2u(7u, 0u), first.Position);
+            Assert.AreEqual(new Vec2u(4u, 0u), second.Position);
+            Assert.AreEqual(new Vec2u(0u, 0u), third.Position);
             Assert.AreEqual(1, backend.FramebufferTextureCalls);
             Assert.AreEqual(1, backend.DrawElementsCalls);
         }
@@ -173,15 +173,15 @@ public sealed class FontSizeTest
 
             font.Pack();
 
-            Assert.AreEqual(new Vector2(0f, 0f), first.Position);
-            Assert.AreEqual(new Vector2(2f, 0f), second.Position);
+            Assert.AreEqual(new Vec2u(0u, 0u), first.Position);
+            Assert.AreEqual(new Vec2u(2u, 0u), second.Position);
 
             _ = fontSize.GlyphSlot(new Rune('C'));
             font.Pack();
 
             Assert.AreEqual(2, font.Textures.Length);
-            Assert.AreEqual(new Vector2(3f, 0f), first.Position);
-            Assert.AreEqual(new Vector2(0f, 0f), second.Position);
+            Assert.AreEqual(new Vec2u(3u, 0u), first.Position);
+            Assert.AreEqual(new Vec2u(0u, 0u), second.Position);
         }
         finally
         {
@@ -209,9 +209,9 @@ public sealed class FontSizeTest
 
             font.ForcePack();
 
-            Assert.AreEqual(new Vector2(0f, 0f), first.Position);
-            Assert.AreEqual(new Vector2(0f, 2f), second.Position);
-            Assert.AreEqual(new Vector2(2f, 2f), third.Position);
+            Assert.AreEqual(new Vec2u(0u, 0u), first.Position);
+            Assert.AreEqual(new Vec2u(0u, 2u), second.Position);
+            Assert.AreEqual(new Vec2u(2u, 2u), third.Position);
         }
         finally
         {

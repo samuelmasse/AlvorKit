@@ -29,13 +29,13 @@ public class AgentGlfwWindowHost : GlfwWindowHost
     /// <summary>Creates a native-free deterministic agent host for tests.</summary>
     internal AgentGlfwWindowHost(
         GlLayer gl,
-        Vector2 clientSize,
+        Vec2u clientSize,
         string title = "AlvorKit.Windowing",
         bool isVisible = false,
         bool isVSyncEnabled = true,
         TextReader? agentInput = null,
         TextWriter? agentOutput = null,
-        Action<GlLayer, Vector2, string>? screenshotSave = null) : base()
+        Action<GlLayer, Vec2u, string>? screenshotSave = null) : base()
     {
         useAgent = true;
         state.Initialize(clientSize, title, isVisible, isVSyncEnabled);
@@ -76,7 +76,7 @@ public class AgentGlfwWindowHost : GlfwWindowHost
     public override bool IsFullscreen => useAgent ? state.IsFullscreen : base.IsFullscreen;
 
     /// <inheritdoc />
-    public override Vector2 MonitorSize => useAgent ? state.MonitorSize : base.MonitorSize;
+    public override Vec2u MonitorSize => useAgent ? state.MonitorSize : base.MonitorSize;
 
     /// <inheritdoc />
     public override float MonitorScale => useAgent ? state.MonitorScale : base.MonitorScale;
@@ -85,7 +85,7 @@ public class AgentGlfwWindowHost : GlfwWindowHost
     public override bool IsVisible { get => useAgent ? state.IsVisible : base.IsVisible; set { if (useAgent) state.IsVisible = value; else base.IsVisible = value; } }
 
     /// <inheritdoc />
-    public override Vector2 MousePosition
+    public override Vec2 MousePosition
     {
         get => useAgent ? state.MousePosition : base.MousePosition;
         set { if (useAgent) state.MousePosition = value; else base.MousePosition = value; }
@@ -119,7 +119,7 @@ public class AgentGlfwWindowHost : GlfwWindowHost
     public override string Clipboard { get => useAgent ? state.Clipboard : base.Clipboard; set { if (useAgent) state.Clipboard = value; else base.Clipboard = value; } }
 
     /// <inheritdoc />
-    public override Vector2 ClientSize
+    public override Vec2u ClientSize
     {
         get => useAgent ? state.ClientSize : base.ClientSize;
         set
@@ -214,7 +214,7 @@ public class AgentGlfwWindowHost : GlfwWindowHost
 
     /// <summary>Applies an agent-mode client size to local state and the hidden native window, when present.</summary>
     /// <param name="size">Requested client size.</param>
-    private void SetAgentClientSize(Vector2 size)
+    private void SetAgentClientSize(Vec2u size)
     {
         state.ClientSize = size;
         if (HasNativeWindow)

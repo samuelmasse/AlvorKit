@@ -7,10 +7,11 @@ namespace AlvorKit.Maths;
 /// <typeparam name="TScalar">The signed component type, such as <see cref="float" />, <see cref="int" />, or <see cref="Half" />.</typeparam>
 /// <typeparam name="TMask">The Boolean mask type returned by comparisons, such as <see cref="Vec3b" />.</typeparam>
 /// <typeparam name="TLength">The length and distance type, such as <see cref="float" /> for <see cref="Vec3i" />.</typeparam>
-public interface IVecSignedNumeric<TSelf, TScalar, TMask, TLength> :
-    IVecNumeric<TSelf, TScalar, TMask, TLength>,
-    IUnaryNegationOperators<TSelf, TSelf>
-    where TSelf : struct, IVecSignedNumeric<TSelf, TScalar, TMask, TLength>
+/// <typeparam name="TArithmetic">The vector type returned by component-wise arithmetic.</typeparam>
+public interface IVecSignedNumeric<TSelf, TScalar, TMask, TLength, TArithmetic> :
+    IVecNumeric<TSelf, TScalar, TMask, TLength, TArithmetic>,
+    IUnaryNegationOperators<TSelf, TArithmetic>
+    where TSelf : struct, IVecSignedNumeric<TSelf, TScalar, TMask, TLength, TArithmetic>
     where TMask : struct, IVecMask<TMask>
 {
     /// <summary>Returns the absolute value of each component.</summary>

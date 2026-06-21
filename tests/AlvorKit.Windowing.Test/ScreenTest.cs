@@ -32,7 +32,7 @@ public class ScreenTest
         Assert.AreEqual("Windowing test", screen.Title);
         Assert.IsTrue(host.IsVisible);
         Assert.AreEqual("Windowing test", host.Title);
-        Assert.AreEqual(new Vector2(640, 480), host.ClientSize);
+        Assert.AreEqual(new Vec2u(640u, 480u), host.ClientSize);
         Assert.AreEqual(1, host.CloseCount);
     }
 
@@ -44,7 +44,7 @@ public class ScreenTest
         host.MonitorSize = new(2560, 1440);
         host.MonitorScale = 1.5f;
 
-        Assert.AreEqual(new Vector2(2560, 1440), screen.MonitorSize);
+        Assert.AreEqual(new Vec2u(2560u, 1440u), screen.MonitorSize);
         Assert.AreEqual(1.5f, screen.MonitorScale);
     }
 

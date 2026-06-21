@@ -9,7 +9,7 @@ public class CanvasTest
         var (_, loop) = WindowingTestFactory.Create(new(200, 200));
         var canvas = new WindowCanvas(loop);
 
-        Assert.AreEqual(new Vector2(200, 200), canvas.Size);
+        Assert.AreEqual(new Vec2u(200u, 200u), canvas.Size);
     }
 
     [TestMethod]
@@ -28,7 +28,7 @@ public class CanvasTest
 
         host.RaiseResize(new(400, 400));
 
-        Assert.AreEqual(new Vector2(400, 400), canvas.Size);
+        Assert.AreEqual(new Vec2u(400u, 400u), canvas.Size);
         Assert.AreEqual(1, updateInvoked);
         Assert.AreEqual(1, renderInvoked);
         Assert.AreEqual(1, host.SwapBuffersCount);
@@ -40,8 +40,8 @@ public class CanvasTest
         var (host, loop) = WindowingTestFactory.Create(new(300, 300));
         var canvas = new WindowCanvas(loop);
 
-        host.RaiseResize(Vector2.Zero);
+        host.RaiseResize(Vec2u.Zero);
 
-        Assert.AreEqual(new Vector2(300, 300), canvas.Size);
+        Assert.AreEqual(new Vec2u(300u, 300u), canvas.Size);
     }
 }

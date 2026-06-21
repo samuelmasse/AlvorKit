@@ -23,13 +23,13 @@ internal sealed partial class AnimatedGlbMesh
         public readonly float[] Matrix = new float[MatrixFloatCount];
 
         /// <summary>The node local translation used for TRS-authored nodes.</summary>
-        public Vector3 Translation;
+        public Vec3 Translation;
 
         /// <summary>The node local rotation used for TRS-authored nodes.</summary>
         public Quaternion Rotation;
 
         /// <summary>The node local scale used for TRS-authored nodes.</summary>
-        public Vector3 Scale;
+        public Vec3 Scale;
 
         /// <summary>Whether <see cref="Matrix"/> should be used instead of TRS fields.</summary>
         public bool HasMatrix;
@@ -37,9 +37,9 @@ internal sealed partial class AnimatedGlbMesh
         /// <summary>Creates a node pose with identity TRS values.</summary>
         public NodePose()
         {
-            Translation = Vector3.Zero;
+            Translation = Vec3.Zero;
             Rotation = Quaternion.Identity;
-            Scale = Vector3.One;
+            Scale = Vec3.One;
         }
 
         /// <summary>Gets an identity local pose for nodes that omit transform properties.</summary>
@@ -72,7 +72,7 @@ internal sealed partial class AnimatedGlbMesh
         private readonly float[] times;
 
         /// <summary>The vector output values for translation and scale channels.</summary>
-        private readonly Vector3[]? vectorValues;
+        private readonly Vec3[]? vectorValues;
 
         /// <summary>The quaternion output values for rotation channels.</summary>
         private readonly Quaternion[]? rotationValues;
@@ -85,7 +85,7 @@ internal sealed partial class AnimatedGlbMesh
             int nodeIndex,
             AnimationPath path,
             float[] times,
-            Vector3[]? vectorValues,
+            Vec3[]? vectorValues,
             Quaternion[]? rotationValues,
             bool step)
         {
@@ -98,7 +98,7 @@ internal sealed partial class AnimatedGlbMesh
         }
 
         /// <summary>Creates a translation or scale animation channel.</summary>
-        public static AnimationChannel CreateVector(int nodeIndex, AnimationPath path, float[] times, Vector3[] values, bool step)
+        public static AnimationChannel CreateVector(int nodeIndex, AnimationPath path, float[] times, Vec3[] values, bool step)
         {
             if (times.Length != values.Length)
                 throw new FormatException("Animation vector channel input and output counts must match.");
@@ -132,7 +132,7 @@ internal sealed partial class AnimatedGlbMesh
         }
 
         /// <summary>Samples a vector channel at the requested animation time.</summary>
-        private Vector3 SampleVector(float seconds)
+        private Vec3 SampleVector(float seconds)
         {
             var values = vectorValues ?? throw new InvalidOperationException("Vector channel is missing vector values.");
             var frame = FindKeyframe(seconds);
@@ -141,7 +141,7 @@ internal sealed partial class AnimatedGlbMesh
 
             var nextFrame = frame + 1;
             var amount = (seconds - times[frame]) / (times[nextFrame] - times[frame]);
-            return Vector3.Lerp(values[frame], values[nextFrame], Math.Clamp(amount, 0f, 1f));
+            return Vec3.Lerp(values[frame], values[nextFrame], Math.Clamp(amount, 0f, 1f));
         }
 
         /// <summary>Samples a rotation channel at the requested animation time.</summary>

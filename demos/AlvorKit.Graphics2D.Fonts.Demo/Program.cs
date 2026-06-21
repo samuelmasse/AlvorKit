@@ -48,7 +48,7 @@ void RenderFrame(int framebufferWidth, int framebufferHeight)
     UpdateFps();
     Input();
 
-    var clientSize = new Vector2(framebufferWidth, framebufferHeight);
+    var clientSize = new Vec2(framebufferWidth, framebufferHeight);
     gl.Viewport(0, 0, framebufferWidth, framebufferHeight);
     gl.ClearColor(0.2f, 0.05f, 0.3f, 0f);
     gl.Clear(GlClearBufferMask.ColorBufferBit);
@@ -68,38 +68,38 @@ void RenderFrame(int framebufferWidth, int framebufferHeight)
 }
 
 // Draws title text, FPS text, typed red text, and the raw atlas texture strip.
-void Draw(Vector2 clientSize)
+void Draw(Vec2 clientSize)
 {
     var titleSize = font.Size(60);
     var titleMetrics = titleSize.Metrics;
-    sprites.Writer.Write(titleSize, WindowTitle, new Vector2(0f, titleMetrics.Ascender + titleMetrics.Descender), new Vector4(1f, 1f, 0f, 0.5f));
+    sprites.Writer.Write(titleSize, WindowTitle, new Vec2(0f, titleMetrics.Ascender + titleMetrics.Descender), new Vec4(1f, 1f, 0f, 0.5f));
 
     var fpsSize = font.Size(30);
     var fpsWidth = sprites.Writer.Measure(fpsSize, fpsText);
-    var fpsPosition = new Vector2(clientSize.X - fpsWidth - 10f, fpsSize.Metrics.Ascender + fpsSize.Metrics.Descender);
-    sprites.Writer.Write(fpsSize, fpsText, fpsPosition, new Vector4(0f, 1f, 0f, 1f));
+    var fpsPosition = new Vec2(clientSize.X - fpsWidth - 10f, fpsSize.Metrics.Ascender + fpsSize.Metrics.Descender);
+    sprites.Writer.Write(fpsSize, fpsText, fpsPosition, new Vec4(0f, 1f, 0f, 1f));
 
     var freeTextFontSize = font.Size(120);
-    var freeTextStart = new Vector2(20f, 200f);
+    var freeTextStart = new Vec2(20f, 200f);
 
     for (var i = 0; i < freeText.Count; i++)
     {
-        var position = freeTextStart + i * new Vector2(0f, freeTextFontSize.Metrics.Height);
-        sprites.Writer.Write(freeTextFontSize, freeText[i], position, new Vector4(1f, 0f, 0f, 1f));
+        var position = freeTextStart + i * new Vec2(0f, freeTextFontSize.Metrics.Height);
+        sprites.Writer.Write(freeTextFontSize, freeText[i], position, new Vec4(1f, 0f, 0f, 1f));
     }
 
     sprites.Writer.Draw(
-        new Vector2(0f, clientSize.Y - AtlasPreviewSize),
-        new Vector2(clientSize.X, AtlasPreviewSize),
-        new Vector4(0f, 0f, 0f, 1f));
+        new Vec2(0f, clientSize.Y - AtlasPreviewSize),
+        new Vec2(clientSize.X, AtlasPreviewSize),
+        new Vec4(0f, 0f, 0f, 1f));
 
     var textures = font.Textures;
     for (var i = 0; i < textures.Length; i++)
     {
         sprites.Writer.Draw(
             textures[i],
-            new Vector2(i * AtlasPreviewSize, clientSize.Y - AtlasPreviewSize),
-            new Vector2(AtlasPreviewSize, AtlasPreviewSize));
+            new Vec2(i * AtlasPreviewSize, clientSize.Y - AtlasPreviewSize),
+            new Vec2(AtlasPreviewSize, AtlasPreviewSize));
     }
 }
 

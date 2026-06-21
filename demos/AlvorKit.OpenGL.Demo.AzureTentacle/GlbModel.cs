@@ -73,7 +73,7 @@ public sealed class GlbModel : IDisposable
     private readonly AnimatedGlbMesh mesh;
 
     /// <summary>The model-space center used to normalize the mesh into the demo camera frame.</summary>
-    private readonly Vector3 boundsCenter;
+    private readonly Vec3 boundsCenter;
 
     /// <summary>The uniform scale used to normalize the mesh into the demo camera frame.</summary>
     private readonly float modelScale;
@@ -92,7 +92,7 @@ public sealed class GlbModel : IDisposable
         int textureHeight,
         int indexCount,
         AnimatedGlbMesh mesh,
-        Vector3 boundsCenter,
+        Vec3 boundsCenter,
         float modelScale)
     {
         this.gl = gl;
@@ -307,7 +307,7 @@ public sealed class GlbModel : IDisposable
     }
 
     /// <summary>Writes a column-major model matrix that centers, scales, and turns the mesh into a static three-quarter pose.</summary>
-    private static void WriteModelMatrix(Span<float> matrix, Vector3 center, float scale)
+    private static void WriteModelMatrix(Span<float> matrix, Vec3 center, float scale)
     {
         var yaw = -0.35f;
         var cosine = MathF.Cos(yaw);

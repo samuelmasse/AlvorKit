@@ -3,7 +3,7 @@ namespace AlvorKit.Graphics2D;
 public partial class SpriteBatchWriter
 {
     /// <summary>Builds texture-space corners for a subregion, rotation, and flip combination.</summary>
-    private static QuadCorners TexCorners(Vector2 subPosition, Vector2 subSize, SpriteBatchRotation rotation, SpriteBatchFlip flip)
+    private static QuadCorners TexCorners(Vec2 subPosition, Vec2 subSize, SpriteBatchRotation rotation, SpriteBatchFlip flip)
     {
         var left = subPosition.X;
         var right = left + subSize.X;
@@ -17,10 +17,10 @@ public partial class SpriteBatchWriter
             (top, bottom) = (bottom, top);
 
         var corners = new QuadCorners(
-            new Vector2(left, top),
-            new Vector2(right, top),
-            new Vector2(left, bottom),
-            new Vector2(right, bottom));
+            new Vec2(left, top),
+            new Vec2(right, top),
+            new Vec2(left, bottom),
+            new Vec2(right, bottom));
 
         return rotation switch
         {
@@ -39,7 +39,7 @@ public partial class SpriteBatchWriter
         Sample(corners, rightT, bottomT));
 
     /// <summary>Samples one point within texture-space quad corners.</summary>
-    private static Vector2 Sample(QuadCorners corners, float x, float y)
+    private static Vec2 Sample(QuadCorners corners, float x, float y)
     {
         var top = corners.TopLeft + ((corners.TopRight - corners.TopLeft) * x);
         var bottom = corners.BottomLeft + ((corners.BottomRight - corners.BottomLeft) * x);
@@ -47,18 +47,18 @@ public partial class SpriteBatchWriter
     }
 
     /// <summary>Texture-space corners for a generated quad.</summary>
-    private readonly struct QuadCorners(Vector2 topLeft, Vector2 topRight, Vector2 bottomLeft, Vector2 bottomRight)
+    private readonly struct QuadCorners(Vec2 topLeft, Vec2 topRight, Vec2 bottomLeft, Vec2 bottomRight)
     {
         /// <summary>Gets the top-left texture-space corner.</summary>
-        internal Vector2 TopLeft => topLeft;
+        internal Vec2 TopLeft => topLeft;
 
         /// <summary>Gets the top-right texture-space corner.</summary>
-        internal Vector2 TopRight => topRight;
+        internal Vec2 TopRight => topRight;
 
         /// <summary>Gets the bottom-left texture-space corner.</summary>
-        internal Vector2 BottomLeft => bottomLeft;
+        internal Vec2 BottomLeft => bottomLeft;
 
         /// <summary>Gets the bottom-right texture-space corner.</summary>
-        internal Vector2 BottomRight => bottomRight;
+        internal Vec2 BottomRight => bottomRight;
     }
 }

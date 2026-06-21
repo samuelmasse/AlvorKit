@@ -24,7 +24,7 @@ public class AgentWindowCommandRunnerTest
         runner.Execute("text ok");
         runner.Execute("state");
 
-        Assert.AreEqual(new Vector2(16, 28), mouse.Position);
+        Assert.AreEqual(new Vec2(16, 28), mouse.Position);
         Assert.IsTrue(keyboard.IsKeyDown(WindowKey.Space));
         Assert.AreEqual(1.25, host.Time);
         Assert.AreEqual(3, host.UpdateCount);
@@ -65,9 +65,9 @@ public class AgentWindowCommandRunnerTest
         Assert.AreEqual(1, host.RenderCount);
         Assert.IsTrue(mouse.IsMainUp());
         Assert.IsTrue(keyboard.IsKeyPressedRepeated(WindowKey.A));
-        Assert.AreEqual(new Vector2(2, 3), mouse.Position);
-        Assert.AreEqual(new Vector2(0, -1), mouse.Wheel);
-        Assert.AreEqual(new Vector2(40, 50), host.ClientSize);
+        Assert.AreEqual(new Vec2(2, 3), mouse.Position);
+        Assert.AreEqual(new Vec2(0, -1), mouse.Wheel);
+        Assert.AreEqual(new Vec2u(40u, 50u), host.ClientSize);
         Assert.IsFalse(host.IsFocused);
         Assert.IsFalse(host.IsVisible);
         Assert.IsTrue(host.IsExiting);

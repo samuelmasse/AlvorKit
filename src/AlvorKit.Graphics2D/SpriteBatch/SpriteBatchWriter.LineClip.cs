@@ -22,13 +22,13 @@ public partial class SpriteBatchWriter
     }
 
     /// <summary>One unclipped or clipped line polygon vertex in canvas and texture space.</summary>
-    private readonly struct LineVertex(Vector2 position, Vector2 texCoord)
+    private readonly struct LineVertex(Vec2 position, Vec2 texCoord)
     {
         /// <summary>Gets the canvas-space pixel position.</summary>
-        internal Vector2 Position => position;
+        internal Vec2 Position => position;
 
         /// <summary>Gets the texture-space pixel coordinate.</summary>
-        internal Vector2 TexCoord => texCoord;
+        internal Vec2 TexCoord => texCoord;
     }
 
     /// <summary>Clips a line quad polygon in place against the supplied sprite-batch clip rectangle.</summary>
@@ -90,7 +90,7 @@ public partial class SpriteBatchWriter
     }
 
     /// <summary>Returns whether a canvas-space position is inside one clip edge.</summary>
-    private static bool IsInsideLineClip(Vector2 position, LineClipEdge edge, float boundary) =>
+    private static bool IsInsideLineClip(Vec2 position, LineClipEdge edge, float boundary) =>
         edge switch
         {
             LineClipEdge.MinX => position.X >= boundary,

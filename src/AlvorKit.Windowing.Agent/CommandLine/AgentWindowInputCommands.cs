@@ -13,7 +13,7 @@ internal static class AgentWindowInputCommands
         root.Subcommands.Add(CreateVectorCommand("move", "Move the cursor to absolute client coordinates.", protocol.MoveMouse));
         root.Subcommands.Add(CreateVectorCommand("pan", "Move the cursor by a client-space delta.", protocol.PanMouse));
         root.Subcommands.Add(CreateVectorCommand("wheel", "Inject mouse wheel delta.", protocol.ScrollMouse));
-        root.Subcommands.Add(CreateVectorCommand("resize", "Resize the client area.", protocol.ResizeWindow));
+        root.Subcommands.Add(CreateSizeCommand(protocol));
         root.Subcommands.Add(CreateTextCommand(protocol));
         root.Subcommands.Add(CreateClipboardCommand(protocol));
         root.Subcommands.Add(CreateBoolCommand("focus", "Set whether the window reports focus.", protocol.SetFocus));
@@ -53,7 +53,7 @@ internal static class AgentWindowInputCommands
     /// <param name="description">Help description.</param>
     /// <param name="action">Protocol action that receives the parsed vector.</param>
     /// <returns>The configured command.</returns>
-    private static Command CreateVectorCommand(string name, string description, Action<Vector2> action)
+    private static Command CreateVectorCommand(string name, string description, Action<Vec2> action)
     {
         var x = AgentWindowCommandArguments.Float("x");
         var y = AgentWindowCommandArguments.Float("y");
@@ -61,6 +61,22 @@ internal static class AgentWindowInputCommands
         command.Arguments.Add(x);
         command.Arguments.Add(y);
         command.SetAction(parseResult => action(new(parseResult.GetValue(x), parseResult.GetValue(y))));
+        return command;
+    }
+
+    /// <summary>Creates the integer client resize command.</summary>
+    /// <param name="protocol">Command protocol that receives the parsed size.</param>
+    /// <returns>The configured command.</returns>
+    private static Command CreateSizeCommand(AgentWindowCommandProtocol protocol)
+    {
+        var width = AgentWindowCommandArguments.PositiveInt("width");
+        var height = AgentWindowCommandArguments.PositiveInt("height");
+        var command = new Command("resize", "Resize the client area.");
+        command.Arguments.Add(width);
+        command.Arguments.Add(height);
+        command.SetAction(parseResult => protocol.ResizeWindow(new(
+            checked((uint)parseResult.GetValue(width)),
+            checked((uint)parseResult.GetValue(height)))));
         return command;
     }
 

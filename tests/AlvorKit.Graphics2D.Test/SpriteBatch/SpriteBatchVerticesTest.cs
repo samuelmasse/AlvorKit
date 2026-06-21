@@ -10,12 +10,12 @@ public sealed class SpriteBatchVerticesTest
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
         var vertices = new SpriteBatchVertices(16);
-        using var texture = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
+        using var texture = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
 
-        vertices.Add(texture, new SpriteBatchVertex { Position = new Vector2(34f, 354f) });
+        vertices.Add(texture, new SpriteBatchVertex { Position = new Vec2(34f, 354f) });
 
         Assert.AreEqual(1, vertices.VertexCount);
-        Assert.AreEqual(new Vector2(34f, 354f), vertices.Vertices[0].Position);
+        Assert.AreEqual(new Vec2(34f, 354f), vertices.Vertices[0].Position);
         Assert.AreEqual(0f, vertices.Vertices[0].TexIndex);
         Assert.AreEqual(1, vertices.Sections.Length);
         Assert.AreSame(texture, vertices.SectionTextures(0)[0]);
@@ -29,8 +29,8 @@ public sealed class SpriteBatchVerticesTest
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
         var vertices = new SpriteBatchVertices(16);
-        using var texture = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
-        vertices.Add(texture, new SpriteBatchVertex { Position = new Vector2(34f, 354f) });
+        using var texture = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
+        vertices.Add(texture, new SpriteBatchVertex { Position = new Vec2(34f, 354f) });
 
         vertices.Reset();
 
@@ -44,8 +44,8 @@ public sealed class SpriteBatchVerticesTest
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
         var vertices = new SpriteBatchVertices(16);
-        using var texture = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
-        var vertex = new SpriteBatchVertex { Position = new Vector2(34f, 354f) };
+        using var texture = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
+        var vertex = new SpriteBatchVertex { Position = new Vec2(34f, 354f) };
 
         for (var i = 0; i < 64; i++)
             vertices.Add(texture, vertex);
@@ -65,13 +65,13 @@ public sealed class SpriteBatchVerticesTest
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
         var vertices = new SpriteBatchVertices(16);
-        using var textureA = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
-        using var textureB = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
+        using var textureA = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
+        using var textureB = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
 
-        vertices.Add(textureA, new SpriteBatchVertex { Position = Vector2.Zero });
-        vertices.Add(textureB, new SpriteBatchVertex { Position = Vector2.One });
-        vertices.Add(textureA, new SpriteBatchVertex { Position = new Vector2(2f, 2f) });
-        vertices.Add(textureB, new SpriteBatchVertex { Position = new Vector2(3f, 3f) });
+        vertices.Add(textureA, new SpriteBatchVertex { Position = Vec2.Zero });
+        vertices.Add(textureB, new SpriteBatchVertex { Position = Vec2.One });
+        vertices.Add(textureA, new SpriteBatchVertex { Position = new Vec2(2f, 2f) });
+        vertices.Add(textureB, new SpriteBatchVertex { Position = new Vec2(3f, 3f) });
 
         Assert.AreEqual(4, vertices.VertexCount);
         Assert.AreEqual(0f, vertices.Vertices[0].TexIndex);
@@ -86,13 +86,13 @@ public sealed class SpriteBatchVerticesTest
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
         var vertices = new SpriteBatchVertices(2);
-        using var textureA = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
-        using var textureB = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
-        using var textureC = new Texture(gl, new Vector2(1f, 1f), GlTextureTarget.Texture2D);
+        using var textureA = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
+        using var textureB = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
+        using var textureC = new Texture(gl, new Vec2u(1u, 1u), GlTextureTarget.Texture2D);
 
-        vertices.Add(textureA, new SpriteBatchVertex { Position = Vector2.Zero });
-        vertices.Add(textureB, new SpriteBatchVertex { Position = Vector2.One });
-        vertices.Add(textureC, new SpriteBatchVertex { Position = new Vector2(2f, 2f) });
+        vertices.Add(textureA, new SpriteBatchVertex { Position = Vec2.Zero });
+        vertices.Add(textureB, new SpriteBatchVertex { Position = Vec2.One });
+        vertices.Add(textureC, new SpriteBatchVertex { Position = new Vec2(2f, 2f) });
 
         Assert.AreEqual(2, vertices.Sections.Length);
         Assert.AreEqual(2, vertices.Sections[0].TextureCount);

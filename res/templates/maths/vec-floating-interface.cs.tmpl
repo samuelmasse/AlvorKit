@@ -7,7 +7,7 @@ namespace AlvorKit.Maths;
 /// <typeparam name="TScalar">The floating-point component type, such as <see cref="float" />, <see cref="double" />, or <see cref="Half" />.</typeparam>
 /// <typeparam name="TMask">The Boolean mask type returned by floating-point checks, such as <see cref="Vec3b" />.</typeparam>
 public interface IVecFloating<TSelf, TScalar, TMask> :
-    IVecSignedNumeric<TSelf, TScalar, TMask, TScalar>,
+    IVecSignedNumeric<TSelf, TScalar, TMask, TScalar, TSelf>,
     IVecFloatingGeometry<TSelf, TScalar>
     where TSelf : struct, IVecFloating<TSelf, TScalar, TMask>
     where TMask : struct, IVecMask<TMask>

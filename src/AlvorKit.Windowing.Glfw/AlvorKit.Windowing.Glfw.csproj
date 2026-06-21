@@ -14,10 +14,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.GLFW" />
         <Using Include="AlvorKit.Windowing" />
     </ItemGroup>

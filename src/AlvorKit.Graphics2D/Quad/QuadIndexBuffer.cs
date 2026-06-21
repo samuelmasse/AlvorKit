@@ -25,7 +25,7 @@ internal class QuadIndexBuffer(GlLayer gl) : IDisposable
         if (quadVertexCount <= capacity)
             return;
 
-        var newCapacity = (int)BitOperations.RoundUpToPowerOf2((uint)quadVertexCount + 1u);
+        var newCapacity = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)quadVertexCount + 1u);
         var indexCount = newCapacity / 4 * 6;
         var indexValues = new uint[indexCount];
         uint vertexIndex = 0;

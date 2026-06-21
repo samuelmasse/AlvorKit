@@ -10,9 +10,9 @@ public sealed class SpriteBatchTest
     {
         using var spriteBatch = CreateSpriteBatch();
 
-        spriteBatch.Begin(Vector2.One);
+        spriteBatch.Begin(Vec2.One);
 
-        Assert.Throws<InvalidOperationException>(() => spriteBatch.Begin(Vector2.One));
+        Assert.Throws<InvalidOperationException>(() => spriteBatch.Begin(Vec2.One));
     }
 
     /// <summary>Ending without a matching begin surfaces the lifecycle guard.</summary>
@@ -30,9 +30,9 @@ public sealed class SpriteBatchTest
     {
         using var spriteBatch = CreateSpriteBatch();
 
-        spriteBatch.Begin(new Vector2(100f, 100f));
+        spriteBatch.Begin(new Vec2(100f, 100f));
         spriteBatch.End();
-        spriteBatch.Begin(new Vector2(100f, 100f));
+        spriteBatch.Begin(new Vec2(100f, 100f));
         spriteBatch.End();
     }
 
@@ -65,8 +65,8 @@ public sealed class SpriteBatchTest
         var (backend, spriteBatch) = CreateSpriteBatchWithBackend();
         using (spriteBatch)
         {
-            spriteBatch.Begin(new Vector2(100f, 100f));
-            spriteBatch.Writer.Draw(Vector2.Zero, new Vector2(10f, 10f));
+            spriteBatch.Begin(new Vec2(100f, 100f));
+            spriteBatch.Writer.Draw(Vec2.Zero, new Vec2(10f, 10f));
             spriteBatch.End();
         }
 
@@ -81,9 +81,9 @@ public sealed class SpriteBatchTest
 
         for (var pass = 0; pass < 2; pass++)
         {
-            spriteBatch.Begin(new Vector2(100f, 100f));
+            spriteBatch.Begin(new Vec2(100f, 100f));
             for (var i = 0; i < 128; i++)
-                spriteBatch.Writer.Draw(Vector2.Zero, Vector2.One);
+                spriteBatch.Writer.Draw(Vec2.Zero, Vec2.One);
             spriteBatch.End();
         }
     }
@@ -94,20 +94,20 @@ public sealed class SpriteBatchTest
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
         using var spriteBatch = CreateSpriteBatch(gl);
-        using var texture = new Texture(gl, Vector2.One, GlTextureTarget.Texture2D);
+        using var texture = new Texture(gl, Vec2u.One, GlTextureTarget.Texture2D);
 
         foreach (var rotation in Enum.GetValues<SpriteBatchRotation>())
         {
-            spriteBatch.Writer.Draw(texture, Vector2.Zero, Vector2.One, Vector2.Zero, Vector2.One, Vector4.One, rotation, SpriteBatchFlip.None);
-            spriteBatch.Writer.Draw(texture, Vector2.Zero, Vector2.One, Vector2.Zero, Vector2.One, Vector4.One, rotation, SpriteBatchFlip.Horizontal);
-            spriteBatch.Writer.Draw(texture, Vector2.Zero, Vector2.One, Vector2.Zero, Vector2.One, Vector4.One, rotation, SpriteBatchFlip.Vertical);
+            spriteBatch.Writer.Draw(texture, Vec2.Zero, Vec2.One, Vec2.Zero, Vec2.One, Vec4.One, rotation, SpriteBatchFlip.None);
+            spriteBatch.Writer.Draw(texture, Vec2.Zero, Vec2.One, Vec2.Zero, Vec2.One, Vec4.One, rotation, SpriteBatchFlip.Horizontal);
+            spriteBatch.Writer.Draw(texture, Vec2.Zero, Vec2.One, Vec2.Zero, Vec2.One, Vec4.One, rotation, SpriteBatchFlip.Vertical);
             spriteBatch.Writer.Draw(
                 texture,
-                Vector2.Zero,
-                Vector2.One,
-                Vector2.Zero,
-                Vector2.One,
-                Vector4.One,
+                Vec2.Zero,
+                Vec2.One,
+                Vec2.Zero,
+                Vec2.One,
+                Vec4.One,
                 rotation,
                 SpriteBatchFlip.Horizontal | SpriteBatchFlip.Vertical);
         }

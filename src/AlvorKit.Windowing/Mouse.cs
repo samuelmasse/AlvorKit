@@ -17,17 +17,17 @@ public sealed class Mouse(WindowLoop window)
     }
 
     /// <summary>Gets or sets the cursor position in window coordinates.</summary>
-    public Vector2 Position
+    public Vec2 Position
     {
         get => window.MousePosition.Position;
         set => window.MousePosition.Position = value;
     }
 
     /// <summary>Gets the tracked cursor delta for the current update.</summary>
-    public Vector2 Delta => window.MousePosition.Delta;
+    public Vec2 Delta => window.MousePosition.Delta;
 
     /// <summary>Gets the mouse wheel offset for the current tick.</summary>
-    public Vector2 Wheel => window.Mouse.Wheel;
+    public Vec2 Wheel => window.Mouse.Wheel;
 
     /// <summary>Gets or sets whether cursor delta tracking is active.</summary>
     public ref bool Track => ref window.MousePosition.Track;

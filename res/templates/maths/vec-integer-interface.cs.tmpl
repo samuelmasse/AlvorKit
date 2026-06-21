@@ -8,32 +8,24 @@ namespace AlvorKit.Maths;
 /// <typeparam name="TMask">The Boolean mask type returned by bit checks, such as <see cref="Vec3b" />.</typeparam>
 /// <typeparam name="TCount">The signed integer vector type returned by bit-count methods, such as <see cref="Vec3i" />.</typeparam>
 /// <typeparam name="TLength">The length and distance type, such as <see cref="float" /> for <see cref="Vec3i" />.</typeparam>
-public interface IVecInteger<TSelf, TScalar, TMask, TCount, TLength> :
-    IVecNumeric<TSelf, TScalar, TMask, TLength>,
-    IModulusOperators<TSelf, TSelf, TSelf>,
-    IBitwiseOperators<TSelf, TSelf, TSelf>,
-    IShiftOperators<TSelf, int, TSelf>
-    where TSelf : struct, IVecInteger<TSelf, TScalar, TMask, TCount, TLength>
+/// <typeparam name="TArithmetic">The vector type returned by component-wise arithmetic.</typeparam>
+public interface IVecInteger<TSelf, TScalar, TMask, TCount, TLength, TArithmetic> :
+    IVecNumeric<TSelf, TScalar, TMask, TLength, TArithmetic>,
+    IBitwiseOperators<TSelf, TSelf, TArithmetic>,
+    IShiftOperators<TSelf, int, TArithmetic>,
+    IVecIntegerCountShiftOperators<TSelf, TCount, TArithmetic>
+    where TSelf : struct, IVecInteger<TSelf, TScalar, TMask, TCount, TLength, TArithmetic>
     where TMask : struct, IVecMask<TMask>
     where TCount : struct, IVec<TCount, int>
 {
     /// <summary>Shifts each component left by a scalar bit count.</summary>
-    static abstract TSelf operator <<(TSelf left, int right);
+    static abstract TArithmetic operator <<(TSelf left, int right);
 
     /// <summary>Shifts each component right by a scalar bit count.</summary>
-    static abstract TSelf operator >>(TSelf left, int right);
+    static abstract TArithmetic operator >>(TSelf left, int right);
 
     /// <summary>Shifts each component right without sign extension by a scalar bit count.</summary>
-    static abstract TSelf operator >>>(TSelf left, int right);
-
-    /// <summary>Shifts each component left by matching component bit counts.</summary>
-    static abstract TSelf operator <<(TSelf left, TSelf right);
-
-    /// <summary>Shifts each component right by matching component bit counts.</summary>
-    static abstract TSelf operator >>(TSelf left, TSelf right);
-
-    /// <summary>Shifts each component right without sign extension by matching component bit counts.</summary>
-    static abstract TSelf operator >>>(TSelf left, TSelf right);
+    static abstract TArithmetic operator >>>(TSelf left, int right);
 
     /// <summary>Returns the number of set bits in each component.</summary>
     static abstract TCount BitCount(TSelf value);

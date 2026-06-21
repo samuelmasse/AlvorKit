@@ -8,13 +8,13 @@ namespace AlvorKit.Maths;
 /// <typeparam name="TMask">The three-component Boolean mask type returned by comparisons, such as <see cref="Vec3b" />.</typeparam>
 /// <typeparam name="TCount">The three-component signed integer vector type returned by bit-count methods, such as <see cref="Vec3i" />.</typeparam>
 /// <typeparam name="TLength">The length and distance type, such as <see cref="float" /> or <see cref="double" />.</typeparam>
-public interface IVec3UnsignedInteger<TSelf, TScalar, TMask, TCount, TLength> :
+/// <typeparam name="TArithmetic">The three-component vector type returned by component-wise arithmetic.</typeparam>
+public interface IVec3UnsignedInteger<TSelf, TScalar, TMask, TCount, TLength, TArithmetic> :
     IVec3<TSelf, TScalar>,
-    IVecInteger<TSelf, TScalar, TMask, TCount, TLength>,
+    IVecInteger<TSelf, TScalar, TMask, TCount, TLength, TArithmetic>,
     IVec3Axes<TSelf>,
-    IVecIntegerCountShiftOperators<TSelf, TCount>,
     IVec3Cross<TSelf, TScalar>
-    where TSelf : struct, IVec3UnsignedInteger<TSelf, TScalar, TMask, TCount, TLength>
+    where TSelf : struct, IVec3UnsignedInteger<TSelf, TScalar, TMask, TCount, TLength, TArithmetic>
     where TMask : struct, IVec3Mask<TMask>
     where TCount : struct, IVec3<TCount, int>
 {

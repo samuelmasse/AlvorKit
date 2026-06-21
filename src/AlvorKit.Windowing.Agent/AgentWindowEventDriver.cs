@@ -15,7 +15,7 @@ internal sealed class AgentWindowEventDriver(
     Action<WindowTextInputEvent> textInput,
     Action<WindowResizeEvent> resize,
     Action<WindowPositionEvent> move,
-    Action<Vector2> setClientSize)
+    Action<Vec2u> setClientSize)
 {
     /// <summary>Closes the simulated window and raises the closing event once.</summary>
     internal void Close() { if (state.TryClose()) closing(); }
@@ -36,17 +36,17 @@ internal sealed class AgentWindowEventDriver(
     internal void ReleaseMouse(WindowMouseButton button) => mouseUp(new(button));
 
     /// <summary>Injects an absolute cursor move in simulated window coordinates.</summary>
-    internal void MoveMouse(Vector2 position)
+    internal void MoveMouse(Vec2 position)
     {
         state.MousePosition = position;
         mouseMove(new(position));
     }
 
     /// <summary>Injects a relative cursor move in simulated window coordinates.</summary>
-    internal void PanMouse(Vector2 delta) => MoveMouse(state.MousePosition + delta);
+    internal void PanMouse(Vec2 delta) => MoveMouse(state.MousePosition + delta);
 
     /// <summary>Injects a mouse wheel offset into the next exact agent-controlled frame.</summary>
-    internal void ScrollMouse(Vector2 offset) => mouseWheel(new(offset));
+    internal void ScrollMouse(Vec2 offset) => mouseWheel(new(offset));
 
     /// <summary>Injects one Unicode scalar of text input.</summary>
     internal void EnterText(Rune rune) => textInput(new(rune));
@@ -62,14 +62,14 @@ internal sealed class AgentWindowEventDriver(
     internal void SetFocus(bool isFocused) => state.IsFocused = isFocused;
 
     /// <summary>Injects a window resize event and updates the simulated drawable size.</summary>
-    internal void ResizeWindow(Vector2 size)
+    internal void ResizeWindow(Vec2u size)
     {
         setClientSize(size);
         resize(new(state.ClientSize));
     }
 
     /// <summary>Injects a simulated top-level window move event.</summary>
-    internal void MoveWindow(Vector2 position) => move(new(position));
+    internal void MoveWindow(Vec2i position) => move(new(position));
 
     /// <summary>Invokes exactly one logical update with the supplied delta.</summary>
     internal void Update(double deltaSeconds)
@@ -79,7 +79,7 @@ internal sealed class AgentWindowEventDriver(
     }
 
     /// <summary>Pans the mouse, then invokes exactly one logical update with the supplied delta.</summary>
-    internal void Update(double deltaSeconds, Vector2 mouseDelta)
+    internal void Update(double deltaSeconds, Vec2 mouseDelta)
     {
         PanMouse(mouseDelta);
         Update(deltaSeconds);
@@ -108,7 +108,7 @@ internal sealed class AgentWindowEventDriver(
     }
 
     /// <summary>Invokes fixed updates while applying the same cursor delta before each update.</summary>
-    internal void Advance(int count, double deltaSeconds, Vector2 mouseDeltaPerUpdate)
+    internal void Advance(int count, double deltaSeconds, Vec2 mouseDeltaPerUpdate)
     {
         AgentWindowState.ValidateCount(count);
         for (var i = 0; i < count && !state.IsExiting; i++)

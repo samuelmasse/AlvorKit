@@ -4,13 +4,13 @@ namespace AlvorKit.Windowing;
 /// <param name="gl">The OpenGL layer owned by the agent host after construction.</param>
 /// <param name="save">Optional save callback for tests that should avoid framebuffer reads.</param>
 [ExcludeFromCodeCoverage(Justification = "Reads a native OpenGL framebuffer and writes a PNG file.")]
-internal sealed class AgentWindowScreenshot(GlLayer gl, Action<GlLayer, Vector2, string>? save = null) : IDisposable
+internal sealed class AgentWindowScreenshot(GlLayer gl, Action<GlLayer, Vec2u, string>? save = null) : IDisposable
 {
-    private readonly Action<GlLayer, Vector2, string> save = save ?? SaveFramebuffer;
+    private readonly Action<GlLayer, Vec2u, string> save = save ?? SaveFramebuffer;
     private bool disposed;
 
     /// <summary>Reads the current framebuffer and saves it as an RGB PNG.</summary>
-    internal void Save(Vector2 size, string path) => save(gl, size, path);
+    internal void Save(Vec2u size, string path) => save(gl, size, path);
 
     /// <summary>Disposes the OpenGL layer after the host is done with the window context.</summary>
     public void Dispose()
@@ -23,10 +23,10 @@ internal sealed class AgentWindowScreenshot(GlLayer gl, Action<GlLayer, Vector2,
     }
 
     /// <summary>Reads the current framebuffer and saves it as an RGB PNG.</summary>
-    private static unsafe void SaveFramebuffer(GlLayer gl, Vector2 size, string path)
+    private static unsafe void SaveFramebuffer(GlLayer gl, Vec2u size, string path)
     {
-        var width = Math.Max(1, (int)size.X);
-        var height = Math.Max(1, (int)size.Y);
+        var width = checked((int)Math.Max(1u, size.X));
+        var height = checked((int)Math.Max(1u, size.Y));
         var pixels = new byte[width * height * 4];
 
         fixed (byte* pointer = pixels)
