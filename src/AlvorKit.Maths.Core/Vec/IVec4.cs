@@ -1,0 +1,20 @@
+namespace AlvorKit.Maths;
+
+/// <summary>Applies to all four-component vector types, including <c>Vec4</c>, <c>Vec4i</c>, and <c>Vec4b</c>.</summary>
+/// <typeparam name="TSelf">The concrete four-component vector type.</typeparam>
+/// <typeparam name="TScalar">The component type, such as <see cref="float" />, <see cref="int" />, or <see cref="bool" />.</typeparam>
+public interface IVec4<TSelf, TScalar> : IVec<TSelf, TScalar>
+    where TSelf : struct, IVec4<TSelf, TScalar>
+{
+    /// <summary>Creates a vector from X, Y, Z, and W components.</summary>
+    static abstract TSelf Create(TScalar x, TScalar y, TScalar z, TScalar w);
+
+    /// <summary>Creates a vector from an X/Y/Z/W tuple.</summary>
+    static abstract implicit operator TSelf((TScalar X, TScalar Y, TScalar Z, TScalar W) value);
+
+    /// <summary>Returns this vector as an X/Y/Z/W tuple.</summary>
+    static abstract implicit operator (TScalar X, TScalar Y, TScalar Z, TScalar W)(TSelf value);
+
+    /// <summary>Deconstructs this vector into X, Y, Z, and W components.</summary>
+    void Deconstruct(out TScalar x, out TScalar y, out TScalar z, out TScalar w);
+}

@@ -34,19 +34,12 @@ internal static class MathsGenerator
         var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         RecreateDirectory(projectDirectory);
         File.WriteAllText(ProjectFile(projectDirectory), ProjectSource(packageVersion), encoding);
-        File.WriteAllText(Path.Combine(projectDirectory, "ScalarMath.g.cs"), ScalarMathSource(), encoding);
         Directory.CreateDirectory(vecDirectory);
         Directory.CreateDirectory(matDirectory);
         Directory.CreateDirectory(quatDirectory);
         Directory.CreateDirectory(boxDirectory);
         foreach (var (fileName, source) in VectorInterfaceFileEmitter.EmitAll())
             File.WriteAllText(Path.Combine(vecDirectory, fileName), source, encoding);
-        foreach (var (fileName, source) in MatrixInterfaceFileEmitter.EmitAll())
-            File.WriteAllText(Path.Combine(matDirectory, fileName), source, encoding);
-        foreach (var (fileName, source) in QuaternionInterfaceFileEmitter.EmitAll())
-            File.WriteAllText(Path.Combine(quatDirectory, fileName), source, encoding);
-        foreach (var (fileName, source) in BoxInterfaceFileEmitter.EmitAll())
-            File.WriteAllText(Path.Combine(boxDirectory, fileName), source, encoding);
 
         foreach (var vector in VectorCatalog.Vectors)
         {
@@ -83,10 +76,6 @@ internal static class MathsGenerator
     /// <summary>Returns generated project source for the pinned primitives package version.</summary>
     private static string ProjectSource(string packageVersion) =>
         MathsTemplate.Render("maths-primitives-project.csproj.tmpl", ("Version", packageVersion));
-
-    /// <summary>Returns generated scalar math helper source.</summary>
-    private static string ScalarMathSource() =>
-        MathsTemplate.Render("scalar-math.cs.tmpl");
 
     /// <summary>Deletes stale generated files before creating the output directory again.</summary>
     private static void RecreateDirectory(string projectDirectory)

@@ -1,0 +1,45 @@
+namespace AlvorKit.Maths;
+
+/// <summary>Applies to all vector types, including <c>Vec2</c>, <c>Vec3i</c>, <c>Vec4d</c>, and <c>Vec4b</c>.</summary>
+/// <typeparam name="TSelf">The concrete vector type, such as <c>Vec3</c> or <c>Vec4i</c>.</typeparam>
+/// <typeparam name="TScalar">The component type, such as <see cref="float" />, <see cref="int" />, or <see cref="bool" />.</typeparam>
+public interface IVec<TSelf, TScalar> :
+    IEquatable<TSelf>,
+    IComparable<TSelf>,
+    IEqualityOperators<TSelf, TSelf, bool>,
+    ISpanFormattable,
+    IUtf8SpanFormattable,
+    ISpanParsable<TSelf>,
+    IUtf8SpanParsable<TSelf>
+    where TSelf : struct, IVec<TSelf, TScalar>
+{
+    /// <summary>Gets the number of scalar components in the vector.</summary>
+    static abstract int ComponentCount { get; }
+
+    /// <summary>Gets the byte size of the vector.</summary>
+    static abstract int SizeInBytes { get; }
+
+    /// <summary>Creates a vector with every component set to <paramref name="value" />.</summary>
+    static abstract TSelf Create(TScalar value);
+
+    /// <summary>Creates a vector from the first <see cref="ComponentCount" /> values in a span.</summary>
+    static abstract TSelf Create(ReadOnlySpan<TScalar> values);
+
+    /// <summary>Gets a mutable reference to a component by zero-based index.</summary>
+    static abstract ref TScalar ComponentRef(ref TSelf value, int index);
+
+    /// <summary>Gets or sets a component by zero-based index.</summary>
+    TScalar this[int index] { get; set; }
+
+    /// <summary>Copies this vector into an array.</summary>
+    void CopyTo(TScalar[] array);
+
+    /// <summary>Copies this vector into an array starting at <paramref name="index" />.</summary>
+    void CopyTo(TScalar[] array, int index);
+
+    /// <summary>Copies this vector into a destination span.</summary>
+    void CopyTo(Span<TScalar> destination);
+
+    /// <summary>Attempts to copy this vector into a destination span.</summary>
+    bool TryCopyTo(Span<TScalar> destination);
+}

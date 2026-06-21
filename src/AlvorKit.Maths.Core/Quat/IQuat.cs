@@ -1,0 +1,189 @@
+namespace AlvorKit.Maths;
+
+/// <summary>Applies to quaternion types such as <c>Quat</c> and <c>Quatd</c>.</summary>
+/// <typeparam name="TSelf">The concrete quaternion type.</typeparam>
+/// <typeparam name="TScalar">The component type, such as <see cref="float" /> or <see cref="double" />.</typeparam>
+/// <typeparam name="TVector3">The matching three-component vector type.</typeparam>
+/// <typeparam name="TVector4">The matching four-component vector type.</typeparam>
+/// <typeparam name="TMask">The Boolean mask type returned by component-wise comparisons.</typeparam>
+/// <typeparam name="TMatrix3">The matching 3x3 matrix type.</typeparam>
+/// <typeparam name="TMatrix4">The matching 4x4 matrix type.</typeparam>
+public interface IQuat<TSelf, TScalar, TVector3, TVector4, TMask, TMatrix3, TMatrix4> :
+    IQuatRotation<TSelf, TScalar, TVector3, TMatrix3, TMatrix4>,
+    IQuatInterpolation<TSelf, TScalar>,
+    IEquatable<TSelf>,
+    IComparable<TSelf>,
+    IEqualityOperators<TSelf, TSelf, bool>,
+    IUnaryPlusOperators<TSelf, TSelf>,
+    IUnaryNegationOperators<TSelf, TSelf>,
+    IAdditionOperators<TSelf, TSelf, TSelf>,
+    ISubtractionOperators<TSelf, TSelf, TSelf>,
+    IMultiplyOperators<TSelf, TSelf, TSelf>,
+    IDivisionOperators<TSelf, TSelf, TSelf>,
+    IAdditiveIdentity<TSelf, TSelf>,
+    IMultiplicativeIdentity<TSelf, TSelf>,
+    ISpanFormattable,
+    IUtf8SpanFormattable,
+    ISpanParsable<TSelf>,
+    IUtf8SpanParsable<TSelf>
+    where TSelf : struct, IQuat<TSelf, TScalar, TVector3, TVector4, TMask, TMatrix3, TMatrix4>
+    where TVector3 : struct, IVec3<TVector3, TScalar>
+    where TVector4 : struct, IVec4<TVector4, TScalar>
+    where TMask : struct
+{
+    /// <summary>Gets the number of scalar components in the quaternion.</summary>
+    static abstract int ComponentCount { get; }
+
+    /// <summary>Gets the byte size of the quaternion.</summary>
+    static abstract int SizeInBytes { get; }
+
+    /// <summary>Gets the zero quaternion.</summary>
+    static abstract TSelf Zero { get; }
+
+    /// <summary>Gets the identity rotation quaternion.</summary>
+    static abstract TSelf Identity { get; }
+
+    /// <summary>Gets or sets the vector part of the quaternion.</summary>
+    TVector3 Vector { get; set; }
+
+    /// <summary>Gets or sets the scalar part of the quaternion.</summary>
+    TScalar Scalar { get; set; }
+
+    /// <summary>Gets the squared quaternion length.</summary>
+    TScalar LengthSquared { get; }
+
+    /// <summary>Gets the quaternion length.</summary>
+    TScalar Length { get; }
+
+    /// <summary>Gets this quaternion divided by its length.</summary>
+    TSelf Normalized { get; }
+
+    /// <summary>Gets this quaternion divided by its length, or identity when its length is zero.</summary>
+    TSelf NormalizedOrIdentity { get; }
+
+    /// <summary>Returns this quaternion divided by its length, or fallback when its length is zero.</summary>
+    TSelf NormalizedOr(TSelf fallback);
+
+    /// <summary>Returns this quaternion divided by its length when possible.</summary>
+    bool TryNormalize(out TSelf result);
+
+    /// <summary>Gets the conjugate quaternion.</summary>
+    TSelf Conjugated { get; }
+
+    /// <summary>Gets the inverse quaternion.</summary>
+    TSelf Inverted { get; }
+
+    /// <summary>Creates a quaternion from scalar components.</summary>
+    static abstract TSelf Create(TScalar x, TScalar y, TScalar z, TScalar w);
+
+    /// <summary>Creates a quaternion from vector and scalar parts.</summary>
+    static abstract TSelf Create(TVector3 vector, TScalar scalar);
+
+    /// <summary>Creates a quaternion from the first four values in a span.</summary>
+    static abstract TSelf Create(ReadOnlySpan<TScalar> values);
+
+    /// <summary>Gets a mutable reference to a component by zero-based index.</summary>
+    static abstract ref TScalar ComponentRef(ref TSelf value, int index);
+
+    /// <summary>Gets or sets a component by zero-based index.</summary>
+    TScalar this[int index] { get; set; }
+
+    /// <summary>Copies this quaternion into an array.</summary>
+    void CopyTo(TScalar[] array);
+
+    /// <summary>Copies this quaternion into an array starting at <paramref name="index" />.</summary>
+    void CopyTo(TScalar[] array, int index);
+
+    /// <summary>Copies this quaternion into a destination span.</summary>
+    void CopyTo(Span<TScalar> destination);
+
+    /// <summary>Attempts to copy this quaternion into a destination span.</summary>
+    bool TryCopyTo(Span<TScalar> destination);
+
+    /// <summary>Returns value divided by its length.</summary>
+    static abstract TSelf Normalize(TSelf value);
+
+    /// <summary>Returns the dot product of two quaternions.</summary>
+    static abstract TScalar Dot(TSelf left, TSelf right);
+
+    /// <summary>Returns the conjugate quaternion.</summary>
+    static abstract TSelf Conjugate(TSelf value);
+
+    /// <summary>Returns the inverse quaternion.</summary>
+    static abstract TSelf Invert(TSelf value);
+
+    /// <summary>Returns the inverse quaternion when possible.</summary>
+    static abstract bool TryInvert(TSelf value, out TSelf result);
+
+    /// <summary>Returns whether value is close to the identity rotation.</summary>
+    static abstract bool IsIdentity(TSelf value, TScalar epsilon);
+
+    /// <summary>Returns whether value has unit length.</summary>
+    static abstract bool IsNormalized(TSelf value, TScalar epsilon);
+
+    /// <summary>Returns a mask containing component-wise equality results.</summary>
+    static abstract TMask Equal(TSelf left, TSelf right);
+
+    /// <summary>Returns a mask containing tolerance-based component-wise equality results.</summary>
+    static abstract TMask Equal(TSelf left, TSelf right, TScalar epsilon);
+
+    /// <summary>Returns a mask containing component-wise inequality results.</summary>
+    static abstract TMask NotEqual(TSelf left, TSelf right);
+
+    /// <summary>Returns a mask containing tolerance-based component-wise inequality results.</summary>
+    static abstract TMask NotEqual(TSelf left, TSelf right, TScalar epsilon);
+
+    /// <summary>Returns a mask containing component-wise less-than results.</summary>
+    static abstract TMask LessThan(TSelf left, TSelf right);
+
+    /// <summary>Returns a mask containing component-wise less-than-or-equal results.</summary>
+    static abstract TMask LessThanOrEqual(TSelf left, TSelf right);
+
+    /// <summary>Returns a mask containing component-wise greater-than results.</summary>
+    static abstract TMask GreaterThan(TSelf left, TSelf right);
+
+    /// <summary>Returns a mask containing component-wise greater-than-or-equal results.</summary>
+    static abstract TMask GreaterThanOrEqual(TSelf left, TSelf right);
+
+    /// <summary>Returns a mask containing component-wise NaN results.</summary>
+    static abstract TMask IsNaN(TSelf value);
+
+    /// <summary>Returns a mask containing component-wise infinity results.</summary>
+    static abstract TMask IsInfinity(TSelf value);
+
+    /// <summary>Returns a mask containing component-wise finite results.</summary>
+    static abstract TMask IsFinite(TSelf value);
+
+    /// <summary>Returns a mask containing component-wise less-than results.</summary>
+    static abstract TMask operator <(TSelf left, TSelf right);
+
+    /// <summary>Returns a mask containing component-wise less-than-or-equal results.</summary>
+    static abstract TMask operator <=(TSelf left, TSelf right);
+
+    /// <summary>Returns a mask containing component-wise greater-than results.</summary>
+    static abstract TMask operator >(TSelf left, TSelf right);
+
+    /// <summary>Returns a mask containing component-wise greater-than-or-equal results.</summary>
+    static abstract TMask operator >=(TSelf left, TSelf right);
+
+    /// <summary>Multiplies a quaternion by a scalar.</summary>
+    static abstract TSelf operator *(TSelf left, TScalar right);
+
+    /// <summary>Multiplies a quaternion by a scalar.</summary>
+    static abstract TSelf operator *(TScalar left, TSelf right);
+
+    /// <summary>Divides a quaternion by a scalar.</summary>
+    static abstract TSelf operator /(TSelf left, TScalar right);
+
+    /// <summary>Adds a scalar to each quaternion component.</summary>
+    static abstract TSelf operator +(TSelf left, TScalar right);
+
+    /// <summary>Adds a scalar to each quaternion component.</summary>
+    static abstract TSelf operator +(TScalar left, TSelf right);
+
+    /// <summary>Subtracts a scalar from each quaternion component.</summary>
+    static abstract TSelf operator -(TSelf left, TScalar right);
+
+    /// <summary>Subtracts each quaternion component from a scalar.</summary>
+    static abstract TSelf operator -(TScalar left, TSelf right);
+}

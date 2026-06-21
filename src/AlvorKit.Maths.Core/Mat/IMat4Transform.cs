@@ -1,0 +1,313 @@
+namespace AlvorKit.Maths;
+
+/// <summary>Applies to 4x4 transform matrix types, including <c>Mat4</c> and <c>Mat4d</c>.</summary>
+/// <typeparam name="TSelf">The 4x4 transform matrix type.</typeparam>
+/// <typeparam name="TScalar">The component type, such as <see cref="float" /> or <see cref="double" />.</typeparam>
+/// <typeparam name="TVector2">The matching two-component vector type.</typeparam>
+/// <typeparam name="TVector3">The matching three-component vector type.</typeparam>
+/// <typeparam name="TVector4">The matching four-component vector type.</typeparam>
+public interface IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4> :
+    IMat4<TSelf, TScalar, TVector4, TVector4, TSelf>
+    where TSelf : struct, IMat4Transform<TSelf, TScalar, TVector2, TVector3, TVector4>
+    where TVector2 : struct, IVec2<TVector2, TScalar>
+    where TVector3 : struct, IVec3<TVector3, TScalar>
+    where TVector4 : struct, IVec4<TVector4, TScalar>
+{
+    /// <summary>Gets or sets the translation component.</summary>
+    TVector3 Translation { get; set; }
+
+    /// <summary>Creates a translation matrix.</summary>
+    static abstract TSelf CreateTranslation(TVector3 translation);
+
+    /// <summary>Applies a translation after an existing transform.</summary>
+    static abstract TSelf Translate(TSelf value, TVector3 translation);
+
+    /// <summary>Creates a scale matrix.</summary>
+    static abstract TSelf CreateScale(TVector3 scale);
+
+    /// <summary>Creates a uniform scale matrix.</summary>
+    static abstract TSelf CreateScale(TScalar scale);
+
+    /// <summary>Creates a scale matrix around a center point.</summary>
+    static abstract TSelf CreateScale(TVector3 scale, TVector3 center);
+
+    /// <summary>Creates a uniform scale matrix around a center point.</summary>
+    static abstract TSelf CreateScale(TScalar scale, TVector3 center);
+
+    /// <summary>Applies a scale after an existing transform.</summary>
+    static abstract TSelf Scale(TSelf value, TVector3 scale);
+
+    /// <summary>Applies a uniform scale after an existing transform.</summary>
+    static abstract TSelf Scale(TSelf value, TScalar scale);
+
+    /// <summary>Creates a rotation matrix around the X axis.</summary>
+    static abstract TSelf CreateRotationX(TScalar radians);
+
+    /// <summary>Creates a rotation matrix around the X axis and a center point.</summary>
+    static abstract TSelf CreateRotationX(TScalar radians, TVector3 center);
+
+    /// <summary>Creates a rotation matrix around the Y axis.</summary>
+    static abstract TSelf CreateRotationY(TScalar radians);
+
+    /// <summary>Creates a rotation matrix around the Y axis and a center point.</summary>
+    static abstract TSelf CreateRotationY(TScalar radians, TVector3 center);
+
+    /// <summary>Creates a rotation matrix around the Z axis.</summary>
+    static abstract TSelf CreateRotationZ(TScalar radians);
+
+    /// <summary>Creates a rotation matrix around the Z axis and a center point.</summary>
+    static abstract TSelf CreateRotationZ(TScalar radians, TVector3 center);
+
+    /// <summary>Creates a rotation matrix around an axis.</summary>
+    static abstract TSelf CreateRotation(TScalar radians, TVector3 axis);
+
+    /// <summary>Creates a rotation matrix around an axis and a center point.</summary>
+    static abstract TSelf CreateRotation(TScalar radians, TVector3 axis, TVector3 center);
+
+    /// <summary>Applies an axis rotation after an existing transform.</summary>
+    static abstract TSelf Rotate(TSelf value, TScalar radians, TVector3 axis);
+
+    /// <summary>Applies an X-axis rotation after an existing transform.</summary>
+    static abstract TSelf RotateX(TSelf value, TScalar radians);
+
+    /// <summary>Applies a Y-axis rotation after an existing transform.</summary>
+    static abstract TSelf RotateY(TSelf value, TScalar radians);
+
+    /// <summary>Applies a Z-axis rotation after an existing transform.</summary>
+    static abstract TSelf RotateZ(TSelf value, TScalar radians);
+
+    /// <summary>Creates a shear matrix around a point.</summary>
+    static abstract TSelf CreateShear(TVector3 point, TVector2 x, TVector2 y, TVector2 z);
+
+    /// <summary>Creates a shear matrix around the origin.</summary>
+    static abstract TSelf CreateShear(TVector2 x, TVector2 y, TVector2 z);
+
+    /// <summary>Applies a shear after an existing transform.</summary>
+    static abstract TSelf Shear(TSelf value, TVector3 point, TVector2 x, TVector2 y, TVector2 z);
+
+    /// <summary>Creates a matrix that scales and biases normalized coordinates.</summary>
+    static abstract TSelf CreateScaleBias(TScalar scale, TScalar bias);
+
+    /// <summary>Applies a scale-bias matrix after an existing transform.</summary>
+    static abstract TSelf ScaleBias(TSelf value, TScalar scale, TScalar bias);
+
+    /// <summary>Creates a look-at view matrix with default OpenGL view-space conventions.</summary>
+    static abstract TSelf LookAt(TVector3 eye, TVector3 target, TVector3 up);
+
+    /// <summary>Creates a look-at view matrix with explicit view-space handedness.</summary>
+    static abstract TSelf LookAt(TVector3 eye, TVector3 target, TVector3 up, ProjectionHandedness handedness);
+
+    /// <summary>Creates a look-to view matrix with default OpenGL view-space conventions.</summary>
+    static abstract TSelf LookTo(TVector3 eye, TVector3 direction, TVector3 up);
+
+    /// <summary>Creates a look-to view matrix with explicit view-space handedness.</summary>
+    static abstract TSelf LookTo(TVector3 eye, TVector3 direction, TVector3 up, ProjectionHandedness handedness);
+
+    /// <summary>Creates a world transform from position, forward, and up directions.</summary>
+    static abstract TSelf CreateWorld(TVector3 position, TVector3 forward, TVector3 up);
+
+    /// <summary>Gets the scale of the first three columns.</summary>
+    TVector3 ExtractScale();
+
+    /// <summary>Returns this transform with its translation cleared.</summary>
+    TSelf WithoutTranslation();
+
+    /// <summary>Transforms a 3D point using the homogeneous transform.</summary>
+    static abstract TVector3 TransformPoint(TSelf value, TVector3 point);
+
+    /// <summary>Transforms a 3D direction vector without applying translation.</summary>
+    static abstract TVector3 TransformVector(TSelf value, TVector3 vector);
+
+    /// <summary>Creates a perspective projection with default OpenGL clip-space conventions.</summary>
+    static abstract TSelf CreatePerspectiveFieldOfView(TScalar fovYRadians, TScalar aspect, TScalar nearPlane, TScalar farPlane);
+
+    /// <summary>Creates a perspective projection with explicit clip-space conventions.</summary>
+    static abstract TSelf CreatePerspectiveFieldOfView(
+        TScalar fovYRadians,
+        TScalar aspect,
+        TScalar nearPlane,
+        TScalar farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange);
+
+    /// <summary>Creates a perspective projection from field of view and viewport size with default OpenGL clip-space conventions.</summary>
+    static abstract TSelf CreatePerspectiveFieldOfView(
+        TScalar fovRadians,
+        TScalar width,
+        TScalar height,
+        TScalar nearPlane,
+        TScalar farPlane);
+
+    /// <summary>Creates a perspective projection from field of view and viewport size with explicit clip-space conventions.</summary>
+    static abstract TSelf CreatePerspectiveFieldOfView(
+        TScalar fovRadians,
+        TScalar width,
+        TScalar height,
+        TScalar nearPlane,
+        TScalar farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange);
+
+    /// <summary>Creates a frustum projection with default OpenGL clip-space conventions.</summary>
+    static abstract TSelf CreateFrustum(
+        TScalar left,
+        TScalar right,
+        TScalar bottom,
+        TScalar top,
+        TScalar nearPlane,
+        TScalar farPlane);
+
+    /// <summary>Creates a frustum projection with explicit clip-space conventions.</summary>
+    static abstract TSelf CreateFrustum(
+        TScalar left,
+        TScalar right,
+        TScalar bottom,
+        TScalar top,
+        TScalar nearPlane,
+        TScalar farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange);
+
+    /// <summary>Creates an off-center perspective projection with default OpenGL clip-space conventions.</summary>
+    static abstract TSelf CreatePerspectiveOffCenter(
+        TScalar left,
+        TScalar right,
+        TScalar bottom,
+        TScalar top,
+        TScalar nearPlane,
+        TScalar farPlane);
+
+    /// <summary>Creates an off-center perspective projection with explicit clip-space conventions.</summary>
+    static abstract TSelf CreatePerspectiveOffCenter(
+        TScalar left,
+        TScalar right,
+        TScalar bottom,
+        TScalar top,
+        TScalar nearPlane,
+        TScalar farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange);
+
+    /// <summary>Creates a centered perspective projection from near-plane dimensions with default OpenGL clip-space conventions.</summary>
+    static abstract TSelf CreatePerspective(TScalar width, TScalar height, TScalar nearPlane, TScalar farPlane);
+
+    /// <summary>Creates a centered perspective projection from near-plane dimensions with explicit clip-space conventions.</summary>
+    static abstract TSelf CreatePerspective(
+        TScalar width,
+        TScalar height,
+        TScalar nearPlane,
+        TScalar farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange);
+
+    /// <summary>Creates an infinite perspective projection with default OpenGL clip-space conventions.</summary>
+    static abstract TSelf CreateInfinitePerspective(TScalar fovYRadians, TScalar aspect, TScalar nearPlane);
+
+    /// <summary>Creates an infinite perspective projection with explicit clip-space conventions.</summary>
+    static abstract TSelf CreateInfinitePerspective(
+        TScalar fovYRadians,
+        TScalar aspect,
+        TScalar nearPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange);
+
+    /// <summary>Creates a tweaked infinite perspective projection with default OpenGL clip-space conventions.</summary>
+    static abstract TSelf CreateTweakedInfinitePerspective(
+        TScalar fovYRadians,
+        TScalar aspect,
+        TScalar nearPlane,
+        TScalar epsilon);
+
+    /// <summary>Creates a tweaked infinite perspective projection with default OpenGL clip-space conventions.</summary>
+    static abstract TSelf CreateTweakedInfinitePerspective(TScalar fovYRadians, TScalar aspect, TScalar nearPlane);
+
+    /// <summary>Creates a tweaked infinite perspective projection with explicit clip-space conventions.</summary>
+    static abstract TSelf CreateTweakedInfinitePerspective(
+        TScalar fovYRadians,
+        TScalar aspect,
+        TScalar nearPlane,
+        TScalar epsilon,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange);
+
+    /// <summary>Creates a tweaked infinite perspective projection with explicit clip-space conventions.</summary>
+    static abstract TSelf CreateTweakedInfinitePerspective(
+        TScalar fovYRadians,
+        TScalar aspect,
+        TScalar nearPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange);
+
+    /// <summary>Creates an orthographic projection with default OpenGL clip-space conventions.</summary>
+    static abstract TSelf CreateOrthographicOffCenter(
+        TScalar left,
+        TScalar right,
+        TScalar bottom,
+        TScalar top,
+        TScalar nearPlane,
+        TScalar farPlane);
+
+    /// <summary>Creates an orthographic projection with explicit clip-space conventions.</summary>
+    static abstract TSelf CreateOrthographicOffCenter(
+        TScalar left,
+        TScalar right,
+        TScalar bottom,
+        TScalar top,
+        TScalar nearPlane,
+        TScalar farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange);
+
+    /// <summary>Creates a centered orthographic projection with default OpenGL clip-space conventions.</summary>
+    static abstract TSelf CreateOrthographic(TScalar width, TScalar height, TScalar nearPlane, TScalar farPlane);
+
+    /// <summary>Creates a centered orthographic projection with explicit clip-space conventions.</summary>
+    static abstract TSelf CreateOrthographic(
+        TScalar width,
+        TScalar height,
+        TScalar nearPlane,
+        TScalar farPlane,
+        ProjectionHandedness handedness,
+        ProjectionDepthRange depthRange);
+
+    /// <summary>Projects an object-space point to window coordinates with default OpenGL depth conventions.</summary>
+    static abstract TVector3 Project(TVector3 objectPosition, TSelf model, TSelf projection, TVector4 viewport);
+
+    /// <summary>Projects an object-space point to window coordinates with explicit depth conventions.</summary>
+    static abstract TVector3 Project(
+        TVector3 objectPosition,
+        TSelf model,
+        TSelf projection,
+        TVector4 viewport,
+        ProjectionDepthRange depthRange);
+
+    /// <summary>Unprojects a window-space point with default OpenGL depth conventions.</summary>
+    static abstract TVector3 UnProject(TVector3 windowPosition, TSelf model, TSelf projection, TVector4 viewport);
+
+    /// <summary>Unprojects a window-space point with explicit depth conventions.</summary>
+    static abstract TVector3 UnProject(
+        TVector3 windowPosition,
+        TSelf model,
+        TSelf projection,
+        TVector4 viewport,
+        ProjectionDepthRange depthRange);
+
+    /// <summary>Creates a picking matrix for a window-space selection rectangle.</summary>
+    static abstract TSelf PickMatrix(TVector2 center, TVector2 delta, TVector4 viewport);
+
+    /// <summary>Creates a viewport transform for default OpenGL normalized depth.</summary>
+    static abstract TSelf CreateViewport(TVector4 viewport);
+
+    /// <summary>Creates a viewport transform for default OpenGL normalized depth.</summary>
+    static abstract TSelf CreateViewport(
+        TVector4 viewport,
+        TScalar minDepth,
+        TScalar maxDepth);
+
+    /// <summary>Creates a viewport transform for explicit normalized depth conventions.</summary>
+    static abstract TSelf CreateViewport(
+        TVector4 viewport,
+        TScalar minDepth,
+        TScalar maxDepth,
+        ProjectionDepthRange depthRange);
+}

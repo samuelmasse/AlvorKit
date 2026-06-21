@@ -1,0 +1,25 @@
+namespace AlvorKit.Maths;
+
+/// <summary>Applies to 4x4 matrix types that can be created from matching quaternions.</summary>
+/// <typeparam name="TSelf">The 4x4 matrix type.</typeparam>
+/// <typeparam name="TScalar">The component type, such as <see cref="float" /> or <see cref="double" />.</typeparam>
+/// <typeparam name="TVector3">The matching three-component vector type.</typeparam>
+/// <typeparam name="TVector4">The matching four-component vector type.</typeparam>
+/// <typeparam name="TQuaternion">The matching quaternion type.</typeparam>
+/// <typeparam name="TMatrix3">The matching 3x3 matrix type.</typeparam>
+public interface IMat4QuaternionRotation<TSelf, TScalar, TVector3, TVector4, TQuaternion, TMatrix3> :
+    IMat4<TSelf, TScalar, TVector4, TVector4, TSelf>
+    where TSelf : struct, IMat4QuaternionRotation<TSelf, TScalar, TVector3, TVector4, TQuaternion, TMatrix3>
+    where TVector3 : struct, IVec3<TVector3, TScalar>
+    where TVector4 : struct, IVec4<TVector4, TScalar>
+    where TQuaternion : struct, IQuatRotation<TQuaternion, TScalar, TVector3, TMatrix3, TSelf>
+{
+    /// <summary>Creates a 3D rotation matrix from a quaternion.</summary>
+    static abstract TSelf CreateRotation(TQuaternion rotation);
+
+    /// <summary>Creates a 3D rotation matrix from a quaternion around a center point.</summary>
+    static abstract TSelf CreateRotation(TQuaternion rotation, TVector3 center);
+
+    /// <summary>Applies a quaternion rotation after an existing transform.</summary>
+    static abstract TSelf Rotate(TSelf value, TQuaternion rotation);
+}

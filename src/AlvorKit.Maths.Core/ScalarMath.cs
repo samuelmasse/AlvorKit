@@ -1,0 +1,259 @@
+namespace AlvorKit.Maths;
+
+/// <summary>Provides scalar math helpers shared by vector component operations.</summary>
+public static class ScalarMath
+{
+    /// <summary>Returns the smaller of two values using vector-style comparison semantics.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T>(T left, T right)
+        where T : INumber<T> =>
+        left < right ? left : right;
+
+    /// <summary>Returns the larger of two values using vector-style comparison semantics.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T>(T left, T right)
+        where T : INumber<T> =>
+        left > right ? left : right;
+
+    /// <summary>Constrains a value between inclusive minimum and maximum bounds.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Clamp<T>(T value, T min, T max)
+        where T : INumber<T> =>
+        Min(Max(value, min), max);
+
+    /// <summary>Returns the absolute value using vector-style signed-zero semantics.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Abs<T>(T value)
+        where T : INumber<T> =>
+        value < T.Zero ? -value : value;
+
+    /// <summary>Linearly interpolates between two values without clamping amount.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Lerp<T>(T from, T to, T amount)
+        where T : INumber<T> =>
+        from + ((to - from) * amount);
+
+    /// <summary>Returns the barycentric blend of three values.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Barycentric<T>(T a, T b, T c, T u, T v)
+        where T : INumber<T> =>
+        a + ((b - a) * u) + ((c - a) * v);
+
+    /// <summary>Constrains a value to the inclusive zero-to-one range.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Saturate<T>(T value)
+        where T : INumber<T> =>
+        Clamp(value, T.Zero, T.One);
+
+    /// <summary>Returns a value rounded downward.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Floor<T>(T value)
+        where T : IFloatingPoint<T> =>
+        T.Floor(value);
+
+    /// <summary>Returns a value rounded upward.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Ceiling<T>(T value)
+        where T : IFloatingPoint<T> =>
+        T.Ceiling(value);
+
+    /// <summary>Returns a value rounded to the nearest value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Round<T>(T value)
+        where T : IFloatingPoint<T> =>
+        T.Round(value);
+
+    /// <summary>Returns a value rounded to the nearest value using mode for midpoints.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Round<T>(T value, MidpointRounding mode)
+        where T : IFloatingPoint<T> =>
+        T.Round(value, mode);
+
+    /// <summary>Returns a value rounded toward zero.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Truncate<T>(T value)
+        where T : IFloatingPoint<T> =>
+        T.Truncate(value);
+
+    /// <summary>Returns the fractional part using floor-based modulo semantics.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T FractionalPart<T>(T value)
+        where T : IFloatingPoint<T> =>
+        value - Floor(value);
+
+    /// <summary>Returns floor-based modulo.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Modulo<T>(T left, T right)
+        where T : IFloatingPoint<T> =>
+        left - (right * Floor(left / right));
+
+    /// <summary>Returns floor-based modulo.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Mod<T>(T left, T right)
+        where T : IFloatingPoint<T> =>
+        Modulo(left, right);
+
+    /// <summary>Returns zero when value is below edge and one otherwise.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Step<T>(T edge, T value)
+        where T : INumber<T> =>
+        value < edge ? T.Zero : T.One;
+
+    /// <summary>Smoothly interpolates from zero to one between edge values.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T SmoothStep<T>(T edge0, T edge1, T value)
+        where T : IFloatingPoint<T>
+    {
+        var t = Saturate((value - edge0) / (edge1 - edge0));
+        var two = T.One + T.One;
+        return t * t * ((two + T.One) - (two * t));
+    }
+
+    /// <summary>Returns the sine of a value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Sin<T>(T value)
+        where T : IFloatingPointIeee754<T> =>
+        T.Sin(value);
+
+    /// <summary>Returns the cosine of a value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Cos<T>(T value)
+        where T : IFloatingPointIeee754<T> =>
+        T.Cos(value);
+
+    /// <summary>Returns the tangent of a value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Tan<T>(T value)
+        where T : IFloatingPointIeee754<T> =>
+        T.Tan(value);
+
+    /// <summary>Returns the angle whose sine is the specified value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Asin<T>(T value)
+        where T : IFloatingPointIeee754<T> =>
+        T.Asin(value);
+
+    /// <summary>Returns the angle whose cosine is the specified value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Acos<T>(T value)
+        where T : IFloatingPointIeee754<T> =>
+        T.Acos(value);
+
+    /// <summary>Returns the angle whose tangent is the specified value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Atan<T>(T value)
+        where T : IFloatingPointIeee754<T> =>
+        T.Atan(value);
+
+    /// <summary>Returns the base-e exponential of a value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Exp<T>(T value)
+        where T : IFloatingPointIeee754<T> =>
+        T.Exp(value);
+
+    /// <summary>Returns the natural logarithm of a value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Log<T>(T value)
+        where T : IFloatingPointIeee754<T> =>
+        T.Log(value);
+
+    /// <summary>Returns the base-two logarithm of a value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Log2<T>(T value)
+        where T : IFloatingPointIeee754<T> =>
+        T.Log2(value);
+
+    /// <summary>Returns the square root of a value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Sqrt<T>(T value)
+        where T : IFloatingPointIeee754<T> =>
+        T.Sqrt(value);
+
+    /// <summary>Returns the two-argument arctangent.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Atan2<T>(T y, T x)
+        where T : IFloatingPointIeee754<T> =>
+        T.Atan2(y, x);
+
+    /// <summary>Returns a value raised to a power.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Pow<T>(T value, T exponent)
+        where T : IFloatingPointIeee754<T> =>
+        T.Pow(value, exponent);
+
+    /// <summary>Returns one divided by the square root of a value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T InverseSqrt<T>(T value)
+        where T : IFloatingPointIeee754<T> =>
+        T.One / T.Sqrt(value);
+
+    /// <summary>Returns the fused multiply-add result.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T FusedMultiplyAdd<T>(T left, T right, T addend)
+        where T : IFloatingPointIeee754<T> =>
+        T.FusedMultiplyAdd(left, right, addend);
+
+    /// <summary>Returns whether a value is NaN.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsNaN<T>(T value)
+        where T : INumberBase<T> =>
+        T.IsNaN(value);
+
+    /// <summary>Returns whether a value is infinite.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsInfinity<T>(T value)
+        where T : INumberBase<T> =>
+        T.IsInfinity(value);
+
+    /// <summary>Returns whether a value is finite.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsFinite<T>(T value)
+        where T : INumberBase<T> =>
+        T.IsFinite(value);
+
+    /// <summary>Returns the number of set bits in the value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int BitCount<T>(T value)
+        where T : unmanaged, IBinaryInteger<T> =>
+        int.CreateChecked(T.PopCount(value));
+
+    /// <summary>Returns the number of leading zero bits in the value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int LeadingZeroCount<T>(T value)
+        where T : unmanaged, IBinaryInteger<T> =>
+        int.CreateChecked(T.LeadingZeroCount(value));
+
+    /// <summary>Returns the number of trailing zero bits in the value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int TrailingZeroCount<T>(T value)
+        where T : unmanaged, IBinaryInteger<T> =>
+        int.CreateChecked(T.TrailingZeroCount(value));
+
+    /// <summary>Returns the least-significant set-bit index, or -1 for zero.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int FindLeastSignificantBit<T>(T value)
+        where T : unmanaged, IBinaryInteger<T> =>
+        value == T.Zero ? -1 : TrailingZeroCount(value);
+
+    /// <summary>Returns the most-significant set-bit index, or -1 for zero.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int FindMostSignificantBit<T>(T value)
+        where T : unmanaged, IBinaryInteger<T>
+    {
+        if (value == T.Zero)
+            return -1;
+
+        return ((Unsafe.SizeOf<T>() * 8) - 1) - LeadingZeroCount(value);
+    }
+
+    /// <summary>Returns whether value is a positive power of two.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsPowerOfTwo<T>(T value)
+        where T : IBinaryInteger<T> =>
+        value > T.Zero && T.IsPow2(value);
+
+    /// <summary>Selects one of two values according to a condition.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Select<T>(bool condition, T whenTrue, T whenFalse) =>
+        condition ? whenTrue : whenFalse;
+}

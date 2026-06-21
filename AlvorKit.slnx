@@ -49,6 +49,7 @@
     <Project Path="src/AlvorKit.ECS.Generator/AlvorKit.ECS.Generator.csproj" />
     <Project Path="src/AlvorKit.Injection/AlvorKit.Injection.csproj" />
     <Project Path="src/AlvorKit.Mocking/AlvorKit.Mocking.csproj" />
+    <Project Path="src/AlvorKit.Maths.Core/AlvorKit.Maths.Core.csproj" />
     <Project Path="src/AlvorKit.Maths/AlvorKit.Maths.csproj" />
     <Project Path="src/AlvorKit.Graphics2D/AlvorKit.Graphics2D.csproj" />
     <Project Path="src/AlvorKit.Graphics2D.Fonts/AlvorKit.Graphics2D.Fonts.csproj" />

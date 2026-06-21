@@ -27,43 +27,24 @@ public sealed class MathsGeneratorTest
         string BoxFile(string fileName) => Path.Combine(boxDirectory, fileName);
         Assert.IsFalse(File.Exists(staleFile));
         Assert.IsFalse(Directory.Exists(Path.Combine(project, "Generated")));
-        Assert.AreEqual(124, Directory.GetFiles(vecDirectory, "*.cs").Length);
-        Assert.AreEqual(42, Directory.GetFiles(matDirectory, "*.cs").Length);
-        Assert.AreEqual(6, Directory.GetFiles(quatDirectory, "*.cs").Length);
-        Assert.AreEqual(9, Directory.GetFiles(boxDirectory, "*.cs").Length);
+        Assert.AreEqual(96, Directory.GetFiles(vecDirectory, "*.cs").Length);
+        Assert.AreEqual(18, Directory.GetFiles(matDirectory, "*.cs").Length);
+        Assert.AreEqual(2, Directory.GetFiles(quatDirectory, "*.cs").Length);
+        Assert.AreEqual(6, Directory.GetFiles(boxDirectory, "*.cs").Length);
         Assert.IsTrue(File.Exists(Path.Combine(project, "AlvorKit.Maths.Primitives.csproj")));
-        Assert.IsTrue(File.Exists(Path.Combine(project, "ScalarMath.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec2.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec3.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec4.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecMask.g.cs")));
+        Assert.IsFalse(File.Exists(Path.Combine(project, "ScalarMath.g.cs")));
+        Assert.IsTrue(File.Exists(CoreFile("ScalarMath.cs")));
+        Assert.IsTrue(File.Exists(CoreFile("Vec", "IVec.cs")));
+        Assert.IsTrue(File.Exists(CoreFile("Vec", "IVec3FloatingToInteger.cs")));
+        Assert.IsTrue(File.Exists(CoreFile("Mat", "IMat2.cs")));
+        Assert.IsTrue(File.Exists(CoreFile("Mat", "IMat4Transform.cs")));
+        Assert.IsTrue(File.Exists(CoreFile("Quat", "IQuat.cs")));
+        Assert.IsTrue(File.Exists(CoreFile("Box", "IBox.cs")));
+        Assert.IsFalse(File.Exists(VecFile("IVec.g.cs")));
+        Assert.IsFalse(File.Exists(VecFile("IVecMask.g.cs")));
         Assert.IsTrue(File.Exists(VecFile("IVec2Mask.g.cs")));
         Assert.IsTrue(File.Exists(VecFile("IVec3Mask.g.cs")));
         Assert.IsTrue(File.Exists(VecFile("IVec4Mask.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecRelationalOperators.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecMetric.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecNumeric.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecSignedNumeric.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecInteger.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecIntegerCountShiftOperators.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecFloating.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecFloatingGeometry.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecFloatingScalarFunctions.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecFloatingVectorInterpolation.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec3Cross.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecScalarArithmeticOperators.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVecScalarIntegerOperators.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec2Axes.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec3Axes.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec4Axes.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec2Planar.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec2FloatingToInteger.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec3FloatingToInteger.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec4FloatingToInteger.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec2SystemNumerics.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec3SystemNumerics.g.cs")));
-        Assert.IsTrue(File.Exists(VecFile("IVec4SystemNumerics.g.cs")));
         Assert.IsTrue(File.Exists(VecFile("IVec2Floating.g.cs")));
         Assert.IsTrue(File.Exists(VecFile("IVec3Floating.g.cs")));
         Assert.IsTrue(File.Exists(VecFile("IVec4Floating.g.cs")));
@@ -77,23 +58,11 @@ public sealed class MathsGeneratorTest
         Assert.IsTrue(File.Exists(VecFile("Vec2.Swizzles.g.cs")));
         Assert.IsTrue(File.Exists(VecFile("Vec4u128.g.cs")));
         Assert.IsTrue(File.Exists(VecFile("Vec4u128.Swizzles.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMat.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("ProjectionHandedness.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("ProjectionDepthRange.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMat2.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMat2x3.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMatNumeric.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMatScalarArithmeticOperators.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMatRelationalOperators.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMatQuery.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMatSquare.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMat3Transform2D.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMat3QuaternionRotation.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMat3x2Transform2D.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMat3x2SystemNumerics.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMat4Transform.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMat4QuaternionRotation.g.cs")));
-        Assert.IsTrue(File.Exists(MatFile("IMat4SystemNumerics.g.cs")));
+        Assert.IsFalse(File.Exists(MatFile("IMat.g.cs")));
+        Assert.IsFalse(File.Exists(MatFile("ProjectionHandedness.g.cs")));
+        Assert.IsFalse(File.Exists(MatFile("ProjectionDepthRange.g.cs")));
+        Assert.IsFalse(File.Exists(MatFile("IMat2.g.cs")));
+        Assert.IsFalse(File.Exists(MatFile("IMat2x3.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("Mat2.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("Mat2d.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("Mat3.g.cs")));
@@ -101,15 +70,10 @@ public sealed class MathsGeneratorTest
         Assert.IsTrue(File.Exists(MatFile("Mat4d.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("Mat2x3.g.cs")));
         Assert.IsTrue(File.Exists(MatFile("Mat4x3d.g.cs")));
-        Assert.IsTrue(File.Exists(QuatFile("IQuat.g.cs")));
-        Assert.IsTrue(File.Exists(QuatFile("IQuatRotation.g.cs")));
-        Assert.IsTrue(File.Exists(QuatFile("IQuatInterpolation.g.cs")));
-        Assert.IsTrue(File.Exists(QuatFile("IQuatSystemNumerics.g.cs")));
+        Assert.IsFalse(File.Exists(QuatFile("IQuat.g.cs")));
         Assert.IsTrue(File.Exists(QuatFile("Quat.g.cs")));
         Assert.IsTrue(File.Exists(QuatFile("Quatd.g.cs")));
-        Assert.IsTrue(File.Exists(BoxFile("IBox.g.cs")));
-        Assert.IsTrue(File.Exists(BoxFile("IBox2.g.cs")));
-        Assert.IsTrue(File.Exists(BoxFile("IBox3.g.cs")));
+        Assert.IsFalse(File.Exists(BoxFile("IBox.g.cs")));
         Assert.IsTrue(File.Exists(BoxFile("Box2.g.cs")));
         Assert.IsTrue(File.Exists(BoxFile("Box2d.g.cs")));
         Assert.IsTrue(File.Exists(BoxFile("Box2i.g.cs")));
@@ -124,8 +88,10 @@ public sealed class MathsGeneratorTest
         Assert.IsFalse(File.Exists(BoxFile("Box2u.g.cs")));
         Assert.IsFalse(File.Exists(MatFile("Mat2i.g.cs")));
         Assert.IsFalse(File.Exists(MatFile("Mat4x3u128.g.cs")));
-        StringAssert.Contains(File.ReadAllText(Path.Combine(project, "AlvorKit.Maths.Primitives.csproj")), "<Version>9.8.7</Version>");
-        StringAssert.Contains(File.ReadAllText(Path.Combine(project, "AlvorKit.Maths.Primitives.csproj")),
+        var projectFile = File.ReadAllText(Path.Combine(project, "AlvorKit.Maths.Primitives.csproj"));
+        StringAssert.Contains(projectFile, "<Version>9.8.7</Version>");
+        StringAssert.Contains(projectFile, @"<ProjectReference Include=""..\..\..\src\AlvorKit.Maths.Core\AlvorKit.Maths.Core.csproj"" />");
+        StringAssert.Contains(projectFile,
             "<Using Include=\"System.Diagnostics\" />");
     }
 
@@ -139,9 +105,9 @@ public sealed class MathsGeneratorTest
         MathsGenerator.GenerateTo(outputRoot, "9.8.7");
 
         var boxDirectory = Path.Combine(outputRoot, MathsGenerator.PrimitivesProjectName, MathsGenerator.BoxDirectoryName);
-        var boxInterface = File.ReadAllText(Path.Combine(boxDirectory, "IBox.g.cs"));
-        var box2Interface = File.ReadAllText(Path.Combine(boxDirectory, "IBox2.g.cs"));
-        var box3Interface = File.ReadAllText(Path.Combine(boxDirectory, "IBox3.g.cs"));
+        var boxInterface = File.ReadAllText(CoreFile("Box", "IBox.cs"));
+        var box2Interface = File.ReadAllText(CoreFile("Box", "IBox2.cs"));
+        var box3Interface = File.ReadAllText(CoreFile("Box", "IBox3.cs"));
         var box2 = File.ReadAllText(Path.Combine(boxDirectory, "Box2.g.cs"));
         var box2d = File.ReadAllText(Path.Combine(boxDirectory, "Box2d.g.cs"));
         var box2i = File.ReadAllText(Path.Combine(boxDirectory, "Box2i.g.cs"));
@@ -191,15 +157,15 @@ public sealed class MathsGeneratorTest
 
         var projectDirectory = Path.Combine(outputRoot, MathsGenerator.PrimitivesProjectName);
         var quatDirectory = Path.Combine(projectDirectory, MathsGenerator.QuatDirectoryName);
-        var quatInterface = File.ReadAllText(Path.Combine(quatDirectory, "IQuat.g.cs"));
-        var rotationInterface = File.ReadAllText(Path.Combine(quatDirectory, "IQuatRotation.g.cs"));
-        var interpolationInterface = File.ReadAllText(Path.Combine(quatDirectory, "IQuatInterpolation.g.cs"));
-        var systemInterface = File.ReadAllText(Path.Combine(quatDirectory, "IQuatSystemNumerics.g.cs"));
+        var quatInterface = File.ReadAllText(CoreFile("Quat", "IQuat.cs"));
+        var rotationInterface = File.ReadAllText(CoreFile("Quat", "IQuatRotation.cs"));
+        var interpolationInterface = File.ReadAllText(CoreFile("Quat", "IQuatInterpolation.cs"));
+        var systemInterface = File.ReadAllText(CoreFile("Quat", "IQuatSystemNumerics.cs"));
         var quat = File.ReadAllText(Path.Combine(quatDirectory, "Quat.g.cs"));
         var quatd = File.ReadAllText(Path.Combine(quatDirectory, "Quatd.g.cs"));
         var matDirectory = Path.Combine(projectDirectory, MathsGenerator.MatDirectoryName);
-        var matrix3QuaternionInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat3QuaternionRotation.g.cs"));
-        var matrix4QuaternionInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat4QuaternionRotation.g.cs"));
+        var matrix3QuaternionInterface = File.ReadAllText(CoreFile("Mat", "IMat3QuaternionRotation.cs"));
+        var matrix4QuaternionInterface = File.ReadAllText(CoreFile("Mat", "IMat4QuaternionRotation.cs"));
         var mat4 = File.ReadAllText(Path.Combine(matDirectory, "Mat4.g.cs"));
         var mat3 = File.ReadAllText(Path.Combine(matDirectory, "Mat3.g.cs"));
         var mat4d = File.ReadAllText(Path.Combine(matDirectory, "Mat4d.g.cs"));
@@ -253,16 +219,16 @@ public sealed class MathsGeneratorTest
         var mat3x2 = File.ReadAllText(Path.Combine(matDirectory, "Mat3x2.g.cs"));
         var mat4 = File.ReadAllText(Path.Combine(matDirectory, "Mat4.g.cs"));
         var mat4d = File.ReadAllText(Path.Combine(matDirectory, "Mat4d.g.cs"));
-        var projectionHandedness = File.ReadAllText(Path.Combine(matDirectory, "ProjectionHandedness.g.cs"));
-        var projectionDepthRange = File.ReadAllText(Path.Combine(matDirectory, "ProjectionDepthRange.g.cs"));
-        var matrixInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat.g.cs"));
-        var matrixSquareInterface = File.ReadAllText(Path.Combine(matDirectory, "IMatSquare.g.cs"));
-        var matrixRelationalInterface = File.ReadAllText(Path.Combine(matDirectory, "IMatRelationalOperators.g.cs"));
-        var matrixQueryInterface = File.ReadAllText(Path.Combine(matDirectory, "IMatQuery.g.cs"));
-        var matrixTransform2DInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat3Transform2D.g.cs"));
-        var matrix3x2Transform2DInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat3x2Transform2D.g.cs"));
-        var matrix3x2SystemInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat3x2SystemNumerics.g.cs"));
-        var matrixTransformInterface = File.ReadAllText(Path.Combine(matDirectory, "IMat4Transform.g.cs"));
+        var projectionHandedness = File.ReadAllText(CoreFile("Mat", "ProjectionHandedness.cs"));
+        var projectionDepthRange = File.ReadAllText(CoreFile("Mat", "ProjectionDepthRange.cs"));
+        var matrixInterface = File.ReadAllText(CoreFile("Mat", "IMat.cs"));
+        var matrixSquareInterface = File.ReadAllText(CoreFile("Mat", "IMatSquare.cs"));
+        var matrixRelationalInterface = File.ReadAllText(CoreFile("Mat", "IMatRelationalOperators.cs"));
+        var matrixQueryInterface = File.ReadAllText(CoreFile("Mat", "IMatQuery.cs"));
+        var matrixTransform2DInterface = File.ReadAllText(CoreFile("Mat", "IMat3Transform2D.cs"));
+        var matrix3x2Transform2DInterface = File.ReadAllText(CoreFile("Mat", "IMat3x2Transform2D.cs"));
+        var matrix3x2SystemInterface = File.ReadAllText(CoreFile("Mat", "IMat3x2SystemNumerics.cs"));
+        var matrixTransformInterface = File.ReadAllText(CoreFile("Mat", "IMat4Transform.cs"));
         StringAssert.Contains(projectionHandedness, "public enum ProjectionHandedness");
         StringAssert.Contains(projectionHandedness, "Right");
         StringAssert.Contains(projectionDepthRange, "public enum ProjectionDepthRange");
@@ -381,29 +347,29 @@ public sealed class MathsGeneratorTest
 
         var projectDirectory = Path.Combine(outputRoot, MathsGenerator.PrimitivesProjectName);
         var vecDirectory = Path.Combine(projectDirectory, MathsGenerator.VecDirectoryName);
-        var scalarMath = File.ReadAllText(Path.Combine(projectDirectory, "ScalarMath.g.cs"));
-        var vectorInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVec.g.cs"));
-        var vec3Interface = File.ReadAllText(Path.Combine(vecDirectory, "IVec3.g.cs"));
-        var numericInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVecNumeric.g.cs"));
-        var maskInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVecMask.g.cs"));
+        var scalarMath = File.ReadAllText(CoreFile("ScalarMath.cs"));
+        var vectorInterface = File.ReadAllText(CoreFile("Vec", "IVec.cs"));
+        var vec3Interface = File.ReadAllText(CoreFile("Vec", "IVec3.cs"));
+        var numericInterface = File.ReadAllText(CoreFile("Vec", "IVecNumeric.cs"));
+        var maskInterface = File.ReadAllText(CoreFile("Vec", "IVecMask.cs"));
         var vec3MaskInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVec3Mask.g.cs"));
-        var integerInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVecInteger.g.cs"));
-        var integerCountShiftInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVecIntegerCountShiftOperators.g.cs"));
-        var floatingInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVecFloating.g.cs"));
-        var floatingGeometryInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVecFloatingGeometry.g.cs"));
-        var floatingScalarInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVecFloatingScalarFunctions.g.cs"));
-        var floatingVectorInterpolationInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVecFloatingVectorInterpolation.g.cs"));
-        var crossInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVec3Cross.g.cs"));
-        var scalarArithmeticInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVecScalarArithmeticOperators.g.cs"));
-        var scalarIntegerInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVecScalarIntegerOperators.g.cs"));
-        var vec2AxesInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVec2Axes.g.cs"));
-        var vec2PlanarInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVec2Planar.g.cs"));
+        var integerInterface = File.ReadAllText(CoreFile("Vec", "IVecInteger.cs"));
+        var integerCountShiftInterface = File.ReadAllText(CoreFile("Vec", "IVecIntegerCountShiftOperators.cs"));
+        var floatingInterface = File.ReadAllText(CoreFile("Vec", "IVecFloating.cs"));
+        var floatingGeometryInterface = File.ReadAllText(CoreFile("Vec", "IVecFloatingGeometry.cs"));
+        var floatingScalarInterface = File.ReadAllText(CoreFile("Vec", "IVecFloatingScalarFunctions.cs"));
+        var floatingVectorInterpolationInterface = File.ReadAllText(CoreFile("Vec", "IVecFloatingVectorInterpolation.cs"));
+        var crossInterface = File.ReadAllText(CoreFile("Vec", "IVec3Cross.cs"));
+        var scalarArithmeticInterface = File.ReadAllText(CoreFile("Vec", "IVecScalarArithmeticOperators.cs"));
+        var scalarIntegerInterface = File.ReadAllText(CoreFile("Vec", "IVecScalarIntegerOperators.cs"));
+        var vec2AxesInterface = File.ReadAllText(CoreFile("Vec", "IVec2Axes.cs"));
+        var vec2PlanarInterface = File.ReadAllText(CoreFile("Vec", "IVec2Planar.cs"));
         var vec3FloatingInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVec3Floating.g.cs"));
         var vec3SignedIntegerInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVec3SignedInteger.g.cs"));
         var vec3UnsignedIntegerInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVec3UnsignedInteger.g.cs"));
-        var vec3FloatingToIntegerInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVec3FloatingToInteger.g.cs"));
-        var vec3SystemNumericsInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVec3SystemNumerics.g.cs"));
-        var relationalInterface = File.ReadAllText(Path.Combine(vecDirectory, "IVecRelationalOperators.g.cs"));
+        var vec3FloatingToIntegerInterface = File.ReadAllText(CoreFile("Vec", "IVec3FloatingToInteger.cs"));
+        var vec3SystemNumericsInterface = File.ReadAllText(CoreFile("Vec", "IVec3SystemNumerics.cs"));
+        var relationalInterface = File.ReadAllText(CoreFile("Vec", "IVecRelationalOperators.cs"));
         var vec2 = File.ReadAllText(Path.Combine(vecDirectory, "Vec2.g.cs"));
         var vec3 = File.ReadAllText(Path.Combine(vecDirectory, "Vec3.g.cs"));
         var vec3h = File.ReadAllText(Path.Combine(vecDirectory, "Vec3h.g.cs"));
@@ -429,7 +395,7 @@ public sealed class MathsGeneratorTest
         StringAssert.Contains(vectorInterface, "ISpanParsable<TSelf>");
         StringAssert.Contains(vectorInterface, "IUtf8SpanParsable<TSelf>");
         StringAssert.Contains(vectorInterface, "Applies to all vector types");
-        StringAssert.Contains(vectorInterface, "<see cref=\"Vec2\" />, <see cref=\"Vec3i\" />, <see cref=\"Vec4d\" />");
+        StringAssert.Contains(vectorInterface, "<c>Vec2</c>, <c>Vec3i</c>, <c>Vec4d</c>");
         StringAssert.Contains(vec3Interface, "static abstract implicit operator TSelf((TScalar X, TScalar Y, TScalar Z) value);");
         StringAssert.Contains(vec3Interface, "void Deconstruct(out TScalar x, out TScalar y, out TScalar z);");
         StringAssert.Contains(numericInterface, "public interface IVecNumeric<TSelf, TScalar, TMask, TLength, TArithmetic>");
@@ -579,5 +545,23 @@ public sealed class MathsGeneratorTest
         CollectionAssert.Contains(names, "Vec4i128");
         CollectionAssert.Contains(names, "Vec4u128");
         CollectionAssert.Contains(names, "Vec2b");
+    }
+
+    /// <summary>Returns a source file path in the compile-checked maths core project.</summary>
+    private static string CoreFile(params string[] segments)
+    {
+        var parts = new List<string> { RepositoryRoot(), "src", "AlvorKit.Maths.Core" };
+        parts.AddRange(segments);
+        return Path.Combine([.. parts]);
+    }
+
+    /// <summary>Finds the repository root from the current test process output directory.</summary>
+    private static string RepositoryRoot()
+    {
+        var current = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(current, "AlvorKit.slnx")))
+            current = Directory.GetParent(current)?.FullName ?? throw new InvalidOperationException("Repository root was not found.");
+
+        return current;
     }
 }

@@ -1,0 +1,69 @@
+namespace AlvorKit.Maths;
+
+/// <summary>Applies to all Boolean mask vector types, including <c>Vec2b</c>, <c>Vec3b</c>, and <c>Vec4b</c>.</summary>
+/// <typeparam name="TSelf">The Boolean mask vector type, such as <c>Vec3b</c>.</typeparam>
+public interface IVecMask<TSelf> :
+    IVec<TSelf, bool>,
+    IBitwiseOperators<TSelf, TSelf, TSelf>
+    where TSelf : struct, IVecMask<TSelf>
+{
+    /// <summary>Gets a mask with every component set to false.</summary>
+    static abstract TSelf False { get; }
+
+    /// <summary>Gets a mask with every component set to true.</summary>
+    static abstract TSelf True { get; }
+
+    /// <summary>Gets whether every component is true.</summary>
+    bool All { get; }
+
+    /// <summary>Gets whether at least one component is true.</summary>
+    bool Any { get; }
+
+    /// <summary>Gets whether every component is false.</summary>
+    bool None { get; }
+
+    /// <summary>Returns the component-wise logical complement.</summary>
+    static abstract TSelf operator !(TSelf value);
+
+    /// <summary>Returns the component-wise bitwise complement.</summary>
+    static abstract TSelf operator ~(TSelf value);
+
+    /// <summary>Returns component-wise logical AND results.</summary>
+    static abstract TSelf operator &(TSelf left, bool right);
+
+    /// <summary>Returns component-wise logical AND results.</summary>
+    static abstract TSelf operator &(bool left, TSelf right);
+
+    /// <summary>Returns component-wise logical AND results.</summary>
+    static abstract TSelf operator &(TSelf left, TSelf right);
+
+    /// <summary>Returns component-wise logical OR results.</summary>
+    static abstract TSelf operator |(TSelf left, bool right);
+
+    /// <summary>Returns component-wise logical OR results.</summary>
+    static abstract TSelf operator |(bool left, TSelf right);
+
+    /// <summary>Returns component-wise logical OR results.</summary>
+    static abstract TSelf operator |(TSelf left, TSelf right);
+
+    /// <summary>Returns component-wise exclusive-OR results.</summary>
+    static abstract TSelf operator ^(TSelf left, bool right);
+
+    /// <summary>Returns component-wise exclusive-OR results.</summary>
+    static abstract TSelf operator ^(bool left, TSelf right);
+
+    /// <summary>Returns component-wise exclusive-OR results.</summary>
+    static abstract TSelf operator ^(TSelf left, TSelf right);
+
+    /// <summary>Returns whether every component is true.</summary>
+    static abstract bool operator true(TSelf value);
+
+    /// <summary>Returns whether every component is false.</summary>
+    static abstract bool operator false(TSelf value);
+
+    /// <summary>Returns a mask containing component-wise equality results.</summary>
+    static abstract TSelf Equal(TSelf left, TSelf right);
+
+    /// <summary>Returns a mask containing component-wise inequality results.</summary>
+    static abstract TSelf NotEqual(TSelf left, TSelf right);
+}

@@ -1,0 +1,11 @@
+namespace AlvorKit.Maths;
+
+/// <summary>Defines the normalized device coordinate depth range used by projection matrix helpers.</summary>
+public enum ProjectionDepthRange
+{
+    /// <summary>Depth maps to negative one through one, matching the default OpenGL clip-space convention.</summary>
+    NegativeOneToOne,
+
+    /// <summary>Depth maps to zero through one, matching Direct3D, Vulkan, and Metal-style clip-space conventions.</summary>
+    ZeroToOne,
+}

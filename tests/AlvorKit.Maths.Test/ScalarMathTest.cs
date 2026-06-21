@@ -1,6 +1,6 @@
 namespace AlvorKit.Maths.Test;
 
-/// <summary>Tests scalar helpers shared by generated vector math.</summary>
+/// <summary>Tests scalar helpers shared by vector math.</summary>
 [TestClass]
 public sealed class ScalarMathTest
 {
@@ -32,6 +32,9 @@ public sealed class ScalarMathTest
         Assert.AreEqual(0.5f, ScalarMath.SmoothStep(0f, 1f, 0.5f));
         Assert.AreEqual(0.5f, ScalarMath.InverseSqrt(4f));
         Assert.AreEqual(1d, ScalarMath.Cos(0d));
+        Assert.AreEqual(0d, ScalarMath.Asin(0d));
+        Assert.AreEqual(0d, ScalarMath.Atan(0d));
+        Assert.AreEqual(3d, ScalarMath.Log2(8d));
         Assert.IsTrue(ScalarMath.IsNaN(float.NaN));
         Assert.IsTrue(ScalarMath.IsInfinity(float.PositiveInfinity));
         Assert.IsFalse(ScalarMath.IsFinite(float.PositiveInfinity));

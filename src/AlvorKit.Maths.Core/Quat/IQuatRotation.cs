@@ -1,0 +1,69 @@
+namespace AlvorKit.Maths;
+
+/// <summary>Applies to quaternion types with 3D rotation helpers.</summary>
+/// <typeparam name="TSelf">The concrete quaternion type.</typeparam>
+/// <typeparam name="TScalar">The component type, such as <see cref="float" /> or <see cref="double" />.</typeparam>
+/// <typeparam name="TVector3">The matching three-component vector type.</typeparam>
+/// <typeparam name="TMatrix3">The matching 3x3 matrix type.</typeparam>
+/// <typeparam name="TMatrix4">The matching 4x4 matrix type.</typeparam>
+public interface IQuatRotation<TSelf, TScalar, TVector3, TMatrix3, TMatrix4>
+    where TSelf : struct, IQuatRotation<TSelf, TScalar, TVector3, TMatrix3, TMatrix4>
+    where TVector3 : struct, IVec3<TVector3, TScalar>
+{
+    /// <summary>Gets the rotation angle in radians.</summary>
+    TScalar Angle { get; }
+
+    /// <summary>Gets the rotation axis.</summary>
+    TVector3 Axis { get; }
+
+    /// <summary>Gets pitch, yaw, and roll in radians.</summary>
+    TVector3 EulerAngles { get; }
+
+    /// <summary>Gets the pitch angle in radians.</summary>
+    TScalar Pitch { get; }
+
+    /// <summary>Gets the yaw angle in radians.</summary>
+    TScalar Yaw { get; }
+
+    /// <summary>Gets the roll angle in radians.</summary>
+    TScalar Roll { get; }
+
+    /// <summary>Creates a quaternion from an axis and angle in radians.</summary>
+    static abstract TSelf CreateFromAxisAngle(TVector3 axis, TScalar radians);
+
+    /// <summary>Creates a quaternion from pitch, yaw, and roll angles in radians.</summary>
+    static abstract TSelf CreateFromEulerAngles(TVector3 angles);
+
+    /// <summary>Creates a quaternion from yaw, pitch, and roll angles in radians.</summary>
+    static abstract TSelf CreateFromYawPitchRoll(TScalar yaw, TScalar pitch, TScalar roll);
+
+    /// <summary>Creates a quaternion from a 3x3 rotation matrix.</summary>
+    static abstract TSelf CreateFromRotationMatrix(TMatrix3 matrix);
+
+    /// <summary>Creates a quaternion from a 4x4 rotation matrix.</summary>
+    static abstract TSelf CreateFromRotationMatrix(TMatrix4 matrix);
+
+    /// <summary>Creates an orientation with default OpenGL view-space conventions.</summary>
+    static abstract TSelf LookRotation(TVector3 direction, TVector3 up);
+
+    /// <summary>Creates an orientation with explicit view-space handedness.</summary>
+    static abstract TSelf LookRotation(TVector3 direction, TVector3 up, ProjectionHandedness handedness);
+
+    /// <summary>Creates the shortest rotation from one direction to another.</summary>
+    static abstract TSelf CreateRotationBetween(TVector3 from, TVector3 to);
+
+    /// <summary>Writes the quaternion as an axis and angle in radians.</summary>
+    void ToAxisAngle(out TVector3 axis, out TScalar radians);
+
+    /// <summary>Converts the quaternion to a 3x3 rotation matrix.</summary>
+    TMatrix3 ToMat3();
+
+    /// <summary>Converts the quaternion to a 4x4 rotation matrix.</summary>
+    TMatrix4 ToMat4();
+
+    /// <summary>Rotates a vector by a normalized quaternion.</summary>
+    static abstract TVector3 TransformVector(TSelf rotation, TVector3 vector);
+
+    /// <summary>Rotates a vector by a normalized quaternion.</summary>
+    static abstract TVector3 operator *(TSelf rotation, TVector3 vector);
+}

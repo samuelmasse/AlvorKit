@@ -9,6 +9,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(UseLocalMathsPrimitives)' == 'true'">
+        <ProjectReference Include="..\AlvorKit.Maths.Core\AlvorKit.Maths.Core.csproj" />
         <ProjectReference Include="$(MathsPrimitivesRoot)\AlvorKit.Maths.Primitives.csproj" />
     </ItemGroup>
 
