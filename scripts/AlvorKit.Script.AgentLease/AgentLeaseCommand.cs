@@ -3,9 +3,6 @@ namespace AlvorKit.Script.AgentLease;
 /// <summary>Supported top-level commands for the advisory lease helper.</summary>
 internal enum AgentLeaseCommandKind
 {
-    /// <summary>Print command-line help.</summary>
-    Help,
-
     /// <summary>Create or replace an advisory lease for the current work.</summary>
     Start,
 

@@ -20,13 +20,12 @@ internal sealed class BindgenReviewCoordinator(
     public async Task<BindgenReviewResult> ExecuteAsync(BindgenReviewCommand command) =>
         command.Kind switch
         {
-            BindgenReviewCommandKind.Help => BindgenReviewResult.Success(BindgenReviewCommandParser.HelpText),
             BindgenReviewCommandKind.Start => await StartAsync(command),
             BindgenReviewCommandKind.After => await AfterAsync(command),
             BindgenReviewCommandKind.Diff => await DiffAsync(command),
             BindgenReviewCommandKind.Clean => Clean(command),
             BindgenReviewCommandKind.Finish => await FinishAsync(command),
-            _ => BindgenReviewResult.Success(BindgenReviewCommandParser.HelpText)
+            _ => throw new InvalidOperationException($"Unknown bindgen review command '{command.Kind}'.")
         };
 
     /// <summary>Creates a unique review session and captures the before snapshot.</summary>

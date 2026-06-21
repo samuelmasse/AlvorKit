@@ -41,7 +41,7 @@ public sealed class BindgenOptionsTest
     {
         var exception = Assert.ThrowsException<ArgumentException>(() => BindgenOptions.Parse(["--mystery"]));
 
-        StringAssert.Contains(exception.Message, "Unknown argument '--mystery'");
+        StringAssert.Contains(exception.Message, "Unrecognized command or argument '--mystery'");
     }
 
     /// <summary>Only one positional library selection is accepted.</summary>
@@ -50,7 +50,7 @@ public sealed class BindgenOptionsTest
     {
         var exception = Assert.ThrowsException<ArgumentException>(() => BindgenOptions.Parse(["xxhash", "opengl"]));
 
-        StringAssert.Contains(exception.Message, "Unexpected argument 'opengl'");
+        StringAssert.Contains(exception.Message, "Unrecognized command or argument 'opengl'");
     }
 
     /// <summary>Options that require values report a clear parser failure when the value is absent.</summary>
@@ -59,6 +59,6 @@ public sealed class BindgenOptionsTest
     {
         var exception = Assert.ThrowsException<ArgumentException>(() => BindgenOptions.Parse(["--output-root"]));
 
-        StringAssert.Contains(exception.Message, "Missing value for '--output-root'");
+        StringAssert.Contains(exception.Message, "Required argument missing for option: '--output-root'");
     }
 }

@@ -32,8 +32,11 @@ internal sealed class XxHashBenchDemo(
 
     /// <summary>Creates a configured benchmark demo from command line arguments.</summary>
     public static XxHashBenchDemo Create(string[] args)
+        => Create(BenchOptions.Parse(args));
+
+    /// <summary>Creates a configured benchmark demo from parsed command-line options.</summary>
+    public static XxHashBenchDemo Create(BenchOptions options)
     {
-        var options = BenchOptions.Parse(args);
         Xxh xxh = new XxhBackend();
         return new(
             options,

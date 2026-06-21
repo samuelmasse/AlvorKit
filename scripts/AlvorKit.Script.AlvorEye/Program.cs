@@ -10,17 +10,25 @@ internal static class Program
     {
         try
         {
-            var command = AlvorEyeCommandParser.Parse(args);
-            var result = await AlvorEyeCoordinator.CreateDefault().ExecuteAsync(command, Console.In, Console.Out);
-            foreach (var line in result.Lines)
-                Console.WriteLine(line);
-
-            return result.ExitCode;
+            var root = AlvorEyeCommandParser.CreateRootCommand(
+                () => ProjectRoot.FindFromCurrentProcess(typeof(AlvorEyeCommandParser)),
+                ExecuteAsync);
+            return await root.Parse(args).InvokeAsync(new() { EnableDefaultExceptionHandler = false });
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine(ex.Message);
             return 1;
         }
+    }
+
+    /// <summary>Executes one parsed AlvorEye command.</summary>
+    private static async Task<int> ExecuteAsync(AlvorEyeCommand command)
+    {
+        var result = await AlvorEyeCoordinator.CreateDefault().ExecuteAsync(command, Console.In, Console.Out);
+        foreach (var line in result.Lines)
+            Console.WriteLine(line);
+
+        return result.ExitCode;
     }
 }

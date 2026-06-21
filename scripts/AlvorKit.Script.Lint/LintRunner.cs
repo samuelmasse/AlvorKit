@@ -36,13 +36,14 @@ internal sealed class LintRunner(
             ? LintPlan.CommandsBeforeActionlint(repoRoot, options.Fix)
             : LintPlan.CommandsBeforeActionlint(repoRoot, options.Fix, scope);
         using var commandGate = new SemaphoreSlim(maxParallelCommands);
+        using var dotNetFormatGate = new SemaphoreSlim(1);
         var commandTasks = preActionlintCommands
-            .Select(command => RunCommandAsync(command, commandGate))
+            .Select(command => RunCommandAsync(command, commandGate, dotNetFormatGate))
             .ToList();
 
         var actionlintPath = actionlintTask is null ? null : await actionlintTask;
         if (actionlintPath is not null)
-            commandTasks.Add(RunCommandAsync(LintPlan.ActionlintCommand(repoRoot, actionlintPath, scope), commandGate));
+            commandTasks.Add(RunCommandAsync(LintPlan.ActionlintCommand(repoRoot, actionlintPath, scope), commandGate, dotNetFormatGate));
 
         var results = await Task.WhenAll(commandTasks);
         return results.FirstOrDefault(result => result.ExitCode != 0)?.ExitCode ?? (LintPlan.RequiresActionlint(scope) && actionlintPath is null ? 1 : 0);
@@ -68,7 +69,27 @@ internal sealed class LintRunner(
     }
 
     /// <summary>Runs one command with start, completion, and captured output logging.</summary>
-    private async Task<CommandResult> RunCommandAsync(CommandSpec command, SemaphoreSlim commandGate)
+    private async Task<CommandResult> RunCommandAsync(
+        CommandSpec command,
+        SemaphoreSlim commandGate,
+        SemaphoreSlim dotNetFormatGate)
+    {
+        if (!IsDotNetFormatCommand(command))
+            return await RunCommandWithGlobalGateAsync(command, commandGate);
+
+        await dotNetFormatGate.WaitAsync();
+        try
+        {
+            return await RunCommandWithGlobalGateAsync(command, commandGate);
+        }
+        finally
+        {
+            dotNetFormatGate.Release();
+        }
+    }
+
+    /// <summary>Runs one command with the global external-process concurrency limit.</summary>
+    private async Task<CommandResult> RunCommandWithGlobalGateAsync(CommandSpec command, SemaphoreSlim commandGate)
     {
         await commandGate.WaitAsync();
         try
@@ -120,6 +141,11 @@ internal sealed class LintRunner(
     /// <summary>Returns a stable display label for a command.</summary>
     private static string Label(CommandSpec command) =>
         command.Label;
+
+    /// <summary>Returns true for dotnet format invocations that must not restore the same workspace concurrently.</summary>
+    private static bool IsDotNetFormatCommand(CommandSpec command) =>
+        string.Equals(command.FileName, "dotnet", StringComparison.OrdinalIgnoreCase)
+        && command.Arguments is ["format", ..];
 
     /// <summary>Formats elapsed time for progress output.</summary>
     private static string ElapsedText(DateTimeOffset started) =>

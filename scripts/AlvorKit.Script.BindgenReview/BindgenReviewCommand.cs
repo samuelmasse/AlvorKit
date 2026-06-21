@@ -3,9 +3,6 @@ namespace AlvorKit.Script.BindgenReview;
 /// <summary>Supported commands for disposable bindgen review snapshots.</summary>
 internal enum BindgenReviewCommandKind
 {
-    /// <summary>Print command-line help.</summary>
-    Help,
-
     /// <summary>Create a review directory and generate the before snapshot.</summary>
     Start,
 

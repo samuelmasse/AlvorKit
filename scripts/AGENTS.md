@@ -15,11 +15,29 @@ These instructions apply to C# code under `scripts/` and the matching tests unde
 - Keep changes cohesive, boring, and easy to review; avoid sweeping rewrites that
   do not pay for themselves in clarity, testability, or correctness.
 
+## CLI Tools
+
+- Build script command-line surfaces with `System.CommandLine`.
+- Let `System.CommandLine` own generated help, version output, command routing,
+  parse errors, option aliases, arity, and subcommand structure. Do not add
+  hand-written usage strings, `HelpText` constants, `ShowHelp` sentinels, or
+  custom `help` command paths for ordinary script CLIs.
+- Keep command trees close to the entry point or parser type, with options and
+  arguments represented as `Option<T>` and `Argument<T>`. Read values from
+  `ParseResult` and pass a small immutable request/options object to execution
+  code.
+- Keep any manual argument scanning narrowly bounded to real boundary cases,
+  such as separating a script's own options from arbitrary forwarded child
+  process arguments. Prefer a named, tested splitter for that case.
+- Tests may call parse-only helpers, but app entry points should invoke the
+  `RootCommand` so generated `--help` output and parser errors behave the same
+  way users see them.
+
 ## Visual Automation Scripts
 
 - Prefer `scripts/AlvorKit.Script.AlvorSense` over AlvorEye for games wired with
-  `AgentGlfwWindowHost` from `AlvorKit.Windowing.Agent`. Read `docs/AlvorSense.md` before using or changing
-  that workflow.
+  `AgentGlfwWindowHost` from `AlvorKit.Windowing.Agent`. Read
+  `docs/AlvorSense.md` before using or changing that workflow.
 - When using AlvorSense, share important screenshots in chat, summarize the key
   command batches and visual observations, and continue one live session
   whenever practical instead of repeatedly restarting the target.

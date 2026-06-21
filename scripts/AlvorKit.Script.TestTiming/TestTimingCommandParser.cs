@@ -3,25 +3,6 @@ namespace AlvorKit.Script.TestTiming;
 /// <summary>Parses command-line options for the unit test timing guard.</summary>
 internal sealed class TestTimingCommandParser
 {
-    /// <summary>Usage text for the timing guard.</summary>
-    public const string HelpText =
-        """
-        Usage:
-          dotnet run --project scripts\AlvorKit.Script.TestTiming -- [options] [dotnet test args]
-
-        Examples:
-          dotnet run --project scripts\AlvorKit.Script.TestTiming -- AlvorKit.slnx --no-build --no-restore
-          dotnet run --project scripts\AlvorKit.Script.TestTiming -- --warn-only --trx out\test-timing\run.trx
-
-        Options:
-          --max-duration-ms <n>     Maximum allowed duration for one test. Default: 1000.
-          --warn-only              Print slow-test warnings but do not fail when tests pass.
-          --trx <path>             Inspect an existing TRX file instead of running dotnet test.
-          --results-directory <p>  Directory for TRX files and timing reports.
-          --repo-root <path>       Repository root. Default: discovered from the current process.
-          -h, --help, help         Show this help.
-        """;
-
     /// <summary>Parses options using repository discovery for default paths.</summary>
     /// <param name="args">Command-line arguments supplied by the caller.</param>
     public TestTimingOptions Parse(IReadOnlyList<string> args) =>
@@ -33,103 +14,31 @@ internal sealed class TestTimingCommandParser
     internal TestTimingOptions Parse(IReadOnlyList<string> args, string defaultRepoRoot)
     {
         var repoRoot = Path.GetFullPath(defaultRepoRoot);
-        if (args.Count == 0 || IsHelp(args[0]))
-            return TestTimingOptions.Help(repoRoot);
-
-        TimeSpan maxDuration = TestTimingOptions.DefaultMaxDuration;
-        string? resultsDirectory = null;
-        string? trxPath = null;
-        var warnOnly = false;
-        var dotNetArgs = new List<string>();
-
-        for (var i = 0; i < args.Count; i++)
-        {
-            var arg = args[i];
-            if (arg == "--")
-            {
-                AddRemaining(dotNetArgs, args, i + 1);
-                break;
-            }
-
-            if (arg == "--warn-only")
-            {
-                warnOnly = true;
-                continue;
-            }
-
-            if (TryParseValuedOption(args, ref i, ref repoRoot, ref resultsDirectory, ref trxPath, ref maxDuration))
-                continue;
-
-            AddRemaining(dotNetArgs, args, i);
-            break;
-        }
-
-        resultsDirectory ??= Path.Combine(repoRoot, "out", "test-timing", "runs", CreateRunId());
-        return new TestTimingOptions(
-            repoRoot,
-            Path.GetFullPath(resultsDirectory, repoRoot),
-            maxDuration,
-            warnOnly,
-            trxPath is null ? null : Path.GetFullPath(trxPath, repoRoot),
-            NormalizeDotNetArguments(dotNetArgs));
+        var split = TestTimingCommandLineSplit.Create(args);
+        var options = TimingOptions();
+        var command = CreateRootCommand(options);
+        var result = command.Parse(split.TimingArguments);
+        ThrowIfErrors(result);
+        return Options(result, options, repoRoot, split.ForwardedArguments);
     }
 
-    /// <summary>Parses one option that requires a following value.</summary>
-    private static bool TryParseValuedOption(
-        IReadOnlyList<string> args,
-        ref int index,
-        ref string repoRoot,
-        ref string? resultsDirectory,
-        ref string? trxPath,
-        ref TimeSpan maxDuration)
+    /// <summary>Creates the command-line surface for the timing guard.</summary>
+    /// <param name="defaultRepoRoot">Repository root provider used when <c>--repo-root</c> is omitted.</param>
+    /// <param name="forwardedArguments">Arguments forwarded to <c>dotnet test</c>.</param>
+    /// <param name="execute">Action that executes timing with parsed options.</param>
+    internal static RootCommand CreateRootCommand(
+        Func<string> defaultRepoRoot,
+        IReadOnlyList<string> forwardedArguments,
+        Func<TestTimingOptions, int> execute)
     {
-        switch (args[index])
-        {
-            case "--repo-root":
-                repoRoot = Path.GetFullPath(RequiredValue(args, ref index));
-                return true;
-            case "--results-directory":
-                resultsDirectory = RequiredValue(args, ref index);
-                return true;
-            case "--trx":
-                trxPath = RequiredValue(args, ref index);
-                return true;
-            case "--max-duration-ms":
-                maxDuration = ParseMilliseconds(RequiredValue(args, ref index));
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    /// <summary>Returns the required value following an option.</summary>
-    private static string RequiredValue(IReadOnlyList<string> args, ref int index)
-    {
-        if (index + 1 >= args.Count)
-            throw new ArgumentException($"{args[index]} requires a value.");
-
-        index++;
-        return args[index];
-    }
-
-    /// <summary>Parses a positive millisecond duration.</summary>
-    private static TimeSpan ParseMilliseconds(string value)
-    {
-        if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var milliseconds) || milliseconds <= 0)
-            throw new ArgumentException("--max-duration-ms must be a positive number.");
-
-        return TimeSpan.FromMilliseconds(milliseconds);
-    }
-
-    /// <summary>Adds all remaining arguments to the forwarded <c>dotnet test</c> argument list.</summary>
-    private static void AddRemaining(List<string> target, IReadOnlyList<string> args, int start)
-    {
-        for (var i = start; i < args.Count; i++)
-            target.Add(args[i]);
+        var options = TimingOptions();
+        var command = CreateRootCommand(options);
+        command.SetAction(parse => execute(Options(parse, options, Path.GetFullPath(defaultRepoRoot()), forwardedArguments)));
+        return command;
     }
 
     /// <summary>Adds the solution path when callers provide only options for <c>dotnet test</c>.</summary>
-    private static IReadOnlyList<string> NormalizeDotNetArguments(IReadOnlyList<string> args)
+    internal static IReadOnlyList<string> NormalizeDotNetArguments(IReadOnlyList<string> args)
     {
         if (args.Count == 0)
             return TestTimingOptions.DefaultDotNetTestArguments;
@@ -139,11 +48,83 @@ internal sealed class TestTimingCommandParser
             : args.ToArray();
     }
 
-    /// <summary>Returns whether an argument requests help output.</summary>
-    private static bool IsHelp(string arg) =>
-        arg is "help" or "-h" or "--help";
+    /// <summary>Creates the option instances used by one timing command tree.</summary>
+    private static (
+        Option<string> MaxDuration,
+        Option<bool> WarnOnly,
+        Option<string> Trx,
+        Option<string> ResultsDirectory,
+        Option<string> RepoRoot) TimingOptions() =>
+        (
+            new("--max-duration-ms") { Description = "Maximum allowed duration for one test." },
+            new("--warn-only") { Description = "Warn instead of failing when tests are slow." },
+            new("--trx") { Description = "Existing TRX file to inspect." },
+            new("--results-directory") { Description = "Directory for reports and TRX files." },
+            new("--repo-root") { Description = "Repository root." });
+
+    /// <summary>Creates the System.CommandLine root command for timing guard options.</summary>
+    private static RootCommand CreateRootCommand(
+        (
+            Option<string> MaxDuration,
+            Option<bool> WarnOnly,
+            Option<string> Trx,
+            Option<string> ResultsDirectory,
+            Option<string> RepoRoot) options)
+    {
+        var command = new RootCommand("Unit test timing guard.");
+        command.Options.Add(options.MaxDuration);
+        command.Options.Add(options.WarnOnly);
+        command.Options.Add(options.Trx);
+        command.Options.Add(options.ResultsDirectory);
+        command.Options.Add(options.RepoRoot);
+        return command;
+    }
+
+    /// <summary>Creates immutable timing options from parsed command-line values.</summary>
+    private static TestTimingOptions Options(
+        ParseResult parse,
+        (
+            Option<string> MaxDuration,
+            Option<bool> WarnOnly,
+            Option<string> Trx,
+            Option<string> ResultsDirectory,
+            Option<string> RepoRoot) options,
+        string defaultRepoRoot,
+        IReadOnlyList<string> forwardedArguments)
+    {
+        var root = Path.GetFullPath(parse.GetValue(options.RepoRoot) ?? defaultRepoRoot);
+        var results = parse.GetValue(options.ResultsDirectory) ?? Path.Combine(root, "out", "test-timing", "runs", CreateRunId());
+        var trxPath = parse.GetValue(options.Trx);
+        return new(
+            root,
+            Path.GetFullPath(results, root),
+            ParseMilliseconds(parse.GetValue(options.MaxDuration)),
+            parse.GetValue(options.WarnOnly),
+            trxPath is null ? null : Path.GetFullPath(trxPath, root),
+            NormalizeDotNetArguments(forwardedArguments));
+    }
+
+    /// <summary>Parses an optional positive millisecond duration.</summary>
+    private static TimeSpan ParseMilliseconds(string? value)
+    {
+        if (value is null)
+            return TestTimingOptions.DefaultMaxDuration;
+        if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var milliseconds) || milliseconds <= 0)
+            throw new ArgumentException("--max-duration-ms must be a positive number.");
+
+        return TimeSpan.FromMilliseconds(milliseconds);
+    }
 
     /// <summary>Creates a filesystem-safe identifier for this timing run.</summary>
     private static string CreateRunId() =>
         $"{DateTimeOffset.UtcNow:yyyyMMddTHHmmssfffZ}-{Environment.ProcessId}";
+
+    /// <summary>Throws an argument exception when System.CommandLine found parse errors.</summary>
+    private static void ThrowIfErrors(ParseResult result)
+    {
+        if (result.Action is System.CommandLine.Help.HelpAction)
+            throw new ArgumentException("Help is generated by the command-line app.");
+        if (result.Errors.Count > 0)
+            throw new ArgumentException(string.Join(" ", result.Errors.Select(error => error.Message)));
+    }
 }

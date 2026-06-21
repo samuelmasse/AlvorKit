@@ -3,137 +3,115 @@ namespace AlvorKit.Script.AgentLease;
 /// <summary>Parses command-line arguments for the advisory lease helper.</summary>
 internal static partial class AgentLeaseCommandParser
 {
-    /// <summary>Usage text printed for <c>help</c> or <c>--help</c>.</summary>
-    public const string HelpText = """
-        Usage: dotnet run --project scripts/AlvorKit.Script.AgentLease -- <command> [options]
-
-        Commands:
-          start      Create or replace a lease for current write-oriented work.
-          touch      Refresh an existing lease and optionally update its fields.
-          list       Show active leases. Add --include-stale to show expired leases.
-          check      Check proposed paths for active overlapping leases.
-          done       Remove a completed lease.
-          conflict   Write a short markdown note for unavoidable overlapping work.
-
-        Options:
-          --agent <id>             Agent identifier. Falls back to ALVORKIT_AGENT_ID when set.
-          --task <text>            Human-readable task summary.
-          --mode <mode>            write, generate, format, test, cleanup, or review.
-          --path|--paths <glob>    Repository-relative path, directory, glob, *, or repo-wide. Repeatable.
-          --notes <text>           Optional short note stored in the lease.
-          --reason <text>          Conflict-note reason.
-          --timeout-minutes <n>    Lease lifetime from now. Defaults to 5.
-          --repo-root <path>       Repository root. Defaults to the current repo.
-          --include-stale          Include expired leases in list output.
-          -h, --help               Show this help text.
-        """;
-
     /// <summary>Parses command-line arguments using repository-root discovery for defaults.</summary>
     /// <param name="args">Command-line arguments passed to the process.</param>
-    public static AgentLeaseCommand Parse(IReadOnlyList<string> args)
-    {
-        if (args.Count == 0 || args[0] is "help" or "-h" or "--help")
-            return Parse(args, Directory.GetCurrentDirectory());
-
-        var repoRoot = RepoRootArgument(args) ?? ProjectRoot.FindFromCurrentProcess(typeof(AgentLeaseCommandParser));
-        return Parse(args, repoRoot);
-    }
+    public static AgentLeaseCommand Parse(IReadOnlyList<string> args) =>
+        Parse(args, () => ProjectRoot.FindFromCurrentProcess(typeof(AgentLeaseCommandParser)));
 
     /// <summary>Parses command-line arguments with an explicit default repository root for tests.</summary>
     /// <param name="args">Command-line arguments passed to the process.</param>
     /// <param name="defaultRepoRoot">Repository root to use when <c>--repo-root</c> is omitted.</param>
-    internal static AgentLeaseCommand Parse(IReadOnlyList<string> args, string defaultRepoRoot)
+    internal static AgentLeaseCommand Parse(IReadOnlyList<string> args, string defaultRepoRoot) =>
+        Parse(args, () => defaultRepoRoot);
+
+    /// <summary>Creates the command tree for the lease helper.</summary>
+    /// <param name="defaultRepoRoot">Repository root provider used when <c>--repo-root</c> is omitted.</param>
+    /// <param name="execute">Action that executes the parsed command.</param>
+    internal static RootCommand CreateRootCommand(Func<string> defaultRepoRoot, Func<AgentLeaseCommand, Task<int>> execute)
     {
-        if (args.Count == 0 || args[0] is "help" or "-h" or "--help")
-            return Help(defaultRepoRoot);
-
-        var kind = ParseKind(args[0]);
-        var repoRoot = defaultRepoRoot;
-        string? agent = null;
-        string? task = null;
-        string? mode = null;
-        string? notes = null;
-        string? reason = null;
-        var paths = new List<string>();
-        var timeout = AgentLeaseCommand.DefaultTimeout;
-        var includeStale = false;
-
-        for (var index = 1; index < args.Count; index++)
-            ReadOption(args, ref index, ref repoRoot, ref agent, ref task, ref mode, ref notes, ref reason, paths, ref timeout, ref includeStale);
-
-        Validate(kind, task, mode, paths, reason);
-        return new(kind, Path.GetFullPath(repoRoot), agent, task, mode, paths, notes, reason, timeout, includeStale);
+        var root = new RootCommand("Advisory agent lease helper.");
+        root.Subcommands.Add(CreateCommand("start", "Create or replace a lease.", AgentLeaseCommandKind.Start, defaultRepoRoot, execute));
+        root.Subcommands.Add(CreateCommand("touch", "Refresh or update a lease.", AgentLeaseCommandKind.Touch, defaultRepoRoot, execute));
+        root.Subcommands.Add(CreateCommand("list", "Show active leases.", AgentLeaseCommandKind.List, defaultRepoRoot, execute));
+        root.Subcommands.Add(CreateCommand("check", "Check proposed paths for overlaps.", AgentLeaseCommandKind.Check, defaultRepoRoot, execute));
+        root.Subcommands.Add(CreateCommand("done", "Remove a completed lease.", AgentLeaseCommandKind.Done, defaultRepoRoot, execute));
+        root.Subcommands.Add(CreateCommand("conflict", "Write an overlap conflict note.", AgentLeaseCommandKind.Conflict, defaultRepoRoot, execute));
+        return root;
     }
 
-    /// <summary>Returns a help command rooted at the supplied path.</summary>
-    /// <param name="repoRoot">Repository root or current directory used only to fill the command shape.</param>
-    private static AgentLeaseCommand Help(string repoRoot) =>
-        new(AgentLeaseCommandKind.Help, Path.GetFullPath(repoRoot), null, null, null, [], null, null, AgentLeaseCommand.DefaultTimeout, false);
-
-    /// <summary>Parses the command name into the matching command kind.</summary>
-    /// <param name="name">Command name from the first argument.</param>
-    private static AgentLeaseCommandKind ParseKind(string name) =>
-        name switch
-        {
-            "start" => AgentLeaseCommandKind.Start,
-            "touch" => AgentLeaseCommandKind.Touch,
-            "list" => AgentLeaseCommandKind.List,
-            "check" => AgentLeaseCommandKind.Check,
-            "done" => AgentLeaseCommandKind.Done,
-            "conflict" => AgentLeaseCommandKind.Conflict,
-            _ => throw new ArgumentException($"Unknown lease command '{name}'.")
-        };
-
-    /// <summary>Reads one command-line option and updates the parse state.</summary>
-    private static void ReadOption(
-        IReadOnlyList<string> args,
-        ref int index,
-        ref string repoRoot,
-        ref string? agent,
-        ref string? task,
-        ref string? mode,
-        ref string? notes,
-        ref string? reason,
-        List<string> paths,
-        ref TimeSpan timeout,
-        ref bool includeStale)
+    /// <summary>Creates a lease command with the shared option surface.</summary>
+    private static Command CreateCommand(
+        string name,
+        string description,
+        AgentLeaseCommandKind kind,
+        Func<string> defaultRepoRoot,
+        Func<AgentLeaseCommand, Task<int>> execute)
     {
-        switch (args[index])
+        var agent = new Option<string>("--agent") { Description = "Agent identifier." };
+        var task = new Option<string>("--task") { Description = "Human-readable task summary." };
+        var mode = new Option<string>("--mode") { Description = "Lease coordination mode." };
+        var paths = new Option<string[]>("--path", "--paths") { Description = "Repository-relative path or glob." };
+        var notes = new Option<string>("--notes") { Description = "Optional short lease note." };
+        var reason = new Option<string>("--reason") { Description = "Conflict-note reason." };
+        var timeoutMinutes = new Option<string>("--timeout-minutes") { Description = "Lease lifetime in minutes." };
+        var repoRoot = new Option<string>("--repo-root") { Description = "Repository root." };
+        var includeStale = new Option<bool>("--include-stale") { Description = "Include expired leases in list output." };
+        var command = new Command(name, description);
+        command.Options.Add(agent);
+        command.Options.Add(task);
+        command.Options.Add(mode);
+        command.Options.Add(paths);
+        command.Options.Add(notes);
+        command.Options.Add(reason);
+        command.Options.Add(timeoutMinutes);
+        command.Options.Add(repoRoot);
+        command.Options.Add(includeStale);
+        command.SetAction(parse =>
         {
-            case "--agent":
-                agent = ReadValue(args, ref index);
-                break;
-            case "--task":
-                task = ReadValue(args, ref index);
-                break;
-            case "--mode":
-                mode = ReadValue(args, ref index);
-                break;
-            case "--path":
-            case "--paths":
-                paths.Add(ReadValue(args, ref index));
-                break;
-            case "--notes":
-                notes = ReadValue(args, ref index);
-                break;
-            case "--reason":
-                reason = ReadValue(args, ref index);
-                break;
-            case "--timeout-minutes":
-                timeout = TimeSpan.FromMinutes(double.Parse(ReadValue(args, ref index), CultureInfo.InvariantCulture));
-                break;
-            case "--repo-root":
-                repoRoot = ReadValue(args, ref index);
-                break;
-            case "--include-stale":
-                includeStale = true;
-                break;
-            case "-h":
-            case "--help":
-                throw new ArgumentException("Use 'help' as the command to show lease helper usage.");
-            default:
-                throw new ArgumentException($"Unknown lease option '{args[index]}'.");
-        }
+            var parsed = new AgentLeaseCommand(
+                kind,
+                Path.GetFullPath(parse.GetValue(repoRoot) ?? defaultRepoRoot()),
+                parse.GetValue(agent),
+                parse.GetValue(task),
+                parse.GetValue(mode),
+                Paths(parse.GetValue(paths)),
+                parse.GetValue(notes),
+                parse.GetValue(reason),
+                Timeout(parse.GetValue(timeoutMinutes)),
+                parse.GetValue(includeStale));
+            Validate(parsed.Kind, parsed.TaskDescription, parsed.Mode, parsed.Paths, parsed.Reason);
+            return execute(parsed);
+        });
+        return command;
     }
 
+    /// <summary>Parses command-line arguments using the supplied default repository root.</summary>
+    private static AgentLeaseCommand Parse(IReadOnlyList<string> args, Func<string> defaultRepoRoot)
+    {
+        AgentLeaseCommand? command = null;
+        var root = CreateRootCommand(
+            defaultRepoRoot,
+            parsed =>
+            {
+                command = parsed;
+                return Task.FromResult(0);
+            });
+        var result = root.Parse(args.ToArray());
+        ThrowIfErrors(result);
+        var exitCode = result.InvokeAsync(SilentInvocation()).GetAwaiter().GetResult();
+        if (exitCode != 0)
+            throw new ArgumentException($"Command exited with code {exitCode}.");
+
+        return command ?? throw new ArgumentException("A lease command is required.");
+    }
+
+    /// <summary>Normalizes optional path values from the command line.</summary>
+    private static IReadOnlyList<string> Paths(string[]? values) =>
+        values ?? [];
+
+    /// <summary>Parses the optional timeout override.</summary>
+    private static TimeSpan Timeout(string? value)
+    {
+        if (value is null)
+            return AgentLeaseCommand.DefaultTimeout;
+
+        if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var minutes))
+            throw new ArgumentException("--timeout-minutes must be a number.");
+
+        return TimeSpan.FromMinutes(minutes);
+    }
+
+    /// <summary>Creates an invocation configuration that suppresses generated help output during parse tests.</summary>
+    private static InvocationConfiguration SilentInvocation() =>
+        new() { Output = TextWriter.Null, Error = TextWriter.Null, EnableDefaultExceptionHandler = false };
 }

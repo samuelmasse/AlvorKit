@@ -12,12 +12,14 @@ public sealed class MathsGeneratorTest
         var matrixNames = MatrixCatalog.Matrices.Select(matrix => matrix.TypeName).ToArray();
         var quaternionNames = QuaternionCatalog.Quaternions.Select(quaternion => quaternion.TypeName).ToArray();
         var planeNames = PlaneCatalog.Planes.Select(plane => plane.TypeName).ToArray();
+        var frustumNames = FrustumCatalog.Frustums.Select(frustum => frustum.TypeName).ToArray();
         var boxNames = BoxCatalog.Boxes.Select(box => box.TypeName).ToArray();
 
         Assert.AreEqual(42, vectorNames.Length);
         Assert.AreEqual(18, matrixNames.Length);
         Assert.AreEqual(2, quaternionNames.Length);
         Assert.AreEqual(2, planeNames.Length);
+        Assert.AreEqual(2, frustumNames.Length);
         Assert.AreEqual(6, boxNames.Length);
         CollectionAssert.Contains(vectorNames, "Vec3h");
         CollectionAssert.Contains(vectorNames, "Vec4u128");
@@ -25,6 +27,7 @@ public sealed class MathsGeneratorTest
         CollectionAssert.Contains(matrixNames, "Mat4x3d");
         CollectionAssert.Contains(quaternionNames, "Quatd");
         CollectionAssert.Contains(planeNames, "Plane3d");
+        CollectionAssert.Contains(frustumNames, "Frustum3d");
         CollectionAssert.Contains(boxNames, "Box3i");
     }
 
@@ -58,6 +61,8 @@ public sealed class MathsGeneratorTest
         Assert.AreEqual("Quatd", VectorCatalog.Double.QuaternionName());
         Assert.AreEqual("Plane3", VectorCatalog.Float.PlaneName());
         Assert.AreEqual("Plane3d", VectorCatalog.Double.PlaneName());
+        Assert.AreEqual("Frustum3", VectorCatalog.Float.FrustumName());
+        Assert.AreEqual("Frustum3d", VectorCatalog.Double.FrustumName());
         Assert.AreEqual("Box3i", VectorCatalog.Int.BoxName(3));
         Assert.AreEqual("(sbyte)(x + y)", VectorCatalog.Scalars.Single(scalar => scalar.Kind == ScalarKind.Int8).CastArithmetic("x + y"));
         Assert.AreEqual("x + y", VectorCatalog.Int.CastArithmetic("x + y"));
@@ -202,6 +207,28 @@ public sealed class MathsGeneratorTest
         Assert.IsFalse(plane.Contains("public static Plane3 Create(float", StringComparison.Ordinal));
     }
 
+    /// <summary>Frustum source includes clip extraction, box queries, finite corners, formatting, parsing, and scalar conversions.</summary>
+    [TestMethod]
+    public void FrustumEmitter_EmitsExpectedFrustumFeatures()
+    {
+        var frustum = FrustumFileEmitter.Emit(new(VectorCatalog.Float));
+        var frustumd = FrustumFileEmitter.Emit(new(VectorCatalog.Double));
+
+        StringAssert.Contains(frustum, "/// <summary>Single-precision floating-point 3D frustum volume.");
+        StringAssert.Contains(frustum, "public struct Frustum3(");
+        StringAssert.Contains(frustum, "IFrustum3Transform<Frustum3, float, Vec3, Vec4, Mat4, Plane3, Box3>");
+        StringAssert.Contains(frustum, "public static Frustum3 CreateFromClipTransform(Mat4 clipFromSource)");
+        StringAssert.Contains(frustum, "ProjectionDepthRange.NegativeOneToOne");
+        StringAssert.Contains(frustum, "public readonly bool Contains(Vec3 point)");
+        StringAssert.Contains(frustum, "public readonly ContainmentKind Classify(Box3 box)");
+        StringAssert.Contains(frustum, "public readonly bool TryCopyCornersTo(Span<Vec3> destination)");
+        StringAssert.Contains(frustum, "public static implicit operator Frustum3d(Frustum3 value)");
+        StringAssert.Contains(frustumd, "/// <summary>Double-precision floating-point 3D frustum volume.");
+        StringAssert.Contains(frustumd, "IFrustum3Transform<Frustum3d, double, Vec3d, Vec4d, Mat4d, Plane3d, Box3d>");
+        Assert.IsFalse(frustum.Contains("public Frustum3(float", StringComparison.Ordinal));
+        Assert.IsFalse(frustum.Contains("public static Frustum3 Create(float", StringComparison.Ordinal));
+    }
+
     /// <summary>Box source includes 2D and 3D spatial helpers, formatting, parsing, and scalar conversions.</summary>
     [TestMethod]
     public void BoxEmitter_EmitsExpectedBoxFeatures()
@@ -263,6 +290,8 @@ public sealed class MathsGeneratorTest
         yield return ("Quatd.g.cs", QuaternionFileEmitter.Emit(new(VectorCatalog.Double)));
         yield return ("Plane3.g.cs", PlaneFileEmitter.Emit(new(VectorCatalog.Float)));
         yield return ("Plane3d.g.cs", PlaneFileEmitter.Emit(new(VectorCatalog.Double)));
+        yield return ("Frustum3.g.cs", FrustumFileEmitter.Emit(new(VectorCatalog.Float)));
+        yield return ("Frustum3d.g.cs", FrustumFileEmitter.Emit(new(VectorCatalog.Double)));
         yield return ("Box3i.g.cs", BoxFileEmitter.Emit(new(3, VectorCatalog.Int)));
     }
 

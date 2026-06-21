@@ -9,20 +9,20 @@ internal static class Program
     {
         try
         {
-            var options = LintOptions.Parse(args);
-            if (options.ShowHelp)
-            {
-                Console.WriteLine(LintOptions.HelpText);
-                return 0;
-            }
-
-            var runner = new LintRunner(options, new ProcessRunner(), new ActionlintTool());
-            return await runner.RunAsync();
+            var command = LintOptions.CreateRootCommand(() => RepositoryPaths.FindRoot(), RunAsync);
+            return await command.Parse(args).InvokeAsync(new() { EnableDefaultExceptionHandler = false });
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine(ex.Message);
             return 1;
         }
+    }
+
+    /// <summary>Runs linting with parsed command-line options.</summary>
+    private static async Task<int> RunAsync(LintOptions options)
+    {
+        var runner = new LintRunner(options, new ProcessRunner(), new ActionlintTool());
+        return await runner.RunAsync();
     }
 }

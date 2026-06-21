@@ -4,22 +4,6 @@ namespace AlvorKit.Script.BindgenReview.Test;
 [TestClass]
 public sealed class BindgenReviewCoordinatorTest
 {
-    /// <summary>The default coordinator can execute help without launching external tools.</summary>
-    [TestMethod]
-    public async Task Execute_HelpWithDefaultCoordinator_ReturnsHelp()
-    {
-        var result = await BindgenReviewCoordinator.CreateDefault().ExecuteAsync(new(
-            BindgenReviewCommandKind.Help,
-            Directory.GetCurrentDirectory(),
-            null,
-            null,
-            null,
-            false));
-
-        Assert.AreEqual(0, result.ExitCode);
-        CollectionAssert.Contains(result.Lines.ToArray(), BindgenReviewCommandParser.HelpText);
-    }
-
     /// <summary>Start creates a suffixed review directory, writes a manifest, and runs bindgen for before.</summary>
     [TestMethod]
     public async Task Execute_Start_CreatesManifestAndRunsBindgen()
@@ -223,20 +207,17 @@ public sealed class BindgenReviewCoordinatorTest
         Assert.IsTrue(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "xxhash-a1b2c")));
     }
 
-    /// <summary>Unknown command kinds defensively return help.</summary>
+    /// <summary>Unknown command kinds are rejected defensively.</summary>
     [TestMethod]
-    public async Task Execute_UnknownCommand_ReturnsHelp()
+    public async Task Execute_UnknownCommand_Throws()
     {
-        var result = await Coordinator(new FakeProcessRunner()).ExecuteAsync(new(
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => Coordinator(new FakeProcessRunner()).ExecuteAsync(new(
             (BindgenReviewCommandKind)999,
             Directory.GetCurrentDirectory(),
             null,
             null,
             null,
-            false));
-
-        Assert.AreEqual(0, result.ExitCode);
-        CollectionAssert.Contains(result.Lines.ToArray(), BindgenReviewCommandParser.HelpText);
+            false)));
     }
 
     /// <summary>Creates a coordinator with deterministic suffix and timestamp values.</summary>

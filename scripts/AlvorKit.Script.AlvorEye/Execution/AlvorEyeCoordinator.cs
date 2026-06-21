@@ -18,7 +18,6 @@ internal sealed partial class AlvorEyeCoordinator(IAlvorEyePlatform platform)
     {
         return command.Kind switch
         {
-            AlvorEyeCommandKind.Help => AlvorEyeResult.Success(AlvorEyeCommandParser.HelpText),
             AlvorEyeCommandKind.Run => await RunAsync(command),
             AlvorEyeCommandKind.Session => await SessionAsync(command, input, jsonOutput),
             AlvorEyeCommandKind.Handoff => await HandoffAsync(command),

@@ -4,22 +4,26 @@ namespace AlvorKit.Script.TestTiming.Test;
 [TestClass]
 public sealed class TestTimingCommandParserTest
 {
-    /// <summary>Help requests do not require a test target.</summary>
-    [TestMethod]
-    public void Parse_Help_ReturnsHelpOptions()
-    {
-        var options = new TestTimingCommandParser().Parse(["--help"], "C:/repo");
+    /// <summary>Portable absolute repository root fixture used by parser tests.</summary>
+    private static readonly string RepoRoot = Path.Combine(Path.GetTempPath(), "alvorkit-testtiming-repo");
 
-        Assert.IsTrue(options.IsHelp);
+    /// <summary>Portable absolute alternate repository root fixture used by parser tests.</summary>
+    private static readonly string OtherRepoRoot = Path.Combine(Path.GetTempPath(), "alvorkit-testtiming-other-repo");
+
+    /// <summary>Parse-only calls leave generated help to the command-line app.</summary>
+    [TestMethod]
+    public void Parse_Help_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new TestTimingCommandParser().Parse(["--help"], RepoRoot));
     }
 
-    /// <summary>The public parser can return help without a discovered test target.</summary>
+    /// <summary>No-argument parse-only calls use the default test target.</summary>
     [TestMethod]
-    public void Parse_PublicNoArgs_ReturnsHelpOptions()
+    public void Parse_NoArgs_ReturnsDefaultTarget()
     {
-        var options = new TestTimingCommandParser().Parse([]);
+        var options = new TestTimingCommandParser().Parse([], RepoRoot);
 
-        Assert.IsTrue(options.IsHelp);
+        CollectionAssert.AreEqual(TestTimingOptions.DefaultDotNetTestArguments.ToArray(), options.DotNetTestArguments.ToArray());
     }
 
     /// <summary>Timing options parse before forwarded dotnet test arguments.</summary>
@@ -36,11 +40,11 @@ public sealed class TestTimingCommandParserTest
                 "AlvorKit.slnx",
                 "--no-build"
             ],
-            "C:/repo");
+            RepoRoot);
 
         Assert.AreEqual(TimeSpan.FromMilliseconds(25.5), options.MaxDuration);
         Assert.IsTrue(options.WarnOnly);
-        Assert.AreEqual(Path.GetFullPath("out/timing", "C:/repo"), options.ResultsDirectory);
+        Assert.AreEqual(Path.GetFullPath("out/timing", RepoRoot), options.ResultsDirectory);
         CollectionAssert.AreEqual(new[] { "AlvorKit.slnx", "--no-build" }, options.DotNetTestArguments.ToArray());
     }
 
@@ -48,9 +52,9 @@ public sealed class TestTimingCommandParserTest
     [TestMethod]
     public void Parse_RepoRootAndSeparator_ReturnsForwardedArguments()
     {
-        var options = new TestTimingCommandParser().Parse(["--repo-root", "C:/other", "--", "--filter", "Fast"], "C:/repo");
+        var options = new TestTimingCommandParser().Parse(["--repo-root", OtherRepoRoot, "--", "--filter", "Fast"], RepoRoot);
 
-        Assert.AreEqual(Path.GetFullPath("C:/other"), options.RepoRoot);
+        Assert.AreEqual(Path.GetFullPath(OtherRepoRoot), options.RepoRoot);
         CollectionAssert.AreEqual(new[] { "AlvorKit.slnx", "--filter", "Fast" }, options.DotNetTestArguments.ToArray());
     }
 
@@ -58,7 +62,7 @@ public sealed class TestTimingCommandParserTest
     [TestMethod]
     public void Parse_DotNetOptionsOnly_PrependsSolution()
     {
-        var options = new TestTimingCommandParser().Parse(["--no-build", "--filter", "Fast"], "C:/repo");
+        var options = new TestTimingCommandParser().Parse(["--no-build", "--filter", "Fast"], RepoRoot);
 
         CollectionAssert.AreEqual(new[] { "AlvorKit.slnx", "--no-build", "--filter", "Fast" }, options.DotNetTestArguments.ToArray());
     }
@@ -67,29 +71,29 @@ public sealed class TestTimingCommandParserTest
     [TestMethod]
     public void Parse_Trx_ReturnsParseOnlyPath()
     {
-        var options = new TestTimingCommandParser().Parse(["--trx", "out/run.trx"], "C:/repo");
+        var options = new TestTimingCommandParser().Parse(["--trx", "out/run.trx"], RepoRoot);
 
-        Assert.AreEqual(Path.GetFullPath("out/run.trx", "C:/repo"), options.TrxPath);
+        Assert.AreEqual(Path.GetFullPath("out/run.trx", RepoRoot), options.TrxPath);
     }
 
     /// <summary>Non-positive timing budgets are rejected.</summary>
     [TestMethod]
     public void Parse_NonPositiveMaxDuration_Throws()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => new TestTimingCommandParser().Parse(["--max-duration-ms", "0"], "C:/repo"));
+        Assert.ThrowsExactly<ArgumentException>(() => new TestTimingCommandParser().Parse(["--max-duration-ms", "0"], RepoRoot));
     }
 
     /// <summary>Missing option values are rejected with a targeted parse error.</summary>
     [TestMethod]
     public void Parse_MissingValue_Throws()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => new TestTimingCommandParser().Parse(["--trx"], "C:/repo"));
+        Assert.ThrowsExactly<ArgumentException>(() => new TestTimingCommandParser().Parse(["--trx"], RepoRoot));
     }
 
     /// <summary>Non-numeric timing budgets are rejected.</summary>
     [TestMethod]
     public void Parse_NonNumericMaxDuration_Throws()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => new TestTimingCommandParser().Parse(["--max-duration-ms", "fast"], "C:/repo"));
+        Assert.ThrowsExactly<ArgumentException>(() => new TestTimingCommandParser().Parse(["--max-duration-ms", "fast"], RepoRoot));
     }
 }

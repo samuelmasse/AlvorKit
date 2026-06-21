@@ -3,73 +3,86 @@ namespace AlvorKit.Script.BindgenReview;
 /// <summary>Parses command-line arguments for the bindgen review helper.</summary>
 internal static partial class BindgenReviewCommandParser
 {
-    /// <summary>Usage text printed for <c>help</c> or <c>--help</c>.</summary>
-    public const string HelpText = """
-        Usage: dotnet run --project scripts/AlvorKit.Script.BindgenReview -- <command> [options]
-
-        Commands:
-          start <library>      Create a unique review directory and generate before.
-          after <review-root>  Generate after for an existing review directory.
-          diff <review-root>   Print git diff --no-index for before and after.
-          clean <review-root>  Delete an existing review directory.
-          finish <review-root> Generate after, print the diff, and delete the review directory.
-
-        Options:
-          --case <name>        Human-readable case name for start. Defaults to the library.
-          --keep               Keep the review directory after finish prints the diff.
-          --repo-root <path>   Repository root. Defaults to the current repo.
-          -h, --help           Show this help text.
-        """;
-
     /// <summary>Parses command-line arguments using repository-root discovery for defaults.</summary>
     /// <param name="args">Command-line arguments passed to the process.</param>
-    public static BindgenReviewCommand Parse(IReadOnlyList<string> args)
-    {
-        if (args.Count == 0 || args[0] is "help" or "-h" or "--help")
-            return Parse(args, Directory.GetCurrentDirectory());
-
-        var repoRoot = RepoRootArgument(args) ?? ProjectRoot.FindFromCurrentProcess(typeof(BindgenReviewCommandParser));
-        return Parse(args, repoRoot);
-    }
+    public static BindgenReviewCommand Parse(IReadOnlyList<string> args) =>
+        Parse(args, () => ProjectRoot.FindFromCurrentProcess(typeof(BindgenReviewCommandParser)));
 
     /// <summary>Parses command-line arguments with an explicit default repository root for tests.</summary>
     /// <param name="args">Command-line arguments passed to the process.</param>
     /// <param name="defaultRepoRoot">Repository root to use when <c>--repo-root</c> is omitted.</param>
-    internal static BindgenReviewCommand Parse(IReadOnlyList<string> args, string defaultRepoRoot)
+    internal static BindgenReviewCommand Parse(IReadOnlyList<string> args, string defaultRepoRoot) =>
+        Parse(args, () => defaultRepoRoot);
+
+    /// <summary>Creates the command tree for the bindgen review helper.</summary>
+    /// <param name="defaultRepoRoot">Repository root provider used when <c>--repo-root</c> is omitted.</param>
+    /// <param name="execute">Action that executes the parsed command.</param>
+    internal static RootCommand CreateRootCommand(Func<string> defaultRepoRoot, Func<BindgenReviewCommand, Task<int>> execute)
     {
-        if (args.Count == 0 || args[0] is "help" or "-h" or "--help")
-            return Help(defaultRepoRoot);
-
-        var kind = ParseKind(args[0]);
-        var repoRoot = defaultRepoRoot;
-        var positionals = new List<string>();
-        string? caseName = null;
-        var keep = false;
-
-        for (var index = 1; index < args.Count; index++)
-            ReadOption(args, ref index, ref repoRoot, positionals, ref caseName, ref keep);
-
-        Validate(kind, positionals, caseName, keep);
-        var library = kind == BindgenReviewCommandKind.Start ? positionals[0] : null;
-        var reviewRoot = kind == BindgenReviewCommandKind.Start ? null : positionals[0];
-        return new(kind, Path.GetFullPath(repoRoot), library, reviewRoot, caseName, keep);
+        var root = new RootCommand("Generated binding review helper.");
+        root.Subcommands.Add(CreateCommand("start", "Create a review directory and generate before.", BindgenReviewCommandKind.Start, defaultRepoRoot, execute));
+        root.Subcommands.Add(CreateCommand("after", "Generate after for an existing review.", BindgenReviewCommandKind.After, defaultRepoRoot, execute));
+        root.Subcommands.Add(CreateCommand("diff", "Print a before/after diff.", BindgenReviewCommandKind.Diff, defaultRepoRoot, execute));
+        root.Subcommands.Add(CreateCommand("clean", "Delete an existing review directory.", BindgenReviewCommandKind.Clean, defaultRepoRoot, execute));
+        root.Subcommands.Add(CreateCommand("finish", "Generate after, print diff, and clean.", BindgenReviewCommandKind.Finish, defaultRepoRoot, execute));
+        return root;
     }
 
-    /// <summary>Returns a help command rooted at the supplied path.</summary>
-    /// <param name="repoRoot">Repository root or current directory used only to fill the command shape.</param>
-    private static BindgenReviewCommand Help(string repoRoot) =>
-        new(BindgenReviewCommandKind.Help, Path.GetFullPath(repoRoot), null, null, null, false);
-
-    /// <summary>Parses the command name into the matching command kind.</summary>
-    /// <param name="name">Command name from the first argument.</param>
-    private static BindgenReviewCommandKind ParseKind(string name) =>
-        name switch
+    /// <summary>Creates one bindgen review command with shared options and one positional argument.</summary>
+    private static Command CreateCommand(
+        string name,
+        string description,
+        BindgenReviewCommandKind kind,
+        Func<string> defaultRepoRoot,
+        Func<BindgenReviewCommand, Task<int>> execute)
+    {
+        var positional = new Argument<string>("target") { Description = "Library or review root." };
+        var caseName = new Option<string>("--case") { Description = "Human-readable case name." };
+        var repoRoot = new Option<string>("--repo-root") { Description = "Repository root." };
+        var keep = new Option<bool>("--keep") { Description = "Keep review output after finish." };
+        var command = new Command(name, description);
+        command.Arguments.Add(positional);
+        command.Options.Add(caseName);
+        command.Options.Add(repoRoot);
+        command.Options.Add(keep);
+        command.SetAction(parse =>
         {
-            "start" => BindgenReviewCommandKind.Start,
-            "after" => BindgenReviewCommandKind.After,
-            "diff" => BindgenReviewCommandKind.Diff,
-            "clean" => BindgenReviewCommandKind.Clean,
-            "finish" => BindgenReviewCommandKind.Finish,
-            _ => throw new ArgumentException($"Unknown bindgen review command '{name}'.")
-        };
+            var targetValue = parse.GetRequiredValue(positional);
+            var caseValue = parse.GetValue(caseName);
+            var keepValue = parse.GetValue(keep);
+            Validate(kind, [targetValue], caseValue, keepValue);
+            return execute(new(
+                kind,
+                Path.GetFullPath(parse.GetValue(repoRoot) ?? defaultRepoRoot()),
+                kind == BindgenReviewCommandKind.Start ? targetValue : null,
+                kind == BindgenReviewCommandKind.Start ? null : targetValue,
+                caseValue,
+                keepValue));
+        });
+        return command;
+    }
+
+    /// <summary>Parses command-line arguments using the supplied default repository root.</summary>
+    private static BindgenReviewCommand Parse(IReadOnlyList<string> args, Func<string> defaultRepoRoot)
+    {
+        BindgenReviewCommand? command = null;
+        var root = CreateRootCommand(
+            defaultRepoRoot,
+            parsed =>
+            {
+                command = parsed;
+                return Task.FromResult(0);
+            });
+        var result = root.Parse(args.ToArray());
+        ThrowIfErrors(result);
+        var exitCode = result.InvokeAsync(SilentInvocation()).GetAwaiter().GetResult();
+        if (exitCode != 0)
+            throw new ArgumentException($"Command exited with code {exitCode}.");
+
+        return command ?? throw new ArgumentException("A bindgen review command is required.");
+    }
+
+    /// <summary>Creates an invocation configuration that suppresses generated help output during parse tests.</summary>
+    private static InvocationConfiguration SilentInvocation() =>
+        new() { Output = TextWriter.Null, Error = TextWriter.Null, EnableDefaultExceptionHandler = false };
 }

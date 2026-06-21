@@ -15,13 +15,13 @@ public sealed class AlvorEyeCommandParserTest
         Assert.AreEqual(Path.GetFullPath("demo.json"), command.ScenarioPath);
     }
 
-    /// <summary>Defaults to help when no command or a help flag is supplied.</summary>
+    /// <summary>Parse-only calls require executable commands; the app command tree owns generated help.</summary>
     [TestMethod]
-    public void Parse_HelpForms_ReturnHelp()
+    public void Parse_HelpForms_Throw()
     {
-        Assert.AreEqual(AlvorEyeCommandKind.Help, AlvorEyeCommandParser.Parse([], "C:/repo").Kind);
-        Assert.AreEqual(AlvorEyeCommandKind.Help, AlvorEyeCommandParser.Parse(["--help"], "C:/repo").Kind);
-        Assert.AreEqual(AlvorEyeCommandKind.Help, AlvorEyeCommandParser.Parse(["-h"], "C:/repo").Kind);
+        Assert.ThrowsExactly<ArgumentException>(() => AlvorEyeCommandParser.Parse([], "C:/repo"));
+        Assert.ThrowsExactly<ArgumentException>(() => AlvorEyeCommandParser.Parse(["--help"], "C:/repo"));
+        Assert.ThrowsExactly<ArgumentException>(() => AlvorEyeCommandParser.Parse(["-h"], "C:/repo"));
     }
 
     /// <summary>The public parser honors explicit repository roots before project-root discovery.</summary>
@@ -38,7 +38,6 @@ public sealed class AlvorEyeCommandParserTest
     [TestMethod]
     public void Parse_CommandKinds_ReturnExpectedValues()
     {
-        Assert.AreEqual(AlvorEyeCommandKind.Help, AlvorEyeCommandParser.Parse(["help"], "C:/repo").Kind);
         Assert.AreEqual(AlvorEyeCommandKind.Session, AlvorEyeCommandParser.Parse(["session", "--scenario", "a.json"], "C:/repo").Kind);
         Assert.AreEqual(AlvorEyeCommandKind.Handoff, AlvorEyeCommandParser.Parse(["handoff", "--session", "s1"], "C:/repo").Kind);
         Assert.AreEqual(AlvorEyeCommandKind.Resume, AlvorEyeCommandParser.Parse(["resume", "--session", "s1"], "C:/repo").Kind);

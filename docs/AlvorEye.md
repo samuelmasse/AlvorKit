@@ -30,7 +30,7 @@ scripts/AlvorKit.Script.AlvorEye/AlvorKit.Script.AlvorEye.csproj
 Run help:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.AlvorEye -- help
+dotnet run --project scripts\AlvorKit.Script.AlvorEye -- --help
 ```
 
 Current primary platform:
@@ -67,7 +67,8 @@ Additional commands:
 
 - `handoff --session <id>` freezes a known session target and captures it.
 - `resume --session <id>` resumes a known session target.
-- `help` prints the supported CLI syntax.
+
+Generated CLI help is available with `--help`.
 
 Every run should create artifacts:
 

@@ -27,21 +27,19 @@ public sealed class BindgenReviewCommandParserTest
         Assert.IsTrue(command.Keep);
     }
 
-    /// <summary>Help parsing does not require repository discovery.</summary>
+    /// <summary>Parse-only calls require executable commands; the app command tree owns generated help.</summary>
     [TestMethod]
-    public void Parse_HelpCommand_ReturnsHelp()
+    public void Parse_HelpCommand_Throws()
     {
-        var command = BindgenReviewCommandParser.Parse(["help"], "C:/nowhere");
-
-        Assert.AreEqual(BindgenReviewCommandKind.Help, command.Kind);
+        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse(["help"], "C:/nowhere"));
     }
 
-    /// <summary>Public help parsing returns help without repository discovery.</summary>
+    /// <summary>Public parse-only calls reject help aliases.</summary>
     [TestMethod]
-    public void Parse_PublicHelp_ReturnsHelp()
+    public void Parse_PublicHelp_Throws()
     {
-        Assert.AreEqual(BindgenReviewCommandKind.Help, BindgenReviewCommandParser.Parse([]).Kind);
-        Assert.AreEqual(BindgenReviewCommandKind.Help, BindgenReviewCommandParser.Parse(["-h"]).Kind);
+        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse([]));
+        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse(["-h"]));
     }
 
     /// <summary>Public parsing honors an explicit repository root before default discovery.</summary>

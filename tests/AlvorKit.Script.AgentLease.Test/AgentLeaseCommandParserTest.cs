@@ -37,31 +37,27 @@ public sealed class AgentLeaseCommandParserTest
         Assert.AreEqual(TimeSpan.FromMinutes(10), command.Timeout);
     }
 
-    /// <summary>Help parsing does not require repository discovery.</summary>
+    /// <summary>Parse-only calls require executable commands; the app command tree owns generated help.</summary>
     [TestMethod]
-    public void Parse_HelpCommand_ReturnsHelp()
+    public void Parse_HelpCommand_Throws()
     {
-        var command = AgentLeaseCommandParser.Parse(["help"], "C:/nowhere");
-
-        Assert.AreEqual(AgentLeaseCommandKind.Help, command.Kind);
+        Assert.ThrowsExactly<ArgumentException>(() => AgentLeaseCommandParser.Parse(["help"], "C:/nowhere"));
     }
 
-    /// <summary>Public parsing can return help without repository discovery.</summary>
+    /// <summary>Public parse-only calls require executable commands.</summary>
     [TestMethod]
-    public void Parse_PublicNoArgs_ReturnsHelp()
+    public void Parse_PublicNoArgs_Throws()
     {
-        var command = AgentLeaseCommandParser.Parse([]);
-
-        Assert.AreEqual(AgentLeaseCommandKind.Help, command.Kind);
+        Assert.ThrowsExactly<ArgumentException>(() => AgentLeaseCommandParser.Parse([]));
     }
 
-    /// <summary>Public parsing recognizes help aliases before repository discovery.</summary>
+    /// <summary>Public parse-only calls reject help aliases.</summary>
     [TestMethod]
-    public void Parse_PublicHelpAliases_ReturnHelp()
+    public void Parse_PublicHelpAliases_Throw()
     {
-        Assert.AreEqual(AgentLeaseCommandKind.Help, AgentLeaseCommandParser.Parse(["help"]).Kind);
-        Assert.AreEqual(AgentLeaseCommandKind.Help, AgentLeaseCommandParser.Parse(["-h"]).Kind);
-        Assert.AreEqual(AgentLeaseCommandKind.Help, AgentLeaseCommandParser.Parse(["--help"]).Kind);
+        Assert.ThrowsExactly<ArgumentException>(() => AgentLeaseCommandParser.Parse(["help"]));
+        Assert.ThrowsExactly<ArgumentException>(() => AgentLeaseCommandParser.Parse(["-h"]));
+        Assert.ThrowsExactly<ArgumentException>(() => AgentLeaseCommandParser.Parse(["--help"]));
     }
 
     /// <summary>Public parsing honors an explicit repository root before default discovery.</summary>

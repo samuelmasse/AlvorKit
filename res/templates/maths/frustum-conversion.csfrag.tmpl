@@ -1,0 +1,10 @@
+    /// <summary>Converts a {{SourceType}} to a {{TargetType}}.</summary>
+    public static {{Keyword}} operator {{TargetType}}({{SourceType}} value) =>
+        new(
+            ({{TargetPlane3Type}})value.Left,
+            ({{TargetPlane3Type}})value.Right,
+            ({{TargetPlane3Type}})value.Bottom,
+            ({{TargetPlane3Type}})value.Top,
+            ({{TargetPlane3Type}})value.Near,
+            ({{TargetPlane3Type}})value.Far);
+

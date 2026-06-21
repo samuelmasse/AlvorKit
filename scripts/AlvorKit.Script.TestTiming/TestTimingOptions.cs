@@ -7,15 +7,13 @@ namespace AlvorKit.Script.TestTiming;
 /// <param name="warnOnly">Whether slow tests should warn without changing the exit code.</param>
 /// <param name="trxPath">Existing TRX file to inspect instead of running tests.</param>
 /// <param name="dotNetTestArguments">Arguments forwarded after <c>dotnet test</c>.</param>
-/// <param name="isHelp">Whether these options represent a help request.</param>
 internal sealed class TestTimingOptions(
     string repoRoot,
     string resultsDirectory,
     TimeSpan maxDuration,
     bool warnOnly,
     string? trxPath,
-    IEnumerable<string> dotNetTestArguments,
-    bool isHelp = false)
+    IEnumerable<string> dotNetTestArguments)
 {
     /// <summary>The default maximum allowed duration for one test case.</summary>
     public static readonly TimeSpan DefaultMaxDuration = TimeSpan.FromSeconds(1);
@@ -41,19 +39,4 @@ internal sealed class TestTimingOptions(
 
     /// <summary>Arguments forwarded after <c>dotnet test</c>.</summary>
     public IReadOnlyList<string> DotNetTestArguments { get; } = dotNetTestArguments.ToArray();
-
-    /// <summary>Whether these options represent a help request.</summary>
-    public bool IsHelp { get; } = isHelp;
-
-    /// <summary>Creates a help sentinel without requiring the runner to execute.</summary>
-    /// <param name="repoRoot">Repository root discovered by the parser.</param>
-    public static TestTimingOptions Help(string repoRoot) =>
-        new(
-            repoRoot,
-            Path.Combine(repoRoot, "out", "test-timing", "runs", "help"),
-            DefaultMaxDuration,
-            warnOnly: true,
-            trxPath: null,
-            dotNetTestArguments: [],
-            isHelp: true);
 }

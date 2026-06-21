@@ -15,8 +15,14 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="System.CommandLine" Version="2.0.8" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Using Include="AlvorKit.Demo.XxHash.Bench" />
         <Using Include="AlvorKit.XxHash" />
+        <Using Include="System.CommandLine" />
+        <Using Include="System.CommandLine.Parsing" />
     </ItemGroup>
 
 </Project>

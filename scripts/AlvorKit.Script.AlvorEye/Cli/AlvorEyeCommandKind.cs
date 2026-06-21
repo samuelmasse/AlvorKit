@@ -3,9 +3,6 @@ namespace AlvorKit.Script.AlvorEye;
 /// <summary>Identifies the top-level AlvorEye CLI command.</summary>
 internal enum AlvorEyeCommandKind
 {
-    /// <summary>Print usage text.</summary>
-    Help,
-
     /// <summary>Execute a complete scenario file.</summary>
     Run,
 

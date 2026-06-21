@@ -20,7 +20,7 @@ internal sealed partial class AgentLeaseCoordinator(
             AgentLeaseCommandKind.Check => Check(command),
             AgentLeaseCommandKind.Done => Done(command),
             AgentLeaseCommandKind.Conflict => Conflict(command),
-            _ => AgentLeaseResult.Success(AgentLeaseCommandParser.HelpText)
+            _ => throw new InvalidOperationException($"Unknown lease command '{command.Kind}'.")
         };
 
     /// <summary>Creates or replaces a lease and reports any active overlapping leases.</summary>

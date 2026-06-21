@@ -14,7 +14,6 @@ public sealed class LintOptionsTest
 
         Assert.AreEqual(Path.GetFullPath(repoRoot), options.RepoRoot);
         Assert.IsTrue(options.Fix);
-        Assert.IsFalse(options.ShowHelp);
         Assert.AreEqual(0, options.IncludePatterns.Count);
     }
 
@@ -27,15 +26,11 @@ public sealed class LintOptionsTest
         CollectionAssert.AreEqual(new[] { "scripts/**/*.cs", "AGENTS.md" }, options.IncludePatterns.ToArray());
     }
 
-    /// <summary>Parses the help flag without enabling fix mode.</summary>
+    /// <summary>Generated help is handled by the command tree rather than parsed lint options.</summary>
     [TestMethod]
-    public void ParseUsesHelpMode()
+    public void ParseRejectsHelpAsExecutionOptions()
     {
-        var options = LintOptions.Parse(["--help"]);
-
-        Assert.IsTrue(options.ShowHelp);
-        Assert.IsFalse(options.Fix);
-        Assert.AreEqual(0, options.IncludePatterns.Count);
+        Assert.ThrowsException<ArgumentException>(() => LintOptions.Parse(["--help"]));
     }
 
     /// <summary>Rejects a repository root flag without a value.</summary>

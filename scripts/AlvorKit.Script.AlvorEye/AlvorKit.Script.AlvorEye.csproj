@@ -9,12 +9,15 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="System.CommandLine" Version="2.0.8" />
         <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
         <ProjectReference Include="..\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <Using Include="AlvorKit.Script.Workspace" />
+        <Using Include="System.CommandLine" />
+        <Using Include="System.CommandLine.Parsing" />
         <Using Include="System.Diagnostics.CodeAnalysis" />
         <Using Include="System.Drawing" />
         <Using Include="System.Drawing.Imaging" />

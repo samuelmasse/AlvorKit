@@ -19,6 +19,9 @@ internal static class MathsGenerator
     /// <summary>The project subdirectory that contains generated plane source files.</summary>
     public const string PlaneDirectoryName = "Plane";
 
+    /// <summary>The project subdirectory that contains generated frustum source files.</summary>
+    public const string FrustumDirectoryName = "Frustum";
+
     /// <summary>The project subdirectory that contains generated box source files.</summary>
     public const string BoxDirectoryName = "Box";
 
@@ -35,6 +38,7 @@ internal static class MathsGenerator
         var matDirectory = Path.Combine(projectDirectory, MatDirectoryName);
         var quatDirectory = Path.Combine(projectDirectory, QuatDirectoryName);
         var planeDirectory = Path.Combine(projectDirectory, PlaneDirectoryName);
+        var frustumDirectory = Path.Combine(projectDirectory, FrustumDirectoryName);
         var boxDirectory = Path.Combine(projectDirectory, BoxDirectoryName);
         var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         RecreateDirectory(projectDirectory);
@@ -43,6 +47,7 @@ internal static class MathsGenerator
         Directory.CreateDirectory(matDirectory);
         Directory.CreateDirectory(quatDirectory);
         Directory.CreateDirectory(planeDirectory);
+        Directory.CreateDirectory(frustumDirectory);
         Directory.CreateDirectory(boxDirectory);
         foreach (var (fileName, source) in VectorInterfaceFileEmitter.EmitAll())
             File.WriteAllText(Path.Combine(vecDirectory, fileName), source, encoding);
@@ -72,6 +77,12 @@ internal static class MathsGenerator
         {
             var source = PlaneFileEmitter.Emit(plane);
             File.WriteAllText(Path.Combine(planeDirectory, $"{plane.TypeName}.g.cs"), source, encoding);
+        }
+
+        foreach (var frustum in FrustumCatalog.Frustums)
+        {
+            var source = FrustumFileEmitter.Emit(frustum);
+            File.WriteAllText(Path.Combine(frustumDirectory, $"{frustum.TypeName}.g.cs"), source, encoding);
         }
 
         foreach (var box in BoxCatalog.Boxes)

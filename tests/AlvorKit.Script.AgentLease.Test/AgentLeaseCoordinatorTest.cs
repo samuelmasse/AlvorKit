@@ -317,18 +317,15 @@ public sealed class AgentLeaseCoordinatorTest
         StringAssert.Contains(File.ReadAllText(note), "Unspecified task");
     }
 
-    /// <summary>Unknown command kinds return the help text defensively.</summary>
+    /// <summary>Unknown command kinds are rejected defensively.</summary>
     [TestMethod]
-    public void Execute_UnknownCommand_ReturnsHelp()
+    public void Execute_UnknownCommand_Throws()
     {
         using var workspace = TempWorkspace.Create();
         var repository = new AgentLeaseRepository(workspace.Root);
         var command = Command((AgentLeaseCommandKind)999);
 
-        var result = Coordinator(repository).Execute(command);
-
-        Assert.AreEqual(0, result.ExitCode);
-        Assert.AreEqual(AgentLeaseCommandParser.HelpText, result.Lines.Single());
+        Assert.ThrowsExactly<InvalidOperationException>(() => Coordinator(repository).Execute(command));
     }
 
     /// <summary>The system clock returns a current UTC timestamp.</summary>

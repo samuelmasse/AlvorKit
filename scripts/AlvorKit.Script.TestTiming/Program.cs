@@ -10,14 +10,13 @@ internal static class Program
     {
         try
         {
-            var options = new TestTimingCommandParser().Parse(args);
-            if (options.IsHelp)
-            {
-                Console.WriteLine(TestTimingCommandParser.HelpText);
-                return 0;
-            }
-
-            return new TestTimingRunner().Run(options);
+            var commandArgs = args.Length == 0 ? ["--help"] : args;
+            var split = TestTimingCommandLineSplit.Create(commandArgs);
+            var command = TestTimingCommandParser.CreateRootCommand(
+                () => ProjectRoot.FindFromCurrentProcess(typeof(TestTimingCommandParser)),
+                split.ForwardedArguments,
+                options => new TestTimingRunner().Run(options));
+            return command.Parse(split.TimingArguments).Invoke(new() { EnableDefaultExceptionHandler = false });
         }
         catch (Exception ex)
         {

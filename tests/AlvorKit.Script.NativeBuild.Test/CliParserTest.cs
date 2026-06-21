@@ -4,13 +4,11 @@ namespace AlvorKit.Script.NativeBuild.Test;
 [TestClass]
 public sealed class CliParserTest
 {
-    /// <summary>Help requests are normalized without requiring a command.</summary>
+    /// <summary>Parse-only requests require a concrete command.</summary>
     [TestMethod]
-    public void Parse_NoArgs_ReturnsHelpRequest()
+    public void Parse_NoArgs_Throws()
     {
-        var request = CliParser.Parse([]);
-
-        Assert.IsTrue(request.ShowHelp);
+        Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse([]));
     }
 
     /// <summary>Build accepts --rid value syntax.</summary>

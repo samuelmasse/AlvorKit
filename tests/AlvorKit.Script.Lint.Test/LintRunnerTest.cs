@@ -4,15 +4,15 @@ namespace AlvorKit.Script.Lint.Test;
 [TestClass]
 public sealed class LintRunnerTest
 {
-    /// <summary>Limits external command concurrency while still running every planned check.</summary>
+    /// <summary>Limits external command concurrency while serializing dotnet format workspace restores.</summary>
     [TestMethod]
-    public async Task RunAsyncLimitsCommandConcurrency()
+    public async Task RunAsyncLimitsCommandConcurrencyAndSerializesDotNetFormat()
     {
         using var workspace = TempWorkspace.Create();
         var processRunner = new BlockingProcessRunner(expectedStarts: 2);
         var actionlintTool = new FakeActionlintTool("actionlint");
         var runner = new LintRunner(
-            new(workspace.Root, Fix: false, ShowHelp: false, []),
+            new(workspace.Root, Fix: false, []),
             processRunner,
             actionlintTool,
             requestedMaxParallelCommands: 2);
@@ -21,6 +21,8 @@ public sealed class LintRunnerTest
         await processRunner.AllStarted.Task;
 
         Assert.AreEqual(2, processRunner.Commands.Count);
+        Assert.AreEqual("dotnet format AlvorKit.slnx", processRunner.Commands[0].Label);
+        Assert.AreEqual("prettier", processRunner.Commands[1].Label);
         Assert.IsFalse(runnerTask.IsCompleted);
         processRunner.Release();
         var exitCode = await runnerTask;
@@ -36,7 +38,7 @@ public sealed class LintRunnerTest
         using var workspace = TempWorkspace.Create();
         var processRunner = new FakeProcessRunner(new Queue<int>([0, 9, 0, 0, 0]));
         var actionlintTool = new FakeActionlintTool("actionlint");
-        var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false, []), processRunner, actionlintTool);
+        var runner = new LintRunner(new(workspace.Root, Fix: false, []), processRunner, actionlintTool);
 
         var exitCode = await runner.RunAsync();
 
@@ -52,7 +54,7 @@ public sealed class LintRunnerTest
         using var workspace = TempWorkspace.Create();
         var processRunner = new FakeProcessRunner(new Queue<int>([0, 0, 0, 0]));
         var actionlintTool = new FailingActionlintTool();
-        var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false, []), processRunner, actionlintTool);
+        var runner = new LintRunner(new(workspace.Root, Fix: false, []), processRunner, actionlintTool);
 
         var exitCode = await runner.RunAsync();
 
@@ -67,7 +69,7 @@ public sealed class LintRunnerTest
         using var workspace = TempWorkspace.Create();
         var processRunner = new ThrowingProcessRunner();
         var actionlintTool = new FakeActionlintTool("actionlint");
-        var runner = new LintRunner(new(workspace.Root, Fix: false, ShowHelp: false, []), processRunner, actionlintTool);
+        var runner = new LintRunner(new(workspace.Root, Fix: false, []), processRunner, actionlintTool);
 
         var exitCode = await runner.RunAsync();
 
@@ -85,7 +87,7 @@ public sealed class LintRunnerTest
         var processRunner = new FakeProcessRunner(new Queue<int>([0, 0, 0]));
         var actionlintTool = new FakeActionlintTool("actionlint");
         var runner = new LintRunner(
-            new(workspace.Root, Fix: false, ShowHelp: false, ["scripts/Tool/A.cs"]),
+            new(workspace.Root, Fix: false, ["scripts/Tool/A.cs"]),
             processRunner,
             actionlintTool);
 
@@ -104,7 +106,7 @@ public sealed class LintRunnerTest
         var processRunner = new FakeProcessRunner(new Queue<int>());
         var actionlintTool = new FakeActionlintTool("actionlint");
         var runner = new LintRunner(
-            new(workspace.Root, Fix: false, ShowHelp: false, ["scripts/Tool/Deleted.cs"]),
+            new(workspace.Root, Fix: false, ["scripts/Tool/Deleted.cs"]),
             processRunner,
             actionlintTool);
 
@@ -123,7 +125,7 @@ public sealed class LintRunnerTest
 
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(
             () => new LintRunner(
-                new(workspace.Root, Fix: false, ShowHelp: false, []),
+                new(workspace.Root, Fix: false, []),
                 new FakeProcessRunner(new Queue<int>()),
                 new FakeActionlintTool("actionlint"),
                 requestedMaxParallelCommands: -1));

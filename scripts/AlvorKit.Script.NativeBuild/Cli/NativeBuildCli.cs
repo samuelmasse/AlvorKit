@@ -9,15 +9,8 @@ internal sealed class NativeBuildCli
     {
         try
         {
-            var request = CliParser.Parse(args);
-            if (request.ShowHelp)
-            {
-                PrintUsage();
-                return 0;
-            }
-
-            var repository = RepositoryLayout.FindFrom(AppContext.BaseDirectory);
-            return await RunParsedAsync(repository, request);
+            var root = CliParser.CreateRootCommand(RunParsedAsync);
+            return await root.Parse(args).InvokeAsync(new() { EnableDefaultExceptionHandler = false });
         }
         catch (Exception ex)
         {
@@ -27,8 +20,9 @@ internal sealed class NativeBuildCli
     }
 
     /// <summary>Runs a parsed request after the repository root has been found.</summary>
-    private static async Task<int> RunParsedAsync(RepositoryLayout repository, CliRequest request)
+    private static async Task<int> RunParsedAsync(CliRequest request)
     {
+        var repository = RepositoryLayout.FindFrom(AppContext.BaseDirectory);
         switch (request.Command)
         {
             case CliCommand.List:
@@ -54,22 +48,4 @@ internal sealed class NativeBuildCli
     /// <summary>Expands the special all selection into the configured native package names.</summary>
     private static IEnumerable<string> SelectedLibraries(RepositoryLayout repository, string selection) =>
         selection == "all" ? repository.NativeBuildLibraries() : [selection];
-
-    /// <summary>Writes the supported command syntax to standard output.</summary>
-    private static void PrintUsage()
-    {
-        Console.WriteLine("""
-            AlvorKit native build runner
-
-            Usage:
-              dotnet run --project scripts/AlvorKit.Script.NativeBuild -- list
-              dotnet run --project scripts/AlvorKit.Script.NativeBuild -- version <library>
-              dotnet run --project scripts/AlvorKit.Script.NativeBuild -- build <library|all> [--rid <rid>]
-
-            RIDs:
-              win-x64, win-x86, win-arm64
-              linux-x64, linux-arm64, linux-arm
-              osx-x64, osx-arm64
-            """);
-    }
 }

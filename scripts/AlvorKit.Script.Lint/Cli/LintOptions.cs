@@ -3,55 +3,59 @@ namespace AlvorKit.Script.Lint;
 /// <summary>Command-line options for the lint coordinator.</summary>
 /// <param name="RepoRoot">Absolute or relative repository root to lint.</param>
 /// <param name="Fix">True when supported formatters should write changes instead of checking only.</param>
-/// <param name="ShowHelp">True when help text should be printed.</param>
 /// <param name="IncludePatterns">Repository-relative file, directory, or glob patterns to lint.</param>
-internal sealed record LintOptions(string RepoRoot, bool Fix, bool ShowHelp, IReadOnlyList<string> IncludePatterns)
+internal sealed record LintOptions(string RepoRoot, bool Fix, IReadOnlyList<string> IncludePatterns)
 {
-    /// <summary>Usage text printed for --help.</summary>
-    public const string HelpText = """
-        Usage: dotnet run --project scripts/AlvorKit.Script.Lint -- [options]
-
-        Options:
-          --fix                 Format supported files instead of checking them.
-          --include <pattern>   Lint only matching files. May be repeated.
-          --repo-root <path>    Repository root to lint. Defaults to the current repo.
-          -h, --help            Show this help text.
-        """;
+    /// <summary>Creates the command-line surface for the lint coordinator.</summary>
+    /// <param name="defaultRepoRoot">Repository root provider used when <c>--repo-root</c> is omitted.</param>
+    /// <param name="execute">Action that executes linting with parsed options.</param>
+    internal static RootCommand CreateRootCommand(Func<string> defaultRepoRoot, Func<LintOptions, Task<int>> execute)
+    {
+        var fix = new Option<bool>("--fix") { Description = "Format supported files instead of checking them." };
+        var repoRoot = new Option<string>("--repo-root") { Description = "Repository root to lint." };
+        var include = new Option<string[]>("--include") { Description = "Lint only matching files. May be repeated." };
+        var command = new RootCommand("Repository lint coordinator.");
+        command.Options.Add(fix);
+        command.Options.Add(repoRoot);
+        command.Options.Add(include);
+        command.SetAction(parse => execute(Options(parse, defaultRepoRoot(), fix, repoRoot, include)));
+        return command;
+    }
 
     /// <summary>Parses command-line arguments into validated lint options.</summary>
     public static LintOptions Parse(IReadOnlyList<string> args)
     {
-        var repoRoot = RepositoryPaths.FindRoot();
-        var fix = false;
-        var showHelp = false;
-        var includePatterns = new List<string>();
+        var fix = new Option<bool>("--fix") { Description = "Format supported files instead of checking them." };
+        var repoRoot = new Option<string>("--repo-root") { Description = "Repository root to lint." };
+        var include = new Option<string[]>("--include") { Description = "Lint only matching files. May be repeated." };
+        var command = new RootCommand("Repository lint coordinator.");
+        command.Options.Add(fix);
+        command.Options.Add(repoRoot);
+        command.Options.Add(include);
+        var result = command.Parse(args.ToArray());
+        ThrowIfErrors(result);
 
-        for (var i = 0; i < args.Count; i++)
-        {
-            switch (args[i])
-            {
-                case "--fix":
-                    fix = true;
-                    break;
-                case "-h":
-                case "--help":
-                    showHelp = true;
-                    break;
-                case "--repo-root":
-                    if (++i >= args.Count)
-                        throw new ArgumentException("--repo-root requires a path argument.");
-                    repoRoot = Path.GetFullPath(args[i]);
-                    break;
-                case "--include":
-                    if (++i >= args.Count)
-                        throw new ArgumentException("--include requires a path or glob argument.");
-                    includePatterns.Add(args[i]);
-                    break;
-                default:
-                    throw new ArgumentException($"Unknown lint option '{args[i]}'.");
-            }
-        }
+        return Options(result, RepositoryPaths.FindRoot(), fix, repoRoot, include);
+    }
 
-        return new(repoRoot, fix, showHelp, includePatterns);
+    /// <summary>Creates lint options from parsed command-line values.</summary>
+    private static LintOptions Options(
+        ParseResult parse,
+        string defaultRepoRoot,
+        Option<bool> fix,
+        Option<string> repoRoot,
+        Option<string[]> include) =>
+        new(
+            Path.GetFullPath(parse.GetValue(repoRoot) ?? defaultRepoRoot),
+            parse.GetValue(fix),
+            parse.GetValue(include) ?? []);
+
+    /// <summary>Throws an argument exception when System.CommandLine found parse errors.</summary>
+    private static void ThrowIfErrors(ParseResult result)
+    {
+        if (result.Action is System.CommandLine.Help.HelpAction)
+            throw new ArgumentException("Help is generated by the command-line app.");
+        if (result.Errors.Count > 0)
+            throw new ArgumentException(string.Join(" ", result.Errors.Select(error => error.Message)));
     }
 }

@@ -6,40 +6,77 @@ internal static class CliParser
     /// <summary>Parses arguments into a request or throws a user-facing argument error.</summary>
     public static CliRequest Parse(IReadOnlyList<string> args)
     {
-        var command = args.Count > 0 ? args[0] : null;
-        if (command is null or "-h" or "--help" or "help")
-            return new(CliCommand.List, Selection: null, Rid: null, ShowHelp: true);
-
-        return command switch
+        CliRequest? request = null;
+        var result = CreateRootCommand(parsed =>
         {
-            "list" => new(CliCommand.List, Selection: null, Rid: null, ShowHelp: false),
-            "version" => new(CliCommand.Version, Required(args, 1, "version requires a library name."), null, false),
-            "build" => new(CliCommand.Build, Required(args, 1, "build requires a library name or 'all'."), Option(args, "--rid"), false),
-            _ => throw new ArgumentException($"Unknown command '{command}'.")
-        };
+            request = parsed;
+            return Task.FromResult(0);
+        }).Parse(args.ToArray());
+        ThrowIfErrors(result);
+        var exitCode = result.InvokeAsync(SilentInvocation()).GetAwaiter().GetResult();
+        if (exitCode != 0)
+            throw new ArgumentException($"Command exited with code {exitCode}.");
+
+        return request ?? throw new ArgumentException("A native build command is required.");
     }
 
-    /// <summary>Returns the required positional argument at an index.</summary>
-    private static string Required(IReadOnlyList<string> args, int index, string message) =>
-        args.Count > index ? args[index] : throw new ArgumentException(message);
-
-    /// <summary>Finds an option value from either --name value or --name=value syntax.</summary>
-    private static string? Option(IReadOnlyList<string> args, string name)
+    /// <summary>Creates the command tree for the native build runner.</summary>
+    /// <param name="execute">Action that executes the parsed request.</param>
+    internal static RootCommand CreateRootCommand(Func<CliRequest, Task<int>> execute)
     {
-        for (var i = 0; i < args.Count; i++)
-        {
-            if (args[i] == name)
-            {
-                if (i + 1 >= args.Count)
-                    throw new ArgumentException($"{name} requires a value.");
-                return args[i + 1];
-            }
+        var root = new RootCommand("AlvorKit native build runner.");
+        root.Subcommands.Add(CreateListCommand(execute));
+        root.Subcommands.Add(CreateVersionCommand(execute));
+        root.Subcommands.Add(CreateBuildCommand(execute));
+        return root;
+    }
 
-            var prefix = name + "=";
-            if (args[i].StartsWith(prefix, StringComparison.Ordinal))
-                return args[i][prefix.Length..];
-        }
+    /// <summary>Creates the library listing command.</summary>
+    private static Command CreateListCommand(Func<CliRequest, Task<int>> execute)
+    {
+        var command = new Command("list", "List libraries with native build manifests.");
+        command.SetAction(_ => execute(new(CliCommand.List, Selection: null, Rid: null)));
+        return command;
+    }
 
-        return null;
+    /// <summary>Creates the native version command.</summary>
+    private static Command CreateVersionCommand(Func<CliRequest, Task<int>> execute)
+    {
+        var library = new Argument<string>("library") { Description = "Native library name." };
+        var command = new Command("version", "Print one native package version.");
+        command.Arguments.Add(library);
+        command.SetAction(parse => execute(new(
+            CliCommand.Version,
+            parse.GetRequiredValue(library),
+            Rid: null)));
+        return command;
+    }
+
+    /// <summary>Creates the native package build command.</summary>
+    private static Command CreateBuildCommand(Func<CliRequest, Task<int>> execute)
+    {
+        var selection = new Argument<string>("library") { Description = "Native library name, or all." };
+        var rid = new Option<string>("--rid") { Description = "Runtime identifier to build." };
+        var command = new Command("build", "Build native runtime binaries.");
+        command.Arguments.Add(selection);
+        command.Options.Add(rid);
+        command.SetAction(parse => execute(new(
+            CliCommand.Build,
+            parse.GetRequiredValue(selection),
+            parse.GetValue(rid))));
+        return command;
+    }
+
+    /// <summary>Creates an invocation configuration that suppresses generated help output during parse tests.</summary>
+    private static InvocationConfiguration SilentInvocation() =>
+        new() { Output = TextWriter.Null, Error = TextWriter.Null, EnableDefaultExceptionHandler = false };
+
+    /// <summary>Throws an argument exception when System.CommandLine found parse errors.</summary>
+    private static void ThrowIfErrors(ParseResult result)
+    {
+        if (result.Action is System.CommandLine.Help.HelpAction)
+            throw new ArgumentException("Help is generated by the command-line app.");
+        if (result.Errors.Count > 0)
+            throw new ArgumentException(string.Join(" ", result.Errors.Select(error => error.Message)));
     }
 }

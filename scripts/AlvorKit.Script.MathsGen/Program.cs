@@ -8,9 +8,10 @@ internal static class Program
     {
         try
         {
-            var repoRoot = ProjectRoot.FindFromCurrentProcess(typeof(Program), requireResDirectory: true);
-            MathsGenerator.GenerateTo(ResolveOutputRoot(args, repoRoot), ReadPrimitivesVersion(repoRoot));
-            return 0;
+            var command = MathsGenOptions.CreateRootCommand(
+                () => ProjectRoot.FindFromCurrentProcess(typeof(Program), requireResDirectory: true),
+                Run);
+            return command.Parse(args).Invoke(new() { EnableDefaultExceptionHandler = false });
         }
         catch (Exception exception)
         {
@@ -19,16 +20,12 @@ internal static class Program
         }
     }
 
-    /// <summary>Resolves the output root from the command line or the repository default.</summary>
-    private static string ResolveOutputRoot(IReadOnlyList<string> args, string repoRoot)
+    /// <summary>Runs generation with parsed command-line options.</summary>
+    private static int Run(MathsGenOptions options)
     {
-        if (args.Count == 0)
-            return Path.Combine(repoRoot, "out", "mathgen");
-
-        if (args.Count == 2 && args[0] is "--output-root" or "--output")
-            return Path.GetFullPath(args[1]);
-
-        throw new ArgumentException("Usage: dotnet run --project scripts/AlvorKit.Script.MathsGen -- [--output-root <directory>]");
+        var repoRoot = ProjectRoot.FindFromCurrentProcess(typeof(Program), requireResDirectory: true);
+        MathsGenerator.GenerateTo(options.OutputRoot, ReadPrimitivesVersion(repoRoot));
+        return 0;
     }
 
     /// <summary>Reads the package version pin shared with consumers.</summary>

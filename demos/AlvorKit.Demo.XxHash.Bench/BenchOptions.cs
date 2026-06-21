@@ -36,25 +36,40 @@ internal sealed record BenchOptions(int LargeLogMin, int LargeLogMax, int SmallM
     /// <returns>The parsed options, with defaults filled in for omitted flags.</returns>
     public static BenchOptions Parse(string[] args)
     {
-        var options = new BenchOptions(LargeLogMinDefault, LargeLogMaxDefault, SmallMinDefault, SmallMaxDefault, Dense: false);
-        foreach (var arg in args)
-        {
-            if (arg == "--dense")
-                options = options with { Dense = true };
-            else if (arg.StartsWith("--minl=", StringComparison.Ordinal))
-                options = options with { LargeLogMin = int.Parse(arg.AsSpan("--minl=".Length)) };
-            else if (arg.StartsWith("--maxl=", StringComparison.Ordinal))
-                options = options with { LargeLogMax = int.Parse(arg.AsSpan("--maxl=".Length)) };
-            else if (arg.StartsWith("--mins=", StringComparison.Ordinal))
-                options = options with { SmallMin = int.Parse(arg.AsSpan("--mins=".Length)) };
-            else if (arg.StartsWith("--maxs=", StringComparison.Ordinal))
-                options = options with { SmallMax = int.Parse(arg.AsSpan("--maxs=".Length)) };
-            else
-                throw new ArgumentException($"Unknown benchmark option '{arg}'.", nameof(args));
-        }
+        var dense = new Option<bool>("--dense") { Description = "Measure every small input size." };
+        var minLargeLog = new Option<string>("--minl") { Description = "First large-input log2 size." };
+        var maxLargeLog = new Option<string>("--maxl") { Description = "Last large-input log2 size." };
+        var minSmall = new Option<string>("--mins") { Description = "First small-input byte length." };
+        var maxSmall = new Option<string>("--maxs") { Description = "Last small-input byte length." };
+        var command = new RootCommand("xxHash benchmark demo.");
+        command.Options.Add(dense);
+        command.Options.Add(minLargeLog);
+        command.Options.Add(maxLargeLog);
+        command.Options.Add(minSmall);
+        command.Options.Add(maxSmall);
+        var result = command.Parse(args);
+        ThrowIfErrors(result);
 
-        Validate(options);
-        return options;
+        return CreateOptions(result, dense, minLargeLog, maxLargeLog, minSmall, maxSmall);
+    }
+
+    /// <summary>Creates the command-line surface for the xxHash benchmark demo.</summary>
+    /// <param name="execute">Action that runs the benchmark with parsed options.</param>
+    public static RootCommand CreateRootCommand(Func<BenchOptions, int> execute)
+    {
+        var dense = new Option<bool>("--dense") { Description = "Measure every small input size." };
+        var minLargeLog = new Option<string>("--minl") { Description = "First large-input log2 size." };
+        var maxLargeLog = new Option<string>("--maxl") { Description = "Last large-input log2 size." };
+        var minSmall = new Option<string>("--mins") { Description = "First small-input byte length." };
+        var maxSmall = new Option<string>("--maxs") { Description = "Last small-input byte length." };
+        var command = new RootCommand("xxHash benchmark demo.");
+        command.Options.Add(dense);
+        command.Options.Add(minLargeLog);
+        command.Options.Add(maxLargeLog);
+        command.Options.Add(minSmall);
+        command.Options.Add(maxSmall);
+        command.SetAction(parse => execute(CreateOptions(parse, dense, minLargeLog, maxLargeLog, minSmall, maxSmall)));
+        return command;
     }
 
     /// <summary>Returns the log2 large-input sizes to measure.</summary>
@@ -102,5 +117,37 @@ internal sealed record BenchOptions(int LargeLogMin, int LargeLogMax, int SmallM
         ArgumentOutOfRangeException.ThrowIfLessThan(options.SmallMin, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(options.SmallMax, options.SmallMin);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(options.SmallMax, 100_000);
+    }
+
+    /// <summary>Creates immutable benchmark options from parsed command-line values.</summary>
+    private static BenchOptions CreateOptions(
+        ParseResult parse,
+        Option<bool> dense,
+        Option<string> minLargeLog,
+        Option<string> maxLargeLog,
+        Option<string> minSmall,
+        Option<string> maxSmall)
+    {
+        var options = new BenchOptions(
+            ParseInt(parse.GetValue(minLargeLog), LargeLogMinDefault),
+            ParseInt(parse.GetValue(maxLargeLog), LargeLogMaxDefault),
+            ParseInt(parse.GetValue(minSmall), SmallMinDefault),
+            ParseInt(parse.GetValue(maxSmall), SmallMaxDefault),
+            parse.GetValue(dense));
+        Validate(options);
+        return options;
+    }
+
+    /// <summary>Parses an optional integer option using the repository invariant culture.</summary>
+    private static int ParseInt(string? value, int defaultValue) =>
+        value is null ? defaultValue : int.Parse(value, CultureInfo.InvariantCulture);
+
+    /// <summary>Throws an argument exception when System.CommandLine found parse errors.</summary>
+    private static void ThrowIfErrors(ParseResult result)
+    {
+        if (result.Action is System.CommandLine.Help.HelpAction)
+            throw new ArgumentException("Help is generated by the command-line app.");
+        if (result.Errors.Count > 0)
+            throw new ArgumentException(string.Join(" ", result.Errors.Select(error => error.Message)));
     }
 }

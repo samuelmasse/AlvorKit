@@ -5,11 +5,14 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="System.CommandLine" Version="2.0.8" />
         <ProjectReference Include="..\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <Using Include="AlvorKit.Script.Workspace" />
+        <Using Include="System.CommandLine" />
+        <Using Include="System.CommandLine.Parsing" />
         <Using Include="System.Security.Cryptography" />
     </ItemGroup>
 
