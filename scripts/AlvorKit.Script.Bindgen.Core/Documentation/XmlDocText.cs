@@ -33,7 +33,7 @@ internal static class XmlDocText
         const string noiseTags =
             "win32|macos|linux|x11|wayland|egl|wgl|glx|osmesa|nsgl|posix|unix|"
             + "note|remarks?|warning|attention|thread_safety|errors?|sa|see|since|"
-            + "pointer_lifetime|reentrancy|analysis|par|glfw3|link|endlink";
+            + "pointer_lifetime|reentrancy|analysis|par|callback_signature|glfw3|link|endlink";
         text = Regex.Replace(text,
             @"@(?:" + noiseTags + @")\b\s*",
             "");
@@ -55,9 +55,9 @@ internal static class XmlDocText
     {
         const string noiseTags =
             "sa|see|since|thread_safety|errors?|remarks?|note|warning|attention|"
-            + "deprecated|pointer_lifetime|reentrancy|analysis|par|glfw3|code|endcode|"
-            + "verbatim|endverbatim|internal|pre|post|invariant|win32|macos|linux|x11|"
-            + "wayland|egl|wgl|glx|osmesa|nsgl|posix|unix";
+            + "deprecated|pointer_lifetime|reentrancy|analysis|par|callback_signature|"
+            + "glfw3|code|endcode|verbatim|endverbatim|internal|pre|post|invariant|"
+            + "win32|macos|linux|x11|wayland|egl|wgl|glx|osmesa|nsgl|posix|unix";
         return Regex.IsMatch(line, @"^@(" + noiseTags + @")\b");
     }
 

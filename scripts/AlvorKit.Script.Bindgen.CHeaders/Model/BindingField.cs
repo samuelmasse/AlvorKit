@@ -5,4 +5,5 @@ namespace AlvorKit.Script.Bindgen;
 /// <param name="ManagedType">Managed C# field type.</param>
 /// <param name="Offset">Native field offset in bytes.</param>
 /// <param name="Documentation">Optional XML documentation text.</param>
-public record BindingField(string ManagedName, string ManagedType, int Offset, string? Documentation);
+/// <param name="NativeName">Native field name.</param>
+public record BindingField(string ManagedName, string ManagedType, int Offset, string? Documentation, string? NativeName = null);

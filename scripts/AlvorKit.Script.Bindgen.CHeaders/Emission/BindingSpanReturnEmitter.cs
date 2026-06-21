@@ -18,6 +18,7 @@ internal sealed class BindingSpanReturnEmitter(BindingEmitterContext context)
             BindingDocs.InheritedConvenience(
                 documentation,
                 $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
+                function.NativeName,
                 "Returns a read-only span over native memory while supplying the count internally.");
             output.Append(TemplateResource.Render(
                 typeof(BindingSpanReturnEmitter),

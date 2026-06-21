@@ -1,8 +1,8 @@
 
-    /// <summary>A fixed buffer of {{Count}} <see cref="{{ElementType}}"/> values.</summary>
+    /// <summary>A fixed buffer for native <c>{{NativeName}}</c> with {{Count}} <see cref="{{ElementType}}"/> values.</summary>
     [InlineArray({{Count}})]
     public struct {{ManagedName}}
     {
-        /// <summary>First element storage used by the compiler-expanded inline array.</summary>
+        /// <summary>First native <c>{{NativeName}}</c> element storage used by the compiler-expanded inline array.</summary>
         private {{ElementType}} element;
     }

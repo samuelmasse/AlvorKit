@@ -22,6 +22,7 @@ internal sealed class BindingStringArrayReturnEmitter(BindingEmitterContext cont
             BindingDocs.InheritedConvenience(
                 documentation,
                 $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
+                function.NativeName,
                 "Copies the returned C string array to managed strings while supplying the count internally.");
             output.Append(TemplateResource.Render(
                 typeof(BindingStringArrayReturnEmitter),

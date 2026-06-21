@@ -29,7 +29,8 @@ internal sealed class BindingCountedSpanOverloadEmitter(BindingEmitterContext co
         BindingDocs.InheritedConvenience(
             documentation,
             $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
-            "Pins span arguments for the duration of the call, supplies element counts, and forwards to the underlying method.");
+            function.NativeName,
+            "Pins span arguments for the duration of the native call and supplies element counts.");
         var call = $"{function.ManagedName}({string.Join(", ", arguments)})";
         output.Append(TemplateResource.Render(
             typeof(BindingCountedSpanOverloadEmitter),

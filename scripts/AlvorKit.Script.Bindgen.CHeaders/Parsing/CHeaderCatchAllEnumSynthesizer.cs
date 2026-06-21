@@ -29,7 +29,8 @@ internal static class CHeaderCatchAllEnumSynthesizer
         var membership = groups.Count == 0
             ? ""
             : $" See {string.Join(", ", groups.Select(group => $"<see cref=\"{group}\"/>"))}.";
-        return new(token.NativeName, token.ManagedName, token.Value, $"<c>{token.NativeName}</c>.{membership}");
+        var documentation = XmlDocComment.NativeSummary(token.NativeName, token.Documentation, $"<c>{token.NativeName}</c>.");
+        return new(token.NativeName, token.ManagedName, token.Value, documentation + membership);
     }
 
     /// <summary>Returns generated enum group names containing the native macro.</summary>

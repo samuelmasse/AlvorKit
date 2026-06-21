@@ -70,7 +70,7 @@ internal static class DoxygenDocParser
 
     /// <summary>Recognizes grouping directives that do not describe the API member itself.</summary>
     private static bool IsGroupMarker(string line) =>
-        Regex.IsMatch(line, @"^@(defgroup|addtogroup|ingroup)\b") || line is "@{" or "@}";
+        Regex.IsMatch(line, @"^@(defgroup|addtogroup|ingroup|name)\b") || line is "@{" or "@}";
 
     /// <summary>Starts collecting text for a Doxygen parameter directive when one is present.</summary>
     private static string? TryStartParameter(string line, Dictionary<string, string> parameters)

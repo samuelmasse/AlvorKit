@@ -21,9 +21,9 @@ public sealed class BindingDocsTest
 
         var docs = output.ToString();
         StringAssert.Contains(docs, "<summary><c>test_value</c> - Gets a value.</summary>");
-        StringAssert.Contains(docs, "<param name=\"input\">Input value.</param>");
-        StringAssert.Contains(docs, "<returns>The value.</returns>");
-        StringAssert.Contains(docs, "<remarks>Important.</remarks>");
+        StringAssert.Contains(docs, "<param name=\"input\"><c>input</c> - Input value.</param>");
+        StringAssert.Contains(docs, "<returns>Return value from <c>test_value</c>: The value.</returns>");
+        StringAssert.Contains(docs, "<remarks><c>test_value</c>: Important.</remarks>");
     }
 
     /// <summary>Function docs fall back for missing native text and describe bool interop projections.</summary>
@@ -43,7 +43,25 @@ public sealed class BindingDocsTest
 
         var docs = output.ToString();
         StringAssert.Contains(docs, "<summary>Calls native <c>test_flag</c>.</summary>");
-        StringAssert.Contains(docs, "<param name=\"class\">Native <c>class</c> parameter.</param>");
-        StringAssert.Contains(docs, "<returns>true when the native function returns non-zero; otherwise, false.</returns>");
+        StringAssert.Contains(docs, "<param name=\"class\">Native <c>class</c> parameter for <c>test_flag</c>.</param>");
+        StringAssert.Contains(docs, "<returns>true when <c>test_flag</c> returns non-zero; otherwise, false.</returns>");
+    }
+
+    /// <summary>Native summaries keep an existing symbol anchor instead of duplicating it.</summary>
+    [TestMethod]
+    public void NativeSummary_AlreadyAnchoredByNativeName_DoesNotRepeatNativeName()
+    {
+        var docs = XmlDocComment.NativeSummary("XXH_VERSION_MAJOR", "<c>XXH_VERSION_MAJOR</c> - Version", "fallback.");
+
+        Assert.AreEqual("<c>XXH_VERSION_MAJOR</c> - Version.", docs);
+    }
+
+    /// <summary>Native summaries code-tag a bare leading native name without adding a duplicate prefix.</summary>
+    [TestMethod]
+    public void NativeSummary_BareLeadingNativeName_CodeTagsWithoutRepeatingNativeName()
+    {
+        var docs = XmlDocComment.NativeSummary("XXH_VERSION_MINOR", "XXH_VERSION_MINOR - Version minor", "fallback.");
+
+        Assert.AreEqual("<c>XXH_VERSION_MINOR</c> - Version minor.", docs);
     }
 }

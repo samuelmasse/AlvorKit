@@ -33,6 +33,7 @@ internal static class BindingCallbackSetterEmitter
         BindingDocs.InheritedConvenience(
             documentation,
             $"{apiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
+            function.NativeName,
             "Roots the delegate and installs its function pointer; pass null to clear it.");
         output.Append(TemplateResource.Render(
             typeof(BindingCallbackSetterEmitter),

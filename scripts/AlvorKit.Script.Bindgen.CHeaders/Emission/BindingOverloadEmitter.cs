@@ -29,7 +29,7 @@ internal sealed class BindingOverloadEmitter(BindingEmitterContext context)
         if (hasSpanOverloads)
             BindingSpanOverloadEmitter.ByteLengthHelper(helpers);
         if (hasStringConvenience)
-            BindingUtf8HelperEmitter.Utf8Helper(helpers);
+            BindingUtf8HelperEmitter.Utf8Helper(helpers, context.Config.NativeLibrary);
         return TemplateResource.Render(
             typeof(BindingOverloadEmitter),
             "res/templates/bindgen/c-headers/csharp/overloads.cs.tmpl",
@@ -37,6 +37,7 @@ internal sealed class BindingOverloadEmitter(BindingEmitterContext context)
             ("Usings", needsText ? "using System.Text;" + Environment.NewLine + Environment.NewLine : ""),
             ("Namespace", context.Config.Namespace),
             ("ApiClass", context.Config.ApiClass),
+            ("NativeLibrary", context.Config.NativeLibrary),
             ("Unsafe", NeedsUnsafe(model) ? " unsafe" : ""),
             ("Overloads", overloads.ToString()),
             ("Helpers", helpers.ToString()));

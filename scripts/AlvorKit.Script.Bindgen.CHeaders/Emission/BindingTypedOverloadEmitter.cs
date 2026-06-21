@@ -29,9 +29,13 @@ internal sealed class BindingTypedOverloadEmitter(BindingEmitterContext context)
         var invoke = returnEnum is not null && returnEnum != function.ReturnType ? $"({returnEnum}){call}" : call;
         var remarks = strings.Count > 0
             ? "Marshals string arguments to UTF-8 on the stack when possible."
-            : "Casts typed arguments and forwards to the underlying method.";
+            : "Accepts typed managed values for native integer slots.";
 
-        BindingDocs.InheritedConvenience(output, $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})", remarks);
+        BindingDocs.InheritedConvenience(
+            output,
+            $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
+            function.NativeName,
+            remarks);
         if (strings.Count == 0)
         {
             output.Append(TemplateResource.Render(

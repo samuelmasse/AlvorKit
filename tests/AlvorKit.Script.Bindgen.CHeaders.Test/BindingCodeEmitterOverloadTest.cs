@@ -174,8 +174,8 @@ public sealed class BindingCodeEmitterOverloadTest
         StringAssert.Contains(overloads, "/// <inheritdoc cref=\"Test.Fill(nint, nuint)\"/>");
         StringAssert.Contains(
             overloads,
-            "/// <remarks>Convenience overload. Pins span arguments for the duration of the call, supplies byte lengths where the native method expects them, " +
-            "and forwards to the underlying method.</remarks>");
+            "/// <remarks>Managed overload for <c>test_fill</c>. Pins span arguments for the duration of the native call "
+            + "and supplies byte lengths where the native method expects them.</remarks>");
         StringAssert.Contains(overloads, "public void Fill<TBuffer>(Span<TBuffer> buffer)");
         StringAssert.Contains(overloads, "ByteLength<TBuffer>(buffer)");
         StringAssert.Contains(overloads, "/// <summary>Returns the byte length of an unmanaged span.</summary>");

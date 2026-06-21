@@ -155,22 +155,109 @@ public sealed class CHeaderBindingParserTest
         using var workspace = TempWorkspace.Create();
         var source = workspace.CreateDirectory("source");
         var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            /*! @brief Alpha mode. */
             #define test_MODE_A 1
+            /*! @brief Beta mode. */
             #define test_MODE_B 2
             #define test_OTHER 99
             """);
         var config = CHeaderTestConfig.Create();
         config.EnumGroups = new()
         {
-            ["TestMode"] = new EnumGroup { Prefix = "test_MODE_", Flags = true }
+            ["TestMode"] = new EnumGroup
+            {
+                Prefix = "test_MODE_",
+                Flags = true,
+                Documentation = "Mode constants matching <c>test_MODE_*</c>."
+            }
         };
 
         var group = CHeaderParserHarness.Parse(translationUnit, source, config).Enums.Single(binding => binding.ManagedName == "TestMode");
 
         Assert.IsTrue(group.IsFlags);
-        Assert.AreEqual("Native constants matching <c>test_MODE_*</c>.", group.Documentation);
+        Assert.AreEqual("Mode constants matching <c>test_MODE_*</c>.", group.Documentation);
         CollectionAssert.AreEqual(new[] { "A", "B" }, group.Members.Select(member => member.ManagedName).ToArray());
         CollectionAssert.AreEqual(new[] { "test_MODE_A", "test_MODE_B" }, group.Members.Select(member => member.NativeName).ToArray());
+        CollectionAssert.AreEqual(new[] { "Alpha mode.", "Beta mode." }, group.Members.Select(member => member.Documentation).ToArray());
+    }
+
+    /// <summary>Macro docs do not inherit group prose or inline comments from earlier defines.</summary>
+    [TestMethod]
+    public void Parse_DoesNotTreatMacroGroupsOrInlineCommentsAsMemberDocs()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            /*! @name Printable keys
+             * @{
+             */
+            #define test_KEY_SPACE 32
+            #define test_KEY_APOSTROPHE 39 /* ' */
+            #define test_KEY_COMMA 44 /* , */
+            #define test_KEY_WORLD_1 161 /* non-US #1 */
+            #define test_KEY_WORLD_2 162
+            """);
+        var config = CHeaderTestConfig.Create();
+        config.EnumGroups = new()
+        {
+            ["TestKey"] = new EnumGroup { Prefix = "test_KEY_" }
+        };
+
+        var members = CHeaderParserHarness.Parse(translationUnit, source, config)
+            .Enums.Single(binding => binding.ManagedName == "TestKey")
+            .Members.ToDictionary(member => member.ManagedName);
+
+        Assert.IsNull(members["Space"].Documentation);
+        Assert.IsNull(members["Apostrophe"].Documentation);
+        Assert.IsNull(members["Comma"].Documentation);
+        Assert.IsNull(members["World1"].Documentation);
+        Assert.IsNull(members["World2"].Documentation);
+    }
+
+    /// <summary>Callback typedef documentation is preserved for generated delegate docs.</summary>
+    [TestMethod]
+    public void Parse_CallbackTypedefsKeepParsedDocumentation()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            /*! @brief The callback type.
+             *
+             * @param[in] value The callback value.
+             */
+            typedef void (*test_callback)(int value);
+            void test_set(test_callback callback);
+            """);
+
+        var callback = CHeaderParserHarness.Parse(translationUnit, source).Delegates.Single();
+
+        Assert.AreEqual("test_callback", callback.NativeName);
+        Assert.AreEqual("The callback type.", callback.Documentation?.Summary);
+        Assert.AreEqual("The callback value.", callback.Documentation?.Parameters["value"]);
+    }
+
+    /// <summary>Doxygen callback signature sections are discarded instead of leaking into return docs.</summary>
+    [TestMethod]
+    public void Parse_DiscardsCallbackSignatureSections()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            /*! @brief Reads the value.
+             *
+             * @return The value.
+             *
+             * @callback_signature
+             * @code
+             * int function_name(void)
+             * @endcode
+             */
+            int test_read(void);
+            """);
+
+        var returns = CHeaderParserHarness.Parse(translationUnit, source).Functions.Single().Documentation?.Returns;
+
+        Assert.AreEqual("The value.", returns);
     }
 
     /// <summary>Native enum members keep their original names and parsed comments.</summary>

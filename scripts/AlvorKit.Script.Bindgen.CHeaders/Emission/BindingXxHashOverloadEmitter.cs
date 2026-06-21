@@ -35,6 +35,7 @@ internal static class BindingXxHashOverloadEmitter
         BindingDocs.InheritedConvenience(
             output,
             $"{apiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
+            function.NativeName,
             "Uses owned native secret memory from <see cref=\"XxhSecret\"/>. Do not dispose the secret until the streaming state "
             + "is reset again, freed, or no longer used.");
         output.AppendLine($"    public {function.ReturnType} {function.ManagedName}({signature}) =>");
@@ -48,6 +49,7 @@ internal static class BindingXxHashOverloadEmitter
         BindingDocs.InheritedConvenience(
             output,
             $"{apiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
+            function.NativeName,
             "Converts managed <see cref=\"UInt128\"/> values to the native xxHash layout before comparing.");
         output.AppendLine($"    public unsafe {function.ReturnType} {function.ManagedName}(UInt128 left, UInt128 right)");
         output.AppendLine("    {");

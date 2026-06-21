@@ -4,9 +4,12 @@ namespace AlvorKit.Script.Bindgen;
 internal static class BindingUtf8HelperEmitter
 {
     /// <summary>Emits the stack-first UTF-8 ref struct helper.</summary>
-    public static void Utf8Helper(StringBuilder output)
+    public static void Utf8Helper(StringBuilder output, string nativeLibrary)
     {
         output.AppendLine();
-        output.Append(TemplateResource.Read(typeof(BindingUtf8HelperEmitter), "res/templates/bindgen/c-headers/csharp/utf8-helper.csfrag.tmpl"));
+        output.Append(TemplateResource.Render(
+            typeof(BindingUtf8HelperEmitter),
+            "res/templates/bindgen/c-headers/csharp/utf8-helper.csfrag.tmpl",
+            ("NativeLibrary", nativeLibrary)));
     }
 }

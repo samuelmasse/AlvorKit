@@ -22,6 +22,7 @@ internal static partial class BindingFreeTypeOverloadEmitter
         BindingDocs.InheritedConvenience(
             output,
             $"{apiClass}.RequestSize({BindingSignature.Cref(function.Parameters)})",
+            function.NativeName,
             "Passes a caller-owned FT_Size_RequestRec by readonly reference.");
         AppendFreeTypeFragment(
             output,
@@ -35,6 +36,7 @@ internal static partial class BindingFreeTypeOverloadEmitter
         BindingDocs.InheritedConvenience(
             output,
             $"{apiClass}.SetTransform({BindingSignature.Cref(function.Parameters)})",
+            function.NativeName,
             "Passes caller-owned matrix and delta values by readonly reference.");
         AppendFreeTypeFragment(
             output,
@@ -48,6 +50,7 @@ internal static partial class BindingFreeTypeOverloadEmitter
         BindingDocs.InheritedConvenience(
             output,
             $"{apiClass}.FaceProperties({BindingSignature.Cref(function.Parameters)})",
+            function.NativeName,
             "Pins a caller-owned FT_Parameter span and supplies the property count.");
         AppendFreeTypeFragment(
             output,
@@ -61,6 +64,7 @@ internal static partial class BindingFreeTypeOverloadEmitter
         BindingDocs.InheritedConvenience(
             output,
             $"{apiClass}.GetGlyphName({BindingSignature.Cref(function.Parameters)})",
+            function.NativeName,
             "Writes the glyph name into a caller-owned byte buffer and returns the NUL-terminated slice.");
         AppendFreeTypeFragment(
             output,

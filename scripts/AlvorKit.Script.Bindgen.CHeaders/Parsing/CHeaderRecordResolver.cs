@@ -47,7 +47,8 @@ internal sealed class CHeaderRecordResolver(
                 fieldManagedName,
                 managedType,
                 (int)(field.Handle.OffsetOfField / 8),
-                XmlDocComment.Member(field.Handle.RawCommentText.ToString())));
+                XmlDocComment.Member(field.Handle.RawCommentText.ToString()),
+                fieldNativeName));
         }
 
         CHeaderLayoutValidator.ValidateNaturalRecordLayout(state, record, "primary");
@@ -59,7 +60,7 @@ internal sealed class CHeaderRecordResolver(
     {
         var canonical = field.Type.Handle.CanonicalType;
         if (canonical.kind == CXTypeKind.CXType_ConstantArray)
-            return MapInlineArray(canonical, fieldManagedName, owner);
+            return MapInlineArray(canonical, fieldManagedName, fieldNativeName, owner);
         if (canonical.kind == CXTypeKind.CXType_Record)
             return MapRecordField(field, owner.NativeName, fieldNativeName);
         if (state.DelegatesByNativeName.ContainsKey(CHeaderNameMapper.CleanTypeSpelling(field.Type.Handle)))
@@ -85,13 +86,13 @@ internal sealed class CHeaderRecordResolver(
     }
 
     /// <summary>Maps a fixed-size array field to a nested inline-buffer type.</summary>
-    private string? MapInlineArray(CXType arrayType, string fieldManagedName, BindingStruct owner)
+    private string? MapInlineArray(CXType arrayType, string fieldManagedName, string fieldNativeName, BindingStruct owner)
     {
         var count = (int)arrayType.ArraySize;
         var element = arrayType.ElementType;
         var elementType = element.CanonicalType.kind switch
         {
-            CXTypeKind.CXType_ConstantArray => MapInlineArray(element.CanonicalType, fieldManagedName + "Row", owner),
+            CXTypeKind.CXType_ConstantArray => MapInlineArray(element.CanonicalType, fieldManagedName + "Row", fieldNativeName, owner),
             CXTypeKind.CXType_Record => ResolveStruct(CHeaderNameMapper.CleanTypeSpelling(element))?.ManagedName,
             _ => types.MapNativeType(element)
         };
@@ -99,7 +100,7 @@ internal sealed class CHeaderRecordResolver(
             return null;
 
         var bufferName = fieldManagedName + "Buffer";
-        owner.NestedBuffers.Add(new(bufferName, elementType, count));
+        owner.NestedBuffers.Add(new(bufferName, fieldNativeName, elementType, count));
         return bufferName;
     }
 

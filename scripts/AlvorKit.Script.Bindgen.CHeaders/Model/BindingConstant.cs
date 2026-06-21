@@ -4,4 +4,5 @@ namespace AlvorKit.Script.Bindgen;
 /// <param name="NativeName">Native macro name, or managed configured name when no native macro exists.</param>
 /// <param name="ManagedName">Managed C# enum member name.</param>
 /// <param name="Value">Integral constant value.</param>
-public record BindingConstant(string NativeName, string ManagedName, long Value);
+/// <param name="Documentation">Optional upstream documentation text.</param>
+public record BindingConstant(string NativeName, string ManagedName, long Value, string? Documentation);

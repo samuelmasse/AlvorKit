@@ -20,26 +20,32 @@ internal static class BindingDocs
         foreach (var parameter in function.Parameters)
         {
             var name = parameter.ManagedName.TrimStart('@');
-            var text = function.Documentation?.Parameters.GetValueOrDefault(name) ?? $"Native <c>{name}</c> parameter.";
+            var text = NativeSummary(
+                name,
+                function.Documentation?.Parameters.GetValueOrDefault(name),
+                $"Native <c>{name}</c> parameter for <c>{function.NativeName}</c>.");
             output.AppendLine($"    /// <param name=\"{name}\">{text}</param>");
         }
         if (function.ReturnType != "void")
             output.AppendLine($"    /// <returns>{ReturnText(function)}</returns>");
         if (function.Documentation?.Remarks is { } remarks)
-            output.AppendLine($"    /// <remarks>{remarks}</remarks>");
+            output.AppendLine($"    /// <remarks><c>{function.NativeName}</c>: {remarks}</remarks>");
     }
 
     /// <summary>Emits inherited documentation and standard convenience-overload remarks.</summary>
-    public static void InheritedConvenience(StringBuilder output, string cref, string details)
+    public static void InheritedConvenience(StringBuilder output, string cref, string nativeName, string details)
     {
         output.AppendLine($"    /// <inheritdoc cref=\"{cref}\"/>");
-        ConvenienceRemarks(output, details);
+        ConvenienceRemarks(output, nativeName, details);
     }
 
     /// <summary>Emits the standard convenience-overload remarks prefix with operation-specific details.</summary>
-    public static void ConvenienceRemarks(StringBuilder output, string details) =>
-        output.AppendLine(
-            $"    /// <remarks>Convenience overload. {details}</remarks>");
+    public static void ConvenienceRemarks(StringBuilder output, string nativeName, string details) =>
+        output.AppendLine($"    /// <remarks>Managed overload for <c>{nativeName}</c>. {details}</remarks>");
+
+    /// <summary>Returns a documentation sentence that starts from the native C symbol.</summary>
+    public static string NativeSummary(string nativeName, string? original, string fallback) =>
+        XmlDocComment.NativeSummary(nativeName, original, fallback);
 
     /// <summary>Capitalizes leading ASCII lowercase text for readable summaries.</summary>
     private static string Capitalize(string text) =>
@@ -48,6 +54,8 @@ internal static class BindingDocs
     /// <summary>Returns XML documentation text that matches the managed return projection.</summary>
     private static string ReturnText(BindingFunction function) =>
         function.ReturnType == "bool" && function.ReturnInteropType != "bool"
-            ? "true when the native function returns non-zero; otherwise, false."
-            : function.Documentation?.Returns ?? "Native return value.";
+            ? $"true when <c>{function.NativeName}</c> returns non-zero; otherwise, false."
+            : function.Documentation?.Returns is { } returns
+                ? $"Return value from <c>{function.NativeName}</c>: {returns}"
+                : $"Return value from <c>{function.NativeName}</c>.";
 }

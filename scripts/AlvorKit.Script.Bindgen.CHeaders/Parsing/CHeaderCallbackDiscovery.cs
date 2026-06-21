@@ -36,7 +36,12 @@ internal static class CHeaderCallbackDiscovery
             .ToList();
         return parameters.Any(parameter => parameter is null)
             ? null
-            : new(names.DelegateName(typedef.Name), returnType, [.. parameters.OfType<BindingParameter>()]);
+            : new(
+                names.DelegateName(typedef.Name),
+                returnType,
+                [.. parameters.OfType<BindingParameter>()],
+                typedef.Name,
+                XmlDocComment.Parse(typedef.Handle.RawCommentText.ToString()));
     }
 
     /// <summary>Maps one callback parameter while keeping callback strings raw.</summary>

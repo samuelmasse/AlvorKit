@@ -1,6 +1,6 @@
 namespace: "AlvorKit.GLFW"
 apiClass: "Glfw"
-apiSummary: "The GLFW windowing library: windows, OpenGL and Vulkan contexts, monitors, keyboard, mouse and joystick input, events, clipboard and timing."
+apiSummary: "The <c>glfw3.h</c> GLFW API: windows, OpenGL and Vulkan contexts, monitors, keyboard, mouse and joystick input, events, clipboard and timing."
 backendClass: "GlfwBackend"
 nativeClass: "GlfwNative"
 nativeLibrary: "glfw3"
@@ -72,33 +72,42 @@ transparentStructs:
   - "GLFWallocator"
 enumGroups:
   GlfwKey:
+    documentation: "Keyboard key tokens matching <c>GLFW_KEY_*</c>."
     prefix: "GLFW_KEY_"
     digitPrefix: "D"
   GlfwMouseButton:
+    documentation: "Mouse button IDs matching <c>GLFW_MOUSE_BUTTON_*</c>."
     prefix: "GLFW_MOUSE_BUTTON_"
     digitPrefix: "Button"
   GlfwGamepadButton:
+    documentation: "Gamepad button IDs matching <c>GLFW_GAMEPAD_BUTTON_*</c>."
     prefix: "GLFW_GAMEPAD_BUTTON_"
   GlfwGamepadAxis:
+    documentation: "Gamepad axis IDs matching <c>GLFW_GAMEPAD_AXIS_*</c>."
     prefix: "GLFW_GAMEPAD_AXIS_"
   GlfwJoystick:
+    documentation: "Joystick IDs matching <c>GLFW_JOYSTICK_*</c>."
     prefix: "GLFW_JOYSTICK_"
     digitPrefix: "Joystick"
     exclude:
       - "GLFW_JOYSTICK_HAT_BUTTONS"
   GlfwJoystickHat:
+    documentation: "Joystick hat state flags matching <c>GLFW_HAT_*</c>."
     prefix: "GLFW_HAT_"
     flags: true
   GlfwKeyModifier:
+    documentation: "Keyboard modifier flags matching <c>GLFW_MOD_*</c>."
     prefix: "GLFW_MOD_"
     flags: true
   GlfwInputAction:
+    documentation: "Input action constants <c>GLFW_RELEASE</c>, <c>GLFW_PRESS</c>, and <c>GLFW_REPEAT</c>."
     prefix: "GLFW_"
     members:
       - "GLFW_RELEASE"
       - "GLFW_PRESS"
       - "GLFW_REPEAT"
   GlfwErrorCode:
+    documentation: "Error codes returned by <c>glfwGetError</c> and reported to <c>GLFWerrorfun</c>."
     prefix: "GLFW_"
     members:
       - "GLFW_NO_ERROR"
@@ -117,11 +126,13 @@ enumGroups:
       - "GLFW_FEATURE_UNIMPLEMENTED"
       - "GLFW_PLATFORM_UNAVAILABLE"
   GlfwConnectionEvent:
+    documentation: "Connection event constants <c>GLFW_CONNECTED</c> and <c>GLFW_DISCONNECTED</c>."
     prefix: "GLFW_"
     members:
       - "GLFW_CONNECTED"
       - "GLFW_DISCONNECTED"
   GlfwCursorShape:
+    documentation: "Standard cursor shapes accepted by <c>glfwCreateStandardCursor</c>."
     prefix: "GLFW_"
     suffix: "Cursor"
     members:
@@ -136,6 +147,7 @@ enumGroups:
       - "GLFW_RESIZE_ALL_CURSOR"
       - "GLFW_NOT_ALLOWED_CURSOR"
   GlfwInputMode:
+    documentation: "Input mode constants accepted by <c>glfwGetInputMode</c> and <c>glfwSetInputMode</c>."
     prefix: "GLFW_"
     members:
       - "GLFW_CURSOR"
@@ -144,10 +156,14 @@ enumGroups:
       - "GLFW_LOCK_KEY_MODS"
       - "GLFW_RAW_MOUSE_MOTION"
   GlfwCursorMode:
+    documentation: "Cursor mode values matching <c>GLFW_CURSOR_*</c> for the <c>GLFW_CURSOR</c> input mode."
     prefix: "GLFW_CURSOR_"
     exclude:
       - "GLFW_CURSOR_UNAVAILABLE"
   GlfwWindowHint:
+    documentation: >-
+      Window hint and attribute constants accepted by <c>glfwWindowHint</c>, <c>glfwWindowHintString</c>,
+      <c>glfwGetWindowAttrib</c>, and <c>glfwSetWindowAttrib</c>.
     prefix: "GLFW_"
     members:
       - "GLFW_FOCUSED"
@@ -204,43 +220,51 @@ enumGroups:
       - "GLFW_WIN32_SHOWDEFAULT"
       - "GLFW_WAYLAND_APP_ID"
   GlfwClientApi:
+    documentation: "Client API values accepted by <c>GLFW_CLIENT_API</c>."
     prefix: "GLFW_"
     members:
       - "GLFW_NO_API"
       - "GLFW_OPENGL_API"
       - "GLFW_OPENGL_ES_API"
   GlfwContextApi:
+    documentation: "Context creation API values accepted by <c>GLFW_CONTEXT_CREATION_API</c>."
     prefix: "GLFW_"
     members:
       - "GLFW_NATIVE_CONTEXT_API"
       - "GLFW_EGL_CONTEXT_API"
       - "GLFW_OSMESA_CONTEXT_API"
   GlfwOpenGLProfile:
+    documentation: "OpenGL profile values matching <c>GLFW_OPENGL_*</c>."
     prefix: "GLFW_OPENGL_"
     members:
       - "GLFW_OPENGL_ANY_PROFILE"
       - "GLFW_OPENGL_CORE_PROFILE"
       - "GLFW_OPENGL_COMPAT_PROFILE"
   GlfwRobustness:
+    documentation: "Context robustness values accepted by <c>GLFW_CONTEXT_ROBUSTNESS</c>."
     prefix: "GLFW_"
     members:
       - "GLFW_NO_ROBUSTNESS"
       - "GLFW_NO_RESET_NOTIFICATION"
       - "GLFW_LOSE_CONTEXT_ON_RESET"
   GlfwReleaseBehavior:
+    documentation: "Context release behavior values accepted by <c>GLFW_CONTEXT_RELEASE_BEHAVIOR</c>."
     prefix: "GLFW_"
     members:
       - "GLFW_ANY_RELEASE_BEHAVIOR"
       - "GLFW_RELEASE_BEHAVIOR_FLUSH"
       - "GLFW_RELEASE_BEHAVIOR_NONE"
   GlfwAnglePlatformType:
+    documentation: "ANGLE platform type values matching <c>GLFW_ANGLE_PLATFORM_TYPE_*</c>."
     prefix: "GLFW_ANGLE_PLATFORM_TYPE_"
   GlfwWaylandLibdecor:
+    documentation: "Wayland libdecor preference values matching <c>GLFW_WAYLAND_*</c>."
     prefix: "GLFW_WAYLAND_"
     members:
       - "GLFW_WAYLAND_PREFER_LIBDECOR"
       - "GLFW_WAYLAND_DISABLE_LIBDECOR"
   GlfwInitHint:
+    documentation: "Initialization hint constants accepted by <c>glfwInitHint</c>."
     prefix: "GLFW_"
     members:
       - "GLFW_JOYSTICK_HAT_BUTTONS"
@@ -251,6 +275,7 @@ enumGroups:
       - "GLFW_X11_XCB_VULKAN_SURFACE"
       - "GLFW_WAYLAND_LIBDECOR"
   GlfwPlatform:
+    documentation: "Platform selection constants accepted by <c>GLFW_PLATFORM</c> and returned by <c>glfwGetPlatform</c>."
     prefix: "GLFW_"
     members:
       - "GLFW_ANY_PLATFORM"

@@ -6,6 +6,9 @@ internal sealed class CHeaderConstantDiscovery(
     CHeaderParseState state,
     CHeaderTranslationUnit translationUnit)
 {
+    private readonly Dictionary<string, string?> documentationByNativeName = [];
+    private readonly CHeaderMacroDocumentation documentation = new();
+
     /// <summary>Adds macro and configured constants in deterministic managed-name order.</summary>
     public void Discover()
     {
@@ -24,6 +27,7 @@ internal sealed class CHeaderConstantDiscovery(
 
             state.ValuesByNativeName[nativeName] = value.Value;
             state.NativeNamesInOrder.Add(nativeName);
+            documentationByNativeName[nativeName] = documentation.Documentation(cursor)?.Summary;
         }
 
         AddMissingConfiguredNativeValues();
@@ -71,7 +75,11 @@ internal sealed class CHeaderConstantDiscovery(
         var prefix = prefixes.First(namePrefix => nativeName.StartsWith(namePrefix, StringComparison.OrdinalIgnoreCase));
         var managedName = CSharpName.FromNativeIdentifier(nativeName, prefix, config.DigitNamePrefix);
         if (usedManagedNames.Add(managedName))
-            state.ConstantTokens.Add(new(nativeName, managedName, state.ValuesByNativeName[nativeName]));
+            state.ConstantTokens.Add(new(
+                nativeName,
+                managedName,
+                state.ValuesByNativeName[nativeName],
+                documentationByNativeName.GetValueOrDefault(nativeName)));
     }
 
     /// <summary>Returns a configured fallback value for a considered native macro, if one was supplied.</summary>
@@ -99,7 +107,7 @@ internal sealed class CHeaderConstantDiscovery(
         foreach (var (managedName, value) in config.Constants)
         {
             if (!IsNativeConstantName(managedName) && usedManagedNames.Add(managedName))
-                state.ConstantTokens.Add(new(managedName, managedName, value));
+                state.ConstantTokens.Add(new(managedName, managedName, value, Documentation: null));
         }
     }
 

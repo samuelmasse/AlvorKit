@@ -11,7 +11,7 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/enum.cs.tmpl",
             ("TypeHeader", TypeHeader()),
-            ("Documentation", enumType.Documentation ?? $"Native enum <c>{enumType.NativeName}</c>."),
+            ("Documentation", BindingTypeDocs.Enum(enumType)),
             ("Flags", enumType.IsFlags ? "[Flags]" + Environment.NewLine : ""),
             ("ManagedName", enumType.ManagedName),
             ("UnderlyingType", enumType.UnderlyingType == "int" ? "" : " : " + enumType.UnderlyingType),
@@ -27,7 +27,10 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/struct.cs.tmpl",
             ("TypeHeader", TypeHeader()),
-            ("Documentation", structType.Documentation ?? $"Maps <c>{structType.NativeName}</c>."),
+            ("Documentation", BindingDocs.NativeSummary(
+                structType.NativeName,
+                structType.Documentation,
+                $"Native record <c>{structType.NativeName}</c>.")),
             ("StructLayout", structType.IsUnion ? "[StructLayout(LayoutKind.Explicit)]" : "[StructLayout(LayoutKind.Sequential)]"),
             ("Unsafe", structType.Fields.Any(field => field.ManagedType.Contains('*')) ? "unsafe " : ""),
             ("ManagedName", structType.ManagedName),
@@ -59,11 +62,13 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
         var parameters = string.Join("", callback.Parameters.Select(parameter => TemplateResource.Render(
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/delegate-param.csfrag.tmpl",
-            ("ManagedName", parameter.ManagedName.TrimStart('@')))));
+            ("ManagedName", parameter.ManagedName.TrimStart('@')),
+            ("Documentation", BindingTypeDocs.DelegateParameter(callback, parameter)))));
         return TemplateResource.Render(
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/delegate.cs.tmpl",
             ("TypeHeader", TypeHeader()),
+            ("Documentation", BindingTypeDocs.Delegate(callback)),
             ("Parameters", parameters),
             ("ReturnType", callback.ReturnType),
             ("Unsafe", callback.ReturnType.Contains('*') || callback.Parameters.Any(parameter => parameter.ManagedType.Contains('*')) ? "unsafe " : ""),
@@ -84,7 +89,7 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
         TemplateResource.Render(
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/enum-member.csfrag.tmpl",
-            ("Documentation", member.Documentation ?? $"<c>{member.NativeName}</c>."),
+            ("Documentation", BindingDocs.NativeSummary(member.NativeName, member.Documentation, $"<c>{member.NativeName}</c>.")),
             ("ManagedName", member.ManagedName),
             ("Value", member.Value.ToString()));
 
@@ -93,7 +98,7 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
         TemplateResource.Render(
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/struct-field.csfrag.tmpl",
-            ("Documentation", field.Documentation ?? $"Maps the native field at byte offset {field.Offset}."),
+            ("Documentation", BindingTypeDocs.Field(field)),
             ("FieldOffset", structType.IsUnion ? "[FieldOffset(0)] " : ""),
             ("ManagedType", field.ManagedType),
             ("ManagedName", field.ManagedName));
@@ -104,6 +109,7 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
             typeof(BindingTypeEmitter),
             "res/templates/bindgen/c-headers/csharp/inline-buffer.csfrag.tmpl",
             ("Count", buffer.Count.ToString()),
+            ("NativeName", buffer.NativeName),
             ("ElementType", buffer.ElementType),
             ("ManagedName", buffer.ManagedName));
 

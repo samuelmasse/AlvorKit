@@ -16,16 +16,22 @@ public sealed class BindingCodeEmitterCommentsTest
         var api = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Test.cs"));
         var value = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestValue.cs"));
         var point = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestPoint.cs"));
+        var handle = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestHandle.cs"));
+        var callback = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "TestCallback.cs"));
         var native = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "TestNative.cs"));
         var backend = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "TestBackend.cs"));
 
-        StringAssert.Contains(api, "/// <param name=\"left\">Native <c>left</c> parameter.</param>");
-        StringAssert.Contains(value, "/// <summary>Native enum <c>test_value</c>.</summary>");
-        StringAssert.Contains(value, "/// <summary><c>test_VALUE_A</c>.</summary>");
+        StringAssert.Contains(api, "/// <param name=\"left\">Native <c>left</c> parameter for <c>test_add</c>.</param>");
+        StringAssert.Contains(value, "/// <summary><c>test_value</c> - Value enum.</summary>");
+        StringAssert.Contains(value, "/// <summary><c>test_VALUE_A</c> - Alpha value.</summary>");
+        StringAssert.Contains(value, "/// <summary><c>test_VALUE_B</c>.</summary>");
         Assert.IsFalse(value.Contains("/// <summary><c>A</c>.</summary>", StringComparison.Ordinal));
-        StringAssert.Contains(point, "/// <summary>Maps the native field at byte offset 0.</summary>");
-        StringAssert.Contains(point, "/// <summary>First element storage used by the compiler-expanded inline array.</summary>");
-        StringAssert.Contains(native, "/// <summary>Name of the native shared library.</summary>");
+        StringAssert.Contains(point, "/// <summary>Native <c>X</c> field at byte offset 0.</summary>");
+        StringAssert.Contains(point, "/// <summary>First native <c>values</c> element storage used by the compiler-expanded inline array.</summary>");
+        StringAssert.Contains(handle, "/// <param name=\"Handle\">Native <c>test_handle*</c> pointer value.</param>");
+        StringAssert.Contains(callback, "/// <summary>Native callback typedef <c>test_callback</c>.</summary>");
+        StringAssert.Contains(callback, "/// <param name=\"value\">Native <c>value</c> callback parameter.</param>");
+        StringAssert.Contains(native, "/// <summary>Name of the <c>fixture</c> native shared library.</summary>");
         StringAssert.Contains(backend, "/// <inheritdoc/>");
     }
 
@@ -66,14 +72,19 @@ public sealed class BindingCodeEmitterCommentsTest
         new BindingCodeEmitter(config, "1.0.0").Emit(model, workspace.Root, "1.0.0", "1.0.0");
 
         var api = File.ReadAllText(Path.Combine(workspace.Root, config.ApiProject, "Test.cs"));
-        StringAssert.Contains(api, "/// <returns>true when the native function returns non-zero; otherwise, false.</returns>");
+        StringAssert.Contains(api, "/// <returns>true when <c>test_ready</c> returns non-zero; otherwise, false.</returns>");
     }
 
     private static BindingModel ModelWithTypes() => new(
-        Enums: [new("test_value", "TestValue", "int", false, [new("test_VALUE_A", "A", 1, null)], null)],
-        Structs: [new("test_point", "TestPoint", false, 16, [new("X", "int", 0, null)], [new("ValuesBuffer", "int", 4)], null)],
+        Enums: [new("test_value", "TestValue", "int", false,
+            [
+                new("test_VALUE_A", "A", 1, "Alpha value."),
+                new("test_VALUE_B", "B", 2, null)
+            ],
+            "Value enum.")],
+        Structs: [new("test_point", "TestPoint", false, 16, [new("X", "int", 0, null)], [new("ValuesBuffer", "values", "int", 4)], null)],
         Handles: [new("test_handle", "TestHandle")],
-        Delegates: [new("TestCallback", "void", [new("value", "int", "int", "", false)])],
+        Delegates: [new("TestCallback", "void", [new("value", "int", "int", "", false)], "test_callback")],
         Functions:
         [
             new("test_add", "Add", "int", "int", [new("left", "int", "int", "", false)], null)

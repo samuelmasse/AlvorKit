@@ -13,6 +13,7 @@ internal sealed class BindingNoopEmitter(BindingEmitterContext context)
             ("SourceHeader", context.SourceHeader().ToString()),
             ("Namespace", context.Config.Namespace),
             ("ApiClass", context.Config.ApiClass),
+            ("NativeLibrary", context.Config.NativeLibrary),
             ("Methods", methods));
     }
 

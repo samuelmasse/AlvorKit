@@ -34,6 +34,7 @@ internal sealed class BindingStringReturnEmitter(BindingEmitterContext context)
         BindingDocs.InheritedConvenience(
             stringDocumentation,
             inheritCref,
+            function.NativeName,
             "Decodes the returned C string to a managed string, or null when the pointer is null.");
         var stringParameters = string.Join(", ", leading.Append($"out string? {value}"));
         output.Append(TemplateResource.Render(
@@ -50,6 +51,7 @@ internal sealed class BindingStringReturnEmitter(BindingEmitterContext context)
         BindingDocs.InheritedConvenience(
             spanDocumentation,
             inheritCref,
+            function.NativeName,
             $"Decodes the returned C string into <paramref name=\"{destination}\"/> and returns the slice written.");
         var spanParameters = string.Join(
             ", ",

@@ -1,13 +1,13 @@
-    /// <summary>A NUL-terminated UTF-8 copy of a string for interop.</summary>
+    /// <summary>A NUL-terminated UTF-8 copy of a string for <c>{{NativeLibrary}}</c> interop.</summary>
     private readonly unsafe ref struct Utf8
     {
-        /// <summary>Native heap allocation when the stack buffer is too small.</summary>
+        /// <summary>Native heap allocation for <c>{{NativeLibrary}}</c> interop when the stack buffer is too small.</summary>
         private readonly void* native;
 
-        /// <summary>Pointer to the NUL-terminated UTF-8 bytes.</summary>
+        /// <summary>Pointer to the NUL-terminated UTF-8 bytes passed to <c>{{NativeLibrary}}</c>.</summary>
         public readonly nint Pointer;
 
-        /// <summary>Copies a managed string into NUL-terminated UTF-8 storage.</summary>
+        /// <summary>Copies a managed string into NUL-terminated UTF-8 storage for <c>{{NativeLibrary}}</c>.</summary>
         public Utf8(string text, Span<byte> stack)
         {
             var length = Encoding.UTF8.GetByteCount(text);
@@ -18,6 +18,6 @@
             Pointer = (nint)Unsafe.AsPointer(ref MemoryMarshal.GetReference(buffer));
         }
 
-        /// <summary>Frees native heap storage when it was allocated.</summary>
+        /// <summary>Frees native heap storage allocated for <c>{{NativeLibrary}}</c> interop.</summary>
         public void Dispose() => NativeMemory.Free(native);
     }

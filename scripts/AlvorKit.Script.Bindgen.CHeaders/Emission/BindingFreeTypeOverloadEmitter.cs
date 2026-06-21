@@ -24,6 +24,7 @@ internal static partial class BindingFreeTypeOverloadEmitter
             BindingDocs.InheritedConvenience(
                 output,
                 $"{apiClass}.LoadChar({BindingSignature.Cref(loadChar.Parameters)})",
+                loadChar.NativeName,
                 "Converts a UTF-16 code unit to an FT_ULong character code.");
             AppendFreeTypeFragment(
                 output,
@@ -33,6 +34,7 @@ internal static partial class BindingFreeTypeOverloadEmitter
             BindingDocs.InheritedConvenience(
                 output,
                 $"{apiClass}.LoadChar({BindingSignature.Cref(loadChar.Parameters)})",
+                loadChar.NativeName,
                 "Converts a Unicode scalar value to an FT_ULong character code.");
             AppendFreeTypeFragment(
                 output,
@@ -46,6 +48,7 @@ internal static partial class BindingFreeTypeOverloadEmitter
         BindingDocs.InheritedConvenience(
             output,
             $"{apiClass}.GetCharIndex({BindingSignature.Cref(getCharIndex.Parameters)})",
+            getCharIndex.NativeName,
             "Converts a UTF-16 code unit to an FT_ULong character code.");
         AppendFreeTypeFragment(
             output,
@@ -55,6 +58,7 @@ internal static partial class BindingFreeTypeOverloadEmitter
         BindingDocs.InheritedConvenience(
             output,
             $"{apiClass}.GetCharIndex({BindingSignature.Cref(getCharIndex.Parameters)})",
+            getCharIndex.NativeName,
             "Converts a Unicode scalar value to an FT_ULong character code.");
         AppendFreeTypeFragment(
             output,
@@ -69,6 +73,7 @@ internal static partial class BindingFreeTypeOverloadEmitter
         BindingDocs.InheritedConvenience(
             output,
             $"{apiClass}.GetGlyphName({BindingSignature.Cref(function.Parameters)})",
+            function.NativeName,
             "Uses a stack buffer, decodes the returned UTF-8 glyph name, and preserves the FT_Error return value.");
         AppendFreeTypeFragment(
             output,

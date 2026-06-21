@@ -20,4 +20,7 @@ public sealed class EnumGroup
 
     /// <summary>Prefix for member names that would otherwise start with a digit.</summary>
     public string DigitPrefix { get; set; } = "Num";
+
+    /// <summary>Public XML documentation for the synthesized enum group.</summary>
+    public string? Documentation { get; set; }
 }
