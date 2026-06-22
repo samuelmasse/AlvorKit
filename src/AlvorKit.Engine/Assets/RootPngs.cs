@@ -9,7 +9,7 @@ public sealed class RootPngs
     {
         get
         {
-            var image = Png.Open(file);
+            var image = Png.Open(RootAssetFiles.Resolve(file));
             return new((checked((uint)image.Width), checked((uint)image.Height)), GetPixels(image));
         }
     }

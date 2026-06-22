@@ -1,6 +1,6 @@
 namespace AlvorKit.Engine.Loop;
 
-/// <summary>Owns root-loop scripts and maintains their priority order.</summary>
+/// <summary>Owns root-loop scripts and maintains their execution order.</summary>
 [Root]
 public sealed class RootScripts
 {
@@ -9,12 +9,12 @@ public sealed class RootScripts
     /// <summary>Gets the current script list without copying.</summary>
     public ReadOnlySpan<Script> Span => CollectionsMarshal.AsSpan(scripts);
 
-    /// <summary>Adds, loads, and sorts a script.</summary>
+    /// <summary>Adds, loads, and sorts a script by <see cref="Script.Order"/>.</summary>
     public T Add<T>(T script) where T : Script
     {
         scripts.Add(script);
         script.Load();
-        scripts.Sort(static (a, b) => a.Priority.CompareTo(b.Priority));
+        scripts.Sort(static (a, b) => a.Order.CompareTo(b.Order));
         return script;
     }
 

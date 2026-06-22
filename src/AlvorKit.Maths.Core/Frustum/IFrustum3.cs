@@ -90,6 +90,15 @@ public interface IFrustum3<TSelf, TScalar, TVector3, TVector4, TPlane3, TBox3> :
     /// </summary>
     bool TryCopyCornersTo(Span<TVector3> destination);
 
+    /// <summary>Gets whether the frustum planes define eight finite corners.</summary>
+    bool HasFiniteCorners { get; }
+
+    /// <summary>Attempts to copy normalized planes into a caller-owned span in Left, Right, Bottom, Top, Near, Far order.</summary>
+    bool TryCopyNormalizedPlanesTo(Span<TPlane3> destination);
+
+    /// <summary>Attempts to create an axis-aligned bounding box containing all finite frustum corners.</summary>
+    bool TryCreateBoundingBox(out TBox3 box);
+
     /// <summary>Returns whether the frustum contains <paramref name="point" />.</summary>
     bool Contains(TVector3 point);
 
@@ -104,4 +113,22 @@ public interface IFrustum3<TSelf, TScalar, TVector3, TVector4, TPlane3, TBox3> :
     /// and can be returned for boxes outside the finite frustum.
     /// </summary>
     ContainmentKind Classify(TBox3 box);
+
+    /// <summary>Returns whether the frustum intersects <paramref name="box" /> after finite-corner refinement.</summary>
+    bool IntersectsPrecise(TBox3 box);
+
+    /// <summary>Classifies how the frustum relates to <paramref name="box" /> after finite-corner refinement.</summary>
+    ContainmentKind ClassifyPrecise(TBox3 box);
+
+    /// <summary>Returns whether the frustum fully contains <paramref name="other" />.</summary>
+    bool Contains(TSelf other);
+
+    /// <summary>Returns whether the frustum may intersect <paramref name="other" /> using a conservative culling test.</summary>
+    bool Intersects(TSelf other);
+
+    /// <summary>Classifies how the frustum relates to <paramref name="other" /> using finite corners when available.</summary>
+    ContainmentKind Classify(TSelf other);
+
+    /// <summary>Attempts to classify how the frustum relates to <paramref name="other" />.</summary>
+    bool TryClassify(TSelf other, out ContainmentKind result);
 }

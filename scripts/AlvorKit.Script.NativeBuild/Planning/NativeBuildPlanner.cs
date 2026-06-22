@@ -71,6 +71,7 @@ internal static class NativeBuildPlanner
                 "--fresh", "-S", library.SourceDirectory,
                 "-B", library.BuildDirectory(target),
                 "-DCMAKE_C_COMPILER=" + target.LinuxCompiler,
+                "-DCMAKE_CXX_COMPILER=" + target.LinuxCxxCompiler,
                 "-DCMAKE_BUILD_TYPE=Release",
                 .. platform.CMakeOptions
             ]),

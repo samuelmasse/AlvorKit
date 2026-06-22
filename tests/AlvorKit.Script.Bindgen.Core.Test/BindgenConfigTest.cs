@@ -25,6 +25,7 @@ public sealed class BindgenConfigTest
         Assert.AreEqual(0, config.EnumGroups.Count);
         Assert.IsNull(config.EnumOverloads);
         Assert.IsFalse(config.XxHashConvenience);
+        Assert.IsFalse(config.FastNoise2Convenience);
     }
 
     /// <summary>Creates the smallest valid C-header config used by defaults tests.</summary>

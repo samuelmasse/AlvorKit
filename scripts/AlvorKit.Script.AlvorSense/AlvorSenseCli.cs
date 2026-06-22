@@ -54,7 +54,7 @@ internal static class AlvorSenseCli
         Directory.CreateDirectory(Path.Combine(sessionDir, "requests"));
         Directory.CreateDirectory(Path.Combine(sessionDir, "responses"));
         AlvorSenseJson.Save(AlvorSensePaths.Manifest(sessionDir), command.ToManifest());
-        AlvorSenseHostProcess.Start(sessionDir);
+        using var hostProcess = AlvorSenseHostProcess.Start(sessionDir);
         AlvorSenseHostProcess.WaitReady(sessionDir, command.Timeout);
         var status = AlvorSenseSessionRegistry.Get(command.Id);
         output.WriteLine(AlvorSenseJson.ToJson(new AlvorSenseStartResult(command.Id, sessionDir, status.Ready, status.ProcessId)));
@@ -71,7 +71,7 @@ internal static class AlvorSenseCli
         var sessionDir = AlvorSensePaths.SessionDir(command.Id);
         var request = new AlvorSenseRequest(Guid.NewGuid().ToString("N"), command.Commands, Stop: false, AppendState: true);
         var response = AlvorSenseRequestStore.Send(sessionDir, request, command.Timeout);
-        WriteResponse(response, output);
+        AlvorSenseForegroundResponses.WriteSend(response, command, sessionDir, output);
         return response.Ok ? 0 : 1;
     }
 

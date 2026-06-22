@@ -16,6 +16,8 @@
 
         <GlBindVer>4.6.12</GlBindVer>
 
+        <FastNoise2BindVer>1.1.1.1</FastNoise2BindVer>
+
         <MathsPrimitivesVer>0.1.0</MathsPrimitivesVer>
     </PropertyGroup>
 

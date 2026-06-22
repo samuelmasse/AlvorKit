@@ -74,4 +74,6 @@ void Render()
     gl.ClearColor(0.055f, 0.065f, 0.075f, 1f);
     gl.Clear(GlClearBufferMask.ColorBufferBit);
     renderer.Render(state, (float)totalSeconds, width, height);
+    gl.ResetClearColor();
+    gl.ResetViewport();
 }

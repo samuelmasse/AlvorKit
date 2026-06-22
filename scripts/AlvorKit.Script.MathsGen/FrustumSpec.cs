@@ -24,6 +24,12 @@ internal sealed record FrustumSpec(ScalarSpec Scalar)
     /// <summary>Gets the matching 3D sphere type name.</summary>
     public string Sphere3TypeName => Scalar.SphereName();
 
+    /// <summary>Gets the matching 3D capsule type name.</summary>
+    public string Capsule3TypeName => Scalar.CapsuleName();
+
+    /// <summary>Gets the matching 3D oriented bounding box type name.</summary>
+    public string Obb3TypeName => Scalar.ObbName();
+
     /// <summary>Gets the byte size of the frustum.</summary>
     public int SizeBytes => Scalar.SizeBytes * 24;
 }

@@ -23,6 +23,11 @@ internal static class AlvorSenseCliOptions
     internal static Option<string> TimeoutOption() =>
         new("--timeout") { Description = "Maximum wait in seconds. Defaults to 30." };
 
+    /// <summary>Creates the send diagnostic option that includes recent stderr after target exit.</summary>
+    /// <returns>The configured stderr tail option.</returns>
+    internal static Option<string> StderrTailOption() =>
+        new("--stderr-tail") { Description = "Include the last N stderr lines when a failed send observes target exit." };
+
     /// <summary>Creates an option that accepts repeated text values for validation and generated help.</summary>
     /// <param name="name">Primary option name, including leading dashes.</param>
     /// <param name="description">Help description for the option.</param>
@@ -52,6 +57,20 @@ internal static class AlvorSenseCliOptions
         }
 
         return TimeSpan.FromSeconds(seconds);
+    }
+
+    /// <summary>Parses an optional positive stderr line count.</summary>
+    /// <param name="value">Option value supplied by the caller, or <see langword="null" /> when omitted.</param>
+    /// <returns>The requested line count, or zero when stderr tails are disabled.</returns>
+    internal static int StderrTailLines(string? value)
+    {
+        if (value is null)
+            return 0;
+
+        if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count) || count <= 0)
+            throw new ArgumentException("--stderr-tail must be a positive integer.");
+
+        return count;
     }
 
     /// <summary>Reads an option value and advances the parser index over it.</summary>

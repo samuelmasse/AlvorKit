@@ -64,6 +64,7 @@ public sealed class AlvorSenseCommandLineTest
 
         Assert.AreEqual("game-1", command.Id);
         Assert.AreEqual(TimeSpan.FromSeconds(2), command.Timeout);
+        Assert.AreEqual(0, command.StderrTailLines);
         CollectionAssert.AreEqual(new[] { "mouse position 10 20", "updates 3 0.016", "key Space tap" }, command.Commands);
     }
 
@@ -72,9 +73,10 @@ public sealed class AlvorSenseCommandLineTest
     public void Parse_SendCommandFromCommandOptions_ReturnsCommands()
     {
         var command = (AlvorSenseSendCommand)AlvorSenseCommandLine.Parse(
-            ["send", "--id", "game-1", "--command", "render", "--command", "update 0.016"],
+            ["send", "--id", "game-1", "--stderr-tail", "12", "--command", "render", "--command", "update 0.016"],
             new StringReader(""));
 
+        Assert.AreEqual(12, command.StderrTailLines);
         CollectionAssert.AreEqual(new[] { "render", "update 0.016" }, command.Commands);
     }
 
@@ -186,6 +188,7 @@ public sealed class AlvorSenseCommandLineTest
         StringAssert.Contains(text, "send");
         StringAssert.Contains(text, "--command");
         StringAssert.Contains(text, "--file");
+        StringAssert.Contains(text, "--stderr-tail");
     }
 
     /// <summary>Missing required values are rejected before filesystem or process work starts.</summary>
@@ -235,6 +238,12 @@ public sealed class AlvorSenseCommandLineTest
         Assert.ThrowsExactly<ArgumentException>(() => AlvorSenseCommandLine.Parse(
             ["stop", "--id", "game-1", "--timeout", "NaN"],
             new StringReader("")));
+        Assert.ThrowsExactly<ArgumentException>(() => AlvorSenseCommandLine.Parse(
+            ["send", "--id", "game-1", "--stderr-tail", "0"],
+            new StringReader("state")));
+        Assert.ThrowsExactly<ArgumentException>(() => AlvorSenseCommandLine.Parse(
+            ["send", "--id", "game-1", "--stderr-tail", "nope"],
+            new StringReader("state")));
     }
 
     /// <summary>Session ids must stay inside the session root directory.</summary>

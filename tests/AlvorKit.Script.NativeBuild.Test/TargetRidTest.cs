@@ -13,6 +13,7 @@ public sealed class TargetRidTest
         Assert.AreEqual(TargetOperatingSystem.Linux, target.OperatingSystem);
         Assert.AreEqual(TargetArchitecture.Arm, target.Architecture);
         Assert.AreEqual("arm-linux-gnueabihf-gcc", target.LinuxCompiler);
+        Assert.AreEqual("arm-linux-gnueabihf-g++", target.LinuxCxxCompiler);
         Assert.AreEqual("arm-linux-gnueabihf-readelf", target.LinuxReadElf);
         Assert.AreEqual("arm-linux-gnueabihf-strip", target.LinuxStrip);
     }

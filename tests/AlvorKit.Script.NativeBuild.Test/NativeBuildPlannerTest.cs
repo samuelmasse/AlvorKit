@@ -66,6 +66,7 @@ public sealed class NativeBuildPlannerTest
             var commands = NativeBuildPlanner.CMakeLinuxCommands(context, TargetRid.Parse("linux-arm"), context.Build.Linux);
 
             CollectionAssert.Contains(commands[0].Arguments.ToList(), "-DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc");
+            CollectionAssert.Contains(commands[0].Arguments.ToList(), "-DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++");
             CollectionAssert.Contains(commands[0].Arguments.ToList(), "-DBUILD_SHARED_LIBS=ON");
             Assert.AreEqual("cmake", commands[1].FileName);
             Assert.AreEqual("arm-linux-gnueabihf-strip", commands[2].FileName);

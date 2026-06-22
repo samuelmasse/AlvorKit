@@ -18,6 +18,7 @@ internal static class AgentWindowInputCommands
         root.Subcommands.Add(CreateClipboardCommand(protocol));
         root.Subcommands.Add(CreateBoolCommand("focus", "Set whether the window reports focus.", protocol.SetFocus));
         root.Subcommands.Add(CreateBoolCommand("visible", "Set whether the window reports visibility.", protocol.SetVisible));
+        AgentWindowGestureCommands.AddTo(root, protocol);
     }
 
     /// <summary>Creates the keyboard input command.</summary>

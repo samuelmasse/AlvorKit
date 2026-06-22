@@ -415,6 +415,53 @@ public struct {{TypeName}}(
         return contains ? ContainmentKind.Contains : ContainmentKind.Intersects;
     }
 
+    /// <summary>Returns whether the frustum fully contains <paramref name="obb" />.</summary>
+    public readonly bool Contains({{Obb3Type}} obb) =>
+        Classify(obb) == ContainmentKind.Contains;
+
+    /// <summary>Returns whether the frustum intersects <paramref name="obb" />, counting touching surfaces as an intersection.</summary>
+    public readonly bool Intersects({{Obb3Type}} obb) =>
+        Classify(obb) != ContainmentKind.Disjoint;
+
+    /// <summary>Classifies how the frustum relates to <paramref name="obb" />.</summary>
+    public readonly ContainmentKind Classify({{Obb3Type}} obb)
+    {
+        if (obb.IsEmpty)
+            return ContainmentKind.Disjoint;
+
+        Span<{{Vector3Type}}> corners = stackalloc {{Vector3Type}}[{{Obb3Type}}.CornerCount];
+        if (!obb.TryCopyCornersTo(corners))
+            return ContainmentKind.Disjoint;
+
+        var contains = true;
+        if (!PlaneAcceptsCorners(Left, corners, ref contains))
+            return ContainmentKind.Disjoint;
+        if (!PlaneAcceptsCorners(Right, corners, ref contains))
+            return ContainmentKind.Disjoint;
+        if (!PlaneAcceptsCorners(Bottom, corners, ref contains))
+            return ContainmentKind.Disjoint;
+        if (!PlaneAcceptsCorners(Top, corners, ref contains))
+            return ContainmentKind.Disjoint;
+        if (!PlaneAcceptsCorners(Near, corners, ref contains))
+            return ContainmentKind.Disjoint;
+        if (!PlaneAcceptsCorners(Far, corners, ref contains))
+            return ContainmentKind.Disjoint;
+
+        return contains ? ContainmentKind.Contains : ContainmentKind.Intersects;
+    }
+
+    /// <summary>Returns whether the frustum fully contains <paramref name="capsule" />.</summary>
+    public readonly bool Contains({{Capsule3Type}} capsule) =>
+        Classify(capsule) == ContainmentKind.Contains;
+
+    /// <summary>Returns whether the frustum intersects <paramref name="capsule" />, counting touching surfaces as an intersection.</summary>
+    public readonly bool Intersects({{Capsule3Type}} capsule) =>
+        Classify(capsule) != ContainmentKind.Disjoint;
+
+    /// <summary>Classifies how the frustum relates to <paramref name="capsule" />.</summary>
+    public readonly ContainmentKind Classify({{Capsule3Type}} capsule) =>
+        capsule.Classify(this);
+
     /// <summary>Transforms a frustum by a matrix using inverse-transpose plane semantics.</summary>
     public static {{TypeName}} Transform({{TypeName}} frustum, {{Matrix4Type}} matrix) =>
         TryTransform(frustum, matrix, out var result)
@@ -674,6 +721,22 @@ public struct {{TypeName}}(
 
         contains &= centerDistance >= radiusDistance;
         return true;
+    }
+
+    /// <summary>Returns whether a plane does not reject all corners and updates full-containment state.</summary>
+    private static bool PlaneAcceptsCorners({{Plane3Type}} plane, ReadOnlySpan<{{Vector3Type}}> corners, ref bool contains)
+    {
+        var acceptsAny = false;
+        var containsAll = true;
+        for (var index = 0; index < corners.Length; index++)
+        {
+            var distance = plane.Evaluate(corners[index]);
+            acceptsAny |= distance >= {{ZeroLiteral}};
+            containsAll &= distance >= {{ZeroLiteral}};
+        }
+
+        contains &= containsAll;
+        return acceptsAny;
     }
 
     /// <summary>Returns the box vertex farthest along the plane normal.</summary>

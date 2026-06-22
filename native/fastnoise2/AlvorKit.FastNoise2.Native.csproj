@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <PackageId>AlvorKit.FastNoise2.Native</PackageId>
+        <Authors>AlvorKit</Authors>
+        <Description>Native FastNoise2 binaries for AlvorKit.</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/alvorkit/alvorkit</RepositoryUrl>
+    </PropertyGroup>
+</Project>

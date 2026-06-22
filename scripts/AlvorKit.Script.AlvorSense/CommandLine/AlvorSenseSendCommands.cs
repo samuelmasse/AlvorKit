@@ -16,7 +16,7 @@ internal static class AlvorSenseSendCommands
         {
             switch (args[i])
             {
-                case "--id" or "--timeout":
+                case "--id" or "--timeout" or "--stderr-tail":
                     i++;
                     break;
                 case "--command":

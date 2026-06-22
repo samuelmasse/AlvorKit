@@ -15,6 +15,9 @@ internal static class AlvorSensePaths
     /// <summary>Gets the host ready marker path.</summary>
     internal static string Ready(string sessionDir) => Path.Combine(sessionDir, "ready.json");
 
+    /// <summary>Gets the isolated runtime directory used by the detached host process.</summary>
+    internal static string HostRuntime(string sessionDir) => Path.Combine(sessionDir, "host-runtime");
+
     /// <summary>Gets a request path before it is atomically committed.</summary>
     internal static string RequestTemp(string sessionDir, string id) => Path.Combine(sessionDir, "requests", id + ".tmp");
 

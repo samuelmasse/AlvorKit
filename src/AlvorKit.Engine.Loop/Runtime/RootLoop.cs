@@ -30,6 +30,7 @@ public static class RootLoop
                 throw new InvalidOperationException("Failed to create the GLFW window.");
 
             glfw.MakeContextCurrent(nativeWindow);
+            glfw.SwapInterval(0);
 
             var gl = new RootGl(new GlBackend(glfw.GetProcAddress));
             var window = new AgentGlfwWindowHost(glfw, nativeWindow, gl);
@@ -55,6 +56,7 @@ public static class RootLoop
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+        EnableDedicatedGpu.Run();
 
         var rootArgs = args();
         var window = new WindowLoop(rootArgs.Window);
@@ -70,17 +72,34 @@ public static class RootLoop
         root.Add(new RootMouse(window));
         root.Add(new RootScreen(window));
         root.Add(new RootSprites(new(rootArgs.Gl)));
-        root.Handler(root.Get<RootControlListInjector>());
+        injector.Handler(root.Get<RootControlListInjector>());
 
         var state = root.Get<RootState>();
         state.Current = (State)root.New(rootArgs.BootState);
 
         var engine = root.Get<RootEngine>();
         engine.Load();
+        var unloaded = false;
+        void Unload()
+        {
+            if (unloaded)
+                return;
+
+            unloaded = true;
+            engine.Unload();
+        }
+
         window.Update += engine.Update;
         window.Frame += engine.Frame;
         window.Render += engine.Render;
-        window.Unload += engine.Unload;
-        window.Run();
+        window.Unload += Unload;
+        try
+        {
+            window.Run();
+        }
+        finally
+        {
+            Unload();
+        }
     }
 }

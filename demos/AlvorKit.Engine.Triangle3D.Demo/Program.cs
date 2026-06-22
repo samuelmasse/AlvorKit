@@ -18,7 +18,10 @@ internal sealed class Triangle3DState(
 {
     private readonly Camera3D camera = new();
     private readonly Perspective3D perspective = new();
-    private GlVertexArrayHandle vertexArray;
+
+    /// <summary>The VAO that captures the triangle attribute layout.</summary>
+    private GlVertexArrayHandle vao;
+
     private bool paused;
 
     /// <summary>Uploads the triangle vertices, initializes the camera, and shows the window.</summary>
@@ -31,8 +34,8 @@ internal sealed class Triangle3DState(
             new((0.0f, 0.5f, 0.0f), (0.0f, 0.0f, 1.0f)),
         ];
 
-        vertexArray = gl.GenVertexArray();
-        gl.BindVertexArray(vertexArray);
+        vao = gl.GenVertexArray();
+        gl.BindVertexArray(vao);
         gl.BindBuffer(GlBufferTarget.ArrayBuffer, gl.GenBuffer());
         gl.BufferData(GlBufferTarget.ArrayBuffer, vertices.AsSpan(), GlBufferUsage.StaticDraw);
         positionColorProgram3D.SetAttributes();
@@ -91,7 +94,7 @@ internal sealed class Triangle3DState(
         gl.UseProgram(positionColorProgram3D.Id);
         positionColorProgram3D.View = perspective.View;
         positionColorProgram3D.Projection = perspective.Projection;
-        gl.BindVertexArray(vertexArray);
+        gl.BindVertexArray(vao);
         gl.DrawArrays(GlPrimitiveType.Triangles, 0, 3);
         gl.UnbindVertexArray();
         gl.UnuseProgram();

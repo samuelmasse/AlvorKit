@@ -20,7 +20,16 @@ internal sealed class FakeWindowHost : IWindowHost
     public bool IsFullscreen { get; set; }
     public bool IsVisible { get; set; }
     public Vec2u ClientSize { get; set; }
-    public Vec2u MonitorSize { get; } = new(1920u, 1080u);
+    public Vec2u MonitorSize
+    {
+        get
+        {
+            if (ThrowOnMonitorSize)
+                throw new InvalidOperationException("Monitor size is unavailable.");
+
+            return new(1920u, 1080u);
+        }
+    }
     public float MonitorScale { get; init; } = 1f;
     public Vec2 MousePosition { get; set; }
     public WindowState WindowState { get; set; }
@@ -28,6 +37,8 @@ internal sealed class FakeWindowHost : IWindowHost
     public bool IsVSyncEnabled { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Clipboard { get; set; } = string.Empty;
+
+    internal bool ThrowOnMonitorSize { get; init; }
 
     public void Close()
     {

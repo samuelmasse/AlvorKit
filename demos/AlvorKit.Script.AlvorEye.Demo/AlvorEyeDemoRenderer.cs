@@ -22,7 +22,7 @@ public sealed class AlvorEyeDemoRenderer : IDisposable
     private static readonly string FragmentShaderSource = ReadShader("alvoreye-demo.frag.glsl");
 
     /// <summary>The OpenGL command surface used by this renderer.</summary>
-    private readonly Gl gl;
+    private readonly GlLayer gl;
 
     /// <summary>Linked shader program for colored rectangles.</summary>
     private readonly GlProgramHandle program;
@@ -34,7 +34,7 @@ public sealed class AlvorEyeDemoRenderer : IDisposable
     private readonly GlBufferHandle vertexBuffer;
 
     /// <summary>Captures the OpenGL resources owned by the renderer.</summary>
-    private AlvorEyeDemoRenderer(Gl gl, GlProgramHandle program, GlVertexArrayHandle vertexArray, GlBufferHandle vertexBuffer)
+    private AlvorEyeDemoRenderer(GlLayer gl, GlProgramHandle program, GlVertexArrayHandle vertexArray, GlBufferHandle vertexBuffer)
     {
         this.gl = gl;
         this.program = program;
@@ -43,7 +43,7 @@ public sealed class AlvorEyeDemoRenderer : IDisposable
     }
 
     /// <summary>Compiles shaders, creates the dynamic vertex buffer, and returns the renderer.</summary>
-    public static AlvorEyeDemoRenderer Load(Gl gl)
+    public static AlvorEyeDemoRenderer Load(GlLayer gl)
     {
         var program = CreateProgram(gl);
         var vertexArray = gl.GenVertexArray();
@@ -55,8 +55,8 @@ public sealed class AlvorEyeDemoRenderer : IDisposable
         gl.EnableVertexAttribArray(0);
         gl.VertexAttribPointer(1, 3, GlVertexAttribPointerType.Float, false, VertexStrideBytes, 2 * sizeof(float));
         gl.EnableVertexAttribArray(1);
-        gl.BindBuffer(GlBufferTarget.ArrayBuffer, default);
-        gl.BindVertexArray(default);
+        gl.UnbindBuffer(GlBufferTarget.ArrayBuffer);
+        gl.UnbindVertexArray();
         return new(gl, program, vertexArray, vertexBuffer);
     }
 
@@ -72,9 +72,9 @@ public sealed class AlvorEyeDemoRenderer : IDisposable
         gl.BindBuffer(GlBufferTarget.ArrayBuffer, vertexBuffer);
         gl.BufferData(GlBufferTarget.ArrayBuffer, vertices[..cursor], GlBufferUsage.DynamicDraw);
         gl.DrawArrays(GlPrimitiveType.Triangles, 0, cursor / FloatsPerVertex);
-        gl.BindBuffer(GlBufferTarget.ArrayBuffer, default);
-        gl.BindVertexArray(default);
-        gl.UseProgram(default);
+        gl.UnbindBuffer(GlBufferTarget.ArrayBuffer);
+        gl.UnbindVertexArray();
+        gl.UnuseProgram();
     }
 
     /// <summary>Deletes GPU resources owned by the renderer.</summary>

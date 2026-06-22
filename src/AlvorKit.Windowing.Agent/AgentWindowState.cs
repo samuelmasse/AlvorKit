@@ -54,6 +54,9 @@ internal sealed class AgentWindowState
     /// <summary>Gets or sets simulated clipboard text.</summary>
     internal string Clipboard { get; set; } = string.Empty;
 
+    /// <summary>Gets deterministic input state observed by diagnostic agent commands.</summary>
+    internal AgentWindowInputState Input { get; } = new();
+
     /// <summary>Gets deterministic seconds elapsed since this host entered agent mode.</summary>
     internal double Time { get; private set; }
 

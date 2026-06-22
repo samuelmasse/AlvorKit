@@ -3,8 +3,10 @@ namespace AlvorKit.Engine.Loop;
 /// <summary>Base class for a game state owned by the current root loop.</summary>
 public class State
 {
+    private Vec2? drawArea;
+
     /// <summary>Gets or sets the draw surface for two-dimensional rendering, or <c>null</c> for the whole canvas.</summary>
-    public Vec2? DrawArea { get; set; }
+    public virtual Vec2? DrawArea { get => drawArea; set => drawArea = value; }
 
     /// <summary>Runs one-time setup after the state becomes current.</summary>
     public virtual void Load() { }

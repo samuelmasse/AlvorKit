@@ -27,6 +27,9 @@ internal sealed record TargetRid(string Value, TargetOperatingSystem OperatingSy
     /// <summary>C compiler executable for Linux builds.</summary>
     public string LinuxCompiler => Architecture == TargetArchitecture.Arm ? "arm-linux-gnueabihf-gcc" : "gcc";
 
+    /// <summary>C++ compiler executable for Linux CMake builds.</summary>
+    public string LinuxCxxCompiler => Architecture == TargetArchitecture.Arm ? "arm-linux-gnueabihf-g++" : "g++";
+
     /// <summary>readelf executable for Linux dependency inspection.</summary>
     public string LinuxReadElf => Architecture == TargetArchitecture.Arm ? "arm-linux-gnueabihf-readelf" : "readelf";
 

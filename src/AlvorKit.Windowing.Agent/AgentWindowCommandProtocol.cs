@@ -23,6 +23,10 @@ internal class AgentWindowCommandProtocol(AgentGlfwWindowHost host, TextWriter o
 
     internal void Advance(int count, double delta, Vec2 mouseDelta) => host.Agent.Advance(count, delta, mouseDelta);
 
+    internal void Click(Vec2 position, double delta) => AgentWindowGestureDriver.Click(host.Agent, position, delta);
+
+    internal void Drag(Vec2 start, Vec2 end, int steps, double delta) => AgentWindowGestureDriver.Drag(host.Agent, start, end, steps, delta);
+
     internal void Render(double delta) => host.Agent.Render(delta);
 
     internal void Step(double delta) => host.Agent.Step(delta);
@@ -93,6 +97,8 @@ internal class AgentWindowCommandProtocol(AgentGlfwWindowHost host, TextWriter o
             mouse.X,
             mouse.Y));
     }
+
+    internal void WriteInputState() => AgentWindowInputStateWriter.Write(output, host.IsFocused, host.MousePosition, host.Agent.Input);
 
     internal bool TryOptionalVector(float? x, float? y, out Vec2 value)
     {

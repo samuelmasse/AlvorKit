@@ -50,6 +50,12 @@ public interface ISphere3<TSelf, TScalar, TVector3, TBox3> :
     /// <summary>Creates the smallest sphere centered on <paramref name="box" /> that contains its corners.</summary>
     static abstract TSelf CreateFromBox(TBox3 box);
 
+    /// <summary>Creates a bounding sphere that contains all points in <paramref name="points" />.</summary>
+    static abstract TSelf CreateFromPoints(ReadOnlySpan<TVector3> points);
+
+    /// <summary>Attempts to create a bounding sphere that contains all points in <paramref name="points" />.</summary>
+    static abstract bool TryCreateFromPoints(ReadOnlySpan<TVector3> points, out TSelf result);
+
     /// <summary>Gets a mutable reference to a scalar component by zero-based index.</summary>
     static abstract ref TScalar ComponentRef(ref TSelf value, int index);
 

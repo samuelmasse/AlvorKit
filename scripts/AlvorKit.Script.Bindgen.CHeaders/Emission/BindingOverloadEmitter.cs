@@ -16,6 +16,8 @@ internal sealed class BindingOverloadEmitter(BindingEmitterContext context)
             BindingFreeTypeOverloadEmitter.FreeTypeOverloads(overloads, model, context.Config.ApiClass);
         if (context.Config.XxHashConvenience)
             BindingXxHashOverloadEmitter.XxHashOverloads(overloads, model, context.Config.ApiClass);
+        if (context.Config.FastNoise2Convenience)
+            BindingFastNoise2OverloadEmitter.FastNoise2Overloads(overloads, model, context.Config.ApiClass);
         new BindingSpanReturnEmitter(context).SpanReturns(overloads, model);
         new BindingStringArrayReturnEmitter(context).StringArrayReturns(overloads, model);
         new BindingCountedSpanOverloadEmitter(context).CountedSpanOverloads(overloads, model);
@@ -51,5 +53,6 @@ internal sealed class BindingOverloadEmitter(BindingEmitterContext context)
         || context.Config.CountedSpanParams.Count > 0
         || context.Config.FreeTypeConvenience
         || context.Config.XxHashConvenience
+        || context.Config.FastNoise2Convenience
         || model.Functions.Any(function => function.ReturnsCString || function.Parameters.Any(parameter => parameter.HasStringConvenience));
 }

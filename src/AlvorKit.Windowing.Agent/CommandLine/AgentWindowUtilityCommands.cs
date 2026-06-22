@@ -11,6 +11,7 @@ internal static class AgentWindowUtilityCommands
         root.Subcommands.Add(CreateScreenshotCommand(protocol));
         root.Subcommands.Add(CreateSimpleCommand("close", "Request window close.", protocol.Close));
         root.Subcommands.Add(CreateSimpleCommand("state", "Print deterministic host state.", protocol.WriteState));
+        root.Subcommands.Add(CreateSimpleCommand("input-state", "Print deterministic input state.", protocol.WriteInputState));
         root.Subcommands.Add(CreateSimpleCommand("quit", "Stop reading commands.", protocol.StopReading));
         root.Subcommands.Add(CreateSimpleCommand("exit", "Stop reading commands.", protocol.StopReading));
     }

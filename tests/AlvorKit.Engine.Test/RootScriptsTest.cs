@@ -3,9 +3,9 @@ namespace AlvorKit.Engine.Test;
 [TestClass]
 public sealed class RootScriptsTest
 {
-    /// <summary>Scripts are loaded when added and then exposed in priority order.</summary>
+    /// <summary>Scripts are loaded when added and then exposed in execution order.</summary>
     [TestMethod]
-    public void Add_LoadsAndSortsByPriority()
+    public void Add_LoadsAndSortsByOrder()
     {
         var scripts = new RootScripts();
         var high = new TrackingScript(10);
@@ -16,6 +16,18 @@ public sealed class RootScriptsTest
 
         Assert.AreEqual(1, high.Loads);
         Assert.AreEqual(1, low.Loads);
+        Assert.AreSame(low, scripts.Span[0]);
+        Assert.AreSame(high, scripts.Span[1]);
+    }
+
+    /// <summary>Scripts can provide a non-integer virtual order without changing priority compatibility state.</summary>
+    [TestMethod]
+    public void Add_UsesVirtualOrder()
+    {
+        var scripts = new RootScripts();
+        var high = scripts.Add(new OrderedScript(1.5f));
+        var low = scripts.Add(new OrderedScript(0.5f));
+
         Assert.AreSame(low, scripts.Span[0]);
         Assert.AreSame(high, scripts.Span[1]);
     }
@@ -85,5 +97,10 @@ public sealed class RootScriptsTest
             Unloads++;
             unloadOrder?.Add(Priority);
         }
+    }
+
+    private sealed class OrderedScript(float order) : Script
+    {
+        public override float Order => order;
     }
 }

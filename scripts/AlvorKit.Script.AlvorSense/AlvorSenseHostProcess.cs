@@ -6,22 +6,31 @@ internal static class AlvorSenseHostProcess
 {
     /// <summary>Starts the background host that owns the target game process.</summary>
     /// <param name="sessionDir">Session directory containing the manifest and mailbox.</param>
-    internal static void Start(string sessionDir)
+    /// <returns>The started host process, kept alive by the caller until foreground startup output is written.</returns>
+    internal static Process Start(string sessionDir)
     {
-        var assembly = typeof(AlvorSenseCli).Assembly.Location;
+        var start = CreateStartInfo(sessionDir, typeof(AlvorSenseCli).Assembly.Location);
+        return Process.Start(start) ?? throw new InvalidOperationException("Failed to start AlvorSense host.");
+    }
+
+    /// <summary>Creates the detached host process start information from a session-local runtime copy.</summary>
+    /// <param name="sessionDir">Session directory containing the manifest and mailbox.</param>
+    /// <param name="assemblyPath">Foreground AlvorSense assembly path to copy for detached execution.</param>
+    /// <returns>Configured host process start information.</returns>
+    internal static ProcessStartInfo CreateStartInfo(string sessionDir, string assemblyPath)
+    {
+        var assembly = AlvorSenseHostRuntime.CopyForSession(sessionDir, assemblyPath);
         var start = new ProcessStartInfo("dotnet")
         {
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            UseShellExecute = true,
+            WindowStyle = ProcessWindowStyle.Hidden,
             WorkingDirectory = Directory.GetCurrentDirectory()
         };
         start.ArgumentList.Add(assembly);
         start.ArgumentList.Add("host");
         start.ArgumentList.Add("--session-dir");
         start.ArgumentList.Add(Path.GetFullPath(sessionDir));
-        using var process = Process.Start(start) ?? throw new InvalidOperationException("Failed to start AlvorSense host.");
+        return start;
     }
 
     /// <summary>Waits for the host ready marker.</summary>

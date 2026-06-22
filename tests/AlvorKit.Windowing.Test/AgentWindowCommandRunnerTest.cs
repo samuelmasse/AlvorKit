@@ -123,6 +123,99 @@ public class AgentWindowCommandRunnerTest
         StringAssert.Contains(text, "screenshot");
         StringAssert.Contains(text, "mouse");
         StringAssert.Contains(text, "text");
+        StringAssert.Contains(text, "input-state");
+        StringAssert.Contains(text, "click");
+        StringAssert.Contains(text, "drag");
+    }
+
+    /// <summary>Verifies that input-state reports held input, mouse position, focus, and pending text.</summary>
+    [TestMethod]
+    public void AgentWindowCommandRunner_InputState_WritesHeldInput()
+    {
+        var host = CreateAgent();
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        var runner = new AgentWindowCommandRunner(host, output);
+
+        runner.Execute("focus false");
+        runner.Execute("move 10 20");
+        runner.Execute("key D down");
+        runner.Execute("mouse Left down");
+        runner.Execute("text hello");
+        runner.Execute("input-state");
+        runner.Execute("update 0.016");
+        runner.Execute("mouse Left up");
+        runner.Execute("key D up");
+        runner.Execute("input-state");
+
+        var text = output.ToString();
+        StringAssert.Contains(text, "input focus=false mouse=<10 20> keys=[D] buttons=[Left] text=\"hello\"");
+        StringAssert.Contains(text, "input focus=false mouse=<10 20> keys=[] buttons=[] text=\"\"");
+    }
+
+    /// <summary>Verifies that input-state uses friendly button names and escapes diagnostic text.</summary>
+    [TestMethod]
+    public void AgentWindowCommandRunner_InputState_FormatsAliasesAndEscapedText()
+    {
+        var host = CreateAgent();
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        var runner = new AgentWindowCommandRunner(host, output);
+
+        runner.Execute("mouse Right down");
+        runner.Execute("mouse Middle down");
+        runner.Execute("text slash\\quote");
+        host.Agent.EnterText(new Rune('"'));
+        runner.Execute("input-state");
+
+        var text = output.ToString();
+        StringAssert.Contains(text, "buttons=[Right, Middle]");
+        StringAssert.Contains(text, "text=\"slash\\\\quote\\\"\"");
+    }
+
+    /// <summary>Verifies that click runs press and release update frames at the requested position.</summary>
+    [TestMethod]
+    public void AgentWindowCommandRunner_Click_RunsPressAndReleaseFrames()
+    {
+        var host = CreateAgent();
+        var loop = new WindowLoop(host);
+        var mouse = new Mouse(loop);
+        var downDuringFirstUpdate = false;
+        var upDuringSecondUpdate = false;
+        loop.Update += (_) =>
+        {
+            downDuringFirstUpdate |= host.UpdateCount == 1 && mouse.IsMainDown();
+            upDuringSecondUpdate |= host.UpdateCount == 2 && mouse.IsMainUp();
+        };
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        var runner = new AgentWindowCommandRunner(host, output);
+
+        runner.Execute("click 7 9 0.025");
+
+        Assert.AreEqual(new Vec2(7, 9), mouse.Position);
+        Assert.AreEqual(2, host.UpdateCount);
+        Assert.AreEqual(0.05, host.Time, 0.0000001);
+        Assert.IsTrue(downDuringFirstUpdate);
+        Assert.IsTrue(upDuringSecondUpdate);
+        Assert.IsTrue(mouse.IsMainUp());
+    }
+
+    /// <summary>Verifies that drag interpolates movement over fixed updates and releases the button.</summary>
+    [TestMethod]
+    public void AgentWindowCommandRunner_Drag_InterpolatesAndReleases()
+    {
+        var host = CreateAgent();
+        var loop = new WindowLoop(host);
+        var mouse = new Mouse(loop);
+        var positions = new List<Vec2>();
+        loop.Update += (_) => positions.Add(mouse.Position);
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        var runner = new AgentWindowCommandRunner(host, output);
+
+        runner.Execute("drag 10 20 16 29 3 0.01");
+
+        Assert.AreEqual(4, host.UpdateCount);
+        Assert.AreEqual(0.04, host.Time, 0.0000001);
+        CollectionAssert.AreEqual(new[] { new Vec2(12, 23), new Vec2(14, 26), new Vec2(16, 29), new Vec2(16, 29) }, positions);
+        Assert.IsTrue(mouse.IsMainUp());
     }
 
     /// <summary>Verifies that screenshot commands are delegated to the host-provided capture callback.</summary>
@@ -232,6 +325,11 @@ public class AgentWindowCommandRunnerTest
         Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("move nope 1"));
         Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("move 1"));
         Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("move 1e100 1"));
+        Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("click"));
+        Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("click nope 1"));
+        Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("click 1 2 -1"));
+        Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("drag 1 2 3 4 0 0.016"));
+        Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("drag 1 2 3 4 1 NaN"));
         Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("key"));
         Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("key A sideways"));
         Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("key 999 down"));

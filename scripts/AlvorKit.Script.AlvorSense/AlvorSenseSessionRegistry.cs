@@ -30,11 +30,12 @@ internal static class AlvorSenseSessionRegistry
     private static AlvorSenseSessionInfo Read(string sessionDir)
     {
         var readyPath = AlvorSensePaths.Ready(sessionDir);
+        var processId = ReadProcessId(readyPath);
         return new(
             Path.GetFileName(sessionDir),
             sessionDir,
-            File.Exists(readyPath),
-            ReadProcessId(readyPath),
+            IsReady(readyPath, processId),
+            processId,
             CountFiles(Path.Combine(sessionDir, "requests")),
             CountFiles(Path.Combine(sessionDir, "responses")),
             Directory.GetLastWriteTimeUtc(sessionDir));
@@ -54,5 +55,26 @@ internal static class AlvorSenseSessionRegistry
 
         using var document = JsonDocument.Parse(File.ReadAllText(readyPath, Encoding.UTF8));
         return document.RootElement.TryGetProperty("processId", out var processId) && processId.TryGetInt32(out var value) ? value : null;
+    }
+
+    /// <summary>Checks whether a ready marker still belongs to a running host process.</summary>
+    /// <param name="readyPath">Ready marker path.</param>
+    /// <param name="processId">Optional host process id read from the marker.</param>
+    private static bool IsReady(string readyPath, int? processId)
+    {
+        if (!File.Exists(readyPath))
+            return false;
+        if (processId is not { } id)
+            return true;
+
+        try
+        {
+            using var process = Process.GetProcessById(id);
+            return !process.HasExited;
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            return false;
+        }
     }
 }

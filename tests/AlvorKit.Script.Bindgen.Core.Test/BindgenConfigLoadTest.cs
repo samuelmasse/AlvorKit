@@ -42,6 +42,7 @@ public sealed class BindgenConfigLoadTest
             apiProject: generated/Fixture
             backendProject: generated/Fixture.Backend
             xxHashConvenience: true
+            fastNoise2Convenience: true
             advancedFunctions:
               - fixture_raw
             enumGroups:
@@ -94,6 +95,7 @@ public sealed class BindgenConfigLoadTest
         Assert.AreEqual("count", config.CountedSpanParams["fixture_icons"]["images"]);
         CollectionAssert.AreEqual(new[] { "fixture_raw" }, config.AdvancedFunctions);
         Assert.IsTrue(config.XxHashConvenience);
+        Assert.IsTrue(config.FastNoise2Convenience);
     }
 
     /// <summary>Writes a complete config file with caller-provided leading entries.</summary>

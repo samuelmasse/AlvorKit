@@ -29,7 +29,7 @@ The maths package already has these first-class building blocks:
   extraction, finite corner extraction, point and box tests, transformation,
   formatting, parsing, and scalar-family conversions.
 
-The next layer should add the missing game-query shapes and their relationships:
+This pass adds the missing game-query shapes and their relationships:
 
 - `Sphere3` / `Sphere3d`
 - `Ray3` / `Ray3d`
@@ -40,6 +40,33 @@ The next layer should add the missing game-query shapes and their relationships:
 - `Capsule3` / `Capsule3d`
 - `Triangle3` / `Triangle3d`
 - Viewport project, unproject, and pick-ray helpers
+
+## Implementation Status
+
+Implemented in the active maths package:
+
+- `Sphere3` / `Sphere3d`, including point-cloud bounding sphere helpers.
+- `Intervalf` / `Intervald`.
+- `Ray3` / `Ray3d`.
+- `PlaneIntersectionKind`.
+- Plane, sphere, box, ray, and frustum relationships.
+- Frustum finite-corner helpers, bounding-box extraction, frustum/frustum
+  classification, precise box checks, and OBB/capsule relationships.
+- `Obb3` / `Obb3d`.
+- `Segment3` / `Segment3d`.
+- `Capsule3` / `Capsule3d`.
+- `Triangle3` / `Triangle3d`.
+- `Viewport` / `Viewportd` with project, unproject, pick-ray, pick-matrix,
+  span, formatting, and float/double conversion support.
+
+Remaining project hygiene:
+
+- Complete full `MathsGen` source parity for the newest generated shape
+  families before treating regeneration as the only source of truth. The active
+  generated primitive output builds and is covered by maths tests, and the
+  existing generator project/tests are repaired and green.
+- Optional features listed in the Deferred Features section remain intentionally
+  out of scope until a concrete caller appears.
 
 ## Reference Summary
 
@@ -601,33 +628,40 @@ Implementation notes:
 ## Viewport, Project, Unproject, And Picking
 
 Projection helpers are the main bridge between math types and editor/game input.
-They should be designed after `Ray3` exists.
+They are implemented as `Viewport` and `Viewportd` because the viewport is a
+real value: 2D window bounds plus a normalized depth interval.
 
-Candidate API:
+Core API:
 
 ```csharp
-public readonly struct Viewport
+public struct Viewport
 {
-    public Box2 Bounds { get; }
-    public float MinDepth { get; }
-    public float MaxDepth { get; }
+    public Box2 Bounds;
+    public Intervalf Depth;
+
+    public Vec2 Size { get; }
+    public Vec2 Center { get; }
+
+    public static Viewport Create(Box2 bounds);
+    public static Viewport Create(Box2 bounds, Intervalf depth);
+    public static Viewport Create(ReadOnlySpan<float> values);
+
+    public Vec4 ToViewportVector();
+    public Mat4 CreateTransform(ProjectionDepthRange depthRange);
+    public Vec3 Project(Vec3 source, Mat4 clipFromSource, ProjectionDepthRange depthRange);
+    public Vec3 UnProject(Vec3 screen, Mat4 sourceFromClip, ProjectionDepthRange depthRange);
+    public Ray3 CreatePickRay(Vec2 screen, Mat4 worldFromClip, ProjectionDepthRange depthRange);
+    public Mat4 CreatePickMatrix(Box2 selection);
 }
 ```
 
-Helpers:
+Implementation notes:
 
-```csharp
-public Vec3 Project(Vec3 source, Mat4 clipFromSource, ProjectionDepthRange depthRange);
-public Vec3 Unproject(Vec3 screen, Mat4 sourceFromClip, ProjectionDepthRange depthRange);
-public Ray3 CreatePickRay(Vec2 screen, Mat4 worldFromClip, ProjectionDepthRange depthRange);
-```
-
-Open decision:
-
-- These may belong as instance methods on `Viewport`, static methods on a
-  projection helper type, or generated matrix helpers.
-- `Viewport` should probably use `Box2` for its 2D bounds rather than separate
-  `x`, `y`, `width`, and `height` scalars.
+- `Bounds` uses `Box2`; there are no scalar-coordinate overloads.
+- `Depth` uses `Intervalf` / `Intervald`.
+- `Project` takes `clipFromSource`.
+- `UnProject` and `CreatePickRay` take `sourceFromClip` / `worldFromClip`, so
+  callers can explicitly pass the already-inverted clip matrix.
 
 ## Generated Architecture
 
@@ -690,74 +724,74 @@ around compiler-shaped branches.
 
 ### Phase 1: Sphere
 
-- Add `ISphere3` and related transform or shape interfaces if needed.
-- Generate `Sphere3` and `Sphere3d`.
-- Add sphere tests.
-- Add box-sphere relationships.
-- Add frustum-sphere relationships.
-- Add plane-sphere classification if `PlaneIntersectionKind` is introduced in
+- [x] Add `ISphere3` and related transform or shape interfaces if needed.
+- [x] Generate `Sphere3` and `Sphere3d`.
+- [x] Add sphere tests.
+- [x] Add box-sphere relationships.
+- [x] Add frustum-sphere relationships.
+- [x] Add plane-sphere classification if `PlaneIntersectionKind` is introduced in
   this phase.
 
 ### Phase 2: Ray And Interval
 
-- Decide concrete interval shape.
-- Add `Intervalf` and `Intervald`, or a small equivalent.
-- Add `IRay3`.
-- Generate `Ray3` and `Ray3d`.
-- Add ray-plane, ray-box, ray-sphere, and ray-frustum queries.
-- Add tests for normalized and non-normalized ray behavior.
+- [x] Decide concrete interval shape.
+- [x] Add `Intervalf` and `Intervald`, or a small equivalent.
+- [x] Add `IRay3`.
+- [x] Generate `Ray3` and `Ray3d`.
+- [x] Add ray-plane, ray-box, ray-sphere, and ray-frustum queries.
+- [x] Add tests for normalized and non-normalized ray behavior.
 
 ### Phase 3: Plane Classification
 
-- Add `PlaneIntersectionKind`.
-- Add plane classifiers for point, box, sphere, and frustum.
-- Add tests around positive, negative, touching, and crossing cases.
+- [x] Add `PlaneIntersectionKind`.
+- [x] Add plane classifiers for point, box, sphere, and frustum.
+- [x] Add tests around positive, negative, touching, and crossing cases.
 
 ### Phase 4: Frustum Polish
 
-- Add `CreateFromPlanes(ReadOnlySpan<Plane3>)`.
-- Add `TryCreateFromPlanes`.
-- Clarify plane and corner order documentation.
-- Add finite helper APIs if needed.
-- Add frustum-frustum classification if finite/infinite behavior is settled.
-- Document conservative box/frustum semantics.
+- [x] Add `CreateFromPlanes(ReadOnlySpan<Plane3>)`.
+- [x] Add `TryCreateFromPlanes`.
+- [x] Clarify plane and corner order documentation.
+- [x] Add finite helper APIs if needed.
+- [x] Add frustum-frustum classification if finite/infinite behavior is settled.
+- [x] Document conservative box/frustum semantics.
 
 ### Phase 5: Oriented Box
 
-- Add `IObb3`.
-- Generate `Obb3` and `Obb3d`.
-- Add corner extraction, point containment, closest point, and plane
+- [x] Add `IObb3`.
+- [x] Generate `Obb3` and `Obb3d`.
+- [x] Add corner extraction, point containment, closest point, and plane
   classification.
-- Add OBB/sphere and OBB/frustum relationships.
-- Add OBB/OBB SAT when ready.
+- [x] Add OBB/sphere and OBB/frustum relationships.
+- [x] Add OBB/OBB SAT when ready.
 
 ### Phase 6: Segment
 
-- Add `ISegment3`.
-- Generate `Segment3` and `Segment3d`.
-- Add closest-point and distance queries.
-- Add segment-plane, segment-sphere, and segment-box queries.
+- [x] Add `ISegment3`.
+- [x] Generate `Segment3` and `Segment3d`.
+- [x] Add closest-point and distance queries.
+- [x] Add segment-plane, segment-sphere, and segment-box queries.
 
 ### Phase 7: Capsule
 
-- Add `ICapsule3`.
-- Generate `Capsule3` and `Capsule3d`.
-- Add point, sphere, capsule, plane, and box relationships.
-- Add frustum-capsule relationship if culling code needs it.
+- [x] Add `ICapsule3`.
+- [x] Generate `Capsule3` and `Capsule3d`.
+- [x] Add point, sphere, capsule, plane, and box relationships.
+- [x] Add frustum-capsule relationship if culling code needs it.
 
 ### Phase 8: Triangle
 
-- Add `ITriangle3`.
-- Generate `Triangle3` and `Triangle3d`.
-- Add normal, area, barycentric, closest point, and ray-triangle queries.
-- Add box and sphere relationships if useful to mesh or picking code.
+- [x] Add `ITriangle3`.
+- [x] Generate `Triangle3` and `Triangle3d`.
+- [x] Add normal, area, barycentric, closest point, and ray-triangle queries.
+- [x] Add box and sphere relationships if useful to mesh or picking code.
 
 ### Phase 9: Viewport And Picking
 
-- Add `Viewport` or equivalent.
-- Add project and unproject helpers.
-- Add screen-point pick-ray creation.
-- Add tests for OpenGL default depth range and zero-to-one depth range.
+- [x] Add `Viewport` or equivalent.
+- [x] Add project and unproject helpers.
+- [x] Add screen-point pick-ray creation.
+- [x] Add tests for OpenGL default depth range and zero-to-one depth range.
 
 ## Deferred Features
 

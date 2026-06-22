@@ -1,0 +1,31 @@
+kind: c-header
+namespace: AlvorKit.FastNoise2
+apiClass: Fn
+apiSummary: FastNoise2 C API.
+backendClass: FnBackend
+nativeClass: FnNative
+nativeLibrary: FastNoise
+prefix: fn
+workDir: fastnoise2
+sourceDir: FastNoise2-{tag}
+header: include/FastNoise/FastNoise_C.h
+includeSubdir: include
+sourceUrl: https://github.com/Auburn/FastNoise2/archive/refs/tags/v{tag}.tar.gz
+apiProject: out/bindgen/AlvorKit.FastNoise2
+backendProject: out/bindgen/AlvorKit.FastNoise2.Backend
+tuLines:
+  - typedef unsigned char bool;
+  - '#include "FastNoise/FastNoise_C.h"'
+boolTypes:
+  - bool
+interopTypeAliases:
+  bool: byte
+boolReturns:
+  - fnSetVariableFloat
+  - fnSetVariableIntEnum
+  - fnSetNodeLookup
+  - fnSetHybridNodeLookup
+  - fnSetHybridFloat
+opaqueTypes:
+  void: FnNode
+fastNoise2Convenience: true

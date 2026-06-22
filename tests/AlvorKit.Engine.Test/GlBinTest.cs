@@ -16,12 +16,26 @@ public sealed class GlBinTest
         var renderbuffer = gl.GenRenderbuffer();
         var vertexArray = gl.GenVertexArray();
         var framebuffer = gl.GenFramebuffer();
+        var sampler = gl.GenSampler();
+        var query = gl.GenQuery();
+        var programPipeline = gl.GenProgramPipeline();
+        var transformFeedback = gl.GenTransformFeedback();
+        var shader = gl.CreateShader(GlShaderType.VertexShader);
+        var program = gl.CreateProgram();
+        var sync = gl.FenceSync(GlSyncCondition.SyncGpuCommandsComplete, 0);
 
         root.DeleteTexture(texture);
         root.DeleteBuffer(buffer);
         root.DeleteRenderbuffer(renderbuffer);
         root.DeleteVertexArray(vertexArray);
         root.DeleteFramebuffer(framebuffer);
+        root.DeleteSampler(sampler);
+        root.DeleteQuery(query);
+        root.DeleteProgramPipeline(programPipeline);
+        root.DeleteTransformFeedback(transformFeedback);
+        root.DeleteShader(shader);
+        root.DeleteProgram(program);
+        root.DeleteSync(sync);
         root.Empty();
         root.Empty();
         child.Dispose();
@@ -32,6 +46,13 @@ public sealed class GlBinTest
         CollectionAssert.AreEqual(new[] { renderbuffer.Handle }, backend.DeletedRenderbuffers);
         CollectionAssert.AreEqual(new[] { vertexArray.Handle }, backend.DeletedVertexArrays);
         CollectionAssert.AreEqual(new[] { framebuffer.Handle }, backend.DeletedFramebuffers);
+        CollectionAssert.AreEqual(new[] { sampler.Handle }, backend.DeletedSamplers);
+        CollectionAssert.AreEqual(new[] { query.Handle }, backend.DeletedQueries);
+        CollectionAssert.AreEqual(new[] { programPipeline.Handle }, backend.DeletedProgramPipelines);
+        CollectionAssert.AreEqual(new[] { transformFeedback.Handle }, backend.DeletedTransformFeedbacks);
+        CollectionAssert.AreEqual(new[] { shader.Handle }, backend.DeletedShaders);
+        CollectionAssert.AreEqual(new[] { program.Handle }, backend.DeletedPrograms);
+        CollectionAssert.AreEqual(new[] { sync }, backend.DeletedSyncs);
         Assert.AreEqual(0, root.Children.Length);
     }
 
@@ -48,6 +69,20 @@ public sealed class GlBinTest
         public List<uint> DeletedVertexArrays { get; } = [];
 
         public List<uint> DeletedFramebuffers { get; } = [];
+
+        public List<uint> DeletedSamplers { get; } = [];
+
+        public List<uint> DeletedQueries { get; } = [];
+
+        public List<uint> DeletedProgramPipelines { get; } = [];
+
+        public List<uint> DeletedTransformFeedbacks { get; } = [];
+
+        public List<uint> DeletedShaders { get; } = [];
+
+        public List<uint> DeletedPrograms { get; } = [];
+
+        public List<nint> DeletedSyncs { get; } = [];
 
         public override void GenTextures(int n, nint textures)
         {
@@ -84,6 +119,40 @@ public sealed class GlBinTest
                 span[i] = new(next++);
         }
 
+        public override void GenSamplers(int n, nint samplers)
+        {
+            var span = new Span<GlSamplerHandle>((void*)samplers, n);
+            for (var i = 0; i < span.Length; i++)
+                span[i] = new(next++);
+        }
+
+        public override void GenQueries(int n, nint queries)
+        {
+            var span = new Span<GlQueryHandle>((void*)queries, n);
+            for (var i = 0; i < span.Length; i++)
+                span[i] = new(next++);
+        }
+
+        public override void GenProgramPipelines(int n, nint pipelines)
+        {
+            var span = new Span<GlProgramPipelineHandle>((void*)pipelines, n);
+            for (var i = 0; i < span.Length; i++)
+                span[i] = new(next++);
+        }
+
+        public override void GenTransformFeedbacks(int n, nint ids)
+        {
+            var span = new Span<GlTransformFeedbackHandle>((void*)ids, n);
+            for (var i = 0; i < span.Length; i++)
+                span[i] = new(next++);
+        }
+
+        public override GlShaderHandle CreateShader(GlShaderType type) => new(next++);
+
+        public override GlProgramHandle CreateProgram() => new(next++);
+
+        public override nint FenceSync(GlSyncCondition condition, GlSyncBehaviorFlags flags) => (nint)next++;
+
         public override void DeleteTextures(int n, nint textures)
         {
             var span = new Span<GlTextureHandle>((void*)textures, n);
@@ -118,5 +187,39 @@ public sealed class GlBinTest
             foreach (var framebuffer in span)
                 DeletedFramebuffers.Add(framebuffer.Handle);
         }
+
+        public override void DeleteSamplers(int n, nint samplers)
+        {
+            var span = new Span<GlSamplerHandle>((void*)samplers, n);
+            foreach (var sampler in span)
+                DeletedSamplers.Add(sampler.Handle);
+        }
+
+        public override void DeleteQueries(int n, nint queries)
+        {
+            var span = new Span<GlQueryHandle>((void*)queries, n);
+            foreach (var query in span)
+                DeletedQueries.Add(query.Handle);
+        }
+
+        public override void DeleteProgramPipelines(int n, nint pipelines)
+        {
+            var span = new Span<GlProgramPipelineHandle>((void*)pipelines, n);
+            foreach (var pipeline in span)
+                DeletedProgramPipelines.Add(pipeline.Handle);
+        }
+
+        public override void DeleteTransformFeedbacks(int n, nint ids)
+        {
+            var span = new Span<GlTransformFeedbackHandle>((void*)ids, n);
+            foreach (var id in span)
+                DeletedTransformFeedbacks.Add(id.Handle);
+        }
+
+        public override void DeleteShader(GlShaderHandle shader) => DeletedShaders.Add(shader.Handle);
+
+        public override void DeleteProgram(GlProgramHandle program) => DeletedPrograms.Add(program.Handle);
+
+        public override void DeleteSync(nint sync) => DeletedSyncs.Add(sync);
     }
 }

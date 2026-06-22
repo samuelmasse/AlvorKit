@@ -82,6 +82,18 @@ internal sealed record ScalarSpec(
     /// <summary>Gets the sphere type name for this scalar.</summary>
     public string SphereName() => $"Sphere3{Suffix}";
 
+    /// <summary>Gets the capsule type name for this scalar.</summary>
+    public string CapsuleName() => $"Capsule3{Suffix}";
+
+    /// <summary>Gets the oriented bounding box type name for this scalar.</summary>
+    public string ObbName() => $"Obb3{Suffix}";
+
+    /// <summary>Gets the segment type name for this scalar.</summary>
+    public string SegmentName() => $"Segment3{Suffix}";
+
+    /// <summary>Gets the triangle type name for this scalar.</summary>
+    public string TriangleName() => $"Triangle3{Suffix}";
+
     /// <summary>Gets the interval type name for this scalar.</summary>
     public string IntervalName() => Kind == ScalarKind.Float ? "Intervalf" : $"Interval{Suffix}";
 

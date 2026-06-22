@@ -33,7 +33,17 @@ public sealed class RootRuntimeModelTest
         script.Unload();
 
         Assert.AreEqual(7, script.Priority);
+        Assert.AreEqual(7, script.Order);
         Assert.AreEqual(new Vec2(30, 40), script.DrawArea);
+    }
+
+    /// <summary>Scripts can override the state draw-area contract inherited from <see cref="State"/>.</summary>
+    [TestMethod]
+    public void Script_DrawArea_CanBeOverridden()
+    {
+        var script = new DrawAreaScript();
+
+        Assert.AreEqual(new Vec2(80, 45), script.DrawArea);
     }
 
     /// <summary>Root state unloads the previous state and loads the replacement.</summary>
@@ -73,12 +83,44 @@ public sealed class RootRuntimeModelTest
     public void RootShutdown_Start_ClosesScreen()
     {
         var host = new FakeWindowHost();
-        var shutdown = new RootShutdown(new(new(host)));
+        using var gl = new RootGl(new GlNoop());
+        var args = new RootArgs { Window = host, Gl = gl, BootState = typeof(State) };
+        var shutdown = new RootShutdown(args, new(new(host)));
 
         Assert.IsFalse(shutdown.Started);
         shutdown.Start();
 
         Assert.IsTrue(shutdown.Started);
+    }
+
+    /// <summary>Process-exit shutdown closes a live screen when the monitor can still be queried.</summary>
+    [TestMethod]
+    public void RootShutdown_ShutDownWithoutCancel_ClosesLiveScreen()
+    {
+        var host = new FakeWindowHost();
+        using var gl = new RootGl(new GlNoop());
+        var args = new RootArgs { Window = host, Gl = gl, BootState = typeof(State) };
+        var shutdown = new RootShutdown(args, new(new(host)));
+
+        shutdown.ShutDown(false);
+
+        Assert.IsTrue(shutdown.Started);
+        Assert.IsTrue(host.IsExiting);
+    }
+
+    /// <summary>Process-exit shutdown avoids touching a host that can no longer answer screen queries.</summary>
+    [TestMethod]
+    public void RootShutdown_ShutDownWithoutCancel_WhenScreenIsDead_DoesNotClose()
+    {
+        var host = new FakeWindowHost { ThrowOnMonitorSize = true };
+        using var gl = new RootGl(new GlNoop());
+        var args = new RootArgs { Window = host, Gl = gl, BootState = typeof(State) };
+        var shutdown = new RootShutdown(args, new(new(host)));
+
+        shutdown.ShutDown(false);
+
+        Assert.IsTrue(shutdown.Started);
+        Assert.IsFalse(host.IsExiting);
     }
 
     /// <summary>Root metrics exposes update, frame, and elapsed-time tracking.</summary>
@@ -88,13 +130,17 @@ public sealed class RootRuntimeModelTest
         var metrics = new RootMetrics();
 
         metrics.Start();
-        metrics.Update.Add(0.25);
-        metrics.Frame.Add(0.5);
+        metrics.AddUpdate(0.25);
+        metrics.AddFrame(0.5);
+        metrics.AddFrame(0.5);
         metrics.Stop();
 
         Assert.IsTrue(metrics.Elapsed >= TimeSpan.Zero);
-        Assert.AreEqual(0.25, metrics.Update[0].Now);
-        Assert.AreEqual(0.5, metrics.Frame[0].Now);
+        Assert.AreEqual(250, metrics.Update[0].Now);
+        Assert.AreEqual(500, metrics.Frame[0].Now);
+        Assert.AreEqual(2, metrics.Frame.Ticks);
+        Assert.AreEqual(2, metrics.FrameWindow.Ticks);
+        Assert.AreEqual(500, metrics.FrameWindow.Average);
     }
 
     private sealed class TrackingState : State
@@ -106,5 +152,10 @@ public sealed class RootRuntimeModelTest
         public override void Load() => Loads++;
 
         public override void Unload() => Unloads++;
+    }
+
+    private sealed class DrawAreaScript : Script
+    {
+        public override Vec2? DrawArea => new(80, 45);
     }
 }

@@ -1,0 +1,49 @@
+kind: cmake
+windows:
+  cmakeOutput: src/bin/FastNoise.dll
+  cmakeOptions:
+    - -DBUILD_SHARED_LIBS=ON
+    - -DFASTNOISE2_TOOLS=OFF
+    - -DFASTNOISE2_TESTS=OFF
+    - -DFASTNOISE2_UTILITY=OFF
+    - -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=bin
+    - -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=bin
+    - -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=lib
+  allowedDependencies:
+    - KERNEL32.dll
+    - VCRUNTIME140.dll
+    - VCRUNTIME140_1.dll
+    - MSVCP140.dll
+linux:
+  cmakeOutput: src/bin/libFastNoise.so
+  packages:
+    - build-essential
+    - cmake
+  armArchitecture: armhf
+  armPackages:
+    - gcc-arm-linux-gnueabihf
+    - g++-arm-linux-gnueabihf
+  cmakeOptions:
+    - -DBUILD_SHARED_LIBS=ON
+    - -DFASTNOISE2_TOOLS=OFF
+    - -DFASTNOISE2_TESTS=OFF
+    - -DFASTNOISE2_UTILITY=OFF
+    - -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=bin
+    - -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=bin
+    - -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=lib
+  allowedDependencies:
+    - ld-linux
+    - libc.so
+    - libm.so
+    - libstdc++.so
+    - libgcc_s.so
+macos:
+  cmakeOutput: src/bin/libFastNoise.dylib
+  cmakeOptions:
+    - -DBUILD_SHARED_LIBS=ON
+    - -DFASTNOISE2_TOOLS=OFF
+    - -DFASTNOISE2_TESTS=OFF
+    - -DFASTNOISE2_UTILITY=OFF
+    - -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=bin
+    - -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=bin
+    - -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=lib

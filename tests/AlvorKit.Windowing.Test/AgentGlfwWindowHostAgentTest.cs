@@ -183,6 +183,20 @@ public class AgentGlfwWindowHostAgentTest
         Assert.AreEqual(new Vec2i(9, 10), moved);
     }
 
+    /// <summary>Verifies that tracked input state validates values while ignoring unknown keyboard keys.</summary>
+    [TestMethod]
+    public void AgentGlfwWindowHost_InputState_ValidatesValues()
+    {
+        var host = CreateAgent();
+
+        host.Agent.PressKey(Keys.Unknown);
+        host.Agent.ReleaseKey(Keys.Unknown);
+
+        Assert.IsFalse(host.Agent.Input.HeldKeys.Any());
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.PressKey((Keys)int.MaxValue));
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => host.Agent.PressMouse((MouseButton)int.MaxValue));
+    }
+
     /// <summary>Verifies validation and generated GLFW noop lookup paths.</summary>
     [TestMethod]
     public void AgentGlfwWindowHost_InvalidControlInputs_Throw()

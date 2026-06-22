@@ -21,19 +21,39 @@ internal sealed class AgentWindowEventDriver(
     internal void Close() { if (state.TryClose()) closing(); }
 
     /// <summary>Injects a key press into the next exact agent-controlled frame.</summary>
-    internal void PressKey(Keys key) => keyDown(new(key, false));
+    internal void PressKey(Keys key)
+    {
+        state.Input.PressKey(key);
+        keyDown(new(key, false));
+    }
 
     /// <summary>Injects a key repeat into the next exact agent-controlled frame.</summary>
-    internal void RepeatKey(Keys key) => keyDown(new(key, true));
+    internal void RepeatKey(Keys key)
+    {
+        state.Input.PressKey(key);
+        keyDown(new(key, true));
+    }
 
     /// <summary>Injects a key release into the next exact agent-controlled frame.</summary>
-    internal void ReleaseKey(Keys key) => keyUp(new(key, false));
+    internal void ReleaseKey(Keys key)
+    {
+        state.Input.ReleaseKey(key);
+        keyUp(new(key, false));
+    }
 
     /// <summary>Injects a mouse button press into the next exact agent-controlled frame.</summary>
-    internal void PressMouse(MouseButton button) => mouseDown(new(button));
+    internal void PressMouse(MouseButton button)
+    {
+        state.Input.PressMouse(button);
+        mouseDown(new(button));
+    }
 
     /// <summary>Injects a mouse button release into the next exact agent-controlled frame.</summary>
-    internal void ReleaseMouse(MouseButton button) => mouseUp(new(button));
+    internal void ReleaseMouse(MouseButton button)
+    {
+        state.Input.ReleaseMouse(button);
+        mouseUp(new(button));
+    }
 
     /// <summary>Injects an absolute cursor move in simulated window coordinates.</summary>
     internal void MoveMouse(Vec2 position)
@@ -49,13 +69,17 @@ internal sealed class AgentWindowEventDriver(
     internal void ScrollMouse(Vec2 offset) => mouseWheel(new(offset));
 
     /// <summary>Injects one Unicode scalar of text input.</summary>
-    internal void EnterText(Rune rune) => textInput(new(rune));
+    internal void EnterText(Rune rune)
+    {
+        state.Input.AddText(rune);
+        textInput(new(rune));
+    }
 
     /// <summary>Injects all Unicode scalar values from a string as text input.</summary>
     internal void EnterText(string text)
     {
         foreach (var rune in text.EnumerateRunes())
-            textInput(new(rune));
+            EnterText(rune);
     }
 
     /// <summary>Changes focus state observed by the window loop.</summary>
@@ -76,6 +100,7 @@ internal sealed class AgentWindowEventDriver(
     {
         if (state.TryUpdate(deltaSeconds))
             updateFrame(new(deltaSeconds, state.Time));
+        state.Input.ClearPendingText();
     }
 
     /// <summary>Pans the mouse, then invokes exactly one logical update with the supplied delta.</summary>
@@ -114,4 +139,7 @@ internal sealed class AgentWindowEventDriver(
         for (var i = 0; i < count && !state.IsExiting; i++)
             Update(deltaSeconds, mouseDeltaPerUpdate);
     }
+
+    /// <summary>Gets tracked input state for diagnostics.</summary>
+    internal AgentWindowInputState Input => state.Input;
 }

@@ -61,6 +61,7 @@ internal sealed class AlvorSenseHost(string sessionDir)
             var lines = target.LinesSince(start);
             var commandError = CommandError(lines);
             var ok = observed && commandError is null;
+            var targetError = AlvorSenseTargetFailure.Message(observed, target.HasExited, target.ExitCode);
             return new(
                 request.Id,
                 ok,
@@ -69,7 +70,7 @@ internal sealed class AlvorSenseHost(string sessionDir)
                 lines,
                 target.HasExited,
                 target.ExitCode,
-                commandError ?? (observed ? null : "Timed out waiting for target."));
+                commandError ?? targetError);
         }
         catch (Exception ex)
         {

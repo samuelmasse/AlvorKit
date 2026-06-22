@@ -200,6 +200,7 @@ Common commands:
 - `render <dt>`: render with an explicit render delta.
 - `screenshot <path.png>`: render and save a PNG.
 - `state`: print simulated time, update count, render count, and mouse position.
+- `input-state`: print focus, mouse position, held keys, held mouse buttons, and pending text.
 - `quit` or `exit`: exit the agent command loop.
 
 Input commands:
@@ -216,7 +217,8 @@ Input commands:
 - `clipboard <value>`: set clipboard text exposed by the window host.
 
 Use AlvorKit-owned enum names for keys and mouse buttons, such as `D`, `W`,
-`Space`, `Left`, and `Right`.
+`Space`, `Left`, and `Right`. Key and mouse button names are case-insensitive,
+so `key D down` and `key d down` both press `Keys.D`.
 
 ## Stop A Session
 
@@ -265,6 +267,7 @@ Example movement batch:
 ```powershell
 @'
 key D down
+input-state
 updates 15 0.016
 key D up
 render
@@ -340,6 +343,8 @@ where seeing the frame matters.
 - Put screenshots and result files under `out/alvorsense-sessions/<id>/` or
   another ignored `out/` directory.
 - Use `updates` for held movement and `update` for one-frame mouse clicks.
+- If held movement seems wrong, send `input-state` after the `key down` command
+  to verify focus and the currently held key before changing route timing.
 - Capture after each meaningful input group; stdout state is useful, but visual
   proof should come from screenshots.
 - If a target exits unexpectedly, inspect the JSON response, `stdout.log`, and

@@ -81,6 +81,39 @@ public struct {{TypeName}}({{Vector3Type}} center, {{ScalarType}} radius)
     public static {{TypeName}} CreateFromBox({{Box3Type}} box) =>
         box.IsEmpty ? Empty : new {{TypeName}}(box.Center, box.HalfSize.Length);
 
+    /// <summary>Creates a bounding sphere that contains all points in <paramref name="points" />.</summary>
+    public static {{TypeName}} CreateFromPoints(ReadOnlySpan<{{Vector3Type}}> points) =>
+        TryCreateFromPoints(points, out var result)
+            ? result
+            : throw new ArgumentException("At least one point is required.", nameof(points));
+
+    /// <summary>Attempts to create a bounding sphere that contains all points in <paramref name="points" />.</summary>
+    public static bool TryCreateFromPoints(ReadOnlySpan<{{Vector3Type}}> points, out {{TypeName}} result)
+    {
+        if (points.IsEmpty)
+        {
+            result = Empty;
+            return false;
+        }
+
+        var min = points[0];
+        var max = points[0];
+        for (var index = 1; index < points.Length; index++)
+        {
+            min = {{Vector3Type}}.Min(min, points[index]);
+            max = {{Vector3Type}}.Max(max, points[index]);
+        }
+
+        var center = (min + max) / {{TwoLiteral}};
+        var radiusSquared = {{ZeroLiteral}};
+        for (var index = 0; index < points.Length; index++)
+            radiusSquared = ScalarMath.Max(radiusSquared, {{Vector3Type}}.DistanceSquared(center, points[index]));
+
+        var radius = radiusSquared == {{ZeroLiteral}} ? {{ZeroLiteral}} : {{ScalarType}}.BitIncrement(ScalarMath.Sqrt(radiusSquared));
+        result = new {{TypeName}}(center, radius);
+        return true;
+    }
+
     /// <summary>Gets or sets a scalar component by zero-based index, with center components first.</summary>
     public {{ScalarType}} this[int index]
     {

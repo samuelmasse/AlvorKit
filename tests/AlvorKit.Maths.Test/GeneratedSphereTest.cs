@@ -140,6 +140,22 @@ public sealed class GeneratedSphereTest
         Assert.IsTrue(ContainsGeneric<Sphere3, float, Vec3, Box3>(sphere, Vec3.UnitX));
     }
 
+    /// <summary>Generated sphere point-cloud helpers create containing spheres and report empty input.</summary>
+    [TestMethod]
+    public void GeneratedSphereCreateFromPoints_Work()
+    {
+        Vec3[] points = [new Vec3(-1f, 0f, 0f), new Vec3(1f, 0f, 0f), new Vec3(0f, 2f, 0f)];
+
+        var sphere = Sphere3.CreateFromPoints(points);
+
+        Assert.IsTrue(sphere.Contains(points[0]));
+        Assert.IsTrue(sphere.Contains(points[1]));
+        Assert.IsTrue(sphere.Contains(points[2]));
+        Assert.IsTrue(Sphere3.TryCreateFromPoints(points, out _));
+        Assert.IsFalse(Sphere3.TryCreateFromPoints([], out var empty));
+        Assert.IsTrue(empty.IsEmpty);
+    }
+
     private static TSphere CreateGeneric<TSphere, TScalar, TVector3, TBox3>(TVector3 center, TScalar radius)
         where TSphere : struct, ISphere3<TSphere, TScalar, TVector3, TBox3>
         where TVector3 : struct, IVec3<TVector3, TScalar>

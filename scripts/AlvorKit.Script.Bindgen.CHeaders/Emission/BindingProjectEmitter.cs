@@ -11,6 +11,7 @@ internal sealed class BindingProjectEmitter(BindingEmitterContext context)
             || context.Config.StringArrayReturns.Length > 0
             || context.Config.CountedSpanParams.Count > 0
             || context.Config.XxHashConvenience
+            || context.Config.FastNoise2Convenience
             || model.Functions.Any(function => function.ReturnsCString || function.Parameters.Any(parameter => parameter.HasStringConvenience));
         return TemplateResource.Render(
             typeof(BindingProjectEmitter),

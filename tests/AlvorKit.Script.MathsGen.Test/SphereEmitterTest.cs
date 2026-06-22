@@ -27,12 +27,16 @@ public sealed class SphereEmitterTest
         StringAssert.Contains(sphere, "public struct Sphere3(Vec3 center, float radius)");
         StringAssert.Contains(sphere, "ISphere3<Sphere3, float, Vec3, Box3>");
         StringAssert.Contains(sphere, "public static Sphere3 CreateFromBox(Box3 box)");
+        StringAssert.Contains(sphere, "public static Sphere3 CreateFromPoints(ReadOnlySpan<Vec3> points)");
+        StringAssert.Contains(sphere, "float.BitIncrement(ScalarMath.Sqrt(radiusSquared))");
         StringAssert.Contains(sphere, "public readonly bool Contains(Vec3 point)");
         StringAssert.Contains(sphere, "public readonly Vec3 ClosestPoint(Vec3 point)");
         StringAssert.Contains(sphere, "public static implicit operator Sphere3d(Sphere3 value)");
         StringAssert.Contains(sphere, "public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? formatProvider, out Sphere3 result)");
         StringAssert.Contains(sphered, "/// <summary>Double-precision floating-point 3D sphere for spatial queries.");
         StringAssert.Contains(sphered, "ISphere3<Sphere3d, double, Vec3d, Box3d>");
+        StringAssert.Contains(sphered, "public static Sphere3d CreateFromPoints(ReadOnlySpan<Vec3d> points)");
+        StringAssert.Contains(sphered, "double.BitIncrement(ScalarMath.Sqrt(radiusSquared))");
         StringAssert.Contains(sphered, "public static explicit operator Sphere3(Sphere3d value)");
         Assert.IsFalse(sphere.Contains("public Sphere3(float", StringComparison.Ordinal));
         Assert.IsFalse(sphere.Contains("public static Sphere3 Create(float", StringComparison.Ordinal));
