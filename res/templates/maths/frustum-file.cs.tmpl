@@ -384,6 +384,37 @@ public struct {{TypeName}}(
         return contains ? ContainmentKind.Contains : ContainmentKind.Intersects;
     }
 
+    /// <summary>Returns whether the frustum fully contains <paramref name="sphere" />.</summary>
+    public readonly bool Contains({{Sphere3Type}} sphere) =>
+        Classify(sphere) == ContainmentKind.Contains;
+
+    /// <summary>Returns whether the frustum intersects <paramref name="sphere" />, counting touching surfaces as an intersection.</summary>
+    public readonly bool Intersects({{Sphere3Type}} sphere) =>
+        Classify(sphere) != ContainmentKind.Disjoint;
+
+    /// <summary>Classifies how the frustum relates to <paramref name="sphere" />.</summary>
+    public readonly ContainmentKind Classify({{Sphere3Type}} sphere)
+    {
+        if (sphere.IsEmpty)
+            return ContainmentKind.Disjoint;
+
+        var contains = true;
+        if (!PlaneAcceptsSphere(Left, sphere, ref contains))
+            return ContainmentKind.Disjoint;
+        if (!PlaneAcceptsSphere(Right, sphere, ref contains))
+            return ContainmentKind.Disjoint;
+        if (!PlaneAcceptsSphere(Bottom, sphere, ref contains))
+            return ContainmentKind.Disjoint;
+        if (!PlaneAcceptsSphere(Top, sphere, ref contains))
+            return ContainmentKind.Disjoint;
+        if (!PlaneAcceptsSphere(Near, sphere, ref contains))
+            return ContainmentKind.Disjoint;
+        if (!PlaneAcceptsSphere(Far, sphere, ref contains))
+            return ContainmentKind.Disjoint;
+
+        return contains ? ContainmentKind.Contains : ContainmentKind.Intersects;
+    }
+
     /// <summary>Transforms a frustum by a matrix using inverse-transpose plane semantics.</summary>
     public static {{TypeName}} Transform({{TypeName}} frustum, {{Matrix4Type}} matrix) =>
         TryTransform(frustum, matrix, out var result)
@@ -632,6 +663,18 @@ public struct {{TypeName}}(
     /// <summary>Returns whether the plane contains every point in the box.</summary>
     private static bool PlaneContainsBox({{Plane3Type}} plane, {{Box3Type}} box) =>
         plane.Evaluate(NegativeVertex(plane, box)) >= {{ZeroLiteral}};
+
+    /// <summary>Returns whether a plane does not reject a sphere and updates full-containment state.</summary>
+    private static bool PlaneAcceptsSphere({{Plane3Type}} plane, {{Sphere3Type}} sphere, ref bool contains)
+    {
+        var radiusDistance = sphere.Radius * plane.NormalLength;
+        var centerDistance = plane.Evaluate(sphere.Center);
+        if (centerDistance < -radiusDistance)
+            return false;
+
+        contains &= centerDistance >= radiusDistance;
+        return true;
+    }
 
     /// <summary>Returns the box vertex farthest along the plane normal.</summary>
     private static {{Vector3Type}} PositiveVertex({{Plane3Type}} plane, {{Box3Type}} box) =>

@@ -251,6 +251,8 @@ public sealed class MathsGeneratorTest
         var box2 = BoxFileEmitter.Emit(new(2, VectorCatalog.Float));
         var box2d = BoxFileEmitter.Emit(new(2, VectorCatalog.Double));
         var box2i = BoxFileEmitter.Emit(new(2, VectorCatalog.Int));
+        var box3 = BoxFileEmitter.Emit(new(3, VectorCatalog.Float));
+        var box3d = BoxFileEmitter.Emit(new(3, VectorCatalog.Double));
         var box3i = BoxFileEmitter.Emit(new(3, VectorCatalog.Int));
 
         StringAssert.Contains(box2, "public partial struct Box2(Vec2 min, Vec2 max)");
@@ -262,9 +264,14 @@ public sealed class MathsGeneratorTest
         StringAssert.Contains(box2, "public static implicit operator Box2d(Box2 value)");
         StringAssert.Contains(box2d, "public static explicit operator Box2(Box2d value)");
         StringAssert.Contains(box2i, "public static implicit operator Box2(Box2i value)");
+        StringAssert.Contains(box3, "IBox3Sphere<Box3, float, Vec3, Sphere3>");
+        StringAssert.Contains(box3, "public readonly bool Contains(Sphere3 sphere)");
+        StringAssert.Contains(box3, "public static bool Intersects(Box3 box, Sphere3 sphere)");
+        StringAssert.Contains(box3d, "IBox3Sphere<Box3d, double, Vec3d, Sphere3d>");
         StringAssert.Contains(box3i, "public readonly int Volume => Width * Height * Depth;");
         StringAssert.Contains(box3i, "public readonly float DistanceTo(Vec3i point)");
         Assert.IsFalse(box2.Contains("public Box2(float minX, float minY, float maxX, float maxY)", StringComparison.Ordinal));
+        Assert.IsFalse(box3i.Contains("Sphere3i", StringComparison.Ordinal));
         Assert.IsFalse(box3i.Contains("Box3d operator Box3i", StringComparison.Ordinal));
     }
 

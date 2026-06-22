@@ -101,6 +101,9 @@ var closestSignalPoint = detectionSphere.ClosestPoint(signalPoint);
 var patrolRange = new Intervalf(2f, 8f);
 var rayHitRange = Intervalf.CreateFromEndpoints(6f, 3f);
 var visibleRange = Intervalf.Intersection(patrolRange, rayHitRange);
+var storageBox = Box3.CreateFromCenterSize(Vec3.Zero, new Vec3(6f));
+var storedSphere = new Sphere3(new Vec3(1f, 0f, 0f), 1f);
+var edgeSphere = new Sphere3(new Vec3(3.5f, 0f, 0f), 1f);
 
 Print("detection sphere", FormatSphere(detectionSphere));
 Print("loot sphere from box", FormatSphere(lootSphere));
@@ -109,6 +112,8 @@ Print("signal distance", detectionSphere.DistanceTo(signalPoint).ToString("0.###
 Print("patrol range", FormatInterval(patrolRange));
 Print("ray hit range", FormatInterval(rayHitRange));
 Print("visible range", FormatInterval(visibleRange));
+Print("box contains sphere", storageBox.Contains(storedSphere).ToString());
+Print("box intersects edge sphere", storageBox.Intersects(edgeSphere).ToString());
 
 Expect(detectionSphere.Contains(lootSphere), "Sphere containment should account for the contained sphere radius.");
 ExpectClose(lootSphere.Radius, MathF.Sqrt(3f), "CreateFromBox should produce a centered sphere containing all box corners.");
@@ -117,6 +122,9 @@ ExpectClose(detectionSphere.DistanceTo(signalPoint), 3f, "Sphere DistanceTo shou
 Expect(rayHitRange == new Intervalf(3f, 6f), "CreateFromEndpoints should sort interval endpoints.");
 Expect(visibleRange == new Intervalf(3f, 6f), "Interval intersection should keep only the overlapping distances.");
 Expect(patrolRange.Contains(visibleRange), "Interval containment should work for nested ranges.");
+Expect(storageBox.Contains(storedSphere), "Box containment should require the whole sphere to fit inside the box.");
+Expect(!storageBox.Contains(edgeSphere), "A sphere crossing a box face should not be fully contained.");
+Expect(storageBox.Intersects(edgeSphere), "Box/sphere intersection should count touching or crossing boundaries.");
 
 Section("Span interop");
 
@@ -251,6 +259,8 @@ var pickRay = new Ray3(new Vec3(0f, 0f, -2f), new Vec3(0f, 0f, 2f));
 var missedRay = new Ray3(new Vec3(2f, 0f, -2f), Vec3.UnitZ);
 var targetBox = new Box3(new Vec3(-0.5f, -0.5f, 2f), new Vec3(0.5f, 0.5f, 4f));
 var targetSphere = new Sphere3(new Vec3(0f, 0f, 6f), 1f);
+var clippedSphere = new Sphere3(new Vec3(1.25f, 0f, 6f), 0.5f);
+var rejectedSphere = new Sphere3(new Vec3(2f, 0f, 6f), 0.25f);
 var normalizedPickRayOk = pickRay.TryNormalize(out var normalizedPickRay);
 var frustumHit = pickRay.TryIntersect(boxFrustum, out var frustumDistances);
 Intervalf boxDistances;
@@ -265,6 +275,9 @@ Print("ray point at 2", Format3(pickRay.PointAt(2f)));
 Print("frustum hit range", frustumHit ? FormatInterval(frustumDistances) : "<miss>");
 Print("box hit range", boxHit ? FormatInterval(boxDistances) : "<miss>");
 Print("sphere hit distance", sphereHit ? sphereDistance.ToString("0.###", CultureInfo.InvariantCulture) : "<miss>");
+Print("frustum sphere class", boxFrustum.Classify(targetSphere).ToString());
+Print("clipped sphere class", boxFrustum.Classify(clippedSphere).ToString());
+Print("rejected sphere class", boxFrustum.Classify(rejectedSphere).ToString());
 Print("missed frustum", missedRay.Intersects(boxFrustum).ToString());
 
 Expect(normalizedPickRayOk, "Ray TryNormalize should succeed for nonzero directions.");
@@ -278,6 +291,10 @@ Expect(sphereHit, "A ray through the center should intersect the target sphere."
 ExpectClose(sphereDistance, 3.5f, "Ray/sphere intersections should return the nearest nonnegative distance.");
 Expect(nearPlaneHit, "The same ray should hit the frustum near plane.");
 ExpectClose(nearPlaneDistance, 1f, "Plane intersection should respect non-normalized ray direction distances.");
+Expect(boxFrustum.Contains(targetSphere), "Frustum sphere containment should require every plane to fully contain the sphere.");
+Expect(boxFrustum.Classify(targetSphere) == ContainmentKind.Contains, "A centered sphere should be fully inside the frustum.");
+Expect(boxFrustum.Classify(clippedSphere) == ContainmentKind.Intersects, "A sphere crossing a side plane should intersect the frustum.");
+Expect(!boxFrustum.Intersects(rejectedSphere), "A sphere fully outside one frustum plane should be rejected.");
 Expect(!missedRay.Intersects(boxFrustum), "A ray outside the side planes should miss the frustum.");
 
 Section("Planes and shadows");
@@ -288,6 +305,9 @@ var pointOnFloor = floorPlane.ProjectPoint(floatingPoint);
 var mirroredPoint = floorPlane.ReflectPoint(floatingPoint);
 var reflectedByMatrix = Mat4.TransformPoint(Mat4.CreateReflection(floorPlane), floatingPoint);
 var shadowPoint = Mat4.TransformPoint(Mat4.CreateShadow(new Vec3(0f, -1f, 0f), floorPlane), floatingPoint);
+var belowFloor = new Vec3(2f, 0f, -3f);
+var liftedSphere = new Sphere3(new Vec3(0f, 2.5f, 0f), 0.5f);
+var floorCrossingBox = new Box3(new Vec3(-1f, 0.5f, -1f), new Vec3(1f, 1.5f, 1f));
 Span<char> planeText = stackalloc char[64];
 var planeTextOk = floorPlane.TryFormat(planeText, out var planeCharsWritten, "0.###", CultureInfo.InvariantCulture);
 
@@ -296,12 +316,21 @@ Print("floating point", Format3(floatingPoint));
 Print("closest floor point", Format3(pointOnFloor));
 Print("mirrored point", Format3(mirroredPoint));
 Print("shadow point", Format3(shadowPoint));
+Print("point side", floorPlane.Classify(floatingPoint).ToString());
+Print("below side", floorPlane.Classify(belowFloor).ToString());
+Print("box side", floorPlane.Classify(floorCrossingBox).ToString());
+Print("sphere side", floorPlane.Classify(liftedSphere).ToString());
 Print("plane span text", planeTextOk ? new string(planeText[..planeCharsWritten]) : "<too small>");
 
 ExpectClose(floorPlane.Evaluate(pointOnFloor), 0f, "Plane projection should land back on the plane.");
 ExpectClose3(pointOnFloor, (2f, 1f, -3f), "Plane ProjectPoint should move along the normal.");
 ExpectClose3(mirroredPoint, reflectedByMatrix, "CreateReflection should match Plane3.ReflectPoint.");
 ExpectClose3(shadowPoint, pointOnFloor, "Directional shadow projection should land on the plane.");
+Expect(floorPlane.Classify(floatingPoint) == PlaneIntersectionKind.Positive, "Plane classification should expose the positive half-space.");
+Expect(floorPlane.Classify(pointOnFloor) == PlaneIntersectionKind.Intersecting, "Points on the plane should classify as intersecting.");
+Expect(floorPlane.Classify(belowFloor) == PlaneIntersectionKind.Negative, "Plane classification should expose the negative half-space.");
+Expect(floorPlane.Classify(floorCrossingBox) == PlaneIntersectionKind.Intersecting, "Boxes crossing the plane should classify as intersecting.");
+Expect(floorPlane.Classify(liftedSphere) == PlaneIntersectionKind.Positive, "Spheres fully above the plane should classify positive.");
 Expect(planeTextOk, "Plane TryFormat should write into caller-owned spans.");
 
 Section("Quaternion rotations");

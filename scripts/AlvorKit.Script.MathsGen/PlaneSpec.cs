@@ -12,6 +12,12 @@ internal sealed record PlaneSpec(ScalarSpec Scalar)
     /// <summary>Gets the matching 4D vector type name.</summary>
     public string Vector4TypeName => Scalar.VectorName(4);
 
+    /// <summary>Gets the matching 3D axis-aligned box type name.</summary>
+    public string Box3TypeName => Scalar.BoxName(3);
+
+    /// <summary>Gets the matching 3D sphere type name.</summary>
+    public string Sphere3TypeName => Scalar.SphereName();
+
     /// <summary>Gets the matching 4x4 matrix type name.</summary>
     public string Matrix4TypeName => Scalar.MatrixName(4, 4);
 

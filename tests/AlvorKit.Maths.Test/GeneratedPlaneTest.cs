@@ -54,6 +54,27 @@ public sealed class GeneratedPlaneTest
         Assert.AreEqual(plane, Plane3.Zero.NormalizedOr(plane));
     }
 
+    /// <summary>Generated plane classification uses exact signs and treats touching shapes as intersecting.</summary>
+    [TestMethod]
+    public void GeneratedPlaneClassification_Work()
+    {
+        var plane = Plane3.CreateFromPointNormal(new Vec3(0f, 2f, 0f), Vec3.UnitY);
+        var scaled = new Plane3(new Vec3(0f, 2f, 0f), -4f);
+
+        Assert.AreEqual(PlaneIntersectionKind.Negative, plane.Classify(new Vec3(0f, 1f, 0f)));
+        Assert.AreEqual(PlaneIntersectionKind.Intersecting, plane.Classify(new Vec3(0f, 2f, 0f)));
+        Assert.AreEqual(PlaneIntersectionKind.Positive, Plane3.Classify(plane, new Vec3(0f, 3f, 0f)));
+        Assert.AreEqual(PlaneIntersectionKind.Negative, plane.Classify(new Box3(new Vec3(-1f, 0f, -1f), new Vec3(1f, 1f, 1f))));
+        Assert.AreEqual(PlaneIntersectionKind.Positive, plane.Classify(new Box3(new Vec3(-1f, 3f, -1f), new Vec3(1f, 4f, 1f))));
+        Assert.AreEqual(PlaneIntersectionKind.Intersecting, plane.Classify(new Box3(new Vec3(-1f, 1f, -1f), new Vec3(1f, 3f, 1f))));
+        Assert.AreEqual(PlaneIntersectionKind.Intersecting, plane.Classify(new Box3(new Vec3(-1f, 2f, -1f), new Vec3(1f, 3f, 1f))));
+        Assert.AreEqual(PlaneIntersectionKind.Intersecting, plane.Classify(Box3.Empty));
+        Assert.AreEqual(PlaneIntersectionKind.Negative, scaled.Classify(new Sphere3(new Vec3(0f, 0f, 0f), 0.5f)));
+        Assert.AreEqual(PlaneIntersectionKind.Intersecting, scaled.Classify(new Sphere3(new Vec3(0f, 1f, 0f), 1f)));
+        Assert.AreEqual(PlaneIntersectionKind.Positive, scaled.Classify(new Sphere3(new Vec3(0f, 5f, 0f), 1f)));
+        Assert.AreEqual(PlaneIntersectionKind.Intersecting, scaled.Classify(Sphere3.Empty));
+    }
+
     /// <summary>Generated plane formatting and parsing use the same coefficient text as four-component vectors.</summary>
     [TestMethod]
     public void GeneratedPlaneFormattingAndParsing_UsesVectorStyle()
@@ -126,6 +147,8 @@ public sealed class GeneratedPlaneTest
 
         AssertVecClose(new Vec3d(1d, -1d, 3d), reflected);
         AssertClose(0d, translated.Evaluate(new Vec3d(0d, 5d, 0d)));
+        Assert.AreEqual(PlaneIntersectionKind.Positive, plane.Classify(new Box3d(new Vec3d(-1d, 3d, -1d), new Vec3d(1d, 4d, 1d))));
+        Assert.AreEqual(PlaneIntersectionKind.Intersecting, plane.Classify(new Sphere3d(new Vec3d(0d, 2d, 0d), 0d)));
         Assert.AreEqual(plane, ParseUtf8<Plane3d>("(0, 1, 0, -2)"u8));
     }
 
@@ -139,6 +162,7 @@ public sealed class GeneratedPlaneTest
 
         Assert.AreEqual(0f, plane.Evaluate(new Vec3(0f, 2f, 0f)));
         Assert.AreEqual(plane, normalized);
+        Assert.AreEqual(PlaneIntersectionKind.Positive, ClassifyGeneric<Plane3, float, Vec3, Vec4>(plane, new Vec3(0f, 3f, 0f)));
         AssertVecClose(new Vec3(0f, -1f, 0f), Mat4.TransformPoint(reflection, new Vec3(0f, 5f, 0f)));
     }
 
@@ -153,6 +177,12 @@ public sealed class GeneratedPlaneTest
         where TVector3 : struct, IVec3<TVector3, TScalar>
         where TVector4 : struct, IVec4<TVector4, TScalar> =>
         TPlane.Normalize(value);
+
+    private static PlaneIntersectionKind ClassifyGeneric<TPlane, TScalar, TVector3, TVector4>(TPlane plane, TVector3 point)
+        where TPlane : struct, IPlane3<TPlane, TScalar, TVector3, TVector4>
+        where TVector3 : struct, IVec3<TVector3, TScalar>
+        where TVector4 : struct, IVec4<TVector4, TScalar> =>
+        TPlane.Classify(plane, point);
 
     private static TMatrix CreateReflectionGeneric<TMatrix, TScalar, TVector3, TVector4, TPlane>(TPlane plane)
         where TMatrix : struct, IMat4PlaneTransform<TMatrix, TScalar, TVector3, TVector4, TPlane>

@@ -9,6 +9,22 @@
         <PackageReference Include="ZString" Version="2.6.0" />
     </ItemGroup>
 
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
+        <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(GlfwBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj')">
+        <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(GlBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj" />
+    </ItemGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\AlvorKit.Engine\AlvorKit.Engine.csproj" />
         <ProjectReference Include="..\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
@@ -17,6 +33,7 @@
         <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
         <ProjectReference Include="..\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
+        <ProjectReference Include="..\AlvorKit.Windowing.Agent\AlvorKit.Windowing.Agent.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -29,6 +46,7 @@
         <Using Include="AlvorKit.Engine" />
         <Using Include="AlvorKit.Graphics2D" />
         <Using Include="AlvorKit.Graphics2D.Fonts" />
+        <Using Include="AlvorKit.GLFW" />
         <Using Include="AlvorKit.Injection" />
         <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.OpenGL" />

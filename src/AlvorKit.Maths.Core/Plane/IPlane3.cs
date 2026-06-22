@@ -93,6 +93,9 @@ public interface IPlane3<TSelf, TScalar, TVector3, TVector4> :
     /// <summary>Evaluates <c>dot(Normal, point) + Offset</c>.</summary>
     TScalar Evaluate(TVector3 point);
 
+    /// <summary>Classifies the side containing <paramref name="point" /> from the sign of <see cref="Evaluate(TVector3)" />.</summary>
+    PlaneIntersectionKind Classify(TVector3 point);
+
     /// <summary>Returns the dot product of the plane coefficients and a four-component vector.</summary>
     TScalar Dot(TVector4 value);
 
@@ -125,6 +128,9 @@ public interface IPlane3<TSelf, TScalar, TVector3, TVector4> :
 
     /// <summary>Evaluates <c>dot(plane.Normal, point) + plane.Offset</c>.</summary>
     static abstract TScalar Evaluate(TSelf plane, TVector3 point);
+
+    /// <summary>Classifies the side containing <paramref name="point" /> from the sign of <see cref="Evaluate(TSelf, TVector3)" />.</summary>
+    static abstract PlaneIntersectionKind Classify(TSelf plane, TVector3 point);
 
     /// <summary>Returns the dot product of the plane coefficients and a four-component vector.</summary>
     static abstract TScalar Dot(TSelf plane, TVector4 value);

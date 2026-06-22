@@ -26,8 +26,9 @@ internal static class BoxFileEmitter
             ("IntersectsInclusive", IntersectsComparison(box, "<=")),
             ("IntersectsExclusive", IntersectsComparison(box, "<")),
             ("DistanceType", box.DistanceTypeName),
+            ("SphereRelationships", SphereRelationships(box)),
             ("CrossScalarConversions", CrossScalarConversions(box)),
-            ("ImplementedInterfaces", $"IBox{box.Dimension}<{box.TypeName}, {box.Scalar.CSharpName}, {box.VectorTypeName}>"));
+            ("ImplementedInterfaces", ImplementedInterfaces(box)));
 
     private static string TypeSummary(BoxSpec box) =>
         $"Axis-aligned {box.Dimension}D {box.Scalar.Description} bounding box for spatial queries.";
@@ -67,6 +68,20 @@ internal static class BoxFileEmitter
 
         return builder.ToString();
     }
+
+    private static string SphereRelationships(BoxSpec box) =>
+        box.SupportsSphereRelationships
+            ? MathsTemplate.Fragment(
+                "box3-sphere-relationships.csfrag.tmpl",
+                ("TypeName", box.TypeName),
+                ("VectorType", box.VectorTypeName),
+                ("SphereType", box.SphereTypeName))
+            : "";
+
+    private static string ImplementedInterfaces(BoxSpec box) =>
+        box.SupportsSphereRelationships
+            ? $"IBox3Sphere<{box.TypeName}, {box.Scalar.CSharpName}, {box.VectorTypeName}, {box.SphereTypeName}>"
+            : $"IBox{box.Dimension}<{box.TypeName}, {box.Scalar.CSharpName}, {box.VectorTypeName}>";
 
     private static string PointComparison(BoxSpec box, string lowerOperator, string upperOperator) =>
         ComponentJoin(box, component => $"point.{component} {lowerOperator} Min.{component} && point.{component} {upperOperator} Max.{component}", " && ");

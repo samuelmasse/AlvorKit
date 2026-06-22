@@ -15,6 +15,7 @@ internal static class FrustumFileEmitter
             ("Matrix4Type", frustum.Matrix4TypeName),
             ("Plane3Type", frustum.Plane3TypeName),
             ("Box3Type", frustum.Box3TypeName),
+            ("Sphere3Type", frustum.Sphere3TypeName),
             ("SizeBytes", frustum.SizeBytes.ToString(CultureInfo.InvariantCulture)),
             ("ZeroLiteral", frustum.Scalar.ZeroLiteral),
             ("CrossScalarConversions", CrossScalarConversions(frustum)),
@@ -22,7 +23,10 @@ internal static class FrustumFileEmitter
 
     private static string ImplementedInterfaces(FrustumSpec frustum) =>
         $"IFrustum3Transform<{frustum.TypeName}, {frustum.Scalar.CSharpName}, {frustum.Vector3TypeName}, " +
-        $"{frustum.Vector4TypeName}, {frustum.Matrix4TypeName}, {frustum.Plane3TypeName}, {frustum.Box3TypeName}>";
+        $"{frustum.Vector4TypeName}, {frustum.Matrix4TypeName}, {frustum.Plane3TypeName}, {frustum.Box3TypeName}>," +
+        Environment.NewLine +
+        $"    IFrustum3Sphere<{frustum.TypeName}, {frustum.Scalar.CSharpName}, {frustum.Vector3TypeName}, " +
+        $"{frustum.Vector4TypeName}, {frustum.Plane3TypeName}, {frustum.Box3TypeName}, {frustum.Sphere3TypeName}>";
 
     private static string TypeSummary(FrustumSpec frustum) =>
         $"{Capitalized(frustum.Scalar.Description)} 3D frustum volume.";

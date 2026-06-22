@@ -10,6 +10,11 @@ public sealed class RootState
     public State Current
     {
         get => current;
-        set => current = value;
+        set
+        {
+            current.Unload();
+            current = value;
+            current.Load();
+        }
     }
 }

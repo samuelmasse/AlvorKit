@@ -218,6 +218,7 @@ public partial struct {{TypeName}}({{VectorType}} min, {{VectorType}} max)
     public static bool Intersects({{TypeName}} left, {{TypeName}} right) =>
         left.Intersects(right);
 
+{{SphereRelationships}}
     /// <summary>Returns the closest point in this box to the supplied point.</summary>
     public readonly {{VectorType}} ClosestPoint({{VectorType}} point) =>
         {{VectorType}}.Clamp(point, Min, Max);

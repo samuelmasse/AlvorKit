@@ -226,6 +226,10 @@ public struct {{TypeName}}({{Vector3Type}} normal, {{ScalarType}} offset)
     public readonly {{ScalarType}} Evaluate({{Vector3Type}} point) =>
         Evaluate(this, point);
 
+    /// <summary>Classifies the side containing <paramref name="point" /> from the exact sign of <see cref="Evaluate({{Vector3Type}})" />.</summary>
+    public readonly PlaneIntersectionKind Classify({{Vector3Type}} point) =>
+        Classify(this, point);
+
     /// <summary>Returns the dot product of the plane coefficients and a four-component vector.</summary>
     public readonly {{ScalarType}} Dot({{Vector4Type}} value) =>
         Dot(this, value);
@@ -253,6 +257,42 @@ public struct {{TypeName}}({{Vector3Type}} normal, {{ScalarType}} offset)
     /// <summary>Returns <paramref name="point" /> reflected across this plane.</summary>
     public readonly {{Vector3Type}} ReflectPoint({{Vector3Type}} point) =>
         point - (Normal * (({{TwoLiteral}} * Evaluate(point)) / NormalLengthSquared));
+
+    /// <summary>
+    /// Classifies <paramref name="box" /> against this plane. An empty box returns <see cref="PlaneIntersectionKind.Intersecting" />.
+    /// </summary>
+    public readonly PlaneIntersectionKind Classify({{Box3Type}} box)
+    {
+        if (box.IsEmpty)
+            return PlaneIntersectionKind.Intersecting;
+
+        var minimum = Evaluate(NegativeVertex(box));
+        var maximum = Evaluate(PositiveVertex(box));
+        if (minimum > {{ZeroLiteral}})
+            return PlaneIntersectionKind.Positive;
+        if (maximum < {{ZeroLiteral}})
+            return PlaneIntersectionKind.Negative;
+
+        return PlaneIntersectionKind.Intersecting;
+    }
+
+    /// <summary>
+    /// Classifies <paramref name="sphere" /> against this plane. An empty sphere returns <see cref="PlaneIntersectionKind.Intersecting" />.
+    /// </summary>
+    public readonly PlaneIntersectionKind Classify({{Sphere3Type}} sphere)
+    {
+        if (sphere.IsEmpty)
+            return PlaneIntersectionKind.Intersecting;
+
+        var centerDistance = Evaluate(sphere.Center);
+        var radiusDistance = sphere.Radius * NormalLength;
+        if (centerDistance > radiusDistance)
+            return PlaneIntersectionKind.Positive;
+        if (centerDistance < -radiusDistance)
+            return PlaneIntersectionKind.Negative;
+
+        return PlaneIntersectionKind.Intersecting;
+    }
 
     /// <summary>Returns value divided by its normal length.</summary>
     public static {{TypeName}} Normalize({{TypeName}} value)
@@ -283,6 +323,10 @@ public struct {{TypeName}}({{Vector3Type}} normal, {{ScalarType}} offset)
     /// <summary>Evaluates <c>dot(plane.Normal, point) + plane.Offset</c>.</summary>
     public static {{ScalarType}} Evaluate({{TypeName}} plane, {{Vector3Type}} point) =>
         {{Vector3Type}}.Dot(plane.Normal, point) + plane.Offset;
+
+    /// <summary>Classifies the side containing <paramref name="point" /> from the exact sign of <see cref="Evaluate({{TypeName}}, {{Vector3Type}})" />.</summary>
+    public static PlaneIntersectionKind Classify({{TypeName}} plane, {{Vector3Type}} point) =>
+        ClassifyEvaluation(Evaluate(plane, point));
 
     /// <summary>Returns the dot product of the plane coefficients and a four-component vector.</summary>
     public static {{ScalarType}} Dot({{TypeName}} plane, {{Vector4Type}} value) =>
@@ -448,6 +492,31 @@ public struct {{TypeName}}({{Vector3Type}} normal, {{ScalarType}} offset)
     /// <summary>Returns whether this plane has the same coefficients as an object.</summary>
     public override readonly bool Equals(object? obj) =>
         obj is {{TypeName}} other && Equals(other);
+
+    /// <summary>Classifies an evaluated plane equation value by its exact sign.</summary>
+    private static PlaneIntersectionKind ClassifyEvaluation({{ScalarType}} value)
+    {
+        if (value < {{ZeroLiteral}})
+            return PlaneIntersectionKind.Negative;
+        if (value > {{ZeroLiteral}})
+            return PlaneIntersectionKind.Positive;
+
+        return PlaneIntersectionKind.Intersecting;
+    }
+
+    /// <summary>Returns the box vertex farthest along this plane normal.</summary>
+    private readonly {{Vector3Type}} PositiveVertex({{Box3Type}} box) =>
+        new(
+            Normal.X >= {{ZeroLiteral}} ? box.Max.X : box.Min.X,
+            Normal.Y >= {{ZeroLiteral}} ? box.Max.Y : box.Min.Y,
+            Normal.Z >= {{ZeroLiteral}} ? box.Max.Z : box.Min.Z);
+
+    /// <summary>Returns the box vertex farthest against this plane normal.</summary>
+    private readonly {{Vector3Type}} NegativeVertex({{Box3Type}} box) =>
+        new(
+            Normal.X >= {{ZeroLiteral}} ? box.Min.X : box.Max.X,
+            Normal.Y >= {{ZeroLiteral}} ? box.Min.Y : box.Max.Y,
+            Normal.Z >= {{ZeroLiteral}} ? box.Min.Z : box.Max.Z);
 
     /// <summary>Returns a hash code for this plane.</summary>
     public override readonly int GetHashCode() =>

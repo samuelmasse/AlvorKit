@@ -1,0 +1,17 @@
+    /// <summary>Returns whether this box fully contains <paramref name="sphere" />.</summary>
+    public readonly bool Contains({{SphereType}} sphere)
+    {
+        if (IsEmpty || sphere.IsEmpty)
+            return false;
+
+        var radius = new {{VectorType}}(sphere.Radius);
+        return ContainsInclusive(sphere.Center - radius) && ContainsInclusive(sphere.Center + radius);
+    }
+
+    /// <summary>Returns whether this box intersects <paramref name="sphere" />, counting touching boundaries as an intersection.</summary>
+    public readonly bool Intersects({{SphereType}} sphere) =>
+        !IsEmpty && !sphere.IsEmpty && DistanceSquaredTo(sphere.Center) <= sphere.RadiusSquared;
+
+    /// <summary>Returns whether a box intersects a sphere, counting touching boundaries as an intersection.</summary>
+    public static bool Intersects({{TypeName}} box, {{SphereType}} sphere) =>
+        box.Intersects(sphere);

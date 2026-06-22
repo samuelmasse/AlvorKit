@@ -116,6 +116,47 @@ public sealed class GeneratedFrustumTest
         Assert.IsTrue(frustum.Intersects(box));
     }
 
+    /// <summary>Generated frustum sphere queries use each plane's normal length and handle degenerate planes deliberately.</summary>
+    [TestMethod]
+    public void GeneratedFrustumSphereQueries_Work()
+    {
+        var frustum = UnnormalizedUnitCubeFrustum();
+        var contained = new Sphere3(new Vec3(0.25f, 0f, 0f), 0.5f);
+        var touchingInside = new Sphere3(new Vec3(0.5f, 0f, 0f), 0.5f);
+        var intersecting = new Sphere3(new Vec3(1.25f, 0f, 0f), 0.5f);
+        var touchingOutside = new Sphere3(new Vec3(1.5f, 0f, 0f), 0.5f);
+        var disjoint = new Sphere3(new Vec3(2f, 0f, 0f), 0.5f);
+        var openLeft = new Frustum3(
+            new Plane3(Vec3.Zero, 0f),
+            frustum.Right,
+            frustum.Bottom,
+            frustum.Top,
+            frustum.Near,
+            frustum.Far);
+        var rejectingLeft = new Frustum3(
+            new Plane3(Vec3.Zero, -1f),
+            frustum.Right,
+            frustum.Bottom,
+            frustum.Top,
+            frustum.Near,
+            frustum.Far);
+
+        Assert.AreEqual(ContainmentKind.Contains, frustum.Classify(contained));
+        Assert.AreEqual(ContainmentKind.Contains, frustum.Classify(touchingInside));
+        Assert.AreEqual(ContainmentKind.Intersects, frustum.Classify(intersecting));
+        Assert.AreEqual(ContainmentKind.Intersects, frustum.Classify(touchingOutside));
+        Assert.AreEqual(ContainmentKind.Disjoint, frustum.Classify(disjoint));
+        Assert.AreEqual(ContainmentKind.Disjoint, frustum.Classify(Sphere3.Empty));
+        Assert.IsTrue(frustum.Contains(contained));
+        Assert.IsTrue(frustum.Contains(touchingInside));
+        Assert.IsFalse(frustum.Contains(intersecting));
+        Assert.IsTrue(frustum.Intersects(touchingOutside));
+        Assert.IsFalse(frustum.Intersects(disjoint));
+        Assert.IsFalse(frustum.Intersects(Sphere3.Empty));
+        Assert.AreEqual(ContainmentKind.Contains, openLeft.Classify(contained));
+        Assert.AreEqual(ContainmentKind.Disjoint, rejectingLeft.Classify(contained));
+    }
+
     /// <summary>Generated frustum corner helpers reconstruct finite corners and reject infinite frustums.</summary>
     [TestMethod]
     public void GeneratedFrustumCorners_Work()
@@ -199,6 +240,9 @@ public sealed class GeneratedFrustumTest
         frustum.CopyPlanesTo(planes);
 
         Assert.IsTrue(frustum.Contains(Vec3d.Zero));
+        Assert.AreEqual(ContainmentKind.Contains, frustum.Classify(new Sphere3d(Vec3d.Zero, 0.5d)));
+        Assert.AreEqual(ContainmentKind.Intersects, frustum.Classify(new Sphere3d(new Vec3d(1.25d, 0d, 0d), 0.5d)));
+        Assert.AreEqual(ContainmentKind.Disjoint, frustum.Classify(Sphere3d.Empty));
         Assert.IsTrue(frustum.TryCopyCornersTo(corners));
         Assert.AreEqual(frustum, Frustum3d.CreateFromPlanes(planes));
         AssertVecClose(new Vec3d(-1d, -1d, -1d), corners[0]);
@@ -210,6 +254,11 @@ public sealed class GeneratedFrustumTest
     public void GeneratedFrustumInterfaces_Work()
     {
         Assert.IsTrue(ContainsGeneric<Frustum3, float, Vec3, Vec4, Mat4, Plane3, Box3>(Mat4.Identity, Vec3.Zero));
+        Assert.AreEqual(
+            ContainmentKind.Contains,
+            ClassifySphereGeneric<Frustum3, float, Vec3, Vec4, Plane3, Box3, Sphere3>(
+                Frustum3.CreateFromClipTransform(Mat4.Identity),
+                new Sphere3(Vec3.Zero, 0.5f)));
     }
 
     private static Frustum3 SampleFrustum() =>
@@ -220,6 +269,15 @@ public sealed class GeneratedFrustumTest
             new Plane3(new Vec3(0f, -1f, 0f), 4f),
             new Plane3(new Vec3(0f, 0f, 1f), 5f),
             new Plane3(new Vec3(0f, 0f, -1f), 6f));
+
+    private static Frustum3 UnnormalizedUnitCubeFrustum() =>
+        new(
+            new Plane3(new Vec3(2f, 0f, 0f), 2f),
+            new Plane3(new Vec3(-3f, 0f, 0f), 3f),
+            new Plane3(new Vec3(0f, 4f, 0f), 4f),
+            new Plane3(new Vec3(0f, -5f, 0f), 5f),
+            new Plane3(new Vec3(0f, 0f, 6f), 6f),
+            new Plane3(new Vec3(0f, 0f, -7f), 7f));
 
     private static bool ContainsGeneric<TFrustum, TScalar, TVector3, TVector4, TMatrix4, TPlane3, TBox3>(
         TMatrix4 clipFromSource,
@@ -248,6 +306,17 @@ public sealed class GeneratedFrustumTest
 
         return TFrustum.TryCreateFromPlanes(planes, out var copied) && copied.Contains(point);
     }
+
+    private static ContainmentKind ClassifySphereGeneric<TFrustum, TScalar, TVector3, TVector4, TPlane3, TBox3, TSphere3>(
+        TFrustum frustum,
+        TSphere3 sphere)
+        where TFrustum : struct, IFrustum3Sphere<TFrustum, TScalar, TVector3, TVector4, TPlane3, TBox3, TSphere3>
+        where TVector3 : struct, IVec3<TVector3, TScalar>
+        where TVector4 : struct, IVec4<TVector4, TScalar>
+        where TPlane3 : struct, IPlane3<TPlane3, TScalar, TVector3, TVector4>
+        where TBox3 : struct, IBox3<TBox3, TScalar, TVector3>
+        where TSphere3 : struct, ISphere3<TSphere3, TScalar, TVector3, TBox3> =>
+        frustum.Classify(sphere);
 
     private static void AssertVecClose(Vec3 expected, Vec3 actual)
     {

@@ -87,6 +87,46 @@ public sealed class GeneratedBoxTest
         Assert.AreEqual(48f, centered.Volume);
     }
 
+    /// <summary>Generated 3D boxes support whole-sphere containment and closest-point sphere intersections.</summary>
+    [TestMethod]
+    public void GeneratedBoxSphereRelationships_Work()
+    {
+        var box = new Box3(new Vec3(-1f), new Vec3(1f));
+        var contained = new Sphere3(Vec3.Zero, 1f);
+        var insidePoint = new Sphere3(new Vec3(0.25f, 0.25f, 0.25f), 0f);
+        var leaking = new Sphere3(new Vec3(0.25f, 0f, 0f), 1f);
+        var touchingOutside = new Sphere3(new Vec3(1.5f, 0f, 0f), 0.5f);
+        var separate = new Sphere3(new Vec3(2.1f, 0f, 0f), 1f);
+
+        Assert.IsTrue(box.Contains(contained));
+        Assert.IsTrue(box.Contains(insidePoint));
+        Assert.IsFalse(box.Contains(leaking));
+        Assert.IsTrue(box.Intersects(leaking));
+        Assert.IsTrue(box.Intersects(touchingOutside));
+        Assert.IsTrue(Box3.Intersects(box, touchingOutside));
+        Assert.IsFalse(box.Intersects(separate));
+        Assert.IsFalse(box.Contains(Sphere3.Empty));
+        Assert.IsFalse(box.Intersects(Sphere3.Empty));
+        Assert.IsFalse(Box3.Empty.Contains(contained));
+        Assert.IsFalse(Box3.Empty.Intersects(contained));
+    }
+
+    /// <summary>Generated double-precision 3D boxes mirror the sphere relationship helpers.</summary>
+    [TestMethod]
+    public void GeneratedBox3dSphereRelationships_Work()
+    {
+        var box = new Box3d(new Vec3d(-2d), new Vec3d(2d));
+        var contained = new Sphere3d(Vec3d.Zero, 2d);
+        var crossing = new Sphere3d(new Vec3d(2.5d, 0d, 0d), 0.75d);
+        var separate = new Sphere3d(new Vec3d(3d, 0d, 0d), 0.5d);
+
+        Assert.IsTrue(box.Contains(contained));
+        Assert.IsTrue(box.Intersects(crossing));
+        Assert.IsTrue(Box3d.Intersects(box, crossing));
+        Assert.IsFalse(box.Contains(crossing));
+        Assert.IsFalse(box.Intersects(separate));
+    }
+
     /// <summary>Generated integer boxes cover pixel, tile, and chunk-style bounds.</summary>
     [TestMethod]
     public void GeneratedIntegerBoxes_Work()
@@ -138,6 +178,12 @@ public sealed class GeneratedBoxTest
         Assert.AreEqual(box, normalized);
         Assert.AreEqual(new Box2(new Vec2(-1f, 2f), new Vec2(3f, 5f)), union);
         Assert.IsTrue(ContainsGeneric<Box2, float, Vec2>(box, new Vec2(2f, 3f)));
+        Assert.IsTrue(ContainsSphereGeneric<Box3, float, Vec3, Sphere3>(
+            new Box3(new Vec3(-1f), new Vec3(1f)),
+            new Sphere3(Vec3.Zero, 1f)));
+        Assert.IsTrue(IntersectsSphereGeneric<Box3, float, Vec3, Sphere3>(
+            new Box3(new Vec3(-1f), new Vec3(1f)),
+            new Sphere3(new Vec3(2f, 0f, 0f), 1f)));
     }
 
     private static TBox CreateGeneric<TBox, TScalar, TVector>(TVector min, TVector max)
@@ -155,6 +201,18 @@ public sealed class GeneratedBoxTest
     private static bool ContainsGeneric<TBox, TScalar, TVector>(TBox box, TVector point)
         where TBox : struct, IBox<TBox, TScalar, TVector> =>
         box.Contains(point);
+
+    private static bool ContainsSphereGeneric<TBox, TScalar, TVector3, TSphere>(TBox box, TSphere sphere)
+        where TBox : struct, IBox3Sphere<TBox, TScalar, TVector3, TSphere>
+        where TVector3 : struct, IVec3<TVector3, TScalar>
+        where TSphere : struct, ISphere3<TSphere, TScalar, TVector3, TBox> =>
+        box.Contains(sphere);
+
+    private static bool IntersectsSphereGeneric<TBox, TScalar, TVector3, TSphere>(TBox box, TSphere sphere)
+        where TBox : struct, IBox3Sphere<TBox, TScalar, TVector3, TSphere>
+        where TVector3 : struct, IVec3<TVector3, TScalar>
+        where TSphere : struct, ISphere3<TSphere, TScalar, TVector3, TBox> =>
+        TBox.Intersects(box, sphere);
 
     private static T ParseUtf8<T>(ReadOnlySpan<byte> text)
         where T : IUtf8SpanParsable<T> =>

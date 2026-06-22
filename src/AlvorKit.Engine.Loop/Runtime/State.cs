@@ -6,6 +6,12 @@ public class State
     /// <summary>Gets or sets the draw surface for two-dimensional rendering, or <c>null</c> for the whole canvas.</summary>
     public Vec2? DrawArea { get; set; }
 
+    /// <summary>Runs one-time setup after the state becomes current.</summary>
+    public virtual void Load() { }
+
+    /// <summary>Runs cleanup before the state is replaced or the root loop unloads.</summary>
+    public virtual void Unload() { }
+
     /// <summary>Runs fixed or variable update work for the state.</summary>
     public virtual void Update(double delta) { }
 

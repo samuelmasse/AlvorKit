@@ -9,10 +9,12 @@ public sealed class RootRuntimeModelTest
     {
         var state = new State { DrawArea = new Vec2(10, 20) };
 
+        state.Load();
         state.Update(1);
         state.Frame(2);
         state.Draw();
         state.Render();
+        state.Unload();
 
         Assert.AreEqual(new Vec2(10, 20), state.DrawArea);
     }
@@ -34,16 +36,22 @@ public sealed class RootRuntimeModelTest
         Assert.AreEqual(new Vec2(30, 40), script.DrawArea);
     }
 
-    /// <summary>Root state defaults to a non-null state and stores replacements.</summary>
+    /// <summary>Root state unloads the previous state and loads the replacement.</summary>
     [TestMethod]
-    public void RootState_Current_StoresState()
+    public void RootState_Current_TransitionsStateLifecycle()
     {
         var rootState = new RootState();
-        var state = new State();
+        var first = new TrackingState();
+        var second = new TrackingState();
 
-        rootState.Current = state;
+        rootState.Current = first;
+        rootState.Current = second;
 
-        Assert.AreSame(state, rootState.Current);
+        Assert.AreSame(second, rootState.Current);
+        Assert.AreEqual(1, first.Loads);
+        Assert.AreEqual(1, first.Unloads);
+        Assert.AreEqual(1, second.Loads);
+        Assert.AreEqual(0, second.Unloads);
     }
 
     /// <summary>Root args expose startup settings without renaming root ownership.</summary>
@@ -87,5 +95,16 @@ public sealed class RootRuntimeModelTest
         Assert.IsTrue(metrics.Elapsed >= TimeSpan.Zero);
         Assert.AreEqual(0.25, metrics.Update[0].Now);
         Assert.AreEqual(0.5, metrics.Frame[0].Now);
+    }
+
+    private sealed class TrackingState : State
+    {
+        internal int Loads { get; private set; }
+
+        internal int Unloads { get; private set; }
+
+        public override void Load() => Loads++;
+
+        public override void Unload() => Unloads++;
     }
 }
