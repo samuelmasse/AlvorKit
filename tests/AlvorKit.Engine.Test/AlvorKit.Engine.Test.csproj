@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <PackageReference Include="BigGustave" Version="1.0.6" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Engine\AlvorKit.Engine.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Engine" />
+        <Using Include="AlvorKit.Engine.Loop" />
+        <Using Include="AlvorKit.Injection" />
+        <Using Include="AlvorKit.Maths" />
+        <Using Include="AlvorKit.OpenGL" />
+        <Using Include="AlvorKit.Windowing" />
+        <Using Include="BigGustave" />
+    </ItemGroup>
+
+</Project>

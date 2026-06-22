@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Tomlyn" Version="0.19.0" />
+        <PackageReference Include="ZString" Version="2.6.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Engine\AlvorKit.Engine.csproj" />
+        <ProjectReference Include="..\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
+        <ProjectReference Include="..\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
+        <ProjectReference Include="..\AlvorKit.Injection\AlvorKit.Injection.csproj" />
+        <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
+        <ProjectReference Include="..\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
+        <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="..\..\res\fonts\RobotoMono-Regular.ttf">
+            <LogicalName>AlvorKit.Engine.Loop.res.fonts.RobotoMono-Regular.ttf</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Engine" />
+        <Using Include="AlvorKit.Graphics2D" />
+        <Using Include="AlvorKit.Graphics2D.Fonts" />
+        <Using Include="AlvorKit.Injection" />
+        <Using Include="AlvorKit.Maths" />
+        <Using Include="AlvorKit.OpenGL" />
+        <Using Include="AlvorKit.OpenGL.Layer" />
+        <Using Include="AlvorKit.Windowing" />
+        <Using Include="Cysharp.Text" />
+        <Using Include="System.Globalization" />
+        <Using Include="System.Runtime" />
+        <Using Include="Tomlyn" />
+        <InternalsVisibleTo Include="AlvorKit.Engine.Test" />
+    </ItemGroup>
+
+</Project>

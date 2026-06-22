@@ -34,17 +34,7 @@ public class InjectorDefaultHandler : InjectorHandler
         for (int i = 0; i < parameters.Length; i++)
         {
             var paramType = parameters[i].ParameterType;
-            var paramScopeAttribute = scope.GetInjectorAttributeType(paramType, path);
-            var newScope = scope;
-
-            while (newScope.Parent != null)
-            {
-                if (newScope.AttributeType == paramScopeAttribute)
-                    break;
-
-                newScope = newScope.Parent;
-            }
-
+            var newScope = scope.FindParameterScope(paramType, path);
             parameterValues[i] = newScope.Get(paramType, path);
         }
 

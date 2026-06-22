@@ -13,8 +13,9 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <BaseOutputPath>..\..\bin\$(MSBuildProjectName)</BaseOutputPath>
-        <BaseIntermediateOutputPath>..\..\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
+        <AlvorKitRepositoryRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\'))</AlvorKitRepositoryRoot>
+        <BaseOutputPath>$(AlvorKitRepositoryRoot)bin\$(MSBuildProjectName)</BaseOutputPath>
+        <BaseIntermediateOutputPath>$(AlvorKitRepositoryRoot)obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     </PropertyGroup>
 

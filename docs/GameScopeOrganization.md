@@ -305,6 +305,66 @@ var level = world.Scope<LevelScope>()
 Use `With(Func<TScope, object>)` when the seed value depends on services inside
 the new scope. This keeps dynamic choices local to the scope being initialized.
 
+## Service Bindings
+
+Use `Bind<TImplementation>()` when a scope-specific implementation should
+provide one or more marked interfaces or abstract base classes. This is useful
+for extension points where the constructor should depend on the public contract,
+while the scope decides which concrete provider belongs to that lifetime.
+
+```csharp
+[Dimension]
+public interface DimensionBiomeGeneratorApi
+{
+    Biome PickBiome(int x, int z);
+}
+
+[Dimension]
+public abstract class DimensionBiomeGeneratorBase
+{
+    public abstract Biome PickBiome(int x, int z);
+}
+
+[Dimension]
+public class DimensionBiomeGenerator(
+    WorldBiomeCatalog catalog,
+    DimensionClimate climate) : DimensionBiomeGeneratorBase, DimensionBiomeGeneratorApi
+{
+    public override Biome PickBiome(int x, int z) =>
+        catalog.Pick(climate.Sample(x, z));
+}
+```
+
+Register the concrete implementation once during scope setup:
+
+```csharp
+var dimension = world.Scope<DimensionScope>()
+    .Run(x => x.Bind<DimensionBiomeGenerator>())
+    .With(dimensionDescriptor)
+    .Run(x => x.Get<DimensionLoader>().Run());
+```
+
+Both marked service surfaces resolve to the same cached implementation:
+
+```csharp
+[Dimension]
+public class DimensionTerrain(DimensionBiomeGeneratorApi biomes);
+
+[Dimension]
+public class DimensionDebugPanel(DimensionBiomeGeneratorBase biomes);
+```
+
+Automatic binding only includes service surfaces that are themselves marked with
+the same scope attribute as the implementation. It does not infer an unmarked
+interface through a marked abstract base class, and it does not bind interfaces
+or base classes that have no scope attribute.
+
+Use `Bind(instance)` when the provider was already created outside the scope,
+and use explicit `Bind<TService, TImplementation>()` or `Add<TService>()` for
+unmarked contracts that should still resolve through a service type. Explicit
+service bindings are exact, so bind each unmarked service surface that
+constructors are allowed to request.
+
 ## States And Scripts
 
 `State` is the top-level mode currently owned by `RootState`. Assigning

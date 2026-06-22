@@ -14,6 +14,11 @@ public partial record InjectorScopeState(InjectorRoot Root, InjectorScopeState? 
     private readonly Dictionary<Type, object> instances = new(16);
 
     /// <summary>
+    /// Scope-local service aliases for interfaces and base classes.
+    /// </summary>
+    private readonly Dictionary<Type, InjectorServiceBinding> bindings = [];
+
+    /// <summary>
     /// Optional include patterns that restrict which service types this scope can resolve.
     /// </summary>
     private List<Regex>? includes;
@@ -31,6 +36,10 @@ public partial record InjectorScopeState(InjectorRoot Root, InjectorScopeState? 
         if (instances.TryGetValue(type, out var exist))
             return exist;
 
+        var binding = FindBinding(type);
+        if (binding != null)
+            return GetBound(type, binding, path);
+
         var instance = New(type, path);
         instances[type] = instance;
         return instance;
@@ -41,6 +50,10 @@ public partial record InjectorScopeState(InjectorRoot Root, InjectorScopeState? 
     /// </summary>
     public object New(Type type, InjectorPath? path = null)
     {
+        var binding = FindBinding(type);
+        if (binding != null)
+            return NewBound(type, binding, path);
+
         path ??= Root.Path;
 
         try
@@ -65,9 +78,7 @@ public partial record InjectorScopeState(InjectorRoot Root, InjectorScopeState? 
                 throw new InjectorException(path, $"Handler '{handler}' for type '{type.FullName}' threw an exception.", e);
             }
 
-            if (instance.GetType() != type)
-                throw new InjectorException(path, $"Handler '{handler}' for type '{type.FullName}' returned an " +
-                    $"object of mismatched type '{instance.GetType().FullName}'.");
+            ValidateCreatedInstanceType(type, instance, handler, path);
 
             return instance;
         }
