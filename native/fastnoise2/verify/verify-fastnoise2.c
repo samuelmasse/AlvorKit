@@ -132,7 +132,7 @@ static const Fixture Fixtures[] = {
         1.75f,
         1.0f,
         0,
-        "99BCAB2C67431326",
+        "5367B3E6D97BD4A6",
     },
     {
         "encoded-wiki-2d",
@@ -149,7 +149,7 @@ static const Fixture Fixtures[] = {
         1.25f,
         1.0f,
         0,
-        "A25EA23EAA75E68E",
+        "EB40E04A371817ED",
     },
     {
         "encoded-wiki-3d",
@@ -166,7 +166,7 @@ static const Fixture Fixtures[] = {
         0.5f,
         1.5f,
         1337,
-        "C116197CB2AAA561",
+        "50C77943A2FF595B",
     },
     {
         "metadata-fbm-simplex-3d",
@@ -183,7 +183,7 @@ static const Fixture Fixtures[] = {
         1.0f,
         2.0f,
         -8675309,
-        "303D3F700DE06D4E",
+        "30562875439B3D05",
     },
 };
 

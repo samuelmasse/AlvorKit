@@ -293,13 +293,15 @@ known to be cold. Reuse buffers for chunk generation, demo textures, and tests.
 Windows FastNoise2 native builds must compile with ClangCL. Upstream recommends
 ClangCL because MSVC has SIMD compiler bugs that can cause incorrect FastNoise2
 generation. The local `native/fastnoise2/conf/native-build.yml` manifest forces
-both CMake compilers to `clang-cl` for Windows:
+both CMake compilers to `clang-cl` for Windows and enables strict floating-point
+generation:
 
 ```yaml
 windows:
   cmakeOptions:
     - -DCMAKE_C_COMPILER=clang-cl
     - -DCMAKE_CXX_COMPILER=clang-cl
+    - -DFASTNOISE2_STRICT_FP=ON
 ```
 
 The native build script is tailored to the GitHub-hosted Windows runners used by
@@ -329,6 +331,20 @@ builds:
 
 Linux FastNoise2 builds intentionally allow the exact C++ runtime SONAMEs
 reported by `readelf`, including `libstdc++.so.6` and `libgcc_s.so.1`.
+
+## Native Verification Pattern
+
+The FastNoise2 verifier lives at `native/fastnoise2/verify/verify-fastnoise2.c`
+and runs after every native package build in `.github/workflows/native-packages.yml`.
+It dynamically loads the freshly built shared library, builds a small set of
+encoded and metadata node graphs, generates fixed 2D and 3D grids, hashes the
+raw float bytes, and writes `out/native-verify/fastnoise2/<rid>/report.json`.
+
+The current expected digests are pinned from a strict ClangCL win-x64 release
+build. `FASTNOISE2_STRICT_FP=ON` should make active FastSIMD paths produce
+matching float bytes across CI RIDs, but keep the report artifacts because they
+are the proof when a compiler, architecture, or scalar fallback still drifts.
+Do not repin fixture digests from an arbitrary non-strict developer build.
 
 ## Agent Workflow
 
