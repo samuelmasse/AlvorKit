@@ -40,6 +40,12 @@ internal sealed class NativeBuildCli
                     await new NativeBuildRunner(LibraryBuildContext.Load(repository, library), target).BuildAsync();
                 return 0;
 
+            case CliCommand.Verify:
+                await new NativeVerifyRunner(
+                    LibraryBuildContext.Load(repository, request.Selection!),
+                    TargetRid.Parse(request.Rid!)).VerifyAsync();
+                return 0;
+
             default:
                 throw new InvalidOperationException($"Unknown command '{request.Command}'.");
         }

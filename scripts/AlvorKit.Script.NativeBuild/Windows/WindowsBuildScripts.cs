@@ -34,6 +34,15 @@ internal static class WindowsBuildScripts
             ("LinkLibraries", linkLibraries));
     }
 
+    /// <summary>Generates the Windows verifier compiler PowerShell script.</summary>
+    public static string Verify(NativeVerifyPlan plan, TargetRid target) =>
+        Templates.Render(
+            "verify-xxhash.ps1.tmpl",
+            ("VisualStudioDevShell", VisualStudioDevShell(target, requiresClangCl: false)),
+            ("ArtifactDirectory", CommandText.PowerShellQuote(plan.ArtifactDirectory)),
+            ("OutputArgument", CommandText.PowerShellQuote("/Fe:" + plan.ExecutablePath)),
+            ("SourcePath", CommandText.PowerShellQuote(plan.SourcePath)));
+
     /// <summary>Generates the Windows CMake PowerShell script.</summary>
     public static string CMake(LibraryBuildContext library, TargetRid target, PlatformBuildConfig platform)
     {

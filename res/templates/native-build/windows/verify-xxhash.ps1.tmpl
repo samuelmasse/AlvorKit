@@ -1,0 +1,6 @@
+{{VisualStudioDevShell}}
+New-Item -ItemType Directory -Force {{ArtifactDirectory}} | Out-Null
+Set-Location {{ArtifactDirectory}}
+& cl /nologo /O2 /MT {{OutputArgument}} {{SourcePath}}
+if ($LASTEXITCODE -ne 0) { throw "cl failed with exit code $LASTEXITCODE." }
+

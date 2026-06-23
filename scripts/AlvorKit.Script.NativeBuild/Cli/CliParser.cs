@@ -28,6 +28,7 @@ internal static class CliParser
         root.Subcommands.Add(CreateListCommand(execute));
         root.Subcommands.Add(CreateVersionCommand(execute));
         root.Subcommands.Add(CreateBuildCommand(execute));
+        root.Subcommands.Add(CreateVerifyCommand(execute));
         return root;
     }
 
@@ -64,6 +65,21 @@ internal static class CliParser
             CliCommand.Build,
             parse.GetRequiredValue(selection),
             parse.GetValue(rid))));
+        return command;
+    }
+
+    /// <summary>Creates the native runtime verification command.</summary>
+    private static Command CreateVerifyCommand(Func<CliRequest, Task<int>> execute)
+    {
+        var library = new Argument<string>("library") { Description = "Native library name." };
+        var rid = new Option<string>("--rid") { Description = "Runtime identifier to verify.", Required = true };
+        var command = new Command("verify", "Verify one native runtime binary.");
+        command.Arguments.Add(library);
+        command.Options.Add(rid);
+        command.SetAction(parse => execute(new(
+            CliCommand.Verify,
+            parse.GetRequiredValue(library),
+            parse.GetRequiredValue(rid))));
         return command;
     }
 

@@ -11,6 +11,13 @@ public sealed class CliParserTest
         Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse([]));
     }
 
+    /// <summary>Parse-only helpers reject generated help instead of writing it to test output.</summary>
+    [TestMethod]
+    public void Parse_Help_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["--help"]));
+    }
+
     /// <summary>Build accepts --rid value syntax.</summary>
     [TestMethod]
     public void Parse_BuildWithRidValue_ReturnsBuildRequest()
@@ -30,6 +37,17 @@ public sealed class CliParserTest
 
         Assert.AreEqual("all", request.Selection);
         Assert.AreEqual("osx-arm64", request.Rid);
+    }
+
+    /// <summary>Verify requires one library and a target runtime identifier.</summary>
+    [TestMethod]
+    public void Parse_VerifyWithRid_ReturnsVerifyRequest()
+    {
+        var request = CliParser.Parse(["verify", "xxhash", "--rid", "linux-arm"]);
+
+        Assert.AreEqual(CliCommand.Verify, request.Command);
+        Assert.AreEqual("xxhash", request.Selection);
+        Assert.AreEqual("linux-arm", request.Rid);
     }
 
     /// <summary>Commands with missing positional arguments produce useful errors.</summary>
@@ -57,6 +75,7 @@ public sealed class CliParserTest
     {
         Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["build"]));
         Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["build", "xxhash", "--rid"]));
+        Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["verify", "xxhash"]));
         Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["publish"]));
     }
 }

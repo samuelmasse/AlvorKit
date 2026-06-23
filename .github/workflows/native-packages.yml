@@ -218,10 +218,36 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      # The linux-arm xxhash verifier runs an armhf test executable on the
+      # Ubuntu ARM64 runner.
+      - name: Install linux-arm verification emulator
+        if: matrix.package.library == 'xxhash' && matrix.target.rid == 'linux-arm'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user
+
       # The C# native build script downloads upstream source, compiles the target
       # RID, verifies dependencies, and writes native/<library>/runtimes.
       - name: Build native runtime
         run: dotnet run --project scripts/AlvorKit.Script.NativeBuild -- build ${{ matrix.package.library }} --rid ${{ matrix.target.rid }}
+
+      # xxhash has a per-RID runtime verification gate in addition to the native
+      # dependency checks shared by every package build.
+      - name: Verify xxhash native runtime
+        id: verify_xxhash
+        if: matrix.package.library == 'xxhash'
+        env:
+          ALVORKIT_NATIVE_VERIFY_LINUX_ARM_RUNNER: qemu-arm
+          ALVORKIT_NATIVE_VERIFY_LINUX_ARM_SYSROOT: /usr/arm-linux-gnueabihf
+        run: dotnet run --project scripts/AlvorKit.Script.NativeBuild -- verify xxhash --rid ${{ matrix.target.rid }}
+
+      - name: Upload xxhash verification report
+        if: always() && matrix.package.library == 'xxhash' && steps.verify_xxhash.outcome != 'skipped'
+        uses: actions/upload-artifact@v7
+        with:
+          name: xxhash-verify-${{ matrix.target.rid }}
+          path: out/native-verify/xxhash/${{ matrix.target.rid }}
+          if-no-files-found: error
 
       # Save this RID's runtime output for the Ubuntu pack job, which combines
       # all RIDs into one NuGet package for the selected library.

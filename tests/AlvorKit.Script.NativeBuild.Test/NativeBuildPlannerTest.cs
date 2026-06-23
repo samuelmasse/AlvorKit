@@ -235,6 +235,88 @@ public sealed class NativeBuildPlannerTest
         }
     }
 
+    /// <summary>xxhash linux-arm verification planning uses the cross compiler and an optional emulator prefix.</summary>
+    [TestMethod]
+    public void VerifyCommands_LinuxArm_UsesCrossCompilerAndRunPrefix()
+    {
+        var context = LoadXxHashContext(out var root);
+        try
+        {
+            var prefix = new NativeVerifyRunPrefix("qemu-arm", ["-L", "/usr/arm-linux-gnueabihf"]);
+            var plan = NativeVerifyPlanner.XxHash(context, TargetRid.Parse("linux-arm"), prefix);
+
+            Assert.AreEqual("arm-linux-gnueabihf-gcc", plan.CompileCommand.FileName);
+            CollectionAssert.Contains(plan.CompileCommand.Arguments.ToList(), "-ldl");
+            Assert.AreEqual("qemu-arm", plan.RunCommand.FileName);
+            CollectionAssert.AreEqual(
+                new[] { "-L", "/usr/arm-linux-gnueabihf", plan.ExecutablePath, plan.LibraryPath, plan.ReportPath, "linux-arm" },
+                plan.RunCommand.Arguments.ToArray());
+            StringAssert.EndsWith(plan.ReportPath, Path.Combine("out", "native-verify", "xxhash", "linux-arm", "report.json"));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    /// <summary>xxhash verification planning uses platform compiler names and executable suffixes.</summary>
+    [TestMethod]
+    public void VerifyCommands_PlatformCompilers_UseTargetConventions()
+    {
+        var context = LoadXxHashContext(out var root);
+        try
+        {
+            var windows = NativeVerifyPlanner.XxHash(context, TargetRid.Parse("win-x64"));
+            var mac = NativeVerifyPlanner.XxHash(context, TargetRid.Parse("osx-arm64"));
+            var linux = NativeVerifyPlanner.XxHash(context, TargetRid.Parse("linux-x64"));
+
+            Assert.AreEqual("cl", windows.CompileCommand.FileName);
+            StringAssert.EndsWith(windows.ExecutablePath, "verify-xxhash.exe");
+            Assert.AreEqual("clang", mac.CompileCommand.FileName);
+            CollectionAssert.Contains(mac.CompileCommand.Arguments.ToList(), "arm64");
+            Assert.AreEqual("gcc", linux.CompileCommand.FileName);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    /// <summary>The first verifier integration is intentionally limited to xxhash.</summary>
+    [TestMethod]
+    public void VerifyCommands_NonXxHash_Throws()
+    {
+        var context = LoadSingleCContext(out var root, out _);
+        try
+        {
+            var error = Assert.ThrowsExactly<NotSupportedException>(
+                () => NativeVerifyPlanner.XxHash(context, TargetRid.Parse("linux-x64")));
+
+            StringAssert.Contains(error.Message, "xxhash only");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    /// <summary>Verification planning rejects impossible target platforms through the compiler switch guard.</summary>
+    [TestMethod]
+    public void VerifyCommands_InvalidTargetOperatingSystem_Throws()
+    {
+        var context = LoadXxHashContext(out var root);
+        try
+        {
+            var invalid = new TargetRid("fixture", (TargetOperatingSystem)999, TargetArchitecture.X64);
+
+            Assert.ThrowsException<PlatformNotSupportedException>(() => NativeVerifyPlanner.XxHash(context, invalid));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     /// <summary>Linux single-C commands create the build directory before invoking the compiler.</summary>
     [TestMethod]
     public void SingleCLinuxCommands_RequestsWorkingDirectoryCreation()
@@ -298,5 +380,13 @@ public sealed class NativeBuildPlannerTest
         var workDir = "alvorkit-native-test-" + Guid.NewGuid().ToString("N");
         root = TestRepositoryFactory.CreateCMakeLibrary("sample", workDir);
         return LibraryBuildContext.Load(new(root), "sample");
+    }
+
+    /// <summary>Loads a temporary xxhash context for verifier planning tests.</summary>
+    private static LibraryBuildContext LoadXxHashContext(out string root)
+    {
+        var workDir = "alvorkit-native-test-" + Guid.NewGuid().ToString("N");
+        root = TestRepositoryFactory.CreateSingleCLibrary("xxhash", workDir);
+        return LibraryBuildContext.Load(new(root), "xxhash");
     }
 }

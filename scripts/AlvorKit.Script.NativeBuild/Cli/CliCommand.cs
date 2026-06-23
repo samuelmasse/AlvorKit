@@ -10,5 +10,8 @@ internal enum CliCommand
     Version,
 
     /// <summary>Builds one or more native runtime binaries.</summary>
-    Build
+    Build,
+
+    /// <summary>Verifies one native runtime binary with a native smoke test.</summary>
+    Verify
 }
