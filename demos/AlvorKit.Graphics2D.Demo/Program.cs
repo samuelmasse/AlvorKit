@@ -32,13 +32,13 @@ gl.GetString(GlStringName.ShadingLanguageVersion, out var glsl);
 Console.WriteLine("OpenGL {0} (GLSL {1}) - Esc exits. G/O/T/Y/C toggle draw modes; arrows rotate; H/V flip; F11 fullscreen.", version, glsl);
 
 var sprites = new SpriteBatch(gl);
-var texture = new Texture2D(gl, "grid-noise", (SmallTextureSize, SmallTextureSize))
+var texture = new Texture2D(gl, (SmallTextureSize, SmallTextureSize))
 {
     PixelsMipmap = Noise.Generate(SmallTextureSize),
     MinFilter = GlTextureMinFilter.LinearMipmapLinear,
     MagFilter = GlTextureMagFilter.Linear
 };
-var bigTexture = new Texture2D(gl, "large-noise", (BigTextureSize, BigTextureSize))
+var bigTexture = new Texture2D(gl, (BigTextureSize, BigTextureSize))
 {
     PixelsMipmap = Noise.Generate(BigTextureSize),
     MinFilter = GlTextureMinFilter.LinearMipmapLinear,

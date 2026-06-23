@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.MiniAudio" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">
+        <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="$(MaBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj" />
+    </ItemGroup>
+
+</Project>

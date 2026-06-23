@@ -40,7 +40,7 @@ internal sealed class FastNoise2Field : IDisposable
         values = new float[pixelCount];
         pixels = new Vec4u8[pixelCount];
 
-        Texture = new Texture2D(gl, "fastnoise2-demo-craftdig-fbm", size)
+        Texture = new Texture2D(gl, size)
         {
             MinFilter = GlTextureMinFilter.Linear,
             MagFilter = GlTextureMagFilter.Linear,

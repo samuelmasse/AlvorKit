@@ -14,6 +14,7 @@
         <Project Path="demos/AlvorKit.Injection.Demo/AlvorKit.Injection.Demo.csproj" />
         <Project Path="demos/AlvorKit.Maths.Demo/AlvorKit.Maths.Demo.csproj" />
         <Project Path="demos/AlvorKit.MiniAudio.Demo/AlvorKit.MiniAudio.Demo.csproj" />
+        <Project Path="demos/AlvorKit.MiniAudio.Demo.Music/AlvorKit.MiniAudio.Demo.Music.csproj" />
         <Project Path="demos/AlvorKit.Mocking.Demo/AlvorKit.Mocking.Demo.csproj" />
         <Project
             Path="demos/AlvorKit.OpenGL.Demo.HelloTriangle/AlvorKit.OpenGL.Demo.HelloTriangle.csproj" />

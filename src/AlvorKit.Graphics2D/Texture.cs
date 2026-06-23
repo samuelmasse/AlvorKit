@@ -2,10 +2,9 @@ namespace AlvorKit.Graphics2D;
 
 /// <summary>Owns a tracked OpenGL texture and exposes strict bind helpers for a single target.</summary>
 /// <param name="gl">The strict OpenGL layer that owns the texture handle.</param>
-/// <param name="label">Optional diagnostic label used by callers when reporting texture ownership.</param>
 /// <param name="size">The logical pixel size associated with the texture.</param>
 /// <param name="target">The OpenGL texture target used by this texture handle.</param>
-public class Texture(GlLayer gl, string? label, Vec2u size, GlTextureTarget target) : IDisposable
+public class Texture(GlLayer gl, Vec2u size, GlTextureTarget target) : IDisposable
 {
     /// <summary>The strict OpenGL command surface that owns this texture.</summary>
     protected readonly GlLayer gl = gl;
@@ -18,9 +17,6 @@ public class Texture(GlLayer gl, string? label, Vec2u size, GlTextureTarget targ
 
     /// <summary>The logical pixel size associated with this texture.</summary>
     protected Vec2u size = size;
-
-    /// <summary>Gets the optional diagnostic label supplied by the caller.</summary>
-    public string? Label => label;
 
     /// <summary>Gets the OpenGL texture handle.</summary>
     public GlTextureHandle Id => id;
@@ -42,12 +38,6 @@ public class Texture(GlLayer gl, string? label, Vec2u size, GlTextureTarget targ
 
     /// <summary>Sets the vertical wrap mode for this texture.</summary>
     public GlTextureWrapMode WrapT { set => TexParameter(GlTextureParameterName.TextureWrapT, (int)value); }
-
-    /// <summary>Creates an unlabeled texture for the supplied target.</summary>
-    /// <param name="gl">The strict OpenGL layer that owns the texture handle.</param>
-    /// <param name="size">The logical pixel size associated with the texture.</param>
-    /// <param name="target">The OpenGL texture target used by this texture handle.</param>
-    public Texture(GlLayer gl, Vec2u size, GlTextureTarget target) : this(gl, null, size, target) { }
 
     /// <summary>Binds this texture to the requested texture unit.</summary>
     /// <param name="unit">The texture unit that should receive the texture binding.</param>

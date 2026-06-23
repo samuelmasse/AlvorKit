@@ -16,7 +16,7 @@ internal sealed class FontTablet : IDisposable
     internal FontTablet(GlLayer gl)
     {
         this.gl = gl;
-        texture = new Texture(gl, nameof(FontTablet), (DefaultSize, DefaultSize), GlTextureTarget.Texture2D);
+        texture = new Texture(gl, (DefaultSize, DefaultSize), GlTextureTarget.Texture2D);
         AllocateTexture();
     }
 

@@ -4,15 +4,14 @@ namespace AlvorKit.Graphics2D.Test;
 [TestClass]
 public sealed class TextureTest
 {
-    /// <summary>Texture construction stores the generated handle, size, label, and target.</summary>
+    /// <summary>Texture construction stores the generated handle, size, and target.</summary>
     [TestMethod]
     public void Constructor_SetsProperties()
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
-        using var texture = new Texture(gl, "diffuse", (12u, 24u), GlTextureTarget.Texture2D);
+        using var texture = new Texture(gl, (12u, 24u), GlTextureTarget.Texture2D);
 
         Assert.AreNotEqual(default, texture.Id);
-        Assert.AreEqual("diffuse", texture.Label);
         Assert.AreEqual(new Vec2u(12u, 24u), texture.Size);
         Assert.AreEqual(GlTextureTarget.Texture2D, texture.Target);
     }
@@ -141,17 +140,17 @@ public sealed class TextureTest
         Assert.AreEqual(4, backend.TexParameterCalls);
     }
 
-    /// <summary>Labeled Texture2D constructors preserve labels and targets.</summary>
+    /// <summary>Texture2D constructors preserve sizes and targets.</summary>
     [TestMethod]
-    public void Texture2D_LabelConstructors_SetProperties()
+    public void Texture2D_Constructors_SetProperties()
     {
         var (_, gl) = Graphics2DTestHarness.CreateLayer();
-        using var defaultTarget = new Texture2D(gl, "default", (2u, 2u));
-        using var explicitTarget = new Texture2D(gl, "explicit", (3u, 3u), GlTextureTarget.Texture2D);
+        using var defaultTarget = new Texture2D(gl, (2u, 2u));
+        using var explicitTarget = new Texture2D(gl, (3u, 3u), GlTextureTarget.TextureRectangle);
 
-        Assert.AreEqual("default", defaultTarget.Label);
+        Assert.AreEqual(new Vec2u(2u, 2u), defaultTarget.Size);
         Assert.AreEqual(GlTextureTarget.Texture2D, defaultTarget.Target);
-        Assert.AreEqual("explicit", explicitTarget.Label);
         Assert.AreEqual(new Vec2u(3u, 3u), explicitTarget.Size);
+        Assert.AreEqual(GlTextureTarget.TextureRectangle, explicitTarget.Target);
     }
 }

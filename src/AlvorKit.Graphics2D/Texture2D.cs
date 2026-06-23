@@ -3,17 +3,11 @@ namespace AlvorKit.Graphics2D;
 /// <summary>Owns a two-dimensional RGBA texture and uploads pixel spans into level zero.</summary>
 public class Texture2D : Texture
 {
-    /// <summary>Creates an unlabeled texture using <see cref="GlTextureTarget.Texture2D"/>.</summary>
-    public Texture2D(GlLayer gl, Vec2u size) : base(gl, null, size, GlTextureTarget.Texture2D) { }
+    /// <summary>Creates a texture using <see cref="GlTextureTarget.Texture2D"/>.</summary>
+    public Texture2D(GlLayer gl, Vec2u size) : base(gl, size, GlTextureTarget.Texture2D) { }
 
-    /// <summary>Creates an unlabeled texture using the supplied two-dimensional target.</summary>
-    public Texture2D(GlLayer gl, Vec2u size, GlTextureTarget target) : base(gl, null, size, target) { }
-
-    /// <summary>Creates a labeled texture using <see cref="GlTextureTarget.Texture2D"/>.</summary>
-    public Texture2D(GlLayer gl, string? label, Vec2u size) : base(gl, label, size, GlTextureTarget.Texture2D) { }
-
-    /// <summary>Creates a labeled texture using the supplied two-dimensional target.</summary>
-    public Texture2D(GlLayer gl, string? label, Vec2u size, GlTextureTarget target) : base(gl, label, size, target) { }
+    /// <summary>Creates a texture using the supplied two-dimensional target.</summary>
+    public Texture2D(GlLayer gl, Vec2u size, GlTextureTarget target) : base(gl, size, target) { }
 
     /// <summary>Uploads RGBA8 pixels into texture level zero.</summary>
     public ReadOnlySpan<Vec4u8> Pixels { set => TexImage2D(value); }
