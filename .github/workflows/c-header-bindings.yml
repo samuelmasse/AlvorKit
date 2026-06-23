@@ -20,6 +20,7 @@ on:
         type: choice
         options:
           - all
+          - fastnoise2
           - freetype
           - glfw
           - miniaudio
@@ -32,6 +33,7 @@ on:
     branches: [main]
     paths:
       [
+        "native/fastnoise2/version/BINDING_REVISION",
         "native/freetype/version/BINDING_REVISION",
         "native/glfw/version/BINDING_REVISION",
         "native/miniaudio/version/BINDING_REVISION",
@@ -81,7 +83,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             selection="${{ inputs.library }}"
             if [[ "$selection" == "all" ]]; then
-              selected=(freetype glfw miniaudio xxhash)
+              selected=(fastnoise2 freetype glfw miniaudio xxhash)
             else
               selected=("$selection")
             fi
@@ -104,7 +106,7 @@ jobs:
             }
 
             # version/BINDING_REVISION means "publish a new managed binding version".
-            for library in freetype glfw miniaudio xxhash; do
+            for library in fastnoise2 freetype glfw miniaudio xxhash; do
               if changed_any "native/${library}/version/BINDING_REVISION"; then
                 selected+=("$library")
               fi
@@ -116,6 +118,12 @@ jobs:
           objects=()
           for library in "${selected[@]}"; do
             case "$library" in
+              fastnoise2)
+                id="alvorkit.fastnoise2"
+                native_id="alvorkit.fastnoise2.native"
+                api_project="AlvorKit.FastNoise2"
+                backend_project="AlvorKit.FastNoise2.Backend"
+                ;;
               freetype)
                 id="alvorkit.freetype"
                 native_id="alvorkit.freetype.native"

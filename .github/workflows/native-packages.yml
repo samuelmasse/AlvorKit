@@ -19,6 +19,7 @@ on:
         type: choice
         options:
           - all
+          - fastnoise2
           - freetype
           - glfw
           - miniaudio
@@ -33,6 +34,8 @@ on:
       [
         "native/freetype/version/TAG",
         "native/freetype/version/REVISION",
+        "native/fastnoise2/version/TAG",
+        "native/fastnoise2/version/REVISION",
         "native/glfw/version/TAG",
         "native/glfw/version/REVISION",
         "native/miniaudio/version/TAG",
@@ -88,7 +91,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             selection="${{ inputs.library }}"
             if [[ "$selection" == "all" ]]; then
-              selected=(freetype glfw miniaudio xxhash)
+              selected=(fastnoise2 freetype glfw miniaudio xxhash)
             else
               selected=("$selection")
             fi
@@ -111,7 +114,7 @@ jobs:
             }
 
             # Only version/TAG and version/REVISION are native-package release signals.
-            for library in freetype glfw miniaudio xxhash; do
+            for library in fastnoise2 freetype glfw miniaudio xxhash; do
               if changed_any "^native/${library}/version/(TAG|REVISION)$"; then
                 selected+=("$library")
               fi
@@ -123,6 +126,11 @@ jobs:
           objects=()
           for library in "${selected[@]}"; do
             case "$library" in
+              fastnoise2)
+                package_id="alvorkit.fastnoise2.native"
+                project="AlvorKit.FastNoise2.Native.csproj"
+                package_name="AlvorKit.FastNoise2.Native"
+                ;;
               freetype)
                 package_id="alvorkit.freetype.native"
                 project="AlvorKit.FreeType.Native.csproj"
@@ -194,8 +202,8 @@ jobs:
       matrix:
         package: ${{ fromJson(needs.detect.outputs.packages) }}
         target:
-          - { runner: windows-latest, rid: win-x64 }
-          - { runner: windows-latest, rid: win-x86 }
+          - { runner: windows-2025, rid: win-x64 }
+          - { runner: windows-2025, rid: win-x86 }
           - { runner: windows-11-arm, rid: win-arm64 }
           - { runner: ubuntu-24.04, rid: linux-x64 }
           - { runner: ubuntu-24.04-arm, rid: linux-arm64 }

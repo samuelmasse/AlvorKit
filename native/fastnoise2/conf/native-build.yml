@@ -2,6 +2,8 @@ kind: cmake
 windows:
   cmakeOutput: src/bin/FastNoise.dll
   cmakeOptions:
+    - -DCMAKE_C_COMPILER=clang-cl
+    - -DCMAKE_CXX_COMPILER=clang-cl
     - -DBUILD_SHARED_LIBS=ON
     - -DFASTNOISE2_TOOLS=OFF
     - -DFASTNOISE2_TESTS=OFF

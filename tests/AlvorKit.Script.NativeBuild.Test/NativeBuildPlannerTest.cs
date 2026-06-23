@@ -107,6 +107,7 @@ public sealed class NativeBuildPlannerTest
             StringAssert.Contains(script, "Launch-VsDevShell.ps1");
             StringAssert.Contains(script, "/MT /LD");
             StringAssert.Contains(script, "sample.dll");
+            Assert.IsFalse(script.Contains("-prerelease", StringComparison.Ordinal));
         }
         finally
         {
@@ -127,6 +128,32 @@ public sealed class NativeBuildPlannerTest
             StringAssert.Contains(script, "-DBUILD_SHARED_LIBS=ON");
             StringAssert.Contains(script, "sample.dll");
             StringAssert.Contains(script, "Copy-Item");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    /// <summary>Windows CMake script requires the VS Clang component when a manifest requests ClangCL.</summary>
+    [TestMethod]
+    public void CMakeWindowsScript_WhenClangClRequested_RequiresClangComponent()
+    {
+        var context = LoadCMakeContext(out var root);
+        try
+        {
+            var platform = new PlatformBuildConfig
+            {
+                CMakeOutput = "src/sample.dll",
+                CMakeOptions = ["-DCMAKE_CXX_COMPILER=clang-cl"]
+            };
+
+            var script = WindowsBuildScripts.CMake(context, TargetRid.Parse("win-x64"), platform);
+
+            StringAssert.Contains(script, "Microsoft.VisualStudio.Component.VC.Llvm.Clang");
+            StringAssert.Contains(script, "Get-Command clang-cl");
+            Assert.IsFalse(script.Contains("-prerelease", StringComparison.Ordinal));
+            Assert.IsFalse(script.Contains("VC\\Tools\\Llvm", StringComparison.Ordinal));
         }
         finally
         {

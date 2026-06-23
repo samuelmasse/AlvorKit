@@ -35,7 +35,6 @@ Relevant local paths:
 - `native/fastnoise2`: native package description and pinned native artifact.
 - `out/bindgen/AlvorKit.FastNoise2`: generated managed C API surface.
 - `out/bindgen/AlvorKit.FastNoise2.Backend`: generated native entry points.
-- `docs/FastNoise2NativePlan.md`: native packaging and binding plan.
 - `demos/AlvorKit.FastNoise2.Demo`: small visual testbed.
 
 The generated managed entry point is `AlvorKit.FastNoise2.Fn`. Production code
@@ -289,11 +288,35 @@ fn.GenUniformGrid3D(rootNode, values, x0, y0, z0, xCount, yCount, zCount, 1f, 1f
 Do not allocate a fresh buffer inside every section or frame unless the code is
 known to be cold. Reuse buffers for chunk generation, demo textures, and tests.
 
+## Native Build Notes
+
+Windows FastNoise2 native builds must compile with ClangCL. Upstream recommends
+ClangCL because MSVC has SIMD compiler bugs that can cause incorrect FastNoise2
+generation. The local `native/fastnoise2/conf/native-build.yml` manifest forces
+both CMake compilers to `clang-cl` for Windows:
+
+```yaml
+windows:
+  cmakeOptions:
+    - -DCMAKE_C_COMPILER=clang-cl
+    - -DCMAKE_CXX_COMPILER=clang-cl
+```
+
+The native build script is tailored to the GitHub-hosted Windows runners used by
+`.github/workflows/native-packages.yml`: `windows-2025` for x64/x86 and
+`windows-11-arm` for arm64. Those images include Visual Studio with the C++
+toolset and `Microsoft.VisualStudio.Component.VC.Llvm.Clang`. The script asks
+`vswhere` for one Visual Studio installation containing both components, then
+launches that developer shell.
+
+If a Windows machine lacks the Visual Studio ClangCL component, the build should
+fail instead of searching custom local installs or falling back to MSVC.
+
 ## Agent Workflow
 
 When changing FastNoise2 code in this repo:
 
-1. Read `docs/FastNoise2NativePlan.md` and this file.
+1. Read this file.
 2. Inspect the generated API in `out/bindgen/AlvorKit.FastNoise2`.
 3. If you need node names or defaults, enumerate metadata at runtime using
    `FnBackend`; do not guess indices.
