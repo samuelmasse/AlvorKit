@@ -1,0 +1,26 @@
+namespace AlvorKit.Script.MathsGen;
+
+/// <summary>Describes one generated 3D segment type.</summary>
+internal sealed record SegmentSpec(ScalarSpec Scalar)
+{
+    /// <summary>Gets the generated segment type name.</summary>
+    public string TypeName => Scalar.SegmentName();
+
+    /// <summary>Gets the matching 3D vector type name.</summary>
+    public string Vector3TypeName => Scalar.VectorName(3);
+
+    /// <summary>Gets the matching 4D vector type name.</summary>
+    public string Vector4TypeName => Scalar.VectorName(4);
+
+    /// <summary>Gets the matching 3D plane type name.</summary>
+    public string Plane3TypeName => Scalar.PlaneName();
+
+    /// <summary>Gets the matching 3D axis-aligned box type name.</summary>
+    public string Box3TypeName => Scalar.BoxName(3);
+
+    /// <summary>Gets the matching 3D sphere type name.</summary>
+    public string Sphere3TypeName => Scalar.SphereName();
+
+    /// <summary>Gets the byte size of the segment.</summary>
+    public int SizeBytes => Scalar.SizeBytes * 6;
+}

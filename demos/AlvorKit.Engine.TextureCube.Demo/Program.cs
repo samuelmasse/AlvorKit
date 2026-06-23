@@ -161,7 +161,7 @@ internal sealed class TextureCubeState(
     }
 
     /// <summary>Builds one textured cube face with a simple per-face color multiplier.</summary>
-    private static PositionColorTextureVertex[] VertexQuad(Quad quad, float shadow) =>
+    private static PositionColorTextureVertex[] VertexQuad(Quad3 quad, float shadow) =>
     [
         new(quad.TopLeft, new Vec3(1, 0, 0) * shadow, (0, 1)),
         new(quad.TopRight, new Vec3(0, 1, 0) * shadow, (1, 1)),

@@ -21,6 +21,9 @@ internal sealed unsafe class Graphics2DTestGl : GlNoop
     /// <summary>Gets the number of texture image uploads observed by the backend.</summary>
     public int TexImage2DCalls { get; private set; }
 
+    /// <summary>Gets the internal format from the most recent texture image upload.</summary>
+    public GlInternalFormat LastTexImage2DInternalFormat { get; private set; }
+
     /// <summary>Gets the number of mipmap-generation calls observed by the backend.</summary>
     public int GenerateMipmapCalls { get; private set; }
 
@@ -82,8 +85,11 @@ internal sealed unsafe class Graphics2DTestGl : GlNoop
         int border,
         GlPixelFormat format,
         GlPixelType type,
-        nint pixels) =>
+        nint pixels)
+    {
         TexImage2DCalls++;
+        LastTexImage2DInternalFormat = internalformat;
+    }
 
     /// <inheritdoc/>
     public override void GenerateMipmap(GlTextureTarget target) => GenerateMipmapCalls++;

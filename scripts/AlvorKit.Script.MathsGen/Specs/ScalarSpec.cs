@@ -94,6 +94,12 @@ internal sealed record ScalarSpec(
     /// <summary>Gets the triangle type name for this scalar.</summary>
     public string TriangleName() => $"Triangle3{Suffix}";
 
+    /// <summary>Gets the quad type name for this scalar.</summary>
+    public string QuadName() => $"Quad3{Suffix}";
+
+    /// <summary>Gets the viewport type name for this scalar.</summary>
+    public string ViewportName() => Kind == ScalarKind.Float ? "Viewport" : $"Viewport{Suffix}";
+
     /// <summary>Gets the interval type name for this scalar.</summary>
     public string IntervalName() => Kind == ScalarKind.Float ? "Intervalf" : $"Interval{Suffix}";
 

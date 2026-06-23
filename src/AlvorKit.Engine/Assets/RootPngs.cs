@@ -14,9 +14,9 @@ public sealed class RootPngs
         }
     }
 
-    private static (byte, byte, byte, byte)[] GetPixels(Png image)
+    private static Vec4u8[] GetPixels(Png image)
     {
-        var pixels = new (byte, byte, byte, byte)[image.Width * image.Height];
+        var pixels = new Vec4u8[image.Width * image.Height];
         for (var y = 0; y < image.Height; y++)
         {
             for (var x = 0; x < image.Width; x++)

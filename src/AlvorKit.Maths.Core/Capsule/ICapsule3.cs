@@ -41,7 +41,7 @@ public interface ICapsule3<TSelf, TScalar, TVector3, TVector4, TSegment3, TPlane
     static abstract TSelf Empty { get; }
 
     /// <summary>Gets or sets the finite centerline segment swept by the capsule radius.</summary>
-    TSegment3 Axis { get; set; }
+    TSegment3 Segment { get; set; }
 
     /// <summary>Gets or sets the capsule radius. A negative value represents an empty capsule.</summary>
     TScalar Radius { get; set; }
@@ -70,8 +70,8 @@ public interface ICapsule3<TSelf, TScalar, TVector3, TVector4, TSegment3, TPlane
     /// <summary>Gets whether the radius is negative.</summary>
     bool IsEmpty { get; }
 
-    /// <summary>Creates a capsule from an axis segment and radius.</summary>
-    static abstract TSelf Create(TSegment3 axis, TScalar radius);
+    /// <summary>Creates a capsule from a finite centerline segment and radius.</summary>
+    static abstract TSelf Create(TSegment3 segment, TScalar radius);
 
     /// <summary>Creates a capsule from the first <see cref="ComponentCount" /> scalar values in a span.</summary>
     static abstract TSelf Create(ReadOnlySpan<TScalar> values);
@@ -88,7 +88,7 @@ public interface ICapsule3<TSelf, TScalar, TVector3, TVector4, TSegment3, TPlane
     /// <summary>Attempts to copy the segment components followed by radius into a caller-owned span.</summary>
     bool TryCopyTo(Span<TScalar> destination);
 
-    /// <summary>Returns the point at <paramref name="amount" /> along the axis segment without clamping the amount.</summary>
+    /// <summary>Returns the point at <paramref name="amount" /> along the segment without clamping the amount.</summary>
     TVector3 PointAt(TScalar amount);
 
     /// <summary>Returns whether this capsule contains <paramref name="point" />.</summary>

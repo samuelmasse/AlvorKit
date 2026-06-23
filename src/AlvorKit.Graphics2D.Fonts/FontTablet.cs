@@ -42,7 +42,7 @@ internal sealed class FontTablet : IDisposable
         gl.TexImage2D(
             GlTextureTarget.Texture2D,
             0,
-            GlInternalFormat.Rgba,
+            GlInternalFormat.Rgba8,
             Size,
             Size,
             0,

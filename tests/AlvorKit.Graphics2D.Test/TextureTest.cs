@@ -69,13 +69,14 @@ public sealed class TextureTest
     {
         var (backend, gl) = Graphics2DTestHarness.CreateLayer();
         using var texture = new Texture2D(gl, (1u, 1u), GlTextureTarget.Texture2D);
-        (byte, byte, byte, byte)[] first = [(1, 2, 3, 4)];
-        (byte, byte, byte, byte)[] second = [(5, 6, 7, 8)];
+        Vec4u8[] first = [(1, 2, 3, 4)];
+        Vec4u8[] second = [(5, 6, 7, 8)];
 
         texture.Pixels = first;
         texture.Pixels = second;
 
         Assert.AreEqual(2, backend.TexImage2DCalls);
+        Assert.AreEqual(GlInternalFormat.Rgba8, backend.LastTexImage2DInternalFormat);
     }
 
     /// <summary>Generic byte uploads succeed when the span contains exactly one RGBA8 value per texture pixel.</summary>
@@ -89,6 +90,7 @@ public sealed class TextureTest
         texture.TexImage2D(pixels);
 
         Assert.AreEqual(1, backend.TexImage2DCalls);
+        Assert.AreEqual(GlInternalFormat.Rgba8, backend.LastTexImage2DInternalFormat);
     }
 
     /// <summary>Pixel uploads reject spans whose byte count does not match the texture size.</summary>
@@ -97,7 +99,7 @@ public sealed class TextureTest
     {
         var (backend, gl) = Graphics2DTestHarness.CreateLayer();
         using var texture = new Texture2D(gl, (2u, 1u), GlTextureTarget.Texture2D);
-        (byte, byte, byte, byte)[] pixels = [(1, 2, 3, 4)];
+        Vec4u8[] pixels = [(1, 2, 3, 4)];
 
         var exception = Assert.ThrowsException<ArgumentException>(() =>
         {
@@ -114,11 +116,12 @@ public sealed class TextureTest
     {
         var (backend, gl) = Graphics2DTestHarness.CreateLayer();
         using var texture = new Texture2D(gl, (1u, 1u), GlTextureTarget.Texture2D);
-        (byte, byte, byte, byte)[] pixels = [(0xFF, 0xFF, 0xFF, 0xFF)];
+        Vec4u8[] pixels = [(0xFF, 0xFF, 0xFF, 0xFF)];
 
         texture.PixelsMipmap = pixels;
 
         Assert.AreEqual(1, backend.TexImage2DCalls);
+        Assert.AreEqual(GlInternalFormat.Rgba8, backend.LastTexImage2DInternalFormat);
         Assert.AreEqual(1, backend.GenerateMipmapCalls);
     }
 

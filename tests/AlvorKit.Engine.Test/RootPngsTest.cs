@@ -20,7 +20,7 @@ public sealed class RootPngsTest
 
             Assert.AreEqual(new Vec2u(2u, 1u), image.Size);
             CollectionAssert.AreEqual(
-                new (byte Red, byte Green, byte Blue, byte Alpha)[] { (1, 2, 3, 255), (4, 5, 6, 255) },
+                new Vec4u8[] { (1, 2, 3, 255), (4, 5, 6, 255) },
                 image.Pixels.ToArray());
         }
         finally
@@ -50,7 +50,7 @@ public sealed class RootPngsTest
 
             Assert.AreEqual(new Vec2u(2u, 1u), image.Size);
             CollectionAssert.AreEqual(
-                new (byte Red, byte Green, byte Blue, byte Alpha)[] { (9, 8, 7, 255), (6, 5, 4, 255) },
+                new Vec4u8[] { (9, 8, 7, 255), (6, 5, 4, 255) },
                 image.Pixels.ToArray());
         }
         finally

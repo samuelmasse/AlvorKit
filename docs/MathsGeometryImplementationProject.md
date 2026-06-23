@@ -1,6 +1,6 @@
 # Maths Geometry Implementation Project
 
-This document describes the next implementation project for the AlvorKit maths
+This document records the geometry implementation project for the AlvorKit maths
 library after vectors, matrices, quaternions, boxes, planes, and frustums.
 
 The goal is to build a small, coherent game geometry layer on top of the
@@ -29,7 +29,7 @@ The maths package already has these first-class building blocks:
   extraction, finite corner extraction, point and box tests, transformation,
   formatting, parsing, and scalar-family conversions.
 
-This pass adds the missing game-query shapes and their relationships:
+This pass added the missing game-query shapes and their relationships:
 
 - `Sphere3` / `Sphere3d`
 - `Ray3` / `Ray3d`
@@ -59,12 +59,12 @@ Implemented in the active maths package:
 - `Viewport` / `Viewportd` with project, unproject, pick-ray, pick-matrix,
   span, formatting, and float/double conversion support.
 
-Remaining project hygiene:
+Closeout status:
 
-- Complete full `MathsGen` source parity for the newest generated shape
-  families before treating regeneration as the only source of truth. The active
-  generated primitive output builds and is covered by maths tests, and the
-  existing generator project/tests are repaired and green.
+- `MathsGen` source parity is complete for the generated geometry families
+  listed above. Regeneration is the source of truth for those primitive shapes.
+- `MathsGen` source files are grouped into shallow folders for catalogs, specs,
+  emitters, infrastructure, and CLI entry points.
 - Optional features listed in the Deferred Features section remain intentionally
   out of scope until a concrete caller appears.
 
@@ -808,20 +808,22 @@ Do not add these in the first pass unless a real caller appears:
 - Full mesh, polygon, convex hull, or broad-phase acceleration structures.
 - Physics-engine style sweep manifolds and contact manifolds.
 
-## Open Decisions
+## Resolved Decisions
 
-- Should negative-radius spheres and capsules throw, or represent empty shapes?
-  The likely answer is to throw in constructors and provide `Empty` separately
-  if empty shapes are useful.
-- Should `Intervalf` and `Intervald` be generated primitives?
-- Should `Ray3.Direction` be allowed to be zero? The likely answer is yes, with
-  `Try...` intersection methods returning `false` for degenerate directions.
-- Should frustum-frustum classification support infinite frustums immediately?
-  If not, expose a `TryClassify` shape rather than a misleading partial answer.
-- Should viewport helpers be methods on `Viewport`, static methods on `Mat4`, or
-  a small projection helper type?
-- Should `Triangle3.Normal` be normalized by default? The likely answer is yes,
-  with a separate `UnnormalizedNormal` for raw cross products.
+- Negative-radius spheres and capsules represent empty shapes. The generated
+  types expose `Empty`, and relationship helpers treat empty shapes as
+  non-intersecting unless a specific classifier documents otherwise.
+- `Intervalf` and `Intervald` are generated primitives.
+- `Ray3.Direction` and `Ray3d.Direction` may be zero. `Try...` intersection
+  methods return `false` for degenerate directions where no stable query result
+  exists.
+- Frustum-frustum classification supports finite frustums directly. `TryClassify`
+  exposes the precise path, while the non-try classifier uses the documented
+  conservative fallback for cases it cannot prove exactly.
+- Viewport projection, unprojection, pick-ray, and pick-matrix helpers live on
+  `Viewport` / `Viewportd`.
+- `Triangle3.Normal` and `Triangle3d.Normal` return normalized vectors, with
+  `UnnormalizedNormal` available for the raw cross product.
 
 ## Recommended Implementation Order
 

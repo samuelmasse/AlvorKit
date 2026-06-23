@@ -22,6 +22,7 @@ public sealed class FontSizeTest
             Assert.AreEqual(Vec2u.Zero, first.Glyph.Box);
             Assert.AreSame(font.Textures[0], first.Texture);
             Assert.AreEqual(1, driver.LoadGlyphCount);
+            Assert.AreEqual(GlInternalFormat.Rgba8, backend.LastTexImage2DInternalFormat);
             Assert.AreEqual(0, backend.TexSubImage2DCalls);
         }
         finally

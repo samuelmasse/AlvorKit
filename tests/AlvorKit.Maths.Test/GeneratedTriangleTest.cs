@@ -24,10 +24,16 @@ public sealed class GeneratedTriangleTest
     {
         var triangle = new Triangle3(Vec3.Zero, Vec3.UnitX, Vec3.UnitY);
         var box = Box3.CreateFromCenterSize(new Vec3(0.25f, 0.25f, 0f), new Vec3(0.25f));
+        var cornerCrossingBox = Box3.CreateFromCenterSize(Vec3.Zero, new Vec3(1f));
+        var cornerCrossingTriangle = new Triangle3(
+            new Vec3(0.4f, 0.6f, 0f),
+            new Vec3(0.6f, 0.4f, 0f),
+            new Vec3(0.6f, 0.6f, 0f));
         var sphere = new Sphere3(new Vec3(0.25f, 0.25f, 0.25f), 0.25f);
         var ray = new Ray3(new Vec3(0.25f, 0.25f, -1f), Vec3.UnitZ);
 
         Assert.IsTrue(triangle.Intersects(box));
+        Assert.IsTrue(cornerCrossingTriangle.Intersects(cornerCrossingBox));
         Assert.IsTrue(triangle.Intersects(sphere));
         Assert.IsTrue(triangle.TryIntersect(ray, out var distance));
         Assert.AreEqual(1f, distance);

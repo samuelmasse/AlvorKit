@@ -330,6 +330,51 @@ public struct {{TypeName}}(
             TryIntersectPlanes(Far, Top, Right, out destination[7]);
     }
 
+    /// <summary>Gets whether the frustum planes define eight finite corners.</summary>
+    public readonly bool HasFiniteCorners
+    {
+        get
+        {
+            Span<{{Vector3Type}}> corners = stackalloc {{Vector3Type}}[CornerCount];
+            return TryCopyCornersTo(corners);
+        }
+    }
+
+    /// <summary>Attempts to copy normalized planes into a caller-owned span in Left, Right, Bottom, Top, Near, Far order.</summary>
+    public readonly bool TryCopyNormalizedPlanesTo(Span<{{Plane3Type}}> destination)
+    {
+        if (destination.Length < PlaneCount)
+            return false;
+
+        if (!Left.TryNormalize(out destination[0]) ||
+            !Right.TryNormalize(out destination[1]) ||
+            !Bottom.TryNormalize(out destination[2]) ||
+            !Top.TryNormalize(out destination[3]) ||
+            !Near.TryNormalize(out destination[4]) ||
+            !Far.TryNormalize(out destination[5]))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>Attempts to create an axis-aligned bounding box containing all finite frustum corners.</summary>
+    public readonly bool TryCreateBoundingBox(out {{Box3Type}} box)
+    {
+        Span<{{Vector3Type}}> corners = stackalloc {{Vector3Type}}[CornerCount];
+        if (!TryCopyCornersTo(corners))
+        {
+            box = default;
+            return false;
+        }
+
+        box = {{Box3Type}}.CreateFromCorners(corners[0], corners[1]);
+        for (var index = 2; index < corners.Length; index++)
+            box = box.Including(corners[index]);
+        return true;
+    }
+
     /// <summary>Returns whether the frustum contains <paramref name="point" />.</summary>
     public readonly bool Contains({{Vector3Type}} point) =>
         Left.Evaluate(point) >= {{ZeroLiteral}} &&
@@ -382,6 +427,93 @@ public struct {{TypeName}}(
         contains &= PlaneContainsBox(Far, box);
 
         return contains ? ContainmentKind.Contains : ContainmentKind.Intersects;
+    }
+
+    /// <summary>Returns whether the frustum intersects <paramref name="box" /> after finite-corner refinement.</summary>
+    public readonly bool IntersectsPrecise({{Box3Type}} box) =>
+        ClassifyPrecise(box) != ContainmentKind.Disjoint;
+
+    /// <summary>Classifies how the frustum relates to <paramref name="box" /> after finite-corner refinement.</summary>
+    public readonly ContainmentKind ClassifyPrecise({{Box3Type}} box)
+    {
+        var classification = Classify(box);
+        if (classification != ContainmentKind.Intersects)
+            return classification;
+
+        Span<{{Vector3Type}}> corners = stackalloc {{Vector3Type}}[CornerCount];
+        if (!TryCopyCornersTo(corners))
+            return classification;
+
+        for (var index = 0; index < corners.Length; index++)
+        {
+            if (box.Contains(corners[index]))
+                return ContainmentKind.Intersects;
+        }
+
+        return classification;
+    }
+
+    /// <summary>Returns whether the frustum fully contains <paramref name="other" />.</summary>
+    public readonly bool Contains({{TypeName}} other) =>
+        Classify(other) == ContainmentKind.Contains;
+
+    /// <summary>Returns whether the frustum may intersect <paramref name="other" /> using a conservative culling test.</summary>
+    public readonly bool Intersects({{TypeName}} other) =>
+        Classify(other) != ContainmentKind.Disjoint;
+
+    /// <summary>Classifies how the frustum relates to <paramref name="other" /> using finite corners when available.</summary>
+    public readonly ContainmentKind Classify({{TypeName}} other) =>
+        TryClassify(other, out var result) ? result : ContainmentKind.Intersects;
+
+    /// <summary>Attempts to classify how the frustum relates to <paramref name="other" />.</summary>
+    public readonly bool TryClassify({{TypeName}} other, out ContainmentKind result)
+    {
+        Span<{{Vector3Type}}> otherCorners = stackalloc {{Vector3Type}}[CornerCount];
+        if (!other.TryCopyCornersTo(otherCorners))
+        {
+            result = default;
+            return false;
+        }
+
+        var containsAnyOtherCorner = false;
+        var containsAllOtherCorners = true;
+        for (var index = 0; index < otherCorners.Length; index++)
+        {
+            var containsCorner = Contains(otherCorners[index]);
+            containsAnyOtherCorner |= containsCorner;
+            containsAllOtherCorners &= containsCorner;
+        }
+
+        if (containsAllOtherCorners)
+        {
+            result = ContainmentKind.Contains;
+            return true;
+        }
+
+        if (containsAnyOtherCorner)
+        {
+            result = ContainmentKind.Intersects;
+            return true;
+        }
+
+        Span<{{Vector3Type}}> corners = stackalloc {{Vector3Type}}[CornerCount];
+        if (!TryCopyCornersTo(corners))
+        {
+            result = default;
+            return false;
+        }
+
+        for (var index = 0; index < corners.Length; index++)
+        {
+            if (other.Contains(corners[index]))
+            {
+                result = ContainmentKind.Intersects;
+                return true;
+            }
+        }
+
+        result = ContainmentKind.Disjoint;
+        return true;
     }
 
     /// <summary>Returns whether the frustum fully contains <paramref name="sphere" />.</summary>

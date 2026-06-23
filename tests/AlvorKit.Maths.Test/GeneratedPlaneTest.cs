@@ -11,11 +11,17 @@ public sealed class GeneratedPlaneTest
         var plane = Plane3.CreateFromPointNormal(Vec3.Zero, new Vec3(0f, 2f, 0f));
         var normalized = plane.Normalized;
         var box = Box3.CreateFromCenterSize(new Vec3(0f, 2f, 0f), new Vec3(1f));
+        var obb = Obb3.CreateFromBox(box);
+        var crossingObb = Obb3.CreateFromBox(Box3.CreateFromCenterSize(Vec3.Zero, new Vec3(1f)));
+        var negativeObb = Obb3.CreateFromBox(Box3.CreateFromCenterSize(new Vec3(0f, -2f, 0f), new Vec3(1f)));
         var crossingSphere = new Sphere3(Vec3.Zero, 1f);
 
         Assert.IsTrue(normalized.IsNormalized(0.0001f));
         Assert.AreEqual(2f, normalized.Evaluate(new Vec3(0f, 2f, 0f)));
         Assert.AreEqual(PlaneIntersectionKind.Positive, normalized.Classify(box));
+        Assert.AreEqual(PlaneIntersectionKind.Positive, normalized.Classify(obb));
+        Assert.AreEqual(PlaneIntersectionKind.Intersecting, normalized.Classify(crossingObb));
+        Assert.AreEqual(PlaneIntersectionKind.Negative, normalized.Classify(negativeObb));
         Assert.AreEqual(PlaneIntersectionKind.Intersecting, normalized.Classify(crossingSphere));
         Assert.AreEqual(new Vec3(1f, 0f, 3f), normalized.ProjectPoint(new Vec3(1f, 4f, 3f)));
     }

@@ -1,16 +1,19 @@
 namespace AlvorKit.Script.MathsGen;
 
-/// <summary>Describes one generated 3D frustum type.</summary>
-internal sealed record FrustumSpec(ScalarSpec Scalar)
+/// <summary>Describes one generated 3D oriented bounding box type.</summary>
+internal sealed record ObbSpec(ScalarSpec Scalar)
 {
-    /// <summary>Gets the generated frustum type name.</summary>
-    public string TypeName => Scalar.FrustumName();
+    /// <summary>Gets the generated oriented bounding box type name.</summary>
+    public string TypeName => Scalar.ObbName();
 
     /// <summary>Gets the matching 3D vector type name.</summary>
     public string Vector3TypeName => Scalar.VectorName(3);
 
     /// <summary>Gets the matching 4D vector type name.</summary>
     public string Vector4TypeName => Scalar.VectorName(4);
+
+    /// <summary>Gets the matching quaternion type name.</summary>
+    public string QuaternionTypeName => Scalar.QuaternionName();
 
     /// <summary>Gets the matching 4x4 matrix type name.</summary>
     public string Matrix4TypeName => Scalar.MatrixName(4, 4);
@@ -24,12 +27,9 @@ internal sealed record FrustumSpec(ScalarSpec Scalar)
     /// <summary>Gets the matching 3D sphere type name.</summary>
     public string Sphere3TypeName => Scalar.SphereName();
 
-    /// <summary>Gets the matching 3D capsule type name.</summary>
-    public string Capsule3TypeName => Scalar.CapsuleName();
+    /// <summary>Gets the matching 3D frustum type name.</summary>
+    public string Frustum3TypeName => Scalar.FrustumName();
 
-    /// <summary>Gets the matching 3D oriented bounding box type name.</summary>
-    public string Obb3TypeName => Scalar.ObbName();
-
-    /// <summary>Gets the byte size of the frustum.</summary>
-    public int SizeBytes => Scalar.SizeBytes * 24;
+    /// <summary>Gets the byte size of the oriented bounding box.</summary>
+    public int SizeBytes => Scalar.SizeBytes * 10;
 }

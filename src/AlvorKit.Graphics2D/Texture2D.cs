@@ -15,11 +15,11 @@ public class Texture2D : Texture
     /// <summary>Creates a labeled texture using the supplied two-dimensional target.</summary>
     public Texture2D(GlLayer gl, string? label, Vec2u size, GlTextureTarget target) : base(gl, label, size, target) { }
 
-    /// <summary>Uploads RGBA byte pixels into texture level zero.</summary>
-    public ReadOnlySpan<(byte Red, byte Green, byte Blue, byte Alpha)> Pixels { set => TexImage2D(value); }
+    /// <summary>Uploads RGBA8 pixels into texture level zero.</summary>
+    public ReadOnlySpan<Vec4u8> Pixels { set => TexImage2D(value); }
 
-    /// <summary>Uploads RGBA byte pixels into texture level zero and regenerates mipmaps.</summary>
-    public ReadOnlySpan<(byte Red, byte Green, byte Blue, byte Alpha)> PixelsMipmap
+    /// <summary>Uploads RGBA8 pixels into texture level zero and regenerates mipmaps.</summary>
+    public ReadOnlySpan<Vec4u8> PixelsMipmap
     {
         set
         {
@@ -49,7 +49,7 @@ public class Texture2D : Texture
         gl.TexImage2D(
             target,
             0,
-            GlInternalFormat.Rgba,
+            GlInternalFormat.Rgba8,
             width,
             height,
             0,

@@ -18,6 +18,7 @@ public sealed class GeometryCameraTest
         Assert.AreEqual(cube.Front, cube.Faces[0]);
         Assert.AreEqual(cube.Right, cube.Faces[5]);
         Assert.AreEqual(new Vec3(0, 1, 1), cube.Front.Quad.TopLeft);
+        Assert.AreEqual(new Box3(Vec3.Zero, Vec3.One), cube.Front.Quad.Bounds.Including(cube.Back.Quad.Bounds));
     }
 
     /// <summary>Root scale derives an adjustable rational scale from monitor scale.</summary>

@@ -18,6 +18,9 @@ internal sealed record PlaneSpec(ScalarSpec Scalar)
     /// <summary>Gets the matching 3D sphere type name.</summary>
     public string Sphere3TypeName => Scalar.SphereName();
 
+    /// <summary>Gets the matching 3D oriented bounding box type name.</summary>
+    public string Obb3TypeName => Scalar.ObbName();
+
     /// <summary>Gets the matching 4x4 matrix type name.</summary>
     public string Matrix4TypeName => Scalar.MatrixName(4, 4);
 

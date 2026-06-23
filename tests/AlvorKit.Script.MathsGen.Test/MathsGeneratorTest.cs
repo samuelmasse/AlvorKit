@@ -236,6 +236,10 @@ public sealed class MathsGeneratorTest
         StringAssert.Contains(frustum, "public readonly bool Contains(Vec3 point)");
         StringAssert.Contains(frustum, "public readonly ContainmentKind Classify(Box3 box)");
         StringAssert.Contains(frustum, "public readonly bool TryCopyCornersTo(Span<Vec3> destination)");
+        StringAssert.Contains(frustum, "public readonly bool TryCopyNormalizedPlanesTo(Span<Plane3> destination)");
+        StringAssert.Contains(frustum, "public readonly bool TryCreateBoundingBox(out Box3 box)");
+        StringAssert.Contains(frustum, "public readonly ContainmentKind ClassifyPrecise(Box3 box)");
+        StringAssert.Contains(frustum, "public readonly bool TryClassify(Frustum3 other, out ContainmentKind result)");
         StringAssert.Contains(frustum, "public static implicit operator Frustum3d(Frustum3 value)");
         StringAssert.Contains(frustumd, "/// <summary>Double-precision floating-point 3D frustum volume.");
         StringAssert.Contains(frustumd, "IFrustum3Transform<Frustum3d, double, Vec3d, Vec4d, Mat4d, Plane3d, Box3d>");

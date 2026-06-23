@@ -1,0 +1,7 @@
+    /// <summary>{{KeywordCapitalized}}ly converts a {{SourceType}} to a {{TargetType}}.</summary>
+    public static {{Keyword}} operator {{TargetType}}({{SourceType}} value) =>
+        new(
+            ({{TargetVector3Type}})value.TopLeft,
+            ({{TargetVector3Type}})value.TopRight,
+            ({{TargetVector3Type}})value.BottomLeft,
+            ({{TargetVector3Type}})value.BottomRight);

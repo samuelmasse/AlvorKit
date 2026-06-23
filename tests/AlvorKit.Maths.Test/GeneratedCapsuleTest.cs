@@ -10,11 +10,15 @@ public sealed class GeneratedCapsuleTest
     {
         var capsule = new Capsule3(new Segment3(new Vec3(-1f, 0f, 0f), new Vec3(1f, 0f, 0f)), 0.5f);
         var box = Box3.CreateFromCenterSize(Vec3.Zero, new Vec3(1f));
+        var largerBox = Box3.CreateFromCenterSize(Vec3.Zero, new Vec3(2f));
+        var nearCornerMiss = new Capsule3(new Segment3(new Vec3(1.15f, 1.15f, -0.5f), new Vec3(1.15f, 1.15f, 0.5f)), 0.2f);
         var sphere = new Sphere3(new Vec3(1.5f, 0f, 0f), 0.5f);
         var plane = Plane3.CreateFromPointNormal(Vec3.Zero, Vec3.UnitY);
 
         Assert.IsTrue(capsule.Contains(Vec3.Zero));
+        Assert.AreEqual(new Vec3(-1f, 0f, 0f), capsule.Segment.Start);
         Assert.IsTrue(capsule.Intersects(box));
+        Assert.IsFalse(nearCornerMiss.Intersects(largerBox));
         Assert.IsTrue(capsule.Intersects(sphere));
         Assert.IsTrue(capsule.Intersects(plane));
         Assert.IsTrue(Capsule3.Intersects(capsule, new Capsule3(new Segment3(new Vec3(0f), new Vec3(0f, 1f, 0f)), 0.25f)));

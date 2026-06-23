@@ -15,6 +15,9 @@ internal sealed unsafe class FontsTestGl : GlNoop
     /// <summary>Gets the number of texture allocation calls observed by the backend.</summary>
     public int TexImage2DCalls { get; private set; }
 
+    /// <summary>Gets the internal format from the most recent texture allocation.</summary>
+    public GlInternalFormat LastTexImage2DInternalFormat { get; private set; }
+
     /// <summary>Gets the number of glyph subimage uploads observed by the backend.</summary>
     public int TexSubImage2DCalls { get; private set; }
 
@@ -97,8 +100,11 @@ internal sealed unsafe class FontsTestGl : GlNoop
         int border,
         GlPixelFormat format,
         GlPixelType type,
-        nint pixels) =>
+        nint pixels)
+    {
         TexImage2DCalls++;
+        LastTexImage2DInternalFormat = internalformat;
+    }
 
     /// <inheritdoc/>
     public override void TexSubImage2D(

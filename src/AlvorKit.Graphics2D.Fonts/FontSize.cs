@@ -75,9 +75,9 @@ public sealed unsafe class FontSize
     }
 
     /// <summary>Reads a FreeType bitmap into bottom-up RGBA coverage pixels.</summary>
-    private static (byte Red, byte Green, byte Blue, byte Alpha)[] ReadPixels(FtBitmap bitmap, int width, int height)
+    private static Vec4u8[] ReadPixels(FtBitmap bitmap, int width, int height)
     {
-        var pixels = new (byte Red, byte Green, byte Blue, byte Alpha)[width * height];
+        var pixels = new Vec4u8[width * height];
         if (bitmap.Buffer == 0)
             return pixels;
 

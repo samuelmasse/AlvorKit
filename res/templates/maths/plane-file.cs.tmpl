@@ -294,6 +294,34 @@ public struct {{TypeName}}({{Vector3Type}} normal, {{ScalarType}} offset)
         return PlaneIntersectionKind.Intersecting;
     }
 
+    /// <summary>
+    /// Classifies <paramref name="obb" /> against this plane. An empty OBB returns <see cref="PlaneIntersectionKind.Intersecting" />.
+    /// </summary>
+    public readonly PlaneIntersectionKind Classify({{Obb3Type}} obb)
+    {
+        Span<{{Vector3Type}}> corners = stackalloc {{Vector3Type}}[{{Obb3Type}}.CornerCount];
+        if (!obb.TryCopyCornersTo(corners))
+            return PlaneIntersectionKind.Intersecting;
+
+        var hasNegative = false;
+        var hasPositive = false;
+        for (var index = 0; index < corners.Length; index++)
+        {
+            var distance = Evaluate(corners[index]);
+            hasNegative |= distance < {{ZeroLiteral}};
+            hasPositive |= distance > {{ZeroLiteral}};
+            if (hasNegative && hasPositive)
+                return PlaneIntersectionKind.Intersecting;
+        }
+
+        if (hasPositive)
+            return PlaneIntersectionKind.Positive;
+        if (hasNegative)
+            return PlaneIntersectionKind.Negative;
+
+        return PlaneIntersectionKind.Intersecting;
+    }
+
     /// <summary>Returns value divided by its normal length.</summary>
     public static {{TypeName}} Normalize({{TypeName}} value)
     {

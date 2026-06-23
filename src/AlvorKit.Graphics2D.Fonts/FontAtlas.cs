@@ -57,7 +57,7 @@ internal sealed partial class FontAtlas : IDisposable
     }
 
     /// <summary>Adds one rendered glyph bitmap to the atlas.</summary>
-    internal FontGlyphSlot Add(FontGlyph glyph, ReadOnlySpan<(byte Red, byte Green, byte Blue, byte Alpha)> pixels)
+    internal FontGlyphSlot Add(FontGlyph glyph, ReadOnlySpan<Vec4u8> pixels)
     {
         var (x, y) = NextSlot(glyph);
         Upload(glyph, pixels, x, y);

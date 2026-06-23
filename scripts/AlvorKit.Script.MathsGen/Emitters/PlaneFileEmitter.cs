@@ -14,6 +14,7 @@ internal static class PlaneFileEmitter
             ("Vector4Type", plane.Vector4TypeName),
             ("Box3Type", plane.Box3TypeName),
             ("Sphere3Type", plane.Sphere3TypeName),
+            ("Obb3Type", plane.Obb3TypeName),
             ("Matrix4Type", plane.Matrix4TypeName),
             ("QuaternionType", plane.QuaternionTypeName),
             ("SizeBytes", plane.SizeBytes.ToString(CultureInfo.InvariantCulture)),

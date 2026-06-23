@@ -1,0 +1,8 @@
+    /// <summary>Returns whether this box intersects <paramref name="segment" />.</summary>
+    public readonly bool Intersects({{SegmentType}} segment) =>
+        segment.Intersects(this);
+
+    /// <summary>Returns whether a box and segment intersect.</summary>
+    public static bool Intersects({{TypeName}} box, {{SegmentType}} segment) =>
+        segment.Intersects(box);
+

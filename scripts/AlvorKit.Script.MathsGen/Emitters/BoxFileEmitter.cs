@@ -27,6 +27,7 @@ internal static class BoxFileEmitter
             ("IntersectsExclusive", IntersectsComparison(box, "<")),
             ("DistanceType", box.DistanceTypeName),
             ("SphereRelationships", SphereRelationships(box)),
+            ("SegmentRelationships", SegmentRelationships(box)),
             ("CrossScalarConversions", CrossScalarConversions(box)),
             ("ImplementedInterfaces", ImplementedInterfaces(box)));
 
@@ -76,6 +77,14 @@ internal static class BoxFileEmitter
                 ("TypeName", box.TypeName),
                 ("VectorType", box.VectorTypeName),
                 ("SphereType", box.SphereTypeName))
+            : "";
+
+    private static string SegmentRelationships(BoxSpec box) =>
+        box.SupportsSegmentRelationships
+            ? MathsTemplate.Fragment(
+                "box3-segment-relationships.csfrag.tmpl",
+                ("TypeName", box.TypeName),
+                ("SegmentType", box.SegmentTypeName))
             : "";
 
     private static string ImplementedInterfaces(BoxSpec box) =>

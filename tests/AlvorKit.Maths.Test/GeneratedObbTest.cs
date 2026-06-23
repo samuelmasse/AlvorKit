@@ -12,6 +12,8 @@ public sealed class GeneratedObbTest
         var box = Box3.CreateFromCenterSize(new Vec3(0.5f, 0f, 0f), new Vec3(1f));
         var sphere = new Sphere3(Vec3.Zero, 0.5f);
         var plane = Plane3.CreateFromPointNormal(Vec3.Zero, Vec3.UnitY);
+        var frustum = Frustum3.CreateFromClipTransform(Mat4.CreatePerspectiveFieldOfView(float.Pi / 2f, 1f, 1f, 10f));
+        var frustumObb = Obb3.CreateFromBox(Box3.CreateFromCenterSize(new Vec3(0f, 0f, -5f), new Vec3(1f)));
 
         Assert.IsTrue(obb.Contains(Vec3.Zero));
         Assert.IsTrue(obb.Contains(sphere));
@@ -19,6 +21,7 @@ public sealed class GeneratedObbTest
         Assert.IsTrue(obb.Intersects(sphere));
         Assert.IsTrue(obb.Intersects(plane));
         Assert.IsTrue(obb.Intersects(Obb3.CreateFromBox(box)));
+        Assert.IsTrue(frustumObb.Intersects(frustum));
     }
 
     /// <summary>OBB corner copying and transforms preserve useful spatial state.</summary>

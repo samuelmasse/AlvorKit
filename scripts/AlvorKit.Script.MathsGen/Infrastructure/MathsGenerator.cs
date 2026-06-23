@@ -31,8 +31,26 @@ internal static class MathsGenerator
     /// <summary>The project subdirectory that contains generated ray source files.</summary>
     public const string RayDirectoryName = "Ray";
 
+    /// <summary>The project subdirectory that contains generated segment source files.</summary>
+    public const string SegmentDirectoryName = "Segment";
+
+    /// <summary>The project subdirectory that contains generated capsule source files.</summary>
+    public const string CapsuleDirectoryName = "Capsule";
+
+    /// <summary>The project subdirectory that contains generated triangle source files.</summary>
+    public const string TriangleDirectoryName = "Triangle";
+
+    /// <summary>The project subdirectory that contains generated oriented bounding box source files.</summary>
+    public const string ObbDirectoryName = "Obb";
+
     /// <summary>The project subdirectory that contains generated box source files.</summary>
     public const string BoxDirectoryName = "Box";
+
+    /// <summary>The project subdirectory that contains generated quad source files.</summary>
+    public const string QuadDirectoryName = "Quad";
+
+    /// <summary>The project subdirectory that contains generated viewport source files.</summary>
+    public const string ViewportDirectoryName = "Viewport";
 
     /// <summary>Regenerates the generated primitives project under <paramref name="outputRoot"/>.</summary>
     public static void GenerateTo(string outputRoot, string packageVersion)
@@ -51,19 +69,25 @@ internal static class MathsGenerator
         var sphereDirectory = Path.Combine(projectDirectory, SphereDirectoryName);
         var intervalDirectory = Path.Combine(projectDirectory, IntervalDirectoryName);
         var rayDirectory = Path.Combine(projectDirectory, RayDirectoryName);
+        var segmentDirectory = Path.Combine(projectDirectory, SegmentDirectoryName);
+        var capsuleDirectory = Path.Combine(projectDirectory, CapsuleDirectoryName);
+        var triangleDirectory = Path.Combine(projectDirectory, TriangleDirectoryName);
+        var obbDirectory = Path.Combine(projectDirectory, ObbDirectoryName);
         var boxDirectory = Path.Combine(projectDirectory, BoxDirectoryName);
+        var quadDirectory = Path.Combine(projectDirectory, QuadDirectoryName);
+        var viewportDirectory = Path.Combine(projectDirectory, ViewportDirectoryName);
         var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         RecreateDirectory(projectDirectory);
         File.WriteAllText(ProjectFile(projectDirectory), ProjectSource(packageVersion), encoding);
-        Directory.CreateDirectory(vecDirectory);
-        Directory.CreateDirectory(matDirectory);
-        Directory.CreateDirectory(quatDirectory);
-        Directory.CreateDirectory(planeDirectory);
-        Directory.CreateDirectory(frustumDirectory);
-        Directory.CreateDirectory(sphereDirectory);
-        Directory.CreateDirectory(intervalDirectory);
-        Directory.CreateDirectory(rayDirectory);
-        Directory.CreateDirectory(boxDirectory);
+        string[] directories =
+        [
+            vecDirectory, matDirectory, quatDirectory, planeDirectory, frustumDirectory,
+            sphereDirectory, intervalDirectory, rayDirectory, segmentDirectory, capsuleDirectory, triangleDirectory,
+            obbDirectory, boxDirectory, quadDirectory, viewportDirectory,
+        ];
+        foreach (var directory in directories)
+            Directory.CreateDirectory(directory);
+
         foreach (var (fileName, source) in VectorInterfaceFileEmitter.EmitAll())
             File.WriteAllText(Path.Combine(vecDirectory, fileName), source, encoding);
 
@@ -77,52 +101,46 @@ internal static class MathsGenerator
         }
 
         foreach (var matrix in MatrixCatalog.Matrices)
-        {
-            var source = MatrixFileEmitter.Emit(matrix);
-            File.WriteAllText(Path.Combine(matDirectory, $"{matrix.TypeName}.g.cs"), source, encoding);
-        }
+            File.WriteAllText(Path.Combine(matDirectory, $"{matrix.TypeName}.g.cs"), MatrixFileEmitter.Emit(matrix), encoding);
 
         foreach (var quaternion in QuaternionCatalog.Quaternions)
-        {
-            var source = QuaternionFileEmitter.Emit(quaternion);
-            File.WriteAllText(Path.Combine(quatDirectory, $"{quaternion.TypeName}.g.cs"), source, encoding);
-        }
+            File.WriteAllText(Path.Combine(quatDirectory, $"{quaternion.TypeName}.g.cs"), QuaternionFileEmitter.Emit(quaternion), encoding);
 
         foreach (var plane in PlaneCatalog.Planes)
-        {
-            var source = PlaneFileEmitter.Emit(plane);
-            File.WriteAllText(Path.Combine(planeDirectory, $"{plane.TypeName}.g.cs"), source, encoding);
-        }
+            File.WriteAllText(Path.Combine(planeDirectory, $"{plane.TypeName}.g.cs"), PlaneFileEmitter.Emit(plane), encoding);
 
         foreach (var frustum in FrustumCatalog.Frustums)
-        {
-            var source = FrustumFileEmitter.Emit(frustum);
-            File.WriteAllText(Path.Combine(frustumDirectory, $"{frustum.TypeName}.g.cs"), source, encoding);
-        }
+            File.WriteAllText(Path.Combine(frustumDirectory, $"{frustum.TypeName}.g.cs"), FrustumFileEmitter.Emit(frustum), encoding);
 
         foreach (var sphere in SphereCatalog.Spheres)
-        {
-            var source = SphereFileEmitter.Emit(sphere);
-            File.WriteAllText(Path.Combine(sphereDirectory, $"{sphere.TypeName}.g.cs"), source, encoding);
-        }
+            File.WriteAllText(Path.Combine(sphereDirectory, $"{sphere.TypeName}.g.cs"), SphereFileEmitter.Emit(sphere), encoding);
 
         foreach (var interval in IntervalCatalog.Intervals)
-        {
-            var source = IntervalFileEmitter.Emit(interval);
-            File.WriteAllText(Path.Combine(intervalDirectory, $"{interval.TypeName}.g.cs"), source, encoding);
-        }
+            File.WriteAllText(Path.Combine(intervalDirectory, $"{interval.TypeName}.g.cs"), IntervalFileEmitter.Emit(interval), encoding);
 
         foreach (var ray in RayCatalog.Rays)
-        {
-            var source = RayFileEmitter.Emit(ray);
-            File.WriteAllText(Path.Combine(rayDirectory, $"{ray.TypeName}.g.cs"), source, encoding);
-        }
+            File.WriteAllText(Path.Combine(rayDirectory, $"{ray.TypeName}.g.cs"), RayFileEmitter.Emit(ray), encoding);
+
+        foreach (var segment in SegmentCatalog.Segments)
+            File.WriteAllText(Path.Combine(segmentDirectory, $"{segment.TypeName}.g.cs"), SegmentFileEmitter.Emit(segment), encoding);
+
+        foreach (var capsule in CapsuleCatalog.Capsules)
+            File.WriteAllText(Path.Combine(capsuleDirectory, $"{capsule.TypeName}.g.cs"), CapsuleFileEmitter.Emit(capsule), encoding);
+
+        foreach (var triangle in TriangleCatalog.Triangles)
+            File.WriteAllText(Path.Combine(triangleDirectory, $"{triangle.TypeName}.g.cs"), TriangleFileEmitter.Emit(triangle), encoding);
+
+        foreach (var obb in ObbCatalog.Obbs)
+            File.WriteAllText(Path.Combine(obbDirectory, $"{obb.TypeName}.g.cs"), ObbFileEmitter.Emit(obb), encoding);
 
         foreach (var box in BoxCatalog.Boxes)
-        {
-            var source = BoxFileEmitter.Emit(box);
-            File.WriteAllText(Path.Combine(boxDirectory, $"{box.TypeName}.g.cs"), source, encoding);
-        }
+            File.WriteAllText(Path.Combine(boxDirectory, $"{box.TypeName}.g.cs"), BoxFileEmitter.Emit(box), encoding);
+
+        foreach (var quad in QuadCatalog.Quads)
+            File.WriteAllText(Path.Combine(quadDirectory, $"{quad.TypeName}.g.cs"), QuadFileEmitter.Emit(quad), encoding);
+
+        foreach (var viewport in ViewportCatalog.Viewports)
+            File.WriteAllText(Path.Combine(viewportDirectory, $"{viewport.TypeName}.g.cs"), ViewportFileEmitter.Emit(viewport), encoding);
     }
 
     /// <summary>Returns the generated project file path for <paramref name="projectDirectory"/>.</summary>

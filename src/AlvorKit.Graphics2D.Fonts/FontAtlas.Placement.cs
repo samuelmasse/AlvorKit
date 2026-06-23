@@ -29,7 +29,7 @@ internal sealed partial class FontAtlas
     }
 
     /// <summary>Uploads a glyph bitmap into its final atlas position.</summary>
-    private void Upload(FontGlyph glyph, ReadOnlySpan<(byte Red, byte Green, byte Blue, byte Alpha)> pixels, int x, int y)
+    private void Upload(FontGlyph glyph, ReadOnlySpan<Vec4u8> pixels, int x, int y)
     {
         var width = checked((int)glyph.Box.X);
         var height = checked((int)glyph.Box.Y);

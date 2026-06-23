@@ -14,7 +14,7 @@ internal sealed class FastNoise2Field : IDisposable
     private readonly int height;
     private readonly float[] values;
     private readonly float[] minMax = new float[2];
-    private readonly (byte Red, byte Green, byte Blue, byte Alpha)[] pixels;
+    private readonly Vec4u8[] pixels;
     private bool disposed;
 
     /// <summary>Creates the FastNoise2 node graph and GPU texture.</summary>
@@ -38,7 +38,7 @@ internal sealed class FastNoise2Field : IDisposable
         height = checked((int)size.Y);
         var pixelCount = checked(width * height);
         values = new float[pixelCount];
-        pixels = new (byte, byte, byte, byte)[pixelCount];
+        pixels = new Vec4u8[pixelCount];
 
         Texture = new Texture2D(gl, "fastnoise2-demo-craftdig-fbm", size)
         {
