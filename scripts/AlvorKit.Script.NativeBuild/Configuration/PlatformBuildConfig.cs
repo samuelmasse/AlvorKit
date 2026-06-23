@@ -18,6 +18,9 @@ internal sealed class PlatformBuildConfig
     /// <summary>Additional CMake configure options.</summary>
     public string[] CMakeOptions { get; init; } = [];
 
+    /// <summary>Additional CMake configure options keyed by runtime identifier.</summary>
+    public Dictionary<string, string[]> RidCMakeOptions { get; init; } = [];
+
     /// <summary>Path to the built CMake output relative to the build directory.</summary>
     public string? CMakeOutput { get; init; }
 
@@ -32,4 +35,10 @@ internal sealed class PlatformBuildConfig
         target.Architecture == TargetArchitecture.Arm
             ? Packages.Concat(ArmPackages)
             : Packages.Concat(NativePackages);
+
+    /// <summary>Returns common and RID-specific CMake configure options.</summary>
+    public IEnumerable<string> CMakeOptionsFor(TargetRid target) =>
+        RidCMakeOptions.TryGetValue(target.Value, out var ridOptions)
+            ? CMakeOptions.Concat(ridOptions)
+            : CMakeOptions;
 }

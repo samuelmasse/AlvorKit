@@ -135,6 +135,31 @@ public sealed class NativeBuildPlannerTest
         }
     }
 
+    /// <summary>Linux CMake planning carries RID-specific options after common options.</summary>
+    [TestMethod]
+    public void CMakeLinuxCommands_IncludesRidCMakeOptions()
+    {
+        var context = LoadCMakeContext(out var root);
+        try
+        {
+            var platform = new PlatformBuildConfig
+            {
+                CMakeOutput = "src/sample.so",
+                CMakeOptions = ["-DCOMMON=1"],
+                RidCMakeOptions = new() { ["linux-arm64"] = ["-DARM64=1"] }
+            };
+
+            var commands = NativeBuildPlanner.CMakeLinuxCommands(context, TargetRid.Parse("linux-arm64"), platform);
+
+            CollectionAssert.Contains(commands[0].Arguments.ToList(), "-DCOMMON=1");
+            CollectionAssert.Contains(commands[0].Arguments.ToList(), "-DARM64=1");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     /// <summary>Windows CMake script requires the VS Clang component when a manifest requests ClangCL.</summary>
     [TestMethod]
     public void CMakeWindowsScript_WhenClangClRequested_RequiresClangComponent()
@@ -151,9 +176,35 @@ public sealed class NativeBuildPlannerTest
             var script = WindowsBuildScripts.CMake(context, TargetRid.Parse("win-x64"), platform);
 
             StringAssert.Contains(script, "Microsoft.VisualStudio.Component.VC.Llvm.Clang");
-            StringAssert.Contains(script, "Get-Command clang-cl");
+            StringAssert.Contains(script, "Tools\\Llvm\\x64\\bin\\clang-cl.exe");
+            StringAssert.Contains(script, "\"-DCMAKE_C_COMPILER=$ClangCl\"");
             Assert.IsFalse(script.Contains("-prerelease", StringComparison.Ordinal));
-            Assert.IsFalse(script.Contains("VC\\Tools\\Llvm", StringComparison.Ordinal));
+            Assert.IsFalse(script.Contains("-DCMAKE_C_COMPILER=clang-cl", StringComparison.Ordinal));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    /// <summary>Windows x86 ClangCL CMake scripts use the Visual Studio x86 LLVM path.</summary>
+    [TestMethod]
+    public void CMakeWindowsScript_WhenX86ClangClRequested_UsesX86VisualStudioLlvmPath()
+    {
+        var context = LoadCMakeContext(out var root);
+        try
+        {
+            var platform = new PlatformBuildConfig
+            {
+                CMakeOutput = "src/sample.dll",
+                CMakeOptions = ["-DCMAKE_C_COMPILER=clang-cl", "-DCMAKE_CXX_COMPILER=clang-cl"]
+            };
+
+            var script = WindowsBuildScripts.CMake(context, TargetRid.Parse("win-x86"), platform);
+
+            StringAssert.Contains(script, "Tools\\Llvm\\bin\\clang-cl.exe");
+            StringAssert.Contains(script, "\"-DCMAKE_CXX_COMPILER=$ClangCl\"");
+            Assert.IsFalse(script.Contains("Tools\\Llvm\\x64\\bin\\clang-cl.exe", StringComparison.Ordinal));
         }
         finally
         {

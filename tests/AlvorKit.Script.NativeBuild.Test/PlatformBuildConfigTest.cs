@@ -21,4 +21,17 @@ public sealed class PlatformBuildConfigTest
 
         Assert.AreEqual("base,arm", string.Join(",", config.LinuxPackages(TargetRid.Parse("linux-arm"))));
     }
+
+    /// <summary>CMake options combine common options with matching RID-specific options.</summary>
+    [TestMethod]
+    public void CMakeOptionsFor_MatchingRid_AppendsRidOptions()
+    {
+        var config = new PlatformBuildConfig
+        {
+            CMakeOptions = ["common"],
+            RidCMakeOptions = new() { ["linux-arm64"] = ["arm64"] }
+        };
+
+        Assert.AreEqual("common,arm64", string.Join(",", config.CMakeOptionsFor(TargetRid.Parse("linux-arm64"))));
+    }
 }

@@ -15,6 +15,9 @@ internal sealed class NativeBuildConfig
     /// <summary>macOS-specific build settings.</summary>
     public PlatformBuildConfig MacOS { get; init; } = new();
 
+    /// <summary>Text replacements applied to the extracted upstream source before building.</summary>
+    public SourcePatchConfig[] SourcePatches { get; init; } = [];
+
     /// <summary>Returns settings for the requested operating system.</summary>
     public PlatformBuildConfig Platform(TargetOperatingSystem operatingSystem) =>
         operatingSystem switch

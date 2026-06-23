@@ -312,6 +312,19 @@ launches that developer shell.
 If a Windows machine lacks the Visual Studio ClangCL component, the build should
 fail instead of searching custom local installs or falling back to MSVC.
 
+FastNoise2 v1.1.1 also needs two local source patches during native package
+builds:
+
+- `src/CMakeLists.txt` is patched so the package manifest can pass explicit
+  FastSIMD feature sets per RID.
+- GNU builds only receive `-mno-vzeroupper` on x86 targets, because ARM GCC
+  rejects that x86-only flag.
+- `linux-arm` caps FastSIMD max/default features to `NEON` so v1.1.1 does not
+  select AArch64-only intrinsics for 32-bit ARM.
+
+Linux FastNoise2 builds intentionally allow the exact C++ runtime SONAMEs
+reported by `readelf`, including `libstdc++.so.6` and `libgcc_s.so.1`.
+
 ## Agent Workflow
 
 When changing FastNoise2 code in this repo:

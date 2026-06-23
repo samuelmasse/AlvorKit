@@ -6,6 +6,12 @@ internal static class WindowsBuildScripts
     /// <summary>Visual Studio component ID for ClangCL support.</summary>
     private const string ClangClComponent = "Microsoft.VisualStudio.Component.VC.Llvm.Clang";
 
+    /// <summary>CMake option requesting the C compiler through ClangCL.</summary>
+    private const string ClangClCCompilerOption = "-DCMAKE_C_COMPILER=clang-cl";
+
+    /// <summary>CMake option requesting the C++ compiler through ClangCL.</summary>
+    private const string ClangClCxxCompilerOption = "-DCMAKE_CXX_COMPILER=clang-cl";
+
     /// <summary>Template files for Windows native build scripts.</summary>
     private static readonly RepositoryTemplateSet Templates = RepositoryTemplates.ForArea(typeof(WindowsBuildScripts), "native-build/windows");
 
@@ -32,14 +38,15 @@ internal static class WindowsBuildScripts
     public static string CMake(LibraryBuildContext library, TargetRid target, PlatformBuildConfig platform)
     {
         var cmakeOutput = NativeBuildPlanner.RequiredCMakeOutput(library, platform);
+        var requiresClangCl = RequiresClangCl(platform, target);
         var sourceDirectory = CommandText.PowerShellQuote(library.SourceDirectory);
         var buildDirectory = CommandText.PowerShellQuote(library.BuildDirectory(target));
         return Templates.Render(
             "cmake.ps1.tmpl",
-            ("VisualStudioDevShell", VisualStudioDevShell(target, RequiresClangCl(platform))),
+            ("VisualStudioDevShell", VisualStudioDevShell(target, requiresClangCl)),
             ("SourceDirectory", sourceDirectory),
             ("BuildDirectory", buildDirectory),
-            ("CMakeOptions", CommandText.PowerShellArgs(platform.CMakeOptions)),
+            ("CMakeOptions", CMakeOptions(platform, target, requiresClangCl)),
             ("CMakeOutputFile", CommandText.PowerShellQuote(library.BuildFile(target, cmakeOutput))),
             ("OutputFile", CommandText.PowerShellQuote(library.OutputFile(target))));
     }
@@ -63,18 +70,50 @@ internal static class WindowsBuildScripts
             "dev-shell.ps1.tmpl",
             ("RequiredComponents", requiredComponents),
             ("MissingMessage", CommandText.PowerShellQuote(missing)),
-            ("ClangClCheck", requiresClangCl ? ClangClCheck() : ""),
+            ("ClangClCheck", requiresClangCl ? ClangClCheck(target) : ""),
             ("WindowsArchitecture", target.WindowsArchitecture),
             ("VisualStudioArchitecture", CommandText.PowerShellQuote(target.VisualStudioArchitecture)));
     }
 
     /// <summary>Returns true when CMake options request ClangCL explicitly.</summary>
-    private static bool RequiresClangCl(PlatformBuildConfig platform) =>
-        platform.CMakeOptions.Any(option => option.Contains("clang-cl", StringComparison.OrdinalIgnoreCase));
+    private static bool RequiresClangCl(PlatformBuildConfig platform, TargetRid target) =>
+        platform.CMakeOptionsFor(target).Any(option => option.Contains("clang-cl", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>Generates the post-dev-shell ClangCL availability check.</summary>
-    private static string ClangClCheck() =>
-        "if (-not (Get-Command clang-cl -ErrorAction SilentlyContinue)) { "
-        + "throw \"clang-cl was requested but was not found after launching the Visual Studio developer shell.\" }"
+    private static string ClangClCheck(TargetRid target) =>
+        "$ClangCl = Join-Path $env:VCINSTALLDIR "
+        + CommandText.PowerShellQuote(ClangClRelativePath(target.Architecture))
+        + Environment.NewLine
+        + "if (-not (Test-Path $ClangCl)) { "
+        + "throw \"clang-cl was requested but was not found in the Visual Studio LLVM toolset.\" }"
         + Environment.NewLine;
+
+    /// <summary>Generates PowerShell CMake option arguments, replacing clang-cl with the Visual Studio compiler path.</summary>
+    private static string CMakeOptions(PlatformBuildConfig platform, TargetRid target, bool requiresClangCl)
+    {
+        if (!requiresClangCl)
+            return CommandText.PowerShellArgs(platform.CMakeOptionsFor(target));
+
+        var options = platform.CMakeOptionsFor(target)
+            .Where(option => !IsClangClCompilerOption(option))
+            .Select(CommandText.PowerShellQuote)
+            .Append("\"-DCMAKE_C_COMPILER=$ClangCl\"")
+            .Append("\"-DCMAKE_CXX_COMPILER=$ClangCl\"");
+        return string.Join(" ", options);
+    }
+
+    /// <summary>Returns whether an option is replaced by the generated Visual Studio ClangCL compiler path.</summary>
+    private static bool IsClangClCompilerOption(string option) =>
+        string.Equals(option, ClangClCCompilerOption, StringComparison.OrdinalIgnoreCase)
+        || string.Equals(option, ClangClCxxCompilerOption, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Returns the Visual Studio LLVM compiler path relative to <c>VCINSTALLDIR</c>.</summary>
+    private static string ClangClRelativePath(TargetArchitecture architecture) =>
+        architecture switch
+        {
+            TargetArchitecture.X86 => @"Tools\Llvm\bin\clang-cl.exe",
+            TargetArchitecture.X64 => @"Tools\Llvm\x64\bin\clang-cl.exe",
+            TargetArchitecture.Arm64 => @"Tools\Llvm\ARM64\bin\clang-cl.exe",
+            _ => throw new PlatformNotSupportedException($"{architecture} is not a Windows architecture.")
+        };
 }

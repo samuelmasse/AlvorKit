@@ -73,7 +73,7 @@ internal static class NativeBuildPlanner
                 "-DCMAKE_C_COMPILER=" + target.LinuxCompiler,
                 "-DCMAKE_CXX_COMPILER=" + target.LinuxCxxCompiler,
                 "-DCMAKE_BUILD_TYPE=Release",
-                .. platform.CMakeOptions
+                .. platform.CMakeOptionsFor(target)
             ]),
             new("cmake", ["--build", library.BuildDirectory(target), "-j"]),
             new(target.LinuxStrip, [library.OutputFile(target)])
@@ -91,7 +91,7 @@ internal static class NativeBuildPlanner
                 "-DCMAKE_BUILD_TYPE=Release",
                 "-DCMAKE_OSX_ARCHITECTURES=" + target.MacArchitecture,
                 "-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0",
-                .. platform.CMakeOptions
+                .. platform.CMakeOptionsFor(target)
             ]),
             new("cmake", ["--build", library.BuildDirectory(target), "-j"]),
             new("strip", ["-x", library.OutputFile(target)])

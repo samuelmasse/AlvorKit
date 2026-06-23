@@ -25,6 +25,7 @@ internal sealed class NativeBuildRunner(
         var platform = library.Build.Platform(target.OperatingSystem);
         Console.WriteLine($"Building {library.Name} {target.Value} ({library.NativeVersion})");
         await SourceArchiveFetcher.EnsureSourceAsync(library);
+        SourcePatcher.Apply(library);
         Directory.CreateDirectory(library.OutputDirectory(target));
         await BuildAsync(platform);
         await NativeBuildVerifier.VerifyAsync(library, target, processRunner, platform);
