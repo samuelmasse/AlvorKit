@@ -304,6 +304,11 @@ windows:
     - -DFASTNOISE2_STRICT_FP=ON
 ```
 
+Linux and macOS builds also pass `-ffp-contract=off` for C++ compilation. The
+extra flag keeps GCC and Clang from contracting scalar floating-point expressions
+in target-specific ways after strict FastNoise2 mode has disabled relaxed
+FastSIMD and `-ffast-math`.
+
 The native build script is tailored to the GitHub-hosted Windows runners used by
 `.github/workflows/native-packages.yml`: `windows-2025` for x64/x86 and
 `windows-11-arm` for arm64. Those images include Visual Studio with the C++
@@ -341,10 +346,11 @@ encoded and metadata node graphs, generates fixed 2D and 3D grids, hashes the
 raw float bytes, and writes `out/native-verify/fastnoise2/<rid>/report.json`.
 
 The current expected digests are pinned from a strict ClangCL win-x64 release
-build. `FASTNOISE2_STRICT_FP=ON` should make active FastSIMD paths produce
-matching float bytes across CI RIDs, but keep the report artifacts because they
-are the proof when a compiler, architecture, or scalar fallback still drifts.
-Do not repin fixture digests from an arbitrary non-strict developer build.
+build. `FASTNOISE2_STRICT_FP=ON`, plus `-ffp-contract=off` on GCC and Clang
+platforms, should make active FastSIMD paths produce matching float bytes across
+CI RIDs. Keep the report artifacts because they are the proof when a compiler,
+architecture, or scalar fallback still drifts. Do not repin fixture digests from
+an arbitrary non-strict developer build.
 
 ## Agent Workflow
 

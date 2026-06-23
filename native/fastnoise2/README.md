@@ -26,4 +26,5 @@ writes `out/native-verify/fastnoise2/<rid>/report.json`, and uploads that direct
 
 FastNoise2 builds pass `FASTNOISE2_STRICT_FP=ON` so the native package favors byte-stable noise output across SIMD feature sets
 over the fastest relaxed floating-point mode. The expected fixture digests are pinned from a local strict ClangCL win-x64 release
-build and should agree across CI RIDs unless a platform-specific code path still drifts.
+build and should agree across CI RIDs unless a platform-specific code path still drifts. Linux and macOS builds also pass
+`-ffp-contract=off` to keep GCC and Clang from introducing target-specific floating-point contraction in strict builds.
