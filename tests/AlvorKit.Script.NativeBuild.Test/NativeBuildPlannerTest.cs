@@ -187,9 +187,9 @@ public sealed class NativeBuildPlannerTest
         }
     }
 
-    /// <summary>Windows x86 ClangCL CMake scripts use the Visual Studio x86 LLVM path.</summary>
+    /// <summary>Windows x86 ClangCL CMake scripts use the x64-host Visual Studio LLVM compiler with an explicit x86 target.</summary>
     [TestMethod]
-    public void CMakeWindowsScript_WhenX86ClangClRequested_UsesX86VisualStudioLlvmPath()
+    public void CMakeWindowsScript_WhenX86ClangClRequested_UsesX64HostCompilerAndX86Target()
     {
         var context = LoadCMakeContext(out var root);
         try
@@ -202,9 +202,10 @@ public sealed class NativeBuildPlannerTest
 
             var script = WindowsBuildScripts.CMake(context, TargetRid.Parse("win-x86"), platform);
 
-            StringAssert.Contains(script, "Tools\\Llvm\\bin\\clang-cl.exe");
+            StringAssert.Contains(script, "Tools\\Llvm\\x64\\bin\\clang-cl.exe");
+            StringAssert.Contains(script, "-DCMAKE_C_COMPILER_TARGET=i686-pc-windows-msvc");
+            StringAssert.Contains(script, "-DCMAKE_CXX_COMPILER_TARGET=i686-pc-windows-msvc");
             StringAssert.Contains(script, "\"-DCMAKE_CXX_COMPILER=$ClangCl\"");
-            Assert.IsFalse(script.Contains("Tools\\Llvm\\x64\\bin\\clang-cl.exe", StringComparison.Ordinal));
         }
         finally
         {

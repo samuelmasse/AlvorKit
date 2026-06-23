@@ -97,10 +97,17 @@ internal static class WindowsBuildScripts
         var options = platform.CMakeOptionsFor(target)
             .Where(option => !IsClangClCompilerOption(option))
             .Select(CommandText.PowerShellQuote)
+            .Concat(ClangClTargetOptions(target).Select(CommandText.PowerShellQuote))
             .Append("\"-DCMAKE_C_COMPILER=$ClangCl\"")
             .Append("\"-DCMAKE_CXX_COMPILER=$ClangCl\"");
         return string.Join(" ", options);
     }
+
+    /// <summary>Returns explicit compiler target options needed when the host ClangCL binary does not imply the target architecture.</summary>
+    private static IEnumerable<string> ClangClTargetOptions(TargetRid target) =>
+        target.Architecture == TargetArchitecture.X86
+            ? ["-DCMAKE_C_COMPILER_TARGET=i686-pc-windows-msvc", "-DCMAKE_CXX_COMPILER_TARGET=i686-pc-windows-msvc"]
+            : [];
 
     /// <summary>Returns whether an option is replaced by the generated Visual Studio ClangCL compiler path.</summary>
     private static bool IsClangClCompilerOption(string option) =>
@@ -111,7 +118,7 @@ internal static class WindowsBuildScripts
     private static string ClangClRelativePath(TargetArchitecture architecture) =>
         architecture switch
         {
-            TargetArchitecture.X86 => @"Tools\Llvm\bin\clang-cl.exe",
+            TargetArchitecture.X86 => @"Tools\Llvm\x64\bin\clang-cl.exe",
             TargetArchitecture.X64 => @"Tools\Llvm\x64\bin\clang-cl.exe",
             TargetArchitecture.Arm64 => @"Tools\Llvm\ARM64\bin\clang-cl.exe",
             _ => throw new PlatformNotSupportedException($"{architecture} is not a Windows architecture.")

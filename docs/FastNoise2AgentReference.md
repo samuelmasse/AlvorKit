@@ -311,6 +311,9 @@ launches that developer shell.
 
 If a Windows machine lacks the Visual Studio ClangCL component, the build should
 fail instead of searching custom local installs or falling back to MSVC.
+The `win-x86` build uses the Visual Studio x64-host ClangCL executable with
+`i686-pc-windows-msvc` CMake compiler targets, because the hosted runners do not
+provide the older unqualified `Tools\Llvm\bin\clang-cl.exe` path.
 
 FastNoise2 v1.1.1 also needs two local source patches during native package
 builds:
@@ -319,8 +322,10 @@ builds:
   FastSIMD feature sets per RID.
 - GNU builds only receive `-mno-vzeroupper` on x86 targets, because ARM GCC
   rejects that x86-only flag.
-- `linux-arm` caps FastSIMD max/default features to `NEON` so v1.1.1 does not
-  select AArch64-only intrinsics for 32-bit ARM.
+- `linux-arm64` and `linux-arm` build with FastSIMD `SCALAR` only. Upstream
+  FastSIMD v1.1.1 ARM SIMD headers currently fail on CI GCC: ARM64 rejects a
+  NEON/AArch64 mask cast path, and 32-bit ARM parses AArch64-only intrinsics
+  even when the manifest requests NEON only.
 
 Linux FastNoise2 builds intentionally allow the exact C++ runtime SONAMEs
 reported by `readelf`, including `libstdc++.so.6` and `libgcc_s.so.1`.
