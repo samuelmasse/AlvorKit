@@ -6,17 +6,17 @@
             Condition="'$(UseLocalMathsPrimitives)' == '' and Exists('$(MathsPrimitivesRoot)\AlvorKit.Maths.Primitives.csproj')">true</UseLocalMathsPrimitives>
         <UseLocalMathsPrimitives Condition="'$(UseLocalMathsPrimitives)' == ''">false</UseLocalMathsPrimitives>
 
-        <FtBindVer>2.14.3.12</FtBindVer>
+        <FtBindVer>2.14.3.13</FtBindVer>
 
-        <GlfwBindVer>3.4.12</GlfwBindVer>
+        <GlfwBindVer>3.4.13</GlfwBindVer>
 
-        <MaBindVer>0.11.25.12</MaBindVer>
+        <MaBindVer>0.11.25.13</MaBindVer>
 
-        <XxhBindVer>0.8.3.12</XxhBindVer>
+        <XxhBindVer>0.8.3.13</XxhBindVer>
 
-        <GlBindVer>4.6.12</GlBindVer>
+        <GlBindVer>4.6.14</GlBindVer>
 
-        <FastNoise2BindVer>1.1.1.1</FastNoise2BindVer>
+        <FastNoise2BindVer>1.1.1.2</FastNoise2BindVer>
 
         <MathsPrimitivesVer>0.1.0</MathsPrimitivesVer>
     </PropertyGroup>
