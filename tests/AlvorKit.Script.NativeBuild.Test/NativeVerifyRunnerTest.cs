@@ -33,6 +33,35 @@ public sealed class NativeVerifyRunnerTest
         }
     }
 
+    /// <summary>Verification uses FastNoise2-specific verifier files and output directories.</summary>
+    [TestMethod]
+    public async Task VerifyAsync_FastNoise2Linux_RunsLibrarySpecificVerifier()
+    {
+        var root = TestRepositoryFactory.CreateSingleCLibrary("fastnoise2", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
+        var context = LibraryBuildContext.Load(new(root), "fastnoise2");
+        var target = TargetRid.Parse("linux-x64");
+        try
+        {
+            CreateVerifierInputs(context, target);
+            var processRunner = new RecordingProcessRunner();
+            var runner = new NativeVerifyRunner(context, target, processRunner, new HostInfo(false, true, false, Architecture.X64));
+
+            await runner.VerifyAsync();
+
+            StringAssert.EndsWith(processRunner.RunCommands[0].Arguments[2], "verify-fastnoise2");
+            StringAssert.EndsWith(
+                processRunner.RunCommands[0].Arguments[3],
+                Path.Combine("native", "fastnoise2", "verify", "verify-fastnoise2.c"));
+            Assert.AreEqual(context.OutputFile(target), processRunner.RunCommands[1].Arguments[0]);
+            Assert.AreEqual(Path.Combine(root, "out", "native-verify", "fastnoise2", "linux-x64", "report.json"),
+                processRunner.RunCommands[1].Arguments[1]);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     /// <summary>Verification reports missing native runtime binaries before invoking external tools.</summary>
     [TestMethod]
     public async Task VerifyAsync_MissingRuntimeLibrary_ThrowsBeforeRunningCommands()
@@ -189,7 +218,7 @@ public sealed class NativeVerifyRunnerTest
     {
         Directory.CreateDirectory(Path.Combine(context.LibraryDirectory, "verify"));
         Directory.CreateDirectory(context.OutputDirectory(target));
-        File.WriteAllText(Path.Combine(context.LibraryDirectory, "verify", "verify-xxhash.c"), "int main(void) { return 0; }");
+        File.WriteAllText(Path.Combine(context.LibraryDirectory, "verify", "verify-" + context.Name + ".c"), "int main(void) { return 0; }");
         File.WriteAllText(context.OutputFile(target), "");
     }
 }

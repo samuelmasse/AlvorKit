@@ -19,3 +19,10 @@ Expected library names:
 
 The upstream source tree is not committed here. Keep this package as build
 metadata plus built runtime artifacts only.
+
+The native package workflow runs `dotnet run --project scripts/AlvorKit.Script.NativeBuild -- verify fastnoise2 --rid <rid>`
+after each runtime build. The verifier dynamically loads the produced FastNoise2 library, checks deterministic noise fixtures,
+writes `out/native-verify/fastnoise2/<rid>/report.json`, and uploads that directory as the `fastnoise2-verify-<rid>` artifact.
+
+The first verifier pass intentionally uses the current non-strict FastNoise2 build flags. Do not add `FASTNOISE2_STRICT_FP=ON`
+until the non-strict verification results have shown whether the shipped RID outputs drift.

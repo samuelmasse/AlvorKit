@@ -3,20 +3,19 @@ namespace AlvorKit.Script.NativeBuild;
 /// <summary>Creates side-effect-free command plans for native verification runs.</summary>
 internal static class NativeVerifyPlanner
 {
-    /// <summary>Creates the xxhash verifier compile and run commands for one target RID.</summary>
-    public static NativeVerifyPlan XxHash(
+    /// <summary>Creates the verifier compile and run commands for one supported native library and target RID.</summary>
+    public static NativeVerifyPlan Create(
         LibraryBuildContext library,
         TargetRid target,
         NativeVerifyRunPrefix? runPrefix = null)
     {
-        if (library.Name != "xxhash")
-            throw new NotSupportedException("Native verification currently supports xxhash only.");
+        var verifierName = VerifierName(library);
 
-        var source = Path.Combine(library.LibraryDirectory, "verify", "verify-xxhash.c");
+        var source = Path.Combine(library.LibraryDirectory, "verify", verifierName + ".c");
         var artifactDirectory = Path.Combine(library.RepositoryRoot, "out", "native-verify", library.Name, target.Value);
         var executable = Path.Combine(artifactDirectory, target.OperatingSystem == TargetOperatingSystem.Windows
-            ? "verify-xxhash.exe"
-            : "verify-xxhash");
+            ? verifierName + ".exe"
+            : verifierName);
         var report = Path.Combine(artifactDirectory, "report.json");
         var compileCommand = CompileCommand(target, source, executable, artifactDirectory);
         var libraryPath = library.OutputFile(target);
@@ -29,6 +28,14 @@ internal static class NativeVerifyPlanner
             compileCommand,
             RunCommand(target, executable, libraryPath, report, artifactDirectory, runPrefix));
     }
+
+    /// <summary>Returns the verifier program basename for a supported native library.</summary>
+    private static string VerifierName(LibraryBuildContext library) =>
+        library.Name switch
+        {
+            "xxhash" or "fastnoise2" => "verify-" + library.Name,
+            _ => throw new NotSupportedException("Native verification currently supports xxhash and fastnoise2 only.")
+        };
 
     /// <summary>Creates a compiler invocation for the verifier source and target RID.</summary>
     private static CommandSpec CompileCommand(

@@ -37,7 +37,7 @@ internal static class WindowsBuildScripts
     /// <summary>Generates the Windows verifier compiler PowerShell script.</summary>
     public static string Verify(NativeVerifyPlan plan, TargetRid target) =>
         Templates.Render(
-            "verify-xxhash.ps1.tmpl",
+            "compile-verifier.ps1.tmpl",
             ("VisualStudioDevShell", VisualStudioDevShell(target, requiresClangCl: false)),
             ("ArtifactDirectory", CommandText.PowerShellQuote(plan.ArtifactDirectory)),
             ("OutputArgument", CommandText.PowerShellQuote("/Fe:" + plan.ExecutablePath)),

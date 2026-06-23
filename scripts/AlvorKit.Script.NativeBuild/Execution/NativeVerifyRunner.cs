@@ -28,7 +28,7 @@ internal sealed class NativeVerifyRunner(
     public async Task VerifyAsync()
     {
         HostCompatibility.EnsureCanBuild(target, host);
-        var plan = NativeVerifyPlanner.XxHash(library, target, LinuxArmRunPrefix());
+        var plan = NativeVerifyPlanner.Create(library, target, LinuxArmRunPrefix());
         EnsureFileExists(plan.SourcePath, "verification source");
         EnsureFileExists(plan.LibraryPath, "native runtime library");
         Directory.CreateDirectory(plan.ArtifactDirectory);

@@ -218,10 +218,10 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      # The linux-arm xxhash verifier runs an armhf test executable on the
+      # The linux-arm native verifiers run armhf test executables on the
       # Ubuntu ARM64 runner.
       - name: Install linux-arm verification emulator
-        if: matrix.package.library == 'xxhash' && matrix.target.rid == 'linux-arm'
+        if: (matrix.package.library == 'fastnoise2' || matrix.package.library == 'xxhash') && matrix.target.rid == 'linux-arm'
         run: |
           sudo apt-get update
           sudo apt-get install -y qemu-user
@@ -230,6 +230,24 @@ jobs:
       # RID, verifies dependencies, and writes native/<library>/runtimes.
       - name: Build native runtime
         run: dotnet run --project scripts/AlvorKit.Script.NativeBuild -- build ${{ matrix.package.library }} --rid ${{ matrix.target.rid }}
+
+      # FastNoise2 has a per-RID runtime verification gate in addition to the
+      # native dependency checks shared by every package build.
+      - name: Verify FastNoise2 native runtime
+        id: verify_fastnoise2
+        if: matrix.package.library == 'fastnoise2'
+        env:
+          ALVORKIT_NATIVE_VERIFY_LINUX_ARM_RUNNER: qemu-arm
+          ALVORKIT_NATIVE_VERIFY_LINUX_ARM_SYSROOT: /usr/arm-linux-gnueabihf
+        run: dotnet run --project scripts/AlvorKit.Script.NativeBuild -- verify fastnoise2 --rid ${{ matrix.target.rid }}
+
+      - name: Upload FastNoise2 verification report
+        if: always() && matrix.package.library == 'fastnoise2' && steps.verify_fastnoise2.outcome != 'skipped'
+        uses: actions/upload-artifact@v7
+        with:
+          name: fastnoise2-verify-${{ matrix.target.rid }}
+          path: out/native-verify/fastnoise2/${{ matrix.target.rid }}
+          if-no-files-found: error
 
       # xxhash has a per-RID runtime verification gate in addition to the native
       # dependency checks shared by every package build.

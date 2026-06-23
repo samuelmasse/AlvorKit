@@ -1,12 +1,15 @@
 <Project>
     <ItemGroup>
         <None Include="$(MSBuildProjectDirectory)\README.md" Pack="true" PackagePath="\" />
-        <Content Include="$(MSBuildProjectDirectory)\runtimes\**\*.*"
+        <NativeRuntimeLibrary Include="$(MSBuildProjectDirectory)\runtimes\**\*.dll" />
+        <NativeRuntimeLibrary Include="$(MSBuildProjectDirectory)\runtimes\**\*.so" />
+        <NativeRuntimeLibrary Include="$(MSBuildProjectDirectory)\runtimes\**\*.dylib" />
+        <Content Include="@(NativeRuntimeLibrary)"
             PackagePath="runtimes\%(RecursiveDir)%(Filename)%(Extension)" Visible="false" />
     </ItemGroup>
 
     <Target Name="EnsureNativeBinaries" BeforeTargets="GenerateNuspec">
-        <Error Condition="'@(Content)' == ''"
+        <Error Condition="'@(NativeRuntimeLibrary)' == ''"
             Text="runtimes/ is empty - build the native binaries first (scripts/AlvorKit.Script.NativeBuild)." />
     </Target>
 </Project>
