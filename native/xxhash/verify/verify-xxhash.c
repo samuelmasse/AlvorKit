@@ -287,6 +287,21 @@ static void bytes_to_hex(const unsigned char *bytes, size_t size, char *text)
     text[size * 2] = '\0';
 }
 
+static void print_hex_prefix(const char *name, const unsigned char *bytes, size_t size)
+{
+    char text[33];
+    size_t prefix_size = size < 16 ? size : 16;
+    bytes_to_hex(bytes, prefix_size, text);
+    printf("  %s[%llu] prefix=%s%s\n", name, (unsigned long long)size, text, size > prefix_size ? "..." : "");
+}
+
+static void hash128_to_hex(const XxHashApi *api, XXH128_hash_t hash, char text[33])
+{
+    XXH128_canonical_t canonical;
+    api->XXH128_canonicalFromHash(&canonical, hash);
+    bytes_to_hex(canonical.digest, sizeof(canonical.digest), text);
+}
+
 static void write_be64(uint64_t value, unsigned char *bytes)
 {
     int i;
@@ -479,6 +494,26 @@ static int check_128(
     return check_bytes(function, case_name, length, mode, expected, canonical.digest, sizeof(canonical.digest));
 }
 
+static void print_known_answer_vector(
+    const XxHashApi *api,
+    const KnownAnswerVector *vector,
+    const unsigned char *payload,
+    const unsigned char *secret)
+{
+    char xxh3_128[33];
+    hash128_to_hex(api, api->XXH3_128bits(payload, vector->length), xxh3_128);
+    printf(
+        "  known-answer len=%llu XXH32(seed)=0x%08" PRIX32 " XXH64(seed)=0x%016" PRIX64 "\n",
+        (unsigned long long)vector->length,
+        api->XXH32(payload, vector->length, Seed32),
+        api->XXH64(payload, vector->length, Seed64));
+    printf(
+        "    XXH3_64=0x%016" PRIX64 " XXH3_64(secret)=0x%016" PRIX64 " XXH3_128=%s\n",
+        api->XXH3_64bits(payload, vector->length),
+        api->XXH3_64bits_withSecret(payload, vector->length, secret, Xxh3SecretDefaultSize),
+        xxh3_128);
+}
+
 static int check_128_parts(
     const XxHashApi *api,
     const char *function,
@@ -602,12 +637,14 @@ static int verify_known_answer_subset(const XxHashApi *api)
     if (result != 0)
         return result;
 
+    print_hex_prefix("known-answer-secret", secret, sizeof(secret));
     for (i = 0; i < sizeof(KnownAnswerVectors) / sizeof(KnownAnswerVectors[0]); i++) {
         const KnownAnswerVector *vector = &KnownAnswerVectors[i];
         known_answer_payload(payload, vector->length);
         result = verify_known_answer_vector(api, vector, payload, secret);
         if (result != 0)
             return result;
+        print_known_answer_vector(api, vector, payload, secret);
     }
 
     return 0;
@@ -850,7 +887,7 @@ static int verify_secret_generation(const XxHashApi *api, unsigned char *custom_
         return result;
 
     api->XXH3_generateSecret_fromSeed(seeded_secret, Seed64);
-    return check_bytes(
+    result = check_bytes(
         "XXH3_generateSecret_fromSeed",
         "seed64",
         0,
@@ -858,6 +895,12 @@ static int verify_secret_generation(const XxHashApi *api, unsigned char *custom_
         ExpectedSeededSecret,
         seeded_secret,
         Xxh3SecretDefaultSize);
+    if (result != 0)
+        return result;
+
+    print_hex_prefix("custom-secret", custom_secret, Xxh3SecretSizeMin);
+    print_hex_prefix("seeded-secret", seeded_secret, Xxh3SecretDefaultSize);
+    return 0;
 }
 
 static int verify_xxh3_64(
@@ -1068,6 +1111,31 @@ static int verify_xxh3_128(
     return check_128(api, "XXH128_hashFromCanonical", "payload", length, "roundtrip", Expected128Default, api->XXH128_hashFromCanonical(&canonical));
 }
 
+static void print_payload_hashes(
+    const XxHashApi *api,
+    const unsigned char *payload,
+    size_t length,
+    const unsigned char *custom_secret)
+{
+    char default_128[33];
+    char seed_128[33];
+    char secret_128[33];
+    hash128_to_hex(api, api->XXH3_128bits(payload, length), default_128);
+    hash128_to_hex(api, api->XXH3_128bits_withSeed(payload, length, Seed64), seed_128);
+    hash128_to_hex(api, api->XXH3_128bits_withSecret(payload, length, custom_secret, Xxh3SecretSizeMin), secret_128);
+    printf(
+        "  payload len=%llu XXH32(seed)=0x%08" PRIX32 " XXH64(seed)=0x%016" PRIX64 "\n",
+        (unsigned long long)length,
+        api->XXH32(payload, length, Seed32),
+        api->XXH64(payload, length, Seed64));
+    printf(
+        "    XXH3_64=0x%016" PRIX64 " XXH3_64(seed)=0x%016" PRIX64 " XXH3_64(secret)=0x%016" PRIX64 "\n",
+        api->XXH3_64bits(payload, length),
+        api->XXH3_64bits_withSeed(payload, length, Seed64),
+        api->XXH3_64bits_withSecret(payload, length, custom_secret, Xxh3SecretSizeMin));
+    printf("    XXH3_128=%s XXH3_128(seed)=%s XXH3_128(secret)=%s\n", default_128, seed_128, secret_128);
+}
+
 static int verify_unaligned(const XxHashApi *api)
 {
     unsigned char prefixed[sizeof(Payload)];
@@ -1152,26 +1220,40 @@ static int run_verification(const XxHashApi *api)
     result = check_u32("XXH_versionNumber", "version", 0, "runtime", UINT32_C(803), version);
     if (result != 0)
         return result;
+    printf("  XXH_versionNumber=%" PRIu32 "\n", version);
 
+    printf("  checking XXH3 secret generation\n");
     result = verify_secret_generation(api, custom_secret, seeded_secret);
     if (result != 0)
         return result;
+    printf("  checking upstream known-answer vectors\n");
     result = verify_known_answer_subset(api);
     if (result != 0)
         return result;
+    printf("  checking XXH32 streaming and canonical APIs\n");
     result = verify_xxh32(api, payload, length);
     if (result != 0)
         return result;
+    printf("  checking XXH64 streaming and canonical APIs\n");
     result = verify_xxh64(api, payload, length);
     if (result != 0)
         return result;
+    printf("  checking XXH3 64-bit APIs\n");
     result = verify_xxh3_64(api, payload, length, custom_secret);
     if (result != 0)
         return result;
+    printf("  checking XXH3 128-bit APIs\n");
     result = verify_xxh3_128(api, payload, length, custom_secret);
     if (result != 0)
         return result;
-    return verify_unaligned(api);
+    print_payload_hashes(api, payload, length, custom_secret);
+    printf("  checking unaligned payload reads\n");
+    result = verify_unaligned(api);
+    if (result != 0)
+        return result;
+
+    printf("  verified cases=%d\n", CheckedCases);
+    return 0;
 }
 
 int main(int argc, char **argv)
@@ -1186,17 +1268,26 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    printf("xxhash verify: rid=%s\n", argv[3]);
+    printf("  library=%s\n", argv[1]);
     library.handle = NULL;
     result = load_library(argv[1], &library);
     if (result != 0)
         return result;
+    printf("  loaded native library\n");
 
     result = load_api(&library, &api);
-    if (result == 0)
+    if (result == 0) {
+        printf("  resolved required symbols\n");
         result = run_verification(&api);
+    }
     if (result == 0) {
         version = api.XXH_versionNumber();
         result = write_report(argv[2], argv[1], argv[3], version);
+        if (result == 0) {
+            printf("  report=%s\n", argv[2]);
+            printf("xxhash verify: PASS cases=%d\n", CheckedCases);
+        }
     }
 
     close_library(&library);
