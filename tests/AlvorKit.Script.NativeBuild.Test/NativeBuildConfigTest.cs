@@ -24,7 +24,7 @@ public sealed class NativeBuildConfigTest
         {
             var options = context.Build.Linux.CMakeOptionsFor(TargetRid.Parse(rid)).ToArray();
 
-            CollectionAssert.Contains(options, "-DCMAKE_CXX_FLAGS=-DFASTSIMD_MAX_FEATURE_SET=SCALAR -DFASTSIMD_DEFAULT_FEATURE_SET=SCALAR");
+            CollectionAssert.Contains(options, "-DCMAKE_CXX_FLAGS=-DFASTSIMD_MAX_FEATURE_SET=SCALAR -DFASTSIMD_DEFAULT_FEATURE_SET=SCALAR -ffp-contract=off");
             CollectionAssert.Contains(options, "-DFASTNOISE2_FASTSIMD_FEATURE_SETS=FEATURE_SETS;SCALAR");
         }
     }
