@@ -4,12 +4,12 @@
         <Project Path="demos/AlvorKit.Demo/AlvorKit.Demo.csproj" />
         <Project Path="demos/AlvorKit.ECS.Demo/AlvorKit.ECS.Demo.csproj" />
         <Project Path="demos/AlvorKit.ECS.Demo.Bench/AlvorKit.ECS.Demo.Bench.csproj" />
-        <Project Path="demos/AlvorKit.Engine.Triangle.Demo/AlvorKit.Engine.Triangle.Demo.csproj" />
-        <Project Path="demos/AlvorKit.Engine.Triangle3D.Demo/AlvorKit.Engine.Triangle3D.Demo.csproj" />
-        <Project Path="demos/AlvorKit.Engine.TextureCube.Demo/AlvorKit.Engine.TextureCube.Demo.csproj" />
+        <Project Path="demos/AlvorKit.Engine.Demo.Triangle/AlvorKit.Engine.Demo.Triangle.csproj" />
+        <Project Path="demos/AlvorKit.Engine.Demo.Triangle3D/AlvorKit.Engine.Demo.Triangle3D.csproj" />
+        <Project Path="demos/AlvorKit.Engine.Demo.TextureCube/AlvorKit.Engine.Demo.TextureCube.csproj" />
         <Project Path="demos/AlvorKit.FastNoise2.Demo/AlvorKit.FastNoise2.Demo.csproj" />
-        <Project Path="demos/AlvorKit.Demo.XxHash/AlvorKit.Demo.XxHash.csproj" />
-        <Project Path="demos/AlvorKit.Demo.XxHash.Bench/AlvorKit.Demo.XxHash.Bench.csproj" />
+        <Project Path="demos/AlvorKit.XxHash.Demo/AlvorKit.XxHash.Demo.csproj" />
+        <Project Path="demos/AlvorKit.XxHash.Demo.Bench/AlvorKit.XxHash.Demo.Bench.csproj" />
         <Project Path="demos/AlvorKit.FreeType.Demo/AlvorKit.FreeType.Demo.csproj" />
         <Project Path="demos/AlvorKit.Injection.Demo/AlvorKit.Injection.Demo.csproj" />
         <Project Path="demos/AlvorKit.Maths.Demo/AlvorKit.Maths.Demo.csproj" />
@@ -24,7 +24,7 @@
         <Project
             Path="demos/AlvorKit.Graphics2D.Demo/AlvorKit.Graphics2D.Demo.csproj" />
         <Project
-            Path="demos/AlvorKit.Graphics2D.Lines.Demo/AlvorKit.Graphics2D.Lines.Demo.csproj" />
+            Path="demos/AlvorKit.Graphics2D.Demo.Lines/AlvorKit.Graphics2D.Demo.Lines.csproj" />
         <Project
             Path="demos/AlvorKit.Graphics2D.Fonts.Demo/AlvorKit.Graphics2D.Fonts.Demo.csproj" />
         <Project Path="demos/AlvorKit.Script.AlvorEye.Demo/AlvorKit.Script.AlvorEye.Demo.csproj" />

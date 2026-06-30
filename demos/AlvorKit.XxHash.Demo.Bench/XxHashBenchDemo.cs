@@ -1,4 +1,4 @@
-namespace AlvorKit.Demo.XxHash.Bench;
+namespace AlvorKit.XxHash.Demo.Bench;
 
 /// <summary>Owns one xxHash benchmark demo run, including backend, sweep sizes, candidates, and printed reports.</summary>
 /// <param name="options">The parsed upstream-style benchmark options for this run.</param>
@@ -50,7 +50,7 @@ internal sealed class XxHashBenchDemo(
     /// <summary>Prints the runtime context needed to interpret benchmark numbers.</summary>
     public void PrintEnvironment()
     {
-        Console.WriteLine("AlvorKit.Demo.XxHash.Bench - port of the xxHash tests/bench harness");
+        Console.WriteLine("AlvorKit.XxHash.Demo.Bench - port of the xxHash tests/bench harness");
         Console.WriteLine($"xxhash {VersionString(xxh.GetVersionNumber())} via AlvorKit.XxHash.Backend, .NET {Environment.Version}");
         Console.WriteLine(
             $"{RuntimeInformation.OSDescription}, {RuntimeInformation.ProcessArchitecture}, {Environment.ProcessorCount} logical cores");

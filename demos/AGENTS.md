@@ -22,6 +22,18 @@ These instructions apply to C# code under `demos/`.
   instead of process-working-directory-relative paths or local repository-root
   walkers.
 
+## Demo Project Naming
+
+- Use `{ExactPackageName}.Demo[.{ScenarioOrVariant}]`. Verify exact package
+  names mechanically; do not guess by splitting dotted names.
+- Preserve real dotted package names, such as
+  `AlvorKit.Graphics2D.Fonts.Demo`. Put scenarios after `.Demo`, such as
+  `AlvorKit.Graphics2D.Demo.Lines`.
+- Keep `AlvorKit.Demo`. Use `AlvorKit.Engine.Demo.*` for engine scenarios, not
+  `AlvorKit.Engine.Loop.Demo.*`.
+- When renaming, update the folder, `.csproj`, solution entry, namespaces,
+  titles, resource paths, and docs together.
+
 ## Visual Demo Automation
 
 - Prefer AlvorSense for visual verification when a demo creates its window with

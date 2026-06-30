@@ -64,7 +64,7 @@ internal sealed class TextureCubeState(
 
         controlsToml.AddFromFile("Controls.toml");
 
-        screen.Title = "AlvorKit.Engine.TextureCube.Demo";
+        screen.Title = "AlvorKit.Engine.Demo.TextureCube";
         screen.IsVisible = true;
     }
 

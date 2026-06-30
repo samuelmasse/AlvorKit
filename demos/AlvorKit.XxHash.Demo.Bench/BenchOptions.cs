@@ -1,4 +1,4 @@
-namespace AlvorKit.Demo.XxHash.Bench;
+namespace AlvorKit.XxHash.Demo.Bench;
 
 /// <summary>
 /// Command line options, mirroring the flags of the upstream harness

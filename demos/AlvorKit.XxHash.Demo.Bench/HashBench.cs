@@ -1,4 +1,4 @@
-namespace AlvorKit.Demo.XxHash.Bench;
+namespace AlvorKit.XxHash.Demo.Bench;
 
 /// <summary>
 /// Port of the upstream xxHash benchmark core (tests/bench/benchHash.c and

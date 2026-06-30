@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Demo.XxHash.Bench" />
+        <Using Include="AlvorKit.XxHash.Demo.Bench" />
         <Using Include="AlvorKit.XxHash" />
         <Using Include="System.CommandLine" />
         <Using Include="System.CommandLine.Parsing" />
