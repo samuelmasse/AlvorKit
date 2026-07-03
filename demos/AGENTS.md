@@ -2,32 +2,28 @@
 
 ## Scope
 
-These instructions apply to C# code under `demos/`.
+These instructions apply to C# code under `demos/`. Demos are an override
+layer, not `src/` code: optimize them as teaching surfaces and runnable
+narrative walkthroughs, while still respecting game-runtime hot paths.
 
 ## Working Standard
 
-- Review the requested demo code and nearby collaborators before editing.
+- Review the requested demo and nearby collaborators before editing.
 - In Working Mode, use demo builds, AlvorSense, or other proof tools only when
-  they are useful for understanding or shaping the change.
-- Treat refactoring as part of normal demo work, but keep it focused on the
-  touched demo project unless a broader refactor is explicitly requested.
-- Preserve existing behavior unless the task asks for a behavior change.
-- Treat demo code as a teaching surface. A person browsing the repository should
-  be able to understand what the demo proves and follow the important steps
-  without hunting through incidental plumbing.
-- Keep changes cohesive, reviewable, and easy to understand for someone learning
-  from the demo.
-- Resolve checked-in demo assets under `res/` through the
-  `AlvorKit.Script.Workspace` project. `demos/Directory.Build.props` provides
-  the shared project reference and global using for demo projects; use
-  `ProjectRoot.ResDirectory(...)` or `ProjectRoot.FindFromCurrentProcess(...)`
-  instead of process-working-directory-relative paths or local repository-root
-  walkers.
+  useful for the specific change.
+- Keep refactors focused on the touched demo project unless the task asks for a
+  broader change.
+- Preserve existing behavior unless a behavior change is requested.
+- Resolve checked-in demo assets under `res/` through
+  `AlvorKit.Script.Workspace`; `demos/Directory.Build.props` provides the shared
+  reference and global using. Prefer `ProjectRoot.ResDirectory(...)` or
+  `ProjectRoot.FindFromCurrentProcess(...)` over process-working-directory paths
+  or local repository-root walkers.
 
-## Demo Project Naming
+## Naming
 
-- Use `{ExactPackageName}.Demo[.{ScenarioOrVariant}]`. Verify exact package
-  names mechanically; do not guess by splitting dotted names.
+- Use `{ExactPackageName}.Demo[.{ScenarioOrVariant}]`; verify exact package
+  names mechanically rather than guessing from dotted names.
 - Preserve real dotted package names, such as
   `AlvorKit.Graphics2D.Fonts.Demo`. Put scenarios after `.Demo`, such as
   `AlvorKit.Graphics2D.Demo.Lines`.
@@ -36,171 +32,107 @@ These instructions apply to C# code under `demos/`.
 - When renaming, update the folder, `.csproj`, solution entry, namespaces,
   titles, resource paths, and docs together.
 
-## Visual Demo Automation
+## Visual Proof
 
-- Use AlvorSense for visual proof when it is useful in Working Mode or required
-  in Commit Mode and the demo creates its window with `AgentGlfwWindowHost` from
-  `AlvorKit.Windowing.Agent`. Read `docs/AlvorSense.md` and use
-  `scripts/AlvorKit.Script.AlvorSense` for exact update counts, input batches,
-  hidden rendering, and screenshots.
-- When using AlvorSense, show important screenshots in chat, summarize the key
-  batches being run, and continue the same live session whenever practical
-  instead of restarting after every observation.
-- Use AlvorEye only when a demo is not wired for AlvorSense or the task needs
-  real desktop window behavior. Read `docs/AlvorEye.md` before doing so.
+- Use AlvorSense when visual proof is useful in Working Mode or required in
+  Commit Mode and the demo creates its window with `AgentGlfwWindowHost` from
+  `AlvorKit.Windowing.Agent`. Read `docs/AlvorSense.md` first.
+- When using AlvorSense, share important screenshots in chat, summarize the
+  input/update batches, and continue one live session when practical.
+- Use AlvorEye only when the demo is not wired for AlvorSense or the task needs
+  real desktop window behavior. Read `docs/AlvorEye.md` first.
 
-## Demo Narrative
+## Demo Shape
 
 - Structure each demo around a clear main path that reads like a step-by-step
-  guide. This often belongs in `Program.cs`, or in the first type reached from
-  `Program.cs`.
-- Prefer top-level statements in `Program.cs` for executable demos. `Program.cs`
-  should use its space to show the primary walkthrough, not just forward to a
-  static app or runner type.
-- Do not introduce a `Program` static class entry point for demos unless the
-  demo has a specific interop or tooling requirement that needs it.
-- Let the main path explain the demo's intent through clear names, ordered
-  sections, and purposeful comments where they help the reader understand the
-  sequence.
-- Comment the main walkthrough path enough to explain intent, sequencing,
-  native/API relationships, and important lifetime or layout constraints. Keep
-  implementation comments out of utility helpers, formatting functions, guards,
-  and other incidental plumbing unless a non-obvious constraint would otherwise
-  be hidden there.
-- Keep setup, platform glue, resource wrappers, repetitive initialization,
-  disposal plumbing, and other boilerplate out of the main narrative when it
-  distracts from the concept being demonstrated.
-- Push boilerplate into local functions, private methods, or small helper types
-  only when doing so makes the main narrative easier to read.
-- Prefer explicit, readable steps over clever compression in demo-facing code,
-  especially when the code is meant to show how to use an API.
-- Treat demos as happy-path walkthroughs. Avoid `try`/`catch` blocks and
-  defensive error-handling scaffolding unless the demo is specifically about
-  failure behavior or a native resource lifetime requires cleanup.
-- Do not introduce wrapper types, disposable lifetime helpers, or abstractions
-  solely to avoid `try`/`finally`, satisfy a style rule, or hide simple cleanup.
-- Prefer direct, readable cleanup in the demo path when the lifetime is local and
-  obvious, such as destroying a window and terminating a backend at the end of
-  `Program.cs`.
-- Extract lifetime management only when the helper represents a real reusable
-  concept or substantially clarifies the demo, not when it wraps a one-line
-  `Dispose` call.
-- Do not hide the essential idea behind abstraction. Extract only the code that
-  is incidental to the lesson, not the lesson itself.
+  guide, usually in `Program.cs` or the first type reached from it.
+- Prefer top-level statements in `Program.cs`. Do not introduce a static
+  `Program` entry point unless interop or tooling requires it.
+- Let the walkthrough show intent through clear names, ordered sections, and
+  purposeful comments about sequencing, native/API relationships, lifetime,
+  layout, or performance constraints.
+- Keep incidental setup, platform glue, resource wrappers, repetitive
+  initialization, and disposal plumbing out of the main narrative when it
+  distracts from the lesson.
+- Prefer explicit readable steps over clever compression. Extract only
+  incidental code, not the concept being demonstrated.
+- Treat demos as happy-path walkthroughs. Avoid defensive scaffolding and
+  `try`/`catch` blocks unless the demo is about failure behavior or a native
+  lifetime requires cleanup.
+- Prefer direct cleanup when lifetime is local and obvious, such as destroying a
+  window and terminating a backend at the end of `Program.cs`. Extract lifetime
+  management only for a real reusable concept or a clearer demo.
 
-## Game-Code Performance
+## Runtime Style
 
-- Demo code is still video game/runtime code. Design hot-path code as if it must
-  stay viable at roughly 5,000 FPS.
-- Avoid GC churn in game-loop paths, render/update paths, input polling, tight
-  benchmark loops, and per-frame helper methods.
-- Prefer structs, readonly structs, spans, ref-friendly APIs, stack allocation,
-  pooled or caller-owned buffers, and explicit ownership where they reduce
-  allocations without making the demo harder to follow.
-- Keep hot-path APIs allocation-free unless a task explicitly accepts the cost.
-  Watch for hidden allocations from LINQ, closures, iterator blocks, boxing,
+- Separate initialization, resource lifetime, input, update, render, and cleanup
+  so the game loop stays legible.
+- Demo code is still game/runtime code. Keep render/update/input polling,
+  per-frame helpers, tight benchmark loops, and other hot paths allocation-free
+  unless the task explicitly accepts the cost.
+- Watch for hidden allocations from LINQ, closures, iterator blocks, boxing,
   params arrays, string formatting, async state machines, and defensive copies.
-- It is acceptable to allocate during startup, asset loading, configuration,
+- Prefer structs, readonly structs, spans, ref-friendly APIs, stack allocation,
+  pooled or caller-owned buffers, and explicit ownership where they reduce hot
+  path allocations without hiding the lesson.
+- Allocate freely when clarity wins in startup, asset loading, configuration,
   diagnostics, error paths, teardown, and explicit load/unload operations.
-- Do not over-optimize cold code. Favor clarity outside the hot path and reserve
-  low-level techniques for places where frame-time or allocation pressure matters.
 
 ## C# Style
 
 - Prefer functional style where it improves clarity: pure helpers, immutable
   values, small transformations, explicit inputs and outputs, and minimal shared
   mutable state.
-- Separate initialization, resource lifetime, input, update, render, and cleanup
-  logic so the game loop stays obvious.
-- Prefer primary constructors for classes and records when they express the
-  dependency or value shape cleanly.
-- Keep primary constructors clean. Do not mirror constructor parameters into
-  private members solely to make them `readonly`; use the parameters directly
-  unless a distinct member is needed for validation, transformation, naming, or
-  real mutable state. In partial demo types, first verify whether the primary
-  constructor parameters are already in scope before adding mirror state for
-  another file.
-- Do not create boilerplate constructors when a primary constructor or generated
-  record constructor is sufficient.
-- Prefer expression-bodied members (`=>`) for simple one-expression methods,
-  properties, and operators when it improves readability. Use block bodies when
-  the member has multiple statements, meaningful control flow, comments, or
-  side effects that benefit from being visually emphasized.
-- Prefer file-scoped namespaces, nullable-aware code, collection expressions, and
-  the style already enforced by `.editorconfig`.
-- Avoid new production dependencies unless the task clearly needs them and the
-  tradeoff is explained.
-- Keep demo projects intentionally compact. Prefer as few files and as few types
-  as practical while preserving a clear step-by-step explanation.
-- When a demo needs to grow large, prefer one cohesive demo class split across
-  partial source files over a bag of public static tour or runner methods.
+- Prefer primary constructors when they express the value or dependency shape;
+  do not add boilerplate constructors or mirrored private state only to satisfy
+  a source-code style rule.
+- Prefer expression-bodied members for simple one-expression members when they
+  read well. Use block bodies for meaningful control flow, comments, or side
+  effects.
+- Keep demo projects compact, but do not force `src/` one-type-per-file
+  pressure onto demos.
 - Keep demo-specific state, native handles, and lifetime sequencing on the demo
   instance. Reserve `static` for constants, pure value helpers, and genuinely
   stateless shared utilities.
 - A `.cs` file may live directly at the root of its demo project when that is
-  the clearest home. Subdirectories are optional organization, not a requirement.
-- Multiple related types can live in the same `.cs` file when they support one
-  demo concept and keeping them together improves readability.
-- Create new files or one-level subdirectories only when a single file becomes
-  harder to navigate than the extra project structure.
-- Keep demo project folders shallow: use at most one level of subdirectories
-  beneath each demo project, and avoid nesting those groups further.
+  clearest. Use at most one level of subdirectories when extra structure helps.
+- Multiple related types may share one `.cs` file when they support one demo
+  concept and keeping them together improves readability.
+- When a large cohesive demo is easier to follow as one demo class, partial
+  source files are allowed; use that exception to preserve narrative, not to
+  mimic production organization.
 
 ## File Size
 
-- In Working Mode, treat the 750-line demo source target as cleanup guidance,
-  not a blocker for making Working Mode changes work.
-- In Commit Mode, keep each edited C# file at or below 750 lines.
-- Larger demo files are acceptable when they preserve a readable, step-by-step
-  narrative and prevent needless file/type sprawl.
-- In Commit Mode, when a touched file is already over 750 lines, split out
-  cohesive helpers or data shapes before adding more code.
-- If a file cannot reasonably be kept under 750 lines because of demo flow,
-  platform glue, or tightly coupled declarations, call that out clearly and keep
-  the exception as small as possible.
+- In Working Mode, treat 750 lines per demo source file as cleanup guidance, not
+  a blocker.
+- In Commit Mode, keep edited demo C# files at or below 750 lines when
+  practical.
+- Larger demo files are acceptable when they preserve a readable walkthrough and
+  prevent needless file/type sprawl; call out the exception if it cannot
+  reasonably be reduced.
 
 ## Documentation
 
-- In Commit Mode, add concise XML documentation comments for every type,
-  constructor, method, field, and property introduced or changed.
-- In Commit Mode, every demo method should have at least a quick XML
-  `<summary>`, including private helpers and formatting methods. These summaries
-  may be brief, but they should say what role the method plays in the demo.
-- In Commit Mode, for local functions under top-level statements, use a short
-  leading comment that gives the same quick purpose summary.
-- For methods and constructors, write one useful `<summary>` comment instead of
-  separate `<param>` comments for each parameter. Add other XML tags only when
-  they explain an important contract that the summary cannot express clearly.
-- Documentation should explain purpose, contracts, ownership, performance
-  expectations, edge cases, or side effects; do not add useless comments or
-  comments that merely restate the implementation.
-- Keep implementation comments rare. Use them only to explain non-obvious
-  runtime constraints, native/API compatibility, resource lifetime rules, or
-  algorithmic choices.
+- In Commit Mode, add concise XML documentation for public and private demo
+  types and members introduced or changed, including a quick purpose summary for
+  private helpers.
+- For local functions under top-level statements, use a short leading comment
+  with the same quick purpose summary.
+- Prefer one useful `<summary>` over mechanical `<param>` comments. Add other
+  XML tags only for important contracts.
+- Documentation and walkthrough comments should explain purpose, ownership,
+  sequencing, performance expectations, native/API compatibility, edge cases, or
+  side effects; avoid restating implementation.
 
-## Tests
+## Tests And Commit Mode
 
-- Do not create tests for demos or demo-only code.
-- If logic moves out of a demo and receives tests elsewhere, those test files
-  use the repo-wide 750-line test limit, not the normal source or demo file-size
-  limits.
-- Prefer moving testable rules into small helpers instead of testing through a
-  live graphics window.
-- If logic becomes important enough to need unit coverage, move it into `src/`
-  or another non-demo project and test it there.
-- Avoid test designs that require real graphics hardware unless the task is
-  explicitly integration-focused.
-- Do not run the repository coverage tool for changes that only touch demo
-  projects or demo-only code. Demo projects have no unit tests by design, so
-  coverage is not required for demo-only work.
+- Do not create tests or run coverage for demo-only code; demo projects have no
+  unit tests by design.
+- If logic becomes important enough for unit coverage, move it into `src/` or
+  another non-demo project and test it there.
 - In Commit Mode, build the touched demo project or explain why that was not
-  possible.
-
-## Final Review
-
-- In Commit Mode, re-read the changed files before handing off.
-- In Commit Mode, check that edited files respect the 750-line target, the
-  repo-wide 170-character code line limit, XML docs are meaningful, constructors
-  are not redundant, and hot paths avoid allocation churn.
-- In Commit Mode, report the exact build or verification command run and any
-  remaining risk.
+  possible, then report the exact command and any remaining risk.
+- In Commit Mode, re-read changed files and check the 750-line target,
+  repo-wide 170-character code line limit, meaningful docs, constructor clarity,
+  and hot-path allocation discipline before handoff.

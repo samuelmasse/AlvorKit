@@ -11,6 +11,6 @@ Keep source-generator templates that must be packaged into analyzers on their
 embedded-resource path. Align behavior with the script renderer when practical,
 but do not add script-tool dependencies to analyzer projects.
 
-Follow `README.md` for naming, fragment, and generated-output review rules.
-Generated-output review for template changes is a Commit Mode gate; in Working
+Follow `README.md` for naming, fragment, and generated-output check rules.
+Generated-output checks for template changes are a Commit Mode gate; in Working
 Mode, generate or inspect output only when it helps iteration.
