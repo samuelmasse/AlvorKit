@@ -38,7 +38,7 @@ public class RangeAllocator
     /// <summary>Gets the number of distinct free block sizes.</summary>
     public int FreeSizeCount => freeBlocks.SizeCount;
 
-    /// <summary>Gets the number of pooled index sets available for reuse.</summary>
+    /// <summary>Gets the number of pooled free-block index nodes available for reuse.</summary>
     public int IndexSetPoolCount => freeBlocks.PooledSetCount;
 
     /// <summary>Gets the total time spent packing, in milliseconds.</summary>

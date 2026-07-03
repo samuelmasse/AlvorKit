@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Ranges\AlvorKit.Ranges.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="RangeAllocatorVisualizer.Controls.toml">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Engine" />
+        <Using Include="AlvorKit.Engine.Loop" />
+        <Using Include="AlvorKit.Graphics2D" />
+        <Using Include="AlvorKit.Graphics2D.Fonts" />
+        <Using Include="AlvorKit.Maths" />
+        <Using Include="AlvorKit.Ranges" />
+        <Using Include="AlvorKit.Ranges.Demo.Visualizer" />
+        <Using Include="AlvorKit.Windowing" />
+    </ItemGroup>
+
+</Project>
