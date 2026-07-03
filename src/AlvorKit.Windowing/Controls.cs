@@ -1,7 +1,7 @@
 namespace AlvorKit.Windowing;
 
 /// <summary>Stores named control bindings for a window loop.</summary>
-public sealed class Controls(WindowLoop window)
+public class Controls(WindowLoop window)
 {
     /// <summary>Gets controls that ran during the current control frame and their hit counts.</summary>
     public IReadOnlyDictionary<Control, int> Hits => window.Controls.Hits;

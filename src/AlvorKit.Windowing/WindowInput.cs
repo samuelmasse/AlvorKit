@@ -2,7 +2,7 @@ namespace AlvorKit.Windowing;
 
 /// <summary>Changes input-related host state for a window loop.</summary>
 /// <param name="window">The window loop that owns the input state.</param>
-public sealed class WindowInput(WindowLoop window)
+public class WindowInput(WindowLoop window)
 {
     /// <summary>Gets or sets the host clipboard text.</summary>
     public string Clipboard

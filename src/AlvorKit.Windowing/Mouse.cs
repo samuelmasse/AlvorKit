@@ -4,7 +4,7 @@ namespace AlvorKit.Windowing;
 /// <param name="window">The window loop that owns the mouse state.</param>
 /// <param name="main">The button used by main-button convenience methods.</param>
 /// <param name="secondary">The button used by secondary-button convenience methods.</param>
-public sealed class Mouse(WindowLoop window, MouseButton main = MouseButton.Left, MouseButton secondary = MouseButton.Right)
+public class Mouse(WindowLoop window, MouseButton main = MouseButton.Left, MouseButton secondary = MouseButton.Right)
 {
     /// <summary>Gets the primary mouse button used by convenience methods.</summary>
     public MouseButton Main { get; } = main;

@@ -1,7 +1,7 @@
 namespace AlvorKit.Windowing;
 
 /// <summary>Reads keyboard state and text input from a window loop.</summary>
-public sealed class Keyboard(WindowLoop window)
+public class Keyboard(WindowLoop window)
 {
     /// <summary>Gets text input runes entered since the previous tick.</summary>
     public IReadOnlyList<Rune> Text => window.Text.Runes;

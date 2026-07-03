@@ -1,7 +1,7 @@
 namespace AlvorKit.Windowing;
 
 /// <summary>Exposes screen, visibility, title, and close operations for a window loop.</summary>
-public sealed class WindowScreen(WindowLoop window)
+public class WindowScreen(WindowLoop window)
 {
     /// <summary>Gets whether the window is exiting.</summary>
     public bool IsExiting => window.Close.IsExiting;
