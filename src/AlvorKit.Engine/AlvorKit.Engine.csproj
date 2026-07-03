@@ -13,6 +13,7 @@
         <ProjectReference Include="..\AlvorKit.Injection\AlvorKit.Injection.csproj" />
         <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
         <ProjectReference Include="..\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
+        <ProjectReference Include="..\AlvorKit.Ranges\AlvorKit.Ranges.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
     </ItemGroup>
 
@@ -22,6 +23,7 @@
         <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.OpenGL.Layer" />
+        <Using Include="AlvorKit.Ranges" />
         <Using Include="AlvorKit.Windowing" />
         <Using Include="BigGustave" />
     </ItemGroup>

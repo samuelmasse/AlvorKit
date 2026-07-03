@@ -1,11 +1,11 @@
 namespace AlvorKit.Engine;
 
-/// <summary>GPU array buffer backed by an <see cref="Allocator"/> that can compact and resize itself.</summary>
+/// <summary>GPU array buffer backed by a <see cref="RangeAllocator"/> that can compact and resize itself.</summary>
 [ExcludeFromCodeCoverage(Justification = "Moves bytes between live OpenGL buffers.")]
 public class SharedVertexBuffer
 {
     private readonly GlLayer gl;
-    private readonly Allocator allocator;
+    private readonly RangeAllocator allocator;
     private readonly GlBufferHandle vbo;
     private long size;
 
@@ -22,7 +22,7 @@ public class SharedVertexBuffer
     }
 
     /// <summary>Gets the backing allocator.</summary>
-    public Allocator Allocator => allocator;
+    public RangeAllocator Allocator => allocator;
 
     /// <summary>Gets the tracked vertex buffer object handle.</summary>
     public GlBufferHandle Vbo => vbo;
@@ -57,8 +57,8 @@ public class SharedVertexBuffer
             gl.CopyBufferSubData(
                 GlCopyBufferSubDataTarget.CopyWriteBuffer,
                 GlCopyBufferSubDataTarget.CopyReadBuffer,
-                (nint)allocator.AlignedAddr(last.Index, last.Alignement),
-                (nint)allocator.AlignedAddr(current.Index, current.Alignement),
+                (nint)allocator.AlignedAddr(last.Index, last.Alignment),
+                (nint)allocator.AlignedAddr(current.Index, current.Alignment),
                 (nint)current.Size);
         }
 

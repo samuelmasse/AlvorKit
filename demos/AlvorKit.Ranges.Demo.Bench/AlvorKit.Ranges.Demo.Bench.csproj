@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <ServerGarbageCollection>false</ServerGarbageCollection>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.CommandLine" Version="2.0.8" />
+        <ProjectReference Include="..\..\src\AlvorKit.Ranges\AlvorKit.Ranges.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Ranges" />
+        <Using Include="AlvorKit.Ranges.Demo.Bench" />
+        <Using Include="System.CommandLine" />
+        <Using Include="System.CommandLine.Parsing" />
+        <Using Include="System.Runtime" />
+        <Using Include="System.Text.Json" />
+    </ItemGroup>
+
+</Project>

@@ -16,6 +16,7 @@
         <Project Path="demos/AlvorKit.MiniAudio.Demo/AlvorKit.MiniAudio.Demo.csproj" />
         <Project Path="demos/AlvorKit.MiniAudio.Demo.Music/AlvorKit.MiniAudio.Demo.Music.csproj" />
         <Project Path="demos/AlvorKit.Mocking.Demo/AlvorKit.Mocking.Demo.csproj" />
+        <Project Path="demos/AlvorKit.Ranges.Demo.Bench/AlvorKit.Ranges.Demo.Bench.csproj" />
         <Project
             Path="demos/AlvorKit.OpenGL.Demo.HelloTriangle/AlvorKit.OpenGL.Demo.HelloTriangle.csproj" />
         <Project
@@ -57,6 +58,7 @@
     <Project Path="src/AlvorKit.Mocking/AlvorKit.Mocking.csproj" />
     <Project Path="src/AlvorKit.Maths.Core/AlvorKit.Maths.Core.csproj" />
     <Project Path="src/AlvorKit.Maths/AlvorKit.Maths.csproj" />
+    <Project Path="src/AlvorKit.Ranges/AlvorKit.Ranges.csproj" />
     <Project Path="src/AlvorKit.Engine/AlvorKit.Engine.csproj" />
     <Project Path="src/AlvorKit.Engine.Loop/AlvorKit.Engine.Loop.csproj" />
     <Project Path="src/AlvorKit.Graphics2D/AlvorKit.Graphics2D.csproj" />
@@ -73,6 +75,7 @@
         <Project Path="tests/AlvorKit.Injection.Test/AlvorKit.Injection.Test.csproj" />
         <Project Path="tests/AlvorKit.Mocking.Test/AlvorKit.Mocking.Test.csproj" />
         <Project Path="tests/AlvorKit.Maths.Test/AlvorKit.Maths.Test.csproj" />
+        <Project Path="tests/AlvorKit.Ranges.Test/AlvorKit.Ranges.Test.csproj" />
         <Project Path="tests/AlvorKit.Engine.Test/AlvorKit.Engine.Test.csproj" />
         <Project Path="tests/AlvorKit.XxHash.Test/AlvorKit.XxHash.Test.csproj" />
         <Project
