@@ -4,6 +4,56 @@ namespace AlvorKit.Ranges;
 internal static class RangeBoundarySearch
 {
     /// <summary>Returns the first index whose value is greater than or equal to <paramref name="value"/>.</summary>
+    public static int FirstGreaterOrEqual(IList<long> list, long value)
+    {
+        if (list.Count == 0)
+            return -1;
+
+        var left = 0;
+        var right = list.Count - 1;
+        var result = -1;
+        while (left <= right)
+        {
+            var mid = left + (right - left) / 2;
+
+            if (list[mid] >= value)
+            {
+                result = mid;
+                right = mid - 1;
+            }
+            else
+                left = mid + 1;
+        }
+
+        return result;
+    }
+
+    /// <summary>Returns the first span index whose value is greater than or equal to <paramref name="value"/>.</summary>
+    public static int FirstGreaterOrEqual(ReadOnlySpan<long> list, long value)
+    {
+        if (list.Length == 0)
+            return -1;
+
+        var left = 0;
+        var right = list.Length - 1;
+        var result = -1;
+        while (left <= right)
+        {
+            var mid = left + (right - left) / 2;
+
+            if (list[mid] >= value)
+            {
+                result = mid;
+                right = mid - 1;
+            }
+            else
+                left = mid + 1;
+        }
+
+        return result;
+    }
+
+    /// <summary>Returns the first index whose value is greater than or equal to <paramref name="value"/>.</summary>
     public static int FirstGreaterOrEqual<T>(IList<T> list, T value) where T : INumber<T>
     {
         if (list.Count == 0)
@@ -17,6 +67,32 @@ internal static class RangeBoundarySearch
             var mid = left + (right - left) / 2;
 
             if (list[mid] >= value)
+            {
+                result = mid;
+                right = mid - 1;
+            }
+            else
+                left = mid + 1;
+        }
+
+        return result;
+    }
+
+    /// <summary>Returns the first index whose value is greater than <paramref name="value"/>.</summary>
+    public static int SmallestStrictlyLarger(IList<long> list, long value)
+    {
+        if (list.Count == 0)
+            return -1;
+
+        var left = 0;
+        var right = list.Count - 1;
+        var result = -1;
+
+        while (left <= right)
+        {
+            var mid = left + (right - left) / 2;
+
+            if (list[mid] > value)
             {
                 result = mid;
                 right = mid - 1;
@@ -49,6 +125,32 @@ internal static class RangeBoundarySearch
             }
             else
                 left = mid + 1;
+        }
+
+        return result;
+    }
+
+    /// <summary>Returns the last index whose value is less than <paramref name="value"/>.</summary>
+    public static int LargestStrictlySmaller(IList<long> list, long value)
+    {
+        if (list.Count == 0)
+            return -1;
+
+        var left = 0;
+        var right = list.Count - 1;
+        var result = -1;
+
+        while (left <= right)
+        {
+            var mid = left + (right - left) / 2;
+
+            if (list[mid] < value)
+            {
+                result = mid;
+                left = mid + 1;
+            }
+            else
+                right = mid - 1;
         }
 
         return result;

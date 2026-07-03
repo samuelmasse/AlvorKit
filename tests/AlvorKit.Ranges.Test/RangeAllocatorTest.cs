@@ -13,11 +13,48 @@ public sealed class RangeAllocatorTest
         allocator.Alloc(ref allocation, 8, 16);
 
         Assert.AreNotEqual(0, allocation);
-        Assert.AreEqual(25, allocator.Used);
+        Assert.AreEqual(24, allocator.Used);
         Assert.AreEqual(1, allocator.Allocations.Length);
         Assert.AreEqual(16, allocator.AllocationSlots[allocation].Size);
         Assert.AreEqual(8, allocator.AllocationSlots[allocation].Alignment);
         Assert.AreEqual(8, allocator.Addr(allocation));
+    }
+
+    /// <summary>Allocating at an already aligned index returns that exact address while reserving max needed padding.</summary>
+    [TestMethod]
+    public void Alloc_WhenIndexAlreadyAligned_UsesExactAddressAndMaxReservedPadding()
+    {
+        var allocator = new RangeAllocator(initialSize: 100);
+        var prefix = 0;
+        var aligned = 0;
+        allocator.Alloc(ref prefix, 0, 7);
+
+        allocator.Alloc(ref aligned, 8, 8);
+
+        Assert.AreEqual(8, allocator.AllocationSlots[aligned].Index);
+        Assert.AreEqual(8, allocator.Addr(aligned));
+        Assert.AreEqual(23, allocator.Used);
+    }
+
+    /// <summary>Best-fit allocation reuses an exact-alignment hole that can hold max reserved padding.</summary>
+    [TestMethod]
+    public void Alloc_WhenAlignedHoleHasReservedCapacity_ReusesHole()
+    {
+        var allocator = new RangeAllocator(initialSize: 100);
+        var prefix = 0;
+        var hole = 0;
+        var suffix = 0;
+        allocator.Alloc(ref prefix, 0, 7);
+        allocator.Alloc(ref hole, 0, 15);
+        allocator.Alloc(ref suffix, 0, 1);
+        allocator.Free(hole);
+
+        var replacement = 0;
+        allocator.Alloc(ref replacement, 8, 8);
+
+        Assert.AreEqual(8, allocator.AllocationSlots[replacement].Index);
+        Assert.AreEqual(8, allocator.Addr(replacement));
+        Assert.AreEqual(24, allocator.Used);
     }
 
     /// <summary>Freeing adjacent ranges coalesces them back into one free block.</summary>
@@ -99,6 +136,49 @@ public sealed class RangeAllocatorTest
         Assert.AreEqual(0, allocator.Allocations.Length);
     }
 
+    /// <summary>Allocating zero bytes on an empty handle remains a no-op.</summary>
+    [TestMethod]
+    public void Alloc_WithZeroSizeAndEmptyHandle_RemainsEmpty()
+    {
+        var allocator = new RangeAllocator();
+        var allocation = 0;
+
+        allocator.Alloc(ref allocation, 0, 0);
+
+        Assert.AreEqual(0, allocation);
+        Assert.AreEqual(1, allocator.Used);
+    }
+
+    /// <summary>Freeing the empty handle is a no-op.</summary>
+    [TestMethod]
+    public void Free_WithEmptyHandle_DoesNothing()
+    {
+        var allocator = new RangeAllocator();
+
+        allocator.Free(0);
+
+        Assert.AreEqual(1, allocator.Used);
+        Assert.AreEqual(0, allocator.Allocations.Length);
+    }
+
+    /// <summary>Zero alignment returns the original address.</summary>
+    [TestMethod]
+    public void AlignedAddr_WithZeroAlignment_ReturnsOriginalIndex()
+    {
+        var allocator = new RangeAllocator();
+
+        Assert.AreEqual(5, allocator.AlignedAddr(5, 0));
+    }
+
+    /// <summary>Non-power-of-two alignment still rounds up to the next valid multiple.</summary>
+    [TestMethod]
+    public void AlignedAddr_WithNonPowerOfTwoAlignment_RoundsUp()
+    {
+        var allocator = new RangeAllocator();
+
+        Assert.AreEqual(6, allocator.AlignedAddr(5, 3));
+    }
+
     /// <summary>Negative sizes and alignments fail clearly instead of changing allocator state.</summary>
     [TestMethod]
     public void Alloc_WithNegativeInputs_Throws()
@@ -172,6 +252,24 @@ public sealed class RangeAllocatorTest
         Assert.AreEqual(81, allocator.Used);
         Assert.IsTrue(allocator.IndexSetPoolCount > 0);
         Assert.IsTrue(allocator.PackTime >= 0);
+    }
+
+    /// <summary>Packing without a callback still compacts live ranges and resets free space.</summary>
+    [TestMethod]
+    public void Pack_WithoutCallback_CompactsLiveRanges()
+    {
+        var allocator = new RangeAllocator();
+        var first = 0;
+        var second = 0;
+        allocator.Alloc(ref first, 0, 10);
+        allocator.Alloc(ref second, 0, 20);
+        allocator.Free(first);
+
+        allocator.Pack();
+
+        Assert.AreEqual(1, allocator.AllocationSlots[second].Index);
+        Assert.AreEqual(21, allocator.Used);
+        Assert.AreEqual(1, allocator.FreeBlockCount);
     }
 
     /// <summary>Resize also works without a callback and exposes resize timing.</summary>

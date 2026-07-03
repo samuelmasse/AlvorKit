@@ -9,7 +9,7 @@ public struct RangeAllocation
     /// <summary>Gets or sets the requested payload size in bytes.</summary>
     public long Size;
 
-    /// <summary>Gets or sets the alignment padding reserved for this allocation.</summary>
+    /// <summary>Gets or sets the requested byte alignment for this allocation.</summary>
     public int Alignment;
 
     /// <summary>Gets or sets the dense live-allocation rank used by the allocator.</summary>

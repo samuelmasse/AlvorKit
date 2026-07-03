@@ -71,13 +71,10 @@ public class RangeAllocator
         if (ReuseExistingOrFree(ref allocation, alignment, allocSize))
             return;
 
-        var (index, blockSize) = TakeBlock(allocSize + alignment);
+        var reservedSize = allocSize + MaxPadding(alignment);
+        var index = TakeBlock(reservedSize);
         allocation = allocations.Add(index, allocSize, alignment);
-        var newIndex = index + allocSize + alignment;
-        var newSize = blockSize - (newIndex - index);
-        if (newSize > 0)
-            freeBlocks.Add(newIndex, newSize);
-        used += allocSize + alignment;
+        used += reservedSize;
     }
 
     /// <summary>Returns the aligned backing-store address for a logical allocation.</summary>
@@ -97,7 +94,7 @@ public class RangeAllocator
             return;
 
         var slot = allocations.Remove(allocation);
-        var allocationSize = slot.Size + slot.Alignment;
+        var allocationSize = ReservedSize(slot);
         freeBlocks.Merge(slot.Index, allocationSize);
         used -= allocationSize;
     }
@@ -113,7 +110,7 @@ public class RangeAllocator
             ref var allocation = ref allocations.Slot(handle);
             allocations.CaptureLast(handle);
             allocation.Index = index;
-            index += allocation.Size + allocation.Alignment;
+            index += ReservedSize(allocation);
         }
 
         used = index;
@@ -141,25 +138,26 @@ public class RangeAllocator
     }
 
     /// <summary>Returns a best-fit free block, packing or resizing until one exists.</summary>
-    private (long Index, long Size) TakeBlock(long requiredSize)
+    private long TakeBlock(long requiredSize)
     {
-        int bestFit;
         do
         {
-            bestFit = freeBlocks.FindBestFit(requiredSize);
+            if (freeBlocks.TryTakeBestFit(requiredSize, out var index))
+                return index;
 
-            if (bestFit < 0)
-            {
-                if (used + requiredSize >= (size / 8) * 7)
-                    Resize(NextPowerOfTwo(size + requiredSize));
-                else
-                    Pack();
-            }
+            if (used + requiredSize >= (size / 8) * 7)
+                Resize(NextPowerOfTwo(size + requiredSize));
+            else
+                Pack();
         }
-        while (bestFit < 0);
-
-        return freeBlocks.TakeBestFit(bestFit);
+        while (true);
     }
+
+    /// <summary>Returns the reserved byte count for a live allocation slot.</summary>
+    private static long ReservedSize(RangeAllocation allocation) => allocation.Size + MaxPadding(allocation.Alignment);
+
+    /// <summary>Returns the maximum padding any index can require for <paramref name="alignment"/>.</summary>
+    private static long MaxPadding(int alignment) => alignment <= 1 ? 0 : alignment - 1L;
 
     /// <summary>Frees an existing handle when it cannot satisfy the new request.</summary>
     private bool ReuseExistingOrFree(ref int allocation, int alignment, long allocSize)
