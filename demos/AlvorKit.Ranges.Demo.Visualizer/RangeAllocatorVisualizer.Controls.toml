@@ -39,6 +39,3 @@ KeyPress = "L"
 
 [TogglePadding]
 KeyPress = "A"
-
-[ToggleTrails]
-KeyPress = "T"

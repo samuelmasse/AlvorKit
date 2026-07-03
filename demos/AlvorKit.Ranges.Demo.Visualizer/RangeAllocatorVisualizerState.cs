@@ -19,7 +19,6 @@ internal sealed class RangeAllocatorVisualizerState(
     private bool playing = true;
     private bool showLabels = true;
     private bool showPadding = true;
-    private bool showTrails = true;
 
     /// <summary>Loads controls, initializes the first scenario, and shows the window.</summary>
     public override void Load()
@@ -39,8 +38,6 @@ internal sealed class RangeAllocatorVisualizerState(
             showLabels = !showLabels;
         if (controls.TogglePadding.Run())
             showPadding = !showPadding;
-        if (controls.ToggleTrails.Run())
-            showTrails = !showTrails;
         if (controls.Faster.Run())
             speed = Math.Min(12f, speed * 1.25f + 0.05f);
         if (controls.Slower.Run())
@@ -70,7 +67,7 @@ internal sealed class RangeAllocatorVisualizerState(
     /// <summary>Clears the OpenGL backbuffer before two-dimensional drawing.</summary>
     public override void Render() => backbuffer.Clear(renderer.ClearColor);
 
-    /// <summary>Draws allocator state, timeline, metrics, and pack movement trails.</summary>
+    /// <summary>Draws allocator state, timeline, and metrics.</summary>
     public override void Draw() =>
         renderer.Draw(
             runner.Scenario,
@@ -79,8 +76,7 @@ internal sealed class RangeAllocatorVisualizerState(
             speed,
             playing,
             showLabels,
-            showPadding,
-            showTrails);
+            showPadding);
 
     /// <summary>Loads a scenario by wrapping around the built-in scenario list.</summary>
     private void LoadScenario(int index)

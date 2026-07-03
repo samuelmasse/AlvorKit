@@ -69,6 +69,9 @@ public interface IWindowHost
     /// <summary>Gets or sets the cursor capture and visibility mode.</summary>
     CursorMode CursorMode { get; set; }
 
+    /// <summary>Gets or sets the requested visual cursor shape.</summary>
+    CursorShape CursorShape { get; set; }
+
     /// <summary>Gets or sets whether vertical synchronization is enabled for buffer swaps.</summary>
     bool IsVSyncEnabled { get; set; }
 

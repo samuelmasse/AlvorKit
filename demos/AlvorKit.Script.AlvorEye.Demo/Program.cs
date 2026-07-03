@@ -15,7 +15,7 @@ if (window == default)
 
 glfw.MakeContextCurrent(window);
 var gl = new GlLayer(new GlBackend(glfw.GetProcAddress));
-var host = new AgentGlfwWindowHost(glfw, window, gl)
+using var host = new AgentGlfwWindowHost(glfw, window, gl)
 {
     IsVSyncEnabled = true
 };

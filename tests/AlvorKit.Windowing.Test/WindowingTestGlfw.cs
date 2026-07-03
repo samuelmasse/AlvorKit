@@ -16,6 +16,9 @@ internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsV
     public bool LastRawMouseMotion { get; private set; }
     public int RawMouseMotionSupportedCalls { get; private set; }
     public List<(GlfwInputMode Mode, int Value)> InputModeCalls { get; } = [];
+    public List<GlfwCursorShape> CreatedCursorShapes { get; } = [];
+    public List<GlfwCursor> SetCursors { get; } = [];
+    public List<GlfwCursor> DestroyedCursors { get; } = [];
 
     public override void GetWindowPos(GlfwWindow window, out int xpos, out int ypos)
     {
@@ -76,6 +79,16 @@ internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsV
         RawMouseMotionSupportedCalls++;
         return IsRawMouseMotionSupported;
     }
+
+    public override GlfwCursor CreateStandardCursor(int shape)
+    {
+        CreatedCursorShapes.Add((GlfwCursorShape)shape);
+        return new((nint)(CreatedCursorShapes.Count + 10));
+    }
+
+    public override void SetCursor(GlfwWindow window, GlfwCursor cursor) => SetCursors.Add(cursor);
+
+    public override void DestroyCursor(GlfwCursor cursor) => DestroyedCursors.Add(cursor);
 
     public override void IconifyWindow(GlfwWindow window) => IconifyWindowCalls++;
 

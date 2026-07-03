@@ -41,9 +41,9 @@ policy unless this file is more specific.
 
 ## Commit Mode Overrides
 
-- Keep each edited source C# file at or below 150 lines. This target does not
+- Keep each edited source C# file at or below 250 lines. This target does not
   apply to matching test files, which follow the root test-size policy.
-- If a touched source file is already over 150 lines, split out cohesive helpers
+- If a touched source file is already over 250 lines, split out cohesive helpers
   or data shapes before adding more code. If no clean split exists because of
   API shape, platform glue, or tightly coupled declarations, call out the small
   exception in the handoff.
@@ -58,5 +58,5 @@ policy unless this file is more specific.
   practical.
 - Avoid test designs that require real graphics hardware unless the task is
   explicitly integration-focused.
-- In final review, re-read changed files and check the 150-line source target,
+- In final review, re-read changed files and check the 250-line source target,
   meaningful XML docs, hot-path allocation discipline, and focused test coverage.

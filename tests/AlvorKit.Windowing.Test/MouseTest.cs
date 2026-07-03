@@ -13,15 +13,19 @@ public class MouseTest
         Assert.AreEqual(MouseButton.Left, mouse.Main);
         Assert.AreEqual(MouseButton.Right, mouse.Secondary);
         Assert.AreEqual(CursorMode.Normal, mouse.CursorMode);
+        Assert.AreEqual(CursorShape.Default, mouse.CursorShape);
         Assert.AreEqual(Vec2.Zero, mouse.Wheel);
         Assert.IsFalse(mouse.IsMainDown());
         Assert.IsTrue(mouse.IsMainUp());
         Assert.IsFalse(mouse.IsMainPressed());
 
         input.CursorMode = CursorMode.Captured;
+        mouse.CursorShape = CursorShape.Hand;
 
         Assert.AreEqual(CursorMode.Captured, host.CursorMode);
         Assert.AreEqual(CursorMode.Captured, mouse.CursorMode);
+        Assert.AreEqual(CursorShape.Hand, host.CursorShape);
+        Assert.AreEqual(CursorShape.Hand, input.CursorShape);
     }
 
     [TestMethod]

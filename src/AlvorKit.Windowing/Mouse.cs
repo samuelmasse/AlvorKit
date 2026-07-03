@@ -15,6 +15,13 @@ public class Mouse(WindowLoop window, MouseButton main = MouseButton.Left, Mouse
     /// <summary>Gets the cursor capture and visibility mode.</summary>
     public CursorMode CursorMode => window.Mouse.CursorMode;
 
+    /// <summary>Gets or sets the requested visual cursor shape.</summary>
+    public CursorShape CursorShape
+    {
+        get => window.Mouse.CursorShape;
+        set => window.Mouse.CursorShape = value;
+    }
+
     /// <summary>Gets the cursor position in window coordinates.</summary>
     public Vec2 Position => window.MousePosition.Position;
 

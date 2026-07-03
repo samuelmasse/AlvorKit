@@ -125,6 +125,7 @@ public class AgentGlfwWindowHostAgentTest
         host.MousePosition = new(5, 6);
         host.WindowState = WindowState.Fullscreen;
         host.CursorMode = CursorMode.Disabled;
+        host.CursorShape = CursorShape.Crosshair;
         host.IsVSyncEnabled = true;
         host.Title = "renamed";
         Assert.IsTrue(host.IsVisible);
@@ -135,6 +136,7 @@ public class AgentGlfwWindowHostAgentTest
         Assert.AreEqual(1, host.MonitorScale);
         Assert.AreEqual(new Vec2(5, 6), host.MousePosition);
         Assert.AreEqual(CursorMode.Disabled, host.CursorMode);
+        Assert.AreEqual(CursorShape.Crosshair, host.CursorShape);
         Assert.IsTrue(host.IsVSyncEnabled);
         Assert.AreEqual("renamed", host.Title);
     }

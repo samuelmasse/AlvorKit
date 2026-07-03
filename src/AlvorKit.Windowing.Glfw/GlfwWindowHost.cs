@@ -2,7 +2,7 @@ namespace AlvorKit.Windowing;
 
 /// <summary>GLFW-backed implementation of the AlvorKit window host contract.</summary>
 [ExcludeFromCodeCoverage]
-public class GlfwWindowHost : IWindowHost
+public class GlfwWindowHost : IWindowHost, IDisposable
 {
     /// <summary>Performs direct GLFW operations for this host.</summary>
     private readonly GlfwWindowRuntime runtime;
@@ -92,6 +92,9 @@ public class GlfwWindowHost : IWindowHost
     public virtual CursorMode CursorMode { get => runtime.CursorMode; set => runtime.CursorMode = value; }
 
     /// <inheritdoc />
+    public virtual CursorShape CursorShape { get => runtime.CursorShape; set => runtime.CursorShape = value; }
+
+    /// <inheritdoc />
     public virtual bool IsVSyncEnabled { get => runtime.IsVSyncEnabled; set => runtime.IsVSyncEnabled = value; }
 
     /// <inheritdoc />
@@ -111,6 +114,13 @@ public class GlfwWindowHost : IWindowHost
 
     /// <inheritdoc />
     public virtual void Run() => runtime.Run(OnUpdateFrame, OnRenderFrame);
+
+    /// <summary>Releases GLFW cursor resources owned by this host.</summary>
+    public virtual void Dispose()
+    {
+        runtime.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
     /// <summary>Raises the close-request event.</summary>
     protected void OnClosing() => Closing?.Invoke();

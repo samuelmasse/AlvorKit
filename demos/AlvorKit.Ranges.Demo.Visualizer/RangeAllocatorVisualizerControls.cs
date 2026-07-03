@@ -14,5 +14,4 @@ internal sealed record RangeAllocatorVisualizerControls(
     Control UiScaleDown,
     Control JumpPack,
     Control ToggleLabels,
-    Control TogglePadding,
-    Control ToggleTrails) : ControlList;
+    Control TogglePadding) : ControlList;

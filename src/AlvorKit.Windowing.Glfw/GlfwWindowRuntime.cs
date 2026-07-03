@@ -10,8 +10,11 @@ internal sealed class GlfwWindowRuntime
     private readonly GlfwWindowMode mode;
     private readonly GlfwWindowSizes sizes;
     private readonly GlfwCursorModes cursorModes = new();
+    private readonly GlfwCursorShapes cursorShapes;
     private string title = string.Empty;
+    private CursorShape cursorShape;
     private bool isVSyncEnabled;
+    private bool disposed;
 
     /// <summary>Creates a runtime bridge for a GLFW API instance and window handle supplied by the caller.</summary>
     internal GlfwWindowRuntime(Glfw glfw, GlfwWindow window)
@@ -20,6 +23,7 @@ internal sealed class GlfwWindowRuntime
         this.window = window;
         mode = new(glfw, window);
         sizes = new(glfw, window);
+        cursorShapes = new(glfw);
     }
 
     /// <summary>Gets the GLFW API supplied to this runtime.</summary>
@@ -62,6 +66,13 @@ internal sealed class GlfwWindowRuntime
         set => SetCursorMode(value);
     }
 
+    /// <summary>Gets or sets the last requested visual cursor shape represented by a GLFW cursor handle.</summary>
+    internal CursorShape CursorShape
+    {
+        get => cursorShape;
+        set => SetCursorShape(value);
+    }
+
     /// <summary>Gets or sets the last requested swap interval state.</summary>
     internal bool IsVSyncEnabled { get => isVSyncEnabled; set { isVSyncEnabled = value; glfw.SwapInterval(value ? 1 : 0); } }
 
@@ -79,6 +90,17 @@ internal sealed class GlfwWindowRuntime
 
     /// <summary>Returns an OpenGL procedure address from GLFW.</summary>
     internal nint GetProcAddress(string procname) => glfw.GetProcAddress(procname);
+
+    /// <summary>Releases standard cursor handles created by this runtime.</summary>
+    internal void Dispose()
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+        glfw.SetCursor(window, default);
+        cursorShapes.Destroy();
+    }
 
     /// <summary>Runs the GLFW polling loop and forwards update and render frames.</summary>
     internal void Run(Action<WindowFrameEvent> updateFrame, Action<WindowFrameEvent> renderFrame)
@@ -110,6 +132,17 @@ internal sealed class GlfwWindowRuntime
         glfw.SetInputMode(window, GlfwInputMode.Cursor, cursorModes.ToGlfw(value));
         if (glfw.RawMouseMotionSupported())
             glfw.SetInputMode(window, GlfwInputMode.RawMouseMotion, value == CursorMode.Disabled);
+    }
+
+    /// <summary>Applies a platform standard cursor shape through GLFW.</summary>
+    private void SetCursorShape(CursorShape value)
+    {
+        var cursor = cursorShapes.Get(value);
+        if (value == cursorShape)
+            return;
+
+        glfw.SetCursor(window, cursor);
+        cursorShape = value;
     }
 
     /// <summary>Applies the requested visibility through GLFW show and hide calls.</summary>

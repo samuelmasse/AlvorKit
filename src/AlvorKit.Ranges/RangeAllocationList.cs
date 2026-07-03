@@ -34,6 +34,7 @@ internal sealed class RangeAllocationList
         {
             Index = index,
             Size = size,
+            CapacitySize = size,
             Alignment = alignment,
             Rank = count++,
         };

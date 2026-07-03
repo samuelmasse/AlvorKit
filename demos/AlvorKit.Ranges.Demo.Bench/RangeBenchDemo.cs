@@ -8,6 +8,10 @@ public sealed class RangeBenchDemo(RangeBenchOptions options)
     private const int LinearSizeMask = 127;
     private const int HoleSize = 64;
     private const int SeparatorSize = 1;
+    private const int ShrinkPackCapacity = 320;
+    private const int ShrinkPackMinSize = 64;
+    private const int ShrinkPackSizeMask = 15;
+    private const int ShrinkPackSizeStep = 8;
     private const long FirstUsableIndex = 1;
 
     /// <summary>Stores observed addresses so benchmark loops keep visible work.</summary>
@@ -38,6 +42,7 @@ public sealed class RangeBenchDemo(RangeBenchOptions options)
         Measure("linear-alloc-with-resize", "alloc", options.Operations, CreateLinearAllocWithResize),
         Measure("same-handle-reuse-hit", "call", options.Operations, CreateSameHandleReuseHit),
         Measure("same-handle-grow-replace", "call", options.Operations, CreateSameHandleGrowReplace),
+        Measure("same-handle-shrink-pack", "range", options.Window, CreateSameHandleShrinkPack),
         Measure("fragmented-same-size-holes", "alloc", options.Operations, CreateFragmentedSameSizeHoles),
         Measure("fragmented-distinct-size-holes", "alloc", options.Operations, CreateFragmentedDistinctSizeHoles),
         Measure("fragmented-pack-scenario", "alloc", options.Operations, CreateFragmentedPackScenario),
@@ -50,7 +55,7 @@ public sealed class RangeBenchDemo(RangeBenchOptions options)
     {
         Console.WriteLine(
             $"{"Benchmark",-32} {"unit",-6} {"best/s",14} {"mean/s",14} {"B/unit",12} " +
-            $"{"packs",7} {"resizes",7} {"live",8} {"reserved",12} {"padding",10}");
+            $"{"packs",7} {"resizes",7} {"live",8} {"reserved",12} {"capacity",12} {"retained",12} {"padding",10}");
 
         foreach (var result in results)
         {
@@ -58,7 +63,8 @@ public sealed class RangeBenchDemo(RangeBenchOptions options)
                 $"{result.Name,-32} {result.Unit,-6} {result.BestUnitsPerSecond,14:n0} " +
                 $"{result.MeanUnitsPerSecond,14:n0} {result.ManagedBytesPerUnit,12:n4} " +
                 $"{result.MeanPackCount,7:n1} {result.MeanResizeCount,7:n1} {result.LiveRangeCount,8:n0} " +
-                $"{result.ReservedBytes,12:n0} {result.EstimatedPaddingBytes,10:n0}");
+                $"{result.ReservedBytes,12:n0} {result.CapacityBytes,12:n0} {result.RetainedBytes,12:n0} " +
+                $"{result.EstimatedPaddingBytes,10:n0}");
         }
     }
 
@@ -135,6 +141,8 @@ public sealed class RangeBenchDemo(RangeBenchOptions options)
             metrics.LiveRangeCount,
             metrics.ReservedBytes,
             metrics.RequestedBytes,
+            metrics.CapacityBytes,
+            metrics.RetainedBytes,
             metrics.EstimatedPaddingBytes);
     }
 
@@ -328,6 +336,29 @@ public sealed class RangeBenchDemo(RangeBenchOptions options)
             },
             () => Snapshot(allocator, counters),
             () => allocator.Free(allocation));
+    }
+
+    /// <summary>Measures packing retained slack created by same-handle shrink requests.</summary>
+    private RangeBenchCase CreateSameHandleShrinkPack()
+    {
+        var counters = new RangeBenchCounters();
+        var allocator = CreateTrackedAllocator(counters, ShrinkPackInitialSize(options.Window));
+        var handles = new int[options.Window];
+
+        for (var i = 0; i < handles.Length; i++)
+        {
+            allocator.Alloc(ref handles[i], LinearAlignment, ShrinkPackCapacity + (i & ShrinkPackSizeMask) * ShrinkPackSizeStep);
+            allocator.Alloc(ref handles[i], LinearAlignment, ShrinkPackMinSize + (i & ShrinkPackSizeMask));
+        }
+
+        return new(
+            () =>
+            {
+                allocator.Pack();
+                countSink = allocator.FreeBlockCount;
+            },
+            () => Snapshot(allocator, counters),
+            () => FreeLiveHandles(allocator, handles));
     }
 
     /// <summary>Measures churn against many same-sized free blocks separated by live ranges.</summary>
@@ -538,7 +569,10 @@ public sealed class RangeBenchDemo(RangeBenchOptions options)
     private static RangeBenchMetrics Snapshot(RangeAllocator allocator, RangeBenchCounters counters)
     {
         var requested = 0L;
+        var capacity = 0L;
+        var retained = 0L;
         var reserved = 0L;
+        var padding = 0L;
         var handles = allocator.Allocations;
         var slots = allocator.AllocationSlots;
 
@@ -546,7 +580,10 @@ public sealed class RangeBenchDemo(RangeBenchOptions options)
         {
             var slot = slots[handles[i]];
             requested += slot.Size;
-            reserved += slot.Size + allocator.AlignedAddr(slot.Index, slot.Alignment) - slot.Index;
+            capacity += slot.CapacitySize;
+            retained += slot.CapacitySize - slot.Size;
+            padding += slot.Alignment <= 1 ? 0 : slot.Alignment - 1L;
+            reserved += slot.CapacitySize + (slot.Alignment <= 1 ? 0 : slot.Alignment - 1L);
         }
 
         return new(
@@ -559,7 +596,9 @@ public sealed class RangeBenchDemo(RangeBenchOptions options)
             handles.Length,
             reserved,
             requested,
-            reserved - requested);
+            capacity,
+            retained,
+            padding);
     }
 
     /// <summary>Returns the number of live ranges packed by pack-only scenarios.</summary>
@@ -578,6 +617,10 @@ public sealed class RangeBenchDemo(RangeBenchOptions options)
     /// <summary>Returns a no-resize initial size for fragmented pack setup.</summary>
     private static long FragmentedPackInitialSize(int operations) =>
         FirstUsableIndex + (long)operations * (LinearMinSize + 63 + LinearAlignment) + 1;
+
+    /// <summary>Returns a no-resize initial size for same-handle shrink-pack setup.</summary>
+    private static long ShrinkPackInitialSize(int ranges) =>
+        FirstUsableIndex + (long)ranges * (ShrinkPackCapacity + ShrinkPackSizeMask * ShrinkPackSizeStep + LinearAlignment) + 1;
 
     /// <summary>Returns a no-resize initial size for same-size fragmented-hole setup.</summary>
     private long SameSizeHoleInitialSize() => FirstUsableIndex + (long)options.Window * (HoleSize + SeparatorSize) + 1;
@@ -619,5 +662,7 @@ public sealed class RangeBenchDemo(RangeBenchOptions options)
         int LiveRangeCount,
         long ReservedBytes,
         long RequestedBytes,
+        long CapacityBytes,
+        long RetainedBytes,
         long EstimatedPaddingBytes);
 }

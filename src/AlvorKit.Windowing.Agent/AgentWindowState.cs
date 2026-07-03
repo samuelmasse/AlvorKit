@@ -45,6 +45,9 @@ internal sealed class AgentWindowState
     /// <summary>Gets or sets the simulated cursor mode.</summary>
     internal CursorMode CursorMode { get; set; }
 
+    /// <summary>Gets or sets the simulated cursor shape.</summary>
+    internal CursorShape CursorShape { get; set; }
+
     /// <summary>Gets or sets whether simulated vertical sync is enabled.</summary>
     internal bool IsVSyncEnabled { get; set; }
 

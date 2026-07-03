@@ -16,6 +16,7 @@ public sealed class RangeAllocatorTest
         Assert.AreEqual(24, allocator.Used);
         Assert.AreEqual(1, allocator.Allocations.Length);
         Assert.AreEqual(16, allocator.AllocationSlots[allocation].Size);
+        Assert.AreEqual(16, allocator.AllocationSlots[allocation].CapacitySize);
         Assert.AreEqual(8, allocator.AllocationSlots[allocation].Alignment);
         Assert.AreEqual(8, allocator.Addr(allocation));
     }
@@ -103,6 +104,10 @@ public sealed class RangeAllocatorTest
         Assert.AreEqual(second, movedAllocation);
         Assert.AreEqual(11, last.Index);
         Assert.AreEqual(1, current.Index);
+        Assert.AreEqual(20, last.Size);
+        Assert.AreEqual(20, last.CapacitySize);
+        Assert.AreEqual(20, current.Size);
+        Assert.AreEqual(20, current.CapacitySize);
         Assert.AreEqual(21, allocator.Used);
     }
 
@@ -207,14 +212,29 @@ public sealed class RangeAllocatorTest
         var allocator = new RangeAllocator();
         var allocation = 0;
         allocator.Alloc(ref allocation, 8, 32);
+        var handle = allocation;
+        var index = allocator.AllocationSlots[allocation].Index;
         var address = allocator.Addr(allocation);
         var used = allocator.Used;
 
         allocator.Alloc(ref allocation, 8, 16);
 
+        Assert.AreEqual(handle, allocation);
+        Assert.AreEqual(index, allocator.AllocationSlots[allocation].Index);
         Assert.AreEqual(address, allocator.Addr(allocation));
         Assert.AreEqual(used, allocator.Used);
+        Assert.AreEqual(16, allocator.AllocationSlots[allocation].Size);
+        Assert.AreEqual(32, allocator.AllocationSlots[allocation].CapacitySize);
         Assert.AreEqual(1, allocator.Allocations.Length);
+
+        allocator.Alloc(ref allocation, 8, 24);
+
+        Assert.AreEqual(handle, allocation);
+        Assert.AreEqual(index, allocator.AllocationSlots[allocation].Index);
+        Assert.AreEqual(address, allocator.Addr(allocation));
+        Assert.AreEqual(used, allocator.Used);
+        Assert.AreEqual(24, allocator.AllocationSlots[allocation].Size);
+        Assert.AreEqual(32, allocator.AllocationSlots[allocation].CapacitySize);
     }
 
     /// <summary>Allocating into the same handle frees and replaces the existing range when it no longer fits.</summary>
@@ -230,6 +250,135 @@ public sealed class RangeAllocatorTest
         Assert.AreNotEqual(0, allocation);
         Assert.AreEqual(21, allocator.Used);
         Assert.AreEqual(20, allocator.AllocationSlots[allocation].Size);
+        Assert.AreEqual(20, allocator.AllocationSlots[allocation].CapacitySize);
+    }
+
+    /// <summary>Growing beyond retained capacity after shrink returns the full old capacity footprint.</summary>
+    [TestMethod]
+    public void Alloc_AfterShrinkAndGrowBeyondCapacity_ReplacesUsingCapacityFootprint()
+    {
+        var allocator = new RangeAllocator(initialSize: 100);
+        var allocation = 0;
+        allocator.Alloc(ref allocation, 0, 30);
+        allocator.Alloc(ref allocation, 0, 10);
+
+        allocator.Alloc(ref allocation, 0, 40);
+
+        Assert.AreEqual(1, allocator.AllocationSlots[allocation].Index);
+        Assert.AreEqual(41, allocator.Used);
+        Assert.AreEqual(40, allocator.AllocationSlots[allocation].Size);
+        Assert.AreEqual(40, allocator.AllocationSlots[allocation].CapacitySize);
+        Assert.AreEqual(1, allocator.FreeBlockCount);
+    }
+
+    /// <summary>Changing alignment replaces a same-size allocation and resets retained capacity.</summary>
+    [TestMethod]
+    public void Alloc_WhenAlignmentChanges_ReplacesCurrentRange()
+    {
+        var allocator = new RangeAllocator(initialSize: 100);
+        var allocation = 0;
+        allocator.Alloc(ref allocation, 0, 16);
+
+        allocator.Alloc(ref allocation, 8, 16);
+
+        Assert.AreEqual(1, allocator.AllocationSlots[allocation].Index);
+        Assert.AreEqual(8, allocator.Addr(allocation));
+        Assert.AreEqual(24, allocator.Used);
+        Assert.AreEqual(16, allocator.AllocationSlots[allocation].Size);
+        Assert.AreEqual(16, allocator.AllocationSlots[allocation].CapacitySize);
+        Assert.AreEqual(8, allocator.AllocationSlots[allocation].Alignment);
+    }
+
+    /// <summary>Freeing after shrink returns the retained capacity footprint, not only the logical size.</summary>
+    [TestMethod]
+    public void Free_AfterShrink_ReturnsFullCapacityFootprint()
+    {
+        var allocator = new RangeAllocator();
+        var allocation = 0;
+        allocator.Alloc(ref allocation, 8, 32);
+        allocator.Alloc(ref allocation, 8, 10);
+
+        allocator.Free(allocation);
+
+        Assert.AreEqual(1, allocator.Used);
+        Assert.AreEqual(0, allocator.Allocations.Length);
+        Assert.AreEqual(1, allocator.FreeBlockCount);
+    }
+
+    /// <summary>Allocating zero bytes after shrink clears the handle and returns the full retained capacity footprint.</summary>
+    [TestMethod]
+    public void Alloc_WithZeroSizeAfterShrink_ClearsFullCapacityFootprint()
+    {
+        var allocator = new RangeAllocator();
+        var allocation = 0;
+        allocator.Alloc(ref allocation, 8, 32);
+        allocator.Alloc(ref allocation, 8, 10);
+
+        allocator.Alloc(ref allocation, 8, 0);
+
+        Assert.AreEqual(0, allocation);
+        Assert.AreEqual(1, allocator.Used);
+        Assert.AreEqual(0, allocator.Allocations.Length);
+    }
+
+    /// <summary>Invalid zero-byte requests throw before clearing an existing allocation handle.</summary>
+    [TestMethod]
+    public void Alloc_WithInvalidAlignmentAndZeroSize_DoesNotClearExistingAllocation()
+    {
+        var allocator = new RangeAllocator();
+        var allocation = 0;
+        allocator.Alloc(ref allocation, 0, 10);
+        var handle = allocation;
+        var used = allocator.Used;
+
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => allocator.Alloc(ref allocation, -1, 0));
+
+        Assert.AreEqual(handle, allocation);
+        Assert.AreEqual(used, allocator.Used);
+        Assert.AreEqual(10, allocator.AllocationSlots[allocation].Size);
+        Assert.AreEqual(10, allocator.AllocationSlots[allocation].CapacitySize);
+    }
+
+    /// <summary>Packing after shrink compacts to logical size while exposing pre-pack capacity to relocation callbacks.</summary>
+    [TestMethod]
+    public void Pack_AfterShrink_ReclaimsCapacityAndReportsPreviousCapacity()
+    {
+        RangeAllocator? allocator = null;
+        RangeAllocation last = default;
+        RangeAllocation current = default;
+        var movedAllocation = 0;
+        allocator = new(() =>
+        {
+            movedAllocation = allocator!.Allocations[0];
+            last = allocator.LastAllocationSlots[movedAllocation];
+            current = allocator.AllocationSlots[movedAllocation];
+        }, initialSize: 100);
+        var first = 0;
+        var second = 0;
+        allocator.Alloc(ref first, 0, 5);
+        allocator.Alloc(ref second, 8, 32);
+        allocator.Alloc(ref second, 8, 10);
+        allocator.Free(first);
+
+        allocator.Pack();
+
+        Assert.AreEqual(second, movedAllocation);
+        Assert.AreEqual(6, last.Index);
+        Assert.AreEqual(10, last.Size);
+        Assert.AreEqual(32, last.CapacitySize);
+        Assert.AreEqual(1, current.Index);
+        Assert.AreEqual(8, allocator.Addr(second));
+        Assert.AreEqual(10, current.Size);
+        Assert.AreEqual(10, current.CapacitySize);
+        Assert.AreEqual(18, allocator.Used);
+        Assert.AreEqual(1, allocator.FreeBlockCount);
+
+        var packedUsed = allocator.Used;
+        var third = 0;
+        allocator.Alloc(ref third, 0, 5);
+
+        Assert.AreEqual(packedUsed, allocator.AllocationSlots[third].Index);
+        Assert.AreEqual(23, allocator.Used);
     }
 
     /// <summary>Fragmented allocation packs when total used space is still below the resize threshold.</summary>

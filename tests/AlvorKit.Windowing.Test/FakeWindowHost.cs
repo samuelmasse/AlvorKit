@@ -25,6 +25,7 @@ internal sealed class FakeWindowHost : IWindowHost
     public Vec2 MousePosition { get; set; }
     public WindowState WindowState { get; set; }
     public CursorMode CursorMode { get; set; }
+    public CursorShape CursorShape { get; set; }
     public bool IsVSyncEnabled { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Clipboard { get; set; } = string.Empty;

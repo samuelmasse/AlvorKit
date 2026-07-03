@@ -33,6 +33,7 @@ internal sealed class AllocatorScenario
     [
         LinearAllocNoResize(),
         SameHandleReuseHit(),
+        SameHandleShrinkPack(),
         SameHandleGrowReplace(),
         SteadyWindowPrefilled(),
         FragmentedSameSizeHoles(),
@@ -76,6 +77,21 @@ internal sealed class AllocatorScenario
             commands.Add(AllocatorCommand.Realloc(0, 16, 96 + (i & 7) * 12, "reuse slot 0"));
 
         return new("same-handle-reuse-hit", "Repeated smaller requests keep the same backing range.", 2048, [.. commands]);
+    }
+
+    /// <summary>Builds a scenario where pack reclaims retained same-handle shrink capacity.</summary>
+    private static AllocatorScenario SameHandleShrinkPack()
+    {
+        AllocatorCommand[] commands =
+        [
+            AllocatorCommand.Alloc(0, 1, 32, "prefix range"),
+            AllocatorCommand.Alloc(1, 16, 320, "large slot 1"),
+            AllocatorCommand.Realloc(1, 16, 96, "shrink slot 1"),
+            AllocatorCommand.Free(0, "open front gap"),
+            AllocatorCommand.Pack("pack shrunk slot"),
+        ];
+
+        return new("same-handle-shrink-pack", "A shrink keeps capacity until pack compacts to the logical size.", 2048, commands);
     }
 
     /// <summary>Builds the same-handle grow-replace scenario.</summary>

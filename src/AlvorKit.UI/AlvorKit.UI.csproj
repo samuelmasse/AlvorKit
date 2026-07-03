@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <Using Include="AlvorKit.ECS" />
+        <Using Include="AlvorKit.ECS.Generator" />
+        <Using Include="AlvorKit.Engine" />
+        <Using Include="AlvorKit.Engine.Loop" />
+        <Using Include="AlvorKit.Graphics2D" />
+        <Using Include="AlvorKit.Graphics2D.Fonts" />
+        <Using Include="AlvorKit.Maths" />
+        <Using Include="AlvorKit.OpenGL.Layer" />
+        <Using Include="AlvorKit.Windowing" />
+        <Using Include="AlvorKit.UI.UiSyntax">
+            <Static>true</Static>
+        </Using>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\AlvorKit.ECS\AlvorKit.ECS.csproj" />
+        <ProjectReference Include="..\AlvorKit.Engine\AlvorKit.Engine.csproj" />
+        <ProjectReference Include="..\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
+        <ProjectReference Include="..\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
+        <ProjectReference Include="..\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
+        <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
+        <ProjectReference Include="..\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
+        <ProjectReference Include="..\AlvorKit.UI.Generator\AlvorKit.UI.Generator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
+    </ItemGroup>
+
+</Project>

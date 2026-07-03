@@ -48,7 +48,7 @@ internal sealed class AllocatorScenarioRunner
         StepIndex = 0;
         LastCommand = AllocatorCommand.Start();
         ResetLastCallText();
-        Current = Capture(false, 0, 0);
+        Current = Capture(0, 0);
         Previous = Current;
     }
 
@@ -63,14 +63,13 @@ internal sealed class AllocatorScenarioRunner
         LastCommand = command;
         RecordLastCall(command);
 
-        var packsBefore = packCount;
         var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
         var started = Stopwatch.GetTimestamp();
         Apply(command);
         var elapsed = Stopwatch.GetTimestamp() - started;
         var allocatedAfter = GC.GetAllocatedBytesForCurrentThread();
 
-        Current = Capture(packCount > packsBefore, elapsed, allocatedAfter - allocatedBefore);
+        Current = Capture(elapsed, allocatedAfter - allocatedBefore);
         return true;
     }
 
@@ -98,7 +97,7 @@ internal sealed class AllocatorScenarioRunner
             StepIndex++;
         }
 
-        Current = Capture(false, 0, 0);
+        Current = Capture(0, 0);
         Previous = Current;
     }
 
@@ -189,13 +188,12 @@ internal sealed class AllocatorScenarioRunner
     }
 
     /// <summary>Captures allocator public state into sorted live and free ranges.</summary>
-    private AllocatorSnapshot Capture(bool showPackMovement, long elapsedTicks, long managedBytes)
+    private AllocatorSnapshot Capture(long elapsedTicks, long managedBytes)
     {
         ranges.Clear();
         freeSpans.Clear();
 
         var slots = allocator.AllocationSlots;
-        var lastSlots = allocator.LastAllocationSlots;
         for (var slotIndex = 0; slotIndex < handles.Length; slotIndex++)
         {
             var handle = handles[slotIndex];
@@ -206,20 +204,20 @@ internal sealed class AllocatorScenarioRunner
             var reservedSize = ReservedSize(allocation);
             var payloadIndex = allocator.AlignedAddr(allocation.Index, allocation.Alignment);
             var leadingPadding = payloadIndex - allocation.Index;
-            var trailingPadding = reservedSize - allocation.Size - leadingPadding;
-            var lastIndex = showPackMovement ? lastSlots[handle].Index : allocation.Index;
+            var trailingPadding = reservedSize - allocation.CapacitySize - leadingPadding;
+            var retainedExtraSize = allocation.CapacitySize - allocation.Size;
             ranges.Add(new(
                 slotIndex,
                 handle,
                 allocation.Index,
-                lastIndex,
                 payloadIndex,
                 allocation.Size,
+                allocation.CapacitySize,
+                retainedExtraSize,
                 reservedSize,
                 leadingPadding,
                 trailingPadding,
-                allocation.Alignment,
-                showPackMovement && lastIndex != 0 && lastIndex != allocation.Index));
+                allocation.Alignment));
         }
 
         ranges.Sort(rangeComparer);
@@ -255,7 +253,7 @@ internal sealed class AllocatorScenarioRunner
 
     /// <summary>Returns the allocator's reserved size for one allocation slot.</summary>
     private static long ReservedSize(RangeAllocation allocation) =>
-        allocation.Size + (allocation.Alignment <= 1 ? 0 : allocation.Alignment - 1L);
+        allocation.CapacitySize + (allocation.Alignment <= 1 ? 0 : allocation.Alignment - 1L);
 
     /// <summary>Sorts visual ranges by backing-store index.</summary>
     private sealed class AllocatorRangeComparer : IComparer<AllocatorRangeVisual>

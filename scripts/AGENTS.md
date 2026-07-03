@@ -39,9 +39,9 @@ policy unless this file is more specific.
 
 ## Commit Mode Overrides
 
-- Keep each edited script C# file at or below 150 lines. This target does not
+- Keep each edited script C# file at or below 250 lines. This target does not
   apply to matching test files, which follow the root test-size policy.
-- If a touched script file is already over 150 lines, split out cohesive helpers
+- If a touched script file is already over 250 lines, split out cohesive helpers
   or data shapes before adding more code. If generated shape, platform glue, or
   tightly coupled declarations make that unreasonable, call out the small
   exception in the handoff.
@@ -57,5 +57,5 @@ policy unless this file is more specific.
   that move meaningful logic.
 - Cover happy paths, edge cases, invalid input, and failure behavior when the
   script code has explicit error handling.
-- In final review, re-read changed files and check the 150-line script target,
+- In final review, re-read changed files and check the 250-line script target,
   meaningful XML docs, no file-size-only partials, and focused test coverage.

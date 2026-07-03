@@ -29,7 +29,7 @@ public class RangeAllocator
     /// <summary>Gets the current backing-store size in bytes.</summary>
     public long Size => size;
 
-    /// <summary>Gets the reserved byte count, including alignment padding.</summary>
+    /// <summary>Gets the reserved byte count, including the sentinel byte and alignment padding.</summary>
     public long Used => used;
 
     /// <summary>Gets the number of free blocks indexed by offset.</summary>
@@ -110,6 +110,7 @@ public class RangeAllocator
             ref var allocation = ref allocations.Slot(handle);
             allocations.CaptureLast(handle);
             allocation.Index = index;
+            allocation.CapacitySize = allocation.Size;
             index += ReservedSize(allocation);
         }
 
@@ -154,7 +155,7 @@ public class RangeAllocator
     }
 
     /// <summary>Returns the reserved byte count for a live allocation slot.</summary>
-    private static long ReservedSize(RangeAllocation allocation) => allocation.Size + MaxPadding(allocation.Alignment);
+    private static long ReservedSize(RangeAllocation allocation) => allocation.CapacitySize + MaxPadding(allocation.Alignment);
 
     /// <summary>Returns the maximum padding any index can require for <paramref name="alignment"/>.</summary>
     private static long MaxPadding(int alignment) => alignment <= 1 ? 0 : alignment - 1L;
@@ -165,9 +166,12 @@ public class RangeAllocator
         if (allocation == 0)
             return false;
 
-        var current = allocations.Slot(allocation);
-        if (current.Alignment == alignment && current.Size >= allocSize)
+        ref var current = ref allocations.Slot(allocation);
+        if (current.Alignment == alignment && current.CapacitySize >= allocSize)
+        {
+            current.Size = allocSize;
             return true;
+        }
 
         Free(allocation);
         return false;

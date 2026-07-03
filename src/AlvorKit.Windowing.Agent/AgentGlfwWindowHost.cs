@@ -95,6 +95,10 @@ public class AgentGlfwWindowHost : GlfwWindowHost
     { get => useAgent ? state.CursorMode : base.CursorMode; set { if (useAgent) state.CursorMode = value; else base.CursorMode = value; } }
 
     /// <inheritdoc />
+    public override CursorShape CursorShape
+    { get => useAgent ? state.CursorShape : base.CursorShape; set { if (useAgent) state.CursorShape = value; else base.CursorShape = value; } }
+
+    /// <inheritdoc />
     public override bool IsVSyncEnabled
     { get => useAgent ? state.IsVSyncEnabled : base.IsVSyncEnabled; set { if (useAgent) state.IsVSyncEnabled = value; else base.IsVSyncEnabled = value; } }
 

@@ -17,4 +17,6 @@ public sealed record RangeBenchResult(
     int LiveRangeCount,
     long ReservedBytes,
     long RequestedBytes,
+    long CapacityBytes,
+    long RetainedBytes,
     long EstimatedPaddingBytes);

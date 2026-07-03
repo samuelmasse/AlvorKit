@@ -33,7 +33,7 @@ public static class RootLoop
             glfw.SwapInterval(0);
 
             var gl = new RootGl(new GlBackend(glfw.GetProcAddress));
-            var window = new AgentGlfwWindowHost(glfw, nativeWindow, gl);
+            using var window = new AgentGlfwWindowHost(glfw, nativeWindow, gl);
 
             Run(() => new()
             {

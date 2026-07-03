@@ -30,6 +30,13 @@ internal sealed class WindowMouse
         set => window.CursorMode = value;
     }
 
+    /// <summary>Gets or sets the requested visual cursor shape.</summary>
+    internal CursorShape CursorShape
+    {
+        get => window.CursorShape;
+        set => window.CursorShape = value;
+    }
+
     /// <summary>Advances button transition state by one tick.</summary>
     internal void Tick()
     {

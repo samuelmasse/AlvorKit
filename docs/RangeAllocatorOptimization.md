@@ -79,7 +79,7 @@ Other likely costs:
    - Resize count and resize time.
    - Final free block count and distinct free size count.
    - Live range count.
-   - Bytes reserved, bytes requested, and estimated padding.
+   - Bytes reserved, bytes requested, retained capacity, and estimated padding.
 
 ## Phase 2: Low-Risk Allocator Optimizations
 
@@ -150,4 +150,3 @@ Success criteria:
   `steady-window-churn`.
 - Separate pack-only improvements reported as ranges/sec or bytes/sec, not
   allocation throughput.
-

@@ -5,14 +5,14 @@ internal readonly record struct AllocatorRangeVisual(
     int Slot,
     int Handle,
     long Index,
-    long LastIndex,
     long PayloadIndex,
     long Size,
+    long CapacitySize,
+    long RetainedExtraSize,
     long ReservedSize,
     long LeadingPadding,
     long TrailingPadding,
-    int Alignment,
-    bool Moved);
+    int Alignment);
 
 /// <summary>One free span derived from public allocator state.</summary>
 internal readonly record struct AllocatorSpanVisual(long Index, long Size);

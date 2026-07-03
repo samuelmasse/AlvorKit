@@ -13,6 +13,7 @@ public class WindowInputTest
 
         input.Clipboard = "hello";
         input.CursorMode = CursorMode.Captured;
+        input.CursorShape = CursorShape.Text;
         input.MousePosition = new(12, 34);
         input.Track = true;
 
@@ -21,6 +22,9 @@ public class WindowInputTest
         Assert.AreEqual(CursorMode.Captured, host.CursorMode);
         Assert.AreEqual(CursorMode.Captured, input.CursorMode);
         Assert.AreEqual(CursorMode.Captured, mouse.CursorMode);
+        Assert.AreEqual(CursorShape.Text, host.CursorShape);
+        Assert.AreEqual(CursorShape.Text, input.CursorShape);
+        Assert.AreEqual(CursorShape.Text, mouse.CursorShape);
         Assert.AreEqual(new Vec2(12, 34), host.MousePosition);
         Assert.AreEqual(new Vec2(12, 34), mouse.Position);
         Assert.IsTrue(input.Track);

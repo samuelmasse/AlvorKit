@@ -18,6 +18,13 @@ public class WindowInput(WindowLoop window)
         set => window.Mouse.CursorMode = value;
     }
 
+    /// <summary>Gets or sets the requested visual cursor shape.</summary>
+    public CursorShape CursorShape
+    {
+        get => window.Mouse.CursorShape;
+        set => window.Mouse.CursorShape = value;
+    }
+
     /// <summary>Gets or sets the cursor position in window coordinates.</summary>
     public Vec2 MousePosition
     {

@@ -33,6 +33,22 @@ Track two payload byte counts for each live allocation:
 The free map and `Used` continue to describe physical reserved backing-store
 memory. Logical size describes the caller-visible request.
 
+`RangeAllocator` reserves backing-store index `0` by starting usable allocation
+space at `FirstUsableIndex = 1`. This means `Used` has a permanent baseline of
+`1`, even when there are no live allocations. Any total-used invariant must
+include that sentinel byte:
+
+```text
+Used = 1 + sum(CapacitySize + max alignment padding for each live allocation)
+```
+
+After `Pack()` has reclaimed shrink slack, each packed allocation has
+`CapacitySize == Size`, so the invariant becomes:
+
+```text
+Used = 1 + sum(Size + max alignment padding for each live allocation)
+```
+
 ## Public Shape
 
 Use `RangeAllocation.Size` for logical size, matching the current public
@@ -48,13 +64,20 @@ public long CapacitySize;
 reserved backing-store footprint. The reserved footprint is:
 
 ```text
-CapacitySize + MaxPadding(Alignment)
+CapacitySize + maximum possible alignment padding
 ```
 
+For the current allocator policy, maximum possible alignment padding is
+`0` when alignment is `0` or `1`, otherwise `Alignment - 1`. Public docs should
+spell this out instead of relying on the private `MaxPadding` helper name.
+
 This is a public struct change, so docs and tests should make the new meaning
-explicit. If the name `CapacitySize` feels too generic, use
-`ReservedPayloadSize`; the key is that it must not be confused with the total
-reserved footprint including alignment padding.
+explicit. Downstream source that used `RangeAllocation.Size` as reserved
+capacity must move to `CapacitySize`, and unsafe, binary, or serialized
+consumers may observe the public struct layout change. If the name
+`CapacitySize` feels too generic, use `ReservedPayloadSize`; the key is that it
+must not be confused with the total reserved footprint including alignment
+padding.
 
 ## Allocation Behavior
 
@@ -64,7 +87,7 @@ For a new non-zero allocation:
 
 - Set `Size = requestedSize`.
 - Set `CapacitySize = requestedSize`.
-- Reserve `CapacitySize + MaxPadding(alignment)`.
+- Reserve `CapacitySize + max alignment padding`.
 - Increase `Used` by the same reserved footprint.
 
 ### Same Handle, Request Fits Existing Capacity
@@ -99,16 +122,22 @@ Keep the current zero-byte behavior:
 - Free the handle if it is live.
 - Reset the handle to `0`.
 
+Preserve the current validation order: negative alignment or size must throw
+before the zero-byte clear path runs. For example,
+`Alloc(ref handle, -1, 0)` should not free an existing handle.
+
 ## Free Behavior
 
 `Free(handle)` must return the full retained capacity footprint to the free map:
 
 ```text
-CapacitySize + MaxPadding(Alignment)
+CapacitySize + maximum possible alignment padding
 ```
 
 It must not use logical `Size`, because shrink slack is still physically
-reserved until pack or free.
+reserved until pack or free. This is especially important when replacing a
+previously shrunk allocation: the old block must be returned using
+`CapacitySize`, not the smaller logical `Size`.
 
 ## Pack Behavior
 
@@ -119,11 +148,11 @@ reserved until pack or free.
 3. Move each allocation to the next packed index.
 4. Compute the packed footprint from logical `Size`.
 5. Set `CapacitySize = Size`.
-6. Advance the packed index by `Size + MaxPadding(Alignment)`.
+6. Advance the packed index by `Size + max alignment padding`.
 7. Reset the free map to one tail block after the packed live range.
 
-After pack, retained shrink slack is gone and `Used` reflects the sum of packed
-logical footprints.
+After pack, retained shrink slack is gone and `Used` reflects the sentinel byte
+plus the sum of packed logical footprints.
 
 ## Callback And Relocation Semantics
 
@@ -151,11 +180,31 @@ Display these fields:
 - Request/logical bytes: `RangeAllocation.Size`.
 - Capacity bytes: `RangeAllocation.CapacitySize`.
 - Retained extra bytes: `CapacitySize - Size`.
-- Reserved bytes: `CapacitySize + MaxPadding(Alignment)`.
+- Reserved bytes: `CapacitySize + maximum possible alignment padding`.
 - Padding bytes: reserved bytes minus capacity bytes.
 
 For the current operation, the visualizer may still highlight the latest request
 argument, but the persisted logical size should come from allocator state.
+
+Update the captured visual snapshot shape, not only rendered labels.
+`AllocatorRangeVisual` needs separate logical size, capacity size, retained
+extra, reserved size, and padding fields so drawn live ranges agree with
+allocator `Used`. Add or update a scenario so the visualizer shows
+same-handle shrink before and after an explicit `Pack()`.
+
+## Benchmark Updates
+
+Benchmark summary metrics should separate:
+
+- Requested/logical bytes from `RangeAllocation.Size`.
+- Capacity bytes from `RangeAllocation.CapacitySize`.
+- Retained extra bytes from `CapacitySize - Size`.
+- Reserved bytes from capacity plus actual or maximum padding, depending on the
+  metric being reported.
+- Padding bytes excluding retained payload slack.
+
+Add a shrink-then-pack benchmark case before using benchmark output to measure
+the benefit of reclaiming shrink slack.
 
 ## Tests
 
@@ -167,27 +216,57 @@ Add focused tests for the new model:
 4. Growing within retained capacity updates `Size` and does not change `Used`.
 5. Growing beyond retained capacity replaces the block and resets
    `CapacitySize` to the new logical size.
-6. Free after shrink returns the full retained capacity footprint.
-7. Pack after shrink reduces `Used`.
-8. Pack after shrink sets `CapacitySize == Size`.
-9. Pack after shrink resets the free map to one tail block.
-10. `LastAllocationSlots` exposes pre-pack capacity, and `AllocationSlots`
+6. Alignment changes replace the block and reset `CapacitySize` to the new
+   logical size.
+7. Free after shrink returns the full retained capacity footprint.
+8. Zero-byte allocation after shrink clears the handle and returns the full
+   retained capacity footprint.
+9. Invalid zero-byte calls such as `Alloc(ref handle, -1, 0)` throw before
+   clearing the handle.
+10. Replacement after shrink frees the old block using `CapacitySize`, not the
+    smaller logical `Size`.
+11. Pack after shrink reduces `Used`, including the permanent sentinel-byte
+    baseline.
+12. Pack after shrink sets `CapacitySize == Size`.
+13. Pack after shrink resets the free map to one tail block. Assert this with
+    `FreeBlockCount == 1` and a follow-up allocation whose `Index` starts at the
+    pre-allocation `Used`.
+14. `LastAllocationSlots` exposes pre-pack capacity, and `AllocationSlots`
     exposes post-pack compacted capacity.
-11. Alignment padding still matches existing address expectations.
-12. `SharedVertexBuffer` integration still builds against the new public
+15. Alignment padding still matches existing address expectations, including a
+    pack-after-shrink case with a misaligned original index.
+16. New allocations initialize `CapacitySize == Size`.
+17. `SharedVertexBuffer` integration still builds against the new public
     allocation shape.
 
 ## Verification
 
-For implementation:
+For Working Mode implementation, run focused checks that match the touched
+surface:
 
-1. Run focused `AlvorKit.Ranges` unit tests.
-2. Run focused coverage for `AlvorKit.Ranges`.
-3. Build the visualizer demo.
-4. Capture visualizer frames for same-handle shrink before and after pack.
-5. Build `AlvorKit.Engine` to protect `SharedVertexBuffer` integration.
-6. Run Release range benchmarks to measure the cost of recording logical size
-   and the benefit of pack reclaiming shrink slack.
+1. Run focused `AlvorKit.Ranges` unit tests:
+
+   ```powershell
+   dotnet test tests\AlvorKit.Ranges.Test\AlvorKit.Ranges.Test.csproj --filter FullyQualifiedName~AlvorKit.Ranges.Test.RangeAllocatorTest
+   ```
+
+2. Build `AlvorKit.Engine` to protect `SharedVertexBuffer` integration:
+
+   ```powershell
+   dotnet build src\AlvorKit.Engine\AlvorKit.Engine.csproj
+   ```
+
+3. Build the visualizer demo when visualizer files change:
+
+   ```powershell
+   dotnet build demos\AlvorKit.Ranges.Demo.Visualizer\AlvorKit.Ranges.Demo.Visualizer.csproj
+   ```
+
+Commit Mode or explicitly requested verification can add:
+
+- Focused coverage for `AlvorKit.Ranges`.
+- Visualizer frame captures for same-handle shrink before and after pack.
+- Release range benchmarks after the shrink-then-pack benchmark exists.
 
 ## Non-Goals
 

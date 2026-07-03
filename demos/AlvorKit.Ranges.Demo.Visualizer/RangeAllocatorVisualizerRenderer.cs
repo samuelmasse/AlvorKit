@@ -18,7 +18,7 @@ internal sealed class RangeAllocatorVisualizerRenderer(
     private static readonly Vec4 TailFree = (0.09f, 0.14f, 0.14f, 1f);
     private static readonly Vec4 FreeEdge = (0.27f, 0.6f, 0.48f, 1f);
     private static readonly Vec4 Padding = (0.95f, 0.62f, 0.2f, 0.78f);
-    private static readonly Vec4 Trail = (0.98f, 0.86f, 0.35f, 0.72f);
+    private static readonly Vec4 Retained = (0.42f, 0.58f, 0.74f, 0.66f);
     private static readonly Vec4 RequestFill = (0.9f, 1f, 1f, 0.38f);
     private static readonly Vec4 RequestEdge = (1f, 0.96f, 0.55f, 0.95f);
     private static readonly Vec4 Highlight = (1f, 0.96f, 0.55f, 1f);
@@ -38,8 +38,7 @@ internal sealed class RangeAllocatorVisualizerRenderer(
         float speed,
         bool playing,
         bool showLabels,
-        bool showPadding,
-        bool showTrails)
+        bool showPadding)
     {
         var batch = sprites.Batch;
         var ui = scale.Scale;
@@ -70,7 +69,7 @@ internal sealed class RangeAllocatorVisualizerRenderer(
             (margin, headerHeight - S(8f, ui)),
             (sideWidth, canvasSize.Y - headerHeight),
             ui);
-        DrawMemoryStrip(batch, bodyFont, smallFont, text, runner, memoryPosition, memorySize, phase, showLabels, showPadding, showTrails, ui);
+        DrawMemoryStrip(batch, bodyFont, smallFont, text, runner, memoryPosition, memorySize, phase, showLabels, showPadding, ui);
         DrawTimeline(batch, smallFont, text, scenario, runner, timelinePosition, timelineSize, ui);
     }
 
@@ -140,17 +139,15 @@ internal sealed class RangeAllocatorVisualizerRenderer(
                 WriteMetric(batch, smallFont, text, "request B", "none", cursor, ui);
 
             cursor += (0, lineHeight);
-            WriteMetric(batch, smallFont, text, "payload B", touchedRange.Size, cursor, ui);
+            WriteMetric(batch, smallFont, text, "logical B", touchedRange.Size, cursor, ui);
             cursor += (0, lineHeight);
-            if (hasRequest && touchedRange.Size > requestBytes)
-            {
-                WriteMetric(batch, smallFont, text, "retained extra B", touchedRange.Size - requestBytes, cursor, ui);
-                cursor += (0, lineHeight);
-            }
-
+            WriteMetric(batch, smallFont, text, "capacity B", touchedRange.CapacitySize, cursor, ui);
+            cursor += (0, lineHeight);
+            WriteMetric(batch, smallFont, text, "retained extra B", touchedRange.RetainedExtraSize, cursor, ui);
+            cursor += (0, lineHeight);
             WriteMetric(batch, smallFont, text, "reserved B", touchedRange.ReservedSize, cursor, ui);
             cursor += (0, lineHeight);
-            WriteMetric(batch, smallFont, text, "padding B", touchedRange.ReservedSize - touchedRange.Size, cursor, ui);
+            WriteMetric(batch, smallFont, text, "padding B", touchedRange.ReservedSize - touchedRange.CapacitySize, cursor, ui);
             cursor += (0, lineHeight);
         }
         else
@@ -205,7 +202,6 @@ internal sealed class RangeAllocatorVisualizerRenderer(
         float phase,
         bool showLabels,
         bool showPadding,
-        bool showTrails,
         float ui)
     {
         var snapshot = runner.Current;
@@ -218,7 +214,7 @@ internal sealed class RangeAllocatorVisualizerRenderer(
             MutedText);
         batch.Write(smallFont, "last allocator call:", position + (S(18f, ui), S(72f, ui)), MutedText);
         batch.Write(smallFont, runner.LastCallText, position + (S(205f, ui), S(72f, ui)), Highlight);
-        DrawLegend(batch, smallFont, position + (size.X - S(740f, ui), S(18f, ui)), ui);
+        DrawLegend(batch, smallFont, position + (size.X - S(820f, ui), S(18f, ui)), ui);
 
         var stripPosition = position + (S(24f, ui), S(88f, ui));
         var stripWidth = size.X - S(48f, ui);
@@ -228,7 +224,6 @@ internal sealed class RangeAllocatorVisualizerRenderer(
         var stripSize = new Vec2(stripWidth, Math.Max(S(48f, ui), size.Y - S(128f, ui) - detailHeight - detailGap));
         batch.Draw(stripPosition, stripSize, (0.045f, 0.05f, 0.058f, 1f));
         DrawFreeSpans(batch, snapshot, 0, snapshot.Size, stripPosition, stripSize, true, ui);
-        DrawPackTrails(batch, snapshot, 0, snapshot.Size, stripPosition, stripSize, phase, showTrails, ui);
         DrawLiveRanges(batch, smallFont, text, runner, snapshot, 0, snapshot.Size, stripPosition, stripSize, phase, showLabels, showPadding, ui);
         DrawOutline(batch, stripPosition, stripSize, (0.22f, 0.25f, 0.28f, 1f), S(1f, ui));
 
@@ -241,7 +236,6 @@ internal sealed class RangeAllocatorVisualizerRenderer(
             MutedText);
         batch.Draw(detailPosition, detailSize, (0.045f, 0.05f, 0.058f, 1f));
         DrawFreeSpans(batch, snapshot, 1, detailEnd, detailPosition, detailSize, false, ui);
-        DrawPackTrails(batch, snapshot, 1, detailEnd, detailPosition, detailSize, phase, showTrails, ui);
         DrawLiveRanges(batch, smallFont, text, runner, snapshot, 1, detailEnd, detailPosition, detailSize, phase, showLabels, showPadding, ui);
         DrawOutline(batch, detailPosition, detailSize, (0.22f, 0.25f, 0.28f, 1f), S(1f, ui));
     }
@@ -250,10 +244,10 @@ internal sealed class RangeAllocatorVisualizerRenderer(
     private static void DrawLegend(SpriteBatchWriter batch, FontSize font, Vec2 position, float ui)
     {
         DrawLegendItem(batch, font, position, Free, "free block", ui);
-        DrawLegendItem(batch, font, position + (S(140f, ui), 0), Palette(0), "live payload", ui);
-        DrawLegendItem(batch, font, position + (S(305f, ui), 0), Padding, "padding", ui);
-        DrawLegendItem(batch, font, position + (S(430f, ui), 0), RequestFill, "latest request", ui);
-        DrawLegendItem(batch, font, position + (S(600f, ui), 0), Trail, "pack trail", ui);
+        DrawLegendItem(batch, font, position + (S(130f, ui), 0), Palette(0), "live payload", ui);
+        DrawLegendItem(batch, font, position + (S(285f, ui), 0), Retained, "retained", ui);
+        DrawLegendItem(batch, font, position + (S(405f, ui), 0), Padding, "padding", ui);
+        DrawLegendItem(batch, font, position + (S(525f, ui), 0), RequestFill, "latest request", ui);
     }
 
     /// <summary>Draws one legend swatch and label.</summary>
@@ -287,39 +281,6 @@ internal sealed class RangeAllocatorVisualizerRenderer(
         }
     }
 
-    /// <summary>Draws movement trails created by pack operations.</summary>
-    private static void DrawPackTrails(
-        SpriteBatchWriter batch,
-        AllocatorSnapshot snapshot,
-        long viewStart,
-        long viewEnd,
-        Vec2 position,
-        Vec2 size,
-        float phase,
-        bool showTrails,
-        float ui)
-    {
-        if (!showTrails)
-            return;
-
-        for (var i = 0; i < snapshot.Ranges.Length; i++)
-        {
-            var range = snapshot.Ranges[i];
-            if (!range.Moved)
-                continue;
-
-            if (!TryRangeRect(viewStart, viewEnd, range.LastIndex, range.ReservedSize, position, size, ui, out var oldPosition, out var oldSize))
-                continue;
-            if (!TryRangeRect(viewStart, viewEnd, range.Index, range.ReservedSize, position, size, ui, out var newPosition, out var newSize))
-                continue;
-
-            var oldCenter = oldPosition + (oldSize.X * 0.5f, oldSize.Y * 0.18f);
-            var newCenter = newPosition + (newSize.X * 0.5f, newSize.Y * 0.18f);
-            batch.Draw(oldPosition, oldSize, (0.98f, 0.86f, 0.35f, 0.18f * (1f - phase)));
-            batch.DrawLine(oldCenter, newCenter, S(2f, ui), Trail);
-        }
-    }
-
     /// <summary>Draws live ranges and their payload/padding subregions.</summary>
     private static void DrawLiveRanges(
         SpriteBatchWriter batch,
@@ -349,13 +310,15 @@ internal sealed class RangeAllocatorVisualizerRenderer(
             if (showPadding)
                 DrawPadding(batch, viewStart, viewEnd, range, position, size, ui);
 
+            DrawRetainedExtra(batch, viewStart, viewEnd, range, position, size, ui);
+
             if (!TryRangeRect(viewStart, viewEnd, range.PayloadIndex, range.Size, position, size, ui, out var payloadPosition, out var payloadSize))
                 continue;
 
             var hasRequest = TryRequestBytes(runner, range.Slot, out var requestBytes);
-            var requestReusesLargerPayload = activeSlot == range.Slot && hasRequest && requestBytes < range.Size;
+            var requestLeavesRetainedCapacity = activeSlot == range.Slot && hasRequest && requestBytes < range.CapacitySize;
             var pulse = activeSlot == range.Slot ? 0.7f + 0.3f * MathF.Sin(phase * MathF.PI) : 1f;
-            if (requestReusesLargerPayload)
+            if (requestLeavesRetainedCapacity)
                 pulse *= 0.58f;
 
             batch.Draw(payloadPosition, payloadSize, Dim(color, pulse));
@@ -369,6 +332,24 @@ internal sealed class RangeAllocatorVisualizerRenderer(
             if (showLabels)
                 DrawRangeLabel(batch, font, text, runner, range, rectPosition, rectSize, ui);
         }
+    }
+
+    /// <summary>Draws retained payload capacity that is no longer part of the logical request.</summary>
+    private static void DrawRetainedExtra(
+        SpriteBatchWriter batch,
+        long viewStart,
+        long viewEnd,
+        AllocatorRangeVisual range,
+        Vec2 position,
+        Vec2 size,
+        float ui)
+    {
+        if (range.RetainedExtraSize <= 0)
+            return;
+
+        var retainedIndex = range.PayloadIndex + range.Size;
+        if (TryRangeRect(viewStart, viewEnd, retainedIndex, range.RetainedExtraSize, position, size, ui, out var retainedPosition, out var retainedSize))
+            batch.Draw(retainedPosition, retainedSize, Retained);
     }
 
     /// <summary>Draws leading and trailing reserved padding for a live range.</summary>
@@ -389,7 +370,7 @@ internal sealed class RangeAllocatorVisualizerRenderer(
 
         if (range.TrailingPadding > 0)
         {
-            var trailingIndex = range.PayloadIndex + range.Size;
+            var trailingIndex = range.PayloadIndex + range.CapacitySize;
             if (TryRangeRect(viewStart, viewEnd, trailingIndex, range.TrailingPadding, position, size, ui, out var trailingPosition, out var trailingSize))
                 batch.Draw(trailingPosition, trailingSize, Padding);
         }
@@ -486,7 +467,7 @@ internal sealed class RangeAllocatorVisualizerRenderer(
         Vec2 size,
         float ui)
     {
-        var clampedRequestBytes = Math.Clamp(requestBytes, 0, range.Size);
+        var clampedRequestBytes = Math.Clamp(requestBytes, 0, range.CapacitySize);
         if (clampedRequestBytes <= 0)
             return;
 
@@ -539,7 +520,7 @@ internal sealed class RangeAllocatorVisualizerRenderer(
                 return;
         }
 
-        var payloadLabel = text.Format("{0}B payload", range.Size);
+        var payloadLabel = text.Format("{0}B logical", range.Size);
         if (batch.Measure(font, payloadLabel) <= maxWidth)
             batch.Write(font, payloadLabel, (x, y + lineIndex * lineAdvance), Text);
 
@@ -547,7 +528,17 @@ internal sealed class RangeAllocatorVisualizerRenderer(
         if (lineIndex >= maxLines)
             return;
 
-        var padding = range.ReservedSize - range.Size;
+        var capacityLabel = range.RetainedExtraSize == 0
+            ? text.Format("{0}B capacity", range.CapacitySize)
+            : text.Format("{0}B capacity, {1}B retained", range.CapacitySize, range.RetainedExtraSize);
+        if (batch.Measure(font, capacityLabel) <= maxWidth)
+            batch.Write(font, capacityLabel, (x, y + lineIndex * lineAdvance), Text);
+
+        lineIndex++;
+        if (lineIndex >= maxLines)
+            return;
+
+        var padding = range.ReservedSize - range.CapacitySize;
         var reservedLabel = padding == 0
             ? text.Format("{0}B reserved", range.ReservedSize)
             : text.Format("{0}B reserved, {1}B pad", range.ReservedSize, padding);
