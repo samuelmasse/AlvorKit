@@ -14,6 +14,11 @@ These instructions apply to C# code under `scripts/` and the matching tests unde
 - Preserve existing behavior unless the task asks for a behavior change.
 - Keep changes cohesive, boring, and easy to review; avoid sweeping rewrites that
   do not pay for themselves in clarity, testability, or correctness.
+- In Working Mode, make the requested behavior work first. Style,
+  documentation, test, file-size, and final-review rules guide good work but do
+  not block Working Mode progress.
+- In Commit Mode, apply the Commit Mode gates: file-size limits, final review, and
+  relevant tests, coverage, and lint as directed by the root instructions.
 
 ## CLI Tools
 
@@ -72,25 +77,28 @@ These instructions apply to C# code under `scripts/` and the matching tests unde
 
 ## File Size
 
-- Keep each edited C# file at or below 150 lines.
+- In Working Mode, treat the 150-line script source target as cleanup guidance,
+  not a blocker for making Working Mode changes work.
+- In Commit Mode, keep each edited C# file at or below 150 lines.
 - This 150-line target applies to script source files, not tests. Matching test
   files under `tests/AlvorKit.Script.*.Test/` may be up to 750 lines when the
   scenarios are cohesive.
-- When a touched file is already over 150 lines, split out cohesive helpers or
-  data shapes before adding more code.
-- Do not use partial classes solely to satisfy the script source file-size
-  target. If a file grows past the target, first extract cohesive top-level
-  helper types with domain-specific names. If no clean extraction exists, keep
-  the file whole, call out the exception, and avoid spreading one logical type
-  across partial files.
-- If a file cannot reasonably be kept under 150 lines because of generated shape,
-  platform-specific glue, or tightly coupled declarations, call that out clearly
-  and keep the exception as small as possible.
+- In Commit Mode, when a touched file is already over 150 lines, split out
+  cohesive helpers or data shapes before adding more code.
+- Do not use partial classes solely to satisfy the script source file-size target
+  during Commit Mode. If a file grows past the target, first extract cohesive
+  top-level helper types with domain-specific names. If no clean extraction
+  exists, keep the file whole, call out the exception, and avoid spreading one
+  logical type across partial files.
+- If Commit Mode work cannot reasonably keep a file under 150 lines because of
+  generated shape, platform-specific glue, or tightly coupled declarations, call
+  that out clearly and keep the exception as small as
+  possible.
 
 ## Documentation
 
-- Add concise XML documentation comments for every type, constructor, method,
-  field, and property introduced or changed.
+- In Commit Mode, add concise XML documentation comments for every type,
+  constructor, method, field, and property introduced or changed.
 - Documentation should explain purpose, contracts, invariants, edge cases, or
   side effects; do not add comments that merely restate the implementation.
 - Keep implementation comments rare. Use them only to explain non-obvious
@@ -99,20 +107,21 @@ These instructions apply to C# code under `scripts/` and the matching tests unde
 
 ## Tests
 
-- Add or update unit tests for every behavior change and every refactor that
-  moves meaningful logic.
-- Prefer focused tests in the matching project under `tests/AlvorKit.Script.*.Test/`.
-- Cover happy paths, edge cases, invalid input, and failure behavior when the
-  script code has explicit error handling.
-- Use fakes, temporary workspaces, and test doubles instead of invoking real
-  external tools whenever possible.
-- Before finishing, run the most relevant `dotnet test` command. If the change
-  crosses script-project boundaries, run the broader solution tests or explain
-  why that was not possible.
+- In Commit Mode, add or update unit tests for every behavior change and every
+  refactor that moves meaningful logic.
+- When writing tests, prefer focused tests in the matching project under
+  `tests/AlvorKit.Script.*.Test/`.
+- When writing tests, cover happy paths, edge cases, invalid input, and failure
+  behavior when the script code has explicit error handling.
+- When writing tests, use fakes, temporary workspaces, and test doubles instead
+  of invoking real external tools whenever possible.
+- For Commit Mode requests, run the most relevant tests through the root timing
+  guard. If the change crosses script-project boundaries, run the broader
+  solution tests or explain why that was not possible.
 
-## Final Review
+## Commit Mode Review
 
-- Re-read the changed files before finishing.
+- For Commit Mode requests, re-read the changed files before handing off.
 - Check that edited script source files respect the 150-line target, edited test
   files stay within the 750-line test limit, the repo-wide 170-character code
   line limit is respected, XML docs are meaningful, constructors are not

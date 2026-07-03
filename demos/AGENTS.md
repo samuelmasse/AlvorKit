@@ -7,6 +7,8 @@ These instructions apply to C# code under `demos/`.
 ## Working Standard
 
 - Review the requested demo code and nearby collaborators before editing.
+- In Working Mode, use demo builds, AlvorSense, or other proof tools only when
+  they are useful for understanding or shaping the change.
 - Treat refactoring as part of normal demo work, but keep it focused on the
   touched demo project unless a broader refactor is explicitly requested.
 - Preserve existing behavior unless the task asks for a behavior change.
@@ -36,8 +38,9 @@ These instructions apply to C# code under `demos/`.
 
 ## Visual Demo Automation
 
-- Prefer AlvorSense for visual verification when a demo creates its window with
-  `AgentGlfwWindowHost` from `AlvorKit.Windowing.Agent`. Read `docs/AlvorSense.md` and use
+- Use AlvorSense for visual proof when it is useful in Working Mode or required
+  in Commit Mode and the demo creates its window with `AgentGlfwWindowHost` from
+  `AlvorKit.Windowing.Agent`. Read `docs/AlvorSense.md` and use
   `scripts/AlvorKit.Script.AlvorSense` for exact update counts, input batches,
   hidden rendering, and screenshots.
 - When using AlvorSense, show important screenshots in chat, summarize the key
@@ -145,24 +148,26 @@ These instructions apply to C# code under `demos/`.
 
 ## File Size
 
-- Keep each edited C# file at or below 750 lines.
+- In Working Mode, treat the 750-line demo source target as cleanup guidance,
+  not a blocker for making Working Mode changes work.
+- In Commit Mode, keep each edited C# file at or below 750 lines.
 - Larger demo files are acceptable when they preserve a readable, step-by-step
   narrative and prevent needless file/type sprawl.
-- When a touched file is already over 750 lines, split out cohesive helpers or
-  data shapes before adding more code.
+- In Commit Mode, when a touched file is already over 750 lines, split out
+  cohesive helpers or data shapes before adding more code.
 - If a file cannot reasonably be kept under 750 lines because of demo flow,
   platform glue, or tightly coupled declarations, call that out clearly and keep
   the exception as small as possible.
 
 ## Documentation
 
-- Add concise XML documentation comments for every type, constructor, method,
-  field, and property introduced or changed.
-- Every demo method should have at least a quick XML `<summary>`, including
-  private helpers and formatting methods. These summaries may be brief, but they
-  should say what role the method plays in the demo.
-- For local functions under top-level statements, use a short leading comment
-  that gives the same quick purpose summary.
+- In Commit Mode, add concise XML documentation comments for every type,
+  constructor, method, field, and property introduced or changed.
+- In Commit Mode, every demo method should have at least a quick XML
+  `<summary>`, including private helpers and formatting methods. These summaries
+  may be brief, but they should say what role the method plays in the demo.
+- In Commit Mode, for local functions under top-level statements, use a short
+  leading comment that gives the same quick purpose summary.
 - For methods and constructors, write one useful `<summary>` comment instead of
   separate `<param>` comments for each parameter. Add other XML tags only when
   they explain an important contract that the summary cannot express clearly.
@@ -188,13 +193,14 @@ These instructions apply to C# code under `demos/`.
 - Do not run the repository coverage tool for changes that only touch demo
   projects or demo-only code. Demo projects have no unit tests by design, so
   coverage is not required for demo-only work.
-- Before finishing, build the touched demo project or explain why that was not
+- In Commit Mode, build the touched demo project or explain why that was not
   possible.
 
 ## Final Review
 
-- Re-read the changed files before finishing.
-- Check that edited files respect the 750-line target, the repo-wide
-  170-character code line limit, XML docs are meaningful, constructors are not
-  redundant, and hot paths avoid allocation churn.
-- Report the exact build or verification command run and any remaining risk.
+- In Commit Mode, re-read the changed files before handing off.
+- In Commit Mode, check that edited files respect the 750-line target, the
+  repo-wide 170-character code line limit, XML docs are meaningful, constructors
+  are not redundant, and hot paths avoid allocation churn.
+- In Commit Mode, report the exact build or verification command run and any
+  remaining risk.

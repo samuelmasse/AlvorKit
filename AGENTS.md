@@ -3,7 +3,48 @@
 ## Scope
 
 These instructions apply repo-wide. More specific `AGENTS.md` files under
-`src/`, `scripts/`, and `demos/` add area-specific rules.
+`src/`, `scripts/`, `demos/`, `tests/`, and `res/templates/` add area-specific
+rules for their scope and may narrow or relax repo-wide defaults when they say
+so explicitly.
+
+## Working Mode And Commit Mode
+
+Agents operate in **Working Mode** by default. In this mode, make the requested
+change or investigation without treating the work as cleanup, commit, PR, or
+release ready unless the user explicitly asks for Commit Mode.
+
+In Working Mode:
+
+- Do not create, refresh, or require advisory leases unless the user explicitly
+  asks for lease-backed coordination.
+- Do not run lint, coverage, broad test gates, or final verification solely
+  because work is ending.
+- Targeted builds, tests, visual checks, or generated-output checks are allowed
+  when they are useful for the specific change or question.
+- Style, documentation, line-length, file-size, and final-review rules guide
+  good work but should not block making Working Mode changes work.
+- Do not stage, commit, push, open a PR, or describe work as ready to commit
+  unless the user asks for Commit Mode.
+- In the handoff, list skipped final checks such as lint, coverage, broad tests,
+  visual verification, staging, or commit when any of those would normally be
+  expected in Commit Mode.
+
+Use **Commit Mode** only when the user explicitly asks for cleanup, final
+verification, staging, committing, pushing, opening a PR, or making work ready
+to commit. An agent in Commit Mode may clean work from multiple agents, but must
+first inventory the intended scope with status and diffs, then read the relevant
+changed files before editing or staging. Preserve concurrent work: do not revert
+others' edits, do not use destructive git commands, and ask when ownership or
+intent is unclear.
+
+When staging or committing is requested, use explicit path safeguards:
+
+- Identify the exact files or globs intended for staging.
+- Inspect status and diffs for those paths before staging.
+- Stage only the intended paths; avoid broad commands such as `git add .`.
+- Recheck status and the staged diff before committing.
+- If unrelated or surprising changes appear in the same paths, pause and ask or
+  clearly separate the requested changes.
 
 ## Agent Complaints
 
@@ -15,19 +56,19 @@ improvements.
 
 ## Agent Coordination
 
-Use advisory leases under `out/agents/` to make concurrent agent work visible.
-These leases are coordination hints, not hard locks. If an active lease overlaps
-your intended write paths, avoid the overlap when practical, or leave a short
-conflict note explaining why the overlap is unavoidable.
+Advisory leases under `out/agents/` are available when the user explicitly asks
+for lease-backed coordination. They are coordination hints, not hard locks. If
+an active lease overlaps your intended write paths, avoid the overlap when
+practical, or leave a short conflict note explaining why it is unavoidable.
 
-Read-only exploration does not need a lease unless it runs expensive, broad, or
-disruptive commands. Create a lease before editing files, generating code,
-running repo-wide or broad scoped formatters, refreshing generated bindings,
-performing cleanup, staging files, or doing other work that could disturb
-another agent.
+Do not create leases in Working Mode unless the user asks. Read-only
+exploration does not need a lease. When lease-backed coordination is requested,
+create a lease before editing files, generating code, running repo-wide or broad
+scoped formatters, refreshing generated bindings, performing cleanup, staging
+files, or doing other work that could disturb another agent.
 
-Before claiming paths, run `list` or `check` to inspect active non-expired leases.
-Use the lease helper instead of hand-editing JSON:
+When using leases, run `list` or `check` before claiming paths to inspect active
+non-expired leases. Use the lease helper instead of hand-editing JSON:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.AgentLease -- start --agent <id> --task "Short task" --path "src/Foo/**"
@@ -48,22 +89,25 @@ paths and globs such as `src/Foo.cs`, `scripts/AlvorKit.Script.Lint/**`,
 checks to be useful. Valid modes are `write`, `generate`, `format`, `test`,
 `cleanup`, and `review`.
 
-For generated or review artifacts under `out/`, claim the exact artifact
-directory once it is known, such as `out/bindgen-review/<case>-<suffix>/**` or
-`out/coverage/runs/<run-id>/**`. Do not claim shared output roots such as
-`out/bindgen-review/**` or `out/coverage/**` when agents can work in separate
-run directories. If a tool prints the directory after startup, begin with the
-source paths and then refresh the lease with the concrete output path.
+When using leases for generated or review artifacts under `out/`, claim the
+exact artifact directory once it is known, such as
+`out/bindgen-review/<case>-<suffix>/**` or `out/coverage/runs/<run-id>/**`. Do
+not claim shared output roots such as `out/bindgen-review/**` or
+`out/coverage/**` when agents can work in separate run directories. If a tool
+prints the directory after startup, begin with the source paths and then refresh
+the lease with the concrete output path.
 
-Leases expire five minutes after their last update by default. Refresh your lease
-before editing again after any long-running command, and refresh it once in a
-while during longer work. Use `--timeout-minutes <n>` when a longer-running
-operation needs a larger stale window. Delete the lease with `done` when work
-finishes; stale leases expire automatically if cleanup is missed.
+Leases expire five minutes after their last update by default. When using one,
+refresh it before editing again after any long-running command, and refresh it
+once in a while during longer work. Use `--timeout-minutes <n>` when a
+longer-running operation needs a larger stale window. Delete the lease with
+`done` when work finishes; stale leases expire automatically if cleanup is
+missed.
 
-Before staging, run `check` for the exact files or globs you intend to stage and
-confirm your current lease still covers them. If overlap is unavoidable, write a
-conflict note; the helper stores it under `out/agents/conflicts/`.
+If staging is requested with lease-backed coordination, run `check` for the
+exact files or globs you intend to stage and confirm your current lease still
+covers them. If overlap is unavoidable, write a conflict note; the helper stores
+it under `out/agents/conflicts/`.
 
 ## Visual Automation
 
@@ -93,7 +137,9 @@ verification patterns, and desktop automation gotchas.
 
 ## Line Length
 
-Keep hand-authored code and config lines at or below 170 characters.
+In Working Mode, treat the 170-character line limit as cleanup guidance that
+should not block making changes work. In Commit Mode, keep
+hand-authored code and config lines at or below 170 characters.
 
 This applies to C#, MSBuild XML, JSON, YAML, C, and header files. Prefer
 wrapping long argument lists, object and array literals, command strings,
@@ -104,15 +150,18 @@ Generated output, build output, vendored upstream source, minified files,
 lockfiles, and unavoidable long URLs or external identifiers may exceed this
 limit.
 
-When touching an existing over-limit line, wrap it if it is not one of those
-exceptions. Do not create unrelated churn just to clean historical lines.
+During Commit Mode, when touching an existing over-limit line, wrap it if it is
+not one of those exceptions. Do not create unrelated churn just to clean
+historical lines.
 
 ## Generated Code Review
 
 When changing a code generator or generator configuration, capture generated
-output before and after the change whenever feasible. Prefer the helper, which
-adds a random five-character suffix to avoid collisions and removes the review
-directory when `finish` completes:
+output before and after the change when the user asks for Commit Mode or
+generated-output review. In Working Mode, use this only when it is useful for
+the specific change. Prefer the helper, which adds a random five-character
+suffix to avoid collisions and removes the review directory when `finish`
+completes:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.BindgenReview -- start <library> --case <case>
@@ -138,12 +187,14 @@ git diff --no-index -- out\bindgen-review\<case>-<suffix>\before out\bindgen-rev
 
 Regenerate only the binding library whose generator inputs, configuration, or
 source project changed. Use `all` only when the change intentionally affects
-every generated binding project, and say why in the handoff. Review the
-generated source and project-file diff carefully. Use focused fixtures under
-`out/bindgen-review/` when a full binding output is too large, and summarize the
-meaningful generated-code changes before handing off. Delete disposable
-`out/bindgen-review/` snapshot directories before finishing the task unless the
-user explicitly asks to keep them for follow-up inspection.
+every generated binding project, and say why in the handoff. When doing
+generated-output review, read the generated source and project-file diff
+carefully. Use focused fixtures under `out/bindgen-review/` when a full binding
+output is too large, and summarize meaningful generated-code changes before
+handoff. Delete disposable `out/bindgen-review/` snapshot directories before a
+Commit Mode handoff unless the user explicitly asks to keep them for follow-up
+inspection. In a Working Mode handoff, list any generated-output review or
+cleanup that was skipped.
 
 Do not wire bindgen into normal restore or build targets. Run bindgen for the
 changed library, then build; consumers automatically use the exact local
@@ -246,7 +297,8 @@ top-level helper types when a class needs composed collaborators.
 Avoid partial classes for hand-authored code. Do not use partial declarations as
 a file organization technique for parser sections, command groups, protocol
 types, or file-size compliance. Use partial only for generated-code integration
-or unavoidable framework/tooling requirements, and mention the reason in handoff.
+or unavoidable framework/tooling requirements, and mention the reason in the
+work summary.
 
 Avoid Java-style C# design and naming. Do not introduce generic `Factory`,
 `Manager`, `Service`, or similarly broad suffixes when a constructor, static
@@ -272,7 +324,8 @@ concrete examples of the public things the documentation describes.
 
 Before changing generated C binding documentation, read
 `docs/CBindingDocumentation.md`. Use its audit checklist against generated
-output before handoff.
+output when doing generated-output review or Commit Mode checks; in a Working
+Mode handoff, list that audit if it was skipped.
 
 For generated native bindings, use original upstream documentation whenever it
 exists. Mechanical fallback documentation is acceptable only when the upstream
@@ -315,9 +368,10 @@ lifetime contract. For byte-count contracts, prefer reinterpreting existing
 blittable spans with `MemoryMarshal.AsBytes`, validating the byte count, and
 forwarding the resulting span without allocation.
 
-Before finishing low-level runtime changes, scan the touched code for allocation
-constructs and remove accidental allocations from hot paths. Treat teardown and
-delete paths as allocation-sensitive unless the user explicitly says otherwise.
+For low-level runtime changes, scan the touched code for allocation constructs
+when practical and remove accidental allocations from hot paths. In a Working
+Mode handoff, list this scan if it was skipped. Treat teardown and delete paths
+as allocation-sensitive unless the user explicitly says otherwise.
 
 ## Test File Size
 
@@ -328,9 +382,10 @@ to test files.
 
 ## Linting
 
-Run the repository linter before handing off changes that touch code, workflow
-configuration, JSON, or Markdown. For agent work, prefer scoped linting over
-repo-wide linting. Pass only files, directories, or globs you edited:
+Do not run lint by default in Working Mode. Run the repository linter when the
+user asks for Commit Mode or linting, and prefer scoped linting over repo-wide
+linting. Pass only files, directories, or globs in the requested Commit Mode
+scope:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.Lint -- --include "path/or/glob"
@@ -352,8 +407,10 @@ instead of fixing unrelated work.
 
 ## Unit Test Timing
 
-Direct agent-run unit test commands must go through the timing guard so per-test
-TRX durations are checked against the repository budget:
+Do not run broad unit-test timing gates by default in Working Mode.
+Targeted builds or tests are allowed when useful. When the user asks for Commit
+Mode or a broad unit-test gate, run direct unit test commands through the timing
+guard so per-test TRX durations are checked against the repository budget:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.TestTiming -- --max-duration-ms 1000 -- AlvorKit.slnx --no-build --no-restore
@@ -363,8 +420,9 @@ Pass the normal `dotnet test` target and options after the timing guard options.
 The guard adds a TRX logger, writes `slowest-tests.md` and `slowest-tests.csv`
 under `out/test-timing/runs/<run-id>/`, prints `WARNING AVKTESTTIMING` lines for
 tests slower than the budget, and exits nonzero when tests fail or any test
-exceeds the one-second budget. Use `--warn-only` only for temporary measurement while
-finding existing offenders; do not hand off with slow-test warnings unresolved.
+exceeds the one-second budget. Use `--warn-only` only for temporary measurement
+while finding existing offenders. For a Commit Mode handoff, do not leave
+slow-test warnings unresolved unless the user accepts that risk.
 
 The coverage tool already runs tests and enforces the same timing budget from
 its own TRX output, so do not run a separate timing-guard pass after coverage
@@ -372,19 +430,20 @@ unless the user asks for an independent non-instrumented timing check.
 
 ## Code Coverage
 
-Use the coverage tool whenever a change touches C# source or unit tests. The
-tool writes agent-readable and human-readable artifacts under an isolated
-`out/coverage/runs/<run-id>/` directory by default. The console output prints
-the exact paths for the current run.
+Do not run coverage by default in Working Mode. Use the coverage tool when the
+user asks for Commit Mode or a coverage signal for C# source or unit-test
+changes. The tool writes agent-readable and human-readable artifacts under an
+isolated `out/coverage/runs/<run-id>/` directory by default. The console output
+prints the exact paths for the current run.
 
 The repository coverage gate is 95% line, 85% branch, and 95% method coverage,
-but agents should still aim for meaningful 100% coverage in touched source
-modules. Use the 85% branch gate as a practical floor to avoid ridiculous or
-low-value test setups for defensive branches, compiler-shaped branch artifacts,
-platform probes, and integration boundaries. Treat missing lines in touched files
-as test candidates unless the code is a CLI entry point, external process
-wrapper, native-host probe, report generator integration, or other integration
-boundary that is better marked with `ExcludeFromCodeCoverage`.
+and Commit Mode work should still aim for meaningful 100% coverage in touched
+source modules. Use the 85% branch gate as a practical floor to avoid ridiculous
+or low-value test setups for defensive branches, compiler-shaped branch
+artifacts, platform probes, and integration boundaries. Treat missing lines in
+touched files as test candidates unless the code is a CLI entry point, external
+process wrapper, native-host probe, report generator integration, or other
+integration boundary that is better marked with `ExcludeFromCodeCoverage`.
 
 Quick commands:
 
@@ -399,7 +458,8 @@ Quick commands:
 - Agent full coverage gate:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent`
 
-For focused work, gate coverage on the source project or projects you changed:
+For focused Commit Mode work, gate coverage on the source project or projects
+you changed:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild
@@ -435,8 +495,8 @@ repository-relative path. Repeat `--test-project` to run more than one test
 project. When `--source-project` is present, the gate expects only those source
 modules, even if the selected tests also reference helper projects.
 
-Run the full coverage gate only before finishing broad or cross-project work,
-for CI parity checks, or when explicitly requested:
+Run the full coverage gate only when explicitly requested, for CI parity checks,
+or as part of user-requested broad Commit Mode work:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent
@@ -509,8 +569,8 @@ Agent workflow:
   reports by hand.
 - Use the `Human report:` path printed by the current coverage command for a
   quick human-readable ranked list when deciding which file to tackle next.
-- After adding tests, rerun the same targeted coverage command until the touched
-  files have no missing lines, branches, or methods.
+- During Commit Mode work, after adding tests, rerun the same targeted coverage
+  command until the touched files have no missing lines, branches, or methods.
 
 If the coverage gate fails, inspect the JSON for precise missing lines and
 methods, add or adjust unit tests, then rerun the same targeted command. If
