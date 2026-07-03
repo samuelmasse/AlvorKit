@@ -1,7 +1,7 @@
 namespace AlvorKit.Engine;
 
 /// <summary>Mutable 3D camera orientation that computes front, right, up, and look-at vectors.</summary>
-public sealed class Camera3D
+public class Camera3D
 {
     private Vec3 offset;
     private Vec3 rotation;

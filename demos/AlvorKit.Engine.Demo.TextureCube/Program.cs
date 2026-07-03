@@ -32,7 +32,7 @@ internal sealed class TextureCubeState(
     public override void Load()
     {
         var image = pngs["Noise.png"];
-        texture = new Texture2D(gl, image.Size)
+        texture = new Texture2D(gl, (Vec2u)image.Size)
         {
             PixelsMipmap = image.Pixels.Span,
             MagFilter = GlTextureMagFilter.Nearest,

@@ -179,6 +179,10 @@ centralize them.
   `Vec4` when the target type is clear. Use constructors when the constructor is
   the point, such as scalar splats, composition constructors, conversion tests,
   or expressions with no target vector type.
+- Prefer repository vector casts such as `(Vec2u)image.Size` over converting
+  components one by one. Do not add `checked()` around routine vector or scalar
+  boundary casts unless the user asks for it or the code already models that
+  exact checked invariant.
 - Treat AlvorKit maths types as first-class API shapes. Accept and pass vectors,
   matrices, quaternions, boxes, and related maths types instead of flattening
   true maths values into scalar overloads.

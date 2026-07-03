@@ -108,11 +108,11 @@ public sealed class GeometryCameraTest
         Assert.AreNotEqual(default, perspective.Projection);
     }
 
-    /// <summary>Built-in 3D shaders multiply matrices before the vertex for column-major OpenGL uploads.</summary>
+    /// <summary>Built-in 3D shaders multiply the vertex before the matrices like the old engine shaders.</summary>
     [TestMethod]
-    public void RootPositionColorPrograms3D_VertexShaders_UseProjectionViewVertexOrder()
+    public void RootPositionColorPrograms3D_VertexShaders_UseVertexViewProjectionOrder()
     {
-        const string expected = "gl_Position = matProjection * matView * vec4(inPosition, 1.0);";
+        const string expected = "gl_Position = vec4(inPosition, 1.0) * matView * matProjection;";
 
         StringAssert.Contains(RootPositionColorProgram3D.Vert, expected);
         StringAssert.Contains(RootPositionColorTextureProgram3D.Vert, expected);

@@ -3,54 +3,74 @@ namespace AlvorKit.Engine.Test;
 [TestClass]
 public sealed class RootControlsTomlTest
 {
-    /// <summary>TOML control loading binds named keys without changing their case.</summary>
+    /// <summary>TOML file loading binds named keys without changing their case.</summary>
     [TestMethod]
-    public void Load_BindsNamedControls()
+    public void AddFromFile_BindsNamedControls()
     {
         var host = new FakeWindowHost();
         var controls = new RootControls(new(host));
         var loader = new RootControlsToml(controls);
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.toml");
 
-        loader.Load("""
+        File.WriteAllText(path, """
             [Jump]
             KeyPress = "Space"
             Shift = "Any"
             Control = "Any"
             Alt = "Any"
             """);
-        host.RaiseKeyDown(Keys.Space);
 
-        Assert.IsTrue(controls["Jump"].Run());
+        try
+        {
+            loader.AddFromFile(path);
+            host.RaiseKeyDown(Keys.Space);
+
+            Assert.IsTrue(controls["Jump"].Run());
+        }
+        finally
+        {
+            File.Delete(path);
+        }
     }
 
-    /// <summary>Dash-suffixed TOML sections bind the base control name.</summary>
+    /// <summary>Dash-suffixed TOML file sections bind the base control name.</summary>
     [TestMethod]
-    public void Load_BindsDashSuffixedSectionsToBaseControl()
+    public void AddFromFile_BindsDashSuffixedSectionsToBaseControl()
     {
         var host = new FakeWindowHost();
         var controls = new RootControls(new(host));
         var loader = new RootControlsToml(controls);
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.toml");
 
-        loader.Load("""
+        File.WriteAllText(path, """
             [Jump-Keyboard]
             KeyPress = "Space"
             Shift = "Any"
             Control = "Any"
             Alt = "Any"
             """);
-        host.RaiseKeyDown(Keys.Space);
 
-        Assert.IsTrue(controls["Jump"].Run());
+        try
+        {
+            loader.AddFromFile(path);
+            host.RaiseKeyDown(Keys.Space);
+
+            Assert.IsTrue(controls["Jump"].Run());
+        }
+        finally
+        {
+            File.Delete(path);
+        }
     }
 
-    /// <summary>Control loading can read a named TOML file from a nearby root res directory.</summary>
+    /// <summary>Control loading reads the direct path supplied by the caller.</summary>
     [TestMethod]
-    public void AddFromFile_BindsRootResFileByName()
+    public void AddFromFile_BindsDirectPath()
     {
         var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(Path.Combine(root, "res"));
+        Directory.CreateDirectory(root);
         File.WriteAllText(
-            Path.Combine(root, "res", "Controls.toml"),
+            Path.Combine(root, "Controls.toml"),
             """
             [Jump]
             KeyPress = "Space"
@@ -61,11 +81,10 @@ public sealed class RootControlsTomlTest
 
         try
         {
-            using var directory = new CurrentDirectoryScope(root);
             var host = new FakeWindowHost();
             var controls = new RootControls(new(host));
 
-            new RootControlsToml(controls).AddFromFile("Controls.toml");
+            new RootControlsToml(controls).AddFromFile(Path.Combine(root, "Controls.toml"));
             host.RaiseKeyDown(Keys.Space);
 
             Assert.IsTrue(controls["Jump"].Run());

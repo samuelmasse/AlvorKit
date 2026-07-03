@@ -10,6 +10,18 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Include="..\..\res\Noise.png" Visible="false">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\..\res\Controls.toml" Visible="false">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
         <Using Include="AlvorKit.Engine" />
         <Using Include="AlvorKit.Engine.Loop" />
         <Using Include="AlvorKit.Graphics2D" />

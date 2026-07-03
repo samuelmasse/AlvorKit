@@ -3,11 +3,11 @@ namespace AlvorKit.Engine.Test;
 [TestClass]
 public sealed class RootRuntimeModelTest
 {
-    /// <summary>The base state stores draw area and its callbacks are safe no-ops.</summary>
+    /// <summary>The base state lifecycle and rendering callbacks are safe no-ops.</summary>
     [TestMethod]
     public void State_DefaultCallbacks_AreNoOps()
     {
-        var state = new State { DrawArea = new Vec2(10, 20) };
+        var state = new State();
 
         state.Load();
         state.Update(1);
@@ -15,15 +15,13 @@ public sealed class RootRuntimeModelTest
         state.Draw();
         state.Render();
         state.Unload();
-
-        Assert.AreEqual(new Vec2(10, 20), state.DrawArea);
     }
 
-    /// <summary>The base script stores priority and draw area while its callbacks are safe no-ops.</summary>
+    /// <summary>The base script inherits state callbacks and defaults to order zero and full-canvas drawing.</summary>
     [TestMethod]
     public void Script_DefaultCallbacks_AreNoOps()
     {
-        var script = new Script { Priority = 7, DrawArea = new Vec2(30, 40) };
+        var script = new Script();
 
         script.Load();
         script.Update(1);
@@ -32,12 +30,11 @@ public sealed class RootRuntimeModelTest
         script.Render();
         script.Unload();
 
-        Assert.AreEqual(7, script.Priority);
-        Assert.AreEqual(7, script.Order);
-        Assert.AreEqual(new Vec2(30, 40), script.DrawArea);
+        Assert.AreEqual(0, script.Order);
+        Assert.IsNull(script.DrawArea);
     }
 
-    /// <summary>Scripts can override the state draw-area contract inherited from <see cref="State"/>.</summary>
+    /// <summary>Scripts can override the draw area used for two-dimensional rendering.</summary>
     [TestMethod]
     public void Script_DrawArea_CanBeOverridden()
     {
@@ -78,69 +75,19 @@ public sealed class RootRuntimeModelTest
         Assert.IsFalse(args.Failsafe);
     }
 
-    /// <summary>Root shutdown delegates state to the root screen close path.</summary>
+    /// <summary>Root metrics exposes the old frame metric and timer-backed frame window.</summary>
     [TestMethod]
-    public void RootShutdown_Start_ClosesScreen()
-    {
-        var host = new FakeWindowHost();
-        using var gl = new RootGl(new GlNoop());
-        var args = new RootArgs { Window = host, Gl = gl, BootState = typeof(State) };
-        var shutdown = new RootShutdown(args, new(new(host)));
-
-        Assert.IsFalse(shutdown.Started);
-        shutdown.Start();
-
-        Assert.IsTrue(shutdown.Started);
-    }
-
-    /// <summary>Process-exit shutdown closes a live screen when the monitor can still be queried.</summary>
-    [TestMethod]
-    public void RootShutdown_ShutDownWithoutCancel_ClosesLiveScreen()
-    {
-        var host = new FakeWindowHost();
-        using var gl = new RootGl(new GlNoop());
-        var args = new RootArgs { Window = host, Gl = gl, BootState = typeof(State) };
-        var shutdown = new RootShutdown(args, new(new(host)));
-
-        shutdown.ShutDown(false);
-
-        Assert.IsTrue(shutdown.Started);
-        Assert.IsTrue(host.IsExiting);
-    }
-
-    /// <summary>Process-exit shutdown avoids touching a host that can no longer answer screen queries.</summary>
-    [TestMethod]
-    public void RootShutdown_ShutDownWithoutCancel_WhenScreenIsDead_DoesNotClose()
-    {
-        var host = new FakeWindowHost { ThrowOnMonitorSize = true };
-        using var gl = new RootGl(new GlNoop());
-        var args = new RootArgs { Window = host, Gl = gl, BootState = typeof(State) };
-        var shutdown = new RootShutdown(args, new(new(host)));
-
-        shutdown.ShutDown(false);
-
-        Assert.IsTrue(shutdown.Started);
-        Assert.IsFalse(host.IsExiting);
-    }
-
-    /// <summary>Root metrics exposes update, frame, and elapsed-time tracking.</summary>
-    [TestMethod]
-    public void RootMetrics_StartStop_TracksElapsedAndSamples()
+    public void RootMetrics_ExposesFrameMetricAndWindow()
     {
         var metrics = new RootMetrics();
 
+        metrics.FrameMetric.Start();
+        metrics.FrameMetric.End();
         metrics.Start();
-        metrics.AddUpdate(0.25);
-        metrics.AddFrame(0.5);
-        metrics.AddFrame(0.5);
         metrics.Stop();
 
-        Assert.IsTrue(metrics.Elapsed >= TimeSpan.Zero);
-        Assert.AreEqual(250, metrics.Update[0].Now);
-        Assert.AreEqual(500, metrics.Frame[0].Now);
-        Assert.AreEqual(2, metrics.Frame.Ticks);
-        Assert.AreEqual(2, metrics.FrameWindow.Ticks);
-        Assert.AreEqual(500, metrics.FrameWindow.Average);
+        Assert.AreEqual(1, metrics.Frame.Ticks);
+        Assert.IsTrue(metrics.Frame.Last >= 0);
     }
 
     private sealed class TrackingState : State

@@ -2,7 +2,7 @@ namespace AlvorKit.Engine;
 
 /// <summary>Owns a linked OpenGL shader program and its vertex-layout contract.</summary>
 [ExcludeFromCodeCoverage(Justification = "Compiles and links OpenGL shaders through the live graphics backend.")]
-public abstract class RenderProgram<T> : IRenderProgram, IDisposable where T : IVertex
+public abstract class RenderProgram<T> : IRenderProgram where T : IVertex
 {
     /// <summary>The strict OpenGL layer used by this program.</summary>
     protected readonly GlLayer gl;
@@ -23,7 +23,4 @@ public abstract class RenderProgram<T> : IRenderProgram, IDisposable where T : I
 
     /// <inheritdoc />
     public void SetAttributes() => T.SetAttributes(gl);
-
-    /// <summary>Deletes the linked shader program.</summary>
-    public void Dispose() => program.Dispose();
 }

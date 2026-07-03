@@ -37,7 +37,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="..\..\res\fonts\RobotoMono-Regular.ttf">
+        <EmbeddedResource Include="..\..\res\fonts\RobotoMono-Regular.ttf" Visible="false">
             <LogicalName>AlvorKit.Engine.Loop.res.fonts.RobotoMono-Regular.ttf</LogicalName>
         </EmbeddedResource>
     </ItemGroup>

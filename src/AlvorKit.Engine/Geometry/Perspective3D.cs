@@ -1,7 +1,7 @@
 namespace AlvorKit.Engine;
 
 /// <summary>Mutable 3D perspective matrices derived from a canvas and camera.</summary>
-public sealed class Perspective3D
+public class Perspective3D
 {
     private float fov = 70;
     private float near = 0.1f;

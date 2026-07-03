@@ -3,7 +3,7 @@ namespace AlvorKit.Engine;
 /// <summary>Root-owned simple position-color-texture shader program.</summary>
 [Root]
 [ExcludeFromCodeCoverage(Justification = "Compiles and links OpenGL shaders through the live graphics backend.")]
-public sealed class RootPositionColorTextureProgram : RenderProgram<PositionColorTextureVertex>, ITextureProgram
+public class RootPositionColorTextureProgram : RenderProgram<PositionColorTextureVertex>, ITextureProgram
 {
     /// <summary>Vertex shader source for textured color rendering.</summary>
     internal const string Vert =

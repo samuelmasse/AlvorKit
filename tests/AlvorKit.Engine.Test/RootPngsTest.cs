@@ -18,7 +18,7 @@ public sealed class RootPngsTest
 
             var image = new RootPngs()[path];
 
-            Assert.AreEqual(new Vec2u(2u, 1u), image.Size);
+            Assert.AreEqual(new Vec2i(2, 1), image.Size);
             CollectionAssert.AreEqual(
                 new Vec4u8[] { (1, 2, 3, 255), (4, 5, 6, 255) },
                 image.Pixels.ToArray());
@@ -29,13 +29,13 @@ public sealed class RootPngsTest
         }
     }
 
-    /// <summary>PNG loading can resolve a named file from a nearby root res directory.</summary>
+    /// <summary>PNG loading reads the direct path supplied by the caller.</summary>
     [TestMethod]
-    public void Indexer_ResolvesRootResFileByName()
+    public void Indexer_DecodesPngFromDirectPath()
     {
         var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(Path.Combine(root, "res"));
-        var path = Path.Combine(root, "res", "Pixel.png");
+        Directory.CreateDirectory(root);
+        var path = Path.Combine(root, "Pixel.png");
 
         try
         {
@@ -45,10 +45,9 @@ public sealed class RootPngsTest
             using (var stream = File.Create(path))
                 png.Save(stream);
 
-            using var directory = new CurrentDirectoryScope(root);
-            var image = new RootPngs()["Pixel.png"];
+            var image = new RootPngs()[path];
 
-            Assert.AreEqual(new Vec2u(2u, 1u), image.Size);
+            Assert.AreEqual(new Vec2i(2, 1), image.Size);
             CollectionAssert.AreEqual(
                 new Vec4u8[] { (9, 8, 7, 255), (6, 5, 4, 255) },
                 image.Pixels.ToArray());
