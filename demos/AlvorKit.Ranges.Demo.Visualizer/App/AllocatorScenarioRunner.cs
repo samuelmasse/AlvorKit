@@ -1,7 +1,7 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
 /// <summary>Runs one scenario against the real range allocator and captures visual snapshots.</summary>
-internal sealed class AllocatorScenarioRunner
+public class AllocatorScenarioRunner
 {
     private const long FirstUsableIndex = 1;
     private readonly List<AllocatorRangeVisual> ranges = [];
@@ -14,31 +14,31 @@ internal sealed class AllocatorScenarioRunner
     private int resizeCount;
 
     /// <summary>Gets the current scenario.</summary>
-    internal AllocatorScenario Scenario => scenario;
+    public AllocatorScenario Scenario => scenario;
 
     /// <summary>Gets the number of applied commands.</summary>
-    internal int StepIndex { get; private set; }
+    public int StepIndex { get; private set; }
 
     /// <summary>Gets the snapshot captured before the latest operation.</summary>
-    internal AllocatorSnapshot Previous { get; private set; } = AllocatorSnapshot.Empty;
+    public AllocatorSnapshot Previous { get; private set; } = AllocatorSnapshot.Empty;
 
     /// <summary>Gets the snapshot captured after the latest operation.</summary>
-    internal AllocatorSnapshot Current { get; private set; } = AllocatorSnapshot.Empty;
+    public AllocatorSnapshot Current { get; private set; } = AllocatorSnapshot.Empty;
 
     /// <summary>Gets the command applied most recently.</summary>
-    internal AllocatorCommand LastCommand { get; private set; } = AllocatorCommand.Start();
+    public AllocatorCommand LastCommand { get; private set; } = AllocatorCommand.Start();
 
     /// <summary>Gets the allocator method called by the latest operation.</summary>
-    internal string LastMethodText { get; private set; } = "none";
+    public string LastMethodText { get; private set; } = "none";
 
     /// <summary>Gets the allocator arguments passed by the latest operation.</summary>
-    internal string LastArgumentsText { get; private set; } = "scenario not stepped yet";
+    public string LastArgumentsText { get; private set; } = "scenario not stepped yet";
 
     /// <summary>Gets a compact allocator call display for the latest operation.</summary>
-    internal string LastCallText { get; private set; } = "no allocator call yet";
+    public string LastCallText { get; private set; } = "no allocator call yet";
 
     /// <summary>Loads a scenario from its initial allocator state.</summary>
-    internal void Load(AllocatorScenario nextScenario)
+    public void Load(AllocatorScenario nextScenario)
     {
         scenario = nextScenario;
         packCount = 0;
@@ -53,7 +53,7 @@ internal sealed class AllocatorScenarioRunner
     }
 
     /// <summary>Applies the next scenario command when one exists.</summary>
-    internal bool StepForward()
+    public bool StepForward()
     {
         if (StepIndex >= scenario.Commands.Length)
             return false;
@@ -74,7 +74,7 @@ internal sealed class AllocatorScenarioRunner
     }
 
     /// <summary>Replays the current scenario back one command.</summary>
-    internal bool StepBackward()
+    public bool StepBackward()
     {
         if (StepIndex == 0)
             return false;
@@ -84,7 +84,7 @@ internal sealed class AllocatorScenarioRunner
     }
 
     /// <summary>Replays the current scenario to a specific applied command count.</summary>
-    internal void ReplayTo(int targetStep)
+    public void ReplayTo(int targetStep)
     {
         targetStep = Math.Clamp(targetStep, 0, scenario.Commands.Length);
         var currentScenario = scenario;
@@ -109,7 +109,7 @@ internal sealed class AllocatorScenarioRunner
     }
 
     /// <summary>Jumps to the next pack command, applying it immediately when found.</summary>
-    internal bool JumpToPack()
+    public bool JumpToPack()
     {
         for (var i = StepIndex; i < scenario.Commands.Length; i++)
         {
@@ -263,7 +263,7 @@ internal sealed class AllocatorScenarioRunner
         allocation.CapacitySize + (allocation.Alignment <= 1 ? 0 : allocation.Alignment - 1L);
 
     /// <summary>Sorts visual ranges by backing-store index.</summary>
-    private sealed class AllocatorRangeComparer : IComparer<AllocatorRangeVisual>
+    private class AllocatorRangeComparer : IComparer<AllocatorRangeVisual>
     {
         /// <inheritdoc />
         public int Compare(AllocatorRangeVisual x, AllocatorRangeVisual y) => x.Index.CompareTo(y.Index);

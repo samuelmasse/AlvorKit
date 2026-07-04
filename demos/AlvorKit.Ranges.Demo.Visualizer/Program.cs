@@ -1,1 +1,1 @@
-RootLoop.RunGlfw<RangeAllocatorVisualizerState>();
+RootLoop.RunGlfw<RootLoadState>();

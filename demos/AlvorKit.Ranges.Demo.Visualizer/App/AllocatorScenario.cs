@@ -1,35 +1,25 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
 /// <summary>A deterministic allocator script shown by the visualizer.</summary>
-internal sealed class AllocatorScenario
+public class AllocatorScenario(string name, string description, long initialSize, AllocatorCommand[] commands)
 {
-    /// <summary>Creates an allocator scenario.</summary>
-    internal AllocatorScenario(string name, string description, long initialSize, AllocatorCommand[] commands)
-    {
-        Name = name;
-        Description = description;
-        InitialSize = initialSize;
-        Commands = commands;
-        HandleSlotCount = CountHandleSlots(commands);
-    }
-
     /// <summary>Gets the scenario display name.</summary>
-    internal string Name { get; }
+    public string Name { get; } = name;
 
     /// <summary>Gets a short scenario description.</summary>
-    internal string Description { get; }
+    public string Description { get; } = description;
 
     /// <summary>Gets the allocator initial backing-store size.</summary>
-    internal long InitialSize { get; }
+    public long InitialSize { get; } = initialSize;
 
     /// <summary>Gets the deterministic command script.</summary>
-    internal AllocatorCommand[] Commands { get; }
+    public AllocatorCommand[] Commands { get; } = commands;
 
     /// <summary>Gets the number of demo-owned handle slots needed by the script.</summary>
-    internal int HandleSlotCount { get; }
+    public int HandleSlotCount { get; } = CountHandleSlots(commands);
 
     /// <summary>Creates every built-in visualizer scenario.</summary>
-    internal static AllocatorScenario[] CreateAll() =>
+    public static AllocatorScenario[] CreateAll() =>
     [
         LinearAllocNoResize(),
         SameHandleReuseHit(),

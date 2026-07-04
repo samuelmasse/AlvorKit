@@ -1,43 +1,78 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
 /// <summary>Shared visual language for the range allocator visualizer UI.</summary>
-[Root]
-internal sealed class RangeAllocatorVisualizerStyle(RootRoboto roboto, RootKeyboard keyboard)
+[App]
+public class AppStyle(RootRoboto roboto, RootKeyboard keyboard)
 {
-    internal Vec4 BackgroundColor => (0.025f, 0.03f, 0.038f, 1f);
-    internal Vec4 PanelColor => (0.07f, 0.08f, 0.095f, 0.94f);
-    internal Vec4 PanelRaisedColor => (0.105f, 0.115f, 0.13f, 0.94f);
-    internal Vec4 PanelInsetColor => (0.045f, 0.05f, 0.058f, 1f);
-    internal Vec4 ModalTintColor => (0.01f, 0.012f, 0.016f, 0.68f);
-    internal Vec4 TextColor => (0.9f, 0.93f, 0.95f, 1f);
-    internal Vec4 MutedTextColor => (0.58f, 0.64f, 0.68f, 1f);
-    internal Vec4 AccentColor => (0.25f, 0.8f, 0.95f, 1f);
-    internal Vec4 WarmAccentColor => (0.98f, 0.72f, 0.3f, 1f);
-    internal Vec4 ModalBorderColor => (0.22f, 0.38f, 0.44f, 1f);
-    internal Vec4 TooltipColor => (0.04f, 0.055f, 0.066f, 0.98f);
+    public Vec4 BackgroundColor => (0.025f, 0.03f, 0.038f, 1f);
+    public Vec4 PanelColor => (0.07f, 0.08f, 0.095f, 0.94f);
+    public Vec4 PanelRaisedColor => (0.105f, 0.115f, 0.13f, 0.94f);
+    public Vec4 PanelInsetColor => (0.045f, 0.05f, 0.058f, 1f);
+    public Vec4 ModalTintColor => (0.01f, 0.012f, 0.016f, 0.68f);
+    public Vec4 TextColor => (0.9f, 0.93f, 0.95f, 1f);
+    public Vec4 MutedTextColor => (0.58f, 0.64f, 0.68f, 1f);
+    public Vec4 AccentColor => (0.25f, 0.8f, 0.95f, 1f);
+    public Vec4 WarmAccentColor => (0.98f, 0.72f, 0.3f, 1f);
+    public Vec4 ModalBorderColor => (0.22f, 0.38f, 0.44f, 1f);
+    public Vec4 TooltipColor => (0.04f, 0.055f, 0.066f, 0.98f);
+    public Vec4 FreeBlockColor => (0.13f, 0.25f, 0.22f, 1f);
+    public Vec4 TailFreeBlockColor => (0.09f, 0.14f, 0.14f, 1f);
+    public Vec4 FreeBlockEdgeColor => (0.27f, 0.6f, 0.48f, 1f);
+    public Vec4 PaddingColor => (0.95f, 0.62f, 0.2f, 0.78f);
+    public Vec4 RetainedColor => (0.42f, 0.58f, 0.74f, 0.66f);
+    public Vec4 LatestRequestFillColor => (0.9f, 1f, 1f, 0.38f);
+    public Vec4 LatestRequestEdgeColor => (1f, 0.96f, 0.55f, 0.95f);
+    public Vec4 HighlightColor => (1f, 0.96f, 0.55f, 1f);
 
-    internal float SpacingXS => 4f;
-    internal float SpacingS => 6f;
-    internal float Spacing => 10f;
-    internal float SpacingL => 12f;
-    internal float RootPadding => SpacingL;
-    internal float PanelPadding => 14f;
-    internal float FloatingTextInset => PanelPadding + SpacingS;
-    internal float ButtonHeight => 24f;
-    internal float PickerScreenInset => 36f;
-    internal float PickerOptionHeight => 48f;
-    internal float ModalVerticalPadding => (PanelPadding + Spacing) + PanelPadding;
-    internal float ModalHeaderHeight => 36f;
-    internal float TooltipOffset => 14f;
-    internal float TooltipLift => 30f;
+    public float SpacingXS => 4f;
+    public float SpacingS => 6f;
+    public float Spacing => 10f;
+    public float SpacingL => 12f;
+    public float Hairline => 1f;
+    public float RuleWidth => Hairline;
+    public float RootPadding => SpacingL;
+    public float PanelPadding => 14f;
+    public float FloatingTextInset => PanelPadding + SpacingS;
+    public float DefaultButtonWidth => 92f;
+    public float ButtonHeight => 24f;
+    public Vec4 TimelineHoverColor => (1f, 1f, 1f, 0.18f);
+    public Vec4 TimelineIdleOutlineColor => (0.16f, 0.2f, 0.23f, 1f);
+    public float SwatchWidth => 18f;
+    public float SwatchHeight => 10f;
+    public float MetricRowHeight => 16f;
+    public Vec4 MemoryStripOutlineColor => (0.22f, 0.25f, 0.28f, 1f);
+    public Vec4 MemoryActiveFrameFillColor => (1f, 0.96f, 0.55f, 0.16f);
 
-    internal int FontSizeSmall => 10;
-    internal int FontSizeBody => 12;
-    internal int FontSizeHeader => 15;
-    internal int FontSizeTitle => 22;
+    public int FontSizeSmall => 10;
+    public int FontSizeBody => 12;
+    public int FontSizeHeader => 15;
+    public int FontSizeTitle => 22;
+
+    public Vec4 AllocationColor(int slot) => (slot % 8) switch
+    {
+        0 => (0.26f, 0.78f, 0.95f, 1f),
+        1 => (0.95f, 0.46f, 0.52f, 1f),
+        2 => (0.58f, 0.88f, 0.42f, 1f),
+        3 => (0.98f, 0.72f, 0.3f, 1f),
+        4 => (0.66f, 0.55f, 0.96f, 1f),
+        5 => (0.35f, 0.88f, 0.72f, 1f),
+        6 => (0.92f, 0.62f, 0.9f, 1f),
+        _ => (0.68f, 0.78f, 0.92f, 1f),
+    };
+
+    public Vec4 CommandColor(AllocatorCommandKind kind) => kind switch
+    {
+        AllocatorCommandKind.Alloc => AccentColor,
+        AllocatorCommandKind.Realloc => (0.55f, 0.9f, 0.42f, 1f),
+        AllocatorCommandKind.Free => (0.95f, 0.34f, 0.36f, 1f),
+        AllocatorCommandKind.Pack => (0.78f, 0.56f, 1f, 1f),
+        _ => TextColor,
+    };
+
+    public Vec4 Dim(Vec4 color, float factor) => (color.X * factor, color.Y * factor, color.Z * factor, color.W);
 
     /// <summary>Configures the full-screen root node.</summary>
-    internal void Root(EntMut ent) => ent.Mutate()
+    public void Root(EntMut ent) => ent.Mutate()
         .SizeRelativeV((1, 1))
         .InnerLayoutV(InnerLayout.VerticalList)
         .InnerSizingV(InnerSizing.VerticalWeight)
@@ -47,19 +82,19 @@ internal sealed class RangeAllocatorVisualizerStyle(RootRoboto roboto, RootKeybo
         .ColorV(BackgroundColor);
 
     /// <summary>Configures a full-width panel.</summary>
-    internal void Panel(EntMut ent) => ent.Mutate()
+    public void Panel(EntMut ent) => ent.Mutate()
         .ColorV(PanelColor)
         .PaddingV((PanelPadding, PanelPadding, PanelPadding, PanelPadding));
 
     /// <summary>Configures a filled vertical list panel.</summary>
-    internal void PanelList(EntMut ent) => ent.Mutate()
+    public void PanelList(EntMut ent) => ent.Mutate()
         .Mutate(Panel)
         .InnerLayoutV(InnerLayout.VerticalList)
         .InnerSpacingV(Spacing)
         .SizeRelativeV((1, 1));
 
     /// <summary>Configures a compact vertical list that sizes itself from its children.</summary>
-    internal void VerticalList(EntMut ent) => ent.Mutate()
+    public void VerticalList(EntMut ent) => ent.Mutate()
         .InnerLayoutV(InnerLayout.VerticalList)
         .InnerSpacingV(SpacingS)
         .SizeRelativeV((0, 0))
@@ -67,7 +102,7 @@ internal sealed class RangeAllocatorVisualizerStyle(RootRoboto roboto, RootKeybo
         .SizeInnerMaxRelativeV((1, 0));
 
     /// <summary>Configures a compact horizontal list that sizes itself from its children.</summary>
-    internal void HorizontalList(EntMut ent) => ent.Mutate()
+    public void HorizontalList(EntMut ent) => ent.Mutate()
         .InnerLayoutV(InnerLayout.HorizontalList)
         .InnerSpacingV(SpacingS)
         .SizeRelativeV((0, 0))
@@ -75,14 +110,14 @@ internal sealed class RangeAllocatorVisualizerStyle(RootRoboto roboto, RootKeybo
         .SizeInnerMaxRelativeV((0, 1));
 
     /// <summary>Configures a full-width horizontal list.</summary>
-    internal void HorizontalFill(EntMut ent) => ent.Mutate()
+    public void HorizontalFill(EntMut ent) => ent.Mutate()
         .InnerLayoutV(InnerLayout.HorizontalList)
         .InnerSizingV(InnerSizing.HorizontalWeight)
         .InnerSpacingV(Spacing)
         .SizeRelativeV((1, 1));
 
     /// <summary>Configures common text rendering.</summary>
-    internal void Text(EntMut ent) => ent.Mutate()
+    public void Text(EntMut ent) => ent.Mutate()
         .FontV(roboto.Font)
         .FontSizeV(FontSizeBody)
         .TextColorV(TextColor)
@@ -90,37 +125,37 @@ internal sealed class RangeAllocatorVisualizerStyle(RootRoboto roboto, RootKeybo
         .TextAlignmentSnapV(1f);
 
     /// <summary>Configures a compact label that sizes to its text.</summary>
-    internal void Label(EntMut ent) => ent.Mutate()
+    public void Label(EntMut ent) => ent.Mutate()
         .Mutate(Text)
         .SizeRelativeV((0, 0))
         .SizeTextRelativeV((1, 1));
 
     /// <summary>Configures a muted compact label.</summary>
-    internal void MutedLabel(EntMut ent) => ent.Mutate()
+    public void MutedLabel(EntMut ent) => ent.Mutate()
         .Mutate(Label)
         .FontSizeV(FontSizeSmall)
         .TextColorV(MutedTextColor);
 
     /// <summary>Configures a title label.</summary>
-    internal void Title(EntMut ent) => ent.Mutate()
+    public void Title(EntMut ent) => ent.Mutate()
         .Mutate(Label)
         .FontSizeV(FontSizeTitle)
         .TextColorV(TextColor);
 
     /// <summary>Configures a section heading label.</summary>
-    internal void Heading(EntMut ent) => ent.Mutate()
+    public void Heading(EntMut ent) => ent.Mutate()
         .Mutate(Label)
         .FontSizeV(FontSizeHeader)
         .TextColorV(TextColor);
 
     /// <summary>Configures an interactive text button.</summary>
-    internal void Button(EntMut ent)
+    public void Button(EntMut ent)
     {
         var enterWasDown = false;
         ent.Mutate()
             .Mutate(Text)
             .SizeRelativeV((0, 0))
-            .SizeV((92f, ButtonHeight))
+            .SizeV((DefaultButtonWidth, ButtonHeight))
             .TextAlignmentV(Alignment.Center)
             .TextPaddingV((SpacingS, 0, SpacingS, 0))
             .IsSelectableV(true)
@@ -135,11 +170,11 @@ internal sealed class RangeAllocatorVisualizerStyle(RootRoboto roboto, RootKeybo
 
                 enterWasDown = enterDown;
             })
-            .Mutate(ButtonBorder);
+            .Mutate(node => Border(node, () => ButtonBorderColor(node)));
     }
 
     /// <summary>Configures the clickable scenario name in the header.</summary>
-    internal void ScenarioLink(EntMut ent) => ent.Mutate()
+    public void ScenarioLink(EntMut ent) => ent.Mutate()
         .Mutate(Label)
         .FontSizeV(FontSizeHeader)
         .TextColorF(() => ent.IsHoveredR || ent.IsFocusedR ? AccentColor : WarmAccentColor)
@@ -147,20 +182,26 @@ internal sealed class RangeAllocatorVisualizerStyle(RootRoboto roboto, RootKeybo
         .IsSelectableV(true)
         .IsFocusableV(true)
         .CursorF(() => CursorShape.Hand)
-        .Mutate(ScenarioLinkUnderline);
+        .Mutate(node =>
+        {
+            Node(node)
+                .AlignmentV(Alignment.Bottom | Alignment.Left)
+                .SizeRelativeV((1, 0))
+                .SizeV((0, RuleWidth))
+                .ColorF(() => node.IsHoveredR || node.IsFocusedR ? AccentColor : WarmAccentColor);
+        });
 
     /// <summary>Configures the full-screen layer behind the scenario-picker dialog.</summary>
-    internal void ModalLayer(EntMut ent) => ent.Mutate()
+    public void ModalLayer(EntMut ent) => ent.Mutate()
         .SizeRelativeV((1, 1))
         .InnerAlignmentSnapV(1f)
         .ColorV(ModalTintColor);
 
     /// <summary>Configures the centered scenario-picker dialog panel.</summary>
-    internal void ModalPanel(EntMut ent) => ent.Mutate()
+    public void ModalPanel(EntMut ent) => ent.Mutate()
         .ColorV(PanelColor)
         .PaddingV(default)
         .SizeRelativeV((0, 0))
-        .SizeAlignmentSnapV(2f)
         .AlignmentV(Alignment.Horizontal | Alignment.Vertical)
         .AlignmentSnapV(1f)
         .InnerAlignmentSnapV(1f)
@@ -169,7 +210,7 @@ internal sealed class RangeAllocatorVisualizerStyle(RootRoboto roboto, RootKeybo
         .Mutate(node => Border(node, () => ModalBorderColor));
 
     /// <summary>Configures the modal's padded content area.</summary>
-    internal void ModalContent(EntMut ent) => ent.Mutate()
+    public void ModalContent(EntMut ent) => ent.Mutate()
         .PaddingV((PanelPadding + Spacing, PanelPadding, PanelPadding + Spacing, PanelPadding))
         .InnerLayoutV(InnerLayout.VerticalList)
         .InnerSpacingV(SpacingS)
@@ -177,9 +218,8 @@ internal sealed class RangeAllocatorVisualizerStyle(RootRoboto roboto, RootKeybo
         .SizeRelativeV((1, 1));
 
     /// <summary>Configures one two-line scenario option row.</summary>
-    internal void PickerOption(EntMut ent, Func<bool> selected) => ent.Mutate()
+    public void PickerOption(EntMut ent, Func<bool> selected) => ent.Mutate()
         .SizeRelativeV((1, 0))
-        .SizeV((0, PickerOptionHeight))
         .ColorF(() => PickerOptionFill(ent, selected()))
         .IsSelectableV(true)
         .IsFocusableV(true)
@@ -187,7 +227,7 @@ internal sealed class RangeAllocatorVisualizerStyle(RootRoboto roboto, RootKeybo
         .Mutate(node => Border(node, () => PickerOptionBorder(node, selected())));
 
     /// <summary>Configures the floating tooltip readout.</summary>
-    internal void Tooltip(EntMut ent) => ent.Mutate()
+    public void Tooltip(EntMut ent) => ent.Mutate()
         .Mutate(Text)
         .FontSizeV(FontSizeSmall)
         .TextAlignmentV(Alignment.Left | Alignment.Vertical)
@@ -199,27 +239,16 @@ internal sealed class RangeAllocatorVisualizerStyle(RootRoboto roboto, RootKeybo
         .Mutate(node => Border(node, () => ent.TextFV.Resolve().Length == 0 ? default : ModalBorderColor));
 
     /// <summary>Configures a small timeline or memory legend swatch.</summary>
-    internal void Swatch(EntMut ent, Vec4 color) => ent.Mutate()
+    public void Swatch(EntMut ent, Vec4 color) => ent.Mutate()
         .SizeRelativeV((0, 0))
-        .SizeV((18f, 10f))
+        .SizeV((SwatchWidth, SwatchHeight))
         .AlignmentV(Alignment.Vertical)
         .ColorV(color);
 
     /// <summary>Configures a full-width fixed-height metric row.</summary>
-    internal void MetricRow(EntMut ent) => ent.Mutate()
+    public void MetricRow(EntMut ent) => ent.Mutate()
         .SizeRelativeV((1, 0))
-        .SizeV((0, 16f));
-
-    private void ScenarioLinkUnderline(EntMut ent)
-    {
-        Node(ent)
-            .AlignmentV(Alignment.Bottom | Alignment.Left)
-            .SizeRelativeV((1, 0))
-            .SizeV((0, 1f))
-            .ColorF(() => ent.IsHoveredR || ent.IsFocusedR ? AccentColor : WarmAccentColor);
-    }
-
-    private void ButtonBorder(EntMut ent) => Border(ent, () => ButtonBorderColor(ent));
+        .SizeV((0, MetricRowHeight));
 
     private void Border(EntMut ent, Func<Vec4> color)
     {
@@ -227,28 +256,28 @@ internal sealed class RangeAllocatorVisualizerStyle(RootRoboto roboto, RootKeybo
             .IsFloatingV(true)
             .AlignmentV(Alignment.Top | Alignment.Left)
             .SizeRelativeV((1, 0))
-            .SizeV((0, 1f))
+            .SizeV((0, RuleWidth))
             .ColorF(color);
 
         Node(ent)
             .IsFloatingV(true)
             .AlignmentV(Alignment.Bottom | Alignment.Left)
             .SizeRelativeV((1, 0))
-            .SizeV((0, 1f))
+            .SizeV((0, RuleWidth))
             .ColorF(color);
 
         Node(ent)
             .IsFloatingV(true)
             .AlignmentV(Alignment.Top | Alignment.Left)
             .SizeRelativeV((0, 1))
-            .SizeV((1f, 0))
+            .SizeV((RuleWidth, 0))
             .ColorF(color);
 
         Node(ent)
             .IsFloatingV(true)
             .AlignmentV(Alignment.Top | Alignment.Right)
             .SizeRelativeV((0, 1))
-            .SizeV((1f, 0))
+            .SizeV((RuleWidth, 0))
             .ColorF(color);
     }
 
