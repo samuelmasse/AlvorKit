@@ -47,8 +47,11 @@ internal sealed partial class AnimatedGlbMesh
     }
 
     /// <summary>Selects one animation slot by index and captures the current sampled pose as the transition source.</summary>
-    private void SelectAnimation(int animationIndex)
+    public void SelectAnimation(int animationIndex)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(animationIndex);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(animationIndex, AnimationCount);
+
         if (animationIndex == selectedAnimationSlotIndex)
             return;
 

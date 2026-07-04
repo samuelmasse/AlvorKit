@@ -5,8 +5,7 @@ public class AppMemoryStripMenu(
     AppStyle style,
     AppSession session,
     AppMemoryStripGeometry geometry,
-    AppMemoryStripLabels labels,
-    AppMemoryStripTooltips tooltips)
+    AppMemoryStripTexture texture)
 {
     public void Create(EntMut root, AppMemoryStripView view)
     {
@@ -14,25 +13,11 @@ public class AppMemoryStripMenu(
             return;
 
         var snapshot = view.Snapshot;
-        for (var i = 0; i < snapshot.FreeSpans.Length; i++)
-        {
-            var span = snapshot.FreeSpans[i];
-            if (!geometry.Intersects(view, span.Index, span.Size))
-                continue;
-
-            var mutedTail = view.MuteTail && span.Index + span.Size == snapshot.Size && snapshot.Ranges.Length > 0;
-            var color = mutedTail ? style.TailFreeBlockColor : style.FreeBlockColor;
-            Rect(root, view, span.Index, span.Size, () => color)
-                .IsSelectableV(true)
-                .TooltipF(() => tooltips.Free(view, span.Index, span.Size, mutedTail));
-
-            if (span.Size > 0)
-            {
-                const float freeBlockEdgeHeight = 2f;
-
-                Rect(root, view, span.Index, span.Size, () => style.FreeBlockEdgeColor, height: freeBlockEdgeHeight);
-            }
-        }
+        Node(root)
+            .SizeRelativeV((1, 1))
+            .TextureF(() => texture.Texture(view))
+            .IsSelectableV(true)
+            .TooltipF(() => texture.Tooltip(view, root));
 
         var activeSlot = session.ActiveSlot;
         for (var i = 0; i < snapshot.Ranges.Length; i++)
@@ -41,60 +26,8 @@ public class AppMemoryStripMenu(
             if (!geometry.Intersects(view, range.Index, range.ReservedSize))
                 continue;
 
-            const float reservedDimFactor = 0.42f;
-
-            var color = style.AllocationColor(range.Slot);
-            Rect(root, view, range.Index, range.ReservedSize, () => style.Dim(color, reservedDimFactor));
-
-            if (range.LeadingPadding > 0)
-            {
-                Rect(root, view, range.Index, range.LeadingPadding, () => style.PaddingColor)
-                    .IsSelectableV(true)
-                    .TooltipF(() => tooltips.Padding(view, range, range.LeadingPadding, leading: true))
-                    .IsDisabledF(() => !session.ShowPadding);
-            }
-
-            if (range.TrailingPadding > 0)
-            {
-                var trailingIndex = range.PayloadIndex + range.CapacitySize;
-                Rect(root, view, trailingIndex, range.TrailingPadding, () => style.PaddingColor)
-                    .IsSelectableV(true)
-                    .TooltipF(() => tooltips.Padding(view, range, range.TrailingPadding, leading: false))
-                    .IsDisabledF(() => !session.ShowPadding);
-            }
-
-            if (range.RetainedExtraSize > 0)
-            {
-                var retainedIndex = range.PayloadIndex + range.Size;
-                Rect(root, view, retainedIndex, range.RetainedExtraSize, () => style.RetainedColor)
-                    .IsSelectableV(true)
-                    .TooltipF(() => tooltips.Retained(view, range));
-            }
-
-            Rect(root, view, range.PayloadIndex, range.Size, () => PayloadColor(range, color))
-                .IsSelectableV(true)
-                .TooltipF(() => tooltips.Payload(view, range));
-
-            if (session.IsLatestPayloadRequest(range.Slot))
-            {
-                Rect(root, view, range.PayloadIndex, range.Size, () => style.LatestRequestFillColor)
-                    .IsSelectableV(true)
-                    .TooltipF(() => tooltips.LatestRequest(view, range));
-
-                const float latestRequestEdgeWidth = 2f;
-                Rect(
-                    root,
-                    view,
-                    range.PayloadIndex + Math.Max(0, range.Size - 1),
-                    1,
-                    () => style.LatestRequestEdgeColor,
-                    width: latestRequestEdgeWidth);
-            }
-
             if (range.Slot == activeSlot)
                 ActiveFrame(root, view, range.Index, range.ReservedSize);
-
-            labels.Create(root, view, range);
         }
 
         Outline(root, () => style.MemoryStripOutlineColor);
@@ -191,22 +124,6 @@ public class AppMemoryStripMenu(
                 .SizeRelativeV((0, 1))
                 .SizeV((style.RuleWidth, 0))
                 .ColorF(color);
-        }
-
-        Vec4 PayloadColor(AllocatorRangeVisual range, Vec4 color)
-        {
-            const float activePulseBase = 0.72f;
-            const float activePulseRange = 0.28f;
-            const float retainedRequestPulseFactor = 0.58f;
-
-            var active = session.ActiveSlot == range.Slot;
-            var pulse = active
-                ? activePulseBase + activePulseRange * MathF.Sin(session.AnimationPhase * MathF.PI)
-                : 1f;
-            if (active && range.Size < range.CapacitySize && session.IsLatestPayloadRequest(range.Slot))
-                pulse *= retainedRequestPulseFactor;
-
-            return style.Dim(color, pulse);
         }
     }
 }

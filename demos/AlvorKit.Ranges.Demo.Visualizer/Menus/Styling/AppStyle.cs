@@ -23,6 +23,25 @@ public class AppStyle(RootRoboto roboto, RootKeyboard keyboard)
     public Vec4 LatestRequestFillColor => (0.9f, 1f, 1f, 0.38f);
     public Vec4 LatestRequestEdgeColor => (1f, 0.96f, 0.55f, 0.95f);
     public Vec4 HighlightColor => (1f, 0.96f, 0.55f, 1f);
+    public Vec4 OverlayFreeColor => (0.006f, 0.008f, 0.01f, 1f);
+    public Vec4 OverlayOccupiedColor => (0.12f, 0.12f, 0.13f, 1f);
+    public Vec4 OccupancyReservedColor => (0.32f, 0.02f, 0.025f, 1f);
+    public Vec4 OccupancyPayloadColor => (0.96f, 0.06f, 0.035f, 1f);
+    public Vec4 DensityLowColor => (0.18f, 0.025f, 0.03f, 1f);
+    public Vec4 DensityMidColor => (0.85f, 0.2f, 0.08f, 1f);
+    public Vec4 DensityHighColor => (1f, 0.92f, 0.72f, 1f);
+    public Vec4 EfficiencyWasteColor => (0.9f, 0.08f, 0.05f, 1f);
+    public Vec4 EfficiencyMixedColor => (0.96f, 0.72f, 0.12f, 1f);
+    public Vec4 EfficiencyGoodColor => (0.28f, 0.9f, 0.32f, 1f);
+    public Vec4 FragmentTinyColor => (0.95f, 0.1f, 0.06f, 1f);
+    public Vec4 FragmentMediumColor => (0.98f, 0.64f, 0.12f, 1f);
+    public Vec4 FragmentLargeColor => (0.2f, 0.7f, 0.84f, 1f);
+    public Vec4 ChurnIdleColor => (0.16f, 0.17f, 0.18f, 1f);
+    public Vec4 ChurnRecentColor => (1f, 0.78f, 0.2f, 1f);
+    public Vec4 OutlierColor => (1f, 0.22f, 0.82f, 1f);
+    public Vec4 RelocationNewColor => (0.22f, 0.84f, 1f, 1f);
+    public Vec4 RelocationReusedColor => (0.28f, 0.88f, 0.44f, 1f);
+    public Vec4 RelocationMovedColor => (0.96f, 0.34f, 1f, 1f);
 
     public float SpacingXS => 4f;
     public float SpacingS => 6f;

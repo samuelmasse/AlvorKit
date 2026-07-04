@@ -2,11 +2,11 @@ namespace AlvorKit.Ranges.Demo.Visualizer;
 
 [App]
 public class AppTimelineMenu(
-    RootText text,
     RootUiMouse uiMouse,
     RootMouse mouse,
     AppStyle style,
-    AppSession session)
+    AppSession session,
+    AppTimelineTexture texture)
 {
     public void Create(EntMut root)
     {
@@ -18,12 +18,21 @@ public class AppTimelineMenu(
         Node(root, out var content)
             .SizeRelativeV((1, 1))
             .ColorV(style.PanelInsetColor)
+            .IsSelectableV(true)
+            .IsSilentFocusableV(true)
+            .CursorF(() => CursorShape.ResizeHorizontal)
+            .TooltipF(() => texture.Tooltip(content))
+            .OnPressF(() =>
+            {
+                scrubbing = true;
+                ScrubTimeline(content);
+            })
             .OnUpdateF(() =>
             {
                 var mainDown = mouse.IsMainDown();
                 if (!mainDown)
                     scrubbing = false;
-                else if (!mainWasDown && TimelinePointerOverCell(content, session.Runner.Scenario.Commands.Length))
+                else if (!mainWasDown && TimelinePointerInside(content, session.Runner.Scenario.Commands.Length))
                     scrubbing = true;
 
                 if (scrubbing)
@@ -44,29 +53,16 @@ public class AppTimelineMenu(
             if (commands.Length == 0)
                 return;
 
-            for (var i = 0; i < commands.Length; i++)
-            {
-                var index = i;
-                var command = commands[index];
-                Node(lane, out var cell)
-                    .SizeRelativeV((0, 0))
-                    .OffsetF(() => TimelineCellOffset(lane, commands.Length, index))
-                    .SizeF(() => TimelineCellSize(lane, commands.Length))
-                    .ColorF(() => TimelineCellColor(command.Kind, index))
-                    .IsSelectableV(true)
-                    .IsSilentFocusableV(true)
-                    .CursorF(() => CursorShape.ResizeHorizontal)
-                    .TooltipF(() => CommandTooltip(index, command))
-                    .OnPressF(() =>
-                    {
-                        scrubbing = true;
-                        ScrubTimeline(content);
-                    });
-                {
-                    if (index < commands.Length - 1)
-                        TimelineDivider(cell);
-                }
-            }
+            Node(lane)
+                .SizeRelativeV((1, 1))
+                .TextureF(texture.Texture);
+
+            Node(lane)
+                .SizeRelativeV((0, 1))
+                .OffsetF(() => TimelineMarkerOffset(lane, commands.Length, session.Runner.StepIndex, 0))
+                .SizeF(() => TimelineRemainingSize(lane, commands.Length, session.Runner.StepIndex))
+                .ColorV((0f, 0f, 0f, 0.64f))
+                .IsDisabledF(() => session.Runner.StepIndex >= commands.Length);
 
             const float markerWidth = 3f;
             const float markerCapPadding = 2f;
@@ -89,11 +85,11 @@ public class AppTimelineMenu(
             Node(lane)
                 .SizeRelativeV((0, 1))
                 .SizeF(() => TimelineCellSize(lane, commands.Length))
-                .OffsetF(() => TimelineCellOffset(lane, commands.Length, TimelineHoverIndex(lane, commands.Length)))
+                .OffsetF(() => TimelineCellOffset(lane, commands.Length, texture.HoverIndex(lane)))
                 .ColorV(style.TimelineHoverColor)
-                .IsDisabledF(() => !TimelinePointerOverCell(lane, commands.Length));
+                .IsDisabledF(() => !TimelinePointerInside(lane, commands.Length));
 
-            Outline(lane, () => TimelinePointerOverCell(lane, commands.Length)
+            Outline(lane, () => TimelinePointerInside(lane, commands.Length)
                 ? style.AccentColor
                 : style.TimelineIdleOutlineColor);
         }
@@ -105,17 +101,8 @@ public class AppTimelineMenu(
                 return;
 
             var localX = Math.Clamp(uiMouse.Position.X - lane.PositionR.X, 0, lane.SizeR.X);
-            var cell = Math.Clamp((int)MathF.Floor(localX / lane.SizeR.X * count), 0, count - 1);
+            var cell = Math.Clamp((int)Math.Floor(localX / lane.SizeR.X * (double)count), 0, count - 1);
             session.JumpToStep(cell + 1);
-        }
-
-        int TimelineHoverIndex(EntMut lane, int count)
-        {
-            if (count <= 0 || lane.SizeR.X <= 0)
-                return 0;
-
-            var localX = Math.Clamp(uiMouse.Position.X - lane.PositionR.X, 0, lane.SizeR.X);
-            return Math.Clamp((int)MathF.Floor(localX / lane.SizeR.X * count), 0, count - 1);
         }
 
         Vec2 TimelineCellOffset(EntMut lane, int count, int index)
@@ -135,15 +122,10 @@ public class AppTimelineMenu(
             return (Math.Max(1f, lane.SizeR.X / count), lane.SizeR.Y);
         }
 
-        void TimelineDivider(EntMut cell)
-        {
-            Node(cell)
-                .IsFloatingV(true)
-                .AlignmentV(Alignment.Top | Alignment.Right)
-                .SizeRelativeV((0, 1))
-                .SizeV((style.RuleWidth, 0))
-                .ColorV(style.BackgroundColor);
-        }
+        Vec2 TimelineRemainingSize(EntMut lane, int count, int step) =>
+            count <= 0
+                ? default
+                : (Math.Max(0, lane.SizeR.X - Math.Clamp(step, 0, count) / (float)count * lane.SizeR.X), lane.SizeR.Y);
 
         Vec2 TimelineMarkerOffset(EntMut lane, int count, int step, float markerWidth)
         {
@@ -155,57 +137,13 @@ public class AppTimelineMenu(
             return (Math.Clamp(step, 0, count) / (float)count * lane.SizeR.X - markerWidth * markerCenterAnchor, 0);
         }
 
-        Vec4 TimelineCellColor(AllocatorCommandKind kind, int index)
-        {
-            const float inactiveDimFactor = 0.28f;
-
-            var color = style.CommandColor(kind);
-            if (index >= session.Runner.StepIndex)
-                color = style.Dim(color, inactiveDimFactor);
-
-            return color;
-        }
-
-        bool TimelinePointerInside(EntMut lane) =>
+        bool TimelinePointerInside(EntMut lane, int count) =>
+            count > 0 &&
+            lane.SizeR.X > 0 &&
             uiMouse.Position.X >= lane.PositionR.X &&
             uiMouse.Position.X <= lane.PositionR.X + lane.SizeR.X &&
             uiMouse.Position.Y >= lane.PositionR.Y &&
             uiMouse.Position.Y <= lane.PositionR.Y + lane.SizeR.Y;
-
-        bool TimelinePointerOverCell(EntMut lane, int count)
-            => count > 0 && lane.SizeR.X > 0 && TimelinePointerInside(lane);
-
-        ReadOnlySpan<char> CommandTooltip(int index, AllocatorCommand command)
-        {
-            var eventIndex = index + 1;
-            return command.Kind switch
-            {
-                AllocatorCommandKind.Alloc => text.Format(
-                    "scripted event #{0}: alloc slot {1}, alignment {2}, size {3}B; {4}",
-                    eventIndex,
-                    command.Slot,
-                    command.Alignment,
-                    command.Size,
-                    command.Label),
-                AllocatorCommandKind.Realloc => text.Format(
-                    "scripted event #{0}: realloc slot {1}, alignment {2}, size {3}B; {4}",
-                    eventIndex,
-                    command.Slot,
-                    command.Alignment,
-                    command.Size,
-                    command.Label),
-                AllocatorCommandKind.Free => text.Format(
-                    "scripted event #{0}: free slot {1}; {2}",
-                    eventIndex,
-                    command.Slot,
-                    command.Label),
-                AllocatorCommandKind.Pack => text.Format(
-                    "scripted event #{0}: pack live ranges; {1}",
-                    eventIndex,
-                    command.Label),
-                _ => text.Format("scripted event #{0}: {1}", eventIndex, command.Label),
-            };
-        }
 
         void Outline(EntMut parent, Func<Vec4> color)
         {

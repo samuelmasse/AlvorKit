@@ -2,42 +2,39 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <!-- Required by the [LibraryImport] source generator in the GLFW backend source pulled in below. -->
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
-
-    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
-        <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(GlfwBindVer)" />
-    </ItemGroup>
-
-    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj')">
-        <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(GlBindVer)" />
-    </ItemGroup>
-
-    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
-        <ProjectReference Include="$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj" />
-    </ItemGroup>
-
-    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj')">
-        <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj" />
-    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="BigGustave" Version="1.0.6" />
+        <ProjectReference Include="..\..\src\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Maths\AlvorKit.Maths.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.UI\AlvorKit.UI.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.UI.Generator\AlvorKit.UI.Generator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="AlvorKit.ECS" />
+        <Using Include="AlvorKit.ECS.Generator" />
+        <Using Include="AlvorKit.Engine" />
+        <Using Include="AlvorKit.Engine.Loop" />
         <Using Include="AlvorKit.Maths" />
-        <Using Include="AlvorKit.GLFW" />
+        <Using Include="AlvorKit.Injection" />
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.OpenGL.Demo.AzureTentacle" />
         <Using Include="AlvorKit.Graphics2D" />
         <Using Include="AlvorKit.Graphics2D.Fonts" />
         <Using Include="AlvorKit.OpenGL.Layer" />
+        <Using Include="AlvorKit.UI" />
+        <Using Include="AlvorKit.UI.UiSyntax">
+            <Static>true</Static>
+        </Using>
+        <Using Include="AlvorKit.Windowing" />
         <Using Include="BigGustave" />
         <Using Include="System.Buffers.Binary" />
         <Using Include="System.Text.Json" />

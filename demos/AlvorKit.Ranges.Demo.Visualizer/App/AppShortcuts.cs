@@ -26,6 +26,10 @@ public class AppShortcuts(
             session.ToggleLabels();
         if (keyboard.IsKeyPressed(Keys.A))
             session.TogglePadding();
+        if (keyboard.IsKeyPressed(Keys.M))
+            session.NextMemoryOverlayMode();
+        if (keyboard.IsKeyPressed(Keys.T))
+            session.NextTimelineOverlayMode();
         if (keyboard.IsKeyPressedRepeated(Keys.Right))
             session.StepForward();
         if (keyboard.IsKeyPressedRepeated(Keys.Left))

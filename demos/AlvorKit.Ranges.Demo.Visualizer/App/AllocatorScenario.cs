@@ -16,6 +16,13 @@ public class AllocatorScenario(string name, string description, long initialSize
     private const int LargeOperations = 20_000;
     private const int LargeWindow = 256;
     private const int LargeAlignmentMosaicRanges = 4_096;
+    private const int LargeVariableReallocRanges = 40_000;
+    private const int LargeVariableReallocPasses = 3;
+    private const int LargeVariableReallocOutlierCount = 512;
+    private const int LargeVariableReallocOutlierChangesPerPass = 8;
+    private const int LargeVariableReallocCommandCount =
+        LargeVariableReallocRanges * (LargeVariableReallocPasses + 1) +
+        LargeVariableReallocOutlierCount * LargeVariableReallocPasses * LargeVariableReallocOutlierChangesPerPass;
 
     /// <summary>Gets the scenario display name.</summary>
     public string Name { get; } = name;
@@ -54,6 +61,7 @@ public class AllocatorScenario(string name, string description, long initialSize
         LargePackOnlyFragmented(),
         LargeAlignmentMosaic(),
         LargePackVsResizeThreshold(),
+        LargeVariableReallocOutliers(),
     ];
 
     /// <summary>Counts the required handle slots from the highest slot touched by the script.</summary>
@@ -400,6 +408,52 @@ public class AllocatorScenario(string name, string description, long initialSize
             [.. commands]);
     }
 
+    /// <summary>Builds a large variable-size realloc scenario with repeated outlier spikes.</summary>
+    private static AllocatorScenario LargeVariableReallocOutliers()
+    {
+        List<AllocatorCommand> commands = new(LargeVariableReallocCommandCount);
+        for (var i = 0; i < LargeVariableReallocRanges; i++)
+        {
+            commands.Add(AllocatorCommand.Alloc(
+                i,
+                VariableReallocAlignment(i),
+                VariableReallocInitialByteSize(i),
+                "variable initial alloc"));
+        }
+
+        for (var pass = 0; pass < LargeVariableReallocPasses; pass++)
+        {
+            for (var i = 0; i < LargeVariableReallocRanges; i++)
+            {
+                commands.Add(AllocatorCommand.Realloc(
+                    i,
+                    VariableReallocAlignment(i),
+                    VariableReallocSweepByteSize(i, pass),
+                    "variable realloc sweep"));
+            }
+
+            for (var change = 0; change < LargeVariableReallocOutlierChangesPerPass; change++)
+            {
+                var outlierChange = pass * LargeVariableReallocOutlierChangesPerPass + change;
+                for (var outlier = 0; outlier < LargeVariableReallocOutlierCount; outlier++)
+                {
+                    var slot = VariableReallocOutlierSlot(outlier);
+                    commands.Add(AllocatorCommand.Realloc(
+                        slot,
+                        VariableReallocAlignment(slot),
+                        VariableReallocOutlierByteSize(outlier, outlierChange),
+                        "variable outlier realloc"));
+                }
+            }
+        }
+
+        return new(
+            "large-variable-realloc-outliers-40k",
+            "40,000 variable allocations resize through full sweeps while 512 outlier handles spike and shrink repeatedly.",
+            VariableReallocInitialSize(LargeVariableReallocRanges),
+            [.. commands]);
+    }
+
     /// <summary>Adds linear allocation commands with the benchmark size pattern.</summary>
     private static void AddLinearAllocCommands(List<AllocatorCommand> commands, int count, string label)
     {
@@ -498,6 +552,42 @@ public class AllocatorScenario(string name, string description, long initialSize
 
         return size + 1;
     }
+
+    /// <summary>Returns a no-resize initial size for the large variable realloc setup.</summary>
+    private static long VariableReallocInitialSize(int ranges)
+    {
+        var size = FirstUsableIndex;
+        for (var i = 0; i < ranges; i++)
+            size += VariableReallocInitialByteSize(i) + MaxPadding(VariableReallocAlignment(i));
+
+        return size + 1;
+    }
+
+    /// <summary>Returns the alignment pattern for the large variable realloc scenario.</summary>
+    private static int VariableReallocAlignment(int slot) => 8 << (slot & 3);
+
+    /// <summary>Returns the initial size for a slot in the large variable realloc scenario.</summary>
+    private static long VariableReallocInitialByteSize(int slot) => 48 + ((slot * 37) & 511);
+
+    /// <summary>Returns the normal sweep size for a slot in the large variable realloc scenario.</summary>
+    private static long VariableReallocSweepByteSize(int slot, int pass)
+    {
+        var initialSize = VariableReallocInitialByteSize(slot);
+        var delta = 16 + ((slot * 17 + pass * 59) & 255);
+
+        return ((slot + pass) & 1) == 0
+            ? Math.Max(16L, initialSize - delta)
+            : initialSize + delta;
+    }
+
+    /// <summary>Returns one deterministic outlier slot from the large variable realloc live set.</summary>
+    private static int VariableReallocOutlierSlot(int outlier) => outlier * 73 % LargeVariableReallocRanges;
+
+    /// <summary>Returns the repeated extreme size for an outlier slot in the large variable realloc scenario.</summary>
+    private static long VariableReallocOutlierByteSize(int outlier, int change) =>
+        (change & 1) == 0
+            ? 16 + ((outlier * 31 + change * 23) & 127)
+            : 2_048 + ((outlier * 197 + change * 997) & 8191);
 
     /// <summary>Returns the maximum padding any index can require for the given alignment.</summary>
     private static long MaxPadding(int alignment) => alignment <= 1 ? 0 : alignment - 1L;

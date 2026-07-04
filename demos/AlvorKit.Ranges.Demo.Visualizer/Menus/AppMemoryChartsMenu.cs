@@ -126,16 +126,15 @@ public class AppMemoryChartsMenu(
             const long minimumActiveEnd = 2;
 
             tailOmitted = false;
-            if (snapshot.Ranges.Length == 0 || snapshot.FreeSpans.Length == 0)
+            if (snapshot.Ranges.Length == 0)
                 return snapshot.Size;
 
-            var lastFree = snapshot.FreeSpans[^1];
-            if (lastFree.Index + lastFree.Size != snapshot.Size)
-                return snapshot.Size;
+            var activeEnd = minimumActiveEnd;
+            for (var i = 0; i < snapshot.Ranges.Length; i++)
+                activeEnd = Math.Max(activeEnd, snapshot.Ranges[i].Index + snapshot.Ranges[i].ReservedSize);
 
-            var activeEnd = Math.Max(minimumActiveEnd, lastFree.Index);
-            tailOmitted = lastFree.Size > activeEnd;
-            return tailOmitted ? activeEnd : snapshot.Size;
+            tailOmitted = activeEnd < snapshot.Size;
+            return activeEnd;
         }
     }
 }

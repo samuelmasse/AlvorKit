@@ -23,6 +23,7 @@
         <Using Include="AlvorKit.Graphics2D.Fonts" />
         <Using Include="AlvorKit.Injection" />
         <Using Include="AlvorKit.Maths" />
+        <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.Ranges" />
         <Using Include="AlvorKit.Ranges.Demo.Visualizer" />
         <Using Include="AlvorKit.UI" />

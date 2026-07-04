@@ -183,6 +183,9 @@ public sealed class GlbModel : IDisposable
     /// <summary>Selects the previous available animation slot.</summary>
     public void SelectPreviousAnimation() => mesh.SelectPreviousAnimation();
 
+    /// <summary>Selects one available animation slot by index.</summary>
+    public void SelectAnimation(int animationIndex) => mesh.SelectAnimation(animationIndex);
+
     /// <summary>Gets the display name for one selectable animation slot.</summary>
     public string GetAnimationName(int animationIndex) => mesh.GetAnimationName(animationIndex);
 

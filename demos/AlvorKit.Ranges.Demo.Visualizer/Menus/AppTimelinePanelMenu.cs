@@ -11,6 +11,7 @@ public class AppTimelinePanelMenu(
     {
         const float panelHeight = 78f;
         const float stripHeight = 18f;
+        const float modeOffsetX = 164f;
 
         root.Mutate(style.Panel)
             .SizeWeightTypeV(SizeWeightType.Self)
@@ -33,11 +34,29 @@ public class AppTimelinePanelMenu(
             .AlignmentV(Alignment.Right | Alignment.Top);
 
         Node(root)
+            .Mutate(style.Button)
+            .SizeV((188f, style.ButtonHeight))
+            .TextF(() => text.Format("timeline {0}", TimelineModeName(session.TimelineOverlayMode)))
+            .OffsetV((modeOffsetX, 0))
+            .AlignmentV(Alignment.Left | Alignment.Top)
+            .OnPressF(session.NextTimelineOverlayMode);
+
+        Node(root)
             .SizeRelativeV((1, 0))
             .SizeV((0, stripHeight))
             .AlignmentV(Alignment.Bottom | Alignment.Left)
             .OffsetV((0, -style.FloatingTextInset))
             .ColorV(style.PanelInsetColor)
             .Mutate(timelineMenu.Create);
+
+        string TimelineModeName(AppTimelineOverlayMode mode) => mode switch
+        {
+            AppTimelineOverlayMode.Commands => "commands",
+            AppTimelineOverlayMode.Used => "used",
+            AppTimelineOverlayMode.Efficiency => "efficiency",
+            AppTimelineOverlayMode.FreeBlocks => "free blocks",
+            AppTimelineOverlayMode.Events => "events",
+            _ => "timeline",
+        };
     }
 }

@@ -27,14 +27,8 @@ public sealed class FlyCamera(Vec3 initialPosition, float initialYaw, float init
     /// <summary>Whether the next cursor sample should seed mouse look instead of moving the camera.</summary>
     private bool needsCursorSeed = true;
 
-    /// <summary>The previous cursor x coordinate used to calculate mouse movement.</summary>
-    private double previousCursorX;
-
-    /// <summary>The previous cursor y coordinate used to calculate mouse movement.</summary>
-    private double previousCursorY;
-
     /// <summary>Updates mouse look and keyboard movement only while the camera controls are captured.</summary>
-    public void Update(GlfwBackend glfw, GlfwWindow window, float elapsedSeconds, bool mouseTracking)
+    public void Update(RootKeyboard keyboard, RootMouse mouse, float elapsedSeconds, bool mouseTracking)
     {
         if (!mouseTracking)
         {
@@ -42,8 +36,8 @@ public sealed class FlyCamera(Vec3 initialPosition, float initialYaw, float init
             return;
         }
 
-        UpdateLook(glfw, window);
-        UpdatePosition(glfw, window, elapsedSeconds);
+        UpdateLook(mouse);
+        UpdatePosition(keyboard, elapsedSeconds);
     }
 
     /// <summary>Forces the next mouse-look update to seed its cursor position instead of applying a delta.</summary>
@@ -53,37 +47,32 @@ public sealed class FlyCamera(Vec3 initialPosition, float initialYaw, float init
     public Mat4 CreateViewMatrix() => Mat4.LookTo(position, Forward(), Vec3.UnitY);
 
     /// <summary>Updates yaw and pitch from GLFW cursor deltas.</summary>
-    private void UpdateLook(GlfwBackend glfw, GlfwWindow window)
+    private void UpdateLook(RootMouse mouse)
     {
-        glfw.GetCursorPos(window, out var cursorX, out var cursorY);
         if (needsCursorSeed)
         {
-            previousCursorX = cursorX;
-            previousCursorY = cursorY;
             needsCursorSeed = false;
             return;
         }
 
-        yaw += (float)(cursorX - previousCursorX) * MouseSensitivity;
-        pitch = Math.Clamp(pitch - (float)(cursorY - previousCursorY) * MouseSensitivity, -MaxPitch, MaxPitch);
-        previousCursorX = cursorX;
-        previousCursorY = cursorY;
+        yaw += mouse.Delta.X * MouseSensitivity;
+        pitch = Math.Clamp(pitch - mouse.Delta.Y * MouseSensitivity, -MaxPitch, MaxPitch);
     }
 
     /// <summary>Moves the camera using WASD plus Space and Control for vertical travel.</summary>
-    private void UpdatePosition(GlfwBackend glfw, GlfwWindow window, float elapsedSeconds)
+    private void UpdatePosition(RootKeyboard keyboard, float elapsedSeconds)
     {
         var forward = ForwardOnGround();
         var right = Right();
         var movement =
-            forward * (Axis(glfw, window, GlfwKey.W) - Axis(glfw, window, GlfwKey.S)) +
-            right * (Axis(glfw, window, GlfwKey.D) - Axis(glfw, window, GlfwKey.A)) +
-            Vec3.UnitY * (Axis(glfw, window, GlfwKey.Space) - ControlAxis(glfw, window));
+            forward * (Axis(keyboard, Keys.W) - Axis(keyboard, Keys.S)) +
+            right * (Axis(keyboard, Keys.D) - Axis(keyboard, Keys.A)) +
+            Vec3.UnitY * (Axis(keyboard, Keys.Space) - ControlAxis(keyboard));
 
         if (movement.LengthSquared <= 0f)
             return;
 
-        var speed = ShiftAxis(glfw, window) > 0f ? FastMoveSpeed : MoveSpeed;
+        var speed = ShiftAxis(keyboard) > 0f ? FastMoveSpeed : MoveSpeed;
         position += Vec3.Normalize(movement) * speed * MathF.Max(0f, elapsedSeconds);
     }
 
@@ -114,15 +103,15 @@ public sealed class FlyCamera(Vec3 initialPosition, float initialYaw, float init
     }
 
     /// <summary>Returns one when the supplied key is currently held.</summary>
-    private static float Axis(GlfwBackend glfw, GlfwWindow window, GlfwKey key) =>
-        glfw.GetKey(window, key) == GlfwInputAction.Press ? 1f : 0f;
+    private static float Axis(RootKeyboard keyboard, Keys key) =>
+        keyboard.IsKeyDown(key) ? 1f : 0f;
 
     /// <summary>Returns one when either control key is currently held.</summary>
-    private static float ControlAxis(GlfwBackend glfw, GlfwWindow window) =>
-        Axis(glfw, window, GlfwKey.LeftControl) + Axis(glfw, window, GlfwKey.RightControl) > 0f ? 1f : 0f;
+    private static float ControlAxis(RootKeyboard keyboard) =>
+        Axis(keyboard, Keys.LeftControl) + Axis(keyboard, Keys.RightControl) > 0f ? 1f : 0f;
 
     /// <summary>Returns one when either shift key is currently held.</summary>
-    private static float ShiftAxis(GlfwBackend glfw, GlfwWindow window) =>
-        Axis(glfw, window, GlfwKey.LeftShift) + Axis(glfw, window, GlfwKey.RightShift) > 0f ? 1f : 0f;
+    private static float ShiftAxis(RootKeyboard keyboard) =>
+        Axis(keyboard, Keys.LeftShift) + Axis(keyboard, Keys.RightShift) > 0f ? 1f : 0f;
 
 }
