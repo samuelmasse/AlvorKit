@@ -199,6 +199,21 @@ centralize them.
   code; reserve static members for constants, operators, pure domain functions
   with no collaborator dependency, and framework-required entry points.
 
+## Game Scope Organization
+
+Before creating or reorganizing game dependency-injection scopes,
+root/game/world/level/player services, loader scopes, or state transitions, read
+[docs/GameScopeOrganization.md](docs/GameScopeOrganization.md). Keep scope
+prefixes, attributes, service names, and constructor dependency ordering
+consistent with that guide.
+
+## UI Menu Authoring
+
+Before creating or significantly changing an AlvorKit UI menu, read
+[docs/MenuAuthoring.md](docs/MenuAuthoring.md). Menu classes should follow that
+single-`Create`-method shape unless a more specific `AGENTS.md` explicitly
+allows a different local pattern.
+
 ## Documentation
 
 Write public documentation for a reader who only sees the published API, tool,

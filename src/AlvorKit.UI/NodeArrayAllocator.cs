@@ -2,7 +2,7 @@ namespace AlvorKit.UI;
 
 internal class NodeArrayAllocator
 {
-    private const int MaxRank = 16;
+    private const int MaxRank = 20;
 
     private readonly EntMut[][] data = new EntMut[MaxRank][];
     private readonly int[] counts = new int[MaxRank];

@@ -5,7 +5,8 @@ public class AppHeaderMenu(
     RootText text,
     AppStyle style,
     AppSession session,
-    AppUiScale uiScale)
+    AppUiScale uiScale,
+    RootMetrics metrics)
 {
     public void Create(EntMut root)
     {
@@ -40,7 +41,8 @@ public class AppHeaderMenu(
         Node(root)
             .Mutate(style.Label)
             .TextF(() => text.Format(
-                "{0}  scenario {1}/{2}  step {3}/{4}  speed {5:0.##}x  ui {6:F2}x",
+                "{0} FPS  {1}  scenario {2}/{3}  step {4}/{5}  speed {6:0.##}x  ui {7:F2}x",
+                metrics.FrameWindow.Ticks,
                 session.Playing ? "playing" : "paused",
                 session.ScenarioIndex + 1,
                 session.ScenarioCount,
