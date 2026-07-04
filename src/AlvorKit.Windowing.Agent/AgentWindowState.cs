@@ -4,8 +4,15 @@ namespace AlvorKit.Windowing;
 internal sealed class AgentWindowState
 {
     private readonly Vec2u monitorSize = new(1920u, 1080u);
-    private readonly float monitorScale = 1f;
+    private readonly float monitorScale;
     private Vec2u clientSize;
+
+    /// <summary>Creates deterministic agent state with the requested simulated monitor scale.</summary>
+    internal AgentWindowState(float monitorScale)
+    {
+        ValidateMonitorScale(monitorScale);
+        this.monitorScale = monitorScale;
+    }
 
     /// <summary>Gets or sets the simulated client size.</summary>
     internal Vec2u ClientSize
@@ -140,5 +147,12 @@ internal sealed class AgentWindowState
 
         if (size.X > int.MaxValue || size.Y > int.MaxValue)
             throw new ArgumentOutOfRangeException(nameof(size), "Client size must fit the native signed 32-bit window API.");
+    }
+
+    /// <summary>Rejects monitor scales that cannot produce useful UI scale values.</summary>
+    private static void ValidateMonitorScale(float monitorScale)
+    {
+        if (!float.IsFinite(monitorScale) || monitorScale <= 0)
+            throw new ArgumentOutOfRangeException(nameof(monitorScale), "Monitor scale must be a finite positive value.");
     }
 }

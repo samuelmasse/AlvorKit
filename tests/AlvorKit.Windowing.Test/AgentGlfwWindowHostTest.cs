@@ -114,6 +114,7 @@ public class AgentGlfwWindowHostTest
         bool isVisible = false,
         bool isVSyncEnabled = true,
         GlLayer? gl = null,
+        float monitorScale = 1f,
         TextReader? agentInput = null,
         TextWriter? agentOutput = null,
         Action<GlLayer, Vec2u, string>? screenshotSave = null)
@@ -127,6 +128,7 @@ public class AgentGlfwWindowHostTest
             title,
             isVisible,
             isVSyncEnabled,
+            monitorScale,
             agentInput,
             agentOutput,
             screenshotSave);

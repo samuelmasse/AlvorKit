@@ -23,15 +23,20 @@ public static partial class FontSpriteBatchExtensions
         var lastX = 0f;
         var lastSize = 0f;
         var first = true;
+        FontGlyphSlot? previous = null;
 
         foreach (var character in text.EnumerateRunes())
         {
             var slot = fontSize.GlyphSlot(character);
+            if (previous != null)
+                pen += fontSize.Kerning(previous, slot);
+
             var relativeX = pen + (first ? 0f : slot.Glyph.Bearing.X);
             lastX = Snap(relativeX, snap);
             lastSize = slot.Glyph.Box.X;
             pen += slot.Glyph.Advance;
             first = false;
+            previous = slot;
         }
 
         return lastX + lastSize;

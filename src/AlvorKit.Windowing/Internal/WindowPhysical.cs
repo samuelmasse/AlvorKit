@@ -22,7 +22,11 @@ internal sealed class WindowPhysical
     internal Vec2u Size
     {
         get => size;
-        set => window.ClientSize = value;
+        set
+        {
+            window.ClientSize = value;
+            size = window.ClientSize;
+        }
     }
 
     /// <summary>Gets the primary monitor work-area size.</summary>

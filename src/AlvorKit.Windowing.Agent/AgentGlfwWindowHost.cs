@@ -6,17 +6,20 @@ public class AgentGlfwWindowHost : GlfwWindowHost
 {
     /// <summary>The environment variable whose presence selects deterministic agent mode.</summary>
     public const string AgentEnvironmentVariable = "ALVORKIT_WINDOWING_AGENT";
+    /// <summary>The optional environment variable that overrides the simulated monitor scale in agent mode.</summary>
+    public const string AgentMonitorScaleEnvironmentVariable = "ALVORKIT_WINDOWING_AGENT_MONITOR_SCALE";
     /// <summary>Raises deterministic input and frame events for this host.</summary>
     private readonly AgentWindowEventDriver agent;
     /// <summary>Runs scripted agent input and optional screenshot capture for this host.</summary>
     private readonly AgentWindowCommandLoop commandLoop;
-    private readonly AgentWindowState state = new();
+    private readonly AgentWindowState state;
     private readonly bool useAgent;
 
     /// <summary>Wraps an existing GLFW window and switches to agent mode when requested.</summary>
     public AgentGlfwWindowHost(Glfw glfw, GlfwWindow window, GlLayer gl) : base(glfw, window)
     {
         useAgent = IsAgentEnvironmentPresent();
+        state = new(useAgent ? ReadAgentMonitorScale() : 1f);
         state.Initialize(base.ClientSize, base.Title, base.IsVisible, base.IsVSyncEnabled);
         agent = CreateEventDriver();
         if (useAgent)
@@ -33,11 +36,13 @@ public class AgentGlfwWindowHost : GlfwWindowHost
         string title = "AlvorKit.Windowing",
         bool isVisible = false,
         bool isVSyncEnabled = true,
+        float monitorScale = 1f,
         TextReader? agentInput = null,
         TextWriter? agentOutput = null,
         Action<GlLayer, Vec2u, string>? screenshotSave = null) : base(glfw, window)
     {
         useAgent = true;
+        state = new(monitorScale);
         state.Initialize(clientSize, title, isVisible, isVSyncEnabled);
         agent = CreateEventDriver();
         commandLoop = new(this, gl, agentInput, agentOutput, screenshotSave);
@@ -146,7 +151,26 @@ public class AgentGlfwWindowHost : GlfwWindowHost
     {
         state.ClientSize = size;
         base.ClientSize = state.ClientSize;
+        state.ClientSize = base.ClientSize;
     }
 
     private static bool IsAgentEnvironmentPresent() => Environment.GetEnvironmentVariable(AgentEnvironmentVariable) is not null;
+
+    private static float ReadAgentMonitorScale()
+    {
+        var value = Environment.GetEnvironmentVariable(AgentMonitorScaleEnvironmentVariable);
+        if (string.IsNullOrWhiteSpace(value))
+            return 1f;
+
+        if (float.TryParse(
+            value,
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out var scale))
+        {
+            return scale;
+        }
+
+        throw new InvalidOperationException($"{AgentMonitorScaleEnvironmentVariable} must be a finite positive number.");
+    }
 }

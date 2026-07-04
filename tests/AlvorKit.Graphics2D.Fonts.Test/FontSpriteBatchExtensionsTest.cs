@@ -30,6 +30,31 @@ public sealed class FontSpriteBatchExtensionsTest
         }
     }
 
+    /// <summary>Measure applies cached FreeType kerning between adjacent glyphs.</summary>
+    [TestMethod]
+    public void Measure_AppliesKerningBetweenGlyphs()
+    {
+        var (_, driver, batch, context) = FontsTestHarness.CreateContext();
+        driver.SetGlyph(new Rune('a'), 4, 0, 0, 0, 10f, []);
+        driver.SetGlyph(new Rune('b'), 4, 0, 0, 0, 5f, []);
+        driver.SetKerning(new Rune('a'), new Rune('b'), -2f);
+        try
+        {
+            using var font = new Font(context, "Inter.ttf");
+            var fontSize = font.Size(12);
+
+            Assert.AreEqual(12f, batch.Writer.Measure(fontSize, "ab"));
+            Assert.AreEqual(12f, batch.Writer.Measure(fontSize, "ab".AsSpan()));
+            Assert.AreEqual(1, driver.GetKerningCount);
+        }
+        finally
+        {
+            context.Dispose();
+            batch.Dispose();
+            driver.Dispose();
+        }
+    }
+
     /// <summary>Measure snaps the final glyph origin before adding the glyph box.</summary>
     [TestMethod]
     public void Measure_WithSnap_SnapsLastGlyphOrigin()

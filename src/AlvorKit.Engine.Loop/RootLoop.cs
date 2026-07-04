@@ -22,6 +22,8 @@ public static class RootLoop
             glfw.WindowHint(GlfwWindowHint.ContextVersionMinor, 3);
             glfw.WindowHint(GlfwWindowHint.OpenGLProfile, GlfwOpenGLProfile.CoreProfile);
             glfw.WindowHint(GlfwWindowHint.Visible, false);
+            if (IsAgentEnvironmentPresent())
+                glfw.WindowHint(GlfwWindowHint.Decorated, false);
 
             var primaryMonitor = glfw.GetPrimaryMonitor();
             glfw.GetMonitorWorkarea(primaryMonitor, out _, out _, out var monitorWidth, out var monitorHeight);
@@ -104,4 +106,7 @@ public static class RootLoop
             Unload();
         }
     }
+
+    private static bool IsAgentEnvironmentPresent() =>
+        Environment.GetEnvironmentVariable(AgentGlfwWindowHost.AgentEnvironmentVariable) is not null;
 }

@@ -18,6 +18,9 @@ internal sealed unsafe class FontsTestFt : FtNoop, IDisposable
     /// <summary>Configured glyph data keyed by Unicode scalar.</summary>
     private readonly Dictionary<uint, GlyphData> glyphs = [];
 
+    /// <summary>Configured kerning adjustments keyed by paired glyph indices.</summary>
+    private readonly Dictionary<ulong, float> kernings = [];
+
     /// <summary>The unmanaged coverage buffer used by the current glyph slot.</summary>
     private nint glyphBuffer;
 
@@ -48,6 +51,9 @@ internal sealed unsafe class FontsTestFt : FtNoop, IDisposable
 
     /// <summary>Gets the number of glyph load calls.</summary>
     public int LoadGlyphCount { get; private set; }
+
+    /// <summary>Gets the number of kerning lookup calls.</summary>
+    public int GetKerningCount { get; private set; }
 
     /// <summary>Gets the most recent file path passed to <see cref="NewFace(nint, nint, CLong, out FtFaceRec*)"/>.</summary>
     public string? LastFile { get; private set; }
@@ -121,6 +127,15 @@ internal sealed unsafe class FontsTestFt : FtNoop, IDisposable
         return 0;
     }
 
+    /// <inheritdoc/>
+    public override int GetKerning(FtFaceRec* face, uint leftGlyph, uint rightGlyph, uint kernMode, out FtVector akerning)
+    {
+        GetKerningCount++;
+        var key = KerningKey(leftGlyph, rightGlyph);
+        akerning = new FtVector { X = Pixel(kernings.GetValueOrDefault(key)), Y = default };
+        return 0;
+    }
+
     /// <summary>Configures the size metrics reported when a <see cref="FontSize"/> is created.</summary>
     internal void SetMetrics(float ascender, float descender, float height)
     {
@@ -133,6 +148,12 @@ internal sealed unsafe class FontsTestFt : FtNoop, IDisposable
     internal void SetGlyph(Rune character, int width, int height, int bearingX, int bearingY, float advance, ReadOnlySpan<byte> alpha)
     {
         glyphs[(uint)character.Value] = new GlyphData(width, height, width, bearingX, bearingY, advance, alpha.ToArray());
+    }
+
+    /// <summary>Configures a horizontal kerning adjustment between two Unicode scalars.</summary>
+    internal void SetKerning(Rune left, Rune right, float x)
+    {
+        kernings[KerningKey((uint)left.Value, (uint)right.Value)] = x;
     }
 
     /// <summary>Configures a glyph bitmap with default metrics for a Unicode scalar.</summary>
@@ -183,6 +204,9 @@ internal sealed unsafe class FontsTestFt : FtNoop, IDisposable
 
     /// <summary>Converts a pixel value into FreeType 26.6 fixed-point storage.</summary>
     private static CLong Pixel(float value) => new((nint)MathF.Round(value * FontFreeType.PixelOne));
+
+    /// <summary>Creates a stable key for one glyph-index pair.</summary>
+    private static ulong KerningKey(uint leftGlyph, uint rightGlyph) => ((ulong)leftGlyph << 32) | rightGlyph;
 
     /// <summary>One configured glyph slot payload.</summary>
     private sealed record GlyphData(int Width, int Height, int Pitch, int BearingX, int BearingY, float Advance, byte[] Alpha)

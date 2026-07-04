@@ -21,6 +21,9 @@ public sealed unsafe class FontSize
     /// <summary>The cached glyph slots by Unicode scalar.</summary>
     private readonly Dictionary<Rune, FontGlyphSlot> slots = [];
 
+    /// <summary>The cached horizontal kerning offset by paired FreeType glyph indices.</summary>
+    private readonly Dictionary<ulong, float> kernings = [];
+
     /// <summary>Creates a font-size cache and captures size metrics.</summary>
     internal FontSize(Ft ft, FontFace face, FontAtlasList atlases, int size)
     {
@@ -54,8 +57,28 @@ public sealed unsafe class FontSize
         FontFreeType.Require(ft, nameof(Ft.LoadGlyph), ft.LoadGlyph(face.Pointer, glyphIndex, FtLoadFlags.Render));
 
         var slot = CreateGlyphSlot(character, *face.Pointer->Glyph);
+        slot.GlyphIndex = glyphIndex;
         slots.Add(character, slot);
         return slot;
+    }
+
+    /// <summary>Gets the horizontal kerning adjustment between two glyph slots in pixels.</summary>
+    internal float Kerning(FontGlyphSlot left, FontGlyphSlot right)
+    {
+        if (left.GlyphIndex == 0 || right.GlyphIndex == 0)
+            return 0f;
+
+        var key = ((ulong)left.GlyphIndex << 32) | right.GlyphIndex;
+        if (kernings.TryGetValue(key, out var cached))
+            return cached;
+
+        FontFreeType.Require(
+            ft,
+            nameof(Ft.GetKerning),
+            ft.GetKerning(face.Pointer, left.GlyphIndex, right.GlyphIndex, FtKerningMode.KerningDefault, out var kerning));
+        var value = FontFreeType.Pixel26Dot6(kerning.X);
+        kernings.Add(key, value);
+        return value;
     }
 
     /// <summary>Creates a glyph and atlas slot from the current FreeType glyph slot.</summary>

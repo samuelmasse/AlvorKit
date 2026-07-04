@@ -37,6 +37,18 @@ public class ScreenTest
     }
 
     [TestMethod]
+    public void Screen_Size_UpdatesCanvasImmediately()
+    {
+        var (_, loop) = WindowingTestFactory.Create();
+        var screen = new WindowScreen(loop);
+        var canvas = new WindowCanvas(loop);
+
+        screen.Size = new(640, 480);
+
+        Assert.AreEqual(new Vec2u(640u, 480u), canvas.Size);
+    }
+
+    [TestMethod]
     public void Screen_MonitorProps_AreForwarded()
     {
         var (host, loop) = WindowingTestFactory.Create();

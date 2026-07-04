@@ -50,10 +50,14 @@ public static partial class FontSpriteBatchExtensions
         var baselineOffset = (fontSize.Metrics.Ascender + fontSize.Metrics.Descender) * 0.5f;
         var pen = 0f;
         var first = true;
+        FontGlyphSlot? previous = null;
 
         foreach (var character in text.EnumerateRunes())
         {
             var slot = fontSize.GlyphSlot(character);
+            if (previous != null)
+                pen += fontSize.Kerning(previous, slot);
+
             var relativeX = pen + (first ? 0f : slot.Glyph.Bearing.X);
             var relativeY = baselineOffset - slot.Glyph.Bearing.Y;
             var x = position.X + Snap(relativeX, snap);
@@ -63,6 +67,7 @@ public static partial class FontSpriteBatchExtensions
             sprites.Draw(slot.Texture, glyphPosition / scale, slot.Glyph.Box / scale, slot.Position, slot.Glyph.Box, color);
             pen += slot.Glyph.Advance;
             first = false;
+            previous = slot;
         }
     }
 }

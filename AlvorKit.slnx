@@ -18,6 +18,7 @@
         <Project Path="demos/AlvorKit.Mocking.Demo/AlvorKit.Mocking.Demo.csproj" />
         <Project Path="demos/AlvorKit.Ranges.Demo.Bench/AlvorKit.Ranges.Demo.Bench.csproj" />
         <Project Path="demos/AlvorKit.Ranges.Demo.Visualizer/AlvorKit.Ranges.Demo.Visualizer.csproj" />
+        <Project Path="demos/AlvorKit.UI.Blend.Demo/AlvorKit.UI.Blend.Demo.csproj" />
         <Project
             Path="demos/AlvorKit.OpenGL.Demo.HelloTriangle/AlvorKit.OpenGL.Demo.HelloTriangle.csproj" />
         <Project
@@ -57,6 +58,7 @@
     <Project Path="src/AlvorKit.ECS.Generator/AlvorKit.ECS.Generator.csproj" />
     <Project Path="src/AlvorKit.UI.Generator/AlvorKit.UI.Generator.csproj" />
     <Project Path="src/AlvorKit.UI/AlvorKit.UI.csproj" />
+    <Project Path="src/AlvorKit.UI.Blend/AlvorKit.UI.Blend.csproj" />
     <Project Path="src/AlvorKit.Injection/AlvorKit.Injection.csproj" />
     <Project Path="src/AlvorKit.Mocking/AlvorKit.Mocking.csproj" />
     <Project Path="src/AlvorKit.Maths.Core/AlvorKit.Maths.Core.csproj" />

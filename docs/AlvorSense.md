@@ -123,6 +123,11 @@ Useful options:
 - `--timeout <seconds>` controls startup, send, or stop waits. The default is
   30 seconds.
 
+For high-DPI visual matching, pass
+`--env ALVORKIT_WINDOWING_AGENT_MONITOR_SCALE=2` or another positive scale.
+This changes the simulated monitor scale reported by `RootScreen.MonitorScale`
+while preserving the screenshot's physical client size.
+
 ## Send Commands
 
 `send` writes a batch of command lines to the running game and then appends

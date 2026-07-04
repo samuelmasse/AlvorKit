@@ -118,7 +118,7 @@ public class AgentGlfwWindowHostAgentTest
     [TestMethod]
     public void AgentGlfwWindowHost_Properties_Work()
     {
-        var host = CreateAgent(new(3, 4), "agent", false, false);
+        var host = CreateAgent(new(3, 4), "agent", false, false, 2f);
 
         host.IsVisible = true;
         host.ClientSize = new(5, 7);
@@ -133,7 +133,7 @@ public class AgentGlfwWindowHostAgentTest
         Assert.IsTrue(host.IsFullscreen);
         Assert.AreEqual(new Vec2u(5u, 7u), host.ClientSize);
         Assert.AreEqual(new Vec2u(1920u, 1080u), host.MonitorSize);
-        Assert.AreEqual(1, host.MonitorScale);
+        Assert.AreEqual(2, host.MonitorScale);
         Assert.AreEqual(new Vec2(5, 6), host.MousePosition);
         Assert.AreEqual(CursorMode.Disabled, host.CursorMode);
         Assert.AreEqual(CursorShape.Crosshair, host.CursorShape);
@@ -235,10 +235,11 @@ public class AgentGlfwWindowHostAgentTest
         Vec2u? clientSize = null,
         string title = "AlvorKit.Windowing",
         bool isVisible = false,
-        bool isVSyncEnabled = true)
+        bool isVSyncEnabled = true,
+        float monitorScale = 1f)
     {
         var size = clientSize ?? new(800, 600);
         var glfw = new WindowingTestGlfw(size, isVisible);
-        return new(glfw, glfw.Window, new(new GlNoop()), size, title, isVisible, isVSyncEnabled);
+        return new(glfw, glfw.Window, new(new GlNoop()), size, title, isVisible, isVSyncEnabled, monitorScale);
     }
 }
