@@ -5,17 +5,18 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Ranges\AlvorKit.Ranges.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.UI\AlvorKit.UI.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.UI.Generator\AlvorKit.UI.Generator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="RangeAllocatorVisualizer.Controls.toml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-
-    <ItemGroup>
+        <Using Include="AlvorKit.ECS" />
+        <Using Include="AlvorKit.ECS.Generator" />
         <Using Include="AlvorKit.Engine" />
         <Using Include="AlvorKit.Engine.Loop" />
         <Using Include="AlvorKit.Graphics2D" />
@@ -23,6 +24,10 @@
         <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.Ranges" />
         <Using Include="AlvorKit.Ranges.Demo.Visualizer" />
+        <Using Include="AlvorKit.UI" />
+        <Using Include="AlvorKit.UI.UiSyntax">
+            <Static>true</Static>
+        </Using>
         <Using Include="AlvorKit.Windowing" />
     </ItemGroup>
 

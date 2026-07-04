@@ -14,14 +14,14 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
             ce.MarginR = c.MarginFV.Resolve();
         }
 
-        SizeInnerSizing(s, n);
+        SizeInnerSizing(n);
 
         var innerSpace = n.SizeR - n.PaddingR.XY - n.PaddingR.ZW;
         foreach (var c in n.NodesR.Span)
             Size(innerSpace - c.MarginR.XY - c.MarginR.ZW, c);
 
-        SizeInnerMaxRelative(s, n);
-        SizeInnerSumRelative(s, n);
+        SizeInnerMaxRelative(n);
+        SizeInnerSumRelative(n);
 
         SizeAlignmentSnap(n);
         SizeEdgeAlignmentFill(s, n);
@@ -41,7 +41,7 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
         n.SizeR = default;
         n.SizeR += (n.SizeRelativeFV.Resolve() ?? (1, 1)) * s;
         n.SizeR += n.SizeFV.Resolve();
-        SizeTextRelative(s, n);
+        SizeTextRelative(n);
 
         var hor = n.HorizontalWeightSizeR;
         if (hor != null)
@@ -52,7 +52,7 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
             n.SizeR = n.SizeR with { Y = ver.GetValueOrDefault() };
     }
 
-    private void SizeTextRelative(Vec2 s, EntMut n)
+    private void SizeTextRelative(EntMut n)
     {
         var font = n.FontFV.Resolve();
         if (font == null)
@@ -78,7 +78,7 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
         n.SizeR += sizeTextRelative * size;
     }
 
-    private void SizeInnerMaxRelative(Vec2 s, EntMut n)
+    private void SizeInnerMaxRelative(EntMut n)
     {
         var sizeInnerMaxRelative = n.SizeInnerMaxRelativeFV.Resolve();
         if (sizeInnerMaxRelative == default)
@@ -101,7 +101,7 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
         n.SizeR += sizeInnerMaxRelative * sizeInnerMax;
     }
 
-    private void SizeInnerSumRelative(Vec2 s, EntMut n)
+    private void SizeInnerSumRelative(EntMut n)
     {
         var sizeInnerSumRelative = n.SizeInnerSumRelativeFV.Resolve();
         if (sizeInnerSumRelative == default)
@@ -150,7 +150,7 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
         }
     }
 
-    private void SizeInnerSizing(Vec2 s, EntMut n)
+    private void SizeInnerSizing(EntMut n)
     {
         var innerSizing = n.InnerSizingFV.Resolve();
         if (innerSizing == default)

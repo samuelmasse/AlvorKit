@@ -89,7 +89,10 @@ internal sealed class AllocatorScenarioRunner
         targetStep = Math.Clamp(targetStep, 0, scenario.Commands.Length);
         var currentScenario = scenario;
         Load(currentScenario);
-        for (var i = 0; i < targetStep; i++)
+        if (targetStep == 0)
+            return;
+
+        for (var i = 0; i < targetStep - 1; i++)
         {
             LastCommand = scenario.Commands[i];
             RecordLastCall(LastCommand);
@@ -97,8 +100,12 @@ internal sealed class AllocatorScenarioRunner
             StepIndex++;
         }
 
+        Previous = Capture(0, 0);
+        LastCommand = scenario.Commands[targetStep - 1];
+        RecordLastCall(LastCommand);
+        Apply(LastCommand);
+        StepIndex++;
         Current = Capture(0, 0);
-        Previous = Current;
     }
 
     /// <summary>Jumps to the next pack command, applying it immediately when found.</summary>
