@@ -49,7 +49,7 @@ public class AppTimelinePanelMenu(
             .ColorV(style.PanelInsetColor)
             .Mutate(timelineMenu.Create);
 
-        string TimelineModeName(AppTimelineOverlayMode mode) => mode switch
+        static string TimelineModeName(AppTimelineOverlayMode mode) => mode switch
         {
             AppTimelineOverlayMode.Commands => "commands",
             AppTimelineOverlayMode.Used => "used",
