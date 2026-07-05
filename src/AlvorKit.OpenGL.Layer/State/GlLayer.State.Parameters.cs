@@ -20,7 +20,11 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetSampleCoverage()"/>.</remarks>
-    public override void SampleCoverage(float value, bool invert) { state.sampleCoverage.Set(nameof(SampleCoverage), (value, invert)); base.SampleCoverage(value, invert); }
+    public override void SampleCoverage(float value, bool invert)
+    {
+        state.sampleCoverage.Set(nameof(SampleCoverage), (value, invert));
+        base.SampleCoverage(value, invert);
+    }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetSampleMask(uint)"/> for the same word.</remarks>
@@ -52,11 +56,19 @@ public partial class GlLayer
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPixelStore(GlPixelStoreParameter)"/> for the same parameter.</remarks>
-    public override void PixelStorei(GlPixelStoreParameter pname, int param) { state.pixelStoreMap.Set(nameof(PixelStorei), pname, param); base.PixelStorei(pname, param); }
+    public override void PixelStorei(GlPixelStoreParameter pname, int param)
+    {
+        state.pixelStoreMap.Set(nameof(PixelStorei), pname, param);
+        base.PixelStorei(pname, param);
+    }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetPixelStore(GlPixelStoreParameter)"/> for the same parameter.</remarks>
-    public override void PixelStoref(GlPixelStoreParameter pname, float param) { state.pixelStoreMap.Set(nameof(PixelStoref), pname, param); base.PixelStoref(pname, param); }
+    public override void PixelStoref(GlPixelStoreParameter pname, float param)
+    {
+        state.pixelStoreMap.Set(nameof(PixelStoref), pname, param);
+        base.PixelStoref(pname, param);
+    }
 
     /// <inheritdoc/>
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetReadBuffer()"/>.</remarks>

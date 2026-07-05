@@ -20,7 +20,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "10.0.x"
+          global-json-file: global.json
 
       - name: Generate maths primitives
         run: dotnet run --project scripts/AlvorKit.Script.MathsGen
@@ -48,7 +48,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "10.0.x"
+          global-json-file: global.json
 
       # A job that actually runs cannot conclude as skipped, so this probe turns
       # an informational failure into an output. The marker job below is then
