@@ -11,4 +11,7 @@ public sealed record BlendStyleOptions
 
     /// <summary>Gets the optional generated control chrome used for rounded controls.</summary>
     public BlendControlChrome? Chrome { get; init; }
+
+    /// <summary>Gets the optional keyboard; focused controls run their click on Enter when it is provided.</summary>
+    public Keyboard? Keyboard { get; init; }
 }

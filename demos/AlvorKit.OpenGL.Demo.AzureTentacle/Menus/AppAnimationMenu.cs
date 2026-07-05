@@ -22,13 +22,15 @@ public class AppAnimationMenu(
                     .TextV("Animations");
 
                 Node(header)
-                    .Mutate(node => s.ToolbarActionButton(node))
+                    .Mutate(s.ToolbarButton)
+                    .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .TextV("Prev")
                     .OnClickF(session.SelectPreviousAnimation);
 
                 Node(header)
-                    .Mutate(node => s.PrimaryToolbarActionButton(node))
+                    .Mutate(s.ActiveToolbarButton)
+                    .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .TextV("Next")
                     .OnClickF(session.SelectNextAnimation);

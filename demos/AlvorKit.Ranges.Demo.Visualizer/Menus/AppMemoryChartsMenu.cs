@@ -93,8 +93,8 @@ public class AppMemoryChartsMenu(
             const float compressedMinimumDetailHeight = 36f;
             const float detailLabelGap = 12f;
 
-            var inset = s.SpacingS;
-            var labelHeight = s.MetricRowHeight;
+            var inset = s.Metrics.LooseSpacing;
+            var labelHeight = s.Metrics.MetricRowHeight;
             var width = Math.Max(0, root.SizeR.X - inset - inset);
             var height = Math.Max(0, root.SizeR.Y - inset - inset);
             var detailHeight = Math.Min(maximumDetailHeight, Math.Max(minimumDetailHeight, height * detailHeightRatio));

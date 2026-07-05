@@ -2,6 +2,7 @@
 
     <ItemGroup>
         <Using Include="AlvorKit.ECS" />
+        <Using Include="AlvorKit.ECS.Generator" />
         <Using Include="AlvorKit.Engine" />
         <Using Include="AlvorKit.Graphics2D" />
         <Using Include="AlvorKit.Graphics2D.Fonts" />
@@ -17,6 +18,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\AlvorKit.ECS\AlvorKit.ECS.csproj" />
+        <ProjectReference Include="..\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\AlvorKit.Engine\AlvorKit.Engine.csproj" />
         <ProjectReference Include="..\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
         <ProjectReference Include="..\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />

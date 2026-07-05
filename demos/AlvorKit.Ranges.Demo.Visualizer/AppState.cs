@@ -88,5 +88,5 @@ public class AppState(
     }
 
     /// <summary>Clears the OpenGL backbuffer before the UI draws.</summary>
-    public override void Render() => backbuffer.Clear(s.BackgroundColor);
+    public override void Render() => backbuffer.Clear(s.Palette.AppBackground);
 }

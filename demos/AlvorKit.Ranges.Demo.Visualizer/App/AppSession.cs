@@ -21,6 +21,7 @@ public class AppSession
     private bool showPadding = true;
     private bool scenarioPickerOpen;
     private int visualRevision;
+    private int uiRevision;
     private int recentSlotCount;
     private AppMemoryOverlayMode memoryOverlayMode;
     private AppTimelineOverlayMode timelineOverlayMode;
@@ -45,6 +46,7 @@ public class AppSession
     public bool ShowPadding => showPadding;
     public bool ScenarioPickerOpen => scenarioPickerOpen;
     public int VisualRevision => visualRevision;
+    public int UiRevision => uiRevision;
     public AppMemoryOverlayMode MemoryOverlayMode => memoryOverlayMode;
     public AppTimelineOverlayMode TimelineOverlayMode => timelineOverlayMode;
     public int OutlierSlotCount => outlierSlotCount;
@@ -62,18 +64,33 @@ public class AppSession
             AdvancePlayback((float)delta);
     }
 
-    public void TogglePlayback() => playing = !playing;
+    public void TogglePlayback()
+    {
+        playing = !playing;
+        uiRevision++;
+    }
+
+    private void Pause()
+    {
+        if (!playing)
+            return;
+
+        playing = false;
+        uiRevision++;
+    }
 
     public void ToggleLabels()
     {
         showLabels = !showLabels;
         visualRevision++;
+        uiRevision++;
     }
 
     public void TogglePadding()
     {
         showPadding = !showPadding;
         visualRevision++;
+        uiRevision++;
     }
 
     public void NextMemoryOverlayMode()
@@ -86,6 +103,17 @@ public class AppSession
     {
         timelineOverlayMode = Next(timelineOverlayMode);
         visualRevision++;
+        uiRevision++;
+    }
+
+    public void SelectTimelineOverlayMode(AppTimelineOverlayMode mode)
+    {
+        if (timelineOverlayMode == mode)
+            return;
+
+        timelineOverlayMode = mode;
+        visualRevision++;
+        uiRevision++;
     }
 
     public void Faster() => speedPower = Math.Min(MaxSpeedPower, speedPower + 1);
@@ -112,7 +140,7 @@ public class AppSession
 
     public void JumpToStep(int step)
     {
-        playing = false;
+        Pause();
         var targetStep = Math.Clamp(step, 0, runner.Scenario.Commands.Length);
         if (targetStep == runner.StepIndex)
             return;
@@ -126,7 +154,7 @@ public class AppSession
 
     public void StepForward()
     {
-        playing = false;
+        Pause();
         if (runner.StepForward())
         {
             RecordRecentSlot(runner.LastCommand);
@@ -137,7 +165,7 @@ public class AppSession
 
     public void StepBackward()
     {
-        playing = false;
+        Pause();
         if (runner.StepBackward())
         {
             RebuildRecentSlots();
@@ -148,7 +176,7 @@ public class AppSession
 
     public void JumpToPack()
     {
-        playing = false;
+        Pause();
         if (runner.JumpToPack())
         {
             RebuildRecentSlots();

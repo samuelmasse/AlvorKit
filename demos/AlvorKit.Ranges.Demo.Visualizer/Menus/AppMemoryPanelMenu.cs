@@ -9,76 +9,40 @@ public class AppMemoryPanelMenu(
 {
     public void Create(EntMut root)
     {
-        const float headerHeight = 40f;
-        const float headerStatsOffsetY = 22f;
+        const int legendEntryCount = 5;
 
-        Node(root, out var panel)
-            .Mutate(s.PanelList)
-            .InnerSizingV(InnerSizing.VerticalWeight)
-            .SizeRelativeV((1, 1));
+        Node(root, out var viewport)
+            .Mutate(s.PanelFillList);
         {
-            Node(panel, out var header)
-                .SizeWeightTypeV(SizeWeightType.Self)
-                .SizeRelativeV((1, 0))
-                .SizeV((0, headerHeight));
+            Node(viewport, out var header)
+                .Mutate(s.HeaderStrip)
+                .SizeV((0, s.Metrics.ViewportHeaderHeight))
+                .InnerSpacingV(s.Metrics.ToolbarSpacing)
+                .PaddingV(s.Metrics.ViewportHeaderPadding);
             {
                 Node(header)
-                    .Mutate(s.Heading)
-                    .TextV("backing store")
-                    .AlignmentV(Alignment.Left | Alignment.Top);
+                    .Mutate(s.Chip)
+                    .AlignmentV(Alignment.Vertical)
+                    .SizeWeightTypeV(SizeWeightType.Self)
+                    .TextF(() => text.Format("memory: {0}", MemoryModeName(session.MemoryOverlayMode)))
+                    .OnPressF(session.NextMemoryOverlayMode);
+
+                for (var i = 0; i < legendEntryCount; i++)
+                    LegendItem(header, i);
 
                 Node(header)
-                    .Mutate(s.MutedLabel)
-                    .FontSizeV(s.FontSizeBody)
-                    .TextF(() => text.Format(
-                        "size {0}, used {1}, free spans {2}",
-                        session.Runner.Current.Size,
-                        session.Runner.Current.Used,
-                        session.Runner.Current.FreeSpans.Length))
-                    .OffsetV((0, headerStatsOffsetY))
-                    .AlignmentV(Alignment.Left | Alignment.Top);
+                    .ColorV(default);
 
-                Node(header)
-                    .Mutate(s.MutedLabel)
-                    .FontSizeV(s.FontSizeBody)
-                    .TextF(() => text.Format("last allocator call: {0}", session.Runner.LastCallText))
-                    .OffsetV((-s.FloatingTextInset, 0))
-                    .AlignmentV(Alignment.Right | Alignment.Top);
+                Stat(header, () => text.Format("used {0:0.0}%", UsedRatio() * 100));
+                Stat(header, () => text.Format("frag {0:0.0}%", ExternalFragmentationRatio() * 100));
+                Stat(header, () => text.Format("largest free {0}", LargestFreeSpan()));
+                Stat(header, () => text.Format("outliers {0}", session.OutlierSlotCount));
             }
 
-            Node(panel, out var legend)
-                .Mutate(s.HorizontalList)
-                .SizeWeightTypeV(SizeWeightType.Self);
+            Node(viewport, out var charts)
+                .ColorV(s.Palette.AppBackground);
             {
-                for (var i = 0; i < 5; i++)
-                    LegendItem(legend, i);
-            }
-
-            Node(panel, out var modeRow)
-                .Mutate(s.HorizontalList)
-                .SizeWeightTypeV(SizeWeightType.Self);
-            {
-                ButtonF(modeRow, 176f, () => text.Format("memory {0}", MemoryModeName(session.MemoryOverlayMode)), session.NextMemoryOverlayMode);
-                MetricLabel(modeRow, 160f, () => text.Format("used/backing {0:0.0}%", UsedRatio() * 100));
-                MetricLabel(modeRow, 178f, () => text.Format("payload/backing {0:0.0}%", PayloadBackingRatio() * 100));
-                MetricLabel(modeRow, 184f, () => text.Format("payload/reserved {0:0.0}%", PayloadReservedRatio() * 100));
-            }
-
-            Node(panel, out var aggregateRow)
-                .Mutate(s.HorizontalList)
-                .SizeWeightTypeV(SizeWeightType.Self);
-            {
-                MetricLabel(aggregateRow, 142f, () => text.Format("free blocks {0}", session.Runner.Current.FreeBlockCount));
-                MetricLabel(aggregateRow, 158f, () => text.Format("largest free {0}", LargestFreeSpan()));
-                MetricLabel(aggregateRow, 160f, () => text.Format("external frag {0:0.0}%", ExternalFragmentationRatio() * 100));
-                MetricLabel(aggregateRow, 132f, () => text.Format("outliers {0}", session.OutlierSlotCount));
-            }
-
-            Node(panel, out var chartsSlot)
-                .SizeRelativeV((1, 0))
-                .ColorV(s.PanelInsetColor);
-            {
-                memoryChartsMenu.Create(chartsSlot);
+                memoryChartsMenu.Create(charts);
             }
         }
 
@@ -86,39 +50,28 @@ public class AppMemoryPanelMenu(
         {
             Node(parent, out var item)
                 .Mutate(s.HorizontalList)
-                .InnerSpacingV(s.SpacingXS)
-                .SizeWeightTypeV(SizeWeightType.Self);
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .InnerSpacingV(s.Metrics.CompactSpacing);
             {
                 Node(item)
-                    .SizeRelativeV((0, 0))
-                    .SizeV((s.SwatchWidth, s.SwatchHeight))
-                    .AlignmentV(Alignment.Vertical)
+                    .Mutate(s.Swatch)
                     .ColorF(() => MemoryLegendColor(index));
+
                 Node(item)
                     .Mutate(s.MutedLabel)
+                    .AlignmentV(Alignment.Vertical)
                     .TextF(() => MemoryLegendText(index));
             }
         }
 
-        void ButtonF(EntMut parent, float width, Func<ReadOnlySpan<char>> label, Action action)
-        {
-            Node(parent)
-                .Mutate(s.Button)
-                .SizeV((width, s.ButtonHeight))
-                .TextF(label)
-                .OnPressF(action);
-        }
-
-        void MetricLabel(EntMut parent, float width, Func<ReadOnlySpan<char>> value)
+        void Stat(EntMut parent, Func<ReadOnlySpan<char>> value)
         {
             Node(parent)
                 .Mutate(s.MutedLabel)
-                .FontSizeV(s.FontSizeBody)
-                .SizeV((width, s.ButtonHeight))
-                .SizeTextRelativeV((0, 0))
-                .TextAlignmentV(Alignment.Center)
-                .TextF(value)
-                .AlignmentV(Alignment.Vertical);
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextF(value);
         }
 
         string MemoryModeName(AppMemoryOverlayMode mode) => mode switch
@@ -291,34 +244,10 @@ public class AppMemoryPanelMenu(
 
         double UsedRatio() => Ratio(session.Runner.Current.Used, session.Runner.Current.Size);
 
-        double PayloadBackingRatio() => Ratio(PayloadBytes(), session.Runner.Current.Size);
-
-        double PayloadReservedRatio() => Ratio(PayloadBytes(), ReservedBytes());
-
         double ExternalFragmentationRatio()
         {
             var freeBytes = FreeBytes();
             return freeBytes <= 0 ? 0 : 1.0 - Ratio(LargestFreeSpan(), freeBytes);
-        }
-
-        long PayloadBytes()
-        {
-            var total = 0L;
-            var ranges = session.Runner.Current.Ranges;
-            for (var i = 0; i < ranges.Length; i++)
-                total += ranges[i].Size;
-
-            return total;
-        }
-
-        long ReservedBytes()
-        {
-            var total = 0L;
-            var ranges = session.Runner.Current.Ranges;
-            for (var i = 0; i < ranges.Length; i++)
-                total += ranges[i].ReservedSize;
-
-            return total;
         }
 
         long FreeBytes()

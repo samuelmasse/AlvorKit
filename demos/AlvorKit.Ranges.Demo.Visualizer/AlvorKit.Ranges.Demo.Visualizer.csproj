@@ -10,6 +10,7 @@
         <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Ranges\AlvorKit.Ranges.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.UI\AlvorKit.UI.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.UI.Blend\AlvorKit.UI.Blend.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.UI.Generator\AlvorKit.UI.Generator.csproj"
             OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
@@ -27,6 +28,7 @@
         <Using Include="AlvorKit.Ranges" />
         <Using Include="AlvorKit.Ranges.Demo.Visualizer" />
         <Using Include="AlvorKit.UI" />
+        <Using Include="AlvorKit.UI.Blend" />
         <Using Include="AlvorKit.UI.UiSyntax">
             <Static>true</Static>
         </Using>

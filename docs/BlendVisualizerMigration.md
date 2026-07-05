@@ -38,69 +38,95 @@ the cards are illustrative; heights and colors are exact Blend tokens.
 
 ## Phase 0 — Blend Infrastructure
 
-- [ ] 0.1 Convert `BlendMetrics` from a 44-argument positional record to an
+- [x] 0.1 Convert `BlendMetrics` from a 44-argument positional record to an
       init-property record with defaults; replace the positional construction
       in `BlendStyle` with named initializers. No visual change.
-- [ ] 0.2 Add a `Scrim` token to `BlendPalette` (modal tint).
-- [ ] 0.3 Add optional `Keyboard` to `BlendStyleOptions`; Blend buttons run
-      their click on focused-Enter when it is provided. Migrate AzureTentacle's
-      `ToolbarActionButton` Enter shim onto it. Optional in the same slice:
-      disabled fill/border/cursor branches in `ButtonFill`/`ButtonBorder`.
+- [x] 0.2 Add a `Scrim` token to `BlendPalette` (modal tint).
+- [x] 0.3 Add optional `Keyboard` to `BlendStyleOptions`; Blend buttons run
+      their click on focused-Enter when it is provided (falls back to the
+      press callback when no click is set). Migrated AzureTentacle's
+      `ToolbarActionButton`/`PrimaryToolbarActionButton` shims onto it.
+      Skipped: disabled fill/border/cursor branches (nothing uses them yet).
 
 ## Phase A — Promote Existing App-Side Recipes Into BlendStyle
 
 Each step adds the recipe to `BlendStyle` and dedupes the current owner in the
 same slice.
 
-- [ ] A.1 Label family from AzureTentacle `AppStyle`: `Label`, `MutedLabel`,
+- [x] A.1 Label family from AzureTentacle `AppStyle`: `Label`, `MutedLabel`,
       `EmphasisLabel`, `CellLabel`, `MutedCellLabel`, `EmphasisCellLabel`.
-- [ ] A.2 List containers: `PanelFillList`, `PanelFitList`, `HorizontalRow`
-      from AzureTentacle; self-sizing `VerticalList`, `HorizontalList`, and
-      weighted `HorizontalFill` shapes from the Visualizer's current style.
-- [ ] A.3 `SelectableListRow` plus `ListRowFill`/`ListRowTextColor` from
-      AzureTentacle (also the future scenario-picker option row).
-- [ ] A.4 Dock scaffolding from `EditorShellMenu` local functions: `DockPanel`,
-      `TabStrip`, `Splitter`; dedupe the editor-shell demo onto them.
+- [x] A.2 List containers: `PanelFillList`, `PanelFitList`, `HorizontalRow`,
+      plus `HeaderStrip`, `InsetPanelList`, `ListBody` from AzureTentacle;
+      self-sizing `VerticalList`, `HorizontalList`, and weighted
+      `HorizontalFill` shapes from the Visualizer's old style.
+- [x] A.3 `SelectableListRow` from AzureTentacle (hover fill baked in;
+      selected fill stays a call-site `ColorF` override).
+- [x] A.4 Dock scaffolding from `EditorShellMenu` local functions: `Dock`,
+      `TabStrip`, `Splitter`, `ActiveTabAccent` (+ `ActiveTabAccentOffset`
+      metric); editor-shell demo deduped onto them.
 
 ## Phase B — New Blend Components
 
-- [ ] B.1 Modal recipes: `ModalLayer` (uses `Scrim`), `ModalPanel` (centered,
-      strong border), `ModalContent` (padded vertical list).
-- [ ] B.2 Tooltip system: move the `TooltipFV` UI component interface from
-      `demos/AlvorKit.Ranges.Demo.Visualizer/Menus/Styling/IAppUiComponents.cs`
-      into Blend (the UI generator already runs on Blend), add the tooltip
-      surface recipe, and port `AppTooltipMenu` (mouse-follow, clamped to root)
-      as `BlendTooltipMenu`.
-- [ ] B.3 `Swatch` (legend color chip) and a metric label/value row helper.
+- [x] B.1 Modal recipes: `ModalLayer` (uses `Scrim`), `ModalPanel` (centered,
+      strong border, vertical weighted list), `ModalContent` (padded list).
+      Also added a public `StrongBorder` recipe.
+- [x] B.2 Tooltip system: `IBlendUiComponents.TooltipFV` in Blend (with the
+      ECS generator analyzer wired into the Blend csproj), the `Tooltip`
+      surface recipe, and `BlendTooltipMenu` (mouse-follow, clamped to root).
+- [x] B.3 `Swatch` and `MetricRow` recipes (+ `SwatchWidth`, `SwatchHeight`,
+      `MetricRowHeight`, `ModalContentPadding`, `TooltipPadding`,
+      `InsetPanelPadding` metrics).
 
 ## Phase C — Visualizer Rebuild, Region By Region
 
-- [ ] C.1 Wiring: add the `AlvorKit.UI.Blend` project reference and `<Using>`;
-      rewrite `AppStyle : BlendStyle` (Inter + `BlendControlChrome`), keeping
-      temporary compat members so old menus still compile; add `AppLayout` for
-      dock widths and app geometry.
-- [ ] C.2 Shell frame: `AppMenu` becomes MenuBar + Toolbar + workspace docks +
-      StatusBar; `AppHeaderMenu` is deleted and its content redistributed
-      (scenario item to MenuBar, buttons to Toolbar, readouts to StatusBar).
-- [ ] C.3 Metrics dock: `AppMetricsMenu` on `PanelTitle` + metric rows.
-- [ ] C.4 Memory viewport: chip header with mode + swatch legend + aggregate
-      chips; existing strip menus slot into the body unchanged.
-- [ ] C.5 Timeline bottom dock: `TabStrip` with real switching for the five
-      overlay modes; timeline strip in the tab body.
-- [ ] C.6 Scenario picker: rebuild on `ModalLayer`/`ModalPanel`/`ModalContent`
-      with `SelectableListRow` two-line options.
-- [ ] C.7 Tooltips: consume the Blend tooltip; delete `IAppUiComponents` and
-      the app tooltip menu.
-- [ ] C.8 Cleanup: delete compat members and dead chrome colors from
-      `AppStyle`; what remains is only the allocator data palette
-      (`AllocationColor`, `CommandColor`, overlay ramps, block anatomy).
+- [x] C.1 Wiring: `AlvorKit.UI.Blend` project reference and `<Using>`;
+      `AppStyle : BlendStyle` (Inter + `BlendControlChrome` + `Keyboard`);
+      `AppLayout` for dock widths and app geometry. No compat members were
+      needed — the whole phase landed in one pass.
+- [x] C.2 Shell frame: `AppMenu` is MenuBar (brand + scenario item +
+      description) + `AppToolbarMenu` + workspace docks + `AppStatusMenu`;
+      `AppHeaderMenu` deleted. The toolbar rebuilds its controls on a new
+      `AppSession.UiRevision` so Play/Pause and toggle actives stay current.
+- [x] C.3 Metrics dock: `Dock` + `PanelTitle` + `MetricRow` label/value rows.
+- [x] C.4 Memory viewport: `HeaderStrip` with mode chip + `Swatch` legend +
+      aggregate stats; strip menus slot into the body unchanged.
+- [x] C.5 Timeline bottom dock: `TabStrip` with real switching for the five
+      overlay modes (rebuilds on `UiRevision`); caption row with last call +
+      step; timeline lane fills the tab body.
+- [x] C.6 Scenario picker: `ModalLayer`/`ModalPanel`/`PanelTitle`/
+      `ModalContent` with two-line options (reactive fill/border, accent bar).
+- [x] C.7 Tooltips: `AppTooltipMenu` is now a thin `BlendTooltipMenu`
+      subclass; `IAppUiComponents` deleted (Blend's `TooltipFV` serves the
+      strip/timeline call sites unchanged).
+- [x] C.8 Cleanup: `AppStyle` holds only the allocator data palette plus
+      `PanelInsetColor`/`RuleWidth`/`FontSizeSmall` bridges for the strip
+      rendering collaborators.
 
 ## Phase D — Verify And Document
 
-- [ ] D.1 Run the demo and compare against the design cards; fix seams.
-      Prefer AlvorSense (`docs/AlvorSense.md`) for driving and screenshotting.
+- [x] D.1 Ran via AlvorSense (screenshots in `out/alvorsense-sessions/
+      blendviz*/`): shell, tabs, tooltip, scrub, toggles, and status bar all
+      match the design. Caveat: mouse press/click dispatch is dead engine-wide
+      after the RootUi systems refactor in 6a33281 (hover, raw polling, and
+      keyboard work) — verified with focus-retention tests; needs a
+      `RootUiMouse` fix. All visualizer features remain reachable via
+      keyboard shortcuts meanwhile.
 - [ ] D.2 Update `docs/MenuAuthoring.md` / Blend docs if new guidance emerged
       (e.g. when to use dock scaffolding vs raw lists).
+
+## Deviations From The Plan
+
+- Blend recipes follow the one-arg `Mutate(s.Recipe)` convention that landed
+  in 6a33281, with static `Active*` variants + rebuild-on-revision instead of
+  `Func<bool>` reactive actives.
+- The visualizer uses `OnPressF` (old app semantics) rather than `OnClickF`
+  while click dispatch is broken; Blend's Enter activation falls back to the
+  press callback when no click callback is set.
+- Toolbar `-`/`+` use `ToolbarButton` instead of `SquareButton`: the 10px
+  square-button font drops the hyphen glyph (rasterizes to nothing) while
+  12px renders it.
+- `AppMemoryStripLabels` is currently dead code (no callers since the strip
+  texture refactor) — block labels no longer render; predates this migration.
 
 ## Stays App-Local
 

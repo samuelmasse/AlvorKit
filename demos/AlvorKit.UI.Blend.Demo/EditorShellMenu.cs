@@ -159,15 +159,9 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void DockPanel(EntMut parent, float width, string leftTitle, string rightTitle)
         {
             Node(parent, out var panel)
-                .Mutate(PanelSurface)
-                .SizeWeightTypeV(SizeWeightType.Self)
-                .SizeRelativeV((0, 1))
+                .Mutate(s.Dock)
                 .SizeV((width, 0));
             {
-                panel.Mutate()
-                    .InnerLayoutV(InnerLayout.VerticalList)
-                    .InnerSizingV(InnerSizing.VerticalWeight);
-
                 PanelTitle(panel, leftTitle, rightTitle);
                 PanelBody(panel);
             }
@@ -260,27 +254,16 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void TabStrip(EntMut parent)
         {
             Node(parent, out var tabs)
-                .SizeWeightTypeV(SizeWeightType.Self)
-                .SizeRelativeV((1, 0))
-                .SizeV((0, metrics.TabStripHeight))
-                .MarginV((0, layout.BottomDockTopInset, 0, 0))
-                .ColorV(palette.Raised);
+                .Mutate(s.TabStrip)
+                .MarginV((0, layout.BottomDockTopInset, 0, 0));
             {
-                tabs.Mutate()
-                    .InnerLayoutV(InnerLayout.HorizontalList)
-                    .InnerSpacingV(0);
-
                 Tab(tabs, "Assets", true);
                 Tab(tabs, "Console", false);
                 Tab(tabs, "Profiler", false);
                 Tab(tabs, "Timeline", false);
 
                 Node(tabs)
-                    .IsFloatingV(true)
-                    .AlignmentV(Alignment.Bottom | Alignment.Left)
-                    .SizeRelativeV((1, 0))
-                    .SizeV((0, metrics.Hairline))
-                    .ColorV(palette.Border);
+                    .Mutate(s.TabFiller);
             }
         }
 
@@ -356,13 +339,6 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
                 TextLabel(status, "Frame 6.9 ms", metrics.StatusBarHeight, false, false);
                 TextLabel(status, "Ready", metrics.StatusBarHeight, false, false);
             }
-        }
-
-        void PanelSurface(EntMut panel)
-        {
-            panel.Mutate()
-                .Mutate(s.BottomRule)
-                .ColorV(palette.Panel);
         }
 
         void PanelTitle(EntMut parent, string left, string right)
@@ -444,28 +420,16 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV(text);
             {
-                if (!active)
-                    return;
-
-                Node(tab)
-                    .IsFloatingV(true)
-                    .AlignmentV(Alignment.Top | Alignment.Left)
-                    .OffsetV((0, layout.ActiveTabAccentOffset))
-                    .SizeRelativeV((1, 0))
-                    .SizeV((0, metrics.ActiveTabAccentHeight))
-                    .ColorV(palette.Accent);
+                if (active)
+                    s.ActiveTabAccent(tab);
             }
         }
 
         void Splitter(EntMut parent, float width)
         {
             Node(parent)
-                .Mutate(s.LeftRule)
-                .Mutate(s.RightRule)
-                .SizeWeightTypeV(SizeWeightType.Self)
-                .SizeRelativeV((0, 1))
-                .SizeV((width, 0))
-                .ColorV(palette.AppBackground);
+                .Mutate(s.Splitter)
+                .SizeV((width, 0));
         }
 
         static void Spacer(EntMut parent) =>

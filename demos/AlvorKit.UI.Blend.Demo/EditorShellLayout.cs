@@ -14,5 +14,4 @@ public class EditorShellLayout
     public float AxisWidgetInset => 14f;
     public float BrandMarkSize => 13f;
     public float BottomDockTopInset => 2f;
-    public float ActiveTabAccentOffset => 1.5f;
 }

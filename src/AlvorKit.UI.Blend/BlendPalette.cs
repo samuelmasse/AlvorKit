@@ -12,7 +12,8 @@ public readonly record struct BlendPalette(
     Vec4 Accent,
     Vec4 ActiveSurface,
     Vec4 Hover,
-    Vec4 Selection)
+    Vec4 Selection,
+    Vec4 Scrim)
 {
     /// <summary>Gets the default neutral dark palette used by the editor-shell reference.</summary>
     public static BlendPalette Default { get; } = new(
@@ -26,7 +27,8 @@ public readonly record struct BlendPalette(
         Rgb(0xB9, 0x82, 0x45),
         Rgb(0x3A, 0x33, 0x2B),
         Rgb(0x2D, 0x30, 0x31),
-        Rgb(0x34, 0x38, 0x3A));
+        Rgb(0x34, 0x38, 0x3A),
+        (0.03f, 0.035f, 0.04f, 0.62f));
 
     /// <summary>Returns <paramref name="color" /> with its alpha channel replaced.</summary>
     public Vec4 WithAlpha(Vec4 color, float alpha) => (color.X, color.Y, color.Z, alpha);

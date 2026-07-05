@@ -6,54 +6,13 @@ public class BlendStyle(BlendStyleOptions options)
     private readonly Font font = options.Font;
     private readonly Font emphasisFont = options.EmphasisFont ?? options.Font;
     private readonly BlendControlChrome? chrome = options.Chrome;
+    private readonly Keyboard? keyboard = options.Keyboard;
 
     /// <summary>Gets the active color palette.</summary>
     public virtual BlendPalette Palette => BlendPalette.Default;
 
     /// <summary>Gets the active layout metrics.</summary>
-    public virtual BlendMetrics Metrics { get; } = new(
-        25f,
-        35f,
-        22f,
-        28f,
-        29f,
-        29f,
-        31f,
-        24f,
-        26f,
-        24f,
-        23f,
-        26f,
-        2f,
-        1f,
-        1f,
-        12,
-        11,
-        12,
-        11,
-        10,
-        9f,
-        8f,
-        6f,
-        4f,
-        6f,
-        10f,
-        8f,
-        2f,
-        5f,
-        4f,
-        8f,
-        16f,
-        4f,
-        (0, 0, 10f, 0),
-        (6f, 4f, 6f, 4f),
-        (10f, 0, 0, 0),
-        (0, 0, 8f, 0),
-        (7f, 2.5f, 7f, 3.5f),
-        (7f, 2f, 7f, 3f),
-        (10f, 0, 10f, 0),
-        (8f, 0, 8f, 0),
-        2f);
+    public virtual BlendMetrics Metrics { get; } = new();
 
     /// <summary>Applies the full-window vertical root layout.</summary>
     public void Root(EntMut ent) => ent.Mutate()
@@ -106,6 +65,87 @@ public class BlendStyle(BlendStyleOptions options)
         .ColorV(Palette.Raised)
         .Mutate(BottomRule);
 
+    /// <summary>Applies a vertical panel body that fills the available space.</summary>
+    public void PanelFillList(EntMut ent) => ent.Mutate()
+        .ColorV(Palette.Panel)
+        .SizeRelativeV((1, 1))
+        .InnerLayoutV(InnerLayout.VerticalList)
+        .InnerSizingV(InnerSizing.VerticalWeight)
+        .InnerSpacingV(0);
+
+    /// <summary>Applies a vertical panel section sized to its children.</summary>
+    public void PanelFitList(EntMut ent) => ent.Mutate()
+        .SizeWeightTypeV(SizeWeightType.Self)
+        .SizeRelativeV((1, 0))
+        .SizeInnerSumRelativeV((0, 1))
+        .InnerLayoutV(InnerLayout.VerticalList)
+        .InnerSpacingV(0);
+
+    /// <summary>Applies a raised horizontal header strip.</summary>
+    public void HeaderStrip(EntMut ent) => ent.Mutate()
+        .SizeWeightTypeV(SizeWeightType.Self)
+        .SizeRelativeV((1, 0))
+        .ColorV(Palette.Raised)
+        .InnerLayoutV(InnerLayout.HorizontalList)
+        .InnerSizingV(InnerSizing.HorizontalWeight)
+        .PaddingV(Metrics.PanelTitlePadding)
+        .Mutate(BottomRule);
+
+    /// <summary>Applies an inset vertical list panel with a bottom separator.</summary>
+    public void InsetPanelList(EntMut ent) => ent.Mutate()
+        .ColorV(Palette.Panel)
+        .SizeRelativeV((1, 0))
+        .SizeInnerSumRelativeV((0, 1))
+        .InnerLayoutV(InnerLayout.VerticalList)
+        .PaddingV(Metrics.InsetPanelPadding)
+        .Mutate(BottomRule);
+
+    /// <summary>Applies a padded vertical list body.</summary>
+    public void ListBody(EntMut ent) => ent.Mutate()
+        .ColorV(Palette.Panel)
+        .PaddingV((Metrics.ButtonTextPadding, Metrics.ButtonTextPadding, Metrics.ButtonTextPadding, Metrics.ButtonTextPadding))
+        .InnerLayoutV(InnerLayout.VerticalList)
+        .InnerSpacingV(Metrics.CompactSpacing);
+
+    /// <summary>Applies a vertical list sized from its children.</summary>
+    public void VerticalList(EntMut ent) => ent.Mutate()
+        .InnerLayoutV(InnerLayout.VerticalList)
+        .SizeRelativeV((0, 0))
+        .SizeInnerSumRelativeV((0, 1))
+        .SizeInnerMaxRelativeV((1, 0));
+
+    /// <summary>Applies a horizontal list sized from its children.</summary>
+    public void HorizontalList(EntMut ent) => ent.Mutate()
+        .InnerLayoutV(InnerLayout.HorizontalList)
+        .SizeRelativeV((0, 0))
+        .SizeInnerSumRelativeV((1, 0))
+        .SizeInnerMaxRelativeV((0, 1));
+
+    /// <summary>Applies a full-size weighted horizontal list.</summary>
+    public void HorizontalFill(EntMut ent) => ent.Mutate()
+        .InnerLayoutV(InnerLayout.HorizontalList)
+        .InnerSizingV(InnerSizing.HorizontalWeight)
+        .SizeRelativeV((1, 1));
+
+    /// <summary>Applies a fixed-height horizontal row.</summary>
+    public void HorizontalRow(EntMut ent) => ent.Mutate()
+        .SizeRelativeV((1, 0))
+        .InnerLayoutV(InnerLayout.HorizontalList)
+        .InnerSizingV(InnerSizing.HorizontalWeight);
+
+    /// <summary>Applies a selectable horizontal list row.</summary>
+    public void SelectableListRow(EntMut ent) => ent.Mutate()
+        .SizeRelativeV((1, 0))
+        .SizeV((0, Metrics.ButtonHeight))
+        .InnerLayoutV(InnerLayout.HorizontalList)
+        .InnerSizingV(InnerSizing.HorizontalWeight)
+        .InnerSpacingV(Metrics.LooseSpacing)
+        .PaddingV((0, 0, Metrics.ButtonTextPadding, 0))
+        .ColorF(() => ent.IsFocusedR || ent.IsHoveredR ? Palette.Hover : default)
+        .IsSelectableV(true)
+        .IsFocusableV(true)
+        .CursorF(() => CursorShape.Hand);
+
     /// <summary>Applies body text matching the HTML editor-shell reference.</summary>
     public void Text(EntMut ent) => ent.Mutate()
         .FontV(font)
@@ -132,6 +172,39 @@ public class BlendStyle(BlendStyleOptions options)
         .TextAlignmentV(Alignment.Center)
         .TextPaddingV((Metrics.CenterTextPadding, 0, Metrics.CenterTextPadding, 0));
 
+    /// <summary>Applies a text label sized from its text.</summary>
+    public void Label(EntMut ent) => ent.Mutate()
+        .Mutate(Text)
+        .SizeRelativeV((0, 0))
+        .SizeTextRelativeV((1, 1));
+
+    /// <summary>Applies a muted text label sized from its text.</summary>
+    public void MutedLabel(EntMut ent) => ent.Mutate()
+        .Mutate(MutedText)
+        .SizeRelativeV((0, 0))
+        .SizeTextRelativeV((1, 1));
+
+    /// <summary>Applies an emphasized text label sized from its text.</summary>
+    public void EmphasisLabel(EntMut ent) => ent.Mutate()
+        .Mutate(EmphasisText)
+        .SizeRelativeV((0, 0))
+        .SizeTextRelativeV((1, 1));
+
+    /// <summary>Applies a label that fills its assigned row cell.</summary>
+    public void CellLabel(EntMut ent) => ent.Mutate()
+        .Mutate(Text)
+        .SizeRelativeV((1, 1));
+
+    /// <summary>Applies a muted label that fills its assigned row cell.</summary>
+    public void MutedCellLabel(EntMut ent) => ent.Mutate()
+        .Mutate(MutedText)
+        .SizeRelativeV((1, 1));
+
+    /// <summary>Applies an emphasized label that fills its assigned row cell.</summary>
+    public void EmphasisCellLabel(EntMut ent) => ent.Mutate()
+        .Mutate(EmphasisText)
+        .SizeRelativeV((1, 1));
+
     /// <summary>Applies a menu item hit target with transparent idle fill.</summary>
     public void MenuItem(EntMut ent) => ent.Mutate()
         .Mutate(Text)
@@ -139,7 +212,8 @@ public class BlendStyle(BlendStyleOptions options)
         .IsSelectableV(true)
         .IsFocusableV(true)
         .CursorF(() => CursorShape.Hand)
-        .ColorF(() => ent.IsHoveredR || ent.IsFocusedR ? Palette.Hover : default);
+        .ColorF(() => ent.IsHoveredR || ent.IsFocusedR ? Palette.Hover : default)
+        .Mutate(ActivateOnEnter);
 
     /// <summary>Builds a compact rounded button using the standard Blend button font size.</summary>
     public void Button(EntMut ent) =>
@@ -210,7 +284,8 @@ public class BlendStyle(BlendStyleOptions options)
         .TextPaddingV((Metrics.TabTextPaddingLeft, 0, Metrics.TabTextPaddingRight, 0))
         .ColorV(Palette.Raised)
         .TextColorV(Palette.MutedText)
-        .Mutate(RightRule);
+        .Mutate(RightRule)
+        .Mutate(BottomRule);
 
     /// <summary>Applies an active bottom-dock tab surface sized from its text.</summary>
     public void ActiveTab(EntMut ent) => ent.Mutate()
@@ -223,6 +298,48 @@ public class BlendStyle(BlendStyleOptions options)
         .TextColorV(Palette.Text)
         .Mutate(RightRule);
 
+    /// <summary>Adds the accent bar that marks an active tab, sparing the tab's right separator.</summary>
+    public void ActiveTabAccent(EntMut ent) =>
+        Node(ent)
+            .IsFloatingV(true)
+            .AlignmentV(Alignment.Top | Alignment.Left)
+            .OffsetV((0, Metrics.ActiveTabAccentOffset))
+            .SizeRelativeV((1, 0))
+            .SizeV((-Metrics.Hairline, Metrics.ActiveTabAccentHeight))
+            .ColorV(Palette.Accent);
+
+    /// <summary>Applies a raised tab strip surface; tabs carry the bottom rule so active tabs stay open to the content below.</summary>
+    public void TabStrip(EntMut ent) => ent.Mutate()
+        .SizeWeightTypeV(SizeWeightType.Self)
+        .SizeRelativeV((1, 0))
+        .SizeV((0, Metrics.TabStripHeight))
+        .ColorV(Palette.Raised)
+        .InnerLayoutV(InnerLayout.HorizontalList)
+        .InnerSizingV(InnerSizing.HorizontalWeight)
+        .InnerSpacingV(0);
+
+    /// <summary>Fills the tab strip after the last tab and carries its bottom rule.</summary>
+    public void TabFiller(EntMut ent) => ent.Mutate()
+        .ColorV(default)
+        .Mutate(BottomRule);
+
+    /// <summary>Applies a vertical dock panel surface with a bottom separator.</summary>
+    public void Dock(EntMut ent) => ent.Mutate()
+        .SizeWeightTypeV(SizeWeightType.Self)
+        .SizeRelativeV((0, 1))
+        .ColorV(Palette.Panel)
+        .InnerLayoutV(InnerLayout.VerticalList)
+        .InnerSizingV(InnerSizing.VerticalWeight)
+        .Mutate(BottomRule);
+
+    /// <summary>Applies a thin vertical splitter between docks.</summary>
+    public void Splitter(EntMut ent) => ent.Mutate()
+        .SizeWeightTypeV(SizeWeightType.Self)
+        .SizeRelativeV((0, 1))
+        .ColorV(Palette.AppBackground)
+        .Mutate(LeftRule)
+        .Mutate(RightRule);
+
     /// <summary>Adds a one-pixel border around a node.</summary>
     public void Border(EntMut ent)
     {
@@ -232,21 +349,81 @@ public class BlendStyle(BlendStyleOptions options)
         RightRule(ent);
     }
 
+    /// <summary>Adds a one-pixel strong border around a node.</summary>
+    public void StrongBorder(EntMut ent)
+    {
+        Rule(ent, Alignment.Top | Alignment.Left, (1, 0), (0, Metrics.Hairline), Palette.StrongBorder);
+        Rule(ent, Alignment.Bottom | Alignment.Left, (1, 0), (0, Metrics.Hairline), Palette.StrongBorder);
+        Rule(ent, Alignment.Top | Alignment.Left, (0, 1), (Metrics.Hairline, 0), Palette.StrongBorder);
+        Rule(ent, Alignment.Top | Alignment.Right, (0, 1), (Metrics.Hairline, 0), Palette.StrongBorder);
+    }
+
     /// <summary>Adds a top hairline rule.</summary>
     public void TopRule(EntMut ent) =>
-        Rule(ent, Alignment.Top | Alignment.Left, (1, 0), (0, Metrics.Hairline));
+        Rule(ent, Alignment.Top | Alignment.Left, (1, 0), (0, Metrics.Hairline), Palette.Border);
 
     /// <summary>Adds a bottom hairline rule.</summary>
     public void BottomRule(EntMut ent) =>
-        Rule(ent, Alignment.Bottom | Alignment.Left, (1, 0), (0, Metrics.Hairline));
+        Rule(ent, Alignment.Bottom | Alignment.Left, (1, 0), (0, Metrics.Hairline), Palette.Border);
 
     /// <summary>Adds a left hairline rule.</summary>
     public void LeftRule(EntMut ent) =>
-        Rule(ent, Alignment.Top | Alignment.Left, (0, 1), (Metrics.Hairline, 0));
+        Rule(ent, Alignment.Top | Alignment.Left, (0, 1), (Metrics.Hairline, 0), Palette.Border);
 
     /// <summary>Adds a right hairline rule.</summary>
     public void RightRule(EntMut ent) =>
-        Rule(ent, Alignment.Top | Alignment.Right, (0, 1), (Metrics.Hairline, 0));
+        Rule(ent, Alignment.Top | Alignment.Right, (0, 1), (Metrics.Hairline, 0), Palette.Border);
+
+    /// <summary>Applies the full-screen tinted layer behind a modal dialog.</summary>
+    public void ModalLayer(EntMut ent) => ent.Mutate()
+        .SizeRelativeV((1, 1))
+        .InnerAlignmentSnapV(1f)
+        .ColorV(Palette.Scrim)
+        .IsSelectableV(true)
+        .IsSilentFocusableV(true);
+
+    /// <summary>Applies a centered modal dialog panel.</summary>
+    public void ModalPanel(EntMut ent) => ent.Mutate()
+        .ColorV(Palette.Panel)
+        .SizeRelativeV((0, 0))
+        .AlignmentV(Alignment.Horizontal | Alignment.Vertical)
+        .AlignmentSnapV(1f)
+        .InnerAlignmentSnapV(1f)
+        .InnerLayoutV(InnerLayout.VerticalList)
+        .InnerSizingV(InnerSizing.VerticalWeight)
+        .IsSelectableV(true)
+        .IsSilentFocusableV(true)
+        .Mutate(StrongBorder);
+
+    /// <summary>Applies a modal dialog's padded content area.</summary>
+    public void ModalContent(EntMut ent) => ent.Mutate()
+        .SizeRelativeV((1, 1))
+        .PaddingV(Metrics.ModalContentPadding)
+        .InnerLayoutV(InnerLayout.VerticalList)
+        .InnerAlignmentSnapV(1f);
+
+    /// <summary>Applies a floating tooltip surface sized from its text.</summary>
+    public void Tooltip(EntMut ent) => ent.Mutate()
+        .Mutate(Text)
+        .FontSizeV(Metrics.MutedFontSize)
+        .TextPaddingV(Metrics.TooltipPadding)
+        .SizeRelativeV((0, 0))
+        .SizeTextRelativeV((1, 1))
+        .ColorV(Palette.Raised)
+        .Mutate(StrongBorder);
+
+    /// <summary>Applies a small legend swatch; set the color at the call site.</summary>
+    public void Swatch(EntMut ent) => ent.Mutate()
+        .SizeRelativeV((0, 0))
+        .SizeV((Metrics.SwatchWidth, Metrics.SwatchHeight))
+        .AlignmentV(Alignment.Vertical);
+
+    /// <summary>Applies a fixed-height label/value metric row.</summary>
+    public void MetricRow(EntMut ent) => ent.Mutate()
+        .Mutate(Board)
+        .SizeWeightTypeV(SizeWeightType.Self)
+        .SizeRelativeV((1, 0))
+        .SizeV((0, Metrics.MetricRowHeight));
 
     private Vec4 ButtonFill(EntMut ent, bool active)
     {
@@ -311,7 +488,8 @@ public class BlendStyle(BlendStyleOptions options)
         .SizeV(size)
         .IsSelectableV(true)
         .IsFocusableV(true)
-        .CursorF(() => CursorShape.Hand);
+        .CursorF(() => CursorShape.Hand)
+        .Mutate(ActivateOnEnter);
 
     private void MeasuredButtonFrame(EntMut ent, float height, int fontSize, float horizontalPadding) => ent.Mutate()
         .Mutate(Board)
@@ -324,7 +502,31 @@ public class BlendStyle(BlendStyleOptions options)
         .TextColorV(default)
         .IsSelectableV(true)
         .IsFocusableV(true)
-        .CursorF(() => CursorShape.Hand);
+        .CursorF(() => CursorShape.Hand)
+        .Mutate(ActivateOnEnter);
+
+    private void ActivateOnEnter(EntMut ent)
+    {
+        if (keyboard == null)
+            return;
+
+        var enterWasDown = false;
+        ent.Mutate()
+            .OnUpdateF(() =>
+            {
+                var enterDown = keyboard.IsKeyDown(Keys.Enter);
+                if (ent.IsFocusedR && enterDown && !enterWasDown)
+                {
+                    var click = ent.OnClickFV.Resolve();
+                    if (click != null)
+                        click();
+                    else
+                        ent.OnPressFV.Resolve()?.Invoke();
+                }
+
+                enterWasDown = enterDown;
+            });
+    }
 
     private void RoundedControlSurface(EntMut ent, Vec2 size, bool active)
     {
@@ -401,14 +603,14 @@ public class BlendStyle(BlendStyleOptions options)
         ControlRule(ent, Alignment.Top | Alignment.Right, (0, 1), (Metrics.Hairline, 0), active);
     }
 
-    private void Rule(EntMut ent, Alignment alignment, Vec2 relativeSize, Vec2 size) =>
+    private static void Rule(EntMut ent, Alignment alignment, Vec2 relativeSize, Vec2 size, Vec4 color) =>
         Node(ent)
             .IsFloatingV(true)
             .IsPostSizedV(true)
             .AlignmentV(alignment)
             .SizeRelativeV(relativeSize)
             .SizeV(size)
-            .ColorV(Palette.Border);
+            .ColorV(color);
 
     private void ControlRule(EntMut ent, Alignment alignment, Vec2 relativeSize, Vec2 size, bool active) =>
         Node(ent)
