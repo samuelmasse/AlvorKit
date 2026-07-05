@@ -1,5 +1,6 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
+/// <summary>Builds the playback/speed/toggle tool strip; rebuilds its controls when the session UI revision changes.</summary>
 [App]
 public class AppToolbarMenu(
     RootText text,
@@ -10,7 +11,6 @@ public class AppToolbarMenu(
     public void Create(EntMut root)
     {
         const int pendingRevision = -1;
-        const float readoutWidth = 48f;
 
         Node(root, out var toolbar)
             .Mutate(s.Toolbar)
@@ -35,61 +35,134 @@ public class AppToolbarMenu(
 
         void BuildControls(EntMut controls)
         {
-            ActionButton(controls, session.Playing ? "Pause" : "Play", session.TogglePlayback, session.Playing);
-            ActionButton(controls, "Back", session.StepBackward);
-            ActionButton(controls, "Step", session.StepForward);
-            ActionButton(controls, "Reset", session.ResetScenario);
-            Separator(controls);
-            ActionButton(controls, "Prev", session.PreviousScenario);
-            ActionButton(controls, "Next", session.NextScenario);
-            ActionButton(controls, "Pack", session.JumpToPack);
-            Separator(controls);
-            ValueLabel(controls, "speed");
-            SquareButton(controls, "-", session.Slower);
-            ValueReadout(controls, () => text.Format("{0:0.##}x", session.Speed));
-            SquareButton(controls, "+", session.Faster);
-            Separator(controls);
-            ActionButton(controls, "Labels", session.ToggleLabels, session.ShowLabels);
-            ActionButton(controls, "Padding", session.TogglePadding, session.ShowPadding);
-            Spacer(controls);
-            ValueLabel(controls, "ui");
-            SquareButton(controls, "-", uiScale.ScaleDown);
-            ValueReadout(controls, () => text.Format("{0:F2}x", uiScale.Scale));
-            SquareButton(controls, "+", uiScale.ScaleUp);
-        }
-
-        void ActionButton(EntMut parent, string label, Action action, bool active = false)
-        {
-            Node(parent)
-                .Mutate(active ? s.ActiveToolbarButton : s.ToolbarButton)
+            Node(controls)
+                .Mutate(session.Playing ? s.ActiveToolbarButton : s.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
-                .TextV(label)
-                .OnPressF(action);
-        }
+                .TextV(session.Playing ? "Pause" : "Play")
+                .OnPressF(session.TogglePlayback);
 
-        void SquareButton(EntMut parent, string label, Action action)
-        {
-            Node(parent)
+            Node(controls)
                 .Mutate(s.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
-                .TextV(label)
-                .OnPressF(action);
+                .TextV("Back")
+                .OnPressF(session.StepBackward);
+
+            Node(controls)
+                .Mutate(s.ToolbarButton)
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("Step")
+                .OnPressF(session.StepForward);
+
+            Node(controls)
+                .Mutate(s.ToolbarButton)
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("Reset")
+                .OnPressF(session.ResetScenario);
+
+            Separator(controls);
+            Node(controls)
+                .Mutate(s.ToolbarButton)
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("Prev")
+                .OnPressF(session.PreviousScenario);
+
+            Node(controls)
+                .Mutate(s.ToolbarButton)
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("Next")
+                .OnPressF(session.NextScenario);
+
+            Node(controls)
+                .Mutate(s.ToolbarButton)
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("Pack")
+                .OnPressF(session.JumpToPack);
+
+            Separator(controls);
+            SpeedGroup(controls);
+            Separator(controls);
+            Node(controls)
+                .Mutate(session.ShowLabels ? s.ActiveToolbarButton : s.ToolbarButton)
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("Labels")
+                .OnPressF(session.ToggleLabels);
+
+            Node(controls)
+                .Mutate(session.ShowPadding ? s.ActiveToolbarButton : s.ToolbarButton)
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("Padding")
+                .OnPressF(session.TogglePadding);
+
+            Node(controls)
+                .ColorV(default);
+
+            UiScaleGroup(controls);
         }
 
-        void ValueLabel(EntMut parent, string label)
+        void SpeedGroup(EntMut controls)
         {
-            Node(parent)
+            Node(controls)
                 .Mutate(s.MutedLabel)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
-                .TextV(label);
+                .TextV("speed");
+
+            Node(controls)
+                .Mutate(s.ToolbarButton)
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("-")
+                .OnPressF(session.Slower);
+
+            Readout(controls, () => text.Format("{0:0.##}x", session.Speed));
+
+            Node(controls)
+                .Mutate(s.ToolbarButton)
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("+")
+                .OnPressF(session.Faster);
         }
 
-        void ValueReadout(EntMut parent, Func<ReadOnlySpan<char>> value)
+        void UiScaleGroup(EntMut controls)
         {
-            Node(parent)
+            Node(controls)
+                .Mutate(s.MutedLabel)
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("ui");
+
+            Node(controls)
+                .Mutate(s.ToolbarButton)
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("-")
+                .OnPressF(uiScale.ScaleDown);
+
+            Readout(controls, () => text.Format("{0:F2}x", uiScale.Scale));
+
+            Node(controls)
+                .Mutate(s.ToolbarButton)
+                .AlignmentV(Alignment.Vertical)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("+")
+                .OnPressF(uiScale.ScaleUp);
+        }
+
+        void Readout(EntMut controls, Func<ReadOnlySpan<char>> value)
+        {
+            const float readoutWidth = 48f;
+
+            Node(controls)
                 .Mutate(s.Text)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
@@ -99,18 +172,16 @@ public class AppToolbarMenu(
                 .TextF(value);
         }
 
-        void Separator(EntMut parent)
+        void Separator(EntMut controls)
         {
-            Node(parent)
+            const float separatorInsetY = 2f;
+
+            Node(controls)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 1))
                 .SizeV((s.Metrics.Hairline, 0))
-                .MarginV((s.Metrics.CompactSpacing, 2f, s.Metrics.CompactSpacing, 2f))
+                .MarginV((s.Metrics.CompactSpacing, separatorInsetY, s.Metrics.CompactSpacing, separatorInsetY))
                 .ColorV(s.Palette.Border);
         }
-
-        static void Spacer(EntMut parent) =>
-            Node(parent)
-                .ColorV(default);
     }
 }

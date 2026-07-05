@@ -1,5 +1,6 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
+/// <summary>Builds the editor shell: menu bar, toolbar, workspace docks, and status bar.</summary>
 [App]
 public class AppMenu(
     AppStyle s,

@@ -1,5 +1,6 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
+/// <summary>Builds the overview and zoomed backing-store strips; rebuilds when the session visual revision changes.</summary>
 [App]
 public class AppMemoryChartsMenu(
     RootText text,

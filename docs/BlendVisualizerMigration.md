@@ -125,8 +125,10 @@ same slice.
 - Toolbar `-`/`+` use `ToolbarButton` instead of `SquareButton`: the 10px
   square-button font drops the hyphen glyph (rasterizes to nothing) while
   12px renders it.
-- `AppMemoryStripLabels` is currently dead code (no callers since the strip
-  texture refactor) — block labels no longer render; predates this migration.
+- `AppMemoryStripLabels` had no callers since the strip texture refactor
+  (block labels stopped rendering before this migration); the dead class was
+  deleted during cleanup. The Labels toolbar toggle currently affects nothing
+  visible — re-wire or remove it when deciding how strip labels should return.
 
 ## Stays App-Local
 

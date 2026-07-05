@@ -46,6 +46,8 @@ public class AppSession
     public bool ShowPadding => showPadding;
     public bool ScenarioPickerOpen => scenarioPickerOpen;
     public int VisualRevision => visualRevision;
+
+    /// <summary>Gets a counter that changes when chrome-affecting state (playback, toggles, timeline mode) changes.</summary>
     public int UiRevision => uiRevision;
     public AppMemoryOverlayMode MemoryOverlayMode => memoryOverlayMode;
     public AppTimelineOverlayMode TimelineOverlayMode => timelineOverlayMode;
@@ -70,6 +72,7 @@ public class AppSession
         uiRevision++;
     }
 
+    /// <summary>Stops playback when running, refreshing playback-dependent chrome.</summary>
     private void Pause()
     {
         if (!playing)
@@ -106,6 +109,7 @@ public class AppSession
         uiRevision++;
     }
 
+    /// <summary>Switches the timeline overlay to a specific mode.</summary>
     public void SelectTimelineOverlayMode(AppTimelineOverlayMode mode)
     {
         if (timelineOverlayMode == mode)

@@ -1,5 +1,6 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
+/// <summary>Builds the left allocator-state dock with label/value rows for the latest operation and store totals.</summary>
 [App]
 public class AppMetricsMenu(
     RootText text,
@@ -54,7 +55,9 @@ public class AppMetricsMenu(
                 Metric(body, "args", () => ArgumentSummary(session.Runner.LastCommand));
                 Metric(body, "kind", () => text.Format("{0}", session.Runner.LastCommand.Kind));
 
-                Spacer(body);
+                Node(body)
+                    .Mutate(SectionGap);
+
                 Metric(body, "block slot", () => TouchedValue(range => range.Slot));
                 Metric(body, "request B", () => RequestValue(session.Runner));
                 Metric(body, "logical B", () => TouchedValue(range => range.Size));
@@ -63,7 +66,9 @@ public class AppMetricsMenu(
                 Metric(body, "reserved B", () => TouchedValue(range => range.ReservedSize));
                 Metric(body, "padding B", () => TouchedValue(range => range.ReservedSize - range.CapacitySize));
 
-                Spacer(body);
+                Node(body)
+                    .Mutate(SectionGap);
+
                 Metric(body, "backing size", () => text.Format("{0}", session.Runner.Current.Size));
                 Metric(body, "used", () => text.Format("{0}", session.Runner.Current.Used));
                 Metric(body, "live ranges", () => text.Format("{0}", session.Runner.Current.LiveCount));
@@ -95,9 +100,9 @@ public class AppMetricsMenu(
             }
         }
 
-        void Spacer(EntMut parent)
+        void SectionGap(EntMut gap)
         {
-            Node(parent)
+            gap.Mutate()
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((1, 0))
                 .SizeV((0, s.Metrics.LooseSpacing));

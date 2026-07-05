@@ -1,5 +1,6 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
+/// <summary>Builds the scrubbable command timeline lane with playhead, hover cell, and progress shade.</summary>
 [App]
 public class AppTimelineMenu(
     RootUiMouse uiMouse,

@@ -1,5 +1,6 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
+/// <summary>Builds the bottom status strip with frame, playback, scenario, and ui-scale readouts.</summary>
 [App]
 public class AppStatusMenu(
     RootText text,
@@ -17,29 +18,52 @@ public class AppStatusMenu(
             .InnerSpacingV(s.Metrics.StatusSpacing)
             .PaddingV(s.Metrics.StatusBarPadding);
         {
-            Item(status, true, () => text.Format("{0} FPS", metrics.FrameWindow.Ticks));
-            Item(status, false, () => session.Playing ? "playing" : "paused");
-            Item(status, false, () => text.Format("scenario {0}/{1}", session.ScenarioIndex + 1, session.ScenarioCount));
-            Item(status, false, () => text.Format("step {0}/{1}", session.Runner.StepIndex, session.Runner.Scenario.Commands.Length));
-            Item(status, false, () => text.Format("speed {0:0.##}x", session.Speed));
-            Spacer(status);
-            Item(status, false, () => text.Format("ui {0:F2}x", uiScale.Scale));
-            Item(status, false, () => "space play  L labels  A padding  M/T modes");
+            Node(status)
+                .Mutate(s.EmphasisText)
+                .Mutate(StatusItem)
+                .TextF(() => text.Format("{0} FPS", metrics.FrameWindow.Ticks));
+
+            Node(status)
+                .Mutate(s.MutedText)
+                .Mutate(StatusItem)
+                .TextF(() => session.Playing ? "playing" : "paused");
+
+            Node(status)
+                .Mutate(s.MutedText)
+                .Mutate(StatusItem)
+                .TextF(() => text.Format("scenario {0}/{1}", session.ScenarioIndex + 1, session.ScenarioCount));
+
+            Node(status)
+                .Mutate(s.MutedText)
+                .Mutate(StatusItem)
+                .TextF(() => text.Format("step {0}/{1}", session.Runner.StepIndex, session.Runner.Scenario.Commands.Length));
+
+            Node(status)
+                .Mutate(s.MutedText)
+                .Mutate(StatusItem)
+                .TextF(() => text.Format("speed {0:0.##}x", session.Speed));
+
+            Node(status)
+                .ColorV(default);
+
+            Node(status)
+                .Mutate(s.MutedText)
+                .Mutate(StatusItem)
+                .TextF(() => text.Format("ui {0:F2}x", uiScale.Scale));
+
+            Node(status)
+                .Mutate(s.MutedText)
+                .Mutate(StatusItem)
+                .TextV("space play  L labels  A padding  M/T modes");
         }
 
-        void Item(EntMut parent, bool strong, Func<ReadOnlySpan<char>> value)
+        void StatusItem(EntMut item)
         {
-            Node(parent)
-                .Mutate(strong ? s.EmphasisText : s.MutedText)
+            item.Mutate()
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 1))
                 .SizeTextRelativeV((1, 0))
-                .TextPaddingV((0, 0, s.Metrics.RightGlyphPadding, 0))
-                .TextF(value);
+                .TextPaddingV((0, 0, s.Metrics.RightGlyphPadding, 0));
         }
-
-        static void Spacer(EntMut parent) =>
-            Node(parent)
-                .ColorV(default);
     }
 }

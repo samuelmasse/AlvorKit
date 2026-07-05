@@ -1,5 +1,6 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
+/// <summary>Binds the Shift +/- keyboard shortcuts to ui-scale changes.</summary>
 [App]
 public class AppUiScaleMenu(RootKeyboard keyboard, AppUiScale uiScale)
 {

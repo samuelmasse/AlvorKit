@@ -1,5 +1,6 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
+/// <summary>Builds one memory strip: the rendered block texture, active-slot frame, and outline.</summary>
 [App]
 public class AppMemoryStripMenu(
     AppStyle s,
