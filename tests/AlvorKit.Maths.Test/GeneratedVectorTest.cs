@@ -303,7 +303,7 @@ public sealed class GeneratedVectorTest
     public void GeneratedPromotedArithmeticOperators_FollowScalarPromotion()
     {
         Assert.AreEqual(new Vec2i64(11L, 21L), new Vec2u(10u, 20u) + 1);
-        Assert.AreEqual(new Vec2i64(9L, 18L), new Vec2u(10u, 20u) - new Vec2i(1, 2));
+        Assert.AreEqual(new Vec2i64(9L, 18L), new Vec2u(10u, 20u) - new Vec2i64(1L, 2L));
         Assert.AreEqual(new Vec2(5f, 10f), new Vec2u(10u, 20u) * 0.5f);
         Assert.AreEqual(new Vec2(6f, 3f), 12f / new Vec2u(2u, 4u));
         Assert.AreEqual(new Vec3(2.5f, 3.5f, 4.5f), new Vec3u(1u, 2u, 3u) + 1.5f);

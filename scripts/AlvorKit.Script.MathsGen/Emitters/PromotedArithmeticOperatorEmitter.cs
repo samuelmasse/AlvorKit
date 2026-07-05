@@ -64,6 +64,15 @@ internal static class PromotedArithmeticOperatorEmitter
         if (resultScalar is null || ScalarPromotion.ExistingVectorOperatorCovers(left.Scalar, right.Scalar, resultScalar))
             return;
 
+        // Integer pairs with no implicit conversion in either direction (signed vs
+        // unsigned of the same or smaller size) make tuple literals ambiguous: a
+        // non-negative constant tuple converts to both vector types and overload
+        // resolution has no betterness between them, so no operator is generated.
+        if (left.Scalar.IsInteger && right.Scalar.IsInteger &&
+            !VectorCatalog.IsImplicitConversion(left.Scalar, right.Scalar) &&
+            !VectorCatalog.IsImplicitConversion(right.Scalar, left.Scalar))
+            return;
+
         var target = left with { Scalar = resultScalar };
         members.Append(Operator(
             $"Applies C#-promoted {OperatorDescription(op)} component by component.",

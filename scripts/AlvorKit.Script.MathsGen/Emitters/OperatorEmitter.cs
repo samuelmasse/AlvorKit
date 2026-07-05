@@ -193,6 +193,15 @@ internal static class OperatorEmitter
         if (resultScalar is null || ScalarPromotion.ExistingVectorOperatorCovers(left.Scalar, right.Scalar, resultScalar))
             return;
 
+        // Integer pairs with no implicit conversion in either direction (signed vs
+        // unsigned of the same or smaller size) make tuple literals ambiguous: a
+        // non-negative constant tuple converts to both vector types and overload
+        // resolution has no betterness between them, so no operator is generated.
+        if (left.Scalar.IsInteger && right.Scalar.IsInteger &&
+            !VectorCatalog.IsImplicitConversion(left.Scalar, right.Scalar) &&
+            !VectorCatalog.IsImplicitConversion(right.Scalar, left.Scalar))
+            return;
+
         var boolVector = left with { Scalar = VectorCatalog.Bool };
         members.Append(Operator($"Returns a mask containing component-wise C#-promoted {OperatorDescription(op)} results.", left.BoolTypeName, op,
             $"{left.TypeName} left, {right.TypeName} right",

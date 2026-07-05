@@ -83,6 +83,17 @@ public sealed class Vec3iTest
         Assert.IsTrue(left != right);
     }
 
+    /// <summary>Non-negative constant tuples resolve to the same-scalar operator without signed-unsigned ambiguity.</summary>
+    [TestMethod]
+    public void TupleOperands_ResolveWithoutSignedUnsignedAmbiguity()
+    {
+        var loc = new Vec3i(4, 5, 6);
+        Assert.AreEqual(new Vec3i(4, 5, 5), loc - (0, 0, 1));
+        Assert.AreEqual(new Vec3i(4, 5, 7), loc + (0, 0, 1));
+        Assert.AreEqual(new Vec3b(false, false, false), loc < (1, 1, 1));
+        Assert.AreEqual(new Vec3u(4u, 5u, 5u), new Vec3u(4u, 5u, 6u) - (0, 0, 1));
+    }
+
     /// <summary>Bitwise and shift operators apply to each component independently.</summary>
     [TestMethod]
     public void BitwiseOperators_Work()
