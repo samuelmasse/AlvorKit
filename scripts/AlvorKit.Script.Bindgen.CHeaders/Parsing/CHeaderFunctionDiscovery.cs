@@ -6,6 +6,9 @@ internal sealed class CHeaderFunctionDiscovery(
     CHeaderParseState state,
     CHeaderTypeMapper types)
 {
+    /// <summary>Maps native function names to their configured platform label.</summary>
+    private readonly Dictionary<string, string> platformByFunction = PlatformLookup(config);
+
     /// <summary>Adds supported functions from the selected declarations.</summary>
     public void Discover(List<Decl> declarations)
     {
@@ -79,7 +82,24 @@ internal sealed class CHeaderFunctionDiscovery(
             [.. boundParameters.OfType<BindingParameter>()],
             XmlDocComment.Parse(function.Handle.RawCommentText.ToString()),
             ReturnsCString: returnType == "nint" && ReturnsCString(function.ReturnType.Handle),
-            IsAdvanced: config.AdvancedFunctions.Contains(function.Name, StringComparer.Ordinal));
+            IsAdvanced: config.AdvancedFunctions.Contains(function.Name, StringComparer.Ordinal),
+            Platform: platformByFunction.GetValueOrDefault(function.Name));
+    }
+
+    /// <summary>Builds the function-to-platform lookup, rejecting functions listed under multiple platforms.</summary>
+    private static Dictionary<string, string> PlatformLookup(BindgenConfig config)
+    {
+        var lookup = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var (platform, functions) in config.PlatformFunctions)
+        {
+            foreach (var function in functions)
+            {
+                if (!lookup.TryAdd(function, platform))
+                    throw new InvalidOperationException(
+                        $"platformFunctions lists {function} under both {lookup[function]} and {platform}.");
+            }
+        }
+        return lookup;
     }
 
     /// <summary>Returns true when the raw pointer return can drive C-string convenience overloads.</summary>

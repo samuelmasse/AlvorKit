@@ -97,6 +97,84 @@ public class AppMemoryLegend(AppStyle s, AppSession session)
         _ => default,
     };
 
+    /// <summary>Gets the tooltip text of a legend entry for the active mode.</summary>
+    public string EntryTooltip(int index) => session.MemoryOverlayMode switch
+    {
+        AppMemoryOverlayMode.Allocations => index switch
+        {
+            0 => "free block\nreusable gap between reservations",
+            1 => "live payload\nbytes a caller allocated and can use\neach slot gets its own color",
+            2 => "retained capacity\nspare capacity kept after a shrink",
+            3 => "padding\nalignment overhead around payloads",
+            _ => "latest request\nwhite overlay marks the block the last command touched",
+        },
+        AppMemoryOverlayMode.Occupancy => index switch
+        {
+            0 => "free\nno reservation covers these bytes",
+            1 => "reserved\nblock footprint without live payload",
+            2 => "payload\nbytes callers are actively using",
+            3 => "dense\npayload dominates this stretch of the store",
+            _ => "active\nbytes touched by the latest command",
+        },
+        AppMemoryOverlayMode.Density => index switch
+        {
+            0 => "empty\nno payload in this stretch",
+            1 => "low density\nmostly free with some payload",
+            2 => "mixed density\nroughly half payload",
+            3 => "full density\npayload fills this stretch",
+            _ => "",
+        },
+        AppMemoryOverlayMode.Efficiency => index switch
+        {
+            0 => "free\nno reservation here",
+            1 => "waste\nreserved but barely used: padding or retained slack",
+            2 => "mixed\npartly efficient reservations",
+            3 => "efficient\npayload fills the reservation",
+            _ => "",
+        },
+        AppMemoryOverlayMode.Fragmentation => index switch
+        {
+            0 => "occupied\nreserved by live blocks",
+            1 => "tiny holes\nfree gaps too small for most requests",
+            2 => "medium holes\nmid-sized free gaps",
+            3 => "large holes\nbig reusable free gaps",
+            _ => "tail\nthe unused tail of the store",
+        },
+        AppMemoryOverlayMode.Slack => index switch
+        {
+            0 => "free\nno reservation here",
+            1 => "payload\nbytes callers use",
+            2 => "retained\nshrink slack kept for regrowth",
+            3 => "padding\nalignment slack",
+            _ => "latest\nblock touched by the last command",
+        },
+        AppMemoryOverlayMode.Churn => index switch
+        {
+            0 => "free\nno reservation here",
+            1 => "idle live\nallocations untouched by recent commands",
+            2 => "recent\nslots touched by the last commands",
+            3 => "latest\nslot touched by the newest command",
+            _ => "",
+        },
+        AppMemoryOverlayMode.Outliers => index switch
+        {
+            0 => "free\nno reservation here",
+            1 => "normal\ntypical slots",
+            2 => "outlier\nheavy slots: many ops, reallocs, or large sizes",
+            3 => "severe\nstrongest outlier signal",
+            _ => "",
+        },
+        AppMemoryOverlayMode.Relocation => index switch
+        {
+            0 => "free\nno reservation here",
+            1 => "reused\nblock stayed at its previous address",
+            2 => "moved\nblock relocated by the last command",
+            3 => "new\nblock created by the last command",
+            _ => "unchanged\nbytes not touched by the last command",
+        },
+        _ => "",
+    };
+
     /// <summary>Gets the label of a legend entry for the active mode.</summary>
     public string EntryLabel(int index) => session.MemoryOverlayMode switch
     {

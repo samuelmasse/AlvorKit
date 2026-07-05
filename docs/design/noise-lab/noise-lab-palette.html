@@ -1,0 +1,80 @@
+<!-- @dsCard group="Foundations" name="Noise Lab data palette" subtitle="Ramp presets + viewport/histogram colors — app-local, chrome stays BlendPalette" width="960" height="620" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Noise Lab data palette</title>
+<style>
+  :root {
+    --bg:#181818; --panel:#202122; --raised:#282A2B; --border:#36393A; --strong:#4A4E50;
+    --text:#D7D7D2; --muted:#8D918E; --accent:#B98245; --active:#3A332B; --hover:#2D3031; --selection:#34383A;
+  }
+  * { box-sizing:border-box; margin:0; }
+  body {
+    width:960px; background:var(--bg); color:var(--text); padding:0 0 18px;
+    font:12px/1.35 Inter,"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .sb { font-weight:600; }
+  .mut { color:var(--muted); font-size:11px; }
+  .sheethead { height:35px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; padding:0 14px; }
+  .sec { margin:14px 14px 0; border:1px solid var(--border); }
+  .sechead { height:28px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; padding:0 8px; }
+  .secbody { background:var(--panel); padding:14px; }
+
+  .ramp { display:flex; align-items:center; gap:9px; margin-bottom:8px; }
+  .ramp:last-child { margin-bottom:0; }
+  .ramp .rl { width:104px; flex:0 0 104px; font-size:11px; color:var(--muted); }
+  .ramp .rb { height:16px; flex:1; border:1px solid rgba(255,255,255,.09); }
+  .ramp .rn { width:300px; flex:0 0 300px; font-size:10px; color:var(--muted); padding-left:2px; }
+
+  .swrow { display:flex; gap:8px; flex-wrap:wrap; }
+  .csw { display:flex; flex-direction:column; gap:3px; align-items:center; }
+  .csw .s { width:44px; height:22px; border:1px solid rgba(255,255,255,.09); }
+  .csw .n { font-size:10px; color:var(--muted); }
+
+  .foot { margin:14px 14px 0; font-size:11px; color:var(--muted); line-height:1.6; }
+  .foot b { color:var(--text); font-weight:600; }
+</style>
+</head>
+<body>
+
+  <div class="sheethead">
+    <span class="sb">Noise Lab &#8212; data palette</span>
+    <span class="mut">app-local like the Visualizer's allocator colors; Blend chrome tokens are untouched</span>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="sb">Ramp presets &#8212; RampColor(t) maps normalized noise to RGBA</span><span class="mut">Ramp dropdown entries</span></div>
+    <div class="secbody">
+      <div class="ramp"><span class="rl">Grayscale</span><div class="rb" style="background:linear-gradient(90deg,#050505,#FAFAFA)"></div><span class="rn">default &#183; matches raw float export</span></div>
+      <div class="ramp"><span class="rl">Terrain</span><div class="rb" style="background:linear-gradient(90deg,#0E2E4A 0%,#1C5A7A 32%,#2E86A0 44%,#C9B27C 50%,#6F9440 58%,#4E7A38 70%,#6E6659 82%,#8C8578 90%,#EDEDE8 100%)"></div><span class="rn">deep water &#8594; shore &#8594; grass &#8594; rock &#8594; snow; sea level pinned at t = 0.5</span></div>
+      <div class="ramp"><span class="rl">Magma</span><div class="rb" style="background:linear-gradient(90deg,#000004,#1D1147 20%,#51127C 40%,#822681 55%,#B63679 70%,#E65164 82%,#FB8861 90%,#FEC287 96%,#FCFDBF)"></div><span class="rn">perceptual heat &#183; good for density/erosion masks</span></div>
+      <div class="ramp"><span class="rl">Viridis</span><div class="rb" style="background:linear-gradient(90deg,#440154,#414487 25%,#2A788E 50%,#22A884 70%,#7AD151 87%,#FDE725)"></div><span class="rn">perceptual uniform &#183; the analysis default</span></div>
+      <div class="ramp"><span class="rl">Two-tone</span><div class="rb" style="background:linear-gradient(90deg,#181818,#B98245)"></div><span class="rn">AppBackground &#8594; Accent &#183; for previews embedded in UI mocks</span></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="sb">Viewport &amp; histogram</span><span class="mut">single-purpose colors</span></div>
+    <div class="secbody">
+      <div class="swrow">
+        <div class="csw"><span class="s" style="background:#FFF58C"></span><span class="n">probe / markers</span></div>
+        <div class="csw"><span class="s" style="background:rgba(255,245,140,.28)"></span><span class="n">crosshair lines</span></div>
+        <div class="csw"><span class="s" style="background:#4E9BC8"></span><span class="n">histogram bars</span></div>
+        <div class="csw"><span class="s" style="background:#000000"></span><span class="n">viewport backing</span></div>
+        <div class="csw"><span class="s" style="background:#B98245; border-style:dashed; border-color:#B98245; background:transparent"></span><span class="n">tile seam guide</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>Rules:</b> ramps and probe colors are Noise Lab semantics and stay in the demo, exactly like the Visualizer's
+    allocator palette. The probe marker reuses the Visualizer's highlight yellow (#FFF58C) on purpose &#8212; "look here"
+    stays one color across Blend apps. Ramp swatches inside DropdownField options render with the same 22&#215;10
+    gradient chip used in the closed field.
+  </div>
+
+</body>
+</html>

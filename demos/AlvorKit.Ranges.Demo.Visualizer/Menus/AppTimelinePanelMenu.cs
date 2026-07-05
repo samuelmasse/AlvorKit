@@ -71,17 +71,37 @@ public class AppTimelinePanelMenu(
 
         void BuildTabs(EntMut tabRow)
         {
-            Tab(tabRow, AppTimelineOverlayMode.Commands, "Commands");
-            Tab(tabRow, AppTimelineOverlayMode.Used, "Used");
-            Tab(tabRow, AppTimelineOverlayMode.Efficiency, "Efficiency");
-            Tab(tabRow, AppTimelineOverlayMode.FreeBlocks, "Free Blocks");
-            Tab(tabRow, AppTimelineOverlayMode.Events, "Events");
+            Tab(
+                tabRow,
+                AppTimelineOverlayMode.Commands,
+                "Commands",
+                "commands overlay\none cell per scripted command, colored by kind\nshortcut: T cycles modes");
+            Tab(
+                tabRow,
+                AppTimelineOverlayMode.Used,
+                "Used",
+                "used overlay\nstore usage after each command as a heat ramp");
+            Tab(
+                tabRow,
+                AppTimelineOverlayMode.Efficiency,
+                "Efficiency",
+                "efficiency overlay\npayload versus reserved bytes over time");
+            Tab(
+                tabRow,
+                AppTimelineOverlayMode.FreeBlocks,
+                "Free Blocks",
+                "free blocks overlay\nfree gap count after each command");
+            Tab(
+                tabRow,
+                AppTimelineOverlayMode.Events,
+                "Events",
+                "events overlay\nmarks pack compactions and store resizes");
 
             Node(tabRow)
                 .Mutate(s.TabFiller);
         }
 
-        void Tab(EntMut parent, AppTimelineOverlayMode mode, string label)
+        void Tab(EntMut parent, AppTimelineOverlayMode mode, string label, string tooltip)
         {
             var active = session.TimelineOverlayMode == mode;
             Node(parent, out var tab)
@@ -91,6 +111,7 @@ public class AppTimelinePanelMenu(
                 .IsFocusableV(true)
                 .CursorF(() => CursorShape.Hand)
                 .TextV(label)
+                .TooltipV(tooltip)
                 .OnPressF(() => session.SelectTimelineOverlayMode(mode));
             {
                 if (active)

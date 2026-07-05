@@ -31,8 +31,17 @@ internal static class BindingDocs
         if (function.ReturnType != "void")
             output.AppendLine($"    /// <returns>{ReturnText(function)}</returns>");
         if (function.Documentation?.Remarks is { } remarks)
-            Remarks(output, remarks);
+            Remarks(output, remarks, PlatformNote(function));
+        else if (PlatformNote(function) is { } note)
+            output.AppendLine($"    /// <remarks>{note}</remarks>");
     }
+
+    /// <summary>Returns the remark sentence describing a platform-specific native export, or null when always exported.</summary>
+    private static string? PlatformNote(BindingFunction function) =>
+        function.Platform is { } platform
+            ? $"Platform-specific: only {platform} builds of the native library export <c>{function.NativeName}</c>; "
+                + "calling it elsewhere throws <c>EntryPointNotFoundException</c>."
+            : null;
 
     /// <summary>Emits inherited documentation and standard convenience-overload remarks.</summary>
     public static void InheritedConvenience(StringBuilder output, string cref, string nativeName, string details)
@@ -81,10 +90,13 @@ internal static class BindingDocs
     }
 
     /// <summary>Emits wrapped remark paragraphs so large upstream docs stay readable in generated source.</summary>
-    private static void Remarks(StringBuilder output, string remarks)
+    private static void Remarks(StringBuilder output, string remarks, string? extraParagraph = null)
     {
+        var paragraphs = RemarkParagraphs(remarks);
+        if (extraParagraph is not null)
+            paragraphs = paragraphs.Append(extraParagraph);
         output.AppendLine("    /// <remarks>");
-        foreach (var paragraph in RemarkParagraphs(remarks))
+        foreach (var paragraph in paragraphs)
         {
             output.AppendLine("    /// <para>");
             foreach (var line in WrapXmlDocLine(paragraph))

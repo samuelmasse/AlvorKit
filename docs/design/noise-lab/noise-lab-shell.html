@@ -1,0 +1,308 @@
+<!-- @dsCard group="Noise Lab" name="Editor shell" subtitle="FastNoise2 texture designer on Blend — metadata-driven parameter dock, live preview, presets" width="1440" height="900" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Noise Lab — Blend editor shell</title>
+<style>
+  :root {
+    --bg:#181818; --panel:#202122; --raised:#282A2B; --border:#36393A; --strong:#4A4E50;
+    --text:#D7D7D2; --muted:#8D918E; --accent:#B98245; --active:#3A332B; --hover:#2D3031; --selection:#34383A;
+    --probe:#FFF58C; --histo:#4E9BC8;
+  }
+  * { box-sizing:border-box; margin:0; }
+  html,body { height:100%; }
+  body {
+    width:1440px; height:900px; overflow:hidden; background:var(--bg); color:var(--text);
+    font:12px/1.35 Inter,"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; display:flex; flex-direction:column;
+  }
+  .sb { font-weight:600; }
+  .mut { color:var(--muted); font-size:11px; }
+
+  /* ---- menu bar (25) ---- */
+  .menubar { height:25px; flex:0 0 25px; background:var(--panel); border-bottom:1px solid var(--border);
+    display:flex; align-items:stretch; padding-right:10px; }
+  .brand { width:176px; display:flex; align-items:center; gap:8px; padding-left:10px;
+    border-right:1px solid var(--border); }
+  .brandmark { width:13px; height:13px; background:var(--active); border:1px solid var(--accent); }
+  .mi { display:flex; align-items:center; padding:0 9px; color:var(--text); cursor:pointer; }
+  .mi.hov { background:var(--hover); }
+  .menubar .spring { flex:1; }
+  .menubar .desc { display:flex; align-items:center; }
+
+  /* ---- toolbar (35) ---- */
+  .toolbar { height:35px; flex:0 0 35px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:5px; padding:4px 6px; }
+  .tbtn { height:24px; padding:0 8px; display:inline-flex; align-items:center; justify-content:center;
+    background:var(--panel); border:1px solid var(--border); border-radius:2px; color:var(--muted);
+    font-size:12px; cursor:pointer; white-space:nowrap; }
+  .tbtn:hover { background:var(--hover); border-color:var(--strong); }
+  .tbtn.on { background:var(--active); border-color:var(--accent); color:var(--text); }
+  .sq { width:26px; height:26px; padding:0; font-size:10px; }
+  .tsep { width:1px; align-self:stretch; margin:2px 4px; background:var(--border); }
+  .tlabel { padding:0 2px; }
+  .toolbar .spring { flex:1; }
+
+  /* toolbar fields (dropdown + number in the strip) */
+  .tfld { height:24px; display:inline-flex; align-items:center; gap:5px; padding:0 6px;
+    background:var(--bg); border:1px solid var(--border); border-radius:2px; cursor:pointer; }
+  .tfld .v { color:var(--text); }
+  .tfld .dc { color:var(--muted); font-size:9px; }
+
+  /* ---- workspace ---- */
+  .work { flex:1; display:flex; min-height:0; }
+
+  /* ---- parameter dock ---- */
+  .dock-l { width:300px; flex:0 0 300px; background:var(--panel); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; }
+  .ptitle { height:28px; flex:0 0 28px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; padding:0 8px; }
+  .ptitle .t { font-weight:600; }
+  .params { padding:2px 0 8px; overflow:hidden; }
+  .psec { border-bottom:1px solid var(--border); padding:0 8px 8px; margin-bottom:2px; }
+  .psec:last-child { border-bottom:0; }
+  .ph { height:24px; display:flex; align-items:center; gap:6px; }
+  .ph .c { color:var(--muted); font-size:9px; }
+  .ph .t { font-weight:600; }
+  .ph .spring { flex:1; }
+  .prow { margin-bottom:4px; display:flex; }
+  .prow:last-child { margin-bottom:0; }
+
+  /* number / slider / dropdown fields — FieldHeight 24, label inside */
+  .fld { position:relative; height:24px; flex:1; display:flex; align-items:center;
+    padding:0 6px; background:var(--bg); border:1px solid var(--border); border-radius:2px; cursor:ew-resize; }
+  .fld .l { position:relative; z-index:1; flex:1; color:var(--muted); font-size:11px; }
+  .fld .v { position:relative; z-index:1; color:var(--text); }
+  .fld .dc { position:relative; z-index:1; margin-left:5px; color:var(--muted); font-size:9px; }
+  .fld.drop { cursor:pointer; }
+  .fld.sl i { position:absolute; left:1px; top:1px; bottom:1px; background:var(--selection); border-radius:1px; }
+  .fld.hov { border-color:var(--strong); }
+  .fld.hov .l { margin-left:8px; }
+  .fld.hov .v { margin-right:8px; }
+  .fld .arr { position:absolute; z-index:1; top:0; bottom:0; display:flex; align-items:center;
+    color:var(--muted); font-size:9px; }
+  .fld .al { left:3px; }
+  .fld .ar { right:3px; }
+  .rsw { position:relative; z-index:1; width:22px; height:10px; margin-right:6px;
+    border:1px solid rgba(255,255,255,.12); }
+
+  /* checkbox rows */
+  .prow.cbr { align-items:center; gap:7px; height:24px; margin-bottom:0; cursor:pointer; }
+  .ck { width:14px; height:14px; flex:0 0 14px; background:var(--bg); border:1px solid var(--border);
+    border-radius:2px; display:flex; align-items:center; justify-content:center; }
+  .ck.on { background:var(--active); border-color:var(--accent); }
+  .ck.on::after { content:"\2713"; font-size:10px; color:var(--accent); }
+  .cbl { color:var(--text); }
+
+  .center { flex:1; display:flex; flex-direction:column; min-width:0; }
+
+  /* ---- viewport ---- */
+  .vp { flex:1; display:flex; flex-direction:column; min-height:0; background:var(--panel); }
+  .vphead { height:29px; flex:0 0 29px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:5px; padding:2.5px 7px 3.5px; }
+  .chip { height:23px; padding:0 6px; display:inline-flex; align-items:center; gap:5px;
+    background:var(--panel); border:1px solid var(--border); border-radius:2px;
+    color:var(--muted); font-size:11px; white-space:nowrap; }
+  .chip.mode { color:var(--text); cursor:pointer; }
+  .vphead .spring { flex:1; }
+
+  .vpbody { flex:1; background:var(--bg); padding:12px 14px; display:flex; flex-direction:column; min-height:0; }
+  .slicelabel { font-size:11px; color:var(--muted); margin:0 0 5px 1px; }
+  .noisewrap { position:relative; flex:1; min-height:0; background:#000; border:1px solid var(--border); overflow:hidden; }
+  .noisewrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+  /* value probe */
+  .probe-v { position:absolute; top:0; bottom:0; left:63%; width:1px; background:rgba(255,245,140,.28); z-index:2; }
+  .probe-h { position:absolute; left:0; right:0; top:38%; height:1px; background:rgba(255,245,140,.28); z-index:2; }
+  .tip { position:absolute; left:64.2%; top:41%; z-index:5; background:var(--raised);
+    border:1px solid var(--strong); border-radius:2px; padding:6px 9px; font-size:11px; color:var(--text);
+    box-shadow:0 6px 18px rgba(0,0,0,.45); white-space:nowrap; }
+  .tip .mut { display:block; margin-top:2px; }
+  .tip .row1 { font-weight:600; }
+
+  /* ---- bottom dock (190) ---- */
+  .dock-b { height:190px; flex:0 0 190px; display:flex; flex-direction:column; background:var(--panel);
+    border-top:1px solid var(--border); }
+  .tabs { height:29px; flex:0 0 29px; background:var(--raised); display:flex; align-items:stretch;
+    border-bottom:1px solid var(--border); }
+  .tab { display:flex; align-items:center; padding:0 8px 0 10px; color:var(--muted);
+    border-right:1px solid var(--border); position:relative; cursor:pointer; }
+  .tab.on { background:var(--panel); color:var(--text); }
+  .tab.on::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--accent); }
+  .tabbody { flex:1; padding:10px 14px 10px; display:flex; flex-direction:column; min-height:0; }
+  .tabcap { display:flex; justify-content:space-between; margin-bottom:8px; }
+  .presets { flex:1; display:flex; gap:14px; min-height:0; }
+  .rows { flex:1; border:1px solid var(--border); align-self:flex-start; }
+  .lrow { height:26px; display:flex; align-items:center; background:var(--panel); cursor:pointer; }
+  .lrow .bar { width:4px; align-self:stretch; }
+  .lrow .n { flex:1; padding-left:8px; color:var(--muted); }
+  .lrow .r { padding-right:8px; color:var(--muted); font-size:11px; }
+  .lrow.hov { background:var(--hover); } .lrow.hov .n { color:var(--text); }
+  .lrow.sel { background:var(--active); } .lrow.sel .n { color:var(--text); font-weight:600; }
+  .lrow.sel .bar { background:var(--accent); }
+  .save { width:280px; flex:0 0 280px; display:flex; flex-direction:column; gap:6px; }
+  .save .cap { font-size:11px; color:var(--muted); }
+  .tf { height:24px; display:flex; align-items:center; padding:0 6px; background:var(--bg);
+    border:1px solid var(--border); border-radius:2px; color:var(--text); cursor:text; }
+  .btnrow { display:flex; gap:5px; }
+
+  /* ---- status bar (22) ---- */
+  .status { height:22px; flex:0 0 22px; background:var(--panel); border-top:1px solid var(--border);
+    display:flex; align-items:center; gap:16px; padding:0 10px; font-size:11px; color:var(--muted); }
+  .status .fps { color:var(--text); font-weight:600; font-size:11px; }
+  .status .spring { flex:1; }
+</style>
+</head>
+<body>
+
+  <div class="menubar">
+    <div class="brand"><span class="brandmark"></span><span class="sb">Noise Lab</span></div>
+    <div class="mi hov">File</div>
+    <div class="mi">Node</div>
+    <div class="mi">View</div>
+    <div class="mi">Help</div>
+    <div class="spring"></div>
+    <div class="desc mut">panel generated from FastNoise2 metadata &#8212; 2 nodes &#183; 8 variables &#183; 2 hybrids &#183; 1 lookup</div>
+  </div>
+
+  <div class="toolbar">
+    <span class="tlabel mut">node</span>
+    <div class="tfld"><span class="v">FractalFBm</span><span class="dc">&#9662;</span></div>
+    <div class="tsep"></div>
+    <span class="tlabel mut">seed</span>
+    <div class="tfld" style="cursor:ew-resize"><span class="v">12345</span></div>
+    <div class="tbtn sq" title="randomize seed">&#8635;</div>
+    <div class="tsep"></div>
+    <div class="tbtn on">Auto</div>
+    <div class="tbtn">Regenerate</div>
+    <div class="tsep"></div>
+    <div class="tbtn">Export&#8230;</div>
+    <div class="spring"></div>
+    <span class="tlabel mut">ui</span>
+    <div class="tbtn sq">&#8722;</div>
+    <span class="tlabel">1.00&#215;</span>
+    <div class="tbtn sq">+</div>
+  </div>
+
+  <div class="work">
+
+    <div class="dock-l">
+      <div class="ptitle"><span class="t">Node Parameters</span><span class="mut">from metadata</span></div>
+      <div class="params">
+
+        <div class="psec">
+          <div class="ph"><span class="c">&#9662;</span><span class="t">FractalFBm</span><span class="spring"></span><span class="mut">root</span></div>
+          <div class="prow"><div class="fld drop"><span class="l">Source</span><span class="v">Simplex</span><span class="dc">&#9662;</span></div></div>
+          <div class="prow"><div class="fld hov"><span class="arr al">&#9666;</span><span class="l">Octaves</span><span class="v">5</span><span class="arr ar">&#9656;</span></div></div>
+          <div class="prow"><div class="fld"><span class="l">Lacunarity</span><span class="v">2.000</span></div></div>
+          <div class="prow"><div class="fld sl"><i style="width:50%"></i><span class="l">Gain</span><span class="v">0.500</span></div></div>
+          <div class="prow"><div class="fld sl"><i style="width:0%"></i><span class="l">Weighted Strength</span><span class="v">0.000</span></div></div>
+        </div>
+
+        <div class="psec">
+          <div class="ph"><span class="c">&#9662;</span><span class="t">Simplex</span><span class="spring"></span><span class="mut">source</span></div>
+          <div class="prow"><div class="fld"><span class="l">Feature Scale</span><span class="v">100.0</span></div></div>
+          <div class="prow"><div class="fld"><span class="l">Seed Offset</span><span class="v">0</span></div></div>
+          <div class="prow"><div class="fld"><span class="l">Output Min</span><span class="v">&#8722;1.000</span></div></div>
+          <div class="prow"><div class="fld"><span class="l">Output Max</span><span class="v">1.000</span></div></div>
+        </div>
+
+        <div class="psec">
+          <div class="ph"><span class="c">&#9662;</span><span class="t">Post</span></div>
+          <div class="prow cbr"><span class="ck on"></span><span class="cbl">Normalize output</span></div>
+          <div class="prow cbr"><span class="ck"></span><span class="cbl">Invert</span></div>
+          <div class="prow" style="margin-top:4px"><div class="fld drop"><span class="l">Ramp</span><span class="rsw" style="background:linear-gradient(90deg,#050505,#FAFAFA)"></span><span class="v">Grayscale</span><span class="dc">&#9662;</span></div></div>
+        </div>
+
+        <div class="psec">
+          <div class="ph"><span class="c">&#9662;</span><span class="t">Output</span></div>
+          <div class="prow"><div class="fld drop"><span class="l">Resolution</span><span class="v">1100 &#215; 720</span><span class="dc">&#9662;</span></div></div>
+          <div class="prow"><div class="fld drop"><span class="l">Format</span><span class="v">PNG &#183; 8-bit gray</span><span class="dc">&#9662;</span></div></div>
+          <div class="prow cbr" style="margin-top:4px"><span class="ck"></span><span class="cbl">Tiled preview &#215;2</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="center">
+      <div class="vp">
+        <div class="vphead">
+          <div class="chip mode">Slice: 2D &#9662;</div>
+          <div class="chip">z 60.0</div>
+          <div class="spring"></div>
+          <div class="chip">min &#8722;0.987</div>
+          <div class="chip">max 0.991</div>
+          <div class="chip">gen 2.4 ms</div>
+        </div>
+
+        <div class="vpbody">
+          <div class="slicelabel">2D slice at z = 60.0 &#8212; drag pans &#183; wheel zooms &#183; Shift-wheel steps z &#183; hover probes the sample under the cursor</div>
+          <div class="noisewrap">
+            <svg xmlns="http://www.w3.org/2000/svg">
+              <filter id="fbm" x="0" y="0" width="100%" height="100%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.0042" numOctaves="5" seed="12345" stitchTiles="stitch"/>
+                <feColorMatrix type="saturate" values="0"/>
+                <feComponentTransfer>
+                  <feFuncR type="linear" slope="1.8" intercept="-0.42"/>
+                  <feFuncG type="linear" slope="1.8" intercept="-0.42"/>
+                  <feFuncB type="linear" slope="1.8" intercept="-0.42"/>
+                  <feFuncA type="table" tableValues="1 1"/>
+                </feComponentTransfer>
+              </filter>
+              <rect width="100%" height="100%" filter="url(#fbm)"/>
+            </svg>
+            <div class="probe-v"></div>
+            <div class="probe-h"></div>
+            <div class="tip">
+              <span class="row1">value 0.612</span>
+              <span class="mut">pixel 682, 227 &#183; world 286.4, 95.3</span>
+              <span class="mut">FractalFBm(Simplex) &#183; seed 12345</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dock-b">
+        <div class="tabs">
+          <div class="tab on">Presets</div>
+          <div class="tab">Histogram</div>
+          <div class="tab">Export Log</div>
+        </div>
+        <div class="tabbody">
+          <div class="tabcap">
+            <span class="mut">double-click a preset loads it &#183; Save captures the node graph + seed as JSON</span>
+            <span class="mut">presets &#8594; res/noise-lab/presets &#183; exports &#8594; out/noise-lab</span>
+          </div>
+          <div class="presets">
+            <div class="rows">
+              <div class="lrow sel"><span class="bar"></span><span class="n">terrain-base</span><span class="r">FractalFBm(Perlin) &#183; 2026-06-21</span></div>
+              <div class="lrow hov"><span class="bar"></span><span class="n">water-caustics</span><span class="r">FractalRidged(CellularDistance) &#183; 2026-06-28</span></div>
+              <div class="lrow"><span class="bar"></span><span class="n">lighthouse-fog</span><span class="r">FractalFBm(Simplex) &#183; 2026-07-01</span></div>
+              <div class="lrow"><span class="bar"></span><span class="n">hull-grunge</span><span class="r">FractalPingPong(Value) &#183; 2026-06-19</span></div>
+            </div>
+            <div class="save">
+              <span class="cap">save as</span>
+              <div class="tf">terrain-base-02</div>
+              <div class="btnrow"><div class="tbtn">Save</div><div class="tbtn">Delete</div></div>
+              <span class="cap">Enter saves &#183; ps1tex export feeds the AlvorEye demo directly</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <span class="fps">144 FPS</span>
+    <span>idle</span>
+    <span>FractalFBm(Simplex)</span>
+    <span>seed 12345</span>
+    <span>float32 &#183; 792 000 samples</span>
+    <div class="spring"></div>
+    <span>ui 1.00&#215;</span>
+    <span>AlvorKit.UI.Blend</span>
+  </div>
+
+</body>
+</html>

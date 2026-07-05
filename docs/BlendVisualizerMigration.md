@@ -125,10 +125,18 @@ same slice.
 - Toolbar `-`/`+` use `ToolbarButton` instead of `SquareButton`: the 10px
   square-button font drops the hyphen glyph (rasterizes to nothing) while
   12px renders it.
-- `AppMemoryStripLabels` had no callers since the strip texture refactor
-  (block labels stopped rendering before this migration); the dead class was
-  deleted during cleanup. The Labels toolbar toggle currently affects nothing
-  visible — re-wire or remove it when deciding how strip labels should return.
+- `AppMemoryStripLabels` had no callers since the strip texture refactor; it
+  was rebuilt to the design-card look (centered block/free/tail labels over
+  the strip texture, gated by the Labels toggle and per-segment width), so the
+  Labels toggle is functional again.
+- Tooltips are structured: tooltip strings use `\n` between a title line and
+  up to three detail lines; `BlendTooltipMenu` renders them as an emphasized
+  title plus muted lines with a hard drop shadow (the text pipeline has no
+  newline support, so lines are separate nodes). A `TooltipColorFV` component
+  carries an optional swatch color shown before the title (slot color on
+  strips, command-kind color on the timeline).
+- Strip block labels skip entirely when a snapshot has more than 1000
+  ranges-plus-free-spans; at that density no segment can fit a label anyway.
 
 ## Stays App-Local
 

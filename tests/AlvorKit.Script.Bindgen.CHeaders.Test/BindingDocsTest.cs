@@ -143,6 +143,36 @@ public sealed class BindingDocsTest
         Assert.IsTrue((summary + emptySummary).Split(Environment.NewLine).All(line => line.Length <= 170));
     }
 
+    /// <summary>Platform-specific functions append the platform note after upstream remarks or emit their own remarks block.</summary>
+    [TestMethod]
+    public void Function_PlatformSpecific_EmitsPlatformRemark()
+    {
+        var withRemarks = new StringBuilder();
+        var withoutRemarks = new StringBuilder();
+        var function = new BindingFunction(
+            NativeName: "test_native_handle",
+            ManagedName: "NativeHandle",
+            ReturnType: "nint",
+            ReturnInteropType: "nint",
+            Parameters: [],
+            Documentation: new("gets a native handle", [], "The handle.", "Thread safety notes."),
+            Platform: "windows");
+
+        BindingDocs.Function(withRemarks, function);
+        BindingDocs.Function(withoutRemarks, function with { Documentation = null });
+
+        var docs = withRemarks.ToString();
+        StringAssert.Contains(docs, "/// Thread safety notes.");
+        StringAssert.Contains(docs, "Platform-specific: only windows builds");
+        StringAssert.Contains(docs, "<c>test_native_handle</c>;");
+        StringAssert.Contains(docs, "EntryPointNotFoundException");
+        Assert.IsTrue(
+            docs.IndexOf("Platform-specific", StringComparison.Ordinal)
+                > docs.IndexOf("Thread safety notes.", StringComparison.Ordinal),
+            "platform note follows upstream remarks");
+        StringAssert.Contains(withoutRemarks.ToString(), "/// <remarks>Platform-specific: only windows builds");
+    }
+
     /// <summary>Function docs fall back for missing native text and describe bool interop projections.</summary>
     [TestMethod]
     public void Function_MissingDocumentation_EmitsFallbacks()

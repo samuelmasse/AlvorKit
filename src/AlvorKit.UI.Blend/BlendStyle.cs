@@ -14,14 +14,23 @@ public class BlendStyle(BlendStyleOptions options)
     /// <summary>Gets the active layout metrics.</summary>
     public virtual BlendMetrics Metrics { get; } = new();
 
-    /// <summary>Applies the full-window vertical root layout.</summary>
+    /// <summary>Gets the regular text font face, for collaborators that measure text.</summary>
+    public Font TextFont => font;
+
+    /// <summary>
+    /// Applies the full-window vertical root layout. The root silently takes focus when empty chrome is
+    /// pressed, giving Blend apps editor-shell click-away semantics (field edits commit, popups close)
+    /// without imposing that policy on other UI styles at the engine level.
+    /// </summary>
     public void Root(EntMut ent) => ent.Mutate()
         .SizeRelativeV((1, 1))
         .InnerLayoutV(InnerLayout.VerticalList)
         .InnerSizingV(InnerSizing.VerticalWeight)
         .InnerSpacingV(0)
         .InnerAlignmentSnapV(1f)
-        .ColorV(Palette.AppBackground);
+        .ColorV(Palette.AppBackground)
+        .IsSelectableV(true)
+        .IsSilentFocusableV(true);
 
     /// <summary>Applies an explicit-position board layout.</summary>
     public void Board(EntMut ent) => ent.Mutate()
@@ -141,7 +150,7 @@ public class BlendStyle(BlendStyleOptions options)
         .InnerSizingV(InnerSizing.HorizontalWeight)
         .InnerSpacingV(Metrics.LooseSpacing)
         .PaddingV((0, 0, Metrics.ButtonTextPadding, 0))
-        .ColorF(() => ent.IsFocusedR || ent.IsHoveredR ? Palette.Hover : default)
+        .ColorF(() => ent.IsHoveredR ? Palette.Hover : default)
         .IsSelectableV(true)
         .IsFocusableV(true)
         .CursorF(() => CursorShape.Hand);
@@ -212,7 +221,7 @@ public class BlendStyle(BlendStyleOptions options)
         .IsSelectableV(true)
         .IsFocusableV(true)
         .CursorF(() => CursorShape.Hand)
-        .ColorF(() => ent.IsHoveredR || ent.IsFocusedR ? Palette.Hover : default)
+        .ColorF(() => ent.IsHoveredR ? Palette.Hover : default)
         .Mutate(ActivateOnEnter);
 
     /// <summary>Builds a compact rounded button using the standard Blend button font size.</summary>
@@ -264,6 +273,21 @@ public class BlendStyle(BlendStyleOptions options)
     /// <summary>Applies a smaller toolbar chip.</summary>
     public void Chip(EntMut ent)
         => Button(ent, Metrics.ChipHeight, Metrics.ChipFontSize, Metrics.ChipTextPadding, false);
+
+    /// <summary>Applies a non-interactive readout chip; it stays hoverable so it can carry a tooltip, but never reacts.</summary>
+    public void ReadoutChip(EntMut ent) => ent.Mutate()
+        .Mutate(Board)
+        .SizeRelativeV((0, 0))
+        .SizeTextRelativeV((1, 0))
+        .SizeV((0, Metrics.ChipHeight))
+        .FontV(font)
+        .FontSizeV(Metrics.ChipFontSize)
+        .TextPaddingV((Metrics.ChipTextPadding, 0, Metrics.ChipTextPadding, 0))
+        .TextAlignmentV(Alignment.Center)
+        .TextColorV(Palette.MutedText)
+        .ColorV(Palette.Panel)
+        .IsSelectableV(true)
+        .Mutate(Border);
 
     /// <summary>Applies a static field-like surface.</summary>
     public void Field(EntMut ent) => ent.Mutate()
@@ -402,15 +426,26 @@ public class BlendStyle(BlendStyleOptions options)
         .InnerLayoutV(InnerLayout.VerticalList)
         .InnerAlignmentSnapV(1f);
 
-    /// <summary>Applies a floating tooltip surface sized from its text.</summary>
+    /// <summary>Applies a floating tooltip surface that sizes to its line children.</summary>
     public void Tooltip(EntMut ent) => ent.Mutate()
-        .Mutate(Text)
-        .FontSizeV(Metrics.MutedFontSize)
-        .TextPaddingV(Metrics.TooltipPadding)
-        .SizeRelativeV((0, 0))
-        .SizeTextRelativeV((1, 1))
+        .Mutate(VerticalList)
+        .InnerSpacingV(Metrics.TooltipLineSpacing)
+        .PaddingV(Metrics.TooltipPadding)
         .ColorV(Palette.Raised)
         .Mutate(StrongBorder);
+
+    /// <summary>Applies the emphasized first line of a tooltip.</summary>
+    public void TooltipTitle(EntMut ent) => ent.Mutate()
+        .Mutate(EmphasisText)
+        .FontSizeV(Metrics.MutedFontSize)
+        .SizeRelativeV((0, 0))
+        .SizeTextRelativeV((1, 1));
+
+    /// <summary>Applies a muted tooltip detail line.</summary>
+    public void TooltipLine(EntMut ent) => ent.Mutate()
+        .Mutate(MutedText)
+        .SizeRelativeV((0, 0))
+        .SizeTextRelativeV((1, 1));
 
     /// <summary>Applies a small legend swatch; set the color at the call site.</summary>
     public void Swatch(EntMut ent) => ent.Mutate()
@@ -431,7 +466,7 @@ public class BlendStyle(BlendStyleOptions options)
             return Palette.ActiveSurface;
         if (ent.IsPressedR)
             return Palette.Selection;
-        if (ent.IsHoveredR || ent.IsFocusedR)
+        if (ent.IsHoveredR)
             return Palette.Hover;
         return Palette.Panel;
     }
@@ -505,7 +540,8 @@ public class BlendStyle(BlendStyleOptions options)
         .CursorF(() => CursorShape.Hand)
         .Mutate(ActivateOnEnter);
 
-    private void ActivateOnEnter(EntMut ent)
+    /// <summary>Runs the node's click (or press) callback when it is focused and Enter is pressed, if a keyboard was provided.</summary>
+    public void ActivateOnEnter(EntMut ent)
     {
         if (keyboard == null)
             return;
@@ -603,7 +639,8 @@ public class BlendStyle(BlendStyleOptions options)
         ControlRule(ent, Alignment.Top | Alignment.Right, (0, 1), (Metrics.Hairline, 0), active);
     }
 
-    private static void Rule(EntMut ent, Alignment alignment, Vec2 relativeSize, Vec2 size, Vec4 color) =>
+    /// <summary>Adds a floating hairline rule node with a fixed color.</summary>
+    public static void Rule(EntMut ent, Alignment alignment, Vec2 relativeSize, Vec2 size, Vec4 color) =>
         Node(ent)
             .IsFloatingV(true)
             .IsPostSizedV(true)
@@ -611,6 +648,16 @@ public class BlendStyle(BlendStyleOptions options)
             .SizeRelativeV(relativeSize)
             .SizeV(size)
             .ColorV(color);
+
+    /// <summary>Adds a floating hairline rule node with a reactive color.</summary>
+    public static void Rule(EntMut ent, Alignment alignment, Vec2 relativeSize, Vec2 size, Func<Vec4> color) =>
+        Node(ent)
+            .IsFloatingV(true)
+            .IsPostSizedV(true)
+            .AlignmentV(alignment)
+            .SizeRelativeV(relativeSize)
+            .SizeV(size)
+            .ColorF(color);
 
     private void ControlRule(EntMut ent, Alignment alignment, Vec2 relativeSize, Vec2 size, bool active) =>
         Node(ent)

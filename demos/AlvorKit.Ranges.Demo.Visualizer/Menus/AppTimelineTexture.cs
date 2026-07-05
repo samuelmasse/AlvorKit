@@ -45,6 +45,16 @@ public class AppTimelineTexture(
         return Math.Clamp((int)Math.Floor(localX / lane.SizeR.X * (double)count), 0, count - 1);
     }
 
+    /// <summary>Returns the tooltip swatch color for the command under the pointer inside a timeline lane.</summary>
+    public Vec4 TooltipColor(EntMut lane)
+    {
+        var commands = session.Runner.Scenario.Commands;
+        if (commands.Length == 0)
+            return default;
+
+        return s.CommandColor(commands[HoverIndex(lane)].Kind);
+    }
+
     /// <summary>Returns tooltip text for the command under the pointer inside a timeline lane.</summary>
     public ReadOnlySpan<char> Tooltip(EntMut lane)
     {

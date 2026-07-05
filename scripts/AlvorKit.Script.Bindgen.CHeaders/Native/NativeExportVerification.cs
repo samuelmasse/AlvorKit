@@ -8,4 +8,10 @@ public sealed record NativeExportVerification(string LibraryPath, bool LibraryEx
 {
     /// <summary>Whether the library exists and every generated function export was found.</summary>
     public bool AllExportsFound => LibraryExists && MissingFunctions.Count == 0;
+
+    /// <summary>Missing functions that every platform's native library build must export.</summary>
+    public List<BindingFunction> MissingRequired => [.. MissingFunctions.Where(function => function.Platform is null)];
+
+    /// <summary>Missing platform-specific functions, absent by design from other platforms' native builds.</summary>
+    public List<BindingFunction> MissingPlatform => [.. MissingFunctions.Where(function => function.Platform is not null)];
 }

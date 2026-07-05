@@ -109,7 +109,7 @@ public sealed record BlendMetrics
     public Vec4 ToolbarPadding { get; init; } = (6f, 4f, 6f, 4f);
 
     /// <summary>Gets the brand area content padding.</summary>
-    public Vec4 BrandPadding { get; init; } = (10f, 0, 0, 0);
+    public Vec4 BrandPadding { get; init; } = (10f, 0, 10f, 0);
 
     /// <summary>Gets the transform tool group padding.</summary>
     public Vec4 TransformGroupPadding { get; init; } = (0, 0, 8f, 0);
@@ -141,6 +141,9 @@ public sealed record BlendMetrics
     /// <summary>Gets the tooltip text padding.</summary>
     public Vec4 TooltipPadding { get; init; } = (9f, 6f, 9f, 6f);
 
+    /// <summary>Gets the spacing between tooltip lines.</summary>
+    public float TooltipLineSpacing { get; init; } = 2f;
+
     /// <summary>Gets the legend swatch width.</summary>
     public float SwatchWidth { get; init; } = 12f;
 
@@ -149,4 +152,43 @@ public sealed record BlendMetrics
 
     /// <summary>Gets the label/value metric row height.</summary>
     public float MetricRowHeight { get; init; } = 18f;
+
+    /// <summary>Gets the dropdown popup option row height.</summary>
+    public float DropdownOptionHeight { get; init; } = 22f;
+
+    /// <summary>Gets the dropdown popup content padding.</summary>
+    public float DropdownPopupPadding { get; init; } = 3f;
+
+    /// <summary>Gets the gap between a dropdown field and its popup.</summary>
+    public float DropdownPopupGap { get; init; } = 2f;
+
+    /// <summary>Gets the checkbox box edge length.</summary>
+    public float CheckboxSize { get; init; } = 14f;
+
+    /// <summary>Gets the checkbox check glyph font size; 10px glyphs rasterize unreliably, so this stays at 12.</summary>
+    public int CheckGlyphFontSize { get; init; } = 12;
+
+    /// <summary>Gets the text caret width.</summary>
+    public float CaretWidth { get; init; } = 1f;
+
+    /// <summary>Gets the text caret height.</summary>
+    public float CaretHeight { get; init; } = 14f;
+
+    /// <summary>Gets the caret blink period in seconds.</summary>
+    public double CaretBlinkSeconds { get; init; } = 1.0;
+
+    /// <summary>Gets the horizontal inset of the hover step arrows inside a field.</summary>
+    public float FieldArrowPadding { get; init; } = 3f;
+
+    /// <summary>Gets the extra label/value inset applied while the step arrows are visible.</summary>
+    public float FieldArrowInset { get; init; } = 8f;
+
+    /// <summary>Gets the arrow glyph font size for field step arrows and dropdown carets.</summary>
+    public int FieldGlyphFontSize { get; init; } = 10;
+
+    /// <summary>Gets the horizontal drag distance that scrubs one field step.</summary>
+    public float DragPixelsPerStep { get; init; } = 8f;
+
+    /// <summary>Gets the drag distance below which a press-release still counts as a click.</summary>
+    public float DragDeadzone { get; init; } = 3f;
 }

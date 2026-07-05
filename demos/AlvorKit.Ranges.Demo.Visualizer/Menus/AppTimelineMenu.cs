@@ -23,6 +23,7 @@ public class AppTimelineMenu(
             .IsSilentFocusableV(true)
             .CursorF(() => CursorShape.ResizeHorizontal)
             .TooltipF(() => texture.Tooltip(content))
+            .TooltipColorF(() => texture.TooltipColor(content))
             .OnPressF(() =>
             {
                 scrubbing = true;

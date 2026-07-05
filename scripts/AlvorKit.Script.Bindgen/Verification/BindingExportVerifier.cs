@@ -22,20 +22,26 @@ internal sealed class BindingExportVerifier(BindgenOptions options)
         }
 
         var verification = NativeExportVerifier.Verify(nativePackage.LibraryPath, model);
-        if (verification.MissingFunctions.Count > 0 && options.Strict)
+        var missingRequired = verification.MissingRequired;
+        var missingPlatform = verification.MissingPlatform;
+        if (missingRequired.Count > 0 && options.Strict)
             throw new InvalidOperationException(
-                $"{verification.MissingFunctions.Count} entry points missing from " +
-                $"{Path.GetFileName(verification.LibraryPath)}: {MissingFunctionList(verification)}");
+                $"{missingRequired.Count} entry points missing from " +
+                $"{Path.GetFileName(verification.LibraryPath)}: {FunctionList(missingRequired)}");
 
         var libraryName = Path.GetFileName(verification.LibraryPath);
-        Console.WriteLine(verification.MissingFunctions.Count == 0
-            ? $"Exports: all {model.Functions.Count} entry points found in {nativePackage.PackageId} " +
-                $"{nativePackage.Version} ({libraryName})"
-            : $"WARNING: {verification.MissingFunctions.Count} entry points missing from {libraryName}: " +
-                $"{MissingFunctionList(verification)}");
+        Console.WriteLine(missingRequired.Count == 0
+            ? $"Exports: all {model.Functions.Count - missingPlatform.Count} host entry points found in " +
+                $"{nativePackage.PackageId} {nativePackage.Version} ({libraryName})"
+            : $"WARNING: {missingRequired.Count} entry points missing from {libraryName}: " +
+                $"{FunctionList(missingRequired)}");
+        if (missingPlatform.Count > 0)
+            Console.WriteLine(
+                $"Exports: {missingPlatform.Count} platform-specific entry points not exported by {libraryName} " +
+                $"(expected): {FunctionList(missingPlatform)}");
     }
 
-    /// <summary>Formats a short list of missing native entry points for console diagnostics.</summary>
-    private static string MissingFunctionList(NativeExportVerification verification) =>
-        string.Join(", ", verification.MissingFunctions.Select(function => function.NativeName).Take(10));
+    /// <summary>Formats a short list of native entry points for console diagnostics.</summary>
+    private static string FunctionList(List<BindingFunction> functions) =>
+        string.Join(", ", functions.Select(function => function.NativeName).Take(10));
 }

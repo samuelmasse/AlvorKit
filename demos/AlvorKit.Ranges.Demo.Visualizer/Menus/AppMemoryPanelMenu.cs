@@ -28,6 +28,7 @@ public class AppMemoryPanelMenu(
                     .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .TextF(() => text.Format("memory: {0}", legend.ModeName()))
+                    .TooltipV("memory overlay mode\ncycles what the strips visualize\nshortcut: M")
                     .OnPressF(session.NextMemoryOverlayMode);
 
                 for (var i = 0; i < legendEntryCount; i++)
@@ -40,24 +41,32 @@ public class AppMemoryPanelMenu(
                     .Mutate(s.MutedLabel)
                     .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
+                    .IsSelectableV(true)
+                    .TooltipV("used share\nused bytes divided by backing size")
                     .TextF(() => text.Format("used {0:0.0}%", stats.UsedRatio() * 100));
 
                 Node(header)
                     .Mutate(s.MutedLabel)
                     .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
+                    .IsSelectableV(true)
+                    .TooltipV("external fragmentation\none minus largest free block over total free bytes\nhigh values mean free space is split into small gaps")
                     .TextF(() => text.Format("frag {0:0.0}%", stats.ExternalFragmentationRatio() * 100));
 
                 Node(header)
                     .Mutate(s.MutedLabel)
                     .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
+                    .IsSelectableV(true)
+                    .TooltipV("largest free span\nbiggest single allocation that would still fit")
                     .TextF(() => text.Format("largest free {0}", stats.LargestFreeSpan()));
 
                 Node(header)
                     .Mutate(s.MutedLabel)
                     .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
+                    .IsSelectableV(true)
+                    .TooltipV("outlier slots\nslots with heavy traffic: many ops, reallocs, or large sizes")
                     .TextF(() => text.Format("outliers {0}", session.OutlierSlotCount));
             }
 
@@ -74,7 +83,10 @@ public class AppMemoryPanelMenu(
                 .Mutate(s.HorizontalList)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
-                .InnerSpacingV(s.Metrics.CompactSpacing);
+                .InnerSpacingV(s.Metrics.CompactSpacing)
+                .IsSelectableV(true)
+                .TooltipF(() => legend.EntryTooltip(index))
+                .TooltipColorF(() => legend.EntryColor(index));
             {
                 Node(item)
                     .Mutate(s.Swatch)

@@ -137,7 +137,7 @@ public class AppScenarioPickerMenu(
             if (option.IsPressedR)
                 return s.Palette.Selection;
 
-            if (option.IsFocusedR || option.IsHoveredR)
+            if (option.IsHoveredR)
                 return s.Palette.Hover;
 
             return s.Palette.AppBackground;

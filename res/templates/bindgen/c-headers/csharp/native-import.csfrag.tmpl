@@ -1,5 +1,5 @@
 
     /// <summary>Imports native <c>{{NativeName}}</c>.</summary>
-    [LibraryImport(Lib, EntryPoint = "{{NativeName}}")]
+{{Attributes}}    [LibraryImport(Lib, EntryPoint = "{{NativeName}}")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static {{Unsafe}}partial {{ReturnInteropType}} {{ManagedName}}({{Signature}});

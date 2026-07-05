@@ -15,7 +15,12 @@ public class RootUiScript(
 {
     public override Vec2? DrawArea => canvas.Size / scale.Scale;
 
-    public override void Frame(double time)
+    /// <summary>
+    /// Runs UI layout, input dispatch, and cleanup in the logical update phase. Input work must happen here:
+    /// button edges, wheel offsets, and text runes are tick-scoped and cleared before the render-phase frame
+    /// event, so render-phase dispatch misses every input that does not span a render.
+    /// </summary>
+    public override void Update(double delta)
     {
         ResetRoot();
         Traverse();

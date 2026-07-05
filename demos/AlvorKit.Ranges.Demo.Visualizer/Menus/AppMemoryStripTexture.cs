@@ -70,6 +70,36 @@ public class AppMemoryStripTexture(
         return [];
     }
 
+    /// <summary>Returns the tooltip swatch color for the byte currently hovered inside a strip node.</summary>
+    public Vec4 TooltipColor(AppMemoryStripView view, EntMut strip)
+    {
+        if (strip.SizeR.X <= 0 || uiMouse.Position.X < strip.PositionR.X || uiMouse.Position.X > strip.PositionR.X + strip.SizeR.X)
+            return default;
+
+        var byteIndex = HoverByte(view, strip);
+        if (TryFindRange(view.Snapshot.Ranges, byteIndex, out var range))
+        {
+            if (byteIndex < range.PayloadIndex)
+                return s.PaddingColor;
+
+            if (byteIndex < range.PayloadIndex + range.Size)
+                return s.AllocationColor(range.Slot);
+
+            if (byteIndex < range.PayloadIndex + range.CapacitySize)
+                return s.RetainedColor;
+
+            return s.PaddingColor;
+        }
+
+        if (TryFindFreeSpan(view.Snapshot.FreeSpans, byteIndex, out var span))
+        {
+            var mutedTail = view.MuteTail && span.Index + span.Size == view.Snapshot.Size && view.Snapshot.Ranges.Length > 0;
+            return mutedTail ? s.TailFreeBlockColor : s.FreeBlockColor;
+        }
+
+        return default;
+    }
+
     private StripTextureCache Cache(AppMemoryStripView view) =>
         view.DetailedLabels ? detail : overview;
 

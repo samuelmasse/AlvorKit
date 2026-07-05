@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <FastNoise2NativePackageSource>$(AlvorKitRepositoryRoot)bin\AlvorKit.FastNoise2.Native\Release</FastNoise2NativePackageSource>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="Exists('$(FastNoise2NativePackageSource)')">
+        <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(FastNoise2NativePackageSource)</RestoreAdditionalProjectSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.UI\AlvorKit.UI.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.UI.Blend\AlvorKit.UI.Blend.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.UI.Generator\AlvorKit.UI.Generator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
+        <PackageReference Include="AlvorKit.FastNoise2.Backend" Version="$(FastNoise2BindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.ECS" />
+        <Using Include="AlvorKit.ECS.Generator" />
+        <Using Include="AlvorKit.Engine" />
+        <Using Include="AlvorKit.Engine.Loop" />
+        <Using Include="AlvorKit.FastNoise2" />
+        <Using Include="AlvorKit.Graphics2D" />
+        <Using Include="AlvorKit.Graphics2D.Fonts" />
+        <Using Include="AlvorKit.Injection" />
+        <Using Include="AlvorKit.Maths" />
+        <Using Include="AlvorKit.OpenGL" />
+        <Using Include="AlvorKit.UI" />
+        <Using Include="AlvorKit.UI.Blend" />
+        <Using Include="AlvorKit.UI.Blend.Demo.NoiseLab" />
+        <Using Include="AlvorKit.UI.UiSyntax">
+            <Static>true</Static>
+        </Using>
+        <Using Include="AlvorKit.Windowing" />
+    </ItemGroup>
+
+</Project>

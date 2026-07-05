@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <Using Include="System.Globalization" />
         <Using Include="AlvorKit.ECS" />
         <Using Include="AlvorKit.ECS.Generator" />
         <Using Include="AlvorKit.Engine" />

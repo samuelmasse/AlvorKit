@@ -20,6 +20,11 @@ public class AppStyle(
     /// <summary>Gets the strip outline thickness used by the data visualizations.</summary>
     public float RuleWidth => Metrics.Hairline;
 
+    /// <summary>Gets the small font size used by in-strip block labels.</summary>
+    public int FontSizeSmall => 10;
+
+    public Vec4 BlockLabelColor => (0.03f, 0.055f, 0.05f, 0.85f);
+    public Vec4 FreeLabelColor => (0.27f, 0.6f, 0.48f, 1f);
     public Vec4 AccentColor => (0.25f, 0.8f, 0.95f, 1f);
     public Vec4 WarmAccentColor => (0.98f, 0.72f, 0.3f, 1f);
     public Vec4 FreeBlockColor => (0.13f, 0.25f, 0.22f, 1f);

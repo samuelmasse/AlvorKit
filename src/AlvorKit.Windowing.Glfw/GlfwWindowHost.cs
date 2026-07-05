@@ -14,6 +14,7 @@ public class GlfwWindowHost : IWindowHost, IDisposable
     public GlfwWindowHost(Glfw glfw, GlfwWindow window)
     {
         runtime = new(glfw, window);
+        GlfwWindowsDarkMode.TryEnable(glfw, window);
         callbacks = new(
             runtime.Glfw,
             runtime.Window,

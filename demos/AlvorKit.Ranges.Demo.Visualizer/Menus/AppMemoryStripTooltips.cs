@@ -1,5 +1,6 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
+/// <summary>Formats hovered strip regions as tooltip text: a title line plus muted detail lines.</summary>
 [App]
 public class AppMemoryStripTooltips(
     RootText text,
@@ -8,54 +9,54 @@ public class AppMemoryStripTooltips(
     public ReadOnlySpan<char> Free(AppMemoryStripView view, long index, long size, bool mutedTail) =>
         mutedTail
             ? text.Format(
-                "{0}: tail free block, {1} bytes at byte {2}; muted because the active zoom omits that empty tail",
-                view.ViewName,
+                "tail free block\n{0} B at byte {1}\nomitted from the active zoom",
                 size,
                 index)
             : text.Format(
-                "{0}: free block, {1} bytes at byte {2}; allocator can reuse this gap for a fitting request",
-                view.ViewName,
+                "free block\n{0} B at byte {1}\nreusable for a fitting request",
                 size,
                 index);
 
     public ReadOnlySpan<char> Padding(AppMemoryStripView view, AllocatorRangeVisual range, long size, bool leading) =>
         leading
             ? text.Format(
-                "{0}: leading padding of alloc #{1}, {2} bytes; alignment {3} moves payload start to byte {4}",
-                view.ViewName,
+                "leading padding, slot {0}\n{1} B from alignment {2}\npayload starts at byte {3}",
                 range.Slot,
                 size,
                 range.Alignment,
                 range.PayloadIndex)
             : text.Format(
-                "{0}: trailing padding of alloc #{1}, {2} bytes; reserved because alignment can need up to {3} extra bytes",
-                view.ViewName,
+                "trailing padding, slot {0}\n{1} B reserved for alignment {2}\nup to {3} extra bytes can be needed",
                 range.Slot,
                 size,
+                range.Alignment,
                 range.Alignment - 1);
 
     public ReadOnlySpan<char> Retained(AppMemoryStripView view, AllocatorRangeVisual range) =>
         text.Format(
-            "{0}: retained capacity of alloc #{1}, {2} bytes; a shrink kept spare capacity until growth or pack",
-            view.ViewName,
+            "retained capacity, slot {0}\n{1} B kept after a shrink\nreused on growth or freed by pack",
             range.Slot,
             range.RetainedExtraSize);
 
     public ReadOnlySpan<char> Payload(AppMemoryStripView view, AllocatorRangeVisual range) =>
         text.Format(
-            "{0}: alloc #{1} payload, {2} bytes at byte {3}; capacity {4} bytes, alignment {5}",
-            view.ViewName,
+            "slot {0} payload\nlogical {1} B, capacity {2} B\nreserved {3} B at byte {4}, alignment {5}",
             range.Slot,
             range.Size,
-            range.PayloadIndex,
             range.CapacitySize,
+            range.ReservedSize,
+            range.Index,
             range.Alignment);
 
     public ReadOnlySpan<char> LatestRequest(AppMemoryStripView view, AllocatorRangeVisual range) =>
         text.Format(
-            "{0}: latest request touched alloc #{1}, {2} bytes from event #{3}; white overlay marks the allocator call result",
-            view.ViewName,
+            "slot {0}, latest {1}\nlogical {2} B, capacity {3} B\nreserved {4} B, padding {5} B, retained {6} B\nrequest from event {7}",
             range.Slot,
-            session.Runner.LastCommand.Size,
+            session.Runner.LastCommand.Kind,
+            range.Size,
+            range.CapacitySize,
+            range.ReservedSize,
+            range.ReservedSize - range.CapacitySize,
+            range.RetainedExtraSize,
             session.Runner.StepIndex);
 }

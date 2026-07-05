@@ -50,42 +50,128 @@ public class AppMetricsMenu(
                 .InnerLayoutV(InnerLayout.VerticalList)
                 .InnerSpacingV(0);
             {
-                Metric(body, "scenario op", () => session.Runner.LastCommand.Label);
-                Metric(body, "method", () => session.Runner.LastMethodText);
-                Metric(body, "args", () => ArgumentSummary(session.Runner.LastCommand));
-                Metric(body, "kind", () => text.Format("{0}", session.Runner.LastCommand.Kind));
+                Metric(
+                    body,
+                    "scenario op",
+                    "scenario op\nthe last scripted command that ran",
+                    () => session.Runner.LastCommand.Label);
+                Metric(
+                    body,
+                    "method",
+                    "method\nallocator API call made by the last command",
+                    () => session.Runner.LastMethodText);
+                Metric(
+                    body,
+                    "args",
+                    "args\narguments passed to that allocator call",
+                    () => ArgumentSummary(session.Runner.LastCommand));
+                Metric(
+                    body,
+                    "kind",
+                    "kind\ncommand family: Alloc, Realloc, Free, or Pack",
+                    () => text.Format("{0}", session.Runner.LastCommand.Kind));
 
                 Node(body)
                     .Mutate(SectionGap);
 
-                Metric(body, "block slot", () => TouchedValue(range => range.Slot));
-                Metric(body, "request B", () => RequestValue(session.Runner));
-                Metric(body, "logical B", () => TouchedValue(range => range.Size));
-                Metric(body, "capacity B", () => TouchedValue(range => range.CapacitySize));
-                Metric(body, "retained extra B", () => TouchedValue(range => range.RetainedExtraSize));
-                Metric(body, "reserved B", () => TouchedValue(range => range.ReservedSize));
-                Metric(body, "padding B", () => TouchedValue(range => range.ReservedSize - range.CapacitySize));
+                Metric(
+                    body,
+                    "block slot",
+                    "block slot\nhandle slot touched by the last command",
+                    () => TouchedValue(range => range.Slot));
+                Metric(
+                    body,
+                    "request B",
+                    "request bytes\nsize the caller asked for in the last alloc or realloc",
+                    () => RequestValue(session.Runner));
+                Metric(
+                    body,
+                    "logical B",
+                    "logical bytes\npayload size the caller can actually use",
+                    () => TouchedValue(range => range.Size));
+                Metric(
+                    body,
+                    "capacity B",
+                    "capacity bytes\nusable capacity kept for the block\ncan exceed logical after a shrink",
+                    () => TouchedValue(range => range.CapacitySize));
+                Metric(
+                    body,
+                    "retained extra B",
+                    "retained extra bytes\nspare capacity kept after a shrink\nreused on growth or reclaimed by pack",
+                    () => TouchedValue(range => range.RetainedExtraSize));
+                Metric(
+                    body,
+                    "reserved B",
+                    "reserved bytes\ntotal footprint in the store\ncapacity plus alignment padding",
+                    () => TouchedValue(range => range.ReservedSize));
+                Metric(
+                    body,
+                    "padding B",
+                    "padding bytes\nalignment overhead: reserved minus capacity",
+                    () => TouchedValue(range => range.ReservedSize - range.CapacitySize));
 
                 Node(body)
                     .Mutate(SectionGap);
 
-                Metric(body, "backing size", () => text.Format("{0}", session.Runner.Current.Size));
-                Metric(body, "used", () => text.Format("{0}", session.Runner.Current.Used));
-                Metric(body, "live ranges", () => text.Format("{0}", session.Runner.Current.LiveCount));
-                Metric(body, "free blocks", () => text.Format("{0}", session.Runner.Current.FreeBlockCount));
-                Metric(body, "free sizes", () => text.Format("{0}", session.Runner.Current.FreeSizeCount));
-                Metric(body, "pooled nodes", () => text.Format("{0}", session.Runner.Current.PooledNodeCount));
-                Metric(body, "packs", () => text.Format("{0}", session.Runner.Current.PackCount));
-                Metric(body, "resizes", () => text.Format("{0}", session.Runner.Current.ResizeCount));
-                Metric(body, "op ticks", () => text.Format("{0}", session.Runner.Current.OperationTicks));
-                Metric(body, "op managed B", () => text.Format("{0}", session.Runner.Current.OperationManagedBytes));
+                Metric(
+                    body,
+                    "backing size",
+                    "backing size\ntotal bytes the backing store currently owns",
+                    () => text.Format("{0}", session.Runner.Current.Size));
+                Metric(
+                    body,
+                    "used",
+                    "used bytes\nbytes occupied by reserved blocks\nincludes padding and retained capacity",
+                    () => text.Format("{0}", session.Runner.Current.Used));
+                Metric(
+                    body,
+                    "live ranges",
+                    "live ranges\nallocations currently alive",
+                    () => text.Format("{0}", session.Runner.Current.LiveCount));
+                Metric(
+                    body,
+                    "free blocks",
+                    "free blocks\ncontiguous free gaps in the store",
+                    () => text.Format("{0}", session.Runner.Current.FreeBlockCount));
+                Metric(
+                    body,
+                    "free sizes",
+                    "free sizes\ndistinct block sizes in the free-size index",
+                    () => text.Format("{0}", session.Runner.Current.FreeSizeCount));
+                Metric(
+                    body,
+                    "pooled nodes",
+                    "pooled nodes\nrecycled bookkeeping nodes ready for reuse",
+                    () => text.Format("{0}", session.Runner.Current.PooledNodeCount));
+                Metric(
+                    body,
+                    "packs",
+                    "packs\ncompactions run so far in this scenario",
+                    () => text.Format("{0}", session.Runner.Current.PackCount));
+                Metric(
+                    body,
+                    "resizes",
+                    "resizes\nbacking store growths so far in this scenario",
+                    () => text.Format("{0}", session.Runner.Current.ResizeCount));
+                Metric(
+                    body,
+                    "op ticks",
+                    "op ticks\nstopwatch ticks the last allocator call took",
+                    () => text.Format("{0}", session.Runner.Current.OperationTicks));
+                Metric(
+                    body,
+                    "op managed B",
+                    "op managed bytes\nmanaged heap bytes the last call allocated\nzero means garbage-free",
+                    () => text.Format("{0}", session.Runner.Current.OperationManagedBytes));
             }
         }
 
-        void Metric(EntMut parent, string name, Func<ReadOnlySpan<char>> value)
+        void Metric(EntMut parent, string name, string tooltip, Func<ReadOnlySpan<char>> value)
         {
             Node(parent, out var row)
-                .Mutate(s.MetricRow);
+                .Mutate(s.MetricRow)
+                .IsSelectableV(true)
+                .TooltipV(tooltip);
             {
                 Node(row)
                     .Mutate(s.MutedLabel)

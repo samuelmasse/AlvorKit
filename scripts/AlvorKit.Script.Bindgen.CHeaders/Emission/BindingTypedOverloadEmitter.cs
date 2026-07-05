@@ -36,6 +36,7 @@ internal sealed class BindingTypedOverloadEmitter(BindingEmitterContext context)
             $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
             function.NativeName,
             remarks);
+        output.Append(BindingMethodAttributes.PlatformOnly(function));
         if (strings.Count == 0)
         {
             output.Append(TemplateResource.Render(

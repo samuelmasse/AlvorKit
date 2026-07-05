@@ -81,6 +81,7 @@ public class AppMenu(
                     .SizeTextRelativeV((1, 0))
                     .SizeV((0, s.Metrics.MenuBarHeight))
                     .TextF(() => session.Runner.Scenario.Name)
+                    .TooltipV("active scenario\nclick to open the scenario picker\ntab or mouse wheel also switch")
                     .OnPressF(session.OpenScenarioPicker);
 
                 Node(menuBar)

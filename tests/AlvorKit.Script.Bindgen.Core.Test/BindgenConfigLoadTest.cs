@@ -45,6 +45,9 @@ public sealed class BindgenConfigLoadTest
             fastNoise2Convenience: true
             advancedFunctions:
               - fixture_raw
+            platformFunctions:
+              windows:
+                - fixture_win_only
             enumGroups:
               FixtureMode:
                 prefix: FIXTURE_MODE_
@@ -94,6 +97,7 @@ public sealed class BindgenConfigLoadTest
         CollectionAssert.AreEqual(new[] { "fixture_extensions" }, config.StringArrayReturns);
         Assert.AreEqual("count", config.CountedSpanParams["fixture_icons"]["images"]);
         CollectionAssert.AreEqual(new[] { "fixture_raw" }, config.AdvancedFunctions);
+        CollectionAssert.AreEqual(new[] { "fixture_win_only" }, config.PlatformFunctions["windows"]);
         Assert.IsTrue(config.XxHashConvenience);
         Assert.IsTrue(config.FastNoise2Convenience);
     }

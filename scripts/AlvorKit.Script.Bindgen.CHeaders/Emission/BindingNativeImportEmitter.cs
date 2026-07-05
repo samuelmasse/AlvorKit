@@ -23,6 +23,7 @@ internal sealed class BindingNativeImportEmitter(BindingEmitterContext context)
         TemplateResource.Render(
             typeof(BindingNativeImportEmitter),
             "res/templates/bindgen/c-headers/csharp/native-import.csfrag.tmpl",
+            ("Attributes", BindingMethodAttributes.PlatformOnly(function)),
             ("NativeName", function.NativeName),
             ("ReturnInteropType", function.ReturnInteropType),
             ("ManagedName", function.ManagedName),

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.UI.Blend\AlvorKit.UI.Blend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Maths" />
+        <Using Include="AlvorKit.UI.Blend" />
+        <Using Include="AlvorKit.Windowing" />
+    </ItemGroup>
+
+</Project>

@@ -1,12 +1,13 @@
 namespace AlvorKit.Ranges.Demo.Visualizer;
 
-/// <summary>Builds one memory strip: the rendered block texture, active-slot frame, and outline.</summary>
+/// <summary>Builds one memory strip: the rendered block texture, active-slot frame, outline, and block labels.</summary>
 [App]
 public class AppMemoryStripMenu(
     AppStyle s,
     AppSession session,
     AppMemoryStripGeometry geometry,
-    AppMemoryStripTexture texture)
+    AppMemoryStripTexture texture,
+    AppMemoryStripLabels labels)
 {
     public void Create(EntMut root, AppMemoryStripView view)
     {
@@ -18,7 +19,8 @@ public class AppMemoryStripMenu(
             .SizeRelativeV((1, 1))
             .TextureF(() => texture.Texture(view))
             .IsSelectableV(true)
-            .TooltipF(() => texture.Tooltip(view, root));
+            .TooltipF(() => texture.Tooltip(view, root))
+            .TooltipColorF(() => texture.TooltipColor(view, root));
 
         var activeSlot = session.ActiveSlot;
         for (var i = 0; i < snapshot.Ranges.Length; i++)
@@ -32,6 +34,7 @@ public class AppMemoryStripMenu(
         }
 
         Outline(root, () => s.MemoryStripOutlineColor);
+        labels.Create(root, view);
 
         EntMutator<EntMut> Rect(
             EntMut parent,

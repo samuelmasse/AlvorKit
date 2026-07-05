@@ -1,0 +1,245 @@
+<!-- @dsCard group="Blend components" name="Form controls sheet" subtitle="Number fields, sliders, dropdowns, text fields, checkboxes — the widgets the Noise Lab adds" width="960" height="1050" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Blend form controls — number field, slider, dropdown, text field, checkbox</title>
+<style>
+  :root {
+    --bg:#181818; --panel:#202122; --raised:#282A2B; --border:#36393A; --strong:#4A4E50;
+    --text:#D7D7D2; --muted:#8D918E; --accent:#B98245; --active:#3A332B; --hover:#2D3031; --selection:#34383A;
+  }
+  * { box-sizing:border-box; margin:0; }
+  body {
+    width:960px; background:var(--bg); color:var(--text); padding:0 0 18px;
+    font:12px/1.35 Inter,"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .sb { font-weight:600; }
+  .mut { color:var(--muted); font-size:11px; }
+
+  .sheethead { height:35px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; padding:0 14px; }
+  .sheethead .t { font-weight:600; font-size:12px; }
+
+  .sec { margin:14px 14px 0; border:1px solid var(--border); }
+  .sechead { height:28px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:8px; padding:0 8px; }
+  .sechead .t { font-weight:600; }
+  .tag { height:16px; padding:0 6px; display:inline-flex; align-items:center; border-radius:2px;
+    font-size:10px; border:1px solid var(--border); color:var(--muted); }
+  .tag.new { border-color:var(--accent); color:#D8A45F; background:var(--active); }
+  .secbody { background:var(--panel); padding:14px; display:flex; align-items:flex-start; flex-wrap:wrap; gap:12px 16px; }
+  .spec { display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
+  .spec .cap { font-size:10px; color:var(--muted); max-width:200px; }
+
+  /* field base — FieldHeight 24, label inside, value right */
+  .fld { position:relative; width:200px; height:24px; display:flex; align-items:center;
+    padding:0 6px; background:var(--bg); border:1px solid var(--border); border-radius:2px; }
+  .fld .l { position:relative; z-index:1; flex:1; color:var(--muted); font-size:11px; }
+  .fld .v { position:relative; z-index:1; color:var(--text); }
+  .fld .dc { position:relative; z-index:1; margin-left:5px; color:var(--muted); font-size:9px; }
+  .fld.hov { border-color:var(--strong); }
+  .fld.hov .l { margin-left:8px; }
+  .fld.hov .v { margin-right:8px; }
+  .fld.drag { border-color:var(--accent); }
+  .fld.drag .v { font-weight:600; }
+  .fld .arr { position:absolute; z-index:1; top:0; bottom:0; display:flex; align-items:center;
+    color:var(--muted); font-size:9px; }
+  .fld .al { left:3px; }
+  .fld .ar { right:3px; }
+
+  /* slider fill */
+  .fld.sl i { position:absolute; left:1px; top:1px; bottom:1px; background:var(--selection); border-radius:1px; }
+  .fld.sl.drag i { background:var(--active); }
+
+  /* edit mode — inline text edit, select-all on entry */
+  .fld.edit { border-color:var(--accent); cursor:text; }
+  .fld.edit .ev { position:relative; z-index:1; color:var(--text); }
+  .fld.edit .ev .selx { background:var(--selection); }
+  .caret { display:inline-block; width:1px; height:14px; background:var(--text); vertical-align:-2px; }
+
+  /* dropdown open + popup */
+  .fld.open { border-color:var(--accent); background:var(--hover); }
+  .dwrap { position:relative; width:200px; }
+  .pop { position:absolute; left:0; top:26px; width:200px; z-index:5; background:var(--raised);
+    border:1px solid var(--strong); border-radius:2px; box-shadow:0 8px 22px rgba(0,0,0,.5); padding:3px; }
+  .opt { position:relative; height:22px; display:flex; align-items:center; padding:0 8px 0 10px;
+    color:var(--text); cursor:pointer; }
+  .opt.sel { background:var(--active); }
+  .opt.sel::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent); }
+  .opt.hov { background:var(--hover); }
+  .opt .k { margin-left:auto; color:var(--muted); font-size:10px; }
+  .pop .sbtrack { position:absolute; right:2px; top:4px; bottom:4px; width:3px; }
+  .pop .sbthumb { position:absolute; right:0; top:0; width:3px; height:45%; background:var(--strong); border-radius:2px; }
+  .dspacer { height:150px; }
+
+  /* text field */
+  .tf { width:200px; height:24px; display:flex; align-items:center; padding:0 6px; background:var(--bg);
+    border:1px solid var(--border); border-radius:2px; color:var(--text); }
+  .tf .ph { color:var(--muted); }
+  .tf.focus { border-color:var(--accent); }
+  .tf .selx { background:var(--selection); }
+
+  /* checkbox */
+  .cbr { display:flex; align-items:center; gap:7px; height:24px; }
+  .ck { width:14px; height:14px; flex:0 0 14px; background:var(--bg); border:1px solid var(--border);
+    border-radius:2px; display:flex; align-items:center; justify-content:center; }
+  .ck.on { background:var(--active); border-color:var(--accent); }
+  .ck.on::after { content:"\2713"; font-size:10px; color:var(--accent); }
+  .ck.hov { border-color:var(--strong); }
+
+  .foot { margin:14px 14px 0; font-size:11px; color:var(--muted); line-height:1.6; }
+  .foot b { color:var(--text); font-weight:600; }
+</style>
+</head>
+<body>
+
+  <div class="sheethead">
+    <span class="t">AlvorKit.UI.Blend &#8212; form controls sheet</span>
+    <span class="mut"><span class="tag new" style="margin-right:6px">new</span>added by the Noise Lab &#183; all controls reuse Field surface, FieldHeight 24, chrome tokens only</span>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Number fields</span><span class="tag new">new</span><span class="mut">NumberField / IntField &#8212; label inside, value right-aligned</span></div>
+    <div class="secbody">
+      <div class="spec">
+        <div class="fld"><span class="l">Lacunarity</span><span class="v">2.000</span></div>
+        <span class="cap">idle &#8212; Field surface, muted 11px label, 12px value</span>
+      </div>
+      <div class="spec">
+        <div class="fld hov"><span class="arr al">&#9666;</span><span class="l">Lacunarity</span><span class="v">2.000</span><span class="arr ar">&#9656;</span></div>
+        <span class="cap">hover &#8212; StrongBorder + &#9666; &#9656; step arrows; cursor ew-resize</span>
+      </div>
+      <div class="spec">
+        <div class="fld drag"><span class="l">Lacunarity</span><span class="v">2.140</span></div>
+        <span class="cap">dragging &#8212; Accent border; Ctrl snaps to step, Shift is &#215;0.1 fine, Esc cancels</span>
+      </div>
+      <div class="spec">
+        <div class="fld edit"><span class="l">Lacunarity</span><span class="ev"><span class="selx">2.14</span><span class="caret"></span></span></div>
+        <span class="cap">edit &#8212; double-click (or click without drag) selects all; Enter commits, Tab commits + next field</span>
+      </div>
+      <div class="spec">
+        <div class="fld hov"><span class="arr al">&#9666;</span><span class="l">Octaves</span><span class="v">5</span><span class="arr ar">&#9656;</span></div>
+        <span class="cap">IntField &#8212; arrows step 1, drag scrubs 1 per 8px; enum-typed ints render as dropdowns instead</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Sliders</span><span class="tag new">new</span><span class="mut">SliderField &#8212; NumberField with a bounded range and a fill bar</span></div>
+    <div class="secbody">
+      <div class="spec">
+        <div class="fld sl"><i style="width:35%"></i><span class="l">Gain</span><span class="v">0.350</span></div>
+        <span class="cap">idle &#8212; fill is Selection, inset 1px inside the border</span>
+      </div>
+      <div class="spec">
+        <div class="fld sl hov"><span style="position:absolute;left:1px;top:1px;bottom:1px;width:35%;background:var(--selection);border-radius:1px"></span><span class="arr al">&#9666;</span><span class="l">Gain</span><span class="v">0.350</span><span class="arr ar">&#9656;</span></div>
+        <span class="cap">hover &#8212; same arrows as NumberField; click jumps nowhere, only drag moves (Blender behavior)</span>
+      </div>
+      <div class="spec">
+        <div class="fld sl drag"><i style="width:54%"></i><span class="l">Gain</span><span class="v">0.537</span></div>
+        <span class="cap">dragging &#8212; fill turns ActiveSurface, border Accent; absolute drag maps pointer to range</span>
+      </div>
+      <div class="spec">
+        <div class="fld sl"><i style="width:0%"></i><span class="l">Weighted Strength</span><span class="v">0.000</span></div>
+        <span class="cap">empty &#8212; 0% fill collapses fully</span>
+      </div>
+      <div class="spec">
+        <div class="fld sl"><i style="width:100%"></i><span class="l">Gain</span><span class="v">1.000</span></div>
+        <span class="cap">full &#8212; fill reaches the 1px border inset, never over it</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Dropdowns</span><span class="tag new">new</span><span class="mut">DropdownField + BlendDropdownMenu popup collaborator</span></div>
+    <div class="secbody">
+      <div class="spec">
+        <div class="fld drop"><span class="l">Ramp</span><span class="v">Grayscale</span><span class="dc">&#9662;</span></div>
+        <span class="cap">closed &#8212; value + &#9662;; label optional (toolbar variant omits it)</span>
+      </div>
+      <div class="spec">
+        <div class="fld drop hov"><span class="l" style="margin-left:0">Ramp</span><span class="v" style="margin-right:0">Grayscale</span><span class="dc">&#9662;</span></div>
+        <span class="cap">hover &#8212; StrongBorder, Hand cursor; Enter or click opens</span>
+      </div>
+      <div class="spec">
+        <div class="dwrap">
+          <div class="fld open" style="width:200px"><span class="l">Ramp</span><span class="v">Grayscale</span><span class="dc">&#9662;</span></div>
+          <div class="pop">
+            <div class="opt sel">Grayscale<span class="k">current</span></div>
+            <div class="opt hov">Terrain</div>
+            <div class="opt">Magma</div>
+            <div class="opt">Viridis</div>
+            <div class="opt">Two-tone</div>
+            <div class="sbtrack"><div class="sbthumb"></div></div>
+          </div>
+          <div class="dspacer"></div>
+        </div>
+        <span class="cap">open &#8212; popup is Raised + StrongBorder + shadow (tooltip surface recipe), floats on the root layer,
+          opens below and flips above near the root edge; option rows 22px, selected gets the 3px accent bar;
+          &#8593;&#8595; move, Enter picks, Esc / click-away closes</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Text fields</span><span class="tag new">new</span><span class="mut">TextField &#8212; single line; the number-field edit mode reuses this engine</span></div>
+    <div class="secbody">
+      <div class="spec">
+        <div class="tf"><span class="ph">preset name&#8230;</span></div>
+        <span class="cap">idle empty &#8212; muted placeholder</span>
+      </div>
+      <div class="spec">
+        <div class="tf focus"><span class="caret"></span></div>
+        <span class="cap">focused empty &#8212; Accent border, 1px Text caret blinking at 1s</span>
+      </div>
+      <div class="spec">
+        <div class="tf focus">terrain-base-02<span class="caret"></span></div>
+        <span class="cap">typing &#8212; caret trails the insertion point; Home/End, arrows, Backspace/Delete, key repeat</span>
+      </div>
+      <div class="spec">
+        <div class="tf focus"><span class="selx">terrain-base-02</span><span class="caret"></span></div>
+        <span class="cap">selection &#8212; Selection token fill; Ctrl+A all, Shift+arrows extend, typing replaces</span>
+      </div>
+      <div class="spec">
+        <div class="tf">terrain-base-02</div>
+        <span class="cap">blurred with text &#8212; commit on blur and Enter; Esc restores the pre-edit value; numeric mode re-parses and reverts on garbage</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Checkboxes</span><span class="tag new">new</span><span class="mut">Checkbox &#8212; 14px box + label, whole row is the hit target</span></div>
+    <div class="secbody">
+      <div class="spec">
+        <div class="cbr"><span class="ck"></span><span>Invert</span></div>
+        <span class="cap">off</span>
+      </div>
+      <div class="spec">
+        <div class="cbr"><span class="ck on"></span><span>Normalize output</span></div>
+        <span class="cap">on &#8212; ActiveSurface fill, Accent border + check</span>
+      </div>
+      <div class="spec">
+        <div class="cbr"><span class="ck hov"></span><span>Invert</span></div>
+        <span class="cap">hover &#8212; StrongBorder, Hand cursor; Enter toggles when focused</span>
+      </div>
+      <div class="spec">
+        <div class="cbr"><span class="ck on"></span><span>Tiled preview &#215;2</span></div>
+        <span class="cap">label is Text 12; clicking the label toggles too</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>Input capabilities each control forces:</b> number/slider fields need press-drag-release <b>pointer capture</b>
+    (lands on the RootUiMouse click-dispatch fix pending since 6a33281); dropdowns need a <b>root-layer popup</b> with
+    click-away dismissal (grown from the tooltip float); text fields need <b>focused text input</b> with key repeat and
+    a caret timer. <b>Proposed recipes:</b> NumberField / IntField / SliderField / DropdownField / TextField / Checkbox in
+    BlendStyle, plus a BlendDropdownMenu collaborator beside BlendTooltipMenu, and a BlendTextEdit state helper shared by
+    TextField and the number-field edit mode. <b>New metrics:</b> DropdownOptionHeight 22, CheckboxSize 14, CaretWidth 1,
+    FieldArrowPadding 3, DragPixelsPerStep 8; everything else reuses FieldHeight 24, FieldTextPadding 6, and MutedFontSize 11.
+    Per-variable drag ranges, enum entries, and tooltips all come from FastNoise2 metadata, not hand-wired forms.
+  </div>
+
+</body>
+</html>

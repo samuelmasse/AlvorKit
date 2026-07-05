@@ -64,6 +64,7 @@ internal sealed class BindingSpanOverloadEmitter(BindingEmitterContext context)
             $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
             function.NativeName,
             "Pins span arguments for the duration of the native call and supplies byte lengths where the native method expects them.");
+        documentation.Append(BindingMethodAttributes.PlatformOnly(function));
         var call = $"{function.ManagedName}({string.Join(", ", arguments)})";
         var fixedStatements = string.Join("", spanned.Select(candidate =>
         {

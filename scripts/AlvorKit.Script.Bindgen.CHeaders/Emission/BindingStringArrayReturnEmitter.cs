@@ -24,6 +24,7 @@ internal sealed class BindingStringArrayReturnEmitter(BindingEmitterContext cont
                 $"{context.Config.ApiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
                 function.NativeName,
                 "Copies the returned C string array to managed strings while supplying the count internally.");
+            documentation.Append(BindingMethodAttributes.PlatformOnly(function));
             output.Append(TemplateResource.Render(
                 typeof(BindingStringArrayReturnEmitter),
                 "res/templates/bindgen/c-headers/csharp/string-array-return.csfrag.tmpl",

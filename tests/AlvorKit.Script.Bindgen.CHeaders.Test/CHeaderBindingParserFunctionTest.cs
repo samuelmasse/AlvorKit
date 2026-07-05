@@ -157,6 +157,51 @@ public sealed class CHeaderBindingParserFunctionTest
     }
 
     [TestMethod]
+    public void Parse_MarksConfiguredPlatformFunctions()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            void test_win_only(void);
+            void test_mac_only(void);
+            void test_everywhere(void);
+            """);
+        var config = CHeaderTestConfig.Create();
+        config.PlatformFunctions = new()
+        {
+            ["windows"] = ["test_win_only"],
+            ["macos"] = ["test_mac_only"]
+        };
+
+        var model = CHeaderParserHarness.Parse(translationUnit, source, config);
+
+        Assert.AreEqual("windows", model.Functions.Single(function => function.NativeName == "test_win_only").Platform);
+        Assert.AreEqual("macos", model.Functions.Single(function => function.NativeName == "test_mac_only").Platform);
+        Assert.IsNull(model.Functions.Single(function => function.NativeName == "test_everywhere").Platform);
+    }
+
+    [TestMethod]
+    public void Parse_RejectsFunctionListedUnderMultiplePlatforms()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            void test_dual(void);
+            """);
+        var config = CHeaderTestConfig.Create();
+        config.PlatformFunctions = new()
+        {
+            ["windows"] = ["test_dual"],
+            ["linux"] = ["test_dual"]
+        };
+
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() =>
+            CHeaderParserHarness.Parse(translationUnit, source, config));
+
+        StringAssert.Contains(exception.Message, "test_dual");
+    }
+
+    [TestMethod]
     public void Parse_UsesConfiguredTypeAliasesWithoutEmittingStructs()
     {
         using var workspace = TempWorkspace.Create();

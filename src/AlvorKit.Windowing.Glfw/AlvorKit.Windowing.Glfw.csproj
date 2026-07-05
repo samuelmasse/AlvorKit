@@ -22,6 +22,7 @@
         <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.GLFW" />
         <Using Include="AlvorKit.Windowing" />
+        <Using Include="System.Runtime.Versioning" />
     </ItemGroup>
 
 </Project>

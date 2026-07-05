@@ -19,6 +19,7 @@
         <Project Path="demos/AlvorKit.Ranges.Demo.Bench/AlvorKit.Ranges.Demo.Bench.csproj" />
         <Project Path="demos/AlvorKit.Ranges.Demo.Visualizer/AlvorKit.Ranges.Demo.Visualizer.csproj" />
         <Project Path="demos/AlvorKit.UI.Blend.Demo/AlvorKit.UI.Blend.Demo.csproj" />
+        <Project Path="demos/AlvorKit.UI.Blend.Demo.NoiseLab/AlvorKit.UI.Blend.Demo.NoiseLab.csproj" />
         <Project
             Path="demos/AlvorKit.OpenGL.Demo.HelloTriangle/AlvorKit.OpenGL.Demo.HelloTriangle.csproj" />
         <Project
@@ -114,6 +115,8 @@
         <Project
             Path="tests/AlvorKit.Script.TestTiming.Test/AlvorKit.Script.TestTiming.Test.csproj" />
         <Project Path="tests/AlvorKit.Windowing.Test/AlvorKit.Windowing.Test.csproj" />
+        <Project Path="tests/AlvorKit.UI.Test/AlvorKit.UI.Test.csproj" />
+        <Project Path="tests/AlvorKit.UI.Blend.Test/AlvorKit.UI.Blend.Test.csproj" />
     </Folder>
 
 </Solution>

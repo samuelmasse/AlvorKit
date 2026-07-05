@@ -35,6 +35,7 @@ internal static class BindingCallbackSetterEmitter
             $"{apiClass}.{function.ManagedName}({BindingSignature.Cref(function.Parameters)})",
             function.NativeName,
             "Roots the delegate and installs its function pointer; pass null to clear it.");
+        documentation.Append(BindingMethodAttributes.PlatformOnly(function));
         output.Append(TemplateResource.Render(
             typeof(BindingCallbackSetterEmitter),
             "res/templates/bindgen/c-headers/csharp/callback-setter.csfrag.tmpl",
