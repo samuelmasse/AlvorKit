@@ -10,7 +10,20 @@ public class RootUiDraw(RootSprites sprites, RootUiScale scale, RootUiPosition p
 
         DrawNode(n);
         foreach (var sc in n.NodesR.Span)
+        {
+            if (sc.IsFloatingFV.Resolve())
+                continue;
+
             Draw(sc);
+        }
+
+        foreach (var sc in n.NodesR.Span)
+        {
+            if (!sc.IsFloatingFV.Resolve())
+                continue;
+
+            Draw(sc);
+        }
 
         sprites.Batch.Clip = clip;
     }
@@ -83,17 +96,12 @@ public class RootUiDraw(RootSprites sprites, RootUiScale scale, RootUiPosition p
         var size = new Vec2(
             sprites.Batch.Measure(font.Size(fontSize), text, glyphSnap) / scale.Scale,
             font.Size(fontSize).Metrics.Height / scale.Scale);
-        var offset = Vec2.Zero;
-
         var fontPadding = n.FontPaddingFV.Resolve();
         var textPadding = n.TextPaddingFV.Resolve();
+        var contentOffset = fontPadding.XY + textPadding.XY;
+        var contentSize = n.SizeR - contentOffset - fontPadding.ZW - textPadding.ZW;
 
-        if ((alignment & (Alignment.Right | Alignment.Horizontal)) == 0)
-            offset.X += fontPadding.X + textPadding.X;
-        if ((alignment & (Alignment.Bottom | Alignment.Vertical)) == 0)
-            offset.Y += fontPadding.Y + textPadding.Y;
-
-        offset = position.Align(offset, size, n.SizeR, alignment, 0);
+        var offset = position.Align(contentOffset, size, contentSize, alignment, 0);
         offset.Y += size.Y / 2;
         offset += n.TextOffsetFV.Resolve();
 

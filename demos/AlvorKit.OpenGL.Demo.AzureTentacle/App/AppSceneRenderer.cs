@@ -6,7 +6,7 @@ public class AppSceneRenderer(
     RootGl gl,
     RootCanvas canvas,
     RootBackbuffer backbuffer,
-    AppStyle style,
+    AppStyle s,
     AppSession session)
 {
     public void Render()
@@ -15,7 +15,7 @@ public class AppSceneRenderer(
         if (size.X <= 0f || size.Y <= 0f)
             return;
 
-        backbuffer.Clear(style.SceneClearColor);
+        backbuffer.Clear(s.SceneClearColor);
         gl.Viewport(0, 0, (int)size.X, (int)size.Y);
         gl.Enable(GlEnableCap.DepthTest);
         gl.DepthFunc(GlDepthFunction.Less);

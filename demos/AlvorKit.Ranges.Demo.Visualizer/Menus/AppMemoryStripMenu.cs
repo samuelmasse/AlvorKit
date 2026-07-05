@@ -2,7 +2,7 @@ namespace AlvorKit.Ranges.Demo.Visualizer;
 
 [App]
 public class AppMemoryStripMenu(
-    AppStyle style,
+    AppStyle s,
     AppSession session,
     AppMemoryStripGeometry geometry,
     AppMemoryStripTexture texture)
@@ -30,7 +30,7 @@ public class AppMemoryStripMenu(
                 ActiveFrame(root, view, range.Index, range.ReservedSize);
         }
 
-        Outline(root, () => style.MemoryStripOutlineColor);
+        Outline(root, () => s.MemoryStripOutlineColor);
 
         EntMutator<EntMut> Rect(
             EntMut parent,
@@ -60,7 +60,7 @@ public class AppMemoryStripMenu(
             const float edgeWidth = 2f;
             const float framePadding = 2f;
 
-            Rect(parent, view, index, size, () => style.MemoryActiveFrameFillColor)
+            Rect(parent, view, index, size, () => s.MemoryActiveFrameFillColor)
                 .OffsetF(() => geometry.SegmentOffset(parent, view, index) - (framePadding, framePadding))
                 .SizeF(() => geometry.SegmentSize(parent, view, index, size) + (framePadding + framePadding, framePadding + framePadding));
 
@@ -68,7 +68,7 @@ public class AppMemoryStripMenu(
                 .SizeRelativeV((0, 0))
                 .OffsetF(() => geometry.SegmentOffset(parent, view, index) - (framePadding, framePadding))
                 .SizeF(() => (geometry.SegmentSize(parent, view, index, size).X + framePadding + framePadding, edgeWidth))
-                .ColorV(style.HighlightColor);
+                .ColorV(s.HighlightColor);
 
             Node(parent)
                 .SizeRelativeV((0, 0))
@@ -79,13 +79,13 @@ public class AppMemoryStripMenu(
                     return (offset.X - framePadding, offset.Y + segment.Y + framePadding - edgeWidth);
                 })
                 .SizeF(() => (geometry.SegmentSize(parent, view, index, size).X + framePadding + framePadding, edgeWidth))
-                .ColorV(style.HighlightColor);
+                .ColorV(s.HighlightColor);
 
             Node(parent)
                 .SizeRelativeV((0, 0))
                 .OffsetF(() => geometry.SegmentOffset(parent, view, index) - (framePadding, framePadding))
                 .SizeF(() => (edgeWidth, geometry.SegmentSize(parent, view, index, size).Y + framePadding + framePadding))
-                .ColorV(style.HighlightColor);
+                .ColorV(s.HighlightColor);
 
             Node(parent)
                 .SizeRelativeV((0, 0))
@@ -96,7 +96,7 @@ public class AppMemoryStripMenu(
                     return (offset.X + segment.X + framePadding - edgeWidth, offset.Y - framePadding);
                 })
                 .SizeF(() => (edgeWidth, geometry.SegmentSize(parent, view, index, size).Y + framePadding + framePadding))
-                .ColorV(style.HighlightColor);
+                .ColorV(s.HighlightColor);
         }
 
         void Outline(EntMut parent, Func<Vec4> color)
@@ -104,25 +104,25 @@ public class AppMemoryStripMenu(
             Node(parent)
                 .AlignmentV(Alignment.Top | Alignment.Left)
                 .SizeRelativeV((1, 0))
-                .SizeV((0, style.RuleWidth))
+                .SizeV((0, s.RuleWidth))
                 .ColorF(color);
 
             Node(parent)
                 .AlignmentV(Alignment.Bottom | Alignment.Left)
                 .SizeRelativeV((1, 0))
-                .SizeV((0, style.RuleWidth))
+                .SizeV((0, s.RuleWidth))
                 .ColorF(color);
 
             Node(parent)
                 .AlignmentV(Alignment.Top | Alignment.Left)
                 .SizeRelativeV((0, 1))
-                .SizeV((style.RuleWidth, 0))
+                .SizeV((s.RuleWidth, 0))
                 .ColorF(color);
 
             Node(parent)
                 .AlignmentV(Alignment.Top | Alignment.Right)
                 .SizeRelativeV((0, 1))
-                .SizeV((style.RuleWidth, 0))
+                .SizeV((s.RuleWidth, 0))
                 .ColorF(color);
         }
     }

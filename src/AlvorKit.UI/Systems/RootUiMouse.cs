@@ -21,7 +21,13 @@ public class RootUiMouse(RootMouse mouse, RootUiScale scale, RootUiFocus focus, 
     {
         position = mouse.Position / scale.Scale;
 
-        var hovered = FindHovered(null, n);
+        if (CursorGrabbed())
+        {
+            ClearHovered();
+            return;
+        }
+
+        var hovered = FindHovered(null, n, false);
         if (hovered != prevHovered)
         {
             prevHovered.IsHoveredR = false;
@@ -39,7 +45,15 @@ public class RootUiMouse(RootMouse mouse, RootUiScale scale, RootUiFocus focus, 
 
     internal void Update(EntMut n)
     {
-        var scrolled = FindScrolled(null, n);
+        if (CursorGrabbed())
+        {
+            ClearPressed();
+            prevMainDown = mouse.IsMainDown();
+            prevSecondaryDown = mouse.IsSecondaryDown();
+            return;
+        }
+
+        var scrolled = FindScrolled(null, n, false);
         if (mouse.Wheel != default)
             scrolled.OnScrollFV.Resolve()?.Invoke(mouse.Wheel);
 
@@ -136,18 +150,19 @@ public class RootUiMouse(RootMouse mouse, RootUiScale scale, RootUiFocus focus, 
         e.OnSecondaryClickFV.Resolve()?.Invoke();
     }
 
-    private EntMut FindHovered(Box2? clip, EntMut n)
+    private EntMut FindHovered(Box2? clip, EntMut n, bool inputDisabled)
     {
         var box = clipping.IntersectClips(clip, new Box2(n.PositionR, n.PositionR + n.SizeR));
+        inputDisabled |= n.IsInputDisabledFV.Resolve();
 
         EntMut hovered = default;
 
-        if (box.ContainsInclusive(position) && n.IsSelectableFV.Resolve())
+        if (!inputDisabled && box.ContainsInclusive(position) && n.IsSelectableFV.Resolve())
             hovered = n;
 
         foreach (var c in n.NodesR.Span)
         {
-            var child = FindHovered(box, c);
+            var child = FindHovered(box, c, inputDisabled);
             if (child != default)
                 hovered = child;
         }
@@ -155,18 +170,19 @@ public class RootUiMouse(RootMouse mouse, RootUiScale scale, RootUiFocus focus, 
         return hovered;
     }
 
-    private EntMut FindScrolled(Box2? clip, EntMut n)
+    private EntMut FindScrolled(Box2? clip, EntMut n, bool inputDisabled)
     {
         var box = clipping.IntersectClips(clip, new Box2(n.PositionR, n.PositionR + n.SizeR));
+        inputDisabled |= n.IsInputDisabledFV.Resolve();
 
         EntMut scrolled = default;
 
-        if (box.ContainsInclusive(position) && n.IsScrollableFV.Resolve())
+        if (!inputDisabled && box.ContainsInclusive(position) && n.IsScrollableFV.Resolve())
             scrolled = n;
 
         foreach (var c in n.NodesR.Span)
         {
-            var child = FindScrolled(box, c);
+            var child = FindScrolled(box, c, inputDisabled);
             if (child != default)
                 scrolled = child;
         }
@@ -175,4 +191,20 @@ public class RootUiMouse(RootMouse mouse, RootUiScale scale, RootUiFocus focus, 
     }
 
     private bool InputEnabled(EntMut n) => !n.IsInputDisabledFV.Resolve();
+
+    private bool CursorGrabbed() => mouse.CursorMode is CursorMode.Disabled or CursorMode.Captured;
+
+    private void ClearHovered()
+    {
+        prevHovered.IsHoveredR = false;
+        prevHovered = default;
+    }
+
+    private void ClearPressed()
+    {
+        pressedMain.IsPressedR = false;
+        pressedMain = default;
+        pressedSecondary.IsSecondaryPressedR = false;
+        pressedSecondary = default;
+    }
 }

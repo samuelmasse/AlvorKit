@@ -16,6 +16,9 @@ node subtree. Keep the class body intentionally tiny.
 - Constructor injection is allowed. Prefer primary constructors for injected
   collaborators such as style, app/session command surfaces, text formatting,
   input roots, or child menus.
+- Name an injected style collaborator `s`, regardless of the concrete style
+  type. Prefer `AppStyle s` and `.Mutate(s.EmphasisLabel)` over longer names
+  such as `style`.
 - `Create` may accept explicit props, like `Create(EntMut root,
   AppInventoryView view)`. Do not pass the owner, parent state object, or the
   main application state itself as a prop.
@@ -30,12 +33,33 @@ members, but they should not be named `Menu` unless they follow the menu rules.
 
 Write menu code so the source layout mirrors the visible UI tree.
 
+- Treat the `root` parameter as a mount parent owned by the caller. Do not
+  mutate it for size, placement, color, layout, input, or styling.
+- Create a top-level child node for the menu's own surface, such as
+  `Node(root, out var panel)`, then mutate that child and put the menu's
+  children under it. This lets the caller size and place the menu anywhere.
+- If all visible children need to share one layout or surface, create that
+  child container explicitly. Do not use the incoming `root` as that container.
 - Use braces after parent `Node(..., out var child)` calls to show ownership of
   child nodes.
 - Keep sibling groups in screen order.
-- Prefer `Mutate(childMenu.Create)` for child menus when no props are needed.
-  Prefer `Mutate(node => childMenu.Create(node, props))` when props make the
-  child menu reusable and explicit.
+- Make node creation visible in the menu tree. Do not hide simple controls or
+  repeated leaves behind local functions like `Button(parent, ...)`; declare
+  `Node(parent)` at the call site and use `.Mutate(...)` to apply style,
+  behavior, or reusable component recipes.
+- Prefer putting `.Mutate(...)` calls first in a node chain when that mutate
+  establishes the node's general shape, surface, or component recipe. Follow it
+  with local sizing, placement, text, callbacks, or one-off overrides. Put
+  `.Mutate(...)` later only when it intentionally depends on those local values
+  or is applying a final override.
+- If a helper would need to create multiple nodes and the hidden subtree is a
+  meaningful UI region, extract a child menu or name a local region carefully
+  enough that the source still reads like the visible tree.
+- Prefer `childMenu.Create(parent)` for child menus when the child should
+  contribute its own top-level node to the parent layout.
+- Create a caller-owned slot node only when the caller needs to size, align, or
+  otherwise place the child menu's mounting area, then call
+  `childMenu.Create(slot)`.
 - Build visual elements as UI nodes. If a visualization needs pixel geometry,
   express it through node offsets, sizes, colors, and tooltip/selectable
   metadata rather than a separate manual drawing path.
@@ -45,7 +69,7 @@ Example:
 ```csharp
 [App]
 public class AppExampleMenu(
-    AppStyle style,
+    AppStyle s,
     AppSession session,
     AppChildMenu childMenu)
 {
@@ -53,19 +77,20 @@ public class AppExampleMenu(
     {
         const float headerHeight = 40f;
 
-        root.Mutate(style.PanelList);
-
-        Node(root, out var header)
-            .SizeWeightTypeV(SizeWeightType.Self)
-            .SizeV((0, headerHeight));
+        Node(root, out var panel)
+            .Mutate(s.PanelList);
         {
-            Node(header)
-                .Mutate(style.Heading)
-                .TextF(() => session.Title);
-        }
+            Node(panel, out var header)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .SizeV((0, headerHeight));
+            {
+                Node(header)
+                    .Mutate(s.Heading)
+                    .TextF(() => session.Title);
+            }
 
-        Node(root)
-            .Mutate(node => childMenu.Create(node, view.Child));
+            childMenu.Create(panel, view.Child);
+        }
     }
 }
 ```
@@ -90,7 +115,7 @@ Prefer the smallest readable scope.
 Prefer:
 
 ```csharp
-root.Mutate()
+button.Mutate()
     .OnUpdateF(() =>
     {
         if (!keyboard.IsKeyDown(Keys.LeftShift))

@@ -8,7 +8,7 @@ public class EditorShellState(
     RootScripts scripts,
     RootUi ui,
     RootUiScript uiScript,
-    EditorShellStyle style,
+    EditorShellStyle s,
     EditorShellMenu menu) : State
 {
     private EntMut menuNode;
@@ -20,7 +20,11 @@ public class EditorShellState(
         screen.Size = (3840u, 2160u);
         scripts.Add(uiScript);
         uiScriptAdded = true;
-        menuNode = Node(ui).Mutate(menu.Create);
+        menuNode = Node(ui)
+            .SizeRelativeV((1, 1));
+        {
+            menu.Create(menuNode);
+        }
         screen.IsVisible = true;
     }
 
@@ -36,5 +40,5 @@ public class EditorShellState(
         }
     }
 
-    public override void Render() => backbuffer.Clear(style.Palette.AppBackground);
+    public override void Render() => backbuffer.Clear(s.Palette.AppBackground);
 }

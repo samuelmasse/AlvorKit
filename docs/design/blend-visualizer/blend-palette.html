@@ -1,0 +1,131 @@
+<!-- @dsCard group="Foundations" name="Palette tokens" subtitle="Blend chrome palette + app-local Visualizer data palette" width="960" height="900" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Blend palette + Visualizer data palette</title>
+<style>
+  :root {
+    --bg:#181818; --panel:#202122; --raised:#282A2B; --border:#36393A; --strong:#4A4E50;
+    --text:#D7D7D2; --muted:#8D918E; --accent:#B98245; --active:#3A332B; --hover:#2D3031; --selection:#34383A;
+  }
+  * { box-sizing:border-box; margin:0; }
+  body {
+    width:960px; background:var(--bg); color:var(--text); padding:0 0 18px;
+    font:12px/1.35 Inter,"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .sb { font-weight:600; }
+  .mut { color:var(--muted); font-size:11px; }
+  .sheethead { height:35px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; padding:0 14px; }
+  .sec { margin:14px 14px 0; border:1px solid var(--border); }
+  .sechead { height:28px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; padding:0 8px; }
+  .secbody { background:var(--panel); padding:14px; }
+
+  .tokens { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px 14px; }
+  .tok { display:flex; align-items:center; gap:9px; }
+  .tok .s { width:44px; height:30px; flex:0 0 44px; border:1px solid rgba(255,255,255,.09); }
+  .tok .n { font-size:11px; color:var(--text); }
+  .tok .h { display:block; font-size:10px; color:var(--muted); }
+
+  .grp { margin-bottom:14px; }
+  .grp:last-child { margin-bottom:0; }
+  .grplabel { font-size:11px; color:var(--muted); margin-bottom:7px; }
+  .swrow { display:flex; gap:8px; flex-wrap:wrap; }
+  .csw { display:flex; flex-direction:column; gap:3px; align-items:center; }
+  .csw .s { width:34px; height:22px; border:1px solid rgba(255,255,255,.09); }
+  .csw .n { font-size:10px; color:var(--muted); }
+  .ramp { display:flex; align-items:center; gap:9px; margin-bottom:6px; }
+  .ramp .rl { width:104px; flex:0 0 104px; font-size:11px; color:var(--muted); }
+  .ramp .rb { display:flex; height:16px; flex:1; border:1px solid rgba(255,255,255,.09); }
+  .ramp .rb i { flex:1; }
+  .ramp .rn { width:210px; flex:0 0 210px; font-size:10px; color:var(--muted); padding-left:2px; }
+</style>
+</head>
+<body>
+
+  <div class="sheethead">
+    <span class="sb">AlvorKit.UI.Blend — palette tokens</span>
+    <span class="mut">chrome is shared; data colors stay in the demo</span>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="sb">BlendPalette — shared chrome</span><span class="mut">+ proposed Scrim token</span></div>
+    <div class="secbody">
+      <div class="tokens">
+        <div class="tok"><span class="s" style="background:#181818"></span><span class="n">AppBackground<span class="h">#181818</span></span></div>
+        <div class="tok"><span class="s" style="background:#202122"></span><span class="n">Panel<span class="h">#202122</span></span></div>
+        <div class="tok"><span class="s" style="background:#282A2B"></span><span class="n">Raised<span class="h">#282A2B</span></span></div>
+        <div class="tok"><span class="s" style="background:#36393A"></span><span class="n">Border<span class="h">#36393A</span></span></div>
+        <div class="tok"><span class="s" style="background:#4A4E50"></span><span class="n">StrongBorder<span class="h">#4A4E50</span></span></div>
+        <div class="tok"><span class="s" style="background:#D7D7D2"></span><span class="n">Text<span class="h">#D7D7D2</span></span></div>
+        <div class="tok"><span class="s" style="background:#8D918E"></span><span class="n">MutedText<span class="h">#8D918E</span></span></div>
+        <div class="tok"><span class="s" style="background:#B98245"></span><span class="n">Accent<span class="h">#B98245</span></span></div>
+        <div class="tok"><span class="s" style="background:#3A332B"></span><span class="n">ActiveSurface<span class="h">#3A332B</span></span></div>
+        <div class="tok"><span class="s" style="background:#2D3031"></span><span class="n">Hover<span class="h">#2D3031</span></span></div>
+        <div class="tok"><span class="s" style="background:#34383A"></span><span class="n">Selection<span class="h">#34383A</span></span></div>
+        <div class="tok"><span class="s" style="background:rgba(8,9,10,.62)"></span><span class="n">Scrim (new)<span class="h">rgba(8,9,10,.62)</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="sb">Visualizer data palette — app-local</span><span class="mut">allocator semantics, not Blend chrome</span></div>
+    <div class="secbody">
+
+      <div class="grp">
+        <div class="grplabel">allocation slot colors — AllocationColor(slot % 8)</div>
+        <div class="swrow">
+          <div class="csw"><span class="s" style="background:#42C7F2"></span><span class="n">0</span></div>
+          <div class="csw"><span class="s" style="background:#F27585"></span><span class="n">1</span></div>
+          <div class="csw"><span class="s" style="background:#94E06B"></span><span class="n">2</span></div>
+          <div class="csw"><span class="s" style="background:#FAB84D"></span><span class="n">3</span></div>
+          <div class="csw"><span class="s" style="background:#A88CF5"></span><span class="n">4</span></div>
+          <div class="csw"><span class="s" style="background:#59E0B8"></span><span class="n">5</span></div>
+          <div class="csw"><span class="s" style="background:#EB9EE6"></span><span class="n">6</span></div>
+          <div class="csw"><span class="s" style="background:#ADC7EB"></span><span class="n">7</span></div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="grplabel">command kinds — CommandColor(kind)</div>
+        <div class="swrow">
+          <div class="csw"><span class="s" style="background:#40CCF2"></span><span class="n">alloc</span></div>
+          <div class="csw"><span class="s" style="background:#8CE66B"></span><span class="n">realloc</span></div>
+          <div class="csw"><span class="s" style="background:#F2575C"></span><span class="n">free</span></div>
+          <div class="csw"><span class="s" style="background:#C78FFF"></span><span class="n">pack</span></div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="grplabel">block anatomy</div>
+        <div class="swrow">
+          <div class="csw"><span class="s" style="background:#214038"></span><span class="n">free</span></div>
+          <div class="csw"><span class="s" style="background:#45997A"></span><span class="n">free edge</span></div>
+          <div class="csw"><span class="s" style="background:#172424"></span><span class="n">tail free</span></div>
+          <div class="csw"><span class="s" style="background:rgba(107,148,189,.66)"></span><span class="n">retained</span></div>
+          <div class="csw"><span class="s" style="background:rgba(242,158,51,.78)"></span><span class="n">padding</span></div>
+          <div class="csw"><span class="s" style="background:rgba(229,255,255,.38)"></span><span class="n">latest fill</span></div>
+          <div class="csw"><span class="s" style="background:#FFF58C"></span><span class="n">highlight</span></div>
+          <div class="csw"><span class="s" style="background:#020203"></span><span class="n">overlay free</span></div>
+          <div class="csw"><span class="s" style="background:#1F1F21"></span><span class="n">occupied</span></div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="grplabel">overlay mode ramps</div>
+        <div class="ramp"><span class="rl">occupancy</span><div class="rb"><i style="background:#520506"></i><i style="background:#F50F09"></i></div><span class="rn">reserved &#8594; payload</span></div>
+        <div class="ramp"><span class="rl">density</span><div class="rb"><i style="background:#2E0608"></i><i style="background:#D93314"></i><i style="background:#FFEBB8"></i></div><span class="rn">low &#8594; mid &#8594; high</span></div>
+        <div class="ramp"><span class="rl">efficiency</span><div class="rb"><i style="background:#E6140D"></i><i style="background:#F5B81F"></i><i style="background:#47E652"></i></div><span class="rn">waste &#8594; mixed &#8594; good</span></div>
+        <div class="ramp"><span class="rl">fragmentation</span><div class="rb"><i style="background:#F21A0F"></i><i style="background:#FAA31F"></i><i style="background:#33B3D6"></i></div><span class="rn">tiny &#8594; medium &#8594; large holes</span></div>
+        <div class="ramp"><span class="rl">churn</span><div class="rb"><i style="background:#292B2E"></i><i style="background:#FFC733"></i></div><span class="rn">idle &#8594; recent</span></div>
+        <div class="ramp"><span class="rl">relocation</span><div class="rb"><i style="background:#47E070"></i><i style="background:#F557FF"></i><i style="background:#38D6FF"></i></div><span class="rn">reused &#8594; moved &#8594; new</span></div>
+        <div class="ramp"><span class="rl">outliers</span><div class="rb"><i style="background:#1F1F21"></i><i style="background:#FF38D1"></i><i style="background:#FFEBB8"></i></div><span class="rn">normal &#8594; outlier &#8594; severe</span></div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

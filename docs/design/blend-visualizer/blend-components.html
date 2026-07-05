@@ -1,0 +1,237 @@
+<!-- @dsCard group="Blend components" name="Component sheet" subtitle="Existing Blend controls + the pieces the Visualizer adds" width="960" height="980" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Blend components — existing and new</title>
+<style>
+  :root {
+    --bg:#181818; --panel:#202122; --raised:#282A2B; --border:#36393A; --strong:#4A4E50;
+    --text:#D7D7D2; --muted:#8D918E; --accent:#B98245; --active:#3A332B; --hover:#2D3031; --selection:#34383A;
+    --s4:#A88CF5; --free:#214038; --pad-c:rgba(242,158,51,.9); --retained:rgba(107,148,189,.85); --hl:#FFF58C;
+  }
+  * { box-sizing:border-box; margin:0; }
+  body {
+    width:960px; background:var(--bg); color:var(--text); padding:0 0 18px;
+    font:12px/1.35 Inter,"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .sb { font-weight:600; }
+  .mut { color:var(--muted); font-size:11px; }
+
+  .sheethead { height:35px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; padding:0 14px; }
+  .sheethead .t { font-weight:600; font-size:12px; }
+
+  .sec { margin:14px 14px 0; border:1px solid var(--border); }
+  .sechead { height:28px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:8px; padding:0 8px; }
+  .sechead .t { font-weight:600; }
+  .tag { height:16px; padding:0 6px; display:inline-flex; align-items:center; border-radius:2px;
+    font-size:10px; border:1px solid var(--border); color:var(--muted); }
+  .tag.new { border-color:var(--accent); color:#D8A45F; background:var(--active); }
+  .secbody { background:var(--panel); padding:14px; display:flex; align-items:center; flex-wrap:wrap; gap:10px 14px; }
+  .spec { display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
+  .spec .cap { font-size:10px; color:var(--muted); }
+
+  /* buttons */
+  .tbtn { height:24px; padding:0 8px; display:inline-flex; align-items:center; justify-content:center;
+    background:var(--panel); border:1px solid var(--border); border-radius:2px; color:var(--muted); font-size:12px; }
+  .tbtn.hov { background:var(--hover); border-color:var(--strong); }
+  .tbtn.press { background:var(--selection); border-color:var(--strong); color:var(--text); }
+  .tbtn.on { background:var(--active); border-color:var(--accent); color:var(--text); }
+  .tbtn.dis { opacity:.45; }
+  .sq { width:26px; height:26px; padding:0; font-size:10px; }
+  .chip { height:23px; padding:0 6px; display:inline-flex; align-items:center;
+    background:var(--panel); border:1px solid var(--border); border-radius:2px; color:var(--muted); font-size:11px; }
+  .chip.hov { background:var(--hover); border-color:var(--strong); }
+
+  /* tabs */
+  .tabs { display:flex; align-items:stretch; height:29px; background:var(--raised);
+    border:1px solid var(--border); border-bottom-color:var(--strong); }
+  .tab { display:flex; align-items:center; padding:0 8px 0 10px; color:var(--muted);
+    border-right:1px solid var(--border); position:relative; }
+  .tab.on { background:var(--panel); color:var(--text); }
+  .tab.on::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--accent); }
+
+  /* rows */
+  .rows { width:400px; border:1px solid var(--border); }
+  .lrow { height:26px; display:flex; align-items:center; gap:0; background:var(--panel); }
+  .lrow .bar { width:4px; align-self:stretch; }
+  .lrow .n { flex:1; padding-left:8px; color:var(--muted); }
+  .lrow .r { padding-right:8px; color:var(--muted); font-size:11px; }
+  .lrow.hov { background:var(--hover); } .lrow.hov .n { color:var(--text); }
+  .lrow.sel { background:var(--active); } .lrow.sel .n { color:var(--text); font-weight:600; }
+  .lrow.sel .bar { background:var(--accent); }
+
+  /* metric rows */
+  .mrows { width:300px; }
+  .mrow { height:18px; display:flex; align-items:center; position:relative; }
+  .mrow .k { color:var(--muted); font-size:11px; }
+  .mrow .v { position:absolute; left:116px; color:var(--text); }
+
+  /* swatch + legend */
+  .sw { width:12px; height:8px; display:inline-block; border:1px solid rgba(0,0,0,.35); }
+  .leg { display:inline-flex; align-items:center; gap:4px; color:var(--muted); font-size:11px; }
+
+  /* tooltip */
+  .tip { background:var(--raised); border:1px solid var(--strong); border-radius:2px; padding:6px 9px;
+    font-size:11px; box-shadow:0 6px 18px rgba(0,0,0,.45); }
+  .tip .mut { display:block; margin-top:2px; }
+  .tip .dot { display:inline-block; width:8px; height:8px; background:var(--s4); margin-right:5px; }
+
+  /* modal mini */
+  .mini { width:400px; position:relative; background:rgba(8,9,10,.62); padding:22px; }
+  .minimodal { background:var(--panel); border:1px solid var(--strong); box-shadow:0 10px 30px rgba(0,0,0,.5); }
+  .minimodal .mtitle { height:28px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; padding:0 10px; }
+  .minimodal .mbody { padding:12px; }
+  .opt { position:relative; height:44px; padding:7px 10px 0 12px; background:#1B1C1D;
+    border:1px solid var(--border); margin-bottom:6px; }
+  .opt .n { color:var(--text); margin-bottom:2px; }
+  .opt .d { font-size:11px; color:var(--muted); }
+  .opt.sel { background:var(--active); border-color:var(--accent); }
+  .opt.sel::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent); }
+
+  /* status */
+  .status { width:500px; height:22px; background:var(--panel); border:1px solid var(--border);
+    display:flex; align-items:center; gap:16px; padding:0 10px; font-size:11px; color:var(--muted); }
+  .status .fps { color:var(--text); font-weight:600; }
+
+  .foot { margin:14px 14px 0; font-size:11px; color:var(--muted); line-height:1.6; }
+  .foot b { color:var(--text); font-weight:600; }
+</style>
+</head>
+<body>
+
+  <div class="sheethead">
+    <span class="t">AlvorKit.UI.Blend — component sheet</span>
+    <span class="mut"><span class="tag new" style="margin-right:6px">new</span>added by the Visualizer migration &#183; <span class="tag" style="margin:0 6px">existing</span>already in BlendStyle</span>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Text &amp; labels</span><span class="tag new">new</span></div>
+    <div class="secbody">
+      <div class="spec"><span style="font-size:12px">Label — body text 12</span><span class="cap">Label</span></div>
+      <div class="spec"><span class="sb" style="font-size:12px">EmphasisLabel — semibold 12</span><span class="cap">EmphasisLabel</span></div>
+      <div class="spec"><span class="mut">MutedLabel — muted 11</span><span class="cap">MutedLabel</span></div>
+      <div class="spec"><span style="font-size:12px; width:160px; background:var(--hover); padding:2px 4px;">CellLabel fills its row cell</span><span class="cap">CellLabel</span></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Buttons &amp; chips</span><span class="tag">existing</span></div>
+    <div class="secbody">
+      <div class="spec"><div class="tbtn">Step</div><span class="cap">ToolbarButton idle</span></div>
+      <div class="spec"><div class="tbtn hov">Step</div><span class="cap">hover / focus</span></div>
+      <div class="spec"><div class="tbtn press">Step</div><span class="cap">pressed</span></div>
+      <div class="spec"><div class="tbtn on">Labels</div><span class="cap">active</span></div>
+      <div class="spec"><div class="tbtn dis">Pack</div><span class="cap">disabled — new state</span></div>
+      <div class="spec"><div class="tbtn sq">+</div><span class="cap">SquareButton 26</span></div>
+      <div class="spec"><div class="chip">used 35.2%</div><span class="cap">Chip idle</span></div>
+      <div class="spec"><div class="chip hov">Mode: Allocations &#9662;</div><span class="cap">Chip hover</span></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Tabs</span><span class="tag">existing</span></div>
+    <div class="secbody">
+      <div class="spec">
+        <div class="tabs">
+          <div class="tab on">Commands</div><div class="tab">Used</div><div class="tab">Efficiency</div><div class="tab">Free Blocks</div><div class="tab">Events</div>
+        </div>
+        <span class="cap">active tab gets the 2px accent rule — the Visualizer wires real switching</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Selectable list rows</span><span class="tag new">new</span></div>
+    <div class="secbody">
+      <div class="spec">
+        <div class="rows">
+          <div class="lrow"><span class="bar"></span><span class="n">1. idle-pose</span><span class="r">2.4s</span></div>
+          <div class="lrow hov"><span class="bar"></span><span class="n">2. crawl-cycle</span><span class="r">1.8s</span></div>
+          <div class="lrow sel"><span class="bar"></span><span class="n">3. tentacle-sweep</span><span class="r">3.1s</span></div>
+          <div class="lrow"><span class="bar"></span><span class="n">4. rest</span><span class="r">none</span></div>
+        </div>
+        <span class="cap">SelectableListRow — unifies AzureTentacle rows and picker options: idle / hover / selected</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Metric rows</span><span class="tag new">new</span></div>
+    <div class="secbody">
+      <div class="spec">
+        <div class="mrows">
+          <div class="mrow"><span class="k">backing size</span><span class="v">8192</span></div>
+          <div class="mrow"><span class="k">used</span><span class="v">2880</span></div>
+          <div class="mrow"><span class="k">live ranges</span><span class="v">9</span></div>
+        </div>
+        <span class="cap">HorizontalRow + MutedLabel / Label pair, value column at 116</span>
+      </div>
+      <div class="spec">
+        <div style="display:flex; gap:10px;">
+          <span class="leg"><span class="sw" style="background:var(--free)"></span>free block</span>
+          <span class="leg"><span class="sw" style="background:#42C7F2"></span>live payload</span>
+          <span class="leg"><span class="sw" style="background:var(--retained)"></span>retained</span>
+          <span class="leg"><span class="sw" style="background:var(--pad-c)"></span>padding</span>
+          <span class="leg"><span class="sw" style="background:var(--hl)"></span>latest</span>
+        </div>
+        <span class="cap">Swatch + MutedLabel legend item</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Tooltip</span><span class="tag new">new</span></div>
+    <div class="secbody">
+      <div class="spec">
+        <div class="tip">
+          <span class="sb"><span class="dot"></span>slot 4 — realloc</span>
+          <span class="mut">logical 384 B &#183; capacity 512 B</span>
+          <span class="mut">reserved 640 B &#183; padding 128 B</span>
+        </div>
+        <span class="cap">BlendTooltipMenu — mouse-follow, clamped to root; text via TooltipF component</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Modal</span><span class="tag new">new</span></div>
+    <div class="secbody">
+      <div class="spec">
+        <div class="mini">
+          <div class="minimodal">
+            <div class="mtitle"><span class="sb">Select Scenario</span><span class="mut">19</span></div>
+            <div class="mbody">
+              <div class="opt sel"><div class="n">steady-window-prefilled</div><div class="d">A live window churns while the allocator reuses holes.</div></div>
+              <div class="opt" style="margin-bottom:0"><div class="n">pack-only-fragmented</div><div class="d">Live ranges compact toward the front.</div></div>
+            </div>
+          </div>
+        </div>
+        <span class="cap">ModalLayer (Scrim token) + ModalPanel + ModalContent</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><span class="t">Status bar</span><span class="tag">existing</span></div>
+    <div class="secbody">
+      <div class="spec">
+        <div class="status">
+          <span class="fps">144 FPS</span><span>playing</span><span>scenario 5/19</span><span>step 47/96</span>
+        </div>
+        <span class="cap">StatusBar with EmphasisLabel + MutedLabel items at StatusSpacing 16</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>Non-visual additions:</b> self-sizing list containers (VerticalList / HorizontalList / HorizontalFill / PanelFillList / PanelFitList),
+    dock scaffolding promoted from the editor-shell demo (DockPanel / TabStrip / Splitter), a <b>Scrim</b> palette token,
+    Enter-key activation via optional Keyboard in BlendStyleOptions, and BlendMetrics converted to an init-property record.
+  </div>
+
+</body>
+</html>

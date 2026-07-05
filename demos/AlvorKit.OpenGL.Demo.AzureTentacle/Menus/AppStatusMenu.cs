@@ -4,22 +4,36 @@ namespace AlvorKit.OpenGL.Demo.AzureTentacle;
 public class AppStatusMenu(
     RootText text,
     RootMetrics metrics,
-    AppStyle style,
+    AppStyle s,
+    AppLayout layout,
     AppSession session)
 {
     public void Create(EntMut root)
     {
-        root.Mutate(style.Panel);
+        Node(root, out var status)
+            .Mutate(s.FloatingStatusStrip)
+            .AlignmentV(Alignment.Bottom | Alignment.Left)
+            .OffsetV((layout.StatusInset, -layout.StatusInset))
+            .SizeV((0, layout.StatusHeight))
+            .InnerSpacingV(layout.StatusItemSpacing);
+        {
+            Node(status)
+                .Mutate(s.EmphasisLabel)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .AlignmentV(Alignment.Vertical)
+                .TextF(() => text.Format("{0} FPS", metrics.FrameWindow.Ticks));
 
-        Node(root)
-            .Mutate(style.Title)
-            .TextF(() => text.Format(
-                "{0} FPS  {1}",
-                metrics.FrameWindow.Ticks,
-                session.CameraCaptured ? "mouse look" : "menu mode"));
+            Node(status)
+                .Mutate(s.MutedLabel)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .AlignmentV(Alignment.Vertical)
+                .TextF(() => text.Format("Camera: {0}", session.CameraCaptured ? "mouse look" : "menu mode"));
 
-        Node(root)
-            .Mutate(style.Label)
-            .TextF(() => text.Format("Active: {0}", session.ActiveAnimationName));
+            Node(status)
+                .Mutate(s.EmphasisLabel)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .AlignmentV(Alignment.Vertical)
+                .TextF(() => text.Format("Active: {0}", session.ActiveAnimationName));
+        }
     }
 }

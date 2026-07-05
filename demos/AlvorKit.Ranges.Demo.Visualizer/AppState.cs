@@ -8,7 +8,7 @@ public class AppState(
     RootScripts scripts,
     RootUi ui,
     RootUiScript uiScript,
-    AppStyle style,
+    AppStyle s,
     AppSession session,
     AppShortcuts shortcuts,
     AppMenu visualizerMenu,
@@ -31,16 +31,30 @@ public class AppState(
         uiScriptAdded = true;
         dashboardNode = Node(ui)
             .OrderValueV(0)
-            .Mutate(visualizerMenu.Create);
+            .SizeRelativeV((1, 1));
+        {
+            visualizerMenu.Create(dashboardNode);
+        }
+
         pickerNode = Node(ui)
             .OrderValueV(1)
-            .Mutate(scenarioPickerMenu.Create);
+            .SizeRelativeV((1, 1));
+        {
+            scenarioPickerMenu.Create(pickerNode);
+        }
+
         uiScaleNode = Node(ui)
-            .OrderValueV(2)
-            .Mutate(uiScaleMenu.Create);
+            .OrderValueV(2);
+        {
+            uiScaleMenu.Create(uiScaleNode);
+        }
+
         tooltipNode = Node(ui)
             .OrderValueV(3)
-            .Mutate(tooltipMenu.Create);
+            .SizeRelativeV((1, 1));
+        {
+            tooltipMenu.Create(tooltipNode);
+        }
         screen.IsVisible = true;
     }
 
@@ -74,5 +88,5 @@ public class AppState(
     }
 
     /// <summary>Clears the OpenGL backbuffer before the UI draws.</summary>
-    public override void Render() => backbuffer.Clear(style.BackgroundColor);
+    public override void Render() => backbuffer.Clear(s.BackgroundColor);
 }

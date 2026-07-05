@@ -2,7 +2,8 @@ namespace AlvorKit.OpenGL.Demo.AzureTentacle;
 
 [App]
 public class AppMenu(
-    AppStyle style,
+    AppStyle s,
+    AppLayout layout,
     AppSession session,
     AppModelInfoMenu modelInfoMenu,
     AppAnimationMenu animationMenu,
@@ -10,29 +11,31 @@ public class AppMenu(
 {
     public void Create(EntMut root)
     {
-        root.Mutate(style.Root);
-
-        Node(root)
-            .Mutate(style.SceneArea)
-            .IsSelectableV(true)
-            .CursorF(() => session.CameraCaptured ? CursorShape.Default : CursorShape.Hand)
-            .OnPressF(() =>
-            {
-                if (!session.CameraCaptured)
-                    session.CaptureCamera();
-            });
-
-        Node(root, out var sidebar)
-            .Mutate(style.Sidebar);
+        Node(root, out var shell)
+            .Mutate(s.OverlayBoard);
         {
-            Node(sidebar)
-                .Mutate(statusMenu.Create);
+            Node(shell)
+                .SizeRelativeV((1, 1))
+                .IsSelectableV(true)
+                .CursorF(() => session.CameraCaptured ? CursorShape.Default : CursorShape.Hand)
+                .OnClickF(() =>
+                {
+                    if (!session.CameraCaptured)
+                        session.CaptureCamera();
+                });
 
-            Node(sidebar)
-                .Mutate(modelInfoMenu.Create);
+            statusMenu.Create(shell);
 
-            Node(sidebar)
-                .Mutate(animationMenu.Create);
+            Node(shell, out var sidebar)
+                .Mutate(s.RailSurface)
+                .AlignmentV(Alignment.Top | Alignment.Right)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .SizeRelativeV((0, 1))
+                .SizeV((layout.RailWidth, 0));
+            {
+                modelInfoMenu.Create(sidebar);
+                animationMenu.Create(sidebar);
+            }
         }
     }
 }

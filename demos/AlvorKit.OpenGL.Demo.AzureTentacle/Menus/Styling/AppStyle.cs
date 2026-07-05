@@ -1,138 +1,169 @@
 namespace AlvorKit.OpenGL.Demo.AzureTentacle;
 
-/// <summary>Shared visual language for the azure tentacle demo UI.</summary>
+/// <summary>Blend-backed UI style for the azure tentacle demo.</summary>
 [App]
-public class AppStyle(RootRoboto roboto, RootKeyboard keyboard)
+public class AppStyle(
+    RootFonts fonts,
+    RootGl gl,
+    RootUiScale scale,
+    RootKeyboard keyboard) : BlendStyle(new()
 {
-    public Vec4 SceneClearColor => (0.004f, 0.006f, 0.009f, 1f);
-    public Vec4 SidebarColor => (0.145f, 0.145f, 0.145f, 1f);
-    public Vec4 PanelColor => (0.18f, 0.18f, 0.18f, 1f);
-    public Vec4 PanelRaisedColor => (0.235f, 0.235f, 0.235f, 1f);
-    public Vec4 TextColor => (0.82f, 0.82f, 0.82f, 1f);
-    public Vec4 MutedTextColor => (0.58f, 0.61f, 0.62f, 1f);
-    public Vec4 AccentColor => (0.46f, 0.68f, 0.78f, 1f);
-    public Vec4 WarmAccentColor => (0.97f, 0.66f, 0.28f, 1f);
+    Font = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter.ttf") }),
+    EmphasisFont = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter-SemiBold.ttf") }),
+    Chrome = new BlendControlChrome(gl, scale),
+})
+{
+    /// <summary>Gets the OpenGL clear color used behind the animated model.</summary>
+    public Vec4 SceneClearColor => Palette.AppBackground;
 
-    public float SidebarWidth => 300f;
-    public float SidebarPadding => 8f;
-    public float PanelPadding => 7f;
-    public float SpacingS => 3f;
-    public float Spacing => 6f;
-    public float ButtonHeight => 20f;
-    public float RowHeight => 19f;
-
-    public int FontSizeSmall => 8;
-    public int FontSizeBody => 9;
-    public int FontSizeHeader => 10;
-    public int FontSizeTitle => 11;
-
-    public void Root(EntMut ent) => ent.Mutate()
-        .SizeRelativeV((1, 1))
-        .InnerLayoutV(InnerLayout.HorizontalList)
-        .InnerSizingV(InnerSizing.HorizontalWeight)
-        .InnerAlignmentSnapV(1f);
-
-    public void SceneArea(EntMut ent) => ent.Mutate()
+    /// <summary>Applies the base full-screen board treatment used behind app overlays.</summary>
+    public void OverlayBoard(EntMut ent) => ent.Mutate()
+        .Mutate(Board)
         .SizeRelativeV((1, 1));
 
-    public void Sidebar(EntMut ent) => ent.Mutate()
-        .ColorV(SidebarColor)
-        .PaddingV((SidebarPadding, SidebarPadding, SidebarPadding, SidebarPadding))
-        .SizeWeightTypeV(SizeWeightType.Self)
-        .SizeRelativeV((0, 1))
-        .SizeV((SidebarWidth, 0))
+    /// <summary>Applies a vertical rail surface with a left separator.</summary>
+    public void RailSurface(EntMut ent) => ent.Mutate()
+        .ColorV(Palette.Panel)
         .InnerLayoutV(InnerLayout.VerticalList)
-        .InnerSpacingV(SpacingS)
-        .IsSelectableV(true);
+        .InnerSizingV(InnerSizing.VerticalWeight)
+        .InnerSpacingV(0)
+        .IsSelectableV(true)
+        .Mutate(LeftRule);
 
-    public void Panel(EntMut ent) => ent.Mutate()
-        .ColorV(PanelColor)
-        .PaddingV((PanelPadding, PanelPadding, PanelPadding, PanelPadding))
+    /// <summary>Applies a vertical panel body that fills the available rail space.</summary>
+    public void PanelFillList(EntMut ent) => ent.Mutate()
+        .ColorV(Palette.Panel)
+        .SizeRelativeV((1, 1))
+        .InnerLayoutV(InnerLayout.VerticalList)
+        .InnerSizingV(InnerSizing.VerticalWeight)
+        .InnerSpacingV(0);
+
+    /// <summary>Applies a vertical panel section sized to its children.</summary>
+    public void PanelFitList(EntMut ent) => ent.Mutate()
+        .SizeWeightTypeV(SizeWeightType.Self)
         .SizeRelativeV((1, 0))
         .SizeInnerSumRelativeV((0, 1))
         .InnerLayoutV(InnerLayout.VerticalList)
-        .InnerSpacingV(SpacingS)
-        .IsSelectableV(true);
+        .InnerSpacingV(0);
 
-    public void Text(EntMut ent) => ent.Mutate()
-        .FontV(roboto.Font)
-        .FontSizeV(FontSizeBody)
-        .TextColorV(TextColor)
-        .TextAlignmentV(Alignment.Left | Alignment.Vertical)
-        .TextAlignmentSnapV(1f);
+    /// <summary>Applies a raised horizontal header strip.</summary>
+    public void HeaderStrip(EntMut ent) => ent.Mutate()
+        .SizeWeightTypeV(SizeWeightType.Self)
+        .SizeRelativeV((1, 0))
+        .ColorV(Palette.Raised)
+        .InnerLayoutV(InnerLayout.HorizontalList)
+        .InnerSizingV(InnerSizing.HorizontalWeight)
+        .PaddingV(Metrics.PanelTitlePadding)
+        .Mutate(BottomRule);
 
+    /// <summary>Applies an inset vertical list panel with a bottom separator.</summary>
+    public void InsetPanelList(EntMut ent) => ent.Mutate()
+        .ColorV(Palette.Panel)
+        .SizeRelativeV((1, 0))
+        .SizeInnerSumRelativeV((0, 1))
+        .InnerLayoutV(InnerLayout.VerticalList)
+        .PaddingV((10f, 10f, 10f, 10f))
+        .Mutate(BottomRule);
+
+    /// <summary>Applies a padded vertical list body.</summary>
+    public void ListBody(EntMut ent) => ent.Mutate()
+        .ColorV(Palette.Panel)
+        .PaddingV((Metrics.ButtonTextPadding, Metrics.ButtonTextPadding, Metrics.ButtonTextPadding, Metrics.ButtonTextPadding))
+        .InnerLayoutV(InnerLayout.VerticalList)
+        .InnerSpacingV(Metrics.CompactSpacing);
+
+    /// <summary>Applies a fixed-height horizontal row.</summary>
+    public void HorizontalRow(EntMut ent) => ent.Mutate()
+        .SizeRelativeV((1, 0))
+        .InnerLayoutV(InnerLayout.HorizontalList)
+        .InnerSizingV(InnerSizing.HorizontalWeight);
+
+    /// <summary>Applies a selectable horizontal list row.</summary>
+    public void SelectableListRow(EntMut ent) => ent.Mutate()
+        .SizeRelativeV((1, 0))
+        .SizeV((0, Metrics.ButtonHeight))
+        .InnerLayoutV(InnerLayout.HorizontalList)
+        .InnerSizingV(InnerSizing.HorizontalWeight)
+        .InnerSpacingV(Metrics.LooseSpacing)
+        .PaddingV((0, 0, Metrics.ButtonTextPadding, 0))
+        .ColorF(() => ent.IsFocusedR || ent.IsHoveredR ? Palette.Hover : default)
+        .IsSelectableV(true)
+        .IsFocusableV(true)
+        .CursorF(() => CursorShape.Hand);
+
+    /// <summary>Applies a compact floating status strip.</summary>
+    public void FloatingStatusStrip(EntMut ent) => ent.Mutate()
+        .SizeWeightTypeV(SizeWeightType.Self)
+        .SizeRelativeV((0, 0))
+        .SizeInnerSumRelativeV((1, 0))
+        .ColorV(Palette.WithAlpha(Palette.Panel, 0.92f))
+        .PaddingV((Metrics.ButtonTextPadding, 0, Metrics.ButtonTextPadding, 0))
+        .InnerLayoutV(InnerLayout.HorizontalList)
+        .Mutate(Border);
+
+    /// <summary>Applies a text label sized from its text.</summary>
     public void Label(EntMut ent) => ent.Mutate()
         .Mutate(Text)
         .SizeRelativeV((0, 0))
         .SizeTextRelativeV((1, 1));
 
+    /// <summary>Applies a muted text label sized from its text.</summary>
     public void MutedLabel(EntMut ent) => ent.Mutate()
-        .Mutate(Label)
-        .FontSizeV(FontSizeSmall)
-        .TextColorV(MutedTextColor);
+        .Mutate(MutedText)
+        .SizeRelativeV((0, 0))
+        .SizeTextRelativeV((1, 1));
 
-    public void Heading(EntMut ent) => ent.Mutate()
-        .Mutate(Label)
-        .FontSizeV(FontSizeHeader)
-        .TextColorV(AccentColor);
+    /// <summary>Applies an emphasized text label sized from its text.</summary>
+    public void EmphasisLabel(EntMut ent) => ent.Mutate()
+        .Mutate(EmphasisText)
+        .SizeRelativeV((0, 0))
+        .SizeTextRelativeV((1, 1));
 
-    public void Title(EntMut ent) => ent.Mutate()
-        .Mutate(Label)
-        .FontSizeV(FontSizeTitle)
-        .TextColorV(TextColor);
+    /// <summary>Applies a label that fills its assigned row cell.</summary>
+    public void CellLabel(EntMut ent) => ent.Mutate()
+        .Mutate(Text)
+        .SizeRelativeV((1, 1));
 
-    public void Button(EntMut ent)
+    /// <summary>Applies a muted label that fills its assigned row cell.</summary>
+    public void MutedCellLabel(EntMut ent) => ent.Mutate()
+        .Mutate(MutedText)
+        .SizeRelativeV((1, 1));
+
+    /// <summary>Applies an emphasized label that fills its assigned row cell.</summary>
+    public void EmphasisCellLabel(EntMut ent) => ent.Mutate()
+        .Mutate(EmphasisText)
+        .SizeRelativeV((1, 1));
+
+    /// <summary>Applies a toolbar button that also invokes its click callback when focused and Enter is pressed.</summary>
+    public void ToolbarActionButton(EntMut ent)
     {
         var enterWasDown = false;
-        ent.Mutate()
-            .Mutate(Text)
-            .SizeRelativeV((0, 0))
-            .SizeV((58f, ButtonHeight))
-            .TextAlignmentV(Alignment.Center)
-            .TextPaddingV((SpacingS, 0, SpacingS, 0))
-            .IsSelectableV(true)
-            .IsFocusableV(true)
-            .CursorF(() => CursorShape.Hand)
-            .ColorF(() => ButtonFill(ent))
+        ent.Mutate(ToolbarButton)
+            .AlignmentV(Alignment.Vertical)
             .OnUpdateF(() =>
             {
                 var enterDown = keyboard.IsKeyDown(Keys.Enter);
                 if (ent.IsFocusedR && enterDown && !enterWasDown)
-                    ent.OnPressFV.Resolve()?.Invoke();
+                    ent.OnClickFV.Resolve()?.Invoke();
 
                 enterWasDown = enterDown;
             });
     }
 
-    public void AnimationRow(EntMut ent, Func<bool> selected) => ent.Mutate()
-        .SizeRelativeV((1, 0))
-        .SizeV((0, RowHeight))
-        .ColorF(() => AnimationRowFill(ent, selected()))
-        .IsSelectableV(true)
-        .IsFocusableV(true)
-        .CursorF(() => CursorShape.Hand);
-
-    public Vec4 AnimationTextColor(bool selected) => selected ? WarmAccentColor : MutedTextColor;
-
-    private Vec4 ButtonFill(EntMut ent)
+    /// <summary>Applies a primary toolbar button that also invokes its click callback when focused and Enter is pressed.</summary>
+    public void PrimaryToolbarActionButton(EntMut ent)
     {
-        if (ent.IsPressedR)
-            return (0.18f, 0.29f, 0.34f, 1f);
+        var enterWasDown = false;
+        ent.Mutate(ActiveToolbarButton)
+            .AlignmentV(Alignment.Vertical)
+            .OnUpdateF(() =>
+            {
+                var enterDown = keyboard.IsKeyDown(Keys.Enter);
+                if (ent.IsFocusedR && enterDown && !enterWasDown)
+                    ent.OnClickFV.Resolve()?.Invoke();
 
-        if (ent.IsFocusedR || ent.IsHoveredR)
-            return (0.28f, 0.28f, 0.28f, 1f);
-
-        return PanelRaisedColor;
+                enterWasDown = enterDown;
+            });
     }
 
-    private Vec4 AnimationRowFill(EntMut ent, bool selected)
-    {
-        if (selected)
-            return (0.32f, 0.24f, 0.11f, 1f);
-
-        if (ent.IsFocusedR || ent.IsHoveredR)
-            return (0.235f, 0.235f, 0.235f, 1f);
-
-        return default;
-    }
 }

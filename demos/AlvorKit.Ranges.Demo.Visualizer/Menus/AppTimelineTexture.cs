@@ -6,7 +6,7 @@ public class AppTimelineTexture(
     RootGl gl,
     RootText text,
     RootUiMouse uiMouse,
-    AppStyle style,
+    AppStyle s,
     AppSession session,
     AppTextureLimits limits)
 {
@@ -114,7 +114,7 @@ public class AppTimelineTexture(
     {
         if (commands.Length == 0)
         {
-            pixels[0] = Pack(style.PanelInsetColor);
+            pixels[0] = Pack(s.PanelInsetColor);
             return;
         }
 
@@ -126,7 +126,7 @@ public class AppTimelineTexture(
                 Math.Max(start + 1L, (long)(x + 1) * commands.Length / desiredWidth));
             var color = Vec4.Zero;
             for (var i = start; i < end; i++)
-                color += style.CommandColor(commands[i].Kind);
+                color += s.CommandColor(commands[i].Kind);
 
             pixels[x] = Pack(color / (end - start));
         }
@@ -137,7 +137,7 @@ public class AppTimelineTexture(
         var commands = current.Commands;
         if (commands.Length == 0)
         {
-            pixels[0] = Pack(style.PanelInsetColor);
+            pixels[0] = Pack(s.PanelInsetColor);
             return;
         }
 
@@ -251,31 +251,31 @@ public class AppTimelineTexture(
             AppTimelineOverlayMode.Efficiency => TimelineEfficiencyColor(payloadBytes, reservedBytes, allocator.Size),
             AppTimelineOverlayMode.FreeBlocks => FreeBlockColor(allocator.FreeBlockCount, handleCount),
             AppTimelineOverlayMode.Events => EventColor(hadPack, hadResize, lastKind),
-            _ => style.CommandColor(lastKind),
+            _ => s.CommandColor(lastKind),
         };
     }
 
     private Vec4 UsedColor(float ratio)
     {
         if (ratio <= 0)
-            return style.OverlayFreeColor;
+            return s.OverlayFreeColor;
 
         return ratio < 0.5f
-            ? Mix(style.DensityLowColor, style.DensityMidColor, ratio * 2f)
-            : Mix(style.DensityMidColor, style.DensityHighColor, (ratio - 0.5f) * 2f);
+            ? Mix(s.DensityLowColor, s.DensityMidColor, ratio * 2f)
+            : Mix(s.DensityMidColor, s.DensityHighColor, (ratio - 0.5f) * 2f);
     }
 
     private Vec4 TimelineEfficiencyColor(long payloadBytes, long reservedBytes, long backingSize)
     {
         if (reservedBytes <= 0)
-            return style.OverlayFreeColor;
+            return s.OverlayFreeColor;
 
         var efficiency = Ratio(payloadBytes, reservedBytes);
         var density = Ratio(reservedBytes, backingSize);
         var color = efficiency < 0.5f
-            ? Mix(style.EfficiencyWasteColor, style.EfficiencyMixedColor, efficiency * 2f)
-            : Mix(style.EfficiencyMixedColor, style.EfficiencyGoodColor, (efficiency - 0.5f) * 2f);
-        return Mix(style.OverlayFreeColor, color, density);
+            ? Mix(s.EfficiencyWasteColor, s.EfficiencyMixedColor, efficiency * 2f)
+            : Mix(s.EfficiencyMixedColor, s.EfficiencyGoodColor, (efficiency - 0.5f) * 2f);
+        return Mix(s.OverlayFreeColor, color, density);
     }
 
     private Vec4 FreeBlockColor(int freeBlockCount, int handleCount)
@@ -283,22 +283,22 @@ public class AppTimelineTexture(
         var scale = MathF.Log(Math.Max(2, handleCount));
         var ratio = scale <= 0 ? 0 : Math.Clamp(MathF.Log(freeBlockCount + 1) / scale, 0f, 1f);
         return ratio < 0.5f
-            ? Mix(style.FragmentLargeColor, style.FragmentMediumColor, ratio * 2f)
-            : Mix(style.FragmentMediumColor, style.FragmentTinyColor, (ratio - 0.5f) * 2f);
+            ? Mix(s.FragmentLargeColor, s.FragmentMediumColor, ratio * 2f)
+            : Mix(s.FragmentMediumColor, s.FragmentTinyColor, (ratio - 0.5f) * 2f);
     }
 
     private Vec4 EventColor(bool hadPack, bool hadResize, AllocatorCommandKind lastKind)
     {
         if (hadPack && hadResize)
-            return style.HighlightColor;
+            return s.HighlightColor;
 
         if (hadResize)
-            return style.WarmAccentColor;
+            return s.WarmAccentColor;
 
         if (hadPack)
-            return style.CommandColor(AllocatorCommandKind.Pack);
+            return s.CommandColor(AllocatorCommandKind.Pack);
 
-        return style.Dim(style.CommandColor(lastKind), 0.35f);
+        return s.Dim(s.CommandColor(lastKind), 0.35f);
     }
 
     private static long ReservedSize(RangeAllocation allocation) =>

@@ -18,16 +18,14 @@ public class BlendControlChrome(RootGl gl, RootUiScale scale)
         float radius,
         float borderWidth,
         Vec4 fill,
-        Vec4 border,
-        Vec4 outside)
+        Vec4 border)
     {
         var key = new BlendControlCapKey(
             PhysicalPixels(height),
             PhysicalPixels(radius),
             PhysicalPixels(borderWidth),
             Pack(fill),
-            Pack(border),
-            Pack(outside));
+            Pack(border));
 
         if (caps.TryGetValue(key, out var existing))
             return existing;
@@ -42,7 +40,6 @@ public class BlendControlChrome(RootGl gl, RootUiScale scale)
         var pixels = new Vec4u8[key.RadiusPixels * key.HeightPixels];
         var fill = Unpack(key.Fill);
         var border = Unpack(key.Border);
-        var outside = Unpack(key.Outside);
 
         for (var y = 0; y < key.HeightPixels; y++)
         {
@@ -57,8 +54,7 @@ public class BlendControlChrome(RootGl gl, RootUiScale scale)
                     key.RadiusPixels - key.BorderPixels,
                     key.RadiusPixels);
                 var borderCoverage = MathF.Max(0f, outerCoverage - innerCoverage);
-                var color = (outside * (1f - outerCoverage)) + (border * borderCoverage) + (fill * innerCoverage);
-                pixels[y * key.RadiusPixels + x] = ToPixel(color);
+                pixels[y * key.RadiusPixels + x] = ToCoveragePixel(fill, innerCoverage, border, borderCoverage);
             }
         }
 
@@ -151,6 +147,18 @@ public class BlendControlChrome(RootGl gl, RootUiScale scale)
         ToByte(color.Z),
         ToByte(color.W));
 
+    private static Vec4u8 ToCoveragePixel(Vec4 fill, float fillCoverage, Vec4 border, float borderCoverage)
+    {
+        var alpha = fill.W * fillCoverage + border.W * borderCoverage;
+        if (alpha <= 0f)
+            return (0, 0, 0, 0);
+
+        var red = ((fill.X * fill.W * fillCoverage) + (border.X * border.W * borderCoverage)) / alpha;
+        var green = ((fill.Y * fill.W * fillCoverage) + (border.Y * border.W * borderCoverage)) / alpha;
+        var blue = ((fill.Z * fill.W * fillCoverage) + (border.Z * border.W * borderCoverage)) / alpha;
+        return ToPixel((red, green, blue, alpha));
+    }
+
     private static byte ToByte(float value) =>
         (byte)Math.Clamp((int)MathF.Round(value * 255f), 0, 255);
 
@@ -159,6 +167,5 @@ public class BlendControlChrome(RootGl gl, RootUiScale scale)
         int RadiusPixels,
         int BorderPixels,
         uint Fill,
-        uint Border,
-        uint Outside);
+        uint Border);
 }

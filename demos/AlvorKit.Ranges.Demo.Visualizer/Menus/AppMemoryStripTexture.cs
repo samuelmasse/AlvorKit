@@ -5,7 +5,7 @@ namespace AlvorKit.Ranges.Demo.Visualizer;
 public class AppMemoryStripTexture(
     RootGl gl,
     RootUiMouse uiMouse,
-    AppStyle style,
+    AppStyle s,
     AppSession session,
     AppTextureLimits limits,
     AppMemoryStripTooltips tooltips)
@@ -130,24 +130,24 @@ public class AppMemoryStripTexture(
 
     private void RasterizeAllocations(Vec4u8[] pixels, int width, AppMemoryStripView view)
     {
-        Fill(pixels, Pack(style.PanelInsetColor));
+        Fill(pixels, Pack(s.PanelInsetColor));
 
         var snapshot = view.Snapshot;
         for (var i = 0; i < snapshot.FreeSpans.Length; i++)
         {
             var span = snapshot.FreeSpans[i];
             var mutedTail = view.MuteTail && span.Index + span.Size == snapshot.Size && snapshot.Ranges.Length > 0;
-            DrawSegment(pixels, width, view, span.Index, span.Size, mutedTail ? style.TailFreeBlockColor : style.FreeBlockColor);
+            DrawSegment(pixels, width, view, span.Index, span.Size, mutedTail ? s.TailFreeBlockColor : s.FreeBlockColor);
         }
 
         for (var i = 0; i < snapshot.Ranges.Length; i++)
         {
             var range = snapshot.Ranges[i];
-            var color = style.AllocationColor(range.Slot);
-            DrawSegment(pixels, width, view, range.Index, range.ReservedSize, style.Dim(color, 0.42f));
+            var color = s.AllocationColor(range.Slot);
+            DrawSegment(pixels, width, view, range.Index, range.ReservedSize, s.Dim(color, 0.42f));
 
             if (session.ShowPadding && range.LeadingPadding > 0)
-                DrawSegment(pixels, width, view, range.Index, range.LeadingPadding, style.PaddingColor);
+                DrawSegment(pixels, width, view, range.Index, range.LeadingPadding, s.PaddingColor);
 
             if (session.ShowPadding && range.TrailingPadding > 0)
                 DrawSegment(
@@ -156,15 +156,15 @@ public class AppMemoryStripTexture(
                     view,
                     range.PayloadIndex + range.CapacitySize,
                     range.TrailingPadding,
-                    style.PaddingColor);
+                    s.PaddingColor);
 
             if (range.RetainedExtraSize > 0)
-                DrawSegment(pixels, width, view, range.PayloadIndex + range.Size, range.RetainedExtraSize, style.RetainedColor);
+                DrawSegment(pixels, width, view, range.PayloadIndex + range.Size, range.RetainedExtraSize, s.RetainedColor);
 
             DrawSegment(pixels, width, view, range.PayloadIndex, range.Size, color);
 
             if (session.IsLatestPayloadRequest(range.Slot))
-                DrawSegment(pixels, width, view, range.PayloadIndex, range.Size, style.LatestRequestFillColor);
+                DrawSegment(pixels, width, view, range.PayloadIndex, range.Size, s.LatestRequestFillColor);
         }
     }
 
@@ -190,7 +190,7 @@ public class AppMemoryStripTexture(
 
     private void RasterizeFragmentation(Vec4u8[] pixels, int width, AppMemoryStripView view)
     {
-        Fill(pixels, Pack(style.OverlayOccupiedColor));
+        Fill(pixels, Pack(s.OverlayOccupiedColor));
 
         var snapshot = view.Snapshot;
         var largestFree = LargestFreeSpan(snapshot.FreeSpans);
@@ -198,19 +198,19 @@ public class AppMemoryStripTexture(
         {
             var span = snapshot.FreeSpans[i];
             var mutedTail = view.MuteTail && span.Index + span.Size == snapshot.Size && snapshot.Ranges.Length > 0;
-            DrawSegment(pixels, width, view, span.Index, span.Size, mutedTail ? style.TailFreeBlockColor : FragmentationColor(span.Size, largestFree));
+            DrawSegment(pixels, width, view, span.Index, span.Size, mutedTail ? s.TailFreeBlockColor : FragmentationColor(span.Size, largestFree));
         }
     }
 
     private void RasterizeChurn(Vec4u8[] pixels, int width, AppMemoryStripView view)
     {
-        Fill(pixels, Pack(style.OverlayFreeColor));
+        Fill(pixels, Pack(s.OverlayFreeColor));
 
         var ranges = view.Snapshot.Ranges;
         for (var i = 0; i < ranges.Length; i++)
         {
             var range = ranges[i];
-            var color = style.ChurnIdleColor;
+            var color = s.ChurnIdleColor;
             if (session.TryRecentSlotAge(range.Slot, out var age))
                 color = RecentColor(age);
 
@@ -220,22 +220,22 @@ public class AppMemoryStripTexture(
 
     private void RasterizeOutliers(Vec4u8[] pixels, int width, AppMemoryStripView view)
     {
-        Fill(pixels, Pack(style.OverlayFreeColor));
+        Fill(pixels, Pack(s.OverlayFreeColor));
 
         var ranges = view.Snapshot.Ranges;
         for (var i = 0; i < ranges.Length; i++)
         {
             var range = ranges[i];
             var color = session.IsOutlierSlot(range.Slot)
-                ? Mix(style.OutlierColor, style.DensityHighColor, session.OutlierIntensity(range.Slot))
-                : style.OverlayOccupiedColor;
+                ? Mix(s.OutlierColor, s.DensityHighColor, session.OutlierIntensity(range.Slot))
+                : s.OverlayOccupiedColor;
             DrawSegment(pixels, width, view, range.Index, range.ReservedSize, color);
         }
     }
 
     private void RasterizeRelocation(Vec4u8[] pixels, int width, AppMemoryStripView view)
     {
-        Fill(pixels, Pack(style.OverlayFreeColor));
+        Fill(pixels, Pack(s.OverlayFreeColor));
 
         var ranges = view.Snapshot.Ranges;
         for (var i = 0; i < ranges.Length; i++)
@@ -243,10 +243,10 @@ public class AppMemoryStripTexture(
             var range = ranges[i];
             var color = session.RangeMotionForSlot(range.Slot) switch
             {
-                AppRangeMotionKind.New => style.RelocationNewColor,
-                AppRangeMotionKind.Reused => style.RelocationReusedColor,
-                AppRangeMotionKind.Moved => style.RelocationMovedColor,
-                _ => style.OverlayOccupiedColor,
+                AppRangeMotionKind.New => s.RelocationNewColor,
+                AppRangeMotionKind.Reused => s.RelocationReusedColor,
+                AppRangeMotionKind.Moved => s.RelocationMovedColor,
+                _ => s.OverlayOccupiedColor,
             };
             DrawSegment(pixels, width, view, range.Index, range.ReservedSize, color);
         }
@@ -282,53 +282,53 @@ public class AppMemoryStripTexture(
             AppMemoryOverlayMode.Density => DensityColor(density),
             AppMemoryOverlayMode.Efficiency => EfficiencyColor(totals, density),
             AppMemoryOverlayMode.Slack => SlackColor(totals),
-            _ => style.PanelInsetColor,
+            _ => s.PanelInsetColor,
         };
     }
 
     private Vec4 OccupancyColor(PixelMemoryTotals totals, float density)
     {
         if (totals.Reserved <= 0)
-            return style.OverlayFreeColor;
+            return s.OverlayFreeColor;
 
         var payloadRatio = Ratio(totals.Payload, totals.Reserved);
-        var occupied = Mix(style.OccupancyReservedColor, style.OccupancyPayloadColor, payloadRatio);
-        return Mix(style.OverlayFreeColor, occupied, density);
+        var occupied = Mix(s.OccupancyReservedColor, s.OccupancyPayloadColor, payloadRatio);
+        return Mix(s.OverlayFreeColor, occupied, density);
     }
 
     private Vec4 DensityColor(float density)
     {
         if (density <= 0)
-            return style.OverlayFreeColor;
+            return s.OverlayFreeColor;
 
         return density < 0.5f
-            ? Mix(style.DensityLowColor, style.DensityMidColor, density * 2f)
-            : Mix(style.DensityMidColor, style.DensityHighColor, (density - 0.5f) * 2f);
+            ? Mix(s.DensityLowColor, s.DensityMidColor, density * 2f)
+            : Mix(s.DensityMidColor, s.DensityHighColor, (density - 0.5f) * 2f);
     }
 
     private Vec4 EfficiencyColor(PixelMemoryTotals totals, float density)
     {
         if (totals.Reserved <= 0)
-            return style.OverlayFreeColor;
+            return s.OverlayFreeColor;
 
         var efficiency = Ratio(totals.Payload, totals.Reserved);
         var color = efficiency < 0.5f
-            ? Mix(style.EfficiencyWasteColor, style.EfficiencyMixedColor, efficiency * 2f)
-            : Mix(style.EfficiencyMixedColor, style.EfficiencyGoodColor, (efficiency - 0.5f) * 2f);
-        return Mix(style.OverlayFreeColor, color, density);
+            ? Mix(s.EfficiencyWasteColor, s.EfficiencyMixedColor, efficiency * 2f)
+            : Mix(s.EfficiencyMixedColor, s.EfficiencyGoodColor, (efficiency - 0.5f) * 2f);
+        return Mix(s.OverlayFreeColor, color, density);
     }
 
     private Vec4 SlackColor(PixelMemoryTotals totals)
     {
         var free = Math.Max(0, totals.Length - totals.Reserved);
         return WeightedColor(
-            style.OverlayFreeColor,
+            s.OverlayFreeColor,
             free,
-            style.AllocationColor(0),
+            s.AllocationColor(0),
             totals.Payload,
-            style.RetainedColor,
+            s.RetainedColor,
             totals.Retained,
-            style.PaddingColor,
+            s.PaddingColor,
             totals.Padding,
             totals.Length);
     }
@@ -336,18 +336,18 @@ public class AppMemoryStripTexture(
     private Vec4 FragmentationColor(long size, long largestFree)
     {
         if (largestFree <= 0)
-            return style.OverlayFreeColor;
+            return s.OverlayFreeColor;
 
         var ratio = Math.Clamp(size / (float)largestFree, 0f, 1f);
         return ratio < 0.12f
-            ? Mix(style.FragmentTinyColor, style.FragmentMediumColor, ratio / 0.12f)
-            : Mix(style.FragmentMediumColor, style.FragmentLargeColor, (ratio - 0.12f) / 0.88f);
+            ? Mix(s.FragmentTinyColor, s.FragmentMediumColor, ratio / 0.12f)
+            : Mix(s.FragmentMediumColor, s.FragmentLargeColor, (ratio - 0.12f) / 0.88f);
     }
 
     private Vec4 RecentColor(int age)
     {
         var fade = Math.Clamp(age / 127f, 0f, 1f);
-        return Mix(style.ChurnRecentColor, style.ChurnIdleColor, fade);
+        return Mix(s.ChurnRecentColor, s.ChurnIdleColor, fade);
     }
 
     private long HoverByte(AppMemoryStripView view, EntMut strip)

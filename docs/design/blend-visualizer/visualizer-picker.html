@@ -1,0 +1,117 @@
+<!-- @dsCard group="Visualizer" name="Scenario picker" subtitle="Blend modal — scrim, panel title, selectable two-line option rows" width="1440" height="900" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ranges Visualizer — scenario picker modal</title>
+<style>
+  :root {
+    --bg:#181818; --panel:#202122; --raised:#282A2B; --border:#36393A; --strong:#4A4E50;
+    --text:#D7D7D2; --muted:#8D918E; --accent:#B98245; --active:#3A332B; --hover:#2D3031; --selection:#34383A;
+  }
+  * { box-sizing:border-box; margin:0; }
+  html,body { height:100%; }
+  body {
+    width:1440px; height:900px; overflow:hidden; background:var(--bg); color:var(--text);
+    font:12px/1.35 Inter,"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; display:flex; flex-direction:column; position:relative;
+  }
+  .sb { font-weight:600; }
+  .mut { color:var(--muted); font-size:11px; }
+
+  /* ---- dimmed backdrop shell (simplified) ---- */
+  .menubar { height:25px; flex:0 0 25px; background:var(--panel); border-bottom:1px solid var(--border);
+    display:flex; align-items:stretch; }
+  .brand { width:176px; display:flex; align-items:center; gap:8px; padding-left:10px; border-right:1px solid var(--border); }
+  .brandmark { width:13px; height:13px; background:var(--active); border:1px solid var(--accent); }
+  .mi { display:flex; align-items:center; padding:0 9px; }
+  .toolbar { height:35px; flex:0 0 35px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:5px; padding:4px 6px; }
+  .tbtn { height:24px; padding:0 8px; display:inline-flex; align-items:center;
+    background:var(--panel); border:1px solid var(--border); border-radius:2px; color:var(--muted); font-size:12px; }
+  .work { flex:1; display:flex; min-height:0; }
+  .dock-l { width:300px; flex:0 0 300px; background:var(--panel); border-right:1px solid var(--border); }
+  .ptitle { height:28px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; padding:0 8px; font-weight:600; }
+  .center { flex:1; display:flex; flex-direction:column; }
+  .vphead { height:29px; background:var(--raised); border-bottom:1px solid var(--border); }
+  .vpbody { flex:1; background:var(--bg); }
+  .dock-b { height:233px; background:var(--panel); border-top:1px solid var(--border); }
+  .tabs { height:29px; background:var(--raised); border-bottom:1px solid var(--border); display:flex; }
+  .tab { display:flex; align-items:center; padding:0 8px 0 10px; color:var(--muted); border-right:1px solid var(--border); }
+  .status { height:22px; flex:0 0 22px; background:var(--panel); border-top:1px solid var(--border); }
+
+  /* ---- scrim + modal ---- */
+  .scrim { position:absolute; inset:0; background:rgba(8,9,10,.62); z-index:10; }
+  .modal { position:absolute; z-index:11; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:768px; background:var(--panel); border:1px solid var(--strong);
+    box-shadow:0 18px 60px rgba(0,0,0,.55); }
+  .mtitle { height:28px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; padding:0 10px; }
+  .mtitle .t { font-weight:600; }
+  .mbody { padding:14px 16px 12px; }
+  .msub { color:var(--muted); font-size:11px; margin-bottom:12px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 10px; }
+  .opt { position:relative; height:48px; padding:8px 10px 0 12px; background:#1B1C1D;
+    border:1px solid var(--border); cursor:pointer; overflow:hidden; }
+  .opt .n { font-size:12px; color:var(--text); margin-bottom:3px; }
+  .opt .d { font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .opt:hover { background:var(--hover); border-color:var(--strong); }
+  .opt.hov { background:var(--hover); border-color:var(--strong); }
+  .opt.sel { background:var(--active); border-color:var(--accent); }
+  .opt.sel::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent); }
+  .opt.sel .n { font-weight:600; }
+  .mfoot { display:flex; justify-content:space-between; margin-top:12px; }
+</style>
+</head>
+<body>
+
+  <!-- simplified shell behind the modal -->
+  <div class="menubar">
+    <div class="brand"><span class="brandmark"></span><span class="sb">Ranges Visualizer</span></div>
+    <div class="mi">Scenario &#9662;</div><div class="mi">View</div><div class="mi">Playback</div><div class="mi">Help</div>
+  </div>
+  <div class="toolbar">
+    <div class="tbtn">&#10074;&#10074;&nbsp;Pause</div><div class="tbtn">Back</div><div class="tbtn">Step</div><div class="tbtn">Reset</div>
+  </div>
+  <div class="work">
+    <div class="dock-l"><div class="ptitle">Allocator State</div></div>
+    <div class="center">
+      <div class="vphead"></div>
+      <div class="vpbody"></div>
+      <div class="dock-b">
+        <div class="tabs"><div class="tab">Commands</div><div class="tab">Used</div><div class="tab">Efficiency</div><div class="tab">Free Blocks</div><div class="tab">Events</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="status"></div>
+
+  <div class="scrim"></div>
+
+  <div class="modal">
+    <div class="mtitle"><span class="t">Select Scenario</span><span class="mut">19 scenarios</span></div>
+    <div class="mbody">
+      <div class="msub">choose an allocator script to inspect — playback restarts from step 0</div>
+      <div class="grid">
+        <div class="opt"><div class="n">linear-alloc-no-resize</div><div class="d">Tail block consumption without resize or pack.</div></div>
+        <div class="opt"><div class="n">fragmented-same-size-holes</div><div class="d">Same-size holes demonstrate equal-size best-fit reuse.</div></div>
+        <div class="opt"><div class="n">same-handle-reuse-hit</div><div class="d">Repeated smaller requests keep the same backing range.</div></div>
+        <div class="opt hov"><div class="n">fragmented-distinct-size-holes</div><div class="d">Distinct holes show the size index finding the smallest fitting block.</div></div>
+        <div class="opt"><div class="n">same-handle-shrink-pack</div><div class="d">A shrink keeps capacity until pack compacts to the logical size.</div></div>
+        <div class="opt"><div class="n">pack-only-fragmented</div><div class="d">Alternate ranges are freed, then live ranges compact toward the front.</div></div>
+        <div class="opt"><div class="n">same-handle-grow-replace</div><div class="d">Growing the same handle frees the old range and takes a new one.</div></div>
+        <div class="opt"><div class="n">resize-threshold</div><div class="d">Capacity grows when the allocator cannot satisfy a near-full request.</div></div>
+        <div class="opt sel"><div class="n">steady-window-prefilled</div><div class="d">A live window churns while the allocator reuses holes.</div></div>
+        <div class="opt"><div class="n">large-linear-alloc-no-resize-20k</div><div class="d">Large-scale tail consumption across 20 000 commands.</div></div>
+        <div class="opt"><div class="n">large-alignment-mosaic-4096</div><div class="d">Mixed alignments tile the store into a mosaic of padded blocks.</div></div>
+        <div class="opt"><div class="n">large-variable-realloc-outliers-40k</div><div class="d">Variable reallocs surface rare outlier blocks under churn.</div></div>
+      </div>
+      <div class="mfoot">
+        <span class="mut">&#8593;&#8595; navigate &#183; enter selects</span>
+        <span class="mut">esc or click outside to close</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

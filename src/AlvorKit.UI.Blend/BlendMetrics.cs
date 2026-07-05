@@ -1,6 +1,6 @@
 namespace AlvorKit.UI.Blend;
 
-/// <summary>Reusable pixel metrics for Blender-inspired editor UI.</summary>
+/// <summary>Reusable pixel metrics for Blender-inspired UI surfaces and controls.</summary>
 public readonly record struct BlendMetrics(
     float MenuBarHeight,
     float ToolbarHeight,
@@ -9,26 +9,38 @@ public readonly record struct BlendMetrics(
     float ViewportHeaderHeight,
     float TabStripHeight,
     float AssetToolbarHeight,
+    float FieldHeight,
     float ButtonHeight,
+    float ToolbarButtonHeight,
     float ChipHeight,
     float SquareButtonSize,
     float ControlRadius,
     float ControlBorderWidth,
-    float Hairline)
-{
-    /// <summary>Gets the metrics used by the stripped editor-shell HTML reference.</summary>
-    public static BlendMetrics EditorShell { get; } = new(
-        25f,
-        35f,
-        22f,
-        28f,
-        29f,
-        29f,
-        31f,
-        26f,
-        23f,
-        26f,
-        2f,
-        1f,
-        1f);
-}
+    float Hairline,
+    int TextFontSize,
+    int MutedFontSize,
+    int ButtonFontSize,
+    int ChipFontSize,
+    int SquareButtonFontSize,
+    float MenuItemTextPadding,
+    float ButtonTextPadding,
+    float ChipTextPadding,
+    float CenterTextPadding,
+    float FieldTextPadding,
+    float TabTextPaddingLeft,
+    float TabTextPaddingRight,
+    float RightGlyphPadding,
+    float ToolbarSpacing,
+    float CompactSpacing,
+    float LooseSpacing,
+    float StatusSpacing,
+    float TransformGroupMarginRight,
+    Vec4 MenuBarPadding,
+    Vec4 ToolbarPadding,
+    Vec4 BrandPadding,
+    Vec4 TransformGroupPadding,
+    Vec4 ViewportHeaderPadding,
+    Vec4 AssetToolbarPadding,
+    Vec4 StatusBarPadding,
+    Vec4 PanelTitlePadding,
+    float ActiveTabAccentHeight);

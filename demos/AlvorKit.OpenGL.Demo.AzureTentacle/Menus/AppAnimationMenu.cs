@@ -2,59 +2,74 @@ namespace AlvorKit.OpenGL.Demo.AzureTentacle;
 
 [App]
 public class AppAnimationMenu(
-    AppStyle style,
+    AppStyle s,
+    AppLayout layout,
     AppSession session)
 {
     public void Create(EntMut root)
     {
-        root.Mutate(style.Panel);
-
-        Node(root, out var header)
-            .InnerLayoutV(InnerLayout.HorizontalList)
-            .InnerSizingV(InnerSizing.HorizontalWeight)
-            .InnerSpacingV(style.SpacingS)
-            .SizeRelativeV((1, 0))
-            .SizeV((0, style.ButtonHeight));
+        Node(root, out var panel)
+            .Mutate(s.PanelFillList);
         {
-            Node(header)
-                .Mutate(style.Heading)
-                .TextV("Animations")
-                .SizeRelativeV((1, 0));
-
-            Button(header, 54f, "Prev", session.SelectPreviousAnimation);
-            Button(header, 54f, "Next", session.SelectNextAnimation);
-        }
-
-        for (var index = 0; index < session.AnimationLineCount; index++)
-        {
-            var animationIndex = index;
-            Node(root, out var row)
-                .Mutate(node => style.AnimationRow(node, () => animationIndex == session.SelectedAnimationIndex))
-                .OnPressF(() => session.SelectAnimation(animationIndex));
+            Node(panel, out var header)
+                .Mutate(s.HeaderStrip)
+                .SizeV((0, layout.RailHeaderHeight))
+                .InnerSpacingV(s.Metrics.ToolbarSpacing);
             {
-                Node(row)
-                    .IsFloatingV(true)
-                    .AlignmentV(Alignment.Left | Alignment.Vertical)
-                    .SizeRelativeV((0, 1))
-                    .SizeV((3f, 0))
-                    .ColorF(() => animationIndex == session.SelectedAnimationIndex ? style.WarmAccentColor : default);
+                Node(header)
+                    .Mutate(s.EmphasisLabel)
+                    .AlignmentV(Alignment.Vertical)
+                    .TextV("Animations");
 
-                Node(row)
-                    .Mutate(style.Label)
-                    .TextF(() => session.AnimationLineAt(animationIndex))
-                    .TextColorF(() => style.AnimationTextColor(animationIndex == session.SelectedAnimationIndex))
-                    .OffsetV((style.Spacing, 0))
-                    .AlignmentV(Alignment.Left | Alignment.Vertical);
+                Node(header)
+                    .Mutate(node => s.ToolbarActionButton(node))
+                    .SizeWeightTypeV(SizeWeightType.Self)
+                    .TextV("Prev")
+                    .OnClickF(session.SelectPreviousAnimation);
+
+                Node(header)
+                    .Mutate(node => s.PrimaryToolbarActionButton(node))
+                    .SizeWeightTypeV(SizeWeightType.Self)
+                    .TextV("Next")
+                    .OnClickF(session.SelectNextAnimation);
             }
-        }
 
-        void Button(EntMut parent, float width, string label, Action action)
-        {
-            Node(parent)
-                .Mutate(style.Button)
-                .SizeV((width, style.ButtonHeight))
-                .TextV(label)
-                .OnPressF(action);
+            Node(panel, out var list)
+                .Mutate(s.ListBody);
+            {
+                for (var index = 0; index < session.AnimationLineCount; index++)
+                {
+                    var animationIndex = index;
+                    Node(list, out var row)
+                        .Mutate(s.SelectableListRow)
+                        .ColorF(() => animationIndex == session.SelectedAnimationIndex
+                            ? s.Palette.ActiveSurface
+                            : row.IsFocusedR || row.IsHoveredR ? s.Palette.Hover : default)
+                        .OnClickF(() => session.SelectAnimation(animationIndex));
+                    {
+                        Node(row)
+                            .SizeWeightTypeV(SizeWeightType.Self)
+                            .SizeRelativeV((0, 1))
+                            .SizeV((layout.AnimationAccentWidth, 0))
+                            .ColorF(() => animationIndex == session.SelectedAnimationIndex ? s.Palette.Accent : default);
+
+                        Node(row)
+                            .Mutate(s.CellLabel)
+                            .TextV(session.AnimationLabelAt(animationIndex))
+                            .TextColorF(() => animationIndex == session.SelectedAnimationIndex
+                                ? s.Palette.Text
+                                : s.Palette.MutedText);
+
+                        Node(row)
+                            .Mutate(s.MutedCellLabel)
+                            .SizeWeightTypeV(SizeWeightType.Self)
+                            .SizeRelativeV((0, 1))
+                            .SizeTextRelativeV((1, 0))
+                            .TextV(session.AnimationDurationLabelAt(animationIndex))
+                            .TextAlignmentV(Alignment.Right | Alignment.Vertical);
+                    }
+                }
+            }
         }
     }
 }

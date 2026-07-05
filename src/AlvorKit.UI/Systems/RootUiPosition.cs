@@ -8,7 +8,7 @@ public class RootUiPosition(RootSprites sprites, RootUiScale scale)
         PositionNode(s, padding, n);
 
         foreach (var c in n.NodesR.Span)
-            Position(n.SizeR, n.PaddingR.XY, c);
+            Position(n.SizeR, c.IsFloatingFV.Resolve() ? Vec2.Zero : n.PaddingR.XY, c);
 
         PositionInnerLayout(n);
     }

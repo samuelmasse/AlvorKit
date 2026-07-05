@@ -3,7 +3,7 @@ namespace AlvorKit.Ranges.Demo.Visualizer;
 [App]
 public class AppMemoryPanelMenu(
     RootText text,
-    AppStyle style,
+    AppStyle s,
     AppSession session,
     AppMemoryChartsMenu memoryChartsMenu)
 {
@@ -12,86 +12,90 @@ public class AppMemoryPanelMenu(
         const float headerHeight = 40f;
         const float headerStatsOffsetY = 22f;
 
-        root.Mutate(style.PanelList)
+        Node(root, out var panel)
+            .Mutate(s.PanelList)
             .InnerSizingV(InnerSizing.VerticalWeight)
             .SizeRelativeV((1, 1));
-
-        Node(root, out var header)
-            .SizeWeightTypeV(SizeWeightType.Self)
-            .SizeRelativeV((1, 0))
-            .SizeV((0, headerHeight));
         {
-            Node(header)
-                .Mutate(style.Heading)
-                .TextV("backing store")
-                .AlignmentV(Alignment.Left | Alignment.Top);
+            Node(panel, out var header)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .SizeRelativeV((1, 0))
+                .SizeV((0, headerHeight));
+            {
+                Node(header)
+                    .Mutate(s.Heading)
+                    .TextV("backing store")
+                    .AlignmentV(Alignment.Left | Alignment.Top);
 
-            Node(header)
-                .Mutate(style.MutedLabel)
-                .FontSizeV(style.FontSizeBody)
-                .TextF(() => text.Format(
-                    "size {0}, used {1}, free spans {2}",
-                    session.Runner.Current.Size,
-                    session.Runner.Current.Used,
-                    session.Runner.Current.FreeSpans.Length))
-                .OffsetV((0, headerStatsOffsetY))
-                .AlignmentV(Alignment.Left | Alignment.Top);
+                Node(header)
+                    .Mutate(s.MutedLabel)
+                    .FontSizeV(s.FontSizeBody)
+                    .TextF(() => text.Format(
+                        "size {0}, used {1}, free spans {2}",
+                        session.Runner.Current.Size,
+                        session.Runner.Current.Used,
+                        session.Runner.Current.FreeSpans.Length))
+                    .OffsetV((0, headerStatsOffsetY))
+                    .AlignmentV(Alignment.Left | Alignment.Top);
 
-            Node(header)
-                .Mutate(style.MutedLabel)
-                .FontSizeV(style.FontSizeBody)
-                .TextF(() => text.Format("last allocator call: {0}", session.Runner.LastCallText))
-                .OffsetV((-style.FloatingTextInset, 0))
-                .AlignmentV(Alignment.Right | Alignment.Top);
+                Node(header)
+                    .Mutate(s.MutedLabel)
+                    .FontSizeV(s.FontSizeBody)
+                    .TextF(() => text.Format("last allocator call: {0}", session.Runner.LastCallText))
+                    .OffsetV((-s.FloatingTextInset, 0))
+                    .AlignmentV(Alignment.Right | Alignment.Top);
+            }
+
+            Node(panel, out var legend)
+                .Mutate(s.HorizontalList)
+                .SizeWeightTypeV(SizeWeightType.Self);
+            {
+                for (var i = 0; i < 5; i++)
+                    LegendItem(legend, i);
+            }
+
+            Node(panel, out var modeRow)
+                .Mutate(s.HorizontalList)
+                .SizeWeightTypeV(SizeWeightType.Self);
+            {
+                ButtonF(modeRow, 176f, () => text.Format("memory {0}", MemoryModeName(session.MemoryOverlayMode)), session.NextMemoryOverlayMode);
+                MetricLabel(modeRow, 160f, () => text.Format("used/backing {0:0.0}%", UsedRatio() * 100));
+                MetricLabel(modeRow, 178f, () => text.Format("payload/backing {0:0.0}%", PayloadBackingRatio() * 100));
+                MetricLabel(modeRow, 184f, () => text.Format("payload/reserved {0:0.0}%", PayloadReservedRatio() * 100));
+            }
+
+            Node(panel, out var aggregateRow)
+                .Mutate(s.HorizontalList)
+                .SizeWeightTypeV(SizeWeightType.Self);
+            {
+                MetricLabel(aggregateRow, 142f, () => text.Format("free blocks {0}", session.Runner.Current.FreeBlockCount));
+                MetricLabel(aggregateRow, 158f, () => text.Format("largest free {0}", LargestFreeSpan()));
+                MetricLabel(aggregateRow, 160f, () => text.Format("external frag {0:0.0}%", ExternalFragmentationRatio() * 100));
+                MetricLabel(aggregateRow, 132f, () => text.Format("outliers {0}", session.OutlierSlotCount));
+            }
+
+            Node(panel, out var chartsSlot)
+                .SizeRelativeV((1, 0))
+                .ColorV(s.PanelInsetColor);
+            {
+                memoryChartsMenu.Create(chartsSlot);
+            }
         }
-
-        Node(root, out var legend)
-            .Mutate(style.HorizontalList)
-            .SizeWeightTypeV(SizeWeightType.Self);
-        {
-            for (var i = 0; i < 5; i++)
-                LegendItem(legend, i);
-        }
-
-        Node(root, out var modeRow)
-            .Mutate(style.HorizontalList)
-            .SizeWeightTypeV(SizeWeightType.Self);
-        {
-            ButtonF(modeRow, 176f, () => text.Format("memory {0}", MemoryModeName(session.MemoryOverlayMode)), session.NextMemoryOverlayMode);
-            MetricLabel(modeRow, 160f, () => text.Format("used/backing {0:0.0}%", UsedRatio() * 100));
-            MetricLabel(modeRow, 178f, () => text.Format("payload/backing {0:0.0}%", PayloadBackingRatio() * 100));
-            MetricLabel(modeRow, 184f, () => text.Format("payload/reserved {0:0.0}%", PayloadReservedRatio() * 100));
-        }
-
-        Node(root, out var aggregateRow)
-            .Mutate(style.HorizontalList)
-            .SizeWeightTypeV(SizeWeightType.Self);
-        {
-            MetricLabel(aggregateRow, 142f, () => text.Format("free blocks {0}", session.Runner.Current.FreeBlockCount));
-            MetricLabel(aggregateRow, 158f, () => text.Format("largest free {0}", LargestFreeSpan()));
-            MetricLabel(aggregateRow, 160f, () => text.Format("external frag {0:0.0}%", ExternalFragmentationRatio() * 100));
-            MetricLabel(aggregateRow, 132f, () => text.Format("outliers {0}", session.OutlierSlotCount));
-        }
-
-        Node(root)
-            .SizeRelativeV((1, 0))
-            .ColorV(style.PanelInsetColor)
-            .Mutate(memoryChartsMenu.Create);
 
         void LegendItem(EntMut parent, int index)
         {
             Node(parent, out var item)
-                .Mutate(style.HorizontalList)
-                .InnerSpacingV(style.SpacingXS)
+                .Mutate(s.HorizontalList)
+                .InnerSpacingV(s.SpacingXS)
                 .SizeWeightTypeV(SizeWeightType.Self);
             {
                 Node(item)
                     .SizeRelativeV((0, 0))
-                    .SizeV((style.SwatchWidth, style.SwatchHeight))
+                    .SizeV((s.SwatchWidth, s.SwatchHeight))
                     .AlignmentV(Alignment.Vertical)
                     .ColorF(() => MemoryLegendColor(index));
                 Node(item)
-                    .Mutate(style.MutedLabel)
+                    .Mutate(s.MutedLabel)
                     .TextF(() => MemoryLegendText(index));
             }
         }
@@ -99,8 +103,8 @@ public class AppMemoryPanelMenu(
         void ButtonF(EntMut parent, float width, Func<ReadOnlySpan<char>> label, Action action)
         {
             Node(parent)
-                .Mutate(style.Button)
-                .SizeV((width, style.ButtonHeight))
+                .Mutate(s.Button)
+                .SizeV((width, s.ButtonHeight))
                 .TextF(label)
                 .OnPressF(action);
         }
@@ -108,9 +112,9 @@ public class AppMemoryPanelMenu(
         void MetricLabel(EntMut parent, float width, Func<ReadOnlySpan<char>> value)
         {
             Node(parent)
-                .Mutate(style.MutedLabel)
-                .FontSizeV(style.FontSizeBody)
-                .SizeV((width, style.ButtonHeight))
+                .Mutate(s.MutedLabel)
+                .FontSizeV(s.FontSizeBody)
+                .SizeV((width, s.ButtonHeight))
                 .SizeTextRelativeV((0, 0))
                 .TextAlignmentV(Alignment.Center)
                 .TextF(value)
@@ -135,75 +139,75 @@ public class AppMemoryPanelMenu(
         {
             AppMemoryOverlayMode.Allocations => index switch
             {
-                0 => style.FreeBlockColor,
-                1 => style.AllocationColor(0),
-                2 => style.RetainedColor,
-                3 => style.PaddingColor,
-                _ => style.LatestRequestFillColor,
+                0 => s.FreeBlockColor,
+                1 => s.AllocationColor(0),
+                2 => s.RetainedColor,
+                3 => s.PaddingColor,
+                _ => s.LatestRequestFillColor,
             },
             AppMemoryOverlayMode.Occupancy => index switch
             {
-                0 => style.OverlayFreeColor,
-                1 => style.OccupancyReservedColor,
-                2 => style.OccupancyPayloadColor,
-                3 => style.DensityHighColor,
-                _ => style.HighlightColor,
+                0 => s.OverlayFreeColor,
+                1 => s.OccupancyReservedColor,
+                2 => s.OccupancyPayloadColor,
+                3 => s.DensityHighColor,
+                _ => s.HighlightColor,
             },
             AppMemoryOverlayMode.Density => index switch
             {
-                0 => style.OverlayFreeColor,
-                1 => style.DensityLowColor,
-                2 => style.DensityMidColor,
-                3 => style.DensityHighColor,
+                0 => s.OverlayFreeColor,
+                1 => s.DensityLowColor,
+                2 => s.DensityMidColor,
+                3 => s.DensityHighColor,
                 _ => default,
             },
             AppMemoryOverlayMode.Efficiency => index switch
             {
-                0 => style.OverlayFreeColor,
-                1 => style.EfficiencyWasteColor,
-                2 => style.EfficiencyMixedColor,
-                3 => style.EfficiencyGoodColor,
+                0 => s.OverlayFreeColor,
+                1 => s.EfficiencyWasteColor,
+                2 => s.EfficiencyMixedColor,
+                3 => s.EfficiencyGoodColor,
                 _ => default,
             },
             AppMemoryOverlayMode.Fragmentation => index switch
             {
-                0 => style.OverlayOccupiedColor,
-                1 => style.FragmentTinyColor,
-                2 => style.FragmentMediumColor,
-                3 => style.FragmentLargeColor,
-                _ => style.TailFreeBlockColor,
+                0 => s.OverlayOccupiedColor,
+                1 => s.FragmentTinyColor,
+                2 => s.FragmentMediumColor,
+                3 => s.FragmentLargeColor,
+                _ => s.TailFreeBlockColor,
             },
             AppMemoryOverlayMode.Slack => index switch
             {
-                0 => style.OverlayFreeColor,
-                1 => style.AllocationColor(0),
-                2 => style.RetainedColor,
-                3 => style.PaddingColor,
-                _ => style.LatestRequestFillColor,
+                0 => s.OverlayFreeColor,
+                1 => s.AllocationColor(0),
+                2 => s.RetainedColor,
+                3 => s.PaddingColor,
+                _ => s.LatestRequestFillColor,
             },
             AppMemoryOverlayMode.Churn => index switch
             {
-                0 => style.OverlayFreeColor,
-                1 => style.ChurnIdleColor,
-                2 => style.ChurnRecentColor,
-                3 => style.HighlightColor,
+                0 => s.OverlayFreeColor,
+                1 => s.ChurnIdleColor,
+                2 => s.ChurnRecentColor,
+                3 => s.HighlightColor,
                 _ => default,
             },
             AppMemoryOverlayMode.Outliers => index switch
             {
-                0 => style.OverlayFreeColor,
-                1 => style.OverlayOccupiedColor,
-                2 => style.OutlierColor,
-                3 => style.DensityHighColor,
+                0 => s.OverlayFreeColor,
+                1 => s.OverlayOccupiedColor,
+                2 => s.OutlierColor,
+                3 => s.DensityHighColor,
                 _ => default,
             },
             AppMemoryOverlayMode.Relocation => index switch
             {
-                0 => style.OverlayFreeColor,
-                1 => style.RelocationReusedColor,
-                2 => style.RelocationMovedColor,
-                3 => style.RelocationNewColor,
-                _ => style.OverlayOccupiedColor,
+                0 => s.OverlayFreeColor,
+                1 => s.RelocationReusedColor,
+                2 => s.RelocationMovedColor,
+                3 => s.RelocationNewColor,
+                _ => s.OverlayOccupiedColor,
             },
             _ => default,
         };

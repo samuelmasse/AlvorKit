@@ -3,7 +3,7 @@ namespace AlvorKit.Ranges.Demo.Visualizer;
 [App]
 public class AppMemoryChartsMenu(
     RootText text,
-    AppStyle style,
+    AppStyle s,
     AppSession session,
     AppMemoryStripMenu stripMenu)
 {
@@ -14,7 +14,7 @@ public class AppMemoryChartsMenu(
         var lastRevision = pendingRevision;
         Node(root, out var content)
             .SizeRelativeV((1, 1))
-            .ColorV(style.PanelInsetColor)
+            .ColorV(s.PanelInsetColor)
             .OnUpdateF(() =>
             {
                 if (lastRevision == session.VisualRevision)
@@ -31,7 +31,7 @@ public class AppMemoryChartsMenu(
             var detailEnd = DetailEnd(snapshot, out var tailOmitted);
 
             Node(root)
-                .Mutate(style.MutedLabel)
+                .Mutate(s.MutedLabel)
                 .TextV("full backing store")
                 .OffsetF(() => MemoryLayout(root).OverviewLabel);
 
@@ -39,13 +39,15 @@ public class AppMemoryChartsMenu(
                 .Mutate(ChartStrip)
                 .TooltipF(() => StoreTooltip("full backing store", snapshot))
                 .OffsetF(() => MemoryLayout(root).OverviewStrip)
-                .SizeF(() => MemoryLayout(root).OverviewStripSize)
-                .Mutate(node => stripMenu.Create(
-                    node,
-                    new(snapshot, 0, snapshot.Size, "full backing store", MuteTail: true, DetailedLabels: false)));
+                .SizeF(() => MemoryLayout(root).OverviewStripSize);
+            {
+                stripMenu.Create(
+                    overview,
+                    new(snapshot, 0, snapshot.Size, "full backing store", MuteTail: true, DetailedLabels: false));
+            }
 
             Node(root)
-                .Mutate(style.MutedLabel)
+                .Mutate(s.MutedLabel)
                 .TextF(() => DetailLabel(detailEnd, tailOmitted))
                 .OffsetF(() => MemoryLayout(root).DetailLabel);
 
@@ -53,16 +55,18 @@ public class AppMemoryChartsMenu(
                 .Mutate(ChartStrip)
                 .TooltipF(() => DetailTooltip(detailEnd, tailOmitted))
                 .OffsetF(() => MemoryLayout(root).DetailStrip)
-                .SizeF(() => MemoryLayout(root).DetailStripSize)
-                .Mutate(node => stripMenu.Create(
-                    node,
-                    new(snapshot, 1, detailEnd, "active region zoom", MuteTail: false, DetailedLabels: true)));
+                .SizeF(() => MemoryLayout(root).DetailStripSize);
+            {
+                stripMenu.Create(
+                    detail,
+                    new(snapshot, 1, detailEnd, "active region zoom", MuteTail: false, DetailedLabels: true));
+            }
         }
 
         void ChartStrip(EntMut ent) => ent.Mutate()
             .SizeRelativeV((0, 0))
             .IsSelectableV(true)
-            .ColorV(style.PanelInsetColor)
+            .ColorV(s.PanelInsetColor)
             .InnerAlignmentSnapV(1f);
 
         ReadOnlySpan<char> StoreTooltip(string viewName, AllocatorSnapshot snapshot) =>
@@ -89,8 +93,8 @@ public class AppMemoryChartsMenu(
             const float compressedMinimumDetailHeight = 36f;
             const float detailLabelGap = 12f;
 
-            var inset = style.SpacingS;
-            var labelHeight = style.MetricRowHeight;
+            var inset = s.SpacingS;
+            var labelHeight = s.MetricRowHeight;
             var width = Math.Max(0, root.SizeR.X - inset - inset);
             var height = Math.Max(0, root.SizeR.Y - inset - inset);
             var detailHeight = Math.Min(maximumDetailHeight, Math.Max(minimumDetailHeight, height * detailHeightRatio));

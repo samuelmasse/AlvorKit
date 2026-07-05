@@ -18,7 +18,10 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
 
         var innerSpace = n.SizeR - n.PaddingR.XY - n.PaddingR.ZW;
         foreach (var c in n.NodesR.Span)
-            Size(innerSpace - c.MarginR.XY - c.MarginR.ZW, c);
+        {
+            var childSpace = c.IsFloatingFV.Resolve() ? n.SizeR : innerSpace;
+            Size(childSpace - c.MarginR.XY - c.MarginR.ZW, c);
+        }
 
         SizeInnerMaxRelative(n);
         SizeInnerSumRelative(n);
@@ -32,7 +35,8 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
             if (!c.IsPostSizedFV.Resolve())
                 continue;
 
-            Size(postInnerSpace - c.MarginR.XY - c.MarginR.ZW, c);
+            var childSpace = c.IsFloatingFV.Resolve() ? n.SizeR : postInnerSpace;
+            Size(childSpace - c.MarginR.XY - c.MarginR.ZW, c);
         }
     }
 
@@ -108,12 +112,14 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
             return;
 
         var sizeInnerSum = Vec2.Zero;
+        var layoutChildCount = 0;
 
         foreach (var c in n.NodesR.Span)
         {
             if (c.IsFloatingFV.Resolve())
                 continue;
 
+            layoutChildCount++;
             sizeInnerSum += c.SizeR + c.MarginR.XY + c.MarginR.ZW;
         }
 
@@ -121,7 +127,7 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
         sizeInnerSum.Y += n.PaddingR.Y + n.PaddingR.W;
 
         var innerSpacing = n.InnerSpacingFV.Resolve();
-        var innerSum = sizeInnerSum + new Vec2(innerSpacing) * Math.Max(0, (n.NodesR.Length - 1));
+        var innerSum = sizeInnerSum + new Vec2(innerSpacing) * Math.Max(0, layoutChildCount - 1);
         n.SizeR += sizeInnerSumRelative * innerSum;
         n.SizeInnerSumR = innerSum;
     }
@@ -157,6 +163,7 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
             return;
 
         float totalWeight = 0;
+        var layoutChildCount = 0;
 
         foreach (var c in n.NodesR.Span)
         {
@@ -164,20 +171,31 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
             ce.HorizontalWeightSizeR = null;
             ce.VerticalWeightSizeR = null;
 
+            if (c.IsFloatingFV.Resolve())
+                continue;
+
+            layoutChildCount++;
+
             if (IsSelfWeight(c))
                 continue;
 
-            totalWeight += n.SizeWeightFV.Resolve() ?? 1;
+            totalWeight += c.SizeWeightFV.Resolve() ?? 1;
         }
 
+        if (totalWeight <= 0)
+            return;
+
         var innerSpacing = n.InnerSpacingFV.Resolve();
-        var totalSpacing = innerSpacing * Math.Max(0, n.NodesR.Length - 1);
-        Vec2 useableSize = n.SizeR - (totalSpacing, totalSpacing);
+        var totalSpacing = innerSpacing * Math.Max(0, layoutChildCount - 1);
+        Vec2 useableSize = n.SizeR - n.PaddingR.XY - n.PaddingR.ZW - (totalSpacing, totalSpacing);
 
         if (innerSizing == InnerSizing.HorizontalWeight)
         {
             foreach (var c in n.NodesR.Span)
             {
+                if (c.IsFloatingFV.Resolve())
+                    continue;
+
                 useableSize.X -= c.MarginR.X + c.MarginR.Z;
 
                 if (IsSelfWeight(c))
@@ -186,17 +204,20 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
 
             foreach (var c in n.NodesR.Span)
             {
-                if (IsSelfWeight(c))
+                if (c.IsFloatingFV.Resolve() || IsSelfWeight(c))
                     continue;
 
                 var ce = c;
-                ce.HorizontalWeightSizeR = (n.SizeWeightFV.Resolve() ?? 1 / totalWeight) * useableSize.X;
+                ce.HorizontalWeightSizeR = ((c.SizeWeightFV.Resolve() ?? 1) / totalWeight) * useableSize.X;
             }
         }
         else if (innerSizing == InnerSizing.VerticalWeight)
         {
             foreach (var c in n.NodesR.Span)
             {
+                if (c.IsFloatingFV.Resolve())
+                    continue;
+
                 useableSize.Y -= c.MarginR.Y + c.MarginR.W;
 
                 if (IsSelfWeight(c))
@@ -205,11 +226,11 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
 
             foreach (var c in n.NodesR.Span)
             {
-                if (IsSelfWeight(c))
+                if (c.IsFloatingFV.Resolve() || IsSelfWeight(c))
                     continue;
 
                 var ce = c;
-                ce.VerticalWeightSizeR = (n.SizeWeightFV.Resolve() ?? 1 / totalWeight) * useableSize.Y;
+                ce.VerticalWeightSizeR = ((c.SizeWeightFV.Resolve() ?? 1) / totalWeight) * useableSize.Y;
             }
         }
     }

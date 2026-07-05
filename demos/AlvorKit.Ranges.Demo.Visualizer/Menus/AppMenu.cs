@@ -2,7 +2,7 @@ namespace AlvorKit.Ranges.Demo.Visualizer;
 
 [App]
 public class AppMenu(
-    AppStyle style,
+    AppStyle s,
     AppHeaderMenu headerMenu,
     AppMetricsMenu metricsMenu,
     AppMemoryPanelMenu memoryPanelMenu,
@@ -10,28 +10,25 @@ public class AppMenu(
 {
     public void Create(EntMut root)
     {
-        root.Mutate(style.Root);
-
-        Node(root)
-            .Mutate(headerMenu.Create);
-
-        Node(root, out var body)
-            .Mutate(style.HorizontalFill);
+        Node(root, out var shell)
+            .Mutate(s.Root);
         {
-            Node(body)
-                .Mutate(metricsMenu.Create);
+            headerMenu.Create(shell);
 
-            Node(body, out var main)
-                .InnerLayoutV(InnerLayout.VerticalList)
-                .InnerSizingV(InnerSizing.VerticalWeight)
-                .InnerSpacingV(style.Spacing)
-                .SizeRelativeV((1, 1));
+            Node(shell, out var body)
+                .Mutate(s.HorizontalFill);
             {
-                Node(main)
-                    .Mutate(memoryPanelMenu.Create);
+                metricsMenu.Create(body);
 
-                Node(main)
-                    .Mutate(timelinePanelMenu.Create);
+                Node(body, out var main)
+                    .InnerLayoutV(InnerLayout.VerticalList)
+                    .InnerSizingV(InnerSizing.VerticalWeight)
+                    .InnerSpacingV(s.Spacing)
+                    .SizeRelativeV((1, 1));
+                {
+                    memoryPanelMenu.Create(main);
+                    timelinePanelMenu.Create(main);
+                }
             }
         }
     }

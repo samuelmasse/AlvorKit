@@ -64,7 +64,7 @@ public class RootUiFocus(RootKeyboard keyboard)
         (inits, newInits) = (newInits, inits);
         focusables.Clear();
         newInits.Clear();
-        CollectFocusables(n);
+        CollectFocusables(n, false);
         UnselectUnselectables(n);
 
         int index = focusables.IndexOf(focused);
@@ -121,12 +121,12 @@ public class RootUiFocus(RootKeyboard keyboard)
         }
     }
 
-    private void CollectFocusables(EntMut n)
+    private void CollectFocusables(EntMut n, bool inputDisabled)
     {
         var isFocusable = n.IsFocusableFV.Resolve();
-        var isInputDisabled = n.IsInputDisabledFV.Resolve();
+        inputDisabled |= n.IsInputDisabledFV.Resolve();
 
-        if (isFocusable && !isInputDisabled)
+        if (isFocusable && !inputDisabled)
         {
             focusables.Add(n);
 
@@ -135,7 +135,7 @@ public class RootUiFocus(RootKeyboard keyboard)
         }
 
         foreach (var c in n.NodesR.Span)
-            CollectFocusables(c);
+            CollectFocusables(c, inputDisabled);
     }
 
     private void UnselectUnselectables(EntMut n)

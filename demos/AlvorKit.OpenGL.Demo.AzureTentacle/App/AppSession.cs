@@ -10,21 +10,23 @@ public class AppSession(
 {
     private readonly FlyCamera camera = new((0f, 0.08f, 4f), 0f, 0f);
     private GlbModel? model;
-    private string[] modelInfoLines = [];
-    private string[] animationLines = [];
+    private string[] modelStatLabels = [];
+    private string[] modelStatValues = [];
+    private string[] animationLabels = [];
+    private string[] animationDurationLabels = [];
     private bool cameraCaptured;
 
     public bool CameraCaptured => cameraCaptured;
-    public int ModelInfoLineCount => modelInfoLines.Length;
-    public int AnimationLineCount => animationLines.Length;
+    public int ModelStatCount => modelStatLabels.Length;
+    public int AnimationLineCount => animationLabels.Length;
     public int SelectedAnimationIndex => Model.SelectedAnimationIndex;
     public string ActiveAnimationName => Model.GetAnimationName(Model.SelectedAnimationIndex);
 
     public void Load()
     {
         model = GlbModel.Load(gl);
-        modelInfoLines = CreateModelInfoLines(model);
-        animationLines = CreateAnimationLines(model);
+        (modelStatLabels, modelStatValues) = CreateModelStats(model);
+        (animationLabels, animationDurationLabels) = CreateAnimationLabels(model);
         CaptureCamera();
     }
 
@@ -66,9 +68,13 @@ public class AppSession(
 
     public void SelectAnimation(int animationIndex) => Model.SelectAnimation(animationIndex);
 
-    public string ModelInfoLineAt(int index) => modelInfoLines[index];
+    public string ModelStatLabelAt(int index) => modelStatLabels[index];
 
-    public string AnimationLineAt(int index) => animationLines[index];
+    public string ModelStatValueAt(int index) => modelStatValues[index];
+
+    public string AnimationLabelAt(int index) => animationLabels[index];
+
+    public string AnimationDurationLabelAt(int index) => animationDurationLabels[index];
 
     public void Dispose()
     {
@@ -79,27 +85,31 @@ public class AppSession(
 
     private GlbModel Model => model ?? throw new InvalidOperationException("The GLB model has not been loaded.");
 
-    private static string[] CreateModelInfoLines(GlbModel model) =>
-    [
-        "Model: azure_tentacle_monster_tex256.glb",
-        string.Format(CultureInfo.InvariantCulture, "Vertices: {0}", model.VertexCount),
-        string.Format(CultureInfo.InvariantCulture, "Triangles: {0}", model.TriangleCount),
-        string.Format(CultureInfo.InvariantCulture, "Texture: {0} x {1} nearest", model.TextureWidth, model.TextureHeight),
-        string.Format(CultureInfo.InvariantCulture, "Joints: {0}", model.JointCount),
-        string.Format(CultureInfo.InvariantCulture, "Animation slots: {0}", model.AnimationCount),
-    ];
+    private static (string[] Labels, string[] Values) CreateModelStats(GlbModel model) =>
+    (
+        ["Model", "Vertices", "Triangles", "Joints", "Texture"],
+        [
+            "azure_tentacle_monster_tex256.glb",
+            string.Format(CultureInfo.InvariantCulture, "{0}", model.VertexCount),
+            string.Format(CultureInfo.InvariantCulture, "{0}", model.TriangleCount),
+            string.Format(CultureInfo.InvariantCulture, "{0}", model.JointCount),
+            string.Format(CultureInfo.InvariantCulture, "{0} x {1} nearest", model.TextureWidth, model.TextureHeight),
+        ]
+    );
 
-    private static string[] CreateAnimationLines(GlbModel model)
+    private static (string[] Labels, string[] Durations) CreateAnimationLabels(GlbModel model)
     {
-        var lines = new string[model.AnimationCount];
-        for (var index = 0; index < lines.Length; index++)
+        var labels = new string[model.AnimationCount];
+        var durations = new string[model.AnimationCount];
+        for (var index = 0; index < labels.Length; index++)
         {
             var duration = model.GetAnimationDuration(index);
-            lines[index] = duration <= 0f
-                ? string.Format(CultureInfo.InvariantCulture, "{0}. {1} (no animation)", index + 1, model.GetAnimationName(index))
-                : string.Format(CultureInfo.InvariantCulture, "{0}. {1} ({2:0.###}s)", index + 1, model.GetAnimationName(index), duration);
+            labels[index] = string.Format(CultureInfo.InvariantCulture, "{0}. {1}", index + 1, model.GetAnimationName(index));
+            durations[index] = duration <= 0f
+                ? "none"
+                : string.Format(CultureInfo.InvariantCulture, "{0:0.###}s", duration);
         }
 
-        return lines;
+        return (labels, durations);
     }
 }

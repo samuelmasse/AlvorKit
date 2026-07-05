@@ -1,0 +1,309 @@
+<!-- @dsCard group="Visualizer" name="Editor shell" subtitle="Rebuilt Ranges Visualizer on Blend — menu bar, toolbar, docks, status bar" width="1440" height="900" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ranges Visualizer — Blend editor shell</title>
+<style>
+  :root {
+    --bg:#181818; --panel:#202122; --raised:#282A2B; --border:#36393A; --strong:#4A4E50;
+    --text:#D7D7D2; --muted:#8D918E; --accent:#B98245; --active:#3A332B; --hover:#2D3031; --selection:#34383A;
+    --ov-free:#020203; --strip-outline:#383F47;
+    --free:#214038; --free-edge:#45997A; --tail:#172424;
+    --pad-c:rgba(242,158,51,.78); --retained:rgba(107,148,189,.66); --hl:#FFF58C;
+    --s0:#42C7F2; --s1:#F27585; --s2:#94E06B; --s3:#FAB84D; --s4:#A88CF5; --s5:#59E0B8; --s6:#EB9EE6; --s7:#ADC7EB;
+    --ck-a:#40CCF2; --ck-r:#8CE66B; --ck-f:#F2575C; --ck-p:#C78FFF;
+  }
+  * { box-sizing:border-box; margin:0; }
+  html,body { height:100%; }
+  body {
+    width:1440px; height:900px; overflow:hidden; background:var(--bg); color:var(--text);
+    font:12px/1.35 Inter,"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; display:flex; flex-direction:column;
+  }
+  .sb { font-weight:600; }
+  .mut { color:var(--muted); font-size:11px; }
+
+  /* ---- menu bar (25) ---- */
+  .menubar { height:25px; flex:0 0 25px; background:var(--panel); border-bottom:1px solid var(--border);
+    display:flex; align-items:stretch; padding-right:10px; }
+  .brand { width:176px; display:flex; align-items:center; gap:8px; padding-left:10px;
+    border-right:1px solid var(--border); }
+  .brandmark { width:13px; height:13px; background:var(--active); border:1px solid var(--accent); }
+  .mi { display:flex; align-items:center; padding:0 9px; color:var(--text); cursor:pointer; }
+  .mi.hov { background:var(--hover); }
+  .menubar .spring { flex:1; }
+  .menubar .desc { display:flex; align-items:center; }
+
+  /* ---- toolbar (35) ---- */
+  .toolbar { height:35px; flex:0 0 35px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:5px; padding:4px 6px; }
+  .tbtn { height:24px; padding:0 8px; display:inline-flex; align-items:center; justify-content:center;
+    background:var(--panel); border:1px solid var(--border); border-radius:2px; color:var(--muted);
+    font-size:12px; cursor:pointer; white-space:nowrap; }
+  .tbtn:hover { background:var(--hover); border-color:var(--strong); }
+  .tbtn.on { background:var(--active); border-color:var(--accent); color:var(--text); }
+  .sq { width:26px; height:26px; padding:0; font-size:10px; }
+  .tsep { width:1px; align-self:stretch; margin:2px 4px; background:var(--border); }
+  .tlabel { padding:0 2px; }
+  .toolbar .spring { flex:1; }
+
+  /* ---- workspace ---- */
+  .work { flex:1; display:flex; min-height:0; }
+
+  .dock-l { width:300px; flex:0 0 300px; background:var(--panel); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; }
+  .ptitle { height:28px; flex:0 0 28px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; padding:0 8px; }
+  .ptitle .t { font-weight:600; }
+  .metrics { padding:10px 8px; overflow:hidden; }
+  .mrow { height:18px; display:flex; align-items:center; position:relative; }
+  .mrow .k { color:var(--muted); font-size:11px; }
+  .mrow .v { position:absolute; left:116px; font-size:12px; color:var(--text); }
+  .mgap { height:9px; }
+
+  .center { flex:1; display:flex; flex-direction:column; min-width:0; }
+
+  /* ---- viewport ---- */
+  .vp { flex:1; display:flex; flex-direction:column; min-height:0; background:var(--panel); }
+  .vphead { height:29px; flex:0 0 29px; background:var(--raised); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:5px; padding:2.5px 7px 3.5px; }
+  .chip { height:23px; padding:0 6px; display:inline-flex; align-items:center; gap:5px;
+    background:var(--panel); border:1px solid var(--border); border-radius:2px;
+    color:var(--muted); font-size:11px; white-space:nowrap; }
+  .chip.mode { color:var(--text); }
+  .leg { display:inline-flex; align-items:center; gap:4px; color:var(--muted); font-size:11px; margin-left:6px; }
+  .sw { width:12px; height:8px; display:inline-block; border:1px solid rgba(0,0,0,.35); }
+  .vphead .spring { flex:1; }
+
+  .vpbody { flex:1; background:var(--bg); padding:12px 14px; display:flex; flex-direction:column; min-height:0; }
+  .striplabel { font-size:11px; color:var(--muted); margin:0 0 5px 1px; }
+  .strip { position:relative; background:var(--ov-free); border:1px solid var(--strip-outline); }
+  .strip.ov { height:150px; flex:0 0 150px; margin-bottom:16px; }
+  .strip.dt { flex:1; }
+  .seg { position:absolute; top:0; bottom:0; display:flex; align-items:stretch; }
+  .seg > i { display:flex; align-items:center; justify-content:center; overflow:hidden; font-style:normal; }
+  .seg b { font-size:10px; font-weight:600; color:rgba(8,14,13,.85); white-space:nowrap; }
+  .seg.free { background:var(--free); border-left:1px solid var(--free-edge); border-right:1px solid var(--free-edge); }
+  .seg.free b { color:var(--free-edge); font-weight:500; }
+  .seg .ret { background:var(--retained); }
+  .seg .pad { background:var(--pad-c); }
+  .seg.activeblk { box-shadow:0 0 0 2px var(--hl), 0 0 14px rgba(255,245,140,.22); z-index:2; }
+  .seg.tailfree { background:var(--tail); border-left:1px solid var(--free-edge); }
+  .seg.tailfree b { color:#3d6a5c; font-weight:500; font-size:10px; }
+
+  /* tooltip */
+  .tip { position:absolute; left:53.4%; top:26%; z-index:5; background:var(--raised);
+    border:1px solid var(--strong); border-radius:2px; padding:6px 9px; font-size:11px; color:var(--text);
+    box-shadow:0 6px 18px rgba(0,0,0,.45); white-space:nowrap; }
+  .tip .mut { display:block; margin-top:2px; }
+  .tip .row1 { font-weight:600; }
+  .tip .dot { display:inline-block; width:8px; height:8px; background:var(--s4); margin-right:5px; }
+
+  /* ---- bottom dock (233) ---- */
+  .dock-b { height:233px; flex:0 0 233px; display:flex; flex-direction:column; background:var(--panel);
+    border-top:1px solid var(--border); }
+  .tabs { height:29px; flex:0 0 29px; background:var(--raised); display:flex; align-items:stretch;
+    border-bottom:1px solid var(--border); }
+  .tab { display:flex; align-items:center; padding:0 8px 0 10px; color:var(--muted);
+    border-right:1px solid var(--border); position:relative; cursor:pointer; }
+  .tab.on { background:var(--panel); color:var(--text); }
+  .tab.on::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--accent); }
+  .tabbody { flex:1; padding:10px 14px 8px; display:flex; flex-direction:column; min-height:0; }
+  .tabcap { display:flex; justify-content:space-between; margin-bottom:8px; }
+  .lane { position:relative; flex:1; background:var(--bg); border:1px solid var(--border); overflow:hidden;
+    display:flex; align-items:stretch; gap:2px; padding:6px 6px; }
+  .lane i { flex:1; border-radius:1px; opacity:.28; }
+  .lane i.on { opacity:1; }
+  .lane i.a { background:var(--ck-a); } .lane i.r { background:var(--ck-r); }
+  .lane i.f { background:var(--ck-f); } .lane i.p { background:var(--ck-p); }
+  .playhead { position:absolute; top:0; bottom:0; left:48.9%; width:1px; background:var(--hl); z-index:2; }
+  .playhead::after { content:"47"; position:absolute; top:2px; left:4px; font-size:10px; color:var(--hl); }
+  .axis { display:flex; justify-content:space-between; margin-top:5px; font-size:10px; color:var(--muted); }
+
+  /* ---- status bar (22) ---- */
+  .status { height:22px; flex:0 0 22px; background:var(--panel); border-top:1px solid var(--border);
+    display:flex; align-items:center; gap:16px; padding:0 10px; font-size:11px; color:var(--muted); }
+  .status .fps { color:var(--text); font-weight:600; font-size:11px; }
+  .status .spring { flex:1; }
+</style>
+</head>
+<body>
+
+  <div class="menubar">
+    <div class="brand"><span class="brandmark"></span><span class="sb">Ranges Visualizer</span></div>
+    <div class="mi hov">Scenario &#9662;</div>
+    <div class="mi">View</div>
+    <div class="mi">Playback</div>
+    <div class="mi">Help</div>
+    <div class="spring"></div>
+    <div class="desc mut">steady-window-prefilled — a live window churns while the allocator reuses holes</div>
+  </div>
+
+  <div class="toolbar">
+    <div class="tbtn on">&#10074;&#10074;&nbsp;Pause</div>
+    <div class="tbtn">Back</div>
+    <div class="tbtn">Step</div>
+    <div class="tbtn">Reset</div>
+    <div class="tsep"></div>
+    <div class="tbtn">Prev</div>
+    <div class="tbtn">Next</div>
+    <div class="tbtn">Pack</div>
+    <div class="tsep"></div>
+    <span class="tlabel mut">speed</span>
+    <div class="tbtn sq">&#8722;</div>
+    <span class="tlabel">1.25&#215;</span>
+    <div class="tbtn sq">+</div>
+    <div class="tsep"></div>
+    <div class="tbtn on">Labels</div>
+    <div class="tbtn on">Padding</div>
+    <div class="spring"></div>
+    <span class="tlabel mut">ui</span>
+    <div class="tbtn sq">&#8722;</div>
+    <span class="tlabel">1.00&#215;</span>
+    <div class="tbtn sq">+</div>
+  </div>
+
+  <div class="work">
+
+    <div class="dock-l">
+      <div class="ptitle"><span class="t">Allocator State</span><span class="mut">realloc</span></div>
+      <div class="metrics">
+        <div class="mrow"><span class="k">scenario op</span><span class="v">realloc slot 4 &#8594; 384 B</span></div>
+        <div class="mrow"><span class="k">method</span><span class="v">Realloc(slot, align, size)</span></div>
+        <div class="mrow"><span class="k">args</span><span class="v">slot 4, align 16, size 384</span></div>
+        <div class="mrow"><span class="k">kind</span><span class="v">Realloc</span></div>
+        <div class="mgap"></div>
+        <div class="mrow"><span class="k">block slot</span><span class="v">4</span></div>
+        <div class="mrow"><span class="k">request B</span><span class="v">384</span></div>
+        <div class="mrow"><span class="k">logical B</span><span class="v">384</span></div>
+        <div class="mrow"><span class="k">capacity B</span><span class="v">512</span></div>
+        <div class="mrow"><span class="k">retained extra B</span><span class="v">128</span></div>
+        <div class="mrow"><span class="k">reserved B</span><span class="v">640</span></div>
+        <div class="mrow"><span class="k">padding B</span><span class="v">128</span></div>
+        <div class="mgap"></div>
+        <div class="mrow"><span class="k">backing size</span><span class="v">8192</span></div>
+        <div class="mrow"><span class="k">used</span><span class="v">2880</span></div>
+        <div class="mrow"><span class="k">live ranges</span><span class="v">9</span></div>
+        <div class="mrow"><span class="k">free blocks</span><span class="v">5</span></div>
+        <div class="mrow"><span class="k">free sizes</span><span class="v">4</span></div>
+        <div class="mrow"><span class="k">pooled nodes</span><span class="v">6</span></div>
+        <div class="mrow"><span class="k">packs</span><span class="v">1</span></div>
+        <div class="mrow"><span class="k">resizes</span><span class="v">3</span></div>
+        <div class="mrow"><span class="k">op ticks</span><span class="v">1 841</span></div>
+        <div class="mrow"><span class="k">op managed B</span><span class="v">0</span></div>
+      </div>
+    </div>
+
+    <div class="center">
+      <div class="vp">
+        <div class="vphead">
+          <div class="chip mode">Mode: Allocations &#9662;</div>
+          <span class="leg"><span class="sw" style="background:var(--free)"></span>free block</span>
+          <span class="leg"><span class="sw" style="background:var(--s0)"></span>live payload</span>
+          <span class="leg"><span class="sw" style="background:rgba(107,148,189,.85)"></span>retained</span>
+          <span class="leg"><span class="sw" style="background:rgba(242,158,51,.9)"></span>padding</span>
+          <span class="leg"><span class="sw" style="background:var(--hl)"></span>latest request</span>
+          <div class="spring"></div>
+          <div class="chip">used 35.2%</div>
+          <div class="chip">external frag 15.7%</div>
+          <div class="chip">largest free 4 480 B</div>
+        </div>
+
+        <div class="vpbody">
+          <div class="striplabel">full backing store — 8 192 B</div>
+          <div class="strip ov">
+            <div style="position:absolute; inset:0 auto 0 0; width:45.34%;">
+              <div class="seg" style="left:0%;width:6.9%"><i style="flex:224;background:var(--s0)"></i><i class="pad" style="flex:32"></i></div>
+              <div class="seg free" style="left:6.9%;width:3.45%"></div>
+              <div class="seg" style="left:10.34%;width:8.62%"><i style="flex:256;background:var(--s1)"></i><i class="ret" style="flex:64"></i></div>
+              <div class="seg" style="left:18.97%;width:5.17%"><i style="flex:1;background:var(--s2)"></i></div>
+              <div class="seg free" style="left:24.14%;width:6.9%"></div>
+              <div class="seg" style="left:31.03%;width:10.34%"><i style="flex:320;background:var(--s3)"></i><i class="pad" style="flex:64"></i></div>
+              <div class="seg" style="left:41.38%;width:6.03%"><i style="flex:1;background:var(--s5)"></i></div>
+              <div class="seg free" style="left:47.41%;width:4.31%"></div>
+              <div class="seg activeblk" style="left:51.72%;width:17.24%"><i style="flex:384;background:var(--s4)"></i><i class="ret" style="flex:128"></i><i class="pad" style="flex:128"></i></div>
+              <div class="seg" style="left:68.97%;width:7.76%"><i style="flex:1;background:var(--s6)"></i></div>
+              <div class="seg free" style="left:76.72%;width:5.17%"></div>
+              <div class="seg" style="left:81.9%;width:6.9%"><i style="flex:1;background:var(--s7)"></i></div>
+              <div class="seg" style="left:88.79%;width:8.62%"><i style="flex:1;background:var(--s0)"></i></div>
+              <div class="seg free" style="left:97.41%;width:2.59%"></div>
+            </div>
+            <div class="seg tailfree" style="left:45.34%;width:54.66%"><i style="flex:1"><b>tail free 4 480 B</b></i></div>
+          </div>
+
+          <div class="striplabel">active region zoom — bytes 1..3 712; large tail free block is omitted here</div>
+          <div class="strip dt">
+            <div class="seg" style="left:0%;width:6.9%"><i style="flex:224;background:var(--s0)"><b>s0 &#183; 224 B</b></i><i class="pad" style="flex:32"></i></div>
+            <div class="seg free" style="left:6.9%;width:3.45%"><i style="flex:1"><b>free 128</b></i></div>
+            <div class="seg" style="left:10.34%;width:8.62%"><i style="flex:256;background:var(--s1)"><b>s1 &#183; 256 B</b></i><i class="ret" style="flex:64"></i></div>
+            <div class="seg" style="left:18.97%;width:5.17%"><i style="flex:1;background:var(--s2)"><b>s2 &#183; 192 B</b></i></div>
+            <div class="seg free" style="left:24.14%;width:6.9%"><i style="flex:1"><b>free 256 B</b></i></div>
+            <div class="seg" style="left:31.03%;width:10.34%"><i style="flex:320;background:var(--s3)"><b>s3 &#183; 320 B</b></i><i class="pad" style="flex:64"></i></div>
+            <div class="seg" style="left:41.38%;width:6.03%"><i style="flex:1;background:var(--s5)"><b>s5 &#183; 224 B</b></i></div>
+            <div class="seg free" style="left:47.41%;width:4.31%"><i style="flex:1"><b>free 160</b></i></div>
+            <div class="seg activeblk" style="left:51.72%;width:17.24%"><i style="flex:384;background:var(--s4)"><b>s4 &#183; 384 / 512 B</b></i><i class="ret" style="flex:128"></i><i class="pad" style="flex:128"></i></div>
+            <div class="seg" style="left:68.97%;width:7.76%"><i style="flex:1;background:var(--s6)"><b>s6 &#183; 288 B</b></i></div>
+            <div class="seg free" style="left:76.72%;width:5.17%"><i style="flex:1"><b>free 192 B</b></i></div>
+            <div class="seg" style="left:81.9%;width:6.9%"><i style="flex:1;background:var(--s7)"><b>s7 &#183; 256 B</b></i></div>
+            <div class="seg" style="left:88.79%;width:8.62%"><i style="flex:1;background:var(--s0)"><b>s8 &#183; 320 B</b></i></div>
+            <div class="seg free" style="left:97.41%;width:2.59%"></div>
+
+            <div class="tip">
+              <span class="row1"><span class="dot"></span>slot 4 — realloc</span>
+              <span class="mut">logical 384 B &#183; capacity 512 B</span>
+              <span class="mut">reserved 640 B &#183; padding 128 B &#183; retained 128 B</span>
+              <span class="mut">offset 1 920 &#183; latest request</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dock-b">
+        <div class="tabs">
+          <div class="tab on">Commands</div>
+          <div class="tab">Used</div>
+          <div class="tab">Efficiency</div>
+          <div class="tab">Free Blocks</div>
+          <div class="tab">Events</div>
+        </div>
+        <div class="tabbody">
+          <div class="tabcap">
+            <span class="mut">last call: realloc slot 4, align 16, 384 B — moved to offset 1 920</span>
+            <span class="mut">click a command to seek &#183; space toggles playback</span>
+          </div>
+          <div class="lane">
+            <i class="a on"></i><i class="a on"></i><i class="a on"></i><i class="a on"></i><i class="r on"></i><i class="a on"></i><i class="f on"></i><i class="a on"></i>
+            <i class="a on"></i><i class="r on"></i><i class="f on"></i><i class="a on"></i><i class="a on"></i><i class="f on"></i><i class="r on"></i><i class="a on"></i>
+            <i class="a on"></i><i class="a on"></i><i class="f on"></i><i class="r on"></i><i class="a on"></i><i class="f on"></i><i class="a on"></i><i class="r on"></i>
+            <i class="f on"></i><i class="a on"></i><i class="a on"></i><i class="r on"></i><i class="f on"></i><i class="a on"></i><i class="r on"></i><i class="f on"></i>
+            <i class="a on"></i><i class="a on"></i><i class="r on"></i><i class="f on"></i><i class="a on"></i><i class="r on"></i><i class="f on"></i><i class="a on"></i>
+            <i class="a on"></i><i class="r on"></i><i class="f on"></i><i class="a on"></i><i class="r on"></i><i class="f on"></i><i class="r on"></i>
+            <i class="a"></i><i class="f"></i><i class="a"></i><i class="r"></i><i class="f"></i><i class="a"></i><i class="a"></i><i class="r"></i>
+            <i class="f"></i><i class="a"></i><i class="r"></i><i class="f"></i><i class="p"></i><i class="a"></i><i class="a"></i><i class="r"></i>
+            <i class="f"></i><i class="a"></i><i class="r"></i><i class="f"></i><i class="a"></i><i class="a"></i><i class="r"></i><i class="f"></i>
+            <i class="a"></i><i class="r"></i><i class="f"></i><i class="a"></i><i class="a"></i><i class="r"></i><i class="f"></i><i class="a"></i>
+            <i class="r"></i><i class="f"></i><i class="a"></i><i class="a"></i><i class="r"></i><i class="f"></i><i class="a"></i><i class="r"></i>
+            <i class="f"></i><i class="a"></i><i class="a"></i><i class="r"></i><i class="f"></i><i class="a"></i><i class="r"></i><i class="f"></i>
+            <div class="playhead"></div>
+          </div>
+          <div class="axis"><span>0</span><span>24</span><span>48</span><span>72</span><span>96</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <span class="fps">144 FPS</span>
+    <span>playing</span>
+    <span>scenario 5/19</span>
+    <span>step 47/96</span>
+    <span>speed 1.25&#215;</span>
+    <div class="spring"></div>
+    <span>ui 1.00&#215;</span>
+    <span>Shift +/&#8722; scales ui</span>
+    <span>AlvorKit.UI.Blend</span>
+  </div>
+
+</body>
+</html>

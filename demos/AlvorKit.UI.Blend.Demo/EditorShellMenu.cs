@@ -1,354 +1,475 @@
 namespace AlvorKit.UI.Blend.Demo;
 
-/// <summary>Builds the stripped Blender-like editor shell from the current HTML reference.</summary>
+/// <summary>Builds the stripped Blender-like editor shell demo using layout primitives.</summary>
 [App]
-public class EditorShellMenu(EditorShellStyle style)
+public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
 {
     public void Create(EntMut root)
     {
-        const float leftDockWidth = 264f;
-        const float splitterWidth = 6f;
-        const float rightDockWidth = 330f;
-        const float bottomDockHeight = 233f;
-        const float bottomDockTopInset = 2f;
-        const float activeTabAccentOffset = 1.5f;
-        const float centerLeft = leftDockWidth + splitterWidth;
-        const float centerWidthOffset = -(leftDockWidth + splitterWidth + splitterWidth + rightDockWidth);
+        var palette = s.Palette;
+        var metrics = s.Metrics;
 
-        var palette = style.Palette;
-        var metrics = style.Metrics;
-
-        root.Mutate(style.Board)
-            .ColorV(palette.AppBackground);
-
-        Node(root, out var menuBar).Mutate(style.MenuBar);
+        Node(root, out var shell)
+            .Mutate(s.Root);
         {
-            Node(menuBar, out var brand)
-                .SizeRelativeV((0, 1))
-                .SizeV((176f, 0))
-                .ColorV(palette.Panel)
-                .Mutate(node => style.RightRule(node, () => palette.Border));
+            MenuBar(shell);
+            Toolbar(shell);
+            Workspace(shell);
+            StatusBar(shell);
+        }
+
+        void MenuBar(EntMut parent)
+        {
+            Node(parent, out var menuBar).Mutate(s.MenuBar);
             {
-                Node(brand)
-                    .OffsetV((10f, 5.5f))
+                menuBar.Mutate()
+                    .InnerLayoutV(InnerLayout.HorizontalList)
+                    .InnerSizingV(InnerSizing.HorizontalWeight)
+                    .InnerSpacingV(0)
+                    .PaddingV(metrics.MenuBarPadding);
+
+                Brand(menuBar);
+                MenuItem(menuBar, "File");
+                MenuItem(menuBar, "Edit");
+                MenuItem(menuBar, "View");
+                MenuItem(menuBar, "Tools");
+                MenuItem(menuBar, "Build");
+                Spacer(menuBar);
+                TextLabel(menuBar, "Layout: Studio    Scene: sandbox", metrics.MenuBarHeight, false, true);
+            }
+        }
+
+        void Brand(EntMut parent)
+        {
+            Node(parent, out var brand)
+                .Mutate(s.RightRule)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .SizeRelativeV((0, 1))
+                .SizeV((layout.BrandAreaWidth, 0))
+                .ColorV(palette.Panel);
+            {
+                brand.Mutate()
+                    .InnerLayoutV(InnerLayout.HorizontalList)
+                    .InnerSizingV(InnerSizing.HorizontalWeight)
+                    .InnerSpacingV(metrics.LooseSpacing)
+                    .PaddingV(metrics.BrandPadding);
+
+                Node(brand, out var mark)
+                    .AlignmentV(Alignment.Vertical)
+                    .SizeWeightTypeV(SizeWeightType.Self)
                     .SizeRelativeV((0, 0))
-                    .SizeV((13f, 13f))
-                    .ColorV(palette.ActiveSurface)
-                    .Mutate(node => style.Border(node, () => palette.Accent));
-
-                StrongTextAt(brand, (24f, 0), (142f, metrics.MenuBarHeight), "AlvorKit Studio", palette.Text, 12);
-            }
-
-            MenuItem(menuBar, (184f, 0), (34f, metrics.MenuBarHeight), "File");
-            MenuItem(menuBar, (224f, 0), (36f, metrics.MenuBarHeight), "Edit");
-            MenuItem(menuBar, (268f, 0), (44f, metrics.MenuBarHeight), "View");
-            MenuItem(menuBar, (318f, 0), (46f, metrics.MenuBarHeight), "Tools");
-            MenuItem(menuBar, (370f, 0), (48f, metrics.MenuBarHeight), "Build");
-            RightText(menuBar, (-8f, 0), 292f, "Layout: Studio    Scene: sandbox");
-            style.BottomRule(menuBar, () => palette.Border);
-        }
-
-        Node(root, out var toolbar)
-            .OffsetV((0, metrics.MenuBarHeight))
-            .Mutate(style.Toolbar);
-        {
-            ButtonAt(toolbar, (6f, 4f), (26f, metrics.ButtonHeight), "M", true, 10, palette.Raised);
-            ButtonAt(toolbar, (36f, 4f), (26f, metrics.ButtonHeight), "R", false, 10, palette.Raised);
-            ButtonAt(toolbar, (66f, 4f), (26f, metrics.ButtonHeight), "S", false, 10, palette.Raised);
-            VerticalRule(toolbar, 100f, 4f, 26f);
-            ButtonAt(toolbar, (110f, 4f), (79f, metrics.ButtonHeight), "Select Tool", false, 12, palette.Raised);
-            ButtonAt(toolbar, (194f, 4f), (84f, metrics.ButtonHeight), "Snap 0.25m", false, 12, palette.Raised);
-            RightButton(toolbar, (-83f, 4f), (72f, metrics.ButtonHeight), "Play", false, 12, palette.Raised);
-            RightButton(toolbar, (-6f, 4f), (72f, metrics.ButtonHeight), "Build", false, 12, palette.Raised);
-        }
-
-        Node(root, out var workspace).Mutate(style.Board);
-        workspace.Mutate()
-            .OffsetV((0, metrics.MenuBarHeight + metrics.ToolbarHeight))
-            .SizeV((0, -(metrics.MenuBarHeight + metrics.ToolbarHeight + metrics.StatusBarHeight)));
-        {
-            Node(workspace, out var leftDock)
-                .SizeRelativeV((0, 1))
-                .SizeV((leftDockWidth, 0))
-                .Mutate(PanelSurface);
-            {
-                PanelTitle(leftDock, "Scene", "Outliner");
-            }
-
-            Splitter(workspace, (leftDockWidth, 0), splitterWidth);
-
-            Node(workspace, out var center)
-                .OffsetV((centerLeft, 0))
-                .SizeRelativeV((1, 1))
-                .SizeV((centerWidthOffset, 0))
-                .Mutate(style.Board);
-            {
-                Node(center, out var viewportPanel)
-                    .SizeRelativeV((1, 1))
-                    .SizeV((0, -bottomDockHeight))
-                    .ColorV(palette.Panel);
+                    .SizeV((layout.BrandMarkSize, layout.BrandMarkSize))
+                    .ColorV(palette.ActiveSurface);
                 {
-                    ViewportHeader(viewportPanel);
+                    Node(mark)
+                        .IsFloatingV(true)
+                        .IsPostSizedV(true)
+                        .AlignmentV(Alignment.Top | Alignment.Left)
+                        .SizeRelativeV((1, 0))
+                        .SizeV((0, metrics.Hairline))
+                        .ColorV(palette.Accent);
 
-                    Node(viewportPanel, out var viewport)
-                        .OffsetV((0, metrics.ViewportHeaderHeight))
-                        .SizeRelativeV((1, 1))
-                        .SizeV((0, -metrics.ViewportHeaderHeight))
-                        .ColorV(palette.AppBackground);
-                    {
-                        Node(viewport)
-                            .AlignmentV(Alignment.Bottom | Alignment.Right)
-                            .OffsetV((-14f, -14f))
-                            .SizeRelativeV((0, 0))
-                            .SizeV((74f, 74f))
-                            .ColorV(palette.WithAlpha(palette.Panel, 0.88f))
-                            .Mutate(node => style.Border(node, () => palette.Border));
-                    }
+                    Node(mark)
+                        .IsFloatingV(true)
+                        .IsPostSizedV(true)
+                        .AlignmentV(Alignment.Bottom | Alignment.Left)
+                        .SizeRelativeV((1, 0))
+                        .SizeV((0, metrics.Hairline))
+                        .ColorV(palette.Accent);
+
+                    Node(mark)
+                        .IsFloatingV(true)
+                        .IsPostSizedV(true)
+                        .AlignmentV(Alignment.Top | Alignment.Left)
+                        .SizeRelativeV((0, 1))
+                        .SizeV((metrics.Hairline, 0))
+                        .ColorV(palette.Accent);
+
+                    Node(mark)
+                        .IsFloatingV(true)
+                        .IsPostSizedV(true)
+                        .AlignmentV(Alignment.Top | Alignment.Right)
+                        .SizeRelativeV((0, 1))
+                        .SizeV((metrics.Hairline, 0))
+                        .ColorV(palette.Accent);
                 }
 
-                Node(center, out var bottomDock)
-                    .AlignmentV(Alignment.Bottom | Alignment.Left)
-                    .SizeRelativeV((1, 0))
-                    .SizeV((0, bottomDockHeight))
-                    .ColorV(palette.Panel)
-                    .Mutate(node => style.TopRule(node, () => palette.Border))
-                    .Mutate(BottomDock);
-
-                style.BottomRule(center, () => palette.Border);
-            }
-
-            Splitter(workspace, (-rightDockWidth, 0), splitterWidth, Alignment.Top | Alignment.Right);
-
-            Node(workspace, out var rightDock)
-                .AlignmentV(Alignment.Top | Alignment.Right)
-                .SizeRelativeV((0, 1))
-                .SizeV((rightDockWidth, 0))
-                .Mutate(PanelSurface);
-            {
-                PanelTitle(rightDock, "Inspector", "Properties");
+                TextLabel(brand, "AlvorKit Studio", metrics.MenuBarHeight, true, false);
             }
         }
 
-        Node(root, out var statusBar)
-            .AlignmentV(Alignment.Bottom | Alignment.Left)
-            .Mutate(style.StatusBar);
+        void Toolbar(EntMut parent)
         {
-            TextAt(statusBar, (4f, 0), (286f, metrics.StatusBarHeight), "C:/Projects/AlvorKit/stress-scenes/sandbox", palette.MutedText, 11);
-            TextAt(statusBar, (288f, 0), (140f, metrics.StatusBarHeight), "Selected: none", palette.MutedText, 11);
-            RightText(statusBar, (-8f, 0), 294f, "Memory 418 MB    Frame 6.9 ms    Ready");
+            Node(parent, out var toolbar).Mutate(s.Toolbar);
+            {
+                toolbar.Mutate()
+                    .InnerLayoutV(InnerLayout.HorizontalList)
+                    .InnerSizingV(InnerSizing.HorizontalWeight)
+                    .InnerSpacingV(metrics.ToolbarSpacing)
+                    .PaddingV(metrics.ToolbarPadding);
+
+                TransformTools(toolbar);
+                Button(toolbar, "Select Tool", false);
+                Button(toolbar, "Snap 0.25m", false);
+                Spacer(toolbar);
+                Button(toolbar, "Play", false);
+                Button(toolbar, "Build", false);
+            }
+        }
+
+        void TransformTools(EntMut parent)
+        {
+            Node(parent, out var group)
+                .Mutate(s.RightRule)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .SizeRelativeV((0, 0))
+                .SizeV((0, metrics.SquareButtonSize))
+                .SizeInnerSumRelativeV((1, 0))
+                .PaddingV(metrics.TransformGroupPadding)
+                .MarginV((0, 0, metrics.TransformGroupMarginRight, 0));
+            {
+                group.Mutate()
+                    .InnerLayoutV(InnerLayout.HorizontalList)
+                    .InnerSpacingV(metrics.CompactSpacing);
+
+                SquareButton(group, "M", true);
+                SquareButton(group, "R", false);
+                SquareButton(group, "S", false);
+            }
+        }
+
+        void Workspace(EntMut parent)
+        {
+            Node(parent, out var workspace)
+                .ColorV(palette.AppBackground);
+            {
+                workspace.Mutate()
+                    .InnerLayoutV(InnerLayout.HorizontalList)
+                    .InnerSizingV(InnerSizing.HorizontalWeight)
+                    .InnerSpacingV(0);
+
+                DockPanel(workspace, layout.LeftDockWidth, "Scene", "Outliner");
+                Splitter(workspace, layout.SplitterWidth);
+                CenterDock(workspace);
+                Splitter(workspace, layout.SplitterWidth);
+                DockPanel(workspace, layout.RightDockWidth, "Inspector", "Properties");
+            }
+        }
+
+        void DockPanel(EntMut parent, float width, string leftTitle, string rightTitle)
+        {
+            Node(parent, out var panel)
+                .Mutate(PanelSurface)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .SizeRelativeV((0, 1))
+                .SizeV((width, 0));
+            {
+                panel.Mutate()
+                    .InnerLayoutV(InnerLayout.VerticalList)
+                    .InnerSizingV(InnerSizing.VerticalWeight);
+
+                PanelTitle(panel, leftTitle, rightTitle);
+                PanelBody(panel);
+            }
+        }
+
+        void CenterDock(EntMut parent)
+        {
+            Node(parent, out var center)
+                .Mutate(s.Board)
+                .InnerLayoutV(InnerLayout.VerticalList)
+                .InnerSizingV(InnerSizing.VerticalWeight)
+                .ColorV(palette.AppBackground);
+            {
+                ViewportPanel(center);
+                BottomDock(center);
+
+                s.BottomRule(center);
+            }
+        }
+
+        void ViewportPanel(EntMut parent)
+        {
+            Node(parent, out var panel)
+                .ColorV(palette.Panel);
+            {
+                panel.Mutate()
+                    .InnerLayoutV(InnerLayout.VerticalList)
+                    .InnerSizingV(InnerSizing.VerticalWeight);
+
+                ViewportHeader(panel);
+
+                Node(panel, out var viewport)
+                    .ColorV(palette.AppBackground);
+                {
+                    Node(viewport)
+                        .Mutate(s.Border)
+                        .IsFloatingV(true)
+                        .AlignmentV(Alignment.Bottom | Alignment.Right)
+                        .OffsetV((-layout.AxisWidgetInset, -layout.AxisWidgetInset))
+                        .SizeRelativeV((0, 0))
+                        .SizeV((layout.AxisWidgetSize, layout.AxisWidgetSize))
+                        .ColorV(palette.WithAlpha(palette.Panel, 0.88f));
+                }
+            }
+        }
+
+        void ViewportHeader(EntMut parent)
+        {
+            Node(parent, out var header)
+                .Mutate(s.BottomRule)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .SizeRelativeV((1, 0))
+                .SizeV((0, metrics.ViewportHeaderHeight))
+                .ColorV(palette.Raised);
+            {
+                header.Mutate()
+                    .InnerLayoutV(InnerLayout.HorizontalList)
+                    .InnerSizingV(InnerSizing.HorizontalWeight)
+                    .InnerSpacingV(metrics.ToolbarSpacing)
+                    .PaddingV(metrics.ViewportHeaderPadding);
+
+                Chip(header, "Perspective");
+                Chip(header, "Lit");
+                Chip(header, "Gizmos");
+                Chip(header, "Snap 0.25m");
+                Spacer(header);
+                Chip(header, "Zoom 83%");
+                Chip(header, "Grid 1m");
+            }
+        }
+
+        void BottomDock(EntMut parent)
+        {
+            Node(parent, out var panel)
+                .Mutate(s.TopRule)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .SizeRelativeV((1, 0))
+                .SizeV((0, layout.BottomDockHeight))
+                .ColorV(palette.Panel);
+            {
+                panel.Mutate()
+                    .InnerLayoutV(InnerLayout.VerticalList)
+                    .InnerSizingV(InnerSizing.VerticalWeight);
+
+                TabStrip(panel);
+                BottomBody(panel);
+            }
+        }
+
+        void TabStrip(EntMut parent)
+        {
+            Node(parent, out var tabs)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .SizeRelativeV((1, 0))
+                .SizeV((0, metrics.TabStripHeight))
+                .MarginV((0, layout.BottomDockTopInset, 0, 0))
+                .ColorV(palette.Raised);
+            {
+                tabs.Mutate()
+                    .InnerLayoutV(InnerLayout.HorizontalList)
+                    .InnerSpacingV(0);
+
+                Tab(tabs, "Assets", true);
+                Tab(tabs, "Console", false);
+                Tab(tabs, "Profiler", false);
+                Tab(tabs, "Timeline", false);
+
+                Node(tabs)
+                    .IsFloatingV(true)
+                    .AlignmentV(Alignment.Bottom | Alignment.Left)
+                    .SizeRelativeV((1, 0))
+                    .SizeV((0, metrics.Hairline))
+                    .ColorV(palette.Border);
+            }
+        }
+
+        void BottomBody(EntMut parent)
+        {
+            Node(parent, out var body)
+                .ColorV(palette.Panel);
+            {
+                body.Mutate()
+                    .InnerLayoutV(InnerLayout.HorizontalList)
+                    .InnerSizingV(InnerSizing.HorizontalWeight);
+
+                Node(body)
+                    .Mutate(s.RightRule)
+                    .SizeWeightTypeV(SizeWeightType.Self)
+                    .SizeRelativeV((0, 1))
+                    .SizeV((layout.AssetFolderWidth, 0))
+                    .ColorV(palette.WithAlpha(palette.Panel, 0.86f));
+
+                Node(body, out var assets)
+                    .ColorV(palette.Panel);
+                {
+                    assets.Mutate()
+                        .InnerLayoutV(InnerLayout.VerticalList)
+                        .InnerSizingV(InnerSizing.VerticalWeight);
+
+                    AssetToolbar(assets);
+                    Node(assets).ColorV(palette.Panel);
+                }
+            }
+        }
+
+        void AssetToolbar(EntMut parent)
+        {
+            Node(parent, out var toolbar)
+                .Mutate(s.BottomRule)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .SizeRelativeV((1, 0))
+                .SizeV((0, metrics.AssetToolbarHeight))
+                .ColorV(palette.Panel);
+            {
+                Node(toolbar, out var row)
+                    .SizeRelativeV((1, 1))
+                    .PaddingV(metrics.AssetToolbarPadding);
+                {
+                    row.Mutate()
+                        .InnerLayoutV(InnerLayout.HorizontalList)
+                        .InnerSizingV(InnerSizing.HorizontalWeight)
+                        .InnerSpacingV(metrics.ToolbarSpacing);
+
+                    Spacer(row);
+                    Button(row, "New", false);
+                    SquareButton(row, "G", true);
+                    SquareButton(row, "L", false);
+                }
+            }
+        }
+
+        void StatusBar(EntMut parent)
+        {
+            Node(parent, out var status).Mutate(s.StatusBar);
+            {
+                status.Mutate()
+                    .InnerLayoutV(InnerLayout.HorizontalList)
+                    .InnerSizingV(InnerSizing.HorizontalWeight)
+                    .InnerSpacingV(metrics.StatusSpacing)
+                    .PaddingV(metrics.StatusBarPadding);
+
+                TextLabel(status, "C:/Projects/AlvorKit/stress-scenes/sandbox", metrics.StatusBarHeight, false, false);
+                TextLabel(status, "Selected: none", metrics.StatusBarHeight, false, false);
+                Spacer(status);
+                TextLabel(status, "Memory 418 MB", metrics.StatusBarHeight, false, false);
+                TextLabel(status, "Frame 6.9 ms", metrics.StatusBarHeight, false, false);
+                TextLabel(status, "Ready", metrics.StatusBarHeight, false, false);
+            }
         }
 
         void PanelSurface(EntMut panel)
         {
             panel.Mutate()
-                .ColorV(palette.Panel)
-                .Mutate(node => style.BottomRule(node, () => palette.Border));
-        }
-
-        void ViewportHeader(EntMut panel)
-        {
-            Node(panel, out var header)
-                .SizeRelativeV((1, 0))
-                .SizeV((0, metrics.ViewportHeaderHeight))
-                .ColorV(palette.Raised)
-                .Mutate(node => style.BottomRule(node, () => palette.Border));
-            {
-                ChipAt(header, (7f, 2.5f), (72.5f, metrics.ChipHeight), "Perspective", palette.Raised);
-                ChipAt(header, (84.5f, 2.5f), (30f, metrics.ChipHeight), "Lit", palette.Raised);
-                ChipAt(header, (119.5f, 2.5f), (53.5f, metrics.ChipHeight), "Gizmos", palette.Raised);
-                ChipAt(header, (178f, 2.5f), (75f, metrics.ChipHeight), "Snap 0.25m", palette.Raised);
-                RightChip(header, (-69f, 2.5f), (70f, metrics.ChipHeight), "Zoom 83%", palette.Raised);
-                RightChip(header, (-7f, 2.5f), (57f, metrics.ChipHeight), "Grid 1m", palette.Raised);
-            }
-        }
-
-        void BottomDock(EntMut panel)
-        {
-            Node(panel, out var tabs)
-                .OffsetV((0, bottomDockTopInset))
-                .SizeRelativeV((1, 0))
-                .SizeV((0, metrics.TabStripHeight))
-                .ColorV(palette.Raised)
-                .Mutate(node => style.BottomRule(node, () => palette.Border));
-            {
-                TabAt(tabs, 0f, 88f, "Assets", true);
-                TabAt(tabs, 88f, 88f, "Console", false);
-                TabAt(tabs, 176f, 88f, "Profiler", false);
-                TabAt(tabs, 264f, 88f, "Timeline", false);
-
-                Node(tabs)
-                    .IsFloatingV(true)
-                    .AlignmentV(Alignment.Bottom | Alignment.Left)
-                    .OffsetV((88f, 0))
-                    .SizeRelativeV((1, 0))
-                    .SizeV((-88f, metrics.Hairline))
-                    .ColorV(palette.Border);
-
-                Node(tabs)
-                    .IsFloatingV(true)
-                    .AlignmentV(Alignment.Bottom | Alignment.Left)
-                    .OffsetV((0, style.PhysicalPixels(1) / 2f))
-                    .SizeAlignmentSnapV(0f)
-                    .SizeRelativeV((0, 0))
-                    .SizeV((88f, style.PhysicalPixels(1)))
-                    .ColorV(palette.Border);
-            }
-
-            Node(panel)
-                .OffsetV((0, bottomDockTopInset + metrics.TabStripHeight))
-                .SizeRelativeV((0, 1))
-                .SizeV((190f, -bottomDockTopInset - metrics.TabStripHeight))
-                .ColorV(palette.WithAlpha(palette.Panel, 0.86f))
-                .Mutate(node => style.RightRule(node, () => palette.Border));
-
-            Node(panel, out var assets)
-                .OffsetV((190f, bottomDockTopInset + metrics.TabStripHeight))
-                .SizeRelativeV((1, 1))
-                .SizeV((-190f, -bottomDockTopInset - metrics.TabStripHeight))
-                .ColorV(palette.Panel)
-                .Mutate(style.Board);
-            {
-                Node(assets, out var assetToolbar)
-                    .SizeRelativeV((1, 0))
-                    .SizeV((0, metrics.AssetToolbarHeight))
-                    .ColorV(palette.Panel)
-                    .Mutate(node => style.BottomRule(node, () => palette.Border));
-                {
-                    RightButton(assetToolbar, (-69f, 2f), (72f, metrics.ButtonHeight), "New", false, 12, palette.Panel);
-                    RightButton(assetToolbar, (-38f, 2f), (26f, metrics.ButtonHeight), "G", true, 10, palette.Panel);
-                    RightButton(assetToolbar, (-7f, 2f), (26f, metrics.ButtonHeight), "L", false, 10, palette.Panel);
-                }
-            }
-
-            Node(panel)
-                .IsFloatingV(true)
-                .AlignmentV(Alignment.Top | Alignment.Left)
-                .SizeRelativeV((1, 0))
-                .SizeV((0, bottomDockTopInset))
-                .ColorV(palette.Border);
-
-            Node(panel)
-                .IsFloatingV(true)
-                .AlignmentV(Alignment.Top | Alignment.Left)
-                .OffsetV((0, activeTabAccentOffset))
-                .SizeRelativeV((0, 0))
-                .SizeV((88f, 2f))
-                .ColorV(palette.Accent);
+                .Mutate(s.BottomRule)
+                .ColorV(palette.Panel);
         }
 
         void PanelTitle(EntMut parent, string left, string right)
         {
-            Node(parent, out var title).Mutate(style.PanelTitle);
+            Node(parent, out var title)
+                .Mutate(s.PanelTitle);
             {
-                StrongTextAt(title, (2f, 0), (150f, metrics.PanelTitleHeight), left, palette.Text, 12);
-                RightText(title, (-2f, 0), 136f, right);
+                title.Mutate()
+                    .InnerLayoutV(InnerLayout.HorizontalList)
+                    .InnerSizingV(InnerSizing.HorizontalWeight)
+                    .InnerSpacingV(metrics.LooseSpacing)
+                    .PaddingV(metrics.PanelTitlePadding);
+
+                TextLabel(title, left, metrics.PanelTitleHeight, true, false);
+                Spacer(title);
+                TextLabel(title, right, metrics.PanelTitleHeight, false, false);
             }
         }
 
-        void MenuItem(EntMut parent, Vec2 offset, Vec2 size, string text)
-        {
+        void PanelBody(EntMut parent) =>
             Node(parent)
-                .OffsetV(offset)
-                .Mutate(node => style.MenuItem(node, size))
-                .TextV(text);
-        }
+                .ColorV(palette.Panel);
 
-        void TextAt(EntMut parent, Vec2 offset, Vec2 size, string text, Vec4 color, int fontSize)
+        void MenuItem(EntMut parent, string text)
         {
             Node(parent)
-                .Mutate(style.Text)
-                .OffsetV(offset)
+                .Mutate(s.MenuItem)
+                .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 0))
-                .SizeV(size)
-                .FontSizeV(fontSize)
-                .TextColorV(color)
-                .TextPaddingV((6f, 0, 6f, 0))
+                .SizeTextRelativeV((1, 0))
+                .SizeV((0, metrics.MenuBarHeight))
                 .TextV(text);
         }
 
-        void StrongTextAt(EntMut parent, Vec2 offset, Vec2 size, string text, Vec4 color, int fontSize)
+        void TextLabel(EntMut parent, string text, float height, bool strong, bool rightAligned)
         {
-            Node(parent)
-                .Mutate(style.EmphasisText)
-                .OffsetV(offset)
+            Node(parent, out var label)
+                .Mutate(strong ? s.EmphasisText : s.MutedText)
+                .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 0))
-                .SizeV(size)
-                .FontSizeV(fontSize)
-                .TextColorV(color)
-                .TextPaddingV((6f, 0, 6f, 0))
+                .SizeTextRelativeV((1, 0))
+                .SizeV((0, height))
+                .TextPaddingV((0, 0, metrics.RightGlyphPadding, 0))
+                .TextV(text);
+
+            if (rightAligned)
+                label.Mutate()
+                    .TextAlignmentV(Alignment.Right | Alignment.Vertical);
+        }
+
+        void Button(EntMut parent, string text, bool active)
+        {
+            Node(parent)
+                .Mutate(active ? s.ActiveButton : s.Button)
+                .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV(text);
         }
 
-        void RightText(EntMut parent, Vec2 offset, float width, string text)
+        void SquareButton(EntMut parent, string text, bool active)
         {
             Node(parent)
-                .Mutate(style.MutedText)
-                .AlignmentV(Alignment.Top | Alignment.Right)
-                .OffsetV(offset)
-                .SizeRelativeV((0, 1))
-                .SizeV((width, 0))
-                .TextAlignmentV(Alignment.Right | Alignment.Vertical)
-                .TextPaddingV((0, 0, 8f, 0))
+                .Mutate(active ? s.ActiveSquareButton : s.SquareButton)
+                .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV(text);
         }
 
-        void ButtonAt(EntMut parent, Vec2 offset, Vec2 size, string text, bool active, int fontSize, Vec4 outside)
+        void Chip(EntMut parent, string text)
         {
             Node(parent)
-                .OffsetV(offset)
-                .Mutate(node => style.Button(node, size, text, fontSize, () => active, () => outside));
+                .Mutate(s.Chip)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV(text);
         }
 
-        void RightButton(EntMut parent, Vec2 offset, Vec2 size, string text, bool active, int fontSize, Vec4 outside)
-        {
-            Node(parent)
-                .AlignmentV(Alignment.Top | Alignment.Right)
-                .OffsetV(offset)
-                .Mutate(node => style.Button(node, size, text, fontSize, () => active, () => outside));
-        }
-
-        void ChipAt(EntMut parent, Vec2 offset, Vec2 size, string text, Vec4 outside)
-        {
-            Node(parent)
-                .OffsetV(offset)
-                .Mutate(node => style.Chip(node, size, text, () => outside));
-        }
-
-        void RightChip(EntMut parent, Vec2 offset, Vec2 size, string text, Vec4 outside)
-        {
-            Node(parent)
-                .AlignmentV(Alignment.Top | Alignment.Right)
-                .OffsetV(offset)
-                .Mutate(node => style.Chip(node, size, text, () => outside));
-        }
-
-        void TabAt(EntMut parent, float x, float width, string text, bool active)
+        void Tab(EntMut parent, string text, bool active)
         {
             Node(parent, out var tab)
-                .OffsetV((x, 0))
-                .Mutate(node => style.Tab(node, (width, metrics.TabStripHeight), active))
+                .Mutate(active ? s.ActiveTab : s.Tab)
+                .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV(text);
+            {
+                if (!active)
+                    return;
 
-            _ = tab;
+                Node(tab)
+                    .IsFloatingV(true)
+                    .AlignmentV(Alignment.Top | Alignment.Left)
+                    .OffsetV((0, layout.ActiveTabAccentOffset))
+                    .SizeRelativeV((1, 0))
+                    .SizeV((0, metrics.ActiveTabAccentHeight))
+                    .ColorV(palette.Accent);
+            }
         }
 
-        void Splitter(EntMut parent, Vec2 offset, float width, Alignment alignment = Alignment.Top | Alignment.Left)
+        void Splitter(EntMut parent, float width)
         {
             Node(parent)
-                .AlignmentV(alignment)
-                .OffsetV(offset)
+                .Mutate(s.LeftRule)
+                .Mutate(s.RightRule)
+                .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 1))
                 .SizeV((width, 0))
-                .ColorV(palette.AppBackground)
-                .Mutate(node => style.LeftRule(node, () => palette.Border))
-                .Mutate(node => style.RightRule(node, () => palette.Border));
+                .ColorV(palette.AppBackground);
         }
 
-        void VerticalRule(EntMut parent, float x, float y, float height) =>
+        static void Spacer(EntMut parent) =>
             Node(parent)
-                .OffsetV((x, y))
-                .SizeRelativeV((0, 0))
-                .SizeV((1f, height))
-                .ColorV(palette.Border);
+                .ColorV(default);
     }
 }

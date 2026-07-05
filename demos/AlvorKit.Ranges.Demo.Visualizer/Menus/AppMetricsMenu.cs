@@ -3,66 +3,68 @@ namespace AlvorKit.Ranges.Demo.Visualizer;
 [App]
 public class AppMetricsMenu(
     RootText text,
-    AppStyle style,
+    AppStyle s,
     AppSession session)
 {
     public void Create(EntMut root)
     {
         const float metricsWidth = 320f;
 
-        var metricsSectionGap = style.SpacingXS;
-        root.Mutate(style.PanelList)
+        var metricsSectionGap = s.SpacingXS;
+        Node(root, out var panel)
+            .Mutate(s.PanelList)
             .SizeWeightTypeV(SizeWeightType.Self)
             .SizeRelativeV((0, 1))
             .SizeV((metricsWidth, 0));
+        {
+            Node(panel)
+                .Mutate(s.Heading)
+                .SizeWeightTypeV(SizeWeightType.Self)
+                .TextV("allocator state");
 
-        Node(root)
-            .Mutate(style.Heading)
-            .SizeWeightTypeV(SizeWeightType.Self)
-            .TextV("allocator state");
+            Metric(panel, "scenario op", () => session.Runner.LastCommand.Label);
+            Metric(panel, "method", () => session.Runner.LastMethodText);
+            Metric(panel, "args", () => ArgumentSummary(session.Runner.LastCommand));
+            Metric(panel, "kind", () => text.Format("{0}", session.Runner.LastCommand.Kind));
 
-        Metric(root, "scenario op", () => session.Runner.LastCommand.Label);
-        Metric(root, "method", () => session.Runner.LastMethodText);
-        Metric(root, "args", () => ArgumentSummary(session.Runner.LastCommand));
-        Metric(root, "kind", () => text.Format("{0}", session.Runner.LastCommand.Kind));
+            Spacer(panel, metricsSectionGap);
+            Metric(panel, "block slot", () => TouchedValue(range => range.Slot));
+            Metric(panel, "request B", () => RequestValue(session.Runner));
+            Metric(panel, "logical B", () => TouchedValue(range => range.Size));
+            Metric(panel, "capacity B", () => TouchedValue(range => range.CapacitySize));
+            Metric(panel, "retained extra B", () => TouchedValue(range => range.RetainedExtraSize));
+            Metric(panel, "reserved B", () => TouchedValue(range => range.ReservedSize));
+            Metric(panel, "padding B", () => TouchedValue(range => range.ReservedSize - range.CapacitySize));
 
-        Spacer(root, metricsSectionGap);
-        Metric(root, "block slot", () => TouchedValue(range => range.Slot));
-        Metric(root, "request B", () => RequestValue(session.Runner));
-        Metric(root, "logical B", () => TouchedValue(range => range.Size));
-        Metric(root, "capacity B", () => TouchedValue(range => range.CapacitySize));
-        Metric(root, "retained extra B", () => TouchedValue(range => range.RetainedExtraSize));
-        Metric(root, "reserved B", () => TouchedValue(range => range.ReservedSize));
-        Metric(root, "padding B", () => TouchedValue(range => range.ReservedSize - range.CapacitySize));
-
-        Spacer(root, metricsSectionGap);
-        Metric(root, "backing size", () => text.Format("{0}", session.Runner.Current.Size));
-        Metric(root, "used", () => text.Format("{0}", session.Runner.Current.Used));
-        Metric(root, "live ranges", () => text.Format("{0}", session.Runner.Current.LiveCount));
-        Metric(root, "free blocks", () => text.Format("{0}", session.Runner.Current.FreeBlockCount));
-        Metric(root, "free sizes", () => text.Format("{0}", session.Runner.Current.FreeSizeCount));
-        Metric(root, "pooled nodes", () => text.Format("{0}", session.Runner.Current.PooledNodeCount));
-        Metric(root, "packs", () => text.Format("{0}", session.Runner.Current.PackCount));
-        Metric(root, "resizes", () => text.Format("{0}", session.Runner.Current.ResizeCount));
-        Metric(root, "op ticks", () => text.Format("{0}", session.Runner.Current.OperationTicks));
-        Metric(root, "op managed B", () => text.Format("{0}", session.Runner.Current.OperationManagedBytes));
+            Spacer(panel, metricsSectionGap);
+            Metric(panel, "backing size", () => text.Format("{0}", session.Runner.Current.Size));
+            Metric(panel, "used", () => text.Format("{0}", session.Runner.Current.Used));
+            Metric(panel, "live ranges", () => text.Format("{0}", session.Runner.Current.LiveCount));
+            Metric(panel, "free blocks", () => text.Format("{0}", session.Runner.Current.FreeBlockCount));
+            Metric(panel, "free sizes", () => text.Format("{0}", session.Runner.Current.FreeSizeCount));
+            Metric(panel, "pooled nodes", () => text.Format("{0}", session.Runner.Current.PooledNodeCount));
+            Metric(panel, "packs", () => text.Format("{0}", session.Runner.Current.PackCount));
+            Metric(panel, "resizes", () => text.Format("{0}", session.Runner.Current.ResizeCount));
+            Metric(panel, "op ticks", () => text.Format("{0}", session.Runner.Current.OperationTicks));
+            Metric(panel, "op managed B", () => text.Format("{0}", session.Runner.Current.OperationManagedBytes));
+        }
 
         void Metric(EntMut parent, string name, Func<ReadOnlySpan<char>> value)
         {
             const float valueOffsetX = 116f;
 
             Node(parent, out var row)
-                .Mutate(style.MetricRow)
+                .Mutate(s.MetricRow)
                 .SizeWeightTypeV(SizeWeightType.Self);
             {
                 Node(row)
-                    .Mutate(style.MutedLabel)
+                    .Mutate(s.MutedLabel)
                     .TextV(name)
                     .AlignmentV(Alignment.Left | Alignment.Top);
 
                 Node(row)
-                    .Mutate(style.Label)
-                    .FontSizeV(style.FontSizeSmall)
+                    .Mutate(s.Label)
+                    .FontSizeV(s.FontSizeSmall)
                     .TextF(value)
                     .OffsetV((valueOffsetX, 0))
                     .AlignmentV(Alignment.Left | Alignment.Top);

@@ -3,7 +3,7 @@ namespace AlvorKit.Ranges.Demo.Visualizer;
 [App]
 public class AppMemoryStripLabels(
     RootText text,
-    AppStyle style,
+    AppStyle s,
     AppSession session,
     AppMemoryStripGeometry geometry)
 {
@@ -27,8 +27,8 @@ public class AppMemoryStripLabels(
             const float minimumSlotLabelWidth = 28f;
 
             Node(strip)
-                .Mutate(style.Label)
-                .FontSizeV(style.FontSizeSmall)
+                .Mutate(s.Label)
+                .FontSizeV(s.FontSizeSmall)
                 .TextV(text.Format("#{0}", range.Slot).ToString())
                 .OffsetF(() => geometry.SegmentOffset(strip, view, range.Index) + (labelOffsetX, slotLabelOffsetY))
                 .IsDisabledF(() =>
@@ -42,7 +42,7 @@ public class AppMemoryStripLabels(
             const float detailLabelOffsetY = 18f;
 
             Node(strip)
-                .Mutate(style.MutedLabel)
+                .Mutate(s.MutedLabel)
                 .TextF(() => text.Format("{0}B requested", range.Size))
                 .OffsetF(() => geometry.SegmentOffset(strip, view, range.Index) + (labelOffsetX, detailLabelOffsetY))
                 .IsDisabledF(() => !session.ShowLabels || !CanFitDetailLabel(strip, view, range));
@@ -54,7 +54,7 @@ public class AppMemoryStripLabels(
             const float extendedLabelOffsetY = 32f;
 
             Node(strip)
-                .Mutate(style.MutedLabel)
+                .Mutate(s.MutedLabel)
                 .TextF(() => range.RetainedExtraSize == 0
                     ? text.Format("{0}B capacity", range.CapacitySize)
                     : text.Format("{0}B capacity, {1}B retained", range.CapacitySize, range.RetainedExtraSize))

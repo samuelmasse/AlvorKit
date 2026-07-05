@@ -30,7 +30,10 @@ public class AppState(
         uiScriptAdded = true;
         menuNode = Node(ui)
             .OrderValueV(0)
-            .Mutate(menu.Create);
+            .SizeRelativeV((1, 1));
+        {
+            menu.Create(menuNode);
+        }
         screen.IsVisible = true;
     }
 

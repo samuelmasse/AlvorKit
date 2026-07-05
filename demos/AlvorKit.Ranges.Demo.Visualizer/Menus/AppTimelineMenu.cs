@@ -4,7 +4,7 @@ namespace AlvorKit.Ranges.Demo.Visualizer;
 public class AppTimelineMenu(
     RootUiMouse uiMouse,
     RootMouse mouse,
-    AppStyle style,
+    AppStyle s,
     AppSession session,
     AppTimelineTexture texture)
 {
@@ -17,7 +17,7 @@ public class AppTimelineMenu(
         var mainWasDown = false;
         Node(root, out var content)
             .SizeRelativeV((1, 1))
-            .ColorV(style.PanelInsetColor)
+            .ColorV(s.PanelInsetColor)
             .IsSelectableV(true)
             .IsSilentFocusableV(true)
             .CursorF(() => CursorShape.ResizeHorizontal)
@@ -72,7 +72,7 @@ public class AppTimelineMenu(
                 .SizeRelativeV((0, 1))
                 .SizeV((markerWidth, 0))
                 .OffsetF(() => TimelineMarkerOffset(lane, commands.Length, session.Runner.StepIndex, markerWidth))
-                .ColorV(style.HighlightColor);
+                .ColorV(s.HighlightColor);
 
             Node(lane)
                 .SizeRelativeV((0, 0))
@@ -80,18 +80,18 @@ public class AppTimelineMenu(
                     markerWidth + markerCapPadding + markerCapPadding,
                     markerCapHeight))
                 .OffsetF(() => TimelineMarkerOffset(lane, commands.Length, session.Runner.StepIndex, markerWidth) - (markerCapPadding, 0))
-                .ColorV(style.HighlightColor);
+                .ColorV(s.HighlightColor);
 
             Node(lane)
                 .SizeRelativeV((0, 1))
                 .SizeF(() => TimelineCellSize(lane, commands.Length))
                 .OffsetF(() => TimelineCellOffset(lane, commands.Length, texture.HoverIndex(lane)))
-                .ColorV(style.TimelineHoverColor)
+                .ColorV(s.TimelineHoverColor)
                 .IsDisabledF(() => !TimelinePointerInside(lane, commands.Length));
 
             Outline(lane, () => TimelinePointerInside(lane, commands.Length)
-                ? style.AccentColor
-                : style.TimelineIdleOutlineColor);
+                ? s.AccentColor
+                : s.TimelineIdleOutlineColor);
         }
 
         void ScrubTimeline(EntMut lane)
@@ -150,25 +150,25 @@ public class AppTimelineMenu(
             Node(parent)
                 .AlignmentV(Alignment.Top | Alignment.Left)
                 .SizeRelativeV((1, 0))
-                .SizeV((0, style.RuleWidth))
+                .SizeV((0, s.RuleWidth))
                 .ColorF(color);
 
             Node(parent)
                 .AlignmentV(Alignment.Bottom | Alignment.Left)
                 .SizeRelativeV((1, 0))
-                .SizeV((0, style.RuleWidth))
+                .SizeV((0, s.RuleWidth))
                 .ColorF(color);
 
             Node(parent)
                 .AlignmentV(Alignment.Top | Alignment.Left)
                 .SizeRelativeV((0, 1))
-                .SizeV((style.RuleWidth, 0))
+                .SizeV((s.RuleWidth, 0))
                 .ColorF(color);
 
             Node(parent)
                 .AlignmentV(Alignment.Top | Alignment.Right)
                 .SizeRelativeV((0, 1))
-                .SizeV((style.RuleWidth, 0))
+                .SizeV((s.RuleWidth, 0))
                 .ColorF(color);
         }
     }
