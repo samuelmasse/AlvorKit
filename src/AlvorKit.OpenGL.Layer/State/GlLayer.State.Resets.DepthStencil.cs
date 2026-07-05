@@ -8,7 +8,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetDepthFunc()
     {
-        depthFunc.Reset(nameof(DepthFunc));
+        state.depthFunc.Reset(nameof(DepthFunc));
         base.DepthFunc(DefaultDepthFunc);
     }
 
@@ -18,7 +18,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetDepthMask()
     {
-        depthMask.Reset(nameof(DepthMask));
+        state.depthMask.Reset(nameof(DepthMask));
         base.DepthMask(DefaultDepthMask);
     }
 
@@ -28,7 +28,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetClearDepth()
     {
-        clearDepth.Reset(nameof(ClearDepth));
+        state.clearDepth.Reset(nameof(ClearDepth));
         base.ClearDepth(DefaultClearDepth);
     }
 
@@ -38,7 +38,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetDepthRange()
     {
-        depthRange.Reset(nameof(DepthRange));
+        state.depthRange.Reset(nameof(DepthRange));
         base.DepthRange(DefaultDepthRange.Near, DefaultDepthRange.Far);
     }
 
@@ -48,7 +48,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetDepthRangeIndexed(uint index)
     {
-        depthRangeMap.Reset(nameof(DepthRangeIndexed), index);
+        state.depthRangeMap.Reset(nameof(DepthRangeIndexed), index);
         base.DepthRangeIndexed(index, DefaultDepthRange.Near, DefaultDepthRange.Far);
     }
 
@@ -59,13 +59,13 @@ public partial class GlLayer
     public unsafe void ResetDepthRangeArray(uint first, int count)
     {
         for (var i = 0; i < count; i++)
-            depthRangeMap.RequireCanReset(nameof(DepthRangeArrayv), first + (uint)i);
+            state.depthRangeMap.RequireCanReset(nameof(DepthRangeArrayv), first + (uint)i);
         Span<double> values = stackalloc double[count * 2];
         for (var i = 0; i < count; i++) { values[i * 2] = DefaultDepthRange.Near; values[i * 2 + 1] = DefaultDepthRange.Far; }
         fixed (double* pointer = values)
             base.DepthRangeArrayv(first, count, (nint)pointer);
         for (var i = 0; i < count; i++)
-            depthRangeMap.ResetKnownSet(first + (uint)i);
+            state.depthRangeMap.ResetKnownSet(first + (uint)i);
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetClearStencil()
     {
-        clearStencil.Reset(nameof(ClearStencil));
+        state.clearStencil.Reset(nameof(ClearStencil));
         base.ClearStencil(DefaultClearStencil);
     }
 
@@ -84,7 +84,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetStencilFunc()
     {
-        stencilFunc.Reset(nameof(StencilFunc));
+        state.stencilFunc.Reset(nameof(StencilFunc));
         base.StencilFunc(DefaultStencilFunc.Func, DefaultStencilFunc.Ref, DefaultStencilFunc.Mask);
     }
 
@@ -94,7 +94,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetStencilFuncSeparate(GlTriangleFace face)
     {
-        stencilFuncSeparateMap.Reset(nameof(StencilFuncSeparate), face);
+        state.stencilFuncSeparateMap.Reset(nameof(StencilFuncSeparate), face);
         base.StencilFuncSeparate(face, DefaultStencilFunc.Func, DefaultStencilFunc.Ref, DefaultStencilFunc.Mask);
     }
 
@@ -104,7 +104,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetStencilMask()
     {
-        stencilMask.Reset(nameof(StencilMask));
+        state.stencilMask.Reset(nameof(StencilMask));
         base.StencilMask(DefaultStencilMask);
     }
 
@@ -114,7 +114,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetStencilMaskSeparate(GlTriangleFace face)
     {
-        stencilMaskSeparateMap.Reset(nameof(StencilMaskSeparate), face);
+        state.stencilMaskSeparateMap.Reset(nameof(StencilMaskSeparate), face);
         base.StencilMaskSeparate(face, DefaultStencilMask);
     }
 
@@ -124,7 +124,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetStencilOp()
     {
-        stencilOp.Reset(nameof(StencilOp));
+        state.stencilOp.Reset(nameof(StencilOp));
         base.StencilOp(DefaultStencilOp.Fail, DefaultStencilOp.ZFail, DefaultStencilOp.ZPass);
     }
 
@@ -134,7 +134,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetStencilOpSeparate(GlTriangleFace face)
     {
-        stencilOpSeparateMap.Reset(nameof(StencilOpSeparate), face);
+        state.stencilOpSeparateMap.Reset(nameof(StencilOpSeparate), face);
         base.StencilOpSeparate(face, DefaultStencilOp.Fail, DefaultStencilOp.ZFail, DefaultStencilOp.ZPass);
     }
 }

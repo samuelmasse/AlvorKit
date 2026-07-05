@@ -6,8 +6,8 @@ public partial class GlLayer
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetStencilFunc()"/>. Cannot be combined with <c>glStencilFuncSeparate</c>.</remarks>
     public override void StencilFunc(GlStencilFunction func, int @ref, uint mask)
     {
-        if (stencilFuncSeparateMap.HasAny) throw new GlConflictException(nameof(StencilFunc), nameof(StencilFuncSeparate));
-        stencilFunc.Set(nameof(StencilFunc), (func, @ref, mask));
+        if (state.stencilFuncSeparateMap.HasAny) throw new GlConflictException(nameof(StencilFunc), nameof(StencilFuncSeparate));
+        state.stencilFunc.Set(nameof(StencilFunc), (func, @ref, mask));
         base.StencilFunc(func, @ref, mask);
     }
 
@@ -18,8 +18,8 @@ public partial class GlLayer
     /// </remarks>
     public override void StencilFuncSeparate(GlTriangleFace face, GlStencilFunction func, int @ref, uint mask)
     {
-        if (stencilFunc.IsSet) throw new GlConflictException(nameof(StencilFuncSeparate), nameof(StencilFunc));
-        stencilFuncSeparateMap.Set(nameof(StencilFuncSeparate), face, (func, @ref, mask));
+        if (state.stencilFunc.IsSet) throw new GlConflictException(nameof(StencilFuncSeparate), nameof(StencilFunc));
+        state.stencilFuncSeparateMap.Set(nameof(StencilFuncSeparate), face, (func, @ref, mask));
         base.StencilFuncSeparate(face, func, @ref, mask);
     }
 
@@ -27,8 +27,8 @@ public partial class GlLayer
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetStencilMask()"/>. Cannot be combined with <c>glStencilMaskSeparate</c>.</remarks>
     public override void StencilMask(uint mask)
     {
-        if (stencilMaskSeparateMap.HasAny) throw new GlConflictException(nameof(StencilMask), nameof(StencilMaskSeparate));
-        stencilMask.Set(nameof(StencilMask), mask);
+        if (state.stencilMaskSeparateMap.HasAny) throw new GlConflictException(nameof(StencilMask), nameof(StencilMaskSeparate));
+        state.stencilMask.Set(nameof(StencilMask), mask);
         base.StencilMask(mask);
     }
 
@@ -39,8 +39,8 @@ public partial class GlLayer
     /// </remarks>
     public override void StencilMaskSeparate(GlTriangleFace face, uint mask)
     {
-        if (stencilMask.IsSet) throw new GlConflictException(nameof(StencilMaskSeparate), nameof(StencilMask));
-        stencilMaskSeparateMap.Set(nameof(StencilMaskSeparate), face, mask);
+        if (state.stencilMask.IsSet) throw new GlConflictException(nameof(StencilMaskSeparate), nameof(StencilMask));
+        state.stencilMaskSeparateMap.Set(nameof(StencilMaskSeparate), face, mask);
         base.StencilMaskSeparate(face, mask);
     }
 
@@ -48,8 +48,8 @@ public partial class GlLayer
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetStencilOp()"/>. Cannot be combined with <c>glStencilOpSeparate</c>.</remarks>
     public override void StencilOp(GlStencilOp fail, GlStencilOp zfail, GlStencilOp zpass)
     {
-        if (stencilOpSeparateMap.HasAny) throw new GlConflictException(nameof(StencilOp), nameof(StencilOpSeparate));
-        stencilOp.Set(nameof(StencilOp), (fail, zfail, zpass));
+        if (state.stencilOpSeparateMap.HasAny) throw new GlConflictException(nameof(StencilOp), nameof(StencilOpSeparate));
+        state.stencilOp.Set(nameof(StencilOp), (fail, zfail, zpass));
         base.StencilOp(fail, zfail, zpass);
     }
 
@@ -60,8 +60,8 @@ public partial class GlLayer
     /// </remarks>
     public override void StencilOpSeparate(GlTriangleFace face, GlStencilOp sfail, GlStencilOp dpfail, GlStencilOp dppass)
     {
-        if (stencilOp.IsSet) throw new GlConflictException(nameof(StencilOpSeparate), nameof(StencilOp));
-        stencilOpSeparateMap.Set(nameof(StencilOpSeparate), face, (sfail, dpfail, dppass));
+        if (state.stencilOp.IsSet) throw new GlConflictException(nameof(StencilOpSeparate), nameof(StencilOp));
+        state.stencilOpSeparateMap.Set(nameof(StencilOpSeparate), face, (sfail, dpfail, dppass));
         base.StencilOpSeparate(face, sfail, dpfail, dppass);
     }
 }

@@ -38,6 +38,7 @@
     <Folder Name="/Script/">
         <Project Path="scripts/AlvorKit.Script.Workspace/AlvorKit.Script.Workspace.csproj" />
         <Project Path="scripts/AlvorKit.Script.AgentLease/AlvorKit.Script.AgentLease.csproj" />
+        <Project Path="scripts/AlvorKit.Script.DevSolution/AlvorKit.Script.DevSolution.csproj" />
         <Project Path="scripts/AlvorKit.Script.Bindgen.Core/AlvorKit.Script.Bindgen.Core.csproj" />
         <Project
             Path="scripts/AlvorKit.Script.Bindgen.CHeaders/AlvorKit.Script.Bindgen.CHeaders.csproj" />
@@ -104,6 +105,8 @@
             Path="tests/AlvorKit.Script.Bindgen.OpenGLRegistry.Test/AlvorKit.Script.Bindgen.OpenGLRegistry.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.BindgenReview.Test/AlvorKit.Script.BindgenReview.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Script.DevSolution.Test/AlvorKit.Script.DevSolution.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.Lint.Test/AlvorKit.Script.Lint.Test.csproj" />
         <Project

@@ -207,6 +207,14 @@ root/game/world/level/player services, loader scopes, or state transitions, read
 prefixes, attributes, service names, and constructor dependency ordering
 consistent with that guide.
 
+## GL Object Ownership
+
+Before creating, deleting, or wiring the lifetime of any GL object (buffers,
+textures, vertex arrays, programs), read [docs/GlOwnership.md](docs/GlOwnership.md).
+`GlLayer` is hierarchical: objects belong to the scope node that created them,
+and a scope-lifetime object must not get its own `IDisposable` or `Delete*`
+teardown — disposing the scope's node reclaims everything it owns in one sweep.
+
 ## UI Menu Authoring
 
 Before creating or significantly changing an AlvorKit UI menu, read

@@ -102,6 +102,46 @@ internal sealed unsafe partial class GlResourceSet<THandle>(
     }
 
     /// <summary>
+    /// Removes one handle from the tracked live set when present.
+    /// </summary>
+    /// <param name="handle">The handle to remove.</param>
+    /// <returns><see langword="true"/> when the handle was tracked and removed; otherwise, <see langword="false"/>.</returns>
+    internal bool TryUntrack(THandle handle) => items.Remove(handle);
+
+    /// <summary>
+    /// Reads one tracked handle without removing it.
+    /// </summary>
+    /// <param name="handle">One tracked handle, or the default value when the set is empty.</param>
+    /// <returns><see langword="true"/> when a handle was read; otherwise, <see langword="false"/>.</returns>
+    internal bool TryPeek(out THandle handle)
+    {
+        foreach (var candidate in items)
+        {
+            handle = candidate;
+            return true;
+        }
+        handle = default;
+        return false;
+    }
+
+    /// <summary>
+    /// Copies tracked handles into a caller-owned raw id buffer without removing them.
+    /// </summary>
+    /// <param name="destination">The caller-owned buffer that receives raw GL ids.</param>
+    /// <returns>The number of raw ids written to <paramref name="destination"/>.</returns>
+    internal int SnapshotIds(Span<uint> destination)
+    {
+        var count = 0;
+        foreach (var handle in items)
+        {
+            if (count == destination.Length)
+                break;
+            destination[count++] = ToId(handle);
+        }
+        return count;
+    }
+
+    /// <summary>
     /// Removes one tracked handle without allocating a snapshot.
     /// </summary>
     /// <param name="handle">The handle that was removed, or the default value when the set is empty.</param>

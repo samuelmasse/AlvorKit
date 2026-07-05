@@ -62,7 +62,7 @@ public unsafe partial class GlLayer
     /// <param name="info">The renderbuffer shape used for accounting.</param>
     private void TrackBoundRenderbufferSize(string function, GlRenderbufferInfo info)
     {
-        var bound = renderbuffer.Current;
+        var bound = state.renderbuffer.Current;
         if (bound == 0)
             throw new GlException(function, "cannot track renderbuffer size: no renderbuffer is bound.");
         TrackRenderbufferSize(function, (GlRenderbufferHandle)bound, info);
@@ -78,8 +78,8 @@ public unsafe partial class GlLayer
     {
         if (!renderbuffers.Contains(id))
             throw new GlException(function, $"cannot track renderbuffer size: renderbuffer {id} is not tracked.");
-        renderbufferUsage += info.MemoryUsage - renderbufferSizes.GetValueOrDefault(id).MemoryUsage;
-        renderbufferSizes[id] = info;
+        state.renderbufferUsage += info.MemoryUsage - state.renderbufferSizes.GetValueOrDefault(id).MemoryUsage;
+        state.renderbufferSizes[id] = info;
     }
 
     /// <summary>
@@ -88,7 +88,7 @@ public unsafe partial class GlLayer
     /// <param name="id">The renderbuffer handle whose memory accounting should be released.</param>
     private void ReleaseRenderbufferMemory(GlRenderbufferHandle id)
     {
-        if (renderbufferSizes.Remove(id, out var info))
-            renderbufferUsage -= info.MemoryUsage;
+        if (state.renderbufferSizes.Remove(id, out var info))
+            state.renderbufferUsage -= info.MemoryUsage;
     }
 }

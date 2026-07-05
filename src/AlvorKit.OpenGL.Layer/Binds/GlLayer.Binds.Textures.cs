@@ -9,9 +9,9 @@ public unsafe partial class GlLayer
     /// </remarks>
     public override void ActiveTexture(GlTextureUnit texture)
     {
-        activeTexture.RequireCanSet(nameof(ActiveTexture), texture);
+        state.activeTexture.RequireCanSet(nameof(ActiveTexture), texture);
         base.ActiveTexture(texture);
-        activeTexture.SetKnownUnset(texture);
+        state.activeTexture.SetKnownUnset(texture);
     }
 
     /// <inheritdoc/>
@@ -25,11 +25,11 @@ public unsafe partial class GlLayer
         if (id != 0)
             RequireTextureTargetCompatible(nameof(BindTexture), texture, target);
         var key = (GetActiveTextureIndex(nameof(BindTexture)), target);
-        textureBinds.RequireCanBind(nameof(BindTexture), key, id);
+        state.textureBinds.RequireCanBind(nameof(BindTexture), key, id);
         base.BindTexture(target, texture);
         if (id != 0)
             CommitTextureTarget(texture, target);
-        textureBinds.BindKnownFree(key, id);
+        state.textureBinds.BindKnownFree(key, id);
     }
 
     /// <inheritdoc/>
@@ -37,9 +37,9 @@ public unsafe partial class GlLayer
     public override void BindTextureUnit(uint unit, GlTextureHandle texture)
     {
         var target = GetTextureTarget(nameof(BindTextureUnit), texture);
-        textureBinds.RequireCanBind(nameof(BindTextureUnit), (unit, target), (uint)texture);
+        state.textureBinds.RequireCanBind(nameof(BindTextureUnit), (unit, target), (uint)texture);
         base.BindTextureUnit(unit, texture);
-        textureBinds.BindKnownFree((unit, target), (uint)texture);
+        state.textureBinds.BindKnownFree((unit, target), (uint)texture);
     }
 
     /// <inheritdoc/>
@@ -55,13 +55,13 @@ public unsafe partial class GlLayer
         {
             var texture = textures == 0 ? (GlTextureHandle)0u : (GlTextureHandle)ids[i];
             targets[i] = GetTextureTarget(nameof(BindTextures), texture);
-            textureBinds.RequireCanBind(nameof(BindTextures), (first + (uint)i, targets[i]), (uint)texture);
+            state.textureBinds.RequireCanBind(nameof(BindTextures), (first + (uint)i, targets[i]), (uint)texture);
         }
         base.BindTextures(first, count, textures);
         for (var i = 0; i < count; i++)
         {
             var texture = textures == 0 ? (GlTextureHandle)0u : (GlTextureHandle)ids[i];
-            textureBinds.BindKnownFree((first + (uint)i, targets[i]), (uint)texture);
+            state.textureBinds.BindKnownFree((first + (uint)i, targets[i]), (uint)texture);
         }
     }
 
@@ -72,9 +72,9 @@ public unsafe partial class GlLayer
     public void UnbindTexture(GlTextureTarget target)
     {
         var key = (GetActiveTextureIndex(nameof(BindTexture)), target);
-        textureBinds.RequireCanUnbind(nameof(BindTexture), key);
+        state.textureBinds.RequireCanUnbind(nameof(BindTexture), key);
         base.BindTexture(target, (GlTextureHandle)0u);
-        textureBinds.UnbindKnownBound(key);
+        state.textureBinds.UnbindKnownBound(key);
     }
 
     /// <summary>
@@ -110,9 +110,9 @@ public unsafe partial class GlLayer
     /// </summary>
     public void ResetActiveTexture()
     {
-        activeTexture.RequireCanReset(nameof(ActiveTexture));
+        state.activeTexture.RequireCanReset(nameof(ActiveTexture));
         base.ActiveTexture(DefaultActiveTexture);
-        activeTexture.ResetKnownSet();
+        state.activeTexture.ResetKnownSet();
     }
 
     /// <summary>
@@ -137,7 +137,7 @@ public unsafe partial class GlLayer
     {
         if ((uint)texture == 0)
             return;
-        if (textureTargets.TryGetValue(texture, out var existing) && existing != target)
+        if (state.textureTargets.TryGetValue(texture, out var existing) && existing != target)
             throw new GlBindConflictException(function, $"texture {texture} is already used as {existing}, cannot use it as {target}.");
     }
 
@@ -150,7 +150,7 @@ public unsafe partial class GlLayer
     {
         if ((uint)texture == 0)
             return;
-        textureTargets[texture] = target;
+        state.textureTargets[texture] = target;
     }
 
     /// <summary>
@@ -163,7 +163,7 @@ public unsafe partial class GlLayer
     {
         if ((uint)texture == 0)
             throw new GlException(function, "cannot bind texture 0 through strict bind APIs; use the matching Unbind* method.");
-        if (textureTargets.TryGetValue(texture, out var target))
+        if (state.textureTargets.TryGetValue(texture, out var target))
             return target;
         throw new GlException(function, $"texture {texture} has no known target; bind it with glBindTexture or create it with glCreateTextures first.");
     }

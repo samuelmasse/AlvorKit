@@ -12,7 +12,7 @@ public partial class GlLayer
     private void TrackBoundTextureSize(string function, GlTextureTarget target, int level, GlTextureInfo info)
     {
         var unit = GetActiveTextureIndex(function);
-        if (!textureBinds.TryGet((unit, target), out var texture) || texture == 0)
+        if (!state.textureBinds.TryGet((unit, target), out var texture) || texture == 0)
             throw new GlException(function, $"cannot track texture size: no texture is bound to {target} on unit {unit}.");
         TrackTextureLevelSize(function, (GlTextureHandle)texture, level, info);
     }
@@ -28,9 +28,9 @@ public partial class GlLayer
         if (!textures.Contains(texture))
             throw new GlException(function, $"cannot track texture size: texture {texture} is not tracked.");
         RemoveTextureLevels(texture);
-        textureUsage += info.MemoryUsage - textureSizes.GetValueOrDefault(texture).MemoryUsage;
-        textureLevelSizes[(texture, 0)] = info;
-        textureSizes[texture] = info;
+        state.textureUsage += info.MemoryUsage - state.textureSizes.GetValueOrDefault(texture).MemoryUsage;
+        state.textureLevelSizes[(texture, 0)] = info;
+        state.textureSizes[texture] = info;
     }
 
     /// <summary>
@@ -46,11 +46,11 @@ public partial class GlLayer
             throw new GlException(function, $"cannot track texture size: texture {texture} is not tracked.");
         if (level < 0)
             throw new GlException(function, $"cannot track texture size: level {level} is negative.");
-        var previous = textureSizes.GetValueOrDefault(texture).MemoryUsage;
-        textureLevelSizes[(texture, level)] = info;
+        var previous = state.textureSizes.GetValueOrDefault(texture).MemoryUsage;
+        state.textureLevelSizes[(texture, level)] = info;
         var total = TotalTextureLevelUsage(texture);
-        textureUsage += total - previous;
-        textureSizes[texture] = info with { ByteSizeOverride = total };
+        state.textureUsage += total - previous;
+        state.textureSizes[texture] = info with { ByteSizeOverride = total };
     }
 
     /// <summary>
@@ -59,8 +59,8 @@ public partial class GlLayer
     /// <param name="texture">The texture handle whose memory accounting should be released.</param>
     private void ReleaseTextureMemory(GlTextureHandle texture)
     {
-        if (textureSizes.Remove(texture, out var info))
-            textureUsage -= info.MemoryUsage;
+        if (state.textureSizes.Remove(texture, out var info))
+            state.textureUsage -= info.MemoryUsage;
         RemoveTextureLevels(texture);
     }
 
@@ -72,7 +72,7 @@ public partial class GlLayer
     private long TotalTextureLevelUsage(GlTextureHandle texture)
     {
         long total = 0;
-        foreach (var (key, info) in textureLevelSizes)
+        foreach (var (key, info) in state.textureLevelSizes)
             if (key.Texture == texture)
                 total += info.MemoryUsage;
         return total;
@@ -85,7 +85,7 @@ public partial class GlLayer
     private void RemoveTextureLevels(GlTextureHandle texture)
     {
         while (TryFindTextureLevel(texture, out var key))
-            textureLevelSizes.Remove(key);
+            state.textureLevelSizes.Remove(key);
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public partial class GlLayer
     /// <returns><see langword="true"/> when a matching level was found.</returns>
     private bool TryFindTextureLevel(GlTextureHandle texture, out (GlTextureHandle Texture, int Level) key)
     {
-        foreach (var candidate in textureLevelSizes.Keys)
+        foreach (var candidate in state.textureLevelSizes.Keys)
         {
             if (candidate.Texture != texture)
                 continue;

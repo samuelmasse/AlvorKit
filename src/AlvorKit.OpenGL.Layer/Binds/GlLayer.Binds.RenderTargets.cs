@@ -7,9 +7,9 @@ public partial class GlLayer
     public override void BindRenderbuffer(GlRenderbufferTarget target, GlRenderbufferHandle renderbuffer)
     {
         var id = (uint)renderbuffer;
-        this.renderbuffer.RequireCanBind(nameof(BindRenderbuffer), id);
+        state.renderbuffer.RequireCanBind(nameof(BindRenderbuffer), id);
         base.BindRenderbuffer(target, renderbuffer);
-        this.renderbuffer.BindKnownFree(id);
+        state.renderbuffer.BindKnownFree(id);
     }
 
     /// <inheritdoc/>
@@ -21,14 +21,14 @@ public partial class GlLayer
         var affectsDraw = target is GlFramebufferTarget.Framebuffer or GlFramebufferTarget.DrawFramebuffer;
         ValidateFramebufferChange(nameof(BindFramebuffer), target, id, false);
         if (affectsRead)
-            readFramebuffer.RequireCanBind(nameof(BindFramebuffer), id);
+            state.readFramebuffer.RequireCanBind(nameof(BindFramebuffer), id);
         if (affectsDraw)
-            drawFramebuffer.RequireCanBind(nameof(BindFramebuffer), id);
+            state.drawFramebuffer.RequireCanBind(nameof(BindFramebuffer), id);
         base.BindFramebuffer(target, framebuffer);
         if (affectsRead)
-            readFramebuffer.BindKnownFree(id);
+            state.readFramebuffer.BindKnownFree(id);
         if (affectsDraw)
-            drawFramebuffer.BindKnownFree(id);
+            state.drawFramebuffer.BindKnownFree(id);
     }
 
     /// <inheritdoc/>
@@ -38,9 +38,9 @@ public partial class GlLayer
     /// </remarks>
     public override void DrawBuffer(GlDrawBufferMode buf)
     {
-        drawBuffersCount.RequireCanSet(nameof(DrawBuffer), 1);
+        state.drawBuffersCount.RequireCanSet(nameof(DrawBuffer), 1);
         base.DrawBuffer(buf);
-        drawBuffersCount.SetKnownUnset(1);
+        state.drawBuffersCount.SetKnownUnset(1);
     }
 
     /// <inheritdoc/>
@@ -50,9 +50,9 @@ public partial class GlLayer
     /// </remarks>
     public override void DrawBuffers(int n, nint bufs)
     {
-        drawBuffersCount.RequireCanSet(nameof(DrawBuffers), n);
+        state.drawBuffersCount.RequireCanSet(nameof(DrawBuffers), n);
         base.DrawBuffers(n, bufs);
-        drawBuffersCount.SetKnownUnset(n);
+        state.drawBuffersCount.SetKnownUnset(n);
     }
 
     /// <summary>
@@ -61,9 +61,9 @@ public partial class GlLayer
     /// </summary>
     public void UnbindRenderbuffer(GlRenderbufferTarget target)
     {
-        renderbuffer.RequireCanUnbind(nameof(BindRenderbuffer));
+        state.renderbuffer.RequireCanUnbind(nameof(BindRenderbuffer));
         base.BindRenderbuffer(target, (GlRenderbufferHandle)0u);
-        renderbuffer.UnbindKnownBound();
+        state.renderbuffer.UnbindKnownBound();
     }
 
     /// <summary>
@@ -76,14 +76,14 @@ public partial class GlLayer
         var affectsDraw = target is GlFramebufferTarget.Framebuffer or GlFramebufferTarget.DrawFramebuffer;
         ValidateFramebufferChange(nameof(BindFramebuffer), target, 0, true);
         if (affectsRead)
-            readFramebuffer.RequireCanUnbind(nameof(BindFramebuffer));
+            state.readFramebuffer.RequireCanUnbind(nameof(BindFramebuffer));
         if (affectsDraw)
-            drawFramebuffer.RequireCanUnbind(nameof(BindFramebuffer));
+            state.drawFramebuffer.RequireCanUnbind(nameof(BindFramebuffer));
         base.BindFramebuffer(target, (GlFramebufferHandle)0u);
         if (affectsRead)
-            readFramebuffer.UnbindKnownBound();
+            state.readFramebuffer.UnbindKnownBound();
         if (affectsDraw)
-            drawFramebuffer.UnbindKnownBound();
+            state.drawFramebuffer.UnbindKnownBound();
     }
 
     /// <summary>
@@ -92,9 +92,9 @@ public partial class GlLayer
     /// </summary>
     public void ResetDrawBuffers()
     {
-        drawBuffersCount.RequireCanReset(nameof(DrawBuffer));
+        state.drawBuffersCount.RequireCanReset(nameof(DrawBuffer));
         base.DrawBuffer(GlDrawBufferMode.ColorAttachment0);
-        drawBuffersCount.ResetKnownSet();
+        state.drawBuffersCount.ResetKnownSet();
     }
 
     /// <summary>
@@ -106,11 +106,11 @@ public partial class GlLayer
     /// <param name="unbind">Whether the action is an unbind.</param>
     private void ValidateFramebufferChange(string function, GlFramebufferTarget target, uint framebuffer, bool unbind)
     {
-        if (target != GlFramebufferTarget.ReadFramebuffer && drawBuffersCount.IsSet)
+        if (target != GlFramebufferTarget.ReadFramebuffer && state.drawBuffersCount.IsSet)
             throw new GlBindConflictException(function, $"attempted to {FramebufferActionName(framebuffer, unbind)}, but draw buffers are still set.");
-        if (target != GlFramebufferTarget.ReadFramebuffer && viewport.IsSet)
+        if (target != GlFramebufferTarget.ReadFramebuffer && state.viewport.IsSet)
             throw new GlBindConflictException(function, $"attempted to {FramebufferActionName(framebuffer, unbind)}, but viewport is still set.");
-        if (target != GlFramebufferTarget.DrawFramebuffer && readBuffer.IsSet)
+        if (target != GlFramebufferTarget.DrawFramebuffer && state.readBuffer.IsSet)
             throw new GlBindConflictException(function, $"attempted to {FramebufferActionName(framebuffer, unbind)}, but read buffer is still set.");
     }
 

@@ -26,7 +26,7 @@ public partial class GlLayer
     private void RequireVertexArraysUnbound(string function, ReadOnlySpan<GlVertexArrayHandle> arrays)
     {
         foreach (var array in arrays)
-            RequireUnbound(function, "vertex array", array, vertexArray.IsBound((uint)array));
+            RequireUnbound(function, "vertex array", array, state.vertexArray.IsBound((uint)array));
     }
 
     /// <summary>Requires every deleted framebuffer to be unbound from tracked framebuffer slots.</summary>
@@ -44,7 +44,7 @@ public partial class GlLayer
     private void RequireRenderbuffersUnbound(string function, ReadOnlySpan<GlRenderbufferHandle> renderbuffers)
     {
         foreach (var renderbufferHandle in renderbuffers)
-            RequireUnbound(function, "renderbuffer", renderbufferHandle, renderbuffer.IsBound((uint)renderbufferHandle));
+            RequireUnbound(function, "renderbuffer", renderbufferHandle, state.renderbuffer.IsBound((uint)renderbufferHandle));
     }
 
     /// <summary>Requires every deleted sampler to be unbound from tracked sampler slots.</summary>
@@ -53,7 +53,7 @@ public partial class GlLayer
     private void RequireSamplersUnbound(string function, ReadOnlySpan<GlSamplerHandle> samplers)
     {
         foreach (var sampler in samplers)
-            RequireUnbound(function, "sampler", sampler, samplerBinds.ContainsValue((uint)sampler));
+            RequireUnbound(function, "sampler", sampler, state.samplerBinds.ContainsValue((uint)sampler));
     }
 
     /// <summary>Requires every deleted query to be inactive in tracked query scopes.</summary>
@@ -71,7 +71,7 @@ public partial class GlLayer
     private void RequireProgramPipelinesUnbound(string function, ReadOnlySpan<GlProgramPipelineHandle> pipelines)
     {
         foreach (var pipeline in pipelines)
-            RequireUnbound(function, "program pipeline", pipeline, programPipeline.IsBound((uint)pipeline));
+            RequireUnbound(function, "program pipeline", pipeline, state.programPipeline.IsBound((uint)pipeline));
     }
 
     /// <summary>Requires every deleted transform feedback object to be unbound from the current slot.</summary>
@@ -80,36 +80,36 @@ public partial class GlLayer
     private void RequireTransformFeedbacksUnbound(string function, ReadOnlySpan<GlTransformFeedbackHandle> feedbacks)
     {
         foreach (var feedback in feedbacks)
-            RequireUnbound(function, "transform feedback", feedback, transformFeedbackObject.IsBound((uint)feedback));
+            RequireUnbound(function, "transform feedback", feedback, state.transformFeedbackObject.IsBound((uint)feedback));
     }
 
     /// <summary>Requires a deleted program to be unused.</summary>
     /// <param name="function">The GL delete function being validated.</param>
     /// <param name="programHandle">The program requested for deletion.</param>
     private void RequireProgramUnbound(string function, GlProgramHandle programHandle) =>
-        RequireUnbound(function, "program", programHandle, program.IsBound((uint)programHandle));
+        RequireUnbound(function, "program", programHandle, state.program.IsBound((uint)programHandle));
 
     /// <summary>Returns whether a buffer is live-bound through any tracked buffer binding shape.</summary>
     /// <param name="buffer">The buffer id to inspect.</param>
     /// <returns><see langword="true"/> when the buffer is bound.</returns>
     private bool IsBufferBound(uint buffer) =>
-        bufferBinds.ContainsValue(buffer) || indexedBufferBinds.ContainsValue(buffer) || vertexBufferBinds.ContainsValue(buffer);
+        state.bufferBinds.ContainsValue(buffer) || state.indexedBufferBinds.ContainsValue(buffer) || state.vertexBufferBinds.ContainsValue(buffer);
 
     /// <summary>Returns whether a texture is live-bound through any tracked texture binding shape.</summary>
     /// <param name="texture">The texture id to inspect.</param>
     /// <returns><see langword="true"/> when the texture is bound.</returns>
-    private bool IsTextureBound(uint texture) => textureBinds.ContainsValue(texture) || imageTextureBinds.ContainsValue(texture);
+    private bool IsTextureBound(uint texture) => state.textureBinds.ContainsValue(texture) || state.imageTextureBinds.ContainsValue(texture);
 
     /// <summary>Returns whether a framebuffer is bound to a tracked framebuffer target.</summary>
     /// <param name="framebuffer">The framebuffer id to inspect.</param>
     /// <returns><see langword="true"/> when the framebuffer is bound.</returns>
-    private bool IsFramebufferBound(uint framebuffer) => readFramebuffer.IsBound(framebuffer) || drawFramebuffer.IsBound(framebuffer);
+    private bool IsFramebufferBound(uint framebuffer) => state.readFramebuffer.IsBound(framebuffer) || state.drawFramebuffer.IsBound(framebuffer);
 
     /// <summary>Returns whether a query is live-bound or active through any tracked query shape.</summary>
     /// <param name="query">The query id to inspect.</param>
     /// <returns><see langword="true"/> when the query is active.</returns>
     private bool IsQueryBound(uint query) =>
-        queryBinds.ContainsValue(query) || queryIndexedBinds.ContainsValue(query) || conditionalRender.IsBound(query);
+        state.queryBinds.ContainsValue(query) || state.queryIndexedBinds.ContainsValue(query) || state.conditionalRender.IsBound(query);
 
     /// <summary>Throws when a delete candidate is still tracked as bound.</summary>
     /// <typeparam name="THandle">The typed GL handle being checked.</typeparam>

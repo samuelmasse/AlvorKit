@@ -20,7 +20,7 @@ public unsafe partial class GlLayer
     private void ResetTextureUnitBindingsKnownBound(uint unit)
     {
         while (TryFindTextureUnitBinding(unit, out var key))
-            textureBinds.UnbindKnownBound(key);
+            state.textureBinds.UnbindKnownBound(key);
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ public unsafe partial class GlLayer
     /// <returns><see langword="true"/> when a binding for <paramref name="unit"/> was found.</returns>
     private bool TryFindTextureUnitBinding(uint unit, out (uint Unit, GlTextureTarget Target) key)
     {
-        var bindings = textureBinds.GetEnumerator();
+        var bindings = state.textureBinds.GetEnumerator();
         while (bindings.MoveNext())
         {
             var binding = bindings.Current;

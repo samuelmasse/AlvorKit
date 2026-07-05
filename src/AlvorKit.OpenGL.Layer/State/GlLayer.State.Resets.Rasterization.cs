@@ -8,7 +8,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetCullFace()
     {
-        cullFace.Reset(nameof(CullFace));
+        state.cullFace.Reset(nameof(CullFace));
         base.CullFace(DefaultCullFace);
     }
 
@@ -18,7 +18,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetFrontFace()
     {
-        frontFace.Reset(nameof(FrontFace));
+        state.frontFace.Reset(nameof(FrontFace));
         base.FrontFace(DefaultFrontFace);
     }
 
@@ -28,7 +28,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetPolygonMode()
     {
-        polygonMode.Reset(nameof(PolygonMode));
+        state.polygonMode.Reset(nameof(PolygonMode));
         base.PolygonMode(DefaultPolygonMode.Face, DefaultPolygonMode.Mode);
     }
 
@@ -38,7 +38,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetPolygonOffset()
     {
-        polygonOffset.Reset(nameof(PolygonOffset));
+        state.polygonOffset.Reset(nameof(PolygonOffset));
         base.PolygonOffset(DefaultPolygonOffset.Factor, DefaultPolygonOffset.Units);
     }
 
@@ -48,7 +48,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetPolygonOffsetClamp()
     {
-        polygonOffsetClamp.Reset(nameof(PolygonOffsetClamp));
+        state.polygonOffsetClamp.Reset(nameof(PolygonOffsetClamp));
         base.PolygonOffsetClamp(
             DefaultPolygonOffsetClamp.Factor,
             DefaultPolygonOffsetClamp.Units,
@@ -61,7 +61,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetLineWidth()
     {
-        lineWidth.Reset(nameof(LineWidth));
+        state.lineWidth.Reset(nameof(LineWidth));
         base.LineWidth(DefaultLineWidth);
     }
 
@@ -71,7 +71,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetPointSize()
     {
-        pointSize.Reset(nameof(PointSize));
+        state.pointSize.Reset(nameof(PointSize));
         base.PointSize(DefaultPointSize);
     }
 
@@ -81,7 +81,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetProvokingVertex()
     {
-        provokingVertex.Reset(nameof(ProvokingVertex));
+        state.provokingVertex.Reset(nameof(ProvokingVertex));
         base.ProvokingVertex(DefaultProvokingVertex);
     }
 
@@ -91,7 +91,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetPrimitiveRestartIndex()
     {
-        primitiveRestartIndex.Reset(nameof(PrimitiveRestartIndex));
+        state.primitiveRestartIndex.Reset(nameof(PrimitiveRestartIndex));
         base.PrimitiveRestartIndex(DefaultPrimitiveRestartIndex);
     }
 
@@ -101,7 +101,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetLogicOp()
     {
-        logicOp.Reset(nameof(LogicOp));
+        state.logicOp.Reset(nameof(LogicOp));
         base.LogicOp(DefaultLogicOp);
     }
 
@@ -111,7 +111,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetViewport()
     {
-        viewport.Reset(nameof(Viewport));
+        state.viewport.Reset(nameof(Viewport));
         base.Viewport(DefaultViewport.X, DefaultViewport.Y, DefaultViewport.Width, DefaultViewport.Height);
     }
 
@@ -121,7 +121,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetViewportIndexed(uint index)
     {
-        viewportMap.Reset(nameof(ViewportIndexedf), index);
+        state.viewportMap.Reset(nameof(ViewportIndexedf), index);
         base.ViewportIndexedf(index, DefaultViewport.X, DefaultViewport.Y, DefaultViewport.Width, DefaultViewport.Height);
     }
 
@@ -131,7 +131,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetScissor()
     {
-        scissor.Reset(nameof(Scissor));
+        state.scissor.Reset(nameof(Scissor));
         base.Scissor(DefaultScissor.X, DefaultScissor.Y, DefaultScissor.Width, DefaultScissor.Height);
     }
 
@@ -141,7 +141,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetScissorIndexed(uint index)
     {
-        scissorMap.Reset(nameof(ScissorIndexed), index);
+        state.scissorMap.Reset(nameof(ScissorIndexed), index);
         base.ScissorIndexed(index, DefaultScissor.X, DefaultScissor.Y, DefaultScissor.Width, DefaultScissor.Height);
     }
 }

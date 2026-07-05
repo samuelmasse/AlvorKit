@@ -6,7 +6,7 @@ public partial class GlLayer
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindTransformFeedback"/> for the same target.</remarks>
     public override void BindTransformFeedback(GlBindTransformFeedbackTarget target, GlTransformFeedbackHandle id)
     {
-        transformFeedbackObject.Bind(nameof(BindTransformFeedback), (uint)id);
+        state.transformFeedbackObject.Bind(nameof(BindTransformFeedback), (uint)id);
         base.BindTransformFeedback(target, id);
     }
 
@@ -16,7 +16,7 @@ public partial class GlLayer
     /// </summary>
     public void UnbindTransformFeedback(GlBindTransformFeedbackTarget target)
     {
-        transformFeedbackObject.Unbind(nameof(BindTransformFeedback));
+        state.transformFeedbackObject.Unbind(nameof(BindTransformFeedback));
         base.BindTransformFeedback(target, (GlTransformFeedbackHandle)0u);
     }
 }

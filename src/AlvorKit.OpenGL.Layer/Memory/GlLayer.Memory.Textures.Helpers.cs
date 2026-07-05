@@ -11,7 +11,7 @@ public partial class GlLayer
     private void TrackBoundTextureSize(string function, GlTextureTarget target, GlTextureInfo info)
     {
         var unit = GetActiveTextureIndex(function);
-        if (!textureBinds.TryGet((unit, target), out var texture) || texture == 0)
+        if (!state.textureBinds.TryGet((unit, target), out var texture) || texture == 0)
             throw new GlException(function, $"cannot track texture size: no texture is bound to {target} on unit {unit}.");
         TrackTextureSize(function, (GlTextureHandle)texture, info);
     }

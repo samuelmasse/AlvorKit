@@ -9,8 +9,8 @@ public partial class GlLayer
     /// </remarks>
     public override void Viewport(int x, int y, int width, int height)
     {
-        if (viewportMap.HasAny) throw new GlConflictException(nameof(Viewport), nameof(ViewportIndexedf));
-        viewport.Set(nameof(Viewport), (x, y, width, height));
+        if (state.viewportMap.HasAny) throw new GlConflictException(nameof(Viewport), nameof(ViewportIndexedf));
+        state.viewport.Set(nameof(Viewport), (x, y, width, height));
         base.Viewport(x, y, width, height);
     }
 
@@ -21,8 +21,8 @@ public partial class GlLayer
     /// </remarks>
     public override void ViewportIndexedf(uint index, float x, float y, float w, float h)
     {
-        if (viewport.IsSet) throw new GlConflictException(nameof(ViewportIndexedf), nameof(Viewport));
-        viewportMap.Set(nameof(ViewportIndexedf), index, (x, y, w, h));
+        if (state.viewport.IsSet) throw new GlConflictException(nameof(ViewportIndexedf), nameof(Viewport));
+        state.viewportMap.Set(nameof(ViewportIndexedf), index, (x, y, w, h));
         base.ViewportIndexedf(index, x, y, w, h);
     }
 
@@ -33,18 +33,18 @@ public partial class GlLayer
     /// </remarks>
     public override unsafe void ViewportArrayv(uint first, int count, nint v)
     {
-        if (viewport.IsSet) throw new GlConflictException(nameof(ViewportArrayv), nameof(Viewport));
+        if (state.viewport.IsSet) throw new GlConflictException(nameof(ViewportArrayv), nameof(Viewport));
         var values = (float*)v;
         for (var i = 0; i < count; i++)
         {
-            viewportMap.RequireCanSet(
+            state.viewportMap.RequireCanSet(
                 nameof(ViewportArrayv),
                 first + (uint)i,
                 (values[i * 4], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]));
         }
         base.ViewportArrayv(first, count, v);
         for (var i = 0; i < count; i++)
-            viewportMap.SetKnownUnset(first + (uint)i, (values[i * 4], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]));
+            state.viewportMap.SetKnownUnset(first + (uint)i, (values[i * 4], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]));
     }
 
     /// <inheritdoc/>
@@ -54,8 +54,8 @@ public partial class GlLayer
     /// </remarks>
     public override void Scissor(int x, int y, int width, int height)
     {
-        if (scissorMap.HasAny) throw new GlConflictException(nameof(Scissor), nameof(ScissorIndexed));
-        scissor.Set(nameof(Scissor), (x, y, width, height));
+        if (state.scissorMap.HasAny) throw new GlConflictException(nameof(Scissor), nameof(ScissorIndexed));
+        state.scissor.Set(nameof(Scissor), (x, y, width, height));
         base.Scissor(x, y, width, height);
     }
 
@@ -66,8 +66,8 @@ public partial class GlLayer
     /// </remarks>
     public override void ScissorIndexed(uint index, int left, int bottom, int width, int height)
     {
-        if (scissor.IsSet) throw new GlConflictException(nameof(ScissorIndexed), nameof(Scissor));
-        scissorMap.Set(nameof(ScissorIndexed), index, (left, bottom, width, height));
+        if (state.scissor.IsSet) throw new GlConflictException(nameof(ScissorIndexed), nameof(Scissor));
+        state.scissorMap.Set(nameof(ScissorIndexed), index, (left, bottom, width, height));
         base.ScissorIndexed(index, left, bottom, width, height);
     }
 
@@ -78,17 +78,17 @@ public partial class GlLayer
     /// </remarks>
     public override unsafe void ScissorArrayv(uint first, int count, nint v)
     {
-        if (scissor.IsSet) throw new GlConflictException(nameof(ScissorArrayv), nameof(Scissor));
+        if (state.scissor.IsSet) throw new GlConflictException(nameof(ScissorArrayv), nameof(Scissor));
         var values = (int*)v;
         for (var i = 0; i < count; i++)
         {
-            scissorMap.RequireCanSet(
+            state.scissorMap.RequireCanSet(
                 nameof(ScissorArrayv),
                 first + (uint)i,
                 (values[i * 4], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]));
         }
         base.ScissorArrayv(first, count, v);
         for (var i = 0; i < count; i++)
-            scissorMap.SetKnownUnset(first + (uint)i, (values[i * 4], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]));
+            state.scissorMap.SetKnownUnset(first + (uint)i, (values[i * 4], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]));
     }
 }

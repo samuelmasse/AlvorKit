@@ -42,7 +42,7 @@ public unsafe partial class GlLayer
     /// <param name="size">The new storage size in bytes.</param>
     private void TrackBoundBufferSize(string function, GlBufferTarget target, long size)
     {
-        if (!bufferBinds.TryGet(target, out var buffer) || buffer == 0)
+        if (!state.bufferBinds.TryGet(target, out var buffer) || buffer == 0)
             throw new GlException(function, $"cannot track buffer size: no buffer is bound to {target}.");
         TrackBufferSize(function, (GlBufferHandle)buffer, size);
     }
@@ -57,8 +57,8 @@ public unsafe partial class GlLayer
     {
         if (!buffers.Contains(buffer))
             throw new GlException(function, $"cannot track buffer size: buffer {buffer} is not tracked.");
-        bufferUsage += size - bufferSizes.GetValueOrDefault(buffer);
-        bufferSizes[buffer] = size;
+        state.bufferUsage += size - state.bufferSizes.GetValueOrDefault(buffer);
+        state.bufferSizes[buffer] = size;
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public unsafe partial class GlLayer
     /// <param name="buffer">The buffer handle whose memory accounting should be released.</param>
     private void ReleaseBufferMemory(GlBufferHandle buffer)
     {
-        if (bufferSizes.Remove(buffer, out var size))
-            bufferUsage -= size;
+        if (state.bufferSizes.Remove(buffer, out var size))
+            state.bufferUsage -= size;
     }
 }

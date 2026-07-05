@@ -24,6 +24,10 @@ policy unless this file is more specific.
   allocation pressure without obscuring the code.
 - Allocation is acceptable during startup, asset loading, configuration,
   diagnostics, error paths, teardown, and explicit load/unload operations.
+- For GL object lifetime, follow [../docs/GlOwnership.md](../docs/GlOwnership.md):
+  objects belong to the `GlLayer` node that created them, and scope-lifetime
+  objects get no `IDisposable` or `Delete*` teardown of their own — disposing
+  the scope's node reclaims everything it owns.
 - Do not over-optimize cold code; reserve low-level techniques for real
   frame-time, allocation, ownership, or native-boundary pressure.
 

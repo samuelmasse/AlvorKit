@@ -1,0 +1,89 @@
+namespace AlvorKit.Script.DevSolution.Test;
+
+/// <summary>Tests generated development solution structure.</summary>
+[TestClass]
+public sealed class DevSolutionGeneratorTest
+{
+    /// <summary>Combines consumer projects with engine projects under the configured solution folder.</summary>
+    [TestMethod]
+    public void GenerateCombinesConsumerAndEngineSolutions()
+    {
+        using var workspace = TempWorkspace.Create();
+        var consumerSolution = workspace.Write(
+            "Consumer/AlvorPong.slnx",
+            """
+            <Solution>
+                <Project Path="src/AlvorPong/AlvorPong.csproj" Id="consumer-id" />
+                <Folder Name="/Tests/">
+                    <Project Path="tests/AlvorPong.Test/AlvorPong.Test.csproj" />
+                </Folder>
+            </Solution>
+            """);
+        var engineSolution = workspace.Write(
+            "AlvorKit/AlvorKit.slnx",
+            """
+            <Solution>
+                <Folder Name="/Demos/">
+                    <Project Path="demos/AlvorKit.Demo/AlvorKit.Demo.csproj" />
+                </Folder>
+                <Project Path="src/AlvorKit.Engine/AlvorKit.Engine.csproj" Id="engine-id" />
+                <Folder Name="/Tests/">
+                    <Project Path="tests/AlvorKit.Engine.Test/AlvorKit.Engine.Test.csproj" />
+                </Folder>
+            </Solution>
+            """);
+        var output = workspace.PathFor("Consumer/AlvorPong.Dev.slnx");
+
+        var result = new DevSolutionGenerator().Generate(new(consumerSolution, engineSolution, output, ["Engine"]));
+
+        Assert.IsTrue(result.Changed);
+        Assert.AreEqual(2, result.ConsumerProjectCount);
+        Assert.AreEqual(3, result.EngineProjectCount);
+        var document = XDocument.Load(output);
+        AssertProject(document.Root!, "", "src/AlvorPong/AlvorPong.csproj", "consumer-id");
+        AssertProject(document.Root!, "/Tests/", "tests/AlvorPong.Test/AlvorPong.Test.csproj");
+        AssertProject(document.Root!, "/Engine/", "../AlvorKit/src/AlvorKit.Engine/AlvorKit.Engine.csproj", "engine-id");
+        AssertProject(document.Root!, "/Engine/Demos/", "../AlvorKit/demos/AlvorKit.Demo/AlvorKit.Demo.csproj");
+        AssertProject(document.Root!, "/Engine/Tests/", "../AlvorKit/tests/AlvorKit.Engine.Test/AlvorKit.Engine.Test.csproj");
+    }
+
+    /// <summary>Rejects output paths that would overwrite the consumer solution.</summary>
+    [TestMethod]
+    public void GenerateRejectsOutputOverConsumerSolution()
+    {
+        using var workspace = TempWorkspace.Create();
+        var consumerSolution = workspace.Write("Consumer/AlvorPong.slnx", "<Solution />");
+        var engineSolution = workspace.Write("AlvorKit/AlvorKit.slnx", "<Solution />");
+
+        Assert.ThrowsException<InvalidOperationException>(
+            () => new DevSolutionGenerator().Generate(new(consumerSolution, engineSolution, consumerSolution, ["Engine"])));
+    }
+
+    /// <summary>Leaves an existing output untouched when the generated content is unchanged.</summary>
+    [TestMethod]
+    public void GenerateReportsUnchangedWhenContentMatches()
+    {
+        using var workspace = TempWorkspace.Create();
+        var consumerSolution = workspace.Write("Consumer/AlvorPong.slnx", "<Solution><Project Path=\"src/App/App.csproj\" /></Solution>");
+        var engineSolution = workspace.Write("AlvorKit/AlvorKit.slnx", "<Solution />");
+        var output = workspace.PathFor("Consumer/AlvorPong.Dev.slnx");
+        var generator = new DevSolutionGenerator();
+
+        var first = generator.Generate(new(consumerSolution, engineSolution, output, ["Engine"]));
+        var second = generator.Generate(new(consumerSolution, engineSolution, output, ["Engine"]));
+
+        Assert.IsTrue(first.Changed);
+        Assert.IsFalse(second.Changed);
+    }
+
+    /// <summary>Asserts that a generated project appears in the expected solution folder.</summary>
+    private static void AssertProject(XElement root, string folderName, string path, string? id = null)
+    {
+        var container = folderName.Length == 0
+            ? root
+            : root.Elements("Folder").Single(folder => folder.Attribute("Name")?.Value == folderName);
+        var project = container.Elements("Project").Single(element => element.Attribute("Path")?.Value == path);
+        if (id is not null)
+            Assert.AreEqual(id, project.Attribute("Id")?.Value);
+    }
+}

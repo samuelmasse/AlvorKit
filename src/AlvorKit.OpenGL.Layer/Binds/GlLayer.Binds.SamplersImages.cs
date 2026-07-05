@@ -7,9 +7,9 @@ public unsafe partial class GlLayer
     public override void BindSampler(uint unit, GlSamplerHandle sampler)
     {
         var id = (uint)sampler;
-        samplerBinds.RequireCanBind(nameof(BindSampler), unit, id);
+        state.samplerBinds.RequireCanBind(nameof(BindSampler), unit, id);
         base.BindSampler(unit, sampler);
-        samplerBinds.BindKnownFree(unit, id);
+        state.samplerBinds.BindKnownFree(unit, id);
     }
 
     /// <inheritdoc/>
@@ -17,9 +17,9 @@ public unsafe partial class GlLayer
     public override void BindImageTexture(uint unit, GlTextureHandle texture, int level, bool layered, int layer, GlBufferAccess access, GlInternalFormat format)
     {
         var id = (uint)texture;
-        imageTextureBinds.RequireCanBind(nameof(BindImageTexture), unit, id);
+        state.imageTextureBinds.RequireCanBind(nameof(BindImageTexture), unit, id);
         base.BindImageTexture(unit, texture, level, layered, layer, access, format);
-        imageTextureBinds.BindKnownFree(unit, id);
+        state.imageTextureBinds.BindKnownFree(unit, id);
     }
 
     /// <inheritdoc/>
@@ -31,10 +31,10 @@ public unsafe partial class GlLayer
     {
         var ids = (uint*)samplers;
         for (var i = 0; i < count; i++)
-            samplerBinds.RequireCanBind(nameof(BindSamplers), first + (uint)i, samplers == 0 ? 0u : ids[i]);
+            state.samplerBinds.RequireCanBind(nameof(BindSamplers), first + (uint)i, samplers == 0 ? 0u : ids[i]);
         base.BindSamplers(first, count, samplers);
         for (var i = 0; i < count; i++)
-            samplerBinds.BindKnownFree(first + (uint)i, samplers == 0 ? 0u : ids[i]);
+            state.samplerBinds.BindKnownFree(first + (uint)i, samplers == 0 ? 0u : ids[i]);
     }
 
     /// <inheritdoc/>
@@ -46,10 +46,10 @@ public unsafe partial class GlLayer
     {
         var ids = (uint*)textures;
         for (var i = 0; i < count; i++)
-            imageTextureBinds.RequireCanBind(nameof(BindImageTextures), first + (uint)i, textures == 0 ? 0u : ids[i]);
+            state.imageTextureBinds.RequireCanBind(nameof(BindImageTextures), first + (uint)i, textures == 0 ? 0u : ids[i]);
         base.BindImageTextures(first, count, textures);
         for (var i = 0; i < count; i++)
-            imageTextureBinds.BindKnownFree(first + (uint)i, textures == 0 ? 0u : ids[i]);
+            state.imageTextureBinds.BindKnownFree(first + (uint)i, textures == 0 ? 0u : ids[i]);
     }
 
     /// <summary>
@@ -58,9 +58,9 @@ public unsafe partial class GlLayer
     /// </summary>
     public void UnbindSampler(uint unit)
     {
-        samplerBinds.RequireCanUnbind(nameof(BindSampler), unit);
+        state.samplerBinds.RequireCanUnbind(nameof(BindSampler), unit);
         base.BindSampler(unit, (GlSamplerHandle)0u);
-        samplerBinds.UnbindKnownBound(unit);
+        state.samplerBinds.UnbindKnownBound(unit);
     }
 
     /// <summary>
@@ -69,9 +69,9 @@ public unsafe partial class GlLayer
     /// </summary>
     public void UnbindImageTexture(uint unit)
     {
-        imageTextureBinds.RequireCanUnbind(nameof(BindImageTexture), unit);
+        state.imageTextureBinds.RequireCanUnbind(nameof(BindImageTexture), unit);
         base.BindImageTexture(unit, (GlTextureHandle)0u, 0, false, 0, default, default);
-        imageTextureBinds.UnbindKnownBound(unit);
+        state.imageTextureBinds.UnbindKnownBound(unit);
     }
 
     /// <summary>
@@ -81,13 +81,13 @@ public unsafe partial class GlLayer
     public void UnbindSamplers(uint first, int count)
     {
         for (var i = 0; i < count; i++)
-            samplerBinds.RequireCanUnbind(nameof(BindSamplers), first + (uint)i);
+            state.samplerBinds.RequireCanUnbind(nameof(BindSamplers), first + (uint)i);
         Span<uint> samplers = stackalloc uint[count];
         samplers.Clear();
         fixed (uint* p = samplers)
             base.BindSamplers(first, count, (nint)p);
         for (var i = 0; i < count; i++)
-            samplerBinds.UnbindKnownBound(first + (uint)i);
+            state.samplerBinds.UnbindKnownBound(first + (uint)i);
     }
 
     /// <summary>
@@ -97,12 +97,12 @@ public unsafe partial class GlLayer
     public void UnbindImageTextures(uint first, int count)
     {
         for (var i = 0; i < count; i++)
-            imageTextureBinds.RequireCanUnbind(nameof(BindImageTextures), first + (uint)i);
+            state.imageTextureBinds.RequireCanUnbind(nameof(BindImageTextures), first + (uint)i);
         Span<uint> textures = stackalloc uint[count];
         textures.Clear();
         fixed (uint* p = textures)
             base.BindImageTextures(first, count, (nint)p);
         for (var i = 0; i < count; i++)
-            imageTextureBinds.UnbindKnownBound(first + (uint)i);
+            state.imageTextureBinds.UnbindKnownBound(first + (uint)i);
     }
 }

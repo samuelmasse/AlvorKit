@@ -8,7 +8,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetBlendFunc()
     {
-        blendFunc.Reset(nameof(BlendFunc));
+        state.blendFunc.Reset(nameof(BlendFunc));
         base.BlendFunc(DefaultBlendFunc.Source, DefaultBlendFunc.Destination);
     }
 
@@ -18,7 +18,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetBlendFunc(uint buf)
     {
-        blendFuncMap.Reset(nameof(BlendFunci), buf);
+        state.blendFuncMap.Reset(nameof(BlendFunci), buf);
         base.BlendFunci(buf, DefaultBlendFunc.Source, DefaultBlendFunc.Destination);
     }
 
@@ -28,7 +28,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetBlendFuncSeparate()
     {
-        blendFuncSeparate.Reset(nameof(BlendFuncSeparate));
+        state.blendFuncSeparate.Reset(nameof(BlendFuncSeparate));
         base.BlendFuncSeparate(
             DefaultBlendFuncSeparate.SourceRgb,
             DefaultBlendFuncSeparate.DestinationRgb,
@@ -42,7 +42,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetBlendFuncSeparate(uint buf)
     {
-        blendFuncSeparateMap.Reset(nameof(BlendFuncSeparatei), buf);
+        state.blendFuncSeparateMap.Reset(nameof(BlendFuncSeparatei), buf);
         base.BlendFuncSeparatei(
             buf,
             DefaultBlendFuncSeparate.SourceRgb,
@@ -57,7 +57,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetBlendEquation()
     {
-        blendEquation.Reset(nameof(BlendEquation));
+        state.blendEquation.Reset(nameof(BlendEquation));
         base.BlendEquation(DefaultBlendEquation);
     }
 
@@ -67,7 +67,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetBlendEquationSeparate()
     {
-        blendEquationSeparate.Reset(nameof(BlendEquationSeparate));
+        state.blendEquationSeparate.Reset(nameof(BlendEquationSeparate));
         base.BlendEquationSeparate(DefaultBlendEquationSeparate.Rgb, DefaultBlendEquationSeparate.Alpha);
     }
 
@@ -77,7 +77,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetBlendEquationSeparate(uint buf)
     {
-        blendEquationSeparateMap.Reset(nameof(BlendEquationSeparatei), buf);
+        state.blendEquationSeparateMap.Reset(nameof(BlendEquationSeparatei), buf);
         base.BlendEquationSeparatei(buf, DefaultBlendEquationSeparate.Rgb, DefaultBlendEquationSeparate.Alpha);
     }
 
@@ -87,7 +87,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetBlendColor()
     {
-        blendColor.Reset(nameof(BlendColor));
+        state.blendColor.Reset(nameof(BlendColor));
         base.BlendColor(DefaultBlendColor.Red, DefaultBlendColor.Green, DefaultBlendColor.Blue, DefaultBlendColor.Alpha);
     }
 
@@ -97,7 +97,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetClearColor()
     {
-        clearColor.Reset(nameof(ClearColor));
+        state.clearColor.Reset(nameof(ClearColor));
         base.ClearColor(DefaultClearColor.Red, DefaultClearColor.Green, DefaultClearColor.Blue, DefaultClearColor.Alpha);
     }
 
@@ -107,7 +107,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetClampColor()
     {
-        clampColor.Reset(nameof(ClampColor));
+        state.clampColor.Reset(nameof(ClampColor));
         base.ClampColor(DefaultClampColor.Target, DefaultClampColor.Clamp);
     }
 
@@ -117,7 +117,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetColorMask()
     {
-        colorMask.Reset(nameof(ColorMask));
+        state.colorMask.Reset(nameof(ColorMask));
         base.ColorMask(DefaultColorMask.Red, DefaultColorMask.Green, DefaultColorMask.Blue, DefaultColorMask.Alpha);
     }
 
@@ -127,7 +127,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetColorMask(uint buf)
     {
-        colorMaskMap.Reset(nameof(ColorMaski), buf);
+        state.colorMaskMap.Reset(nameof(ColorMaski), buf);
         base.ColorMaski(buf, DefaultColorMask.Red, DefaultColorMask.Green, DefaultColorMask.Blue, DefaultColorMask.Alpha);
     }
 }

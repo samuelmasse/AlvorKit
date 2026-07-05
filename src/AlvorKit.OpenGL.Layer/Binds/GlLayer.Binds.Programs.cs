@@ -6,7 +6,7 @@ public partial class GlLayer
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnuseProgram"/>.</remarks>
     public override void UseProgram(GlProgramHandle program)
     {
-        this.program.Bind(nameof(UseProgram), (uint)program);
+        state.program.Bind(nameof(UseProgram), (uint)program);
         base.UseProgram(program);
     }
 
@@ -14,13 +14,13 @@ public partial class GlLayer
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="UnbindProgramPipeline"/>.</remarks>
     public override void BindProgramPipeline(GlProgramPipelineHandle pipeline)
     {
-        programPipeline.Bind(nameof(BindProgramPipeline), (uint)pipeline);
+        state.programPipeline.Bind(nameof(BindProgramPipeline), (uint)pipeline);
         base.BindProgramPipeline(pipeline);
     }
 
     /// <summary>Layer: Stops using the current program. Must be paired with exactly one earlier call to <c>glUseProgram</c>.</summary>
-    public void UnuseProgram() { program.Unbind(nameof(UseProgram)); base.UseProgram((GlProgramHandle)0u); }
+    public void UnuseProgram() { state.program.Unbind(nameof(UseProgram)); base.UseProgram((GlProgramHandle)0u); }
 
     /// <summary>Layer: Unbinds the program pipeline. Must be paired with exactly one earlier call to <c>glBindProgramPipeline</c>.</summary>
-    public void UnbindProgramPipeline() { programPipeline.Unbind(nameof(BindProgramPipeline)); base.BindProgramPipeline((GlProgramPipelineHandle)0u); }
+    public void UnbindProgramPipeline() { state.programPipeline.Unbind(nameof(BindProgramPipeline)); base.BindProgramPipeline((GlProgramPipelineHandle)0u); }
 }

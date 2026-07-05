@@ -9,10 +9,10 @@ public partial class GlLayer
     /// </remarks>
     public override void BlendFunc(GlBlendingFactor sfactor, GlBlendingFactor dfactor)
     {
-        if (blendFuncSeparate.IsSet) throw new GlConflictException(nameof(BlendFunc), nameof(BlendFuncSeparate));
-        if (blendFuncMap.HasAny) throw new GlConflictException(nameof(BlendFunc), nameof(BlendFunci));
-        if (blendFuncSeparateMap.HasAny) throw new GlConflictException(nameof(BlendFunc), nameof(BlendFuncSeparatei));
-        blendFunc.Set(nameof(BlendFunc), (sfactor, dfactor));
+        if (state.blendFuncSeparate.IsSet) throw new GlConflictException(nameof(BlendFunc), nameof(BlendFuncSeparate));
+        if (state.blendFuncMap.HasAny) throw new GlConflictException(nameof(BlendFunc), nameof(BlendFunci));
+        if (state.blendFuncSeparateMap.HasAny) throw new GlConflictException(nameof(BlendFunc), nameof(BlendFuncSeparatei));
+        state.blendFunc.Set(nameof(BlendFunc), (sfactor, dfactor));
         base.BlendFunc(sfactor, dfactor);
     }
 
@@ -23,10 +23,10 @@ public partial class GlLayer
     /// </remarks>
     public override void BlendFunci(uint buf, GlBlendingFactor src, GlBlendingFactor dst)
     {
-        if (blendFunc.IsSet) throw new GlConflictException(nameof(BlendFunci), nameof(BlendFunc));
-        if (blendFuncSeparate.IsSet) throw new GlConflictException(nameof(BlendFunci), nameof(BlendFuncSeparate));
-        if (blendFuncSeparateMap.HasAny) throw new GlConflictException(nameof(BlendFunci), nameof(BlendFuncSeparatei));
-        blendFuncMap.Set(nameof(BlendFunci), buf, (src, dst));
+        if (state.blendFunc.IsSet) throw new GlConflictException(nameof(BlendFunci), nameof(BlendFunc));
+        if (state.blendFuncSeparate.IsSet) throw new GlConflictException(nameof(BlendFunci), nameof(BlendFuncSeparate));
+        if (state.blendFuncSeparateMap.HasAny) throw new GlConflictException(nameof(BlendFunci), nameof(BlendFuncSeparatei));
+        state.blendFuncMap.Set(nameof(BlendFunci), buf, (src, dst));
         base.BlendFunci(buf, src, dst);
     }
 
@@ -37,10 +37,10 @@ public partial class GlLayer
     /// </remarks>
     public override void BlendFuncSeparate(GlBlendingFactor sfactorRGB, GlBlendingFactor dfactorRGB, GlBlendingFactor sfactorAlpha, GlBlendingFactor dfactorAlpha)
     {
-        if (blendFunc.IsSet) throw new GlConflictException(nameof(BlendFuncSeparate), nameof(BlendFunc));
-        if (blendFuncMap.HasAny) throw new GlConflictException(nameof(BlendFuncSeparate), nameof(BlendFunci));
-        if (blendFuncSeparateMap.HasAny) throw new GlConflictException(nameof(BlendFuncSeparate), nameof(BlendFuncSeparatei));
-        blendFuncSeparate.Set(nameof(BlendFuncSeparate), (sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha));
+        if (state.blendFunc.IsSet) throw new GlConflictException(nameof(BlendFuncSeparate), nameof(BlendFunc));
+        if (state.blendFuncMap.HasAny) throw new GlConflictException(nameof(BlendFuncSeparate), nameof(BlendFunci));
+        if (state.blendFuncSeparateMap.HasAny) throw new GlConflictException(nameof(BlendFuncSeparate), nameof(BlendFuncSeparatei));
+        state.blendFuncSeparate.Set(nameof(BlendFuncSeparate), (sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha));
         base.BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
     }
 
@@ -51,10 +51,10 @@ public partial class GlLayer
     /// </remarks>
     public override void BlendFuncSeparatei(uint buf, GlBlendingFactor srcRGB, GlBlendingFactor dstRGB, GlBlendingFactor srcAlpha, GlBlendingFactor dstAlpha)
     {
-        if (blendFunc.IsSet) throw new GlConflictException(nameof(BlendFuncSeparatei), nameof(BlendFunc));
-        if (blendFuncSeparate.IsSet) throw new GlConflictException(nameof(BlendFuncSeparatei), nameof(BlendFuncSeparate));
-        if (blendFuncMap.HasAny) throw new GlConflictException(nameof(BlendFuncSeparatei), nameof(BlendFunci));
-        blendFuncSeparateMap.Set(nameof(BlendFuncSeparatei), buf, (srcRGB, dstRGB, srcAlpha, dstAlpha));
+        if (state.blendFunc.IsSet) throw new GlConflictException(nameof(BlendFuncSeparatei), nameof(BlendFunc));
+        if (state.blendFuncSeparate.IsSet) throw new GlConflictException(nameof(BlendFuncSeparatei), nameof(BlendFuncSeparate));
+        if (state.blendFuncMap.HasAny) throw new GlConflictException(nameof(BlendFuncSeparatei), nameof(BlendFunci));
+        state.blendFuncSeparateMap.Set(nameof(BlendFuncSeparatei), buf, (srcRGB, dstRGB, srcAlpha, dstAlpha));
         base.BlendFuncSeparatei(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
     }
 
@@ -65,9 +65,9 @@ public partial class GlLayer
     /// </remarks>
     public override void BlendEquation(GlBlendEquationModeEXT mode)
     {
-        if (blendEquationSeparate.IsSet) throw new GlConflictException(nameof(BlendEquation), nameof(BlendEquationSeparate));
-        if (blendEquationSeparateMap.HasAny) throw new GlConflictException(nameof(BlendEquation), nameof(BlendEquationSeparatei));
-        blendEquation.Set(nameof(BlendEquation), mode);
+        if (state.blendEquationSeparate.IsSet) throw new GlConflictException(nameof(BlendEquation), nameof(BlendEquationSeparate));
+        if (state.blendEquationSeparateMap.HasAny) throw new GlConflictException(nameof(BlendEquation), nameof(BlendEquationSeparatei));
+        state.blendEquation.Set(nameof(BlendEquation), mode);
         base.BlendEquation(mode);
     }
 
@@ -78,9 +78,9 @@ public partial class GlLayer
     /// </remarks>
     public override void BlendEquationSeparate(GlBlendEquationModeEXT modeRGB, GlBlendEquationModeEXT modeAlpha)
     {
-        if (blendEquation.IsSet) throw new GlConflictException(nameof(BlendEquationSeparate), nameof(BlendEquation));
-        if (blendEquationSeparateMap.HasAny) throw new GlConflictException(nameof(BlendEquationSeparate), nameof(BlendEquationSeparatei));
-        blendEquationSeparate.Set(nameof(BlendEquationSeparate), (modeRGB, modeAlpha));
+        if (state.blendEquation.IsSet) throw new GlConflictException(nameof(BlendEquationSeparate), nameof(BlendEquation));
+        if (state.blendEquationSeparateMap.HasAny) throw new GlConflictException(nameof(BlendEquationSeparate), nameof(BlendEquationSeparatei));
+        state.blendEquationSeparate.Set(nameof(BlendEquationSeparate), (modeRGB, modeAlpha));
         base.BlendEquationSeparate(modeRGB, modeAlpha);
     }
 
@@ -91,9 +91,9 @@ public partial class GlLayer
     /// </remarks>
     public override void BlendEquationSeparatei(uint buf, GlBlendEquationModeEXT modeRGB, GlBlendEquationModeEXT modeAlpha)
     {
-        if (blendEquation.IsSet) throw new GlConflictException(nameof(BlendEquationSeparatei), nameof(BlendEquation));
-        if (blendEquationSeparate.IsSet) throw new GlConflictException(nameof(BlendEquationSeparatei), nameof(BlendEquationSeparate));
-        blendEquationSeparateMap.Set(nameof(BlendEquationSeparatei), buf, (modeRGB, modeAlpha));
+        if (state.blendEquation.IsSet) throw new GlConflictException(nameof(BlendEquationSeparatei), nameof(BlendEquation));
+        if (state.blendEquationSeparate.IsSet) throw new GlConflictException(nameof(BlendEquationSeparatei), nameof(BlendEquationSeparate));
+        state.blendEquationSeparateMap.Set(nameof(BlendEquationSeparatei), buf, (modeRGB, modeAlpha));
         base.BlendEquationSeparatei(buf, modeRGB, modeAlpha);
     }
 
@@ -101,7 +101,7 @@ public partial class GlLayer
     /// <remarks>Layer: Must be paired with exactly one later call to <see cref="ResetBlendColor()"/>.</remarks>
     public override void BlendColor(float red, float green, float blue, float alpha)
     {
-        blendColor.Set(nameof(BlendColor), (red, green, blue, alpha));
+        state.blendColor.Set(nameof(BlendColor), (red, green, blue, alpha));
         base.BlendColor(red, green, blue, alpha);
     }
 }

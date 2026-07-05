@@ -40,5 +40,5 @@ internal sealed unsafe partial class GlResourceSet<THandle> where THandle : unma
     /// <param name="count">The number of handles in the native array.</param>
     /// <param name="handles">The native pointer to the first raw id.</param>
     /// <returns>A typed span over the native handle array.</returns>
-    private static ReadOnlySpan<THandle> NativeHandleSpan(int count, nint handles) => new((void*)handles, count);
+    internal static ReadOnlySpan<THandle> NativeHandleSpan(int count, nint handles) => new((void*)handles, count);
 }

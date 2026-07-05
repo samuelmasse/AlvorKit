@@ -8,7 +8,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetClipControl()
     {
-        clipControl.Reset(nameof(ClipControl));
+        state.clipControl.Reset(nameof(ClipControl));
         base.ClipControl(DefaultClipControl.Origin, DefaultClipControl.Depth);
     }
 
@@ -18,7 +18,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetHint(GlHintTarget target)
     {
-        hintMap.Reset(nameof(Hint), target);
+        state.hintMap.Reset(nameof(Hint), target);
         base.Hint(target, DefaultHint);
     }
 
@@ -28,7 +28,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetMinSampleShading()
     {
-        minSampleShading.Reset(nameof(MinSampleShading));
+        state.minSampleShading.Reset(nameof(MinSampleShading));
         base.MinSampleShading(DefaultMinSampleShading);
     }
 
@@ -38,7 +38,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetSampleCoverage()
     {
-        sampleCoverage.Reset(nameof(SampleCoverage));
+        state.sampleCoverage.Reset(nameof(SampleCoverage));
         base.SampleCoverage(DefaultSampleCoverage.Value, DefaultSampleCoverage.Invert);
     }
 
@@ -48,7 +48,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetSampleMask(uint maskNumber)
     {
-        sampleMaskMap.Reset(nameof(SampleMaski), maskNumber);
+        state.sampleMaskMap.Reset(nameof(SampleMaski), maskNumber);
         base.SampleMaski(maskNumber, DefaultSampleMask);
     }
 
@@ -58,7 +58,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetPatchParameter(GlPatchParameterName pname)
     {
-        patchParameterMap.Reset(nameof(PatchParameteri), pname);
+        state.patchParameterMap.Reset(nameof(PatchParameteri), pname);
         base.PatchParameteri(pname, DefaultPatchParameter(pname));
     }
 
@@ -68,7 +68,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetPointParameter(GlPointParameterName pname)
     {
-        pointParameterMap.Reset(nameof(PointParameterf), pname);
+        state.pointParameterMap.Reset(nameof(PointParameterf), pname);
         base.PointParameterf(pname, DefaultPointParameter(pname));
     }
 
@@ -78,7 +78,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetPixelStore(GlPixelStoreParameter pname)
     {
-        pixelStoreMap.Reset(nameof(PixelStorei), pname);
+        state.pixelStoreMap.Reset(nameof(PixelStorei), pname);
         base.PixelStorei(pname, DefaultPixelStore(pname));
     }
 
@@ -88,7 +88,7 @@ public partial class GlLayer
     /// </summary>
     public void ResetReadBuffer()
     {
-        readBuffer.Reset(nameof(ReadBuffer));
+        state.readBuffer.Reset(nameof(ReadBuffer));
         base.ReadBuffer(DefaultReadBuffer);
     }
 }

@@ -18,13 +18,13 @@ public partial class GlLayer
     {
         if ((mask & GlClearBufferMask.ColorBufferBit) != 0)
             ValidateClearColorBuffer();
-        if ((mask & GlClearBufferMask.DepthBufferBit) != 0 && !clearDepth.IsSet)
+        if ((mask & GlClearBufferMask.DepthBufferBit) != 0 && !state.clearDepth.IsSet)
             throw new GlMissingPrerequisiteException(nameof(Clear), "cannot clear depth buffer because clear depth is not set.");
-        if ((mask & GlClearBufferMask.StencilBufferBit) != 0 && !clearStencil.IsSet)
+        if ((mask & GlClearBufferMask.StencilBufferBit) != 0 && !state.clearStencil.IsSet)
             throw new GlMissingPrerequisiteException(nameof(Clear), "cannot clear stencil buffer because clear stencil is not set.");
-        if (enableMap.IsSet(GlEnableCap.ScissorTest) && !scissor.IsSet)
+        if (state.enableMap.IsSet(GlEnableCap.ScissorTest) && !state.scissor.IsSet)
             throw new GlMissingPrerequisiteException(nameof(Clear), "cannot clear while scissor test is enabled because no scissor box is set.");
-        if (indexedEnableMap.IsSet((GlEnableCap.ScissorTest, 0)) && !scissorMap.HasAny)
+        if (state.indexedEnableMap.IsSet((GlEnableCap.ScissorTest, 0)) && !state.scissorMap.HasAny)
             throw new GlMissingPrerequisiteException(nameof(Clear), "cannot clear while indexed scissor test is enabled because no indexed scissor box is set.");
     }
 
@@ -33,9 +33,9 @@ public partial class GlLayer
     /// </summary>
     private void ValidateClearColorBuffer()
     {
-        if (!clearColor.IsSet)
+        if (!state.clearColor.IsSet)
             throw new GlMissingPrerequisiteException(nameof(Clear), "cannot clear color buffer because clear color is not set.");
-        if (drawFramebuffer.Current != 0 && !drawBuffersCount.IsSet)
+        if (state.drawFramebuffer.Current != 0 && !state.drawBuffersCount.IsSet)
             throw new GlMissingPrerequisiteException(nameof(Clear), "cannot clear color buffer with a draw framebuffer bound because draw buffers are not set.");
     }
 }
