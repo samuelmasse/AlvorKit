@@ -3,16 +3,10 @@ namespace AlvorKit.OpenGL.Demo.AzureTentacle;
 /// <summary>Blend-backed UI style for the azure tentacle demo.</summary>
 [App]
 public class AppStyle(
-    RootFonts fonts,
+    RootInter inter,
     RootGl gl,
     RootUiScale scale,
-    RootKeyboard keyboard) : BlendStyle(new()
-    {
-        Font = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter.ttf") }),
-        EmphasisFont = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter-SemiBold.ttf") }),
-        Chrome = new BlendControlChrome(gl, scale),
-        Keyboard = keyboard,
-    })
+    RootKeyboard keyboard) : BlendStyle(inter, gl, scale, keyboard)
 {
     /// <summary>Gets the OpenGL clear color used behind the animated model.</summary>
     public Vec4 SceneClearColor => Palette.AppBackground;

@@ -1,10 +1,6 @@
 namespace AlvorKit.UI.Blend.Demo;
 
-/// <summary>Loads the Blend package style with the shared Inter font asset.</summary>
+/// <summary>Blend-backed UI style for the editor-shell demo.</summary>
 [App]
-public class EditorShellStyle(RootFonts fonts, RootGl gl, RootUiScale scale) : BlendStyle(new()
-{
-    Font = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(EditorShellStyle)), "fonts", "Inter.ttf") }),
-    EmphasisFont = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(EditorShellStyle)), "fonts", "Inter-SemiBold.ttf") }),
-    Chrome = new BlendControlChrome(gl, scale),
-});
+public class EditorShellStyle(RootInter inter, RootGl gl, RootUiScale scale, RootKeyboard keyboard)
+    : BlendStyle(inter, gl, scale, keyboard);

@@ -1,10 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <Using Include="System.Diagnostics.CodeAnalysis" />
         <Using Include="System.Globalization" />
         <Using Include="AlvorKit.ECS" />
         <Using Include="AlvorKit.ECS.Generator" />
         <Using Include="AlvorKit.Engine" />
+        <Using Include="AlvorKit.Engine.Loop" />
         <Using Include="AlvorKit.Graphics2D" />
         <Using Include="AlvorKit.Graphics2D.Fonts" />
         <Using Include="AlvorKit.Maths" />
@@ -22,6 +24,7 @@
         <ProjectReference Include="..\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
             OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\AlvorKit.Engine\AlvorKit.Engine.csproj" />
+        <ProjectReference Include="..\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
         <ProjectReference Include="..\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
         <ProjectReference Include="..\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
         <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
@@ -30,6 +33,15 @@
         <ProjectReference Include="..\AlvorKit.UI.Generator\AlvorKit.UI.Generator.csproj"
             OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="..\..\res\fonts\Inter.ttf" Visible="false">
+            <LogicalName>AlvorKit.UI.Blend.res.fonts.Inter.ttf</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="..\..\res\fonts\Inter-SemiBold.ttf" Visible="false">
+            <LogicalName>AlvorKit.UI.Blend.res.fonts.Inter-SemiBold.ttf</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>

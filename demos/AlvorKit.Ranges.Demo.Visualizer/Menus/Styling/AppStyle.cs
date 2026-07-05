@@ -3,16 +3,10 @@ namespace AlvorKit.Ranges.Demo.Visualizer;
 /// <summary>Blend-backed UI style plus the allocator data-visualization palette.</summary>
 [App]
 public class AppStyle(
-    RootFonts fonts,
+    RootInter inter,
     RootGl gl,
     RootUiScale scale,
-    RootKeyboard keyboard) : BlendStyle(new()
-    {
-        Font = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter.ttf") }),
-        EmphasisFont = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter-SemiBold.ttf") }),
-        Chrome = new BlendControlChrome(gl, scale),
-        Keyboard = keyboard,
-    })
+    RootKeyboard keyboard) : BlendStyle(inter, gl, scale, keyboard)
 {
     /// <summary>Gets the backdrop color behind memory strips and the timeline lane.</summary>
     public Vec4 PanelInsetColor => Palette.AppBackground;

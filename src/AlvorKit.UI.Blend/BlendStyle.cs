@@ -1,12 +1,11 @@
 namespace AlvorKit.UI.Blend;
 
-/// <summary>Applies Blender-inspired recipes to AlvorKit UI nodes.</summary>
-public class BlendStyle(BlendStyleOptions options)
+/// <summary>Applies Blender-inspired recipes to AlvorKit UI nodes, using the embedded Inter faces from <see cref="RootInter"/>.</summary>
+public class BlendStyle(RootInter inter, RootGl gl, RootUiScale scale, RootKeyboard keyboard)
 {
-    private readonly Font font = options.Font;
-    private readonly Font emphasisFont = options.EmphasisFont ?? options.Font;
-    private readonly BlendControlChrome? chrome = options.Chrome;
-    private readonly Keyboard? keyboard = options.Keyboard;
+    private readonly Font font = inter.Regular;
+    private readonly Font emphasisFont = inter.SemiBold;
+    private readonly BlendControlChrome chrome = new(gl, scale);
 
     /// <summary>Gets the active color palette.</summary>
     public virtual BlendPalette Palette => BlendPalette.Default;
@@ -483,17 +482,6 @@ public class BlendStyle(BlendStyleOptions options)
     private void FixedButton(EntMut ent, Vec2 size, int fontSize, bool active)
     {
         ButtonFrame(ent, size);
-
-        if (chrome == null)
-        {
-            ent.Mutate(CenterText)
-                .FontSizeV(fontSize)
-                .ColorF(() => ButtonFill(ent, active))
-                .TextColorF(() => active ? Palette.Text : Palette.MutedText)
-                .Mutate(node => ControlBorder(node, active));
-            return;
-        }
-
         RoundedControlSurface(ent, size, active);
         ControlLabel(ent, fontSize, active);
     }
@@ -501,18 +489,6 @@ public class BlendStyle(BlendStyleOptions options)
     private void Button(EntMut ent, float height, int fontSize, float horizontalPadding, bool active)
     {
         MeasuredButtonFrame(ent, height, fontSize, horizontalPadding);
-
-        if (chrome == null)
-        {
-            ent.Mutate(CenterText)
-                .FontSizeV(fontSize)
-                .TextPaddingV((horizontalPadding, 0, horizontalPadding, 0))
-                .TextColorF(() => active ? Palette.Text : Palette.MutedText)
-                .ColorF(() => ButtonFill(ent, active))
-                .Mutate(node => ControlBorder(node, active));
-            return;
-        }
-
         RoundedControlSurface(ent, (0, height), active);
         ControlLabel(ent, fontSize, active);
     }
@@ -540,12 +516,9 @@ public class BlendStyle(BlendStyleOptions options)
         .CursorF(() => CursorShape.Hand)
         .Mutate(ActivateOnEnter);
 
-    /// <summary>Runs the node's click (or press) callback when it is focused and Enter is pressed, if a keyboard was provided.</summary>
+    /// <summary>Runs the node's click (or press) callback when it is focused and Enter is pressed.</summary>
     public void ActivateOnEnter(EntMut ent)
     {
-        if (keyboard == null)
-            return;
-
         var enterWasDown = false;
         ent.Mutate()
             .OnUpdateF(() =>
@@ -566,9 +539,6 @@ public class BlendStyle(BlendStyleOptions options)
 
     private void RoundedControlSurface(EntMut ent, Vec2 size, bool active)
     {
-        if (chrome == null)
-            return;
-
         var capPixels = chrome.PhysicalPixels(Metrics.ControlRadius);
         var capWidth = chrome.UiPixels(capPixels);
         var borderWidth = Metrics.ControlBorderWidth;
@@ -613,7 +583,6 @@ public class BlendStyle(BlendStyleOptions options)
 
     private Texture2D ControlCap(EntMut ent, float height, bool active)
     {
-        Debug.Assert(chrome != null);
         return chrome.Cap(
             height,
             Metrics.ControlRadius,
@@ -630,14 +599,6 @@ public class BlendStyle(BlendStyleOptions options)
             .FontSizeV(fontSize)
             .TextColorF(() => active ? Palette.Text : Palette.MutedText)
             .TextF(() => ent.TextFV.Resolve());
-
-    private void ControlBorder(EntMut ent, bool active)
-    {
-        ControlRule(ent, Alignment.Top | Alignment.Left, (1, 0), (0, Metrics.Hairline), active);
-        ControlRule(ent, Alignment.Bottom | Alignment.Left, (1, 0), (0, Metrics.Hairline), active);
-        ControlRule(ent, Alignment.Top | Alignment.Left, (0, 1), (Metrics.Hairline, 0), active);
-        ControlRule(ent, Alignment.Top | Alignment.Right, (0, 1), (Metrics.Hairline, 0), active);
-    }
 
     /// <summary>Adds a floating hairline rule node with a fixed color.</summary>
     public static void Rule(EntMut ent, Alignment alignment, Vec2 relativeSize, Vec2 size, Vec4 color) =>
@@ -658,13 +619,4 @@ public class BlendStyle(BlendStyleOptions options)
             .SizeRelativeV(relativeSize)
             .SizeV(size)
             .ColorF(color);
-
-    private void ControlRule(EntMut ent, Alignment alignment, Vec2 relativeSize, Vec2 size, bool active) =>
-        Node(ent)
-            .IsFloatingV(true)
-            .IsPostSizedV(true)
-            .AlignmentV(alignment)
-            .SizeRelativeV(relativeSize)
-            .SizeV(size)
-            .ColorF(() => ButtonBorder(ent, active));
 }
