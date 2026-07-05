@@ -9,6 +9,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncLimitsCommandConcurrencyAndSerializesDotNetFormat()
     {
         using var workspace = TempWorkspace.Create();
+        workspace.Write("AlvorKit.slnx", "<Solution />");
         var processRunner = new BlockingProcessRunner(expectedStarts: 2);
         var actionlintTool = new FakeActionlintTool("actionlint");
         var runner = new LintRunner(
@@ -36,6 +37,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncReturnsFailureAfterRunningAllCommands()
     {
         using var workspace = TempWorkspace.Create();
+        workspace.Write("AlvorKit.slnx", "<Solution />");
         var processRunner = new FakeProcessRunner(new Queue<int>([0, 9, 0, 0, 0]));
         var actionlintTool = new FakeActionlintTool("actionlint");
         var runner = new LintRunner(new(workspace.Root, Fix: false, []), processRunner, actionlintTool);
@@ -52,6 +54,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncReturnsFailureWhenActionlintSetupFails()
     {
         using var workspace = TempWorkspace.Create();
+        workspace.Write("AlvorKit.slnx", "<Solution />");
         var processRunner = new FakeProcessRunner(new Queue<int>([0, 0, 0, 0]));
         var actionlintTool = new FailingActionlintTool();
         var runner = new LintRunner(new(workspace.Root, Fix: false, []), processRunner, actionlintTool);
@@ -67,6 +70,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncReturnsFailureWhenProcessRunnerThrows()
     {
         using var workspace = TempWorkspace.Create();
+        workspace.Write("AlvorKit.slnx", "<Solution />");
         var processRunner = new ThrowingProcessRunner();
         var actionlintTool = new FakeActionlintTool("actionlint");
         var runner = new LintRunner(new(workspace.Root, Fix: false, []), processRunner, actionlintTool);

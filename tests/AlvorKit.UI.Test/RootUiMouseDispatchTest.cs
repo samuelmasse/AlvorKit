@@ -234,6 +234,26 @@ public class RootUiMouseDispatchTest
         Assert.AreEqual(1, clicks);
     }
 
+    /// <summary>Removing the UI script releases the hovered control's hand cursor instead of leaving it stuck.</summary>
+    [TestMethod]
+    public void Unload_WhileHoveringHandCursorNode_ResetsCursorShape()
+    {
+        var h = new UiTestHarness();
+        Node(h.Ui, out _)
+            .SizeRelativeV((0, 0))
+            .SizeV((100, 50))
+            .IsSelectableV(true)
+            .CursorF(() => CursorShape.Hand);
+
+        h.MoveMouse((50, 25));
+        h.Frame();
+        h.Script.Draw();
+        Assert.AreEqual(CursorShape.Hand, h.Host.CursorShape);
+
+        h.Script.Unload();
+        Assert.AreEqual(CursorShape.Default, h.Host.CursorShape);
+    }
+
     /// <summary>Wheel input over a scrollable node dispatches the scroll callback with the wheel offset.</summary>
     [TestMethod]
     public void Scroll_OverScrollableNode_RunsScrollCallback()

@@ -43,6 +43,14 @@ public class RootUiMouse(RootMouse mouse, RootUiScale scale, RootUiFocus focus, 
             : CursorShape.Default;
     }
 
+    /// <summary>Clears transient hover and press state and releases the hardware cursor shape.</summary>
+    internal void Unload()
+    {
+        ClearHovered();
+        ClearPressed();
+        mouse.CursorShape = CursorShape.Default;
+    }
+
     internal void Update(EntMut n)
     {
         if (CursorGrabbed())

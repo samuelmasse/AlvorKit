@@ -3,9 +3,6 @@ namespace AlvorKit.Script.Lint;
 /// <summary>Builds the external tool command plan for repository linting.</summary>
 internal static class LintPlan
 {
-    /// <summary>Repository solution used for full C# formatting checks.</summary>
-    private const string SolutionFile = "AlvorKit.slnx";
-
     /// <summary>Maximum number of scoped files to pass to one EditorConfig checker process.</summary>
     private const int EditorConfigFileBatchSize = 80;
 
@@ -36,7 +33,7 @@ internal static class LintPlan
 
     /// <summary>Creates a solution-wide dotnet format command for full repository linting.</summary>
     public static IReadOnlyList<CommandSpec> DotNetFormatCommands(string repoRoot, bool fix) =>
-        DotNetFormatCommands(SolutionFile, repoRoot, fix);
+        DotNetFormatCommands(FindSolutionFile(repoRoot), repoRoot, fix);
 
     /// <summary>Creates dotnet format commands for the scoped C# files grouped by owning project.</summary>
     public static IReadOnlyList<CommandSpec> DotNetFormatCommands(string repoRoot, bool fix, LintScope scope) =>
@@ -46,9 +43,16 @@ internal static class LintPlan
             .SelectMany(group => DotNetFormatCommands(group.Key, repoRoot, fix, group.Order(StringComparer.Ordinal).ToArray()))
             .ToArray();
 
-    /// <summary>Creates the Prettier command for JSON, YAML, and Markdown files.</summary>
+    /// <summary>
+    /// Creates the Prettier command for JSON, YAML, and Markdown files; unmatched globs are tolerated
+    /// so the plan works in repos without every directory.
+    /// </summary>
     public static CommandSpec PrettierCommand(string repoRoot, bool fix) =>
-        new(ToolExecutable.Npx(), ["--yes", "prettier@3", fix ? "--write" : "--check", .. LintScope.PrettierGlobPatterns], repoRoot, "prettier");
+        new(
+            ToolExecutable.Npx(),
+            ["--yes", "prettier@3", fix ? "--write" : "--check", "--no-error-on-unmatched-pattern", .. LintScope.PrettierGlobPatterns],
+            repoRoot,
+            "prettier");
 
     /// <summary>Creates the Prettier command for scoped JSON, YAML, and Markdown files.</summary>
     public static CommandSpec? PrettierCommand(string repoRoot, bool fix, LintScope scope) =>
@@ -112,6 +116,23 @@ internal static class LintPlan
         if (includedFiles is { Count: > 0 })
             arguments.AddRange(["--include", .. includedFiles]);
         return arguments;
+    }
+
+    /// <summary>Finds the single solution file at the repository root used for full C# formatting checks.</summary>
+    private static string FindSolutionFile(string repoRoot)
+    {
+        var solutions = Directory.GetFiles(Path.GetFullPath(repoRoot), "*.slnx", SearchOption.TopDirectoryOnly)
+            .Concat(Directory.GetFiles(Path.GetFullPath(repoRoot), "*.sln", SearchOption.TopDirectoryOnly))
+            .Select(path => Path.GetFileName(path)!)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        return solutions switch
+        {
+            [var single] => single,
+            [] => throw new InvalidOperationException($"No solution file found at '{repoRoot}' for repo-wide dotnet format."),
+            _ => throw new InvalidOperationException($"Multiple solution files found at '{repoRoot}'; repo-wide lint expects exactly one."),
+        };
     }
 
     /// <summary>Finds the nearest project file that owns a scoped C# source file.</summary>

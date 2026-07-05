@@ -119,21 +119,28 @@ public class RootText
         where T : ISpanFormattable
     {
         written = 0;
-        dst[written++] = '(';
+        if (!WriteChar('(', dst, ref written)) return false;
         if (count > 0 && !Write(value.X, dst, ref written, fmt)) return false;
         if (count > 1 && !WriteAfterComma(value.Y, dst, ref written, fmt)) return false;
         if (count > 2 && !WriteAfterComma(value.Z, dst, ref written, fmt)) return false;
         if (count > 3 && !WriteAfterComma(value.W, dst, ref written, fmt)) return false;
-        dst[written++] = ')';
-        return true;
+        return WriteChar(')', dst, ref written);
     }
 
     private static bool WriteAfterComma<T>(T value, Span<char> dst, ref int written, ReadOnlySpan<char> fmt)
-        where T : ISpanFormattable
+        where T : ISpanFormattable =>
+        WriteChar(',', dst, ref written)
+        && WriteChar(' ', dst, ref written)
+        && Write(value, dst, ref written, fmt);
+
+    /// <summary>Writes a literal character, reporting a too-small buffer so the string builder grows and retries.</summary>
+    private static bool WriteChar(char value, Span<char> dst, ref int written)
     {
-        dst[written++] = ',';
-        dst[written++] = ' ';
-        return Write(value, dst, ref written, fmt);
+        if (written >= dst.Length)
+            return false;
+
+        dst[written++] = value;
+        return true;
     }
 
     [ExcludeFromCodeCoverage]

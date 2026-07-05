@@ -22,7 +22,7 @@ public class RootPositionColorTextureProgram3D : RenderProgram3D<PositionColorTe
 
         void main()
         {
-            gl_Position = vec4(inPosition, 1.0) * matView * matProjection;
+            gl_Position = matProjection * matView * vec4(inPosition, 1.0);
             fragColor = inColor;
             fragTexCoord = inTexCoord;
         }

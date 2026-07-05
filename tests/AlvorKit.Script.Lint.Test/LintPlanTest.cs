@@ -9,6 +9,7 @@ public sealed class LintPlanTest
     public void DotNetFormatCommandsVerifyNoChanges()
     {
         using var workspace = TempWorkspace.Create();
+        workspace.Write("AlvorKit.slnx", "<Solution />");
 
         var commands = LintPlan.DotNetFormatCommands(workspace.Root, fix: false).ToArray();
 
@@ -29,6 +30,7 @@ public sealed class LintPlanTest
     public void DotNetFormatCommandsCanWriteChanges()
     {
         using var workspace = TempWorkspace.Create();
+        workspace.Write("AlvorKit.slnx", "<Solution />");
 
         var commands = LintPlan.DotNetFormatCommands(workspace.Root, fix: true).ToArray();
 
@@ -39,6 +41,31 @@ public sealed class LintPlanTest
         CollectionAssert.AreEqual(
             new[] { "format", "style", "AlvorKit.slnx", "--severity", "info", "--verbosity", "minimal" },
             commands[1].Arguments.ToArray());
+    }
+
+    /// <summary>Discovers whichever single root solution the linted repository has, so sibling repos can reuse the coordinator.</summary>
+    [TestMethod]
+    public void DotNetFormatCommandsDiscoverTheRepositorySolution()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.Write("AlvorPong.slnx", "<Solution />");
+
+        var commands = LintPlan.DotNetFormatCommands(workspace.Root, fix: false).ToArray();
+
+        Assert.AreEqual("dotnet format AlvorPong.slnx", commands[0].Label);
+        Assert.AreEqual("dotnet format style AlvorPong.slnx", commands[1].Label);
+    }
+
+    /// <summary>Fails clearly when the linted repository root has no solution file.</summary>
+    [TestMethod]
+    public void DotNetFormatCommandsFailWithoutRootSolution()
+    {
+        using var workspace = TempWorkspace.Create();
+
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(
+            () => LintPlan.DotNetFormatCommands(workspace.Root, fix: false));
+
+        StringAssert.Contains(exception.Message, "No solution file");
     }
 
     /// <summary>Plans dotnet format for scoped C# files under their owning project.</summary>
@@ -127,6 +154,7 @@ public sealed class LintPlanTest
     public void CommandsBeforeActionlintIncludeAllPreChecks()
     {
         using var workspace = TempWorkspace.Create();
+        workspace.Write("AlvorKit.slnx", "<Solution />");
 
         var commands = LintPlan.CommandsBeforeActionlint(workspace.Root, fix: false);
 

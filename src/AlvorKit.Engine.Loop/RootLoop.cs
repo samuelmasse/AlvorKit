@@ -6,10 +6,13 @@ public static class RootLoop
 {
     /// <summary>Creates a default GLFW/OpenGL host and starts the root loop with the requested first state.</summary>
     /// <typeparam name="TState">The concrete <see cref="State"/> type created before the first update.</typeparam>
-    public static void RunGlfw<TState>() where TState : State => RunGlfw(typeof(TState));
+    /// <param name="failsafe">Whether window close forces shutdown even when a state stalls; see <see cref="RootArgs.Failsafe"/>.</param>
+    public static void RunGlfw<TState>(bool failsafe = true) where TState : State => RunGlfw(typeof(TState), failsafe);
 
     /// <summary>Creates a default GLFW/OpenGL host and starts the root loop with the requested first state.</summary>
-    public static void RunGlfw(Type bootState)
+    /// <param name="bootState">The concrete <see cref="State"/> type created before the first update.</param>
+    /// <param name="failsafe">Whether window close forces shutdown even when a state stalls; see <see cref="RootArgs.Failsafe"/>.</param>
+    public static void RunGlfw(Type bootState, bool failsafe = true)
     {
         var glfw = new GlfwBackend();
         if (!glfw.Init())
@@ -42,6 +45,7 @@ public static class RootLoop
                 Window = window,
                 Gl = gl,
                 BootState = bootState,
+                Failsafe = failsafe,
             });
         }
         finally

@@ -40,6 +40,12 @@ public class RootUiScript(
         draw.Draw(ui);
     }
 
+    /// <summary>
+    /// Releases hover state and the hardware cursor shape when the script is removed, so a game that
+    /// takes over input does not keep the last hovered control's cursor.
+    /// </summary>
+    public override void Unload() => mouse.Unload();
+
     private void ResetRoot()
     {
         ui.IsOrderedFV = true;
