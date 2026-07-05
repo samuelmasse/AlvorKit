@@ -1,11 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Version>$(MathsPackageVer)</Version>
+        <Authors>AlvorKit</Authors>
+        <PackageDescription>Facade package for AlvorKit math vectors, matrices, quaternions, bounds, and geometry primitives.</PackageDescription>
+        <PackageTags>alvorkit;math;vectors;matrices;geometry</PackageTags>
+        <PackageProjectUrl>https://github.com/alvorkit/alvorkit</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/alvorkit/alvorkit</RepositoryUrl>
         <IsCoverageSourceProject>false</IsCoverageSourceProject>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(UseLocalMathsPrimitives)' != 'true'">
-        <PackageReference Include="AlvorKit.Maths.Primitives" Version="$(MathsPrimitivesVer)" />
+        <PackageReference Include="AlvorKit.Maths.Primitives" Version="$(MathsPackageVer)" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(UseLocalMathsPrimitives)' == 'true'">

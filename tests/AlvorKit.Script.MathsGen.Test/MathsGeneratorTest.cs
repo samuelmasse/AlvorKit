@@ -92,14 +92,15 @@ public sealed class MathsGeneratorTest
         StringAssert.Contains(vec3, "MathsParseHelper.TryParseComponent(body.Trim(), formatProvider, out float z)");
     }
 
-    /// <summary>Unsigned integer vector source includes cross-scalar arithmetic helpers.</summary>
+    /// <summary>Unsigned integer vector source includes cross-scalar arithmetic helpers without ambiguous vector-pair helpers.</summary>
     [TestMethod]
     public void VectorEmitter_EmitsExpectedUnsignedIntegerVectorFeatures()
     {
         var vec3u = VectorFileEmitter.Emit(new(3, VectorCatalog.UInt));
 
         StringAssert.Contains(vec3u, "public static Vec3d operator /(Vec3u left, double right)");
-        StringAssert.Contains(vec3u, "public static Vec3i64 operator +(Vec3u left, Vec3i right)");
+        StringAssert.Contains(vec3u, "public static Vec3i64 operator +(Vec3u left, int right)");
+        Assert.IsFalse(vec3u.Contains("public static Vec3i64 operator +(Vec3u left, Vec3i right)", StringComparison.Ordinal));
     }
 
     /// <summary>Signed integer vector source includes count-vector shift helpers.</summary>

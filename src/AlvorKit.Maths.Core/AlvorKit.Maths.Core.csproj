@@ -1,5 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+    <PropertyGroup>
+        <Version>$(MathsPackageVer)</Version>
+        <Authors>AlvorKit</Authors>
+        <PackageDescription>Shared interfaces and helpers for AlvorKit math primitive packages.</PackageDescription>
+        <PackageTags>alvorkit;math;vectors;matrices;geometry</PackageTags>
+        <PackageProjectUrl>https://github.com/alvorkit/alvorkit</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/alvorkit/alvorkit</RepositoryUrl>
+    </PropertyGroup>
+
     <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.Maths.Primitives" />
     </ItemGroup>

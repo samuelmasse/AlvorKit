@@ -24,17 +24,17 @@ internal static class Program
     private static int Run(MathsGenOptions options)
     {
         var repoRoot = ProjectRoot.FindFromCurrentProcess(typeof(Program), requireResDirectory: true);
-        MathsGenerator.GenerateTo(options.OutputRoot, ReadPrimitivesVersion(repoRoot));
+        MathsGenerator.GenerateTo(options.OutputRoot, ReadPackageVersion(repoRoot));
         return 0;
     }
 
     /// <summary>Reads the package version pin shared with consumers.</summary>
-    private static string ReadPrimitivesVersion(string repoRoot)
+    private static string ReadPackageVersion(string repoRoot)
     {
-        var props = XDocument.Load(Path.Combine(repoRoot, "AlvorKit.Packages.props"));
-        var value = props.Descendants("MathsPrimitivesVer").SingleOrDefault()?.Value.Trim();
+        var versionFile = Path.Combine(repoRoot, "src", "AlvorKit.Maths", "version", "VERSION");
+        var value = File.Exists(versionFile) ? File.ReadAllText(versionFile).Trim() : "";
         if (string.IsNullOrWhiteSpace(value))
-            throw new InvalidOperationException("AlvorKit.Packages.props must define MathsPrimitivesVer.");
+            throw new InvalidOperationException("src/AlvorKit.Maths/version/VERSION must define the math package version.");
 
         return value;
     }

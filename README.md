@@ -27,6 +27,22 @@ dotnet run --project scripts\AlvorKit.Script.Bindgen -- xxhash --output-root out
 git diff --no-index -- out\bindgen-review\xxhash-before out\bindgen-review\xxhash-after
 ```
 
+## Maths package development mode
+
+Projects use the published `AlvorKit.Maths.Primitives` package when
+`out/mathgen/AlvorKit.Maths.Primitives` is missing. Generate the local primitives
+project only when changing the maths generator or generated primitive surface:
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.MathsGen
+```
+
+The user-facing package is `AlvorKit.Maths`; it is a facade that brings in
+`AlvorKit.Maths.Core` and `AlvorKit.Maths.Primitives`. Maths package releases are
+triggered by changing `src/AlvorKit.Maths/version/VERSION` on `main`. Manual runs
+of the maths package workflow build and upload `.nupkg` artifacts without
+publishing.
+
 ## Linting
 
 Run the repository linter from the repository root with scoped includes while iterating:

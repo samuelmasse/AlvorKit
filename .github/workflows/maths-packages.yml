@@ -1,0 +1,85 @@
+# Builds and publishes the AlvorKit maths NuGet packages.
+name: maths packages
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches: [main]
+    paths: ["src/AlvorKit.Maths/version/VERSION"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maths-packages-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  pack:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Read version
+        id: version
+        run: |
+          version="$(tr -d '[:space:]' < src/AlvorKit.Maths/version/VERSION)"
+          test -n "$version"
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure new version
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for package_id in alvorkit.maths.core alvorkit.maths.primitives alvorkit.maths; do
+            versions="$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/${package_id}/index.json" || echo '{"versions":[]}')"
+            if jq -e --arg version "${{ steps.version.outputs.value }}" '.versions | index($version)' <<< "$versions" > /dev/null; then
+              echo "::error::${package_id} ${{ steps.version.outputs.value }} already exists."
+              exit 1
+            fi
+          done
+
+      - name: Generate
+        run: dotnet run --project scripts/AlvorKit.Script.MathsGen
+
+      - name: Test
+        run: |
+          dotnet test tests/AlvorKit.Script.MathsGen.Test/AlvorKit.Script.MathsGen.Test.csproj
+          dotnet test tests/AlvorKit.Maths.Test/AlvorKit.Maths.Test.csproj
+
+      - name: Pack
+        run: dotnet build -c Release src/AlvorKit.Maths/AlvorKit.Maths.csproj
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: maths-nupkg
+          path: |
+            bin/AlvorKit.Maths.Core/Release/*.nupkg
+            bin/AlvorKit.Maths.Primitives/Release/*.nupkg
+            bin/AlvorKit.Maths/Release/*.nupkg
+          if-no-files-found: error
+
+      - name: Publish
+        if: github.event_name == 'push'
+        run: |
+          dotnet nuget push bin/AlvorKit.Maths.Core/Release/AlvorKit.Maths.Core.${{ steps.version.outputs.value }}.nupkg \
+            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+          dotnet nuget push bin/AlvorKit.Maths.Primitives/Release/AlvorKit.Maths.Primitives.${{ steps.version.outputs.value }}.nupkg \
+            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+          dotnet nuget push bin/AlvorKit.Maths/Release/AlvorKit.Maths.${{ steps.version.outputs.value }}.nupkg \
+            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate

@@ -2,6 +2,10 @@
     <PropertyGroup>
         <BindingsRoot Condition="'$(BindingsRoot)' == ''">$(MSBuildThisFileDirectory)out\bindgen</BindingsRoot>
         <MathsPrimitivesRoot Condition="'$(MathsPrimitivesRoot)' == ''">$(MSBuildThisFileDirectory)out\mathgen\AlvorKit.Maths.Primitives</MathsPrimitivesRoot>
+        <MathsPackageVersionFile Condition="'$(MathsPackageVersionFile)' == ''">$(MSBuildThisFileDirectory)src\AlvorKit.Maths\version\VERSION</MathsPackageVersionFile>
+        <MathsVerFile>$(MathsPackageVersionFile)</MathsVerFile>
+        <MathsPackageVer
+            Condition="'$(MathsPackageVer)' == '' and Exists('$(MathsVerFile)')">$([System.IO.File]::ReadAllText('$(MathsVerFile)').Trim())</MathsPackageVer>
         <UseLocalMathsPrimitives
             Condition="'$(UseLocalMathsPrimitives)' == '' and Exists('$(MathsPrimitivesRoot)\AlvorKit.Maths.Primitives.csproj')">true</UseLocalMathsPrimitives>
         <UseLocalMathsPrimitives Condition="'$(UseLocalMathsPrimitives)' == ''">false</UseLocalMathsPrimitives>
@@ -17,8 +21,6 @@
         <GlBindVer>4.6.14</GlBindVer>
 
         <FastNoise2BindVer>1.1.1.2</FastNoise2BindVer>
-
-        <MathsPrimitivesVer>0.1.0</MathsPrimitivesVer>
     </PropertyGroup>
 
     <Target Name="EnsureGeneratedMathsPrimitives"
