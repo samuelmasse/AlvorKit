@@ -47,24 +47,24 @@ public class AppMemoryStripTexture(
         if (TryFindRange(view.Snapshot.Ranges, byteIndex, out var range))
         {
             if (session.IsLatestPayloadRequest(range.Slot) && byteIndex >= range.PayloadIndex && byteIndex < range.PayloadIndex + range.Size)
-                return tooltips.LatestRequest(view, range);
+                return tooltips.LatestRequest(range);
 
             if (byteIndex < range.PayloadIndex)
-                return tooltips.Padding(view, range, range.LeadingPadding, leading: true);
+                return tooltips.Padding(range, range.LeadingPadding, leading: true);
 
             if (byteIndex < range.PayloadIndex + range.Size)
-                return tooltips.Payload(view, range);
+                return tooltips.Payload(range);
 
             if (byteIndex < range.PayloadIndex + range.CapacitySize)
-                return tooltips.Retained(view, range);
+                return tooltips.Retained(range);
 
-            return tooltips.Padding(view, range, range.TrailingPadding, leading: false);
+            return tooltips.Padding(range, range.TrailingPadding, leading: false);
         }
 
         if (TryFindFreeSpan(view.Snapshot.FreeSpans, byteIndex, out var span))
         {
             var mutedTail = view.MuteTail && span.Index + span.Size == view.Snapshot.Size && view.Snapshot.Ranges.Length > 0;
-            return tooltips.Free(view, span.Index, span.Size, mutedTail);
+            return tooltips.Free(span.Index, span.Size, mutedTail);
         }
 
         return [];

@@ -7,12 +7,12 @@ public class AppStyle(
     RootGl gl,
     RootUiScale scale,
     RootKeyboard keyboard) : BlendStyle(new()
-{
-    Font = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter.ttf") }),
-    EmphasisFont = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter-SemiBold.ttf") }),
-    Chrome = new BlendControlChrome(gl, scale),
-    Keyboard = keyboard,
-})
+    {
+        Font = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter.ttf") }),
+        EmphasisFont = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter-SemiBold.ttf") }),
+        Chrome = new BlendControlChrome(gl, scale),
+        Keyboard = keyboard,
+    })
 {
     /// <summary>Gets the OpenGL clear color used behind the animated model.</summary>
     public Vec4 SceneClearColor => Palette.AppBackground;

@@ -6,7 +6,7 @@ public class AppMemoryStripTooltips(
     RootText text,
     AppSession session)
 {
-    public ReadOnlySpan<char> Free(AppMemoryStripView view, long index, long size, bool mutedTail) =>
+    public ReadOnlySpan<char> Free(long index, long size, bool mutedTail) =>
         mutedTail
             ? text.Format(
                 "tail free block\n{0} B at byte {1}\nomitted from the active zoom",
@@ -17,7 +17,7 @@ public class AppMemoryStripTooltips(
                 size,
                 index);
 
-    public ReadOnlySpan<char> Padding(AppMemoryStripView view, AllocatorRangeVisual range, long size, bool leading) =>
+    public ReadOnlySpan<char> Padding(AllocatorRangeVisual range, long size, bool leading) =>
         leading
             ? text.Format(
                 "leading padding, slot {0}\n{1} B from alignment {2}\npayload starts at byte {3}",
@@ -32,13 +32,13 @@ public class AppMemoryStripTooltips(
                 range.Alignment,
                 range.Alignment - 1);
 
-    public ReadOnlySpan<char> Retained(AppMemoryStripView view, AllocatorRangeVisual range) =>
+    public ReadOnlySpan<char> Retained(AllocatorRangeVisual range) =>
         text.Format(
             "retained capacity, slot {0}\n{1} B kept after a shrink\nreused on growth or freed by pack",
             range.Slot,
             range.RetainedExtraSize);
 
-    public ReadOnlySpan<char> Payload(AppMemoryStripView view, AllocatorRangeVisual range) =>
+    public ReadOnlySpan<char> Payload(AllocatorRangeVisual range) =>
         text.Format(
             "slot {0} payload\nlogical {1} B, capacity {2} B\nreserved {3} B at byte {4}, alignment {5}",
             range.Slot,
@@ -48,7 +48,7 @@ public class AppMemoryStripTooltips(
             range.Index,
             range.Alignment);
 
-    public ReadOnlySpan<char> LatestRequest(AppMemoryStripView view, AllocatorRangeVisual range) =>
+    public ReadOnlySpan<char> LatestRequest(AllocatorRangeVisual range) =>
         text.Format(
             "slot {0}, latest {1}\nlogical {2} B, capacity {3} B\nreserved {4} B, padding {5} B, retained {6} B\nrequest from event {7}",
             range.Slot,

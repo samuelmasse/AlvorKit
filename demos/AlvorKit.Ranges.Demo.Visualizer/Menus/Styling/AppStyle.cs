@@ -7,12 +7,12 @@ public class AppStyle(
     RootGl gl,
     RootUiScale scale,
     RootKeyboard keyboard) : BlendStyle(new()
-{
-    Font = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter.ttf") }),
-    EmphasisFont = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter-SemiBold.ttf") }),
-    Chrome = new BlendControlChrome(gl, scale),
-    Keyboard = keyboard,
-})
+    {
+        Font = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter.ttf") }),
+        EmphasisFont = fonts.Open(new() { File = Path.Combine(ProjectRoot.ResDirectory(typeof(AppStyle)), "fonts", "Inter-SemiBold.ttf") }),
+        Chrome = new BlendControlChrome(gl, scale),
+        Keyboard = keyboard,
+    })
 {
     /// <summary>Gets the backdrop color behind memory strips and the timeline lane.</summary>
     public Vec4 PanelInsetColor => Palette.AppBackground;
