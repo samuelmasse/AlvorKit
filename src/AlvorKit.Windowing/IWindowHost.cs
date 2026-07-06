@@ -92,4 +92,10 @@ public interface IWindowHost
 
     /// <summary>Returns an OpenGL procedure address from the host's current context.</summary>
     nint GetProcAddress(string procname);
+
+    /// <summary>Reads the current polled state of a gamepad slot.</summary>
+    bool TryGetGamepad(int index, out GamepadState state);
+
+    /// <summary>Sets the window icon from RGBA pixels arranged left-to-right, top-to-bottom.</summary>
+    void SetIcon(Vec2u size, ReadOnlySpan<Vec4u8> pixels);
 }

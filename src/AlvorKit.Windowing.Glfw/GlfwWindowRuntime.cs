@@ -91,6 +91,48 @@ internal sealed class GlfwWindowRuntime
     /// <summary>Returns an OpenGL procedure address from GLFW.</summary>
     internal nint GetProcAddress(string procname) => glfw.GetProcAddress(procname);
 
+    /// <summary>Reads the state of a GLFW gamepad slot.</summary>
+    internal bool TryGetGamepad(int index, out GamepadState state)
+    {
+        state = default;
+        if ((uint)index > (uint)GlfwJoystick.Last || !glfw.GetGamepadState(index, out var gamepad))
+            return false;
+
+        var buttons = GamepadButtons.None;
+        for (var i = 0; i <= (int)GlfwGamepadButton.Last; i++)
+        {
+            if (gamepad.Buttons[i] != 0)
+                buttons |= (GamepadButtons)(1 << i);
+        }
+
+        state = new(
+            buttons,
+            (gamepad.Axes[(int)GlfwGamepadAxis.LeftX], gamepad.Axes[(int)GlfwGamepadAxis.LeftY]),
+            (gamepad.Axes[(int)GlfwGamepadAxis.RightX], gamepad.Axes[(int)GlfwGamepadAxis.RightY]),
+            gamepad.Axes[(int)GlfwGamepadAxis.LeftTrigger],
+            gamepad.Axes[(int)GlfwGamepadAxis.RightTrigger]);
+        return true;
+    }
+
+    /// <summary>Applies a single RGBA icon image through GLFW.</summary>
+    internal unsafe void SetIcon(Vec2u size, ReadOnlySpan<Vec4u8> pixels)
+    {
+        if (pixels.Length != checked((int)(size.X * size.Y)))
+            throw new ArgumentException("Icon pixels must be width * height RGBA values.", nameof(pixels));
+
+        fixed (Vec4u8* data = pixels)
+        {
+            var image = new GlfwImage
+            {
+                Width = (int)size.X,
+                Height = (int)size.Y,
+                Pixels = (nint)data
+            };
+
+            glfw.SetWindowIcon(window, 1, &image);
+        }
+    }
+
     /// <summary>Releases standard cursor handles created by this runtime.</summary>
     internal void Dispose()
     {

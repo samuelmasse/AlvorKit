@@ -24,14 +24,6 @@
             OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
-    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
-        <PackageReference Include="AlvorKit.FastNoise2.Backend" Version="$(FastNoise2BindVer)" />
-    </ItemGroup>
-
-    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
-        <ProjectReference Include="$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj" />
-    </ItemGroup>
-
     <ItemGroup>
         <Using Include="AlvorKit.ECS" />
         <Using Include="AlvorKit.ECS.Generator" />

@@ -13,6 +13,7 @@ public sealed class WindowLoop
     private readonly WindowDecoration decoration;
     private readonly WindowText text;
     private readonly WindowControls controls;
+    private readonly WindowGamepads gamepads;
     private bool updating;
     private bool rendering;
 
@@ -40,6 +41,7 @@ public sealed class WindowLoop
         decoration = new(host);
         text = new(host);
         controls = new(mouse, keyboard);
+        gamepads = new(host);
         close = new(host, () => Unload?.Invoke());
 
         host.UpdateFrame += OnUpdateFrame;
@@ -72,6 +74,9 @@ public sealed class WindowLoop
 
     /// <summary>Gets control binding state.</summary>
     internal WindowControls Controls => controls;
+
+    /// <summary>Gets polled gamepad state.</summary>
+    internal WindowGamepads Gamepads => gamepads;
 
     /// <summary>Runs the host event loop until the host exits.</summary>
     public void Run() => host.Run();

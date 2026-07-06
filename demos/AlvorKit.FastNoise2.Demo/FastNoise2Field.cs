@@ -7,7 +7,7 @@ internal sealed class FastNoise2Field : IDisposable
     private const float FastNoiseLiteDefaultFeatureScale = 1f / FastNoiseLiteDefaultFrequency;
     private const float CraftdigBiasCenterZ = 60f;
 
-    private readonly Fn fn = new FnBackend();
+    private readonly Fn fn;
     private readonly FnNode sourceNode;
     private readonly FnNode node;
     private readonly int width;
@@ -18,8 +18,9 @@ internal sealed class FastNoise2Field : IDisposable
     private bool disposed;
 
     /// <summary>Creates the FastNoise2 node graph and GPU texture.</summary>
-    public FastNoise2Field(RootGl gl, Vec2u size)
+    public FastNoise2Field(Fn fn, RootGl gl, Vec2u size)
     {
+        this.fn = fn;
         (sourceNode, _) = CreateNode(fn, SourceNodeName);
         SetVariableFloat(fn, sourceNode, "Feature Scale", FastNoiseLiteDefaultFeatureScale);
         SetVariableInt(fn, sourceNode, "Seed Offset", 0);

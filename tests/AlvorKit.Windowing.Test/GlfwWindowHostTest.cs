@@ -163,4 +163,75 @@ public class GlfwWindowHostTest
         for (var i = 0; i < expected.Length; i++)
             Assert.AreEqual(expected[i].Glfw, glfw.CreatedCursorShapes[i]);
     }
+
+    /// <summary>Verifies GLFW gamepad buttons and axes map into the platform-neutral state.</summary>
+    [TestMethod]
+    public void GlfwWindowHost_TryGetGamepad_MapsGlfwState()
+    {
+        var glfw = new WindowingTestGlfw(new(100, 80));
+        using var host = new GlfwWindowHost(glfw, glfw.Window);
+        var gamepad = default(GlfwGamepadState);
+        gamepad.Buttons[(int)GlfwGamepadButton.A] = 1;
+        gamepad.Buttons[(int)GlfwGamepadButton.DPadUp] = 1;
+        gamepad.Axes[(int)GlfwGamepadAxis.LeftX] = 0.5f;
+        gamepad.Axes[(int)GlfwGamepadAxis.RightTrigger] = 1f;
+        glfw.GamepadStates[0] = gamepad;
+
+        Assert.IsTrue(host.TryGetGamepad(0, out var state));
+        Assert.AreEqual(GamepadButtons.A | GamepadButtons.DPadUp, state.Buttons);
+        Assert.AreEqual(0.5f, state.LeftStick.X);
+        Assert.AreEqual(1f, state.RightTrigger);
+        Assert.IsFalse(host.TryGetGamepad(1, out _));
+    }
+
+    /// <summary>Verifies out-of-range gamepad slots return false without calling GLFW.</summary>
+    [TestMethod]
+    public void GlfwWindowHost_TryGetGamepad_OutOfRangeIndexReturnsFalse()
+    {
+        var glfw = new WindowingTestGlfw(new(100, 80));
+        using var host = new GlfwWindowHost(glfw, glfw.Window);
+
+        Assert.IsFalse(host.TryGetGamepad(16, out _));
+        Assert.IsFalse(host.TryGetGamepad(-1, out _));
+        Assert.AreEqual(0, glfw.GetGamepadStateCalls);
+    }
+
+    /// <summary>Verifies icon pixels are forwarded to GLFW as a single RGBA image.</summary>
+    [TestMethod]
+    public void GlfwWindowHost_SetIcon_ForwardsPixelsToGlfw()
+    {
+        var glfw = new WindowingTestGlfw(new(100, 80));
+        using var host = new GlfwWindowHost(glfw, glfw.Window);
+        Vec4u8[] pixels =
+        [
+            (0xAB, 0x01, 0x02, 0x03),
+            (0x04, 0x05, 0x06, 0x07),
+            (0x08, 0x09, 0x0A, 0x0B),
+            (0x0C, 0x0D, 0x0E, 0xCD)
+        ];
+        byte[] expected =
+        [
+            0xAB, 0x01, 0x02, 0x03,
+            0x04, 0x05, 0x06, 0x07,
+            0x08, 0x09, 0x0A, 0x0B,
+            0x0C, 0x0D, 0x0E, 0xCD
+        ];
+
+        host.SetIcon((2, 2), pixels);
+
+        Assert.AreEqual(1, glfw.SetWindowIconCalls);
+        Assert.AreEqual((1, 2, 2), glfw.LastIcon);
+        CollectionAssert.AreEqual(expected, glfw.LastIconPixels);
+    }
+
+    /// <summary>Verifies icon uploads reject pixel spans that do not match the image size.</summary>
+    [TestMethod]
+    public void GlfwWindowHost_SetIcon_WrongPixelLengthThrows()
+    {
+        var glfw = new WindowingTestGlfw(new(100, 80));
+        using var host = new GlfwWindowHost(glfw, glfw.Window);
+
+        Assert.ThrowsException<ArgumentException>(() => host.SetIcon((2, 2), new Vec4u8[3]));
+        Assert.AreEqual(0, glfw.SetWindowIconCalls);
+    }
 }

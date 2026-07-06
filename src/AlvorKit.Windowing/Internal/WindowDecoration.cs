@@ -16,4 +16,7 @@ internal sealed class WindowDecoration(IWindowHost window)
         get => window.Title;
         set => window.Title = value;
     }
+
+    /// <summary>Sets the window icon from RGBA pixels.</summary>
+    internal void SetIcon(Vec2u size, ReadOnlySpan<Vec4u8> pixels) => window.SetIcon(size, pixels);
 }

@@ -114,6 +114,12 @@ public class GlfwWindowHost : IWindowHost, IDisposable
     public virtual nint GetProcAddress(string procname) => runtime.GetProcAddress(procname);
 
     /// <inheritdoc />
+    public virtual bool TryGetGamepad(int index, out GamepadState state) => runtime.TryGetGamepad(index, out state);
+
+    /// <inheritdoc />
+    public virtual void SetIcon(Vec2u size, ReadOnlySpan<Vec4u8> pixels) => runtime.SetIcon(size, pixels);
+
+    /// <inheritdoc />
     public virtual void Run() => runtime.Run(OnUpdateFrame, OnRenderFrame);
 
     /// <summary>Releases GLFW cursor resources owned by this host.</summary>

@@ -32,6 +32,10 @@ internal sealed class FakeWindowHost : IWindowHost
     public int CloseCount { get; private set; }
     public int SwapBuffersCount { get; private set; }
     public int RunCount { get; private set; }
+    public GamepadState?[] GamepadStates { get; } = new GamepadState?[16];
+    public int SetIconCount { get; private set; }
+    public Vec2u LastIconSize { get; private set; }
+    public Vec4u8[] LastIconPixels { get; private set; } = [];
 
     public void Close()
     {
@@ -45,6 +49,19 @@ internal sealed class FakeWindowHost : IWindowHost
     public void Run() => RunCount++;
 
     public nint GetProcAddress(string procname) => procname.Length;
+
+    public bool TryGetGamepad(int index, out GamepadState state)
+    {
+        state = GamepadStates[index] ?? default;
+        return GamepadStates[index].HasValue;
+    }
+
+    public void SetIcon(Vec2u size, ReadOnlySpan<Vec4u8> pixels)
+    {
+        SetIconCount++;
+        LastIconSize = size;
+        LastIconPixels = pixels.ToArray();
+    }
 
     public void RaiseClosing() => Closing?.Invoke();
 

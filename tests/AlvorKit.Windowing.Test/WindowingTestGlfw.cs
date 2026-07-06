@@ -19,6 +19,11 @@ internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsV
     public List<GlfwCursorShape> CreatedCursorShapes { get; } = [];
     public List<GlfwCursor> SetCursors { get; } = [];
     public List<GlfwCursor> DestroyedCursors { get; } = [];
+    public Dictionary<int, GlfwGamepadState> GamepadStates { get; } = [];
+    public int GetGamepadStateCalls { get; private set; }
+    public int SetWindowIconCalls { get; private set; }
+    public (int Count, int Width, int Height) LastIcon { get; private set; }
+    public byte[] LastIconPixels { get; private set; } = [];
 
     public override void GetWindowPos(GlfwWindow window, out int xpos, out int ypos)
     {
@@ -101,4 +106,17 @@ internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsV
     public override void SetWindowShouldClose(GlfwWindow window, bool value) => SetWindowShouldCloseCalls++;
 
     public override nint GetProcAddress(nint procname) => 123;
+
+    public override bool GetGamepadState(int jid, out GlfwGamepadState state)
+    {
+        GetGamepadStateCalls++;
+        return GamepadStates.TryGetValue(jid, out state);
+    }
+
+    public unsafe override void SetWindowIcon(GlfwWindow window, int count, GlfwImage* images)
+    {
+        SetWindowIconCalls++;
+        LastIcon = (count, images[0].Width, images[0].Height);
+        LastIconPixels = new Span<byte>((void*)images[0].Pixels, images[0].Width * images[0].Height * 4).ToArray();
+    }
 }

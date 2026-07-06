@@ -1,9 +1,9 @@
 namespace AlvorKit.Engine.Loop;
 
 [Root]
-public class RootFonts(RootGl gl)
+public class RootFonts(RootGl gl, Ft ft)
 {
-    private readonly FontContext ctx = new(gl, new(gl));
+    private readonly FontContext ctx = new(gl, ft, new(gl));
     private readonly HashSet<Font> fonts = [];
 
     public Font Open(FontOptions options)

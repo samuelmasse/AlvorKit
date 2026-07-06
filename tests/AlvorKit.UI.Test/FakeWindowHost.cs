@@ -43,6 +43,14 @@ internal sealed class FakeWindowHost : IWindowHost
 
     public nint GetProcAddress(string procname) => procname.Length;
 
+    public bool TryGetGamepad(int index, out GamepadState state)
+    {
+        state = default;
+        return false;
+    }
+
+    public void SetIcon(Vec2u size, ReadOnlySpan<Vec4u8> pixels) { }
+
     internal void RaiseUpdate(double time = 0, double totalTime = 0) => UpdateFrame?.Invoke(new(time, totalTime));
 
     internal void RaiseRender(double time = 0, double totalTime = 0) => RenderFrame?.Invoke(new(time, totalTime));

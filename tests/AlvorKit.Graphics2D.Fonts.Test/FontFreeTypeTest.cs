@@ -10,7 +10,7 @@ public sealed class FontFreeTypeTest
     {
         var (_, gl) = FontsTestHarness.CreateLayer();
         using var batch = new SpriteBatch(gl);
-        using var context = new FontContext(gl, batch);
+        using var context = new FontContext(gl, new FtBackend(), batch);
         var fontBytes = File.ReadAllBytes(InterFontPath());
 
         using var fileFont = new Font(context, InterFontPath());
@@ -32,7 +32,7 @@ public sealed class FontFreeTypeTest
     {
         var (_, gl) = FontsTestHarness.CreateLayer();
         using var batch = new SpriteBatch(gl);
-        using var context = new FontContext(gl, batch);
+        using var context = new FontContext(gl, new FtBackend(), batch);
 
         var exception = Assert.ThrowsException<FontException>(() => new Font(context, MissingFontPath()));
 

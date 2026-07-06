@@ -15,4 +15,10 @@ public record class RootArgs
 
     /// <summary>Gets whether engine update, frame, and render callbacks convert failures into shutdown.</summary>
     public bool Failsafe { get; init; } = true;
+
+    /// <summary>Gets an optional callback that seeds caller services after built-in registrations: unattributed
+    /// instances into the injector, <see cref="RootAttribute"/> instances into the root scope. Registering an
+    /// already-bound service type throws <see cref="InjectorException"/>. The GLFW host path additionally binds
+    /// <c>Glfw</c> and <c>GlfwWindow</c> at the injector level before this callback runs.</summary>
+    public Action<Injector, RootScope>? Inject { get; init; }
 }

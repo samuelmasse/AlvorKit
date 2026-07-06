@@ -54,6 +54,9 @@ public class WindowScreen(WindowLoop window)
     /// <summary>Gets the primary monitor horizontal content scale.</summary>
     public float MonitorScale => window.Physical.MonitorScale;
 
+    /// <summary>Sets the window icon from RGBA pixels.</summary>
+    public void SetIcon(Vec2u size, ReadOnlySpan<Vec4u8> pixels) => window.Decoration.SetIcon(size, pixels);
+
     /// <summary>Toggles fullscreen mode.</summary>
     public void ToggleFullscreen() => window.Toggle.ToggleFullscreen();
 

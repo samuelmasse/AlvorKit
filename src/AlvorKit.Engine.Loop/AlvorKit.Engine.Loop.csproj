@@ -9,20 +9,52 @@
         <PackageReference Include="ZString" Version="2.6.0" />
     </ItemGroup>
 
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
+        <PackageReference Include="AlvorKit.FastNoise2.Backend" Version="$(FastNoise2BindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj')">
+        <PackageReference Include="AlvorKit.FreeType.Backend" Version="$(FtBindVer)" />
+    </ItemGroup>
+
     <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
         <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(GlfwBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">
+        <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="$(MaBindVer)" />
     </ItemGroup>
 
     <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj')">
         <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(GlBindVer)" />
     </ItemGroup>
 
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.XxHash.Backend\AlvorKit.XxHash.Backend.csproj')">
+        <PackageReference Include="AlvorKit.XxHash.Backend" Version="$(XxhBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj" />
+    </ItemGroup>
+
     <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj" />
     </ItemGroup>
 
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj" />
+    </ItemGroup>
+
     <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.XxHash.Backend\AlvorKit.XxHash.Backend.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.XxHash.Backend\AlvorKit.XxHash.Backend.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -44,9 +76,13 @@
 
     <ItemGroup>
         <Using Include="AlvorKit.Engine" />
+        <Using Include="AlvorKit.FastNoise2" />
+        <Using Include="AlvorKit.FreeType" />
         <Using Include="AlvorKit.Graphics2D" />
         <Using Include="AlvorKit.Graphics2D.Fonts" />
         <Using Include="AlvorKit.GLFW" />
+        <Using Include="AlvorKit.MiniAudio" />
+        <Using Include="AlvorKit.XxHash" />
         <Using Include="AlvorKit.Injection" />
         <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.OpenGL" />

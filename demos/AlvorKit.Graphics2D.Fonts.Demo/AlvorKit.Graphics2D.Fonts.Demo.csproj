@@ -31,6 +31,7 @@
 
     <ItemGroup>
         <Using Include="AlvorKit.Maths" />
+        <Using Include="AlvorKit.FreeType" />
         <Using Include="AlvorKit.GLFW" />
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.Graphics2D" />

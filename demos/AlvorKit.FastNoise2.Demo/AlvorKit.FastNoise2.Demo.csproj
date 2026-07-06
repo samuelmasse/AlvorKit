@@ -18,14 +18,6 @@
         <ProjectReference Include="..\..\src\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
     </ItemGroup>
 
-    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
-        <PackageReference Include="AlvorKit.FastNoise2.Backend" Version="$(FastNoise2BindVer)" />
-    </ItemGroup>
-
-    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
-        <ProjectReference Include="$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj" />
-    </ItemGroup>
-
     <ItemGroup>
         <Using Include="AlvorKit.Engine" />
         <Using Include="AlvorKit.Engine.Loop" />

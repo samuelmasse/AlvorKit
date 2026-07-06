@@ -3,6 +3,7 @@ RootLoop.RunGlfw<FastNoise2DemoState>();
 /// <summary>Shows a basic Craftdig-style FastNoise2 FBm field through the RootLoop sprite pipeline.</summary>
 [Root]
 internal sealed class FastNoise2DemoState(
+    Fn fn,
     RootInput input,
     RootMouse mouse,
     RootKeyboard keyboard,
@@ -27,7 +28,7 @@ internal sealed class FastNoise2DemoState(
         screen.Title = "AlvorKit FastNoise2 Craftdig FBm";
         screen.Size = InitialSize;
 
-        field = new FastNoise2Field(gl, InitialSize);
+        field = new FastNoise2Field(fn, gl, InitialSize);
         field.Regenerate();
 
         Console.WriteLine(

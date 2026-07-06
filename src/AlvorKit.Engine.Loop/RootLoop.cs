@@ -6,13 +6,16 @@ public static class RootLoop
 {
     /// <summary>Creates a default GLFW/OpenGL host and starts the root loop with the requested first state.</summary>
     /// <typeparam name="TState">The concrete <see cref="State"/> type created before the first update.</typeparam>
+    /// <param name="inject">Optional callback that seeds caller services; see <see cref="RootArgs.Inject"/>.</param>
     /// <param name="failsafe">Whether window close forces shutdown even when a state stalls; see <see cref="RootArgs.Failsafe"/>.</param>
-    public static void RunGlfw<TState>(bool failsafe = true) where TState : State => RunGlfw(typeof(TState), failsafe);
+    public static void RunGlfw<TState>(Action<Injector, RootScope>? inject = null, bool failsafe = true) where TState : State =>
+        RunGlfw(typeof(TState), inject, failsafe);
 
     /// <summary>Creates a default GLFW/OpenGL host and starts the root loop with the requested first state.</summary>
     /// <param name="bootState">The concrete <see cref="State"/> type created before the first update.</param>
+    /// <param name="inject">Optional callback that seeds caller services; see <see cref="RootArgs.Inject"/>.</param>
     /// <param name="failsafe">Whether window close forces shutdown even when a state stalls; see <see cref="RootArgs.Failsafe"/>.</param>
-    public static void RunGlfw(Type bootState, bool failsafe = true)
+    public static void RunGlfw(Type bootState, Action<Injector, RootScope>? inject = null, bool failsafe = true)
     {
         var glfw = new GlfwBackend();
         if (!glfw.Init())
@@ -39,13 +42,20 @@ public static class RootLoop
 
             var gl = new RootGl(new GlBackend(glfw.GetProcAddress));
             using var window = new AgentGlfwWindowHost(glfw, nativeWindow, gl);
+            var handle = nativeWindow;
 
-            Run(() => new()
+            Run(() => new RootArgs
             {
                 Window = window,
                 Gl = gl,
                 BootState = bootState,
                 Failsafe = failsafe,
+                Inject = (injector, root) =>
+                {
+                    injector.Add<Glfw>(glfw);
+                    injector.Add(handle);
+                    inject?.Invoke(injector, root);
+                },
             });
         }
         finally
@@ -67,6 +77,10 @@ public static class RootLoop
         var rootArgs = args();
         var window = new WindowLoop(rootArgs.Window);
         var injector = new Injector();
+        injector.Add<Fn>(new FnBackend());
+        injector.Add<Ft>(new FtBackend());
+        injector.Add<Ma>(new MaBackend());
+        injector.Add<Xxh>(new XxhBackend());
         var root = injector.Scope<RootScope>();
         var gl = rootArgs.Gl;
 
@@ -74,12 +88,14 @@ public static class RootLoop
         root.Add(gl);
         root.Add(new RootCanvas(window));
         root.Add(new RootControls(window));
+        root.Add(new RootGamepads(window));
         root.Add(new RootInput(window));
         root.Add(new RootKeyboard(window));
         root.Add(new RootMouse(window));
         root.Add(new RootScreen(window));
         root.Add(new RootSprites(new(gl)));
         injector.Handler(root.Get<RootControlListInjector>());
+        rootArgs.Inject?.Invoke(injector, root);
 
         var state = root.Get<RootState>();
         state.Current = (State)root.New(rootArgs.BootState);

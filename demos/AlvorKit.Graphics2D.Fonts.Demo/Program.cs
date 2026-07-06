@@ -28,7 +28,7 @@ glfw.SwapInterval(0);
 
 var gl = new GlLayer(new GlBackend(glfw.GetProcAddress));
 var sprites = new SpriteBatch(gl);
-var context = new FontContext(gl, sprites);
+var context = new FontContext(gl, new FtBackend(), sprites);
 var font = new Font(context, fontPath);
 
 var freeText = new List<string> { string.Empty };

@@ -13,7 +13,7 @@ public sealed class AppNoiseField : IDisposable
     private const int VariableTypeInt = 1;
     private const int VariableTypeEnum = 2;
 
-    private readonly Fn fn = new FnBackend();
+    private readonly Fn fn;
     private readonly RootGl gl;
     private readonly float[] minMax = new float[2];
     private readonly AppRamps ramps;
@@ -26,8 +26,9 @@ public sealed class AppNoiseField : IDisposable
     private bool disposed;
 
     /// <summary>Creates the metadata catalogs and the initial FractalFBm(Simplex) graph; the grid sizes on first resize.</summary>
-    public AppNoiseField(RootGl gl, AppRamps ramps)
+    public AppNoiseField(Fn fn, RootGl gl, AppRamps ramps)
     {
+        this.fn = fn;
         this.gl = gl;
         this.ramps = ramps;
 

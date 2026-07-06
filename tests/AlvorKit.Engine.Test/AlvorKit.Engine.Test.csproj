@@ -12,10 +12,15 @@
     <ItemGroup>
         <Using Include="AlvorKit.Engine" />
         <Using Include="AlvorKit.Engine.Loop" />
+        <Using Include="AlvorKit.FastNoise2" />
+        <Using Include="AlvorKit.FreeType" />
+        <Using Include="AlvorKit.GLFW" />
         <Using Include="AlvorKit.Injection" />
         <Using Include="AlvorKit.Maths" />
+        <Using Include="AlvorKit.MiniAudio" />
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.Windowing" />
+        <Using Include="AlvorKit.XxHash" />
         <Using Include="BigGustave" />
     </ItemGroup>
 

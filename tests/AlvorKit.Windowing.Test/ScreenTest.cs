@@ -37,6 +37,26 @@ public class ScreenTest
     }
 
     [TestMethod]
+    public void Screen_SetIcon_ForwardsToHost()
+    {
+        var (host, loop) = WindowingTestFactory.Create();
+        var screen = new WindowScreen(loop);
+        Vec4u8[] pixels =
+        [
+            (0xAB, 0x01, 0x02, 0x03),
+            (0x04, 0x05, 0x06, 0x07),
+            (0x08, 0x09, 0x0A, 0x0B),
+            (0x0C, 0x0D, 0x0E, 0xCD)
+        ];
+
+        screen.SetIcon((2, 2), pixels);
+
+        Assert.AreEqual(1, host.SetIconCount);
+        Assert.AreEqual(new Vec2u(2u, 2u), host.LastIconSize);
+        CollectionAssert.AreEqual(pixels, host.LastIconPixels);
+    }
+
+    [TestMethod]
     public void Screen_Size_UpdatesCanvasImmediately()
     {
         var (_, loop) = WindowingTestFactory.Create();
