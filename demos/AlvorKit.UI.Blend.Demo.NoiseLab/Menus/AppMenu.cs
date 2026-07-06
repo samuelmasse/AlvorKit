@@ -39,17 +39,17 @@ public class AppMenu(
                     const float markSize = 13f;
                     var brandInset = s.Metrics.BrandPadding.X;
 
-                    Node(brand)
+                    Node(brand, out var mark)
                         .IsFloatingV(true)
                         .AlignmentV(Alignment.Left | Alignment.Vertical)
                         .OffsetV((brandInset, 0))
                         .SizeRelativeV((0, 0))
                         .SizeV((markSize, markSize))
-                        .ColorV(s.Palette.ActiveSurface)
-                        .Mutate(mark => BlendStyle.Rule(mark, Alignment.Top | Alignment.Left, (1, 0), (0, s.Metrics.Hairline), s.Palette.Accent))
-                        .Mutate(mark => BlendStyle.Rule(mark, Alignment.Bottom | Alignment.Left, (1, 0), (0, s.Metrics.Hairline), s.Palette.Accent))
-                        .Mutate(mark => BlendStyle.Rule(mark, Alignment.Top | Alignment.Left, (0, 1), (s.Metrics.Hairline, 0), s.Palette.Accent))
-                        .Mutate(mark => BlendStyle.Rule(mark, Alignment.Top | Alignment.Right, (0, 1), (s.Metrics.Hairline, 0), s.Palette.Accent));
+                        .ColorV(s.Palette.ActiveSurface);
+                    BlendStyle.Rule(mark, Alignment.Top | Alignment.Left, (1, 0), (0, s.Metrics.Hairline), s.Palette.Accent);
+                    BlendStyle.Rule(mark, Alignment.Bottom | Alignment.Left, (1, 0), (0, s.Metrics.Hairline), s.Palette.Accent);
+                    BlendStyle.Rule(mark, Alignment.Top | Alignment.Left, (0, 1), (s.Metrics.Hairline, 0), s.Palette.Accent);
+                    BlendStyle.Rule(mark, Alignment.Top | Alignment.Right, (0, 1), (s.Metrics.Hairline, 0), s.Palette.Accent);
 
                     Node(brand)
                         .Mutate(s.EmphasisCellLabel)

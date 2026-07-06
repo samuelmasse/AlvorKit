@@ -38,6 +38,39 @@ broad cross-repo changes, CI parity checks, or when explicitly requested. If
 scoped lint passes but repo-wide lint fails on unrelated files, report that
 instead of fixing unrelated work.
 
+### C# 14 Extension-Member Lint Failures
+
+Observed on July 5, 2026 local time / July 6, 2026 UTC: the `.NET` CI workflow
+passed, but `Lint Code Base` failed in the lint coordinator during:
+
+```powershell
+dotnet format AlvorKit.slnx --verify-no-changes --verbosity minimal
+```
+
+The failure looked like ordinary compiler errors rather than formatting errors:
+
+- `CS1503: Argument 1: cannot convert from 'method group' to
+  'System.Action<T>'`
+- `CS1503: Argument 1: cannot convert from 'T' to 'AlvorKit.ECS.EntMut'`
+
+The affected code used chained fluent UI calls produced by C# 14 extension
+members such as `extension<T>(EntMutator<T> mut) where T : IEntMut`, followed by
+another `.Mutate(...)` method group or lambda. Normal `dotnet build` passed, and
+the same repo-wide linter passed on Windows, but GitHub Actions on
+`ubuntu-24.04` failed when `dotnet format` loaded the solution through its
+workspace/analyzer path. This lines up with the current Roslyn behavior around
+C# 14 extension-member generic inference; see
+<https://github.com/dotnet/roslyn/issues/81356>.
+
+The short-term patch is to break the fragile fluent chain at the failing call
+site: capture the `EntMut` explicitly, or call style helpers such as
+`RightRule(ent)` and `BlendStyle.Rule(mark, ...)` directly after the fluent
+property setters. If this comes back in more places, think at the generator
+level instead of sprinkling more call-site patches. The likely durable direction
+is to emit classic `this EntMutator<T>` extension methods for generated fluent
+mutator APIs instead of C# 14 extension blocks until the tooling path is proven
+stable across `dotnet build`, `dotnet format`, Windows, and Ubuntu CI.
+
 ## Unit Test Timing
 
 Do not run broad unit-test timing gates by default in Working Mode. Targeted

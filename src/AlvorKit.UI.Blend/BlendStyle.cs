@@ -299,16 +299,19 @@ public class BlendStyle(RootInter inter, RootGl gl, RootUiScale scale, RootKeybo
         .Mutate(Border);
 
     /// <summary>Applies a bottom-dock tab surface sized from its text.</summary>
-    public void Tab(EntMut ent) => ent.Mutate()
-        .Mutate(Text)
-        .SizeRelativeV((0, 0))
-        .SizeTextRelativeV((1, 0))
-        .SizeV((0, Metrics.TabStripHeight))
-        .TextPaddingV((Metrics.TabTextPaddingLeft, 0, Metrics.TabTextPaddingRight, 0))
-        .ColorV(Palette.Raised)
-        .TextColorV(Palette.MutedText)
-        .Mutate(RightRule)
-        .Mutate(BottomRule);
+    public void Tab(EntMut ent)
+    {
+        Text(ent);
+        ent.Mutate()
+            .SizeRelativeV((0, 0))
+            .SizeTextRelativeV((1, 0))
+            .SizeV((0, Metrics.TabStripHeight))
+            .TextPaddingV((Metrics.TabTextPaddingLeft, 0, Metrics.TabTextPaddingRight, 0))
+            .ColorV(Palette.Raised)
+            .TextColorV(Palette.MutedText);
+        RightRule(ent);
+        BottomRule(ent);
+    }
 
     /// <summary>Applies an active bottom-dock tab surface sized from its text.</summary>
     public void ActiveTab(EntMut ent) => ent.Mutate()
@@ -356,12 +359,15 @@ public class BlendStyle(RootInter inter, RootGl gl, RootUiScale scale, RootKeybo
         .Mutate(BottomRule);
 
     /// <summary>Applies a thin vertical splitter between docks.</summary>
-    public void Splitter(EntMut ent) => ent.Mutate()
-        .SizeWeightTypeV(SizeWeightType.Self)
-        .SizeRelativeV((0, 1))
-        .ColorV(Palette.AppBackground)
-        .Mutate(LeftRule)
-        .Mutate(RightRule);
+    public void Splitter(EntMut ent)
+    {
+        ent.Mutate()
+            .SizeWeightTypeV(SizeWeightType.Self)
+            .SizeRelativeV((0, 1))
+            .ColorV(Palette.AppBackground);
+        LeftRule(ent);
+        RightRule(ent);
+    }
 
     /// <summary>Adds a one-pixel border around a node.</summary>
     public void Border(EntMut ent)
