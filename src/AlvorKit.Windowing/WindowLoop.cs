@@ -16,6 +16,7 @@ public sealed class WindowLoop
     private readonly WindowGamepads gamepads;
     private bool updating;
     private bool rendering;
+    private bool unloaded;
 
     /// <summary>Raised when the loop performs logical work for the frame.</summary>
     public event Action<double>? Update;
@@ -26,7 +27,7 @@ public sealed class WindowLoop
     /// <summary>Raised when the loop should draw the current frame.</summary>
     public event Action? Render;
 
-    /// <summary>Raised once when the host requests close.</summary>
+    /// <summary>Raised once when the host requests close or the host loop ends.</summary>
     public event Action? Unload;
 
     /// <summary>Creates a loop around a host-specific window.</summary>
@@ -42,7 +43,7 @@ public sealed class WindowLoop
         text = new(host);
         controls = new(mouse, keyboard);
         gamepads = new(host);
-        close = new(host, () => Unload?.Invoke());
+        close = new(host, UnloadOnce);
 
         host.UpdateFrame += OnUpdateFrame;
         host.RenderFrame += OnRenderFrame;
@@ -79,7 +80,20 @@ public sealed class WindowLoop
     internal WindowGamepads Gamepads => gamepads;
 
     /// <summary>Runs the host event loop until the host exits.</summary>
-    public void Run() => host.Run();
+    public void Run()
+    {
+        host.Run();
+        UnloadOnce();
+    }
+
+    private void UnloadOnce()
+    {
+        if (unloaded)
+            return;
+
+        unloaded = true;
+        Unload?.Invoke();
+    }
 
     private bool DrawResizeFrame()
     {

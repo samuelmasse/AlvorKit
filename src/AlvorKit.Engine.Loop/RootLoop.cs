@@ -6,129 +6,161 @@ public static class RootLoop
 {
     /// <summary>Creates a default GLFW/OpenGL host and starts the root loop with the requested first state.</summary>
     /// <typeparam name="TState">The concrete <see cref="State"/> type created before the first update.</typeparam>
-    /// <param name="inject">Optional callback that seeds caller services; see <see cref="RootArgs.Inject"/>.</param>
+    /// <param name="inject">Optional callback that seeds caller services after built-in registrations.</param>
     public static void RunGlfw<TState>(Action<Injector>? inject = null) where TState : State =>
         RunGlfw(typeof(TState), inject);
 
     /// <summary>Creates a default GLFW/OpenGL host and starts the root loop with the requested first state.</summary>
     /// <param name="bootState">The concrete <see cref="State"/> type created before the first update.</param>
-    /// <param name="inject">Optional callback that seeds caller services; see <see cref="RootArgs.Inject"/>.</param>
+    /// <param name="inject">Optional callback that seeds caller services after built-in registrations.</param>
     public static void RunGlfw(Type bootState, Action<Injector>? inject = null)
     {
+        ConfigureProcess();
+        var glfw = CreateGlfw();
+        ConfigureGlfw(glfw);
+
+        var nativeWindow = CreateNativeWindow(glfw);
+        RunGlfwWindow(glfw, nativeWindow, bootState, inject);
+        glfw.DestroyWindow(nativeWindow);
+        glfw.Terminate();
+    }
+
+    private static void Run(IWindowHost host, RootGl gl, Type bootState, Action<Injector>? inject)
+    {
+        var window = new WindowLoop(host);
+        var injector = CreateInjector();
+        var root = CreateRootScope(injector, window, gl);
+        inject?.Invoke(injector);
+
+        var state = root.Get<RootState>();
+        state.Current = (State)root.New(bootState);
+
+        var engine = StartEngine(root);
+        ConnectEngine(window, engine);
+        window.Run();
+    }
+
+    private static void ConfigureProcess()
+    {
+        EnableDedicatedGpu.Run();
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+    }
 
+    private static GlfwBackend CreateGlfw()
+    {
         var glfw = new GlfwBackend();
         if (!glfw.Init())
             throw new InvalidOperationException("Failed to initialize GLFW.");
 
-        GlfwWindow nativeWindow = default;
-        try
-        {
-            if (OperatingSystem.IsMacOS())
-            {
-                glfw.WindowHint(GlfwWindowHint.ContextVersionMajor, 3);
-                glfw.WindowHint(GlfwWindowHint.ContextVersionMinor, 3);
-                glfw.WindowHint(GlfwWindowHint.OpenGLProfile, GlfwOpenGLProfile.CoreProfile);
-            }
-
-            glfw.WindowHint(GlfwWindowHint.Visible, false);
-            if (IsAgentEnvironmentPresent())
-                glfw.WindowHint(GlfwWindowHint.Decorated, false);
-
-            var primaryMonitor = glfw.GetPrimaryMonitor();
-            glfw.GetMonitorWorkarea(primaryMonitor, out _, out _, out var monitorWidth, out var monitorHeight);
-            nativeWindow = glfw.CreateWindow(monitorWidth / 4 * 3, monitorHeight / 4 * 3, "Window", default, default);
-            if (nativeWindow == default)
-                throw new InvalidOperationException("Failed to create the GLFW window.");
-
-            glfw.MakeContextCurrent(nativeWindow);
-            glfw.SwapInterval(0);
-
-            var gl = new GlBackend(glfw.GetProcAddress);
-            var rgl = new RootGl(gl);
-            using var window = new AgentGlfwWindowHost(glfw, nativeWindow, rgl);
-            var handle = nativeWindow;
-
-            Run(() => new RootArgs
-            {
-                Window = window,
-                Gl = rgl,
-                BootState = bootState,
-                Inject = injector =>
-                {
-                    injector.Add<Gl>(gl);
-                    injector.Add<Glfw>(glfw);
-                    injector.Add(handle);
-                    inject?.Invoke(injector);
-                },
-            });
-        }
-        finally
-        {
-            if (nativeWindow != default)
-                glfw.DestroyWindow(nativeWindow);
-            glfw.Terminate();
-        }
+        return glfw;
     }
 
-    /// <summary>Builds root arguments, creates the root scope, and runs the host window loop.</summary>
-    public static void Run(Func<RootArgs> args)
+    private static void ConfigureGlfw(GlfwBackend glfw)
     {
-        EnableDedicatedGpu.Run();
+        ConfigureMacOsGlfw(glfw);
+        glfw.WindowHint(GlfwWindowHint.Visible, false);
 
-        var rootArgs = args();
-        var window = new WindowLoop(rootArgs.Window);
+        if (IsAgentEnvironmentPresent())
+            glfw.WindowHint(GlfwWindowHint.Decorated, false);
+    }
+
+    private static void ConfigureMacOsGlfw(GlfwBackend glfw)
+    {
+        if (!OperatingSystem.IsMacOS())
+            return;
+
+        glfw.WindowHint(GlfwWindowHint.ContextVersionMajor, 3);
+        glfw.WindowHint(GlfwWindowHint.ContextVersionMinor, 3);
+        glfw.WindowHint(GlfwWindowHint.OpenGLProfile, GlfwOpenGLProfile.CoreProfile);
+    }
+
+    private static GlfwWindow CreateNativeWindow(GlfwBackend glfw)
+    {
+        var (width, height) = GetWindowSize(glfw);
+        var window = glfw.CreateWindow(width, height, "Window", default, default);
+
+        if (window == default)
+            throw new InvalidOperationException("Failed to create the GLFW window.");
+
+        return window;
+    }
+
+    private static void RunGlfwWindow(
+        GlfwBackend glfw,
+        GlfwWindow nativeWindow,
+        Type bootState,
+        Action<Injector>? inject)
+    {
+        MakeCurrent(glfw, nativeWindow);
+
+        var gl = new GlBackend(glfw.GetProcAddress);
+        var rootGl = new RootGl(gl);
+        using var window = new AgentGlfwWindowHost(glfw, nativeWindow, rootGl);
+
+        Run(window, rootGl, bootState, injector =>
+        {
+            injector.Add<Gl>(gl);
+            injector.Add<Glfw>(glfw);
+            injector.Add(nativeWindow);
+            inject?.Invoke(injector);
+        });
+    }
+
+    private static (int Width, int Height) GetWindowSize(GlfwBackend glfw)
+    {
+        var primaryMonitor = glfw.GetPrimaryMonitor();
+        glfw.GetMonitorWorkarea(primaryMonitor, out _, out _, out var width, out var height);
+        return (width / 4 * 3, height / 4 * 3);
+    }
+
+    private static void MakeCurrent(GlfwBackend glfw, GlfwWindow window)
+    {
+        glfw.MakeContextCurrent(window);
+        glfw.SwapInterval(0);
+    }
+
+    private static Injector CreateInjector()
+    {
         var injector = new Injector();
         injector.Add<Fn>(new FnBackend());
         injector.Add<Ft>(new FtBackend());
         injector.Add<Ma>(new MaBackend());
         injector.Add<Xxh>(new XxhBackend());
-        var root = injector.Scope<RootScope>();
-        var gl = rootArgs.Gl;
+        return injector;
+    }
 
-        root.Add(rootArgs);
-        root.Add(gl);
-        root.Add(new RootCanvas(window));
-        root.Add(new RootControls(window));
-        root.Add(new RootGamepads(window));
-        root.Add(new RootInput(window));
-        root.Add(new RootKeyboard(window));
-        root.Add(new RootMouse(window));
-        root.Add(new RootScreen(window));
-        root.Add(new RootSprites(new(gl)));
+    private static RootScope CreateRootScope(Injector injector, WindowLoop window, RootGl gl)
+    {
+        var root = injector.Scope<RootScope>()
+            .With(gl)
+            .With(new RootCanvas(window))
+            .With(new RootControls(window))
+            .With(new RootGamepads(window))
+            .With(new RootInput(window))
+            .With(new RootKeyboard(window))
+            .With(new RootMouse(window))
+            .With(new RootScreen(window))
+            .With(new RootSprites(new(gl)));
+
         injector.Handler(root.Get<RootControlListInjector>());
-        rootArgs.Inject?.Invoke(injector);
+        return root;
+    }
 
-        var state = root.Get<RootState>();
-        state.Current = (State)root.New(rootArgs.BootState);
-
+    private static RootEngine StartEngine(RootScope root)
+    {
         var engine = root.Get<RootEngine>();
         engine.Load();
-        var unloaded = false;
+        return engine;
+    }
 
-        void Unload()
-        {
-            if (unloaded)
-                return;
-
-            unloaded = true;
-            engine.Unload();
-        }
-
+    private static void ConnectEngine(WindowLoop window, RootEngine engine)
+    {
         window.Update += engine.Update;
         window.Frame += engine.Frame;
         window.Render += engine.Render;
-        window.Unload += Unload;
-        try
-        {
-            window.Run();
-        }
-        finally
-        {
-            Unload();
-        }
+        window.Unload += engine.Unload;
     }
 
     private static bool IsAgentEnvironmentPresent() =>

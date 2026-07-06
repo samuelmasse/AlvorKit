@@ -61,25 +61,6 @@ public sealed class RootRuntimeModelTest
         Assert.AreEqual(0, second.Unloads);
     }
 
-    /// <summary>Root args expose startup settings without renaming root ownership.</summary>
-    [TestMethod]
-    public void RootArgs_Properties_ReturnConfiguredValues()
-    {
-        static void Inject(Injector injector) { }
-
-        using var gl = new RootGl(new GlNoop());
-        var host = new FakeWindowHost();
-        Action<Injector> inject = Inject;
-        var args = new RootArgs { Window = host, Gl = gl, BootState = typeof(State), Inject = inject };
-        var defaults = new RootArgs { Window = host, Gl = gl, BootState = typeof(State) };
-
-        Assert.AreSame(host, args.Window);
-        Assert.AreSame(gl, args.Gl);
-        Assert.AreEqual(typeof(State), args.BootState);
-        Assert.AreSame(inject, args.Inject);
-        Assert.IsNull(defaults.Inject);
-    }
-
     /// <summary>Fail-safe behavior is on by default and can be disabled through injected config.</summary>
     [TestMethod]
     public void FailSafeConfig_DefaultsToEnabledAndCanDisable()
