@@ -13,7 +13,7 @@ public sealed class DevSolutionGeneratorTest
             "Consumer/AlvorPong.slnx",
             """
             <Solution>
-                <Project Path="src/AlvorPong/AlvorPong.csproj" Id="consumer-id" />
+                <Project Path="src/AlvorPong/AlvorPong.csproj" Id="consumer-id" DefaultStartup="true" />
                 <Folder Name="/Tests/">
                     <Project Path="tests/AlvorPong.Test/AlvorPong.Test.csproj" />
                 </Folder>
@@ -24,7 +24,7 @@ public sealed class DevSolutionGeneratorTest
             """
             <Solution>
                 <Folder Name="/Demos/">
-                    <Project Path="demos/AlvorKit.Demo/AlvorKit.Demo.csproj" />
+                    <Project Path="demos/AlvorKit.Demo/AlvorKit.Demo.csproj" DefaultStartup="true" />
                 </Folder>
                 <Project Path="src/AlvorKit.Engine/AlvorKit.Engine.csproj" Id="engine-id" />
                 <Folder Name="/Tests/">
@@ -40,11 +40,13 @@ public sealed class DevSolutionGeneratorTest
         Assert.AreEqual(2, result.ConsumerProjectCount);
         Assert.AreEqual(3, result.EngineProjectCount);
         var document = XDocument.Load(output);
-        AssertProject(document.Root!, "", "src/AlvorPong/AlvorPong.csproj", "consumer-id");
+        var consumerProject = AssertProject(document.Root!, "", "src/AlvorPong/AlvorPong.csproj", "consumer-id");
         AssertProject(document.Root!, "/Tests/", "tests/AlvorPong.Test/AlvorPong.Test.csproj");
         AssertProject(document.Root!, "/Engine/", "../AlvorKit/src/AlvorKit.Engine/AlvorKit.Engine.csproj", "engine-id");
-        AssertProject(document.Root!, "/Engine/Demos/", "../AlvorKit/demos/AlvorKit.Demo/AlvorKit.Demo.csproj");
+        var engineDemoProject = AssertProject(document.Root!, "/Engine/Demos/", "../AlvorKit/demos/AlvorKit.Demo/AlvorKit.Demo.csproj");
         AssertProject(document.Root!, "/Engine/Tests/", "../AlvorKit/tests/AlvorKit.Engine.Test/AlvorKit.Engine.Test.csproj");
+        Assert.AreEqual("true", consumerProject.Attribute("DefaultStartup")?.Value);
+        Assert.IsNull(engineDemoProject.Attribute("DefaultStartup"));
     }
 
     /// <summary>Rejects output paths that would overwrite the consumer solution.</summary>
@@ -77,7 +79,7 @@ public sealed class DevSolutionGeneratorTest
     }
 
     /// <summary>Asserts that a generated project appears in the expected solution folder.</summary>
-    private static void AssertProject(XElement root, string folderName, string path, string? id = null)
+    private static XElement AssertProject(XElement root, string folderName, string path, string? id = null)
     {
         var container = folderName.Length == 0
             ? root
@@ -85,5 +87,7 @@ public sealed class DevSolutionGeneratorTest
         var project = container.Elements("Project").Single(element => element.Attribute("Path")?.Value == path);
         if (id is not null)
             Assert.AreEqual(id, project.Attribute("Id")?.Value);
+
+        return project;
     }
 }

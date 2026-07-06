@@ -7,16 +7,18 @@ public static class RootLoop
     /// <summary>Creates a default GLFW/OpenGL host and starts the root loop with the requested first state.</summary>
     /// <typeparam name="TState">The concrete <see cref="State"/> type created before the first update.</typeparam>
     /// <param name="inject">Optional callback that seeds caller services; see <see cref="RootArgs.Inject"/>.</param>
-    /// <param name="failsafe">Whether window close forces shutdown even when a state stalls; see <see cref="RootArgs.Failsafe"/>.</param>
-    public static void RunGlfw<TState>(Action<Injector, RootScope>? inject = null, bool failsafe = true) where TState : State =>
-        RunGlfw(typeof(TState), inject, failsafe);
+    public static void RunGlfw<TState>(Action<Injector>? inject = null) where TState : State =>
+        RunGlfw(typeof(TState), inject);
 
     /// <summary>Creates a default GLFW/OpenGL host and starts the root loop with the requested first state.</summary>
     /// <param name="bootState">The concrete <see cref="State"/> type created before the first update.</param>
     /// <param name="inject">Optional callback that seeds caller services; see <see cref="RootArgs.Inject"/>.</param>
-    /// <param name="failsafe">Whether window close forces shutdown even when a state stalls; see <see cref="RootArgs.Failsafe"/>.</param>
-    public static void RunGlfw(Type bootState, Action<Injector, RootScope>? inject = null, bool failsafe = true)
+    public static void RunGlfw(Type bootState, Action<Injector>? inject = null)
     {
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+        GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+
         var glfw = new GlfwBackend();
         if (!glfw.Init())
             throw new InvalidOperationException("Failed to initialize GLFW.");
@@ -24,9 +26,13 @@ public static class RootLoop
         GlfwWindow nativeWindow = default;
         try
         {
-            glfw.WindowHint(GlfwWindowHint.ContextVersionMajor, 3);
-            glfw.WindowHint(GlfwWindowHint.ContextVersionMinor, 3);
-            glfw.WindowHint(GlfwWindowHint.OpenGLProfile, GlfwOpenGLProfile.CoreProfile);
+            if (OperatingSystem.IsMacOS())
+            {
+                glfw.WindowHint(GlfwWindowHint.ContextVersionMajor, 3);
+                glfw.WindowHint(GlfwWindowHint.ContextVersionMinor, 3);
+                glfw.WindowHint(GlfwWindowHint.OpenGLProfile, GlfwOpenGLProfile.CoreProfile);
+            }
+
             glfw.WindowHint(GlfwWindowHint.Visible, false);
             if (IsAgentEnvironmentPresent())
                 glfw.WindowHint(GlfwWindowHint.Decorated, false);
@@ -40,21 +46,22 @@ public static class RootLoop
             glfw.MakeContextCurrent(nativeWindow);
             glfw.SwapInterval(0);
 
-            var gl = new RootGl(new GlBackend(glfw.GetProcAddress));
-            using var window = new AgentGlfwWindowHost(glfw, nativeWindow, gl);
+            var gl = new GlBackend(glfw.GetProcAddress);
+            var rgl = new RootGl(gl);
+            using var window = new AgentGlfwWindowHost(glfw, nativeWindow, rgl);
             var handle = nativeWindow;
 
             Run(() => new RootArgs
             {
                 Window = window,
-                Gl = gl,
+                Gl = rgl,
                 BootState = bootState,
-                Failsafe = failsafe,
-                Inject = (injector, root) =>
+                Inject = injector =>
                 {
+                    injector.Add<Gl>(gl);
                     injector.Add<Glfw>(glfw);
                     injector.Add(handle);
-                    inject?.Invoke(injector, root);
+                    inject?.Invoke(injector);
                 },
             });
         }
@@ -69,9 +76,6 @@ public static class RootLoop
     /// <summary>Builds root arguments, creates the root scope, and runs the host window loop.</summary>
     public static void Run(Func<RootArgs> args)
     {
-        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-        GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
         EnableDedicatedGpu.Run();
 
         var rootArgs = args();
@@ -95,7 +99,7 @@ public static class RootLoop
         root.Add(new RootScreen(window));
         root.Add(new RootSprites(new(gl)));
         injector.Handler(root.Get<RootControlListInjector>());
-        rootArgs.Inject?.Invoke(injector, root);
+        rootArgs.Inject?.Invoke(injector);
 
         var state = root.Get<RootState>();
         state.Current = (State)root.New(rootArgs.BootState);

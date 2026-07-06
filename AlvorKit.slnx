@@ -1,12 +1,13 @@
 <Solution>
 
     <Folder Name="/Demos/">
-        <Project Path="demos/AlvorKit.Demo/AlvorKit.Demo.csproj" />
+        <Project Path="demos/AlvorKit.Demo/AlvorKit.Demo.csproj" DefaultStartup="true" />
         <Project Path="demos/AlvorKit.ECS.Demo/AlvorKit.ECS.Demo.csproj" />
         <Project Path="demos/AlvorKit.ECS.Demo.Bench/AlvorKit.ECS.Demo.Bench.csproj" />
         <Project Path="demos/AlvorKit.Engine.Demo.Triangle/AlvorKit.Engine.Demo.Triangle.csproj" />
         <Project Path="demos/AlvorKit.Engine.Demo.Triangle3D/AlvorKit.Engine.Demo.Triangle3D.csproj" />
         <Project Path="demos/AlvorKit.Engine.Demo.TextureCube/AlvorKit.Engine.Demo.TextureCube.csproj" />
+        <Project Path="demos/AlvorKit.Engine.Demo.RawApis/AlvorKit.Engine.Demo.RawApis.csproj" />
         <Project Path="demos/AlvorKit.FastNoise2.Demo/AlvorKit.FastNoise2.Demo.csproj" />
         <Project Path="demos/AlvorKit.XxHash.Demo/AlvorKit.XxHash.Demo.csproj" />
         <Project Path="demos/AlvorKit.XxHash.Demo.Bench/AlvorKit.XxHash.Demo.Bench.csproj" />

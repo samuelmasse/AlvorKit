@@ -65,20 +65,27 @@ public sealed class RootRuntimeModelTest
     [TestMethod]
     public void RootArgs_Properties_ReturnConfiguredValues()
     {
-        static void Inject(Injector injector, RootScope root) { }
+        static void Inject(Injector injector) { }
 
         using var gl = new RootGl(new GlNoop());
         var host = new FakeWindowHost();
-        Action<Injector, RootScope> inject = Inject;
-        var args = new RootArgs { Window = host, Gl = gl, BootState = typeof(State), Failsafe = false, Inject = inject };
+        Action<Injector> inject = Inject;
+        var args = new RootArgs { Window = host, Gl = gl, BootState = typeof(State), Inject = inject };
         var defaults = new RootArgs { Window = host, Gl = gl, BootState = typeof(State) };
 
         Assert.AreSame(host, args.Window);
         Assert.AreSame(gl, args.Gl);
         Assert.AreEqual(typeof(State), args.BootState);
-        Assert.IsFalse(args.Failsafe);
         Assert.AreSame(inject, args.Inject);
         Assert.IsNull(defaults.Inject);
+    }
+
+    /// <summary>Fail-safe behavior is on by default and can be disabled through injected config.</summary>
+    [TestMethod]
+    public void FailSafeConfig_DefaultsToEnabledAndCanDisable()
+    {
+        Assert.IsTrue(new FailSafeConfig().Enabled);
+        Assert.IsFalse(new FailSafeConfig { Enabled = false }.Enabled);
     }
 
     /// <summary>Root metrics exposes the old frame metric and timer-backed frame window.</summary>

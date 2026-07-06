@@ -35,8 +35,8 @@ internal sealed class DevSolutionGenerator
         var root = new XElement("Solution");
         var folders = new Dictionary<string, XElement>(StringComparer.Ordinal);
         var projectPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        AddProjects(root, folders, projectPaths, consumerSolution.Projects, [], outputDirectory);
-        AddProjects(root, folders, projectPaths, engineSolution.Projects, options.EngineFolderSegments, outputDirectory);
+        AddProjects(root, folders, projectPaths, consumerSolution.Projects, [], outputDirectory, preserveDefaultStartup: true);
+        AddProjects(root, folders, projectPaths, engineSolution.Projects, options.EngineFolderSegments, outputDirectory, preserveDefaultStartup: false);
         return new(root);
     }
 
@@ -47,7 +47,8 @@ internal sealed class DevSolutionGenerator
         ISet<string> projectPaths,
         IEnumerable<SlnxProject> projects,
         IReadOnlyList<string> folderPrefix,
-        string outputDirectory)
+        string outputDirectory,
+        bool preserveDefaultStartup)
     {
         foreach (var project in projects)
         {
@@ -56,6 +57,9 @@ internal sealed class DevSolutionGenerator
 
             var folderSegments = SolutionFolderPath.Combine(folderPrefix, project.FolderSegments);
             var element = project.ToElement(outputDirectory);
+            if (!preserveDefaultStartup)
+                element.Attribute("DefaultStartup")?.Remove();
+
             if (folderSegments.Count == 0)
             {
                 root.Add(element);

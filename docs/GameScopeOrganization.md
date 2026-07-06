@@ -246,6 +246,13 @@ The chain should tell the story in lifetime order:
 4. Run loader scopes.
 5. Create or switch to the state that uses the loaded scope.
 
+Keep this setup readable. A load chain is allowed to perform startup side
+effects before the final state transition when that is the natural order for the
+game. Do not contort ordinary application startup into transactional rollback
+code just to cover unrecoverable constructor or loader failures. Add explicit
+`try`/`catch` cleanup only when the program is expected to recover and keep
+running in-process.
+
 ## Loader Scopes
 
 Loader scopes separate setup/teardown objects from the long-lived runtime
@@ -283,6 +290,13 @@ public class LevelLoader(
 Use loader scopes for ordered side effects, not for every helper method. A
 loader should have a small public surface, usually `Run`, `Start`, `Stop`,
 `Load`, or `Unload`.
+
+Loader scopes do not need to make each startup step failure-atomic by default.
+For normal boot, content load, or state-entry failures, fail fast and let the
+process or root loop shutdown path handle teardown. Reserve compensating
+unloaders for normal state transitions, hot reload, recoverable loading errors,
+or other flows where the application deliberately continues after a failed
+load.
 
 ## Child Scope Seeding
 

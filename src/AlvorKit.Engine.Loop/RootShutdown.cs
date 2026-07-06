@@ -2,7 +2,7 @@ namespace AlvorKit.Engine.Loop;
 
 /// <summary>Tracks whether the root loop is shutting down after a requested close or runtime failure.</summary>
 [Root]
-public class RootShutdown(RootArgs args, RootScreen screen)
+public class RootShutdown(FailSafeConfig failSafe, RootScreen screen)
 {
     private bool started;
 
@@ -21,7 +21,7 @@ public class RootShutdown(RootArgs args, RootScreen screen)
         AppDomain.CurrentDomain.ProcessExit += (_, _) => ShutDown(false);
         AppDomain.CurrentDomain.UnhandledException += (_, _) =>
         {
-            if (args.Failsafe)
+            if (failSafe.Enabled)
                 ShutDown(false);
             else
                 started = true;
