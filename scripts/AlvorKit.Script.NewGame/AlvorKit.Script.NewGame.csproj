@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <InternalsVisibleTo Include="AlvorKit.Script.DevSolution.Test" />
-        <InternalsVisibleTo Include="AlvorKit.Script.ZoneSolution" />
+        <InternalsVisibleTo Include="AlvorKit.Script.NewGame.Test" />
     </ItemGroup>
 
     <ItemGroup>
@@ -14,7 +13,6 @@
         <Using Include="AlvorKit.Script.Workspace" />
         <Using Include="System.CommandLine" />
         <Using Include="System.CommandLine.Parsing" />
-        <Using Include="System.Xml" />
     </ItemGroup>
 
 </Project>

@@ -6,6 +6,7 @@
 
     <ItemGroup>
         <PackageReference Include="System.CommandLine" Version="2.0.8" />
+        <ProjectReference Include="..\AlvorKit.Script.DevSolution\AlvorKit.Script.DevSolution.csproj" />
         <ProjectReference Include="..\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
     </ItemGroup>
 

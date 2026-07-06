@@ -81,7 +81,7 @@ internal sealed record DevSolutionOptions(
     }
 
     /// <summary>Returns the default generated solution path for a consumer solution.</summary>
-    private static string DefaultOutputPath(string consumerSolutionPath)
+    internal static string DefaultOutputPath(string consumerSolutionPath)
     {
         var directory = Path.GetDirectoryName(consumerSolutionPath) ?? Environment.CurrentDirectory;
         var name = Path.GetFileNameWithoutExtension(consumerSolutionPath);

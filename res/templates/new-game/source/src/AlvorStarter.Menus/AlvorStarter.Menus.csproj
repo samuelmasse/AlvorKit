@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorStarter.App\AlvorStarter.App.csproj" />
+        <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.UI\AlvorKit.UI.csproj" />
+        <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.UI.Blend\AlvorKit.UI.Blend.csproj" />
+        <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.UI.Generator\AlvorKit.UI.Generator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.ECS" />
+        <Using Include="AlvorKit.UI" />
+        <Using Include="AlvorKit.UI.Blend" />
+        <Using Include="AlvorKit.UI.UiSyntax" Static="true" />
+        <Using Include="AlvorStarter.App" />
+    </ItemGroup>
+
+</Project>

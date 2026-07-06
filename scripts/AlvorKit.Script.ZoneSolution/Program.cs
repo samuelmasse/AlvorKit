@@ -32,15 +32,24 @@ internal static class Program
             }
 
             Console.WriteLine($"Output: {options.OutputPath}");
+            Console.WriteLine($"Workspace: {ZoneSolutionGenerator.CodeWorkspacePathFor(options.OutputPath)}");
             return Task.FromResult(0);
         }
 
         var result = new ZoneSolutionGenerator().Generate(options);
-        var verb = result.Changed ? "Wrote" : "Unchanged";
-        Console.WriteLine($"{verb} {result.OutputPath} ({result.RepositoryCount} repositories, {result.ProjectCount} projects).");
+        Console.WriteLine($"{StatusVerb(result.SolutionChanged)} {result.OutputPath}");
+        Console.WriteLine($"{StatusVerb(result.CodeWorkspaceChanged)} {result.CodeWorkspacePath}");
+        Console.WriteLine($"Included {result.RepositoryCount} repositories and {result.ProjectCount} projects.");
+        Console.WriteLine($"Generated {result.DevSolutionCount} development solutions ({result.ChangedDevSolutionCount} changed).");
+        foreach (var devSolution in result.DevSolutions)
+            Console.WriteLine($"  {StatusVerb(devSolution.Changed)} {devSolution.RepositoryName}: {devSolution.OutputPath}");
         foreach (var repository in result.Repositories)
             Console.WriteLine($"  {repository.Name}: {repository.ProjectCount} projects");
 
         return Task.FromResult(0);
     }
+
+    /// <summary>Returns the console verb for one generated file.</summary>
+    private static string StatusVerb(bool changed) =>
+        changed ? "Wrote" : "Unchanged";
 }
