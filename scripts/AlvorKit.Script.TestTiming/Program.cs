@@ -13,7 +13,7 @@ internal static class Program
             var commandArgs = args.Length == 0 ? ["--help"] : args;
             var split = TestTimingCommandLineSplit.Create(commandArgs);
             var command = TestTimingCommandParser.CreateRootCommand(
-                () => ProjectRoot.FindFromCurrentProcess(typeof(TestTimingCommandParser)),
+                () => SolutionRoot.FindPrimaryFromCurrentProcess(typeof(TestTimingCommandParser)),
                 split.ForwardedArguments,
                 options => new TestTimingRunner().Run(options));
             return command.Parse(split.TimingArguments).Invoke(new() { EnableDefaultExceptionHandler = false });

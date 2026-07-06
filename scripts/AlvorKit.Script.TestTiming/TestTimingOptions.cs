@@ -18,9 +18,10 @@ internal sealed class TestTimingOptions(
     /// <summary>The default maximum allowed duration for one test case.</summary>
     public static readonly TimeSpan DefaultMaxDuration = TimeSpan.FromSeconds(1);
 
-    /// <summary>The default <c>dotnet test</c> arguments used when callers do not provide their own target.</summary>
-    public static IReadOnlyList<string> DefaultDotNetTestArguments { get; } =
-        ["AlvorKit.slnx", "--no-restore", "--verbosity", "minimal"];
+    /// <summary>Returns the default <c>dotnet test</c> arguments for a repository root.</summary>
+    /// <param name="repoRoot">Repository root containing the primary solution file.</param>
+    public static IReadOnlyList<string> DefaultDotNetTestArguments(string repoRoot) =>
+        [SolutionRoot.PrimarySolutionFileName(repoRoot), "--no-restore", "--verbosity", "minimal"];
 
     /// <summary>Repository root used as the <c>dotnet test</c> working directory.</summary>
     public string RepoRoot { get; } = repoRoot;

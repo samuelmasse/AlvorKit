@@ -6,7 +6,7 @@ internal sealed class TestTimingCommandParser
     /// <summary>Parses options using repository discovery for default paths.</summary>
     /// <param name="args">Command-line arguments supplied by the caller.</param>
     public TestTimingOptions Parse(IReadOnlyList<string> args) =>
-        Parse(args, ProjectRoot.FindFromCurrentProcess(typeof(TestTimingCommandParser)));
+        Parse(args, SolutionRoot.FindPrimaryFromCurrentProcess(typeof(TestTimingCommandParser)));
 
     /// <summary>Parses options with an explicit repository root for deterministic tests.</summary>
     /// <param name="args">Command-line arguments supplied by the caller.</param>
@@ -40,11 +40,18 @@ internal sealed class TestTimingCommandParser
     /// <summary>Adds the solution path when callers provide only options for <c>dotnet test</c>.</summary>
     internal static IReadOnlyList<string> NormalizeDotNetArguments(IReadOnlyList<string> args)
     {
+        var repoRoot = SolutionRoot.FindPrimaryFromCurrentProcess(typeof(TestTimingCommandParser));
+        return NormalizeDotNetArguments(repoRoot, args);
+    }
+
+    /// <summary>Adds the solution path when callers provide only options for <c>dotnet test</c>.</summary>
+    internal static IReadOnlyList<string> NormalizeDotNetArguments(string repoRoot, IReadOnlyList<string> args)
+    {
         if (args.Count == 0)
-            return TestTimingOptions.DefaultDotNetTestArguments;
+            return TestTimingOptions.DefaultDotNetTestArguments(repoRoot);
 
         return args[0].StartsWith("-", StringComparison.Ordinal)
-            ? ["AlvorKit.slnx", .. args]
+            ? [SolutionRoot.PrimarySolutionFileName(repoRoot), .. args]
             : args.ToArray();
     }
 
@@ -101,7 +108,7 @@ internal sealed class TestTimingCommandParser
             ParseMilliseconds(parse.GetValue(options.MaxDuration)),
             parse.GetValue(options.WarnOnly),
             trxPath is null ? null : Path.GetFullPath(trxPath, root),
-            NormalizeDotNetArguments(forwardedArguments));
+            NormalizeDotNetArguments(root, forwardedArguments));
     }
 
     /// <summary>Parses an optional positive millisecond duration.</summary>

@@ -9,7 +9,8 @@ public sealed class RepositoryPathsTest
     public void FindRootWalksParentsUntilSolutionFile()
     {
         using var workspace = TempWorkspace.Create();
-        workspace.Write("AlvorKit.slnx", "<Solution />");
+        workspace.Write("Rombadil.slnx", "<Solution />");
+        workspace.Write("Rombadil.Dev.slnx", "<Solution />");
         var child = Path.Combine(workspace.Root, "a", "b");
         Directory.CreateDirectory(child);
 

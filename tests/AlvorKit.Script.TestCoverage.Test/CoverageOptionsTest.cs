@@ -25,6 +25,7 @@ public sealed class CoverageOptionsTest
         Assert.IsNull(options.RunId);
         Assert.AreEqual(TimeSpan.FromSeconds(1), options.MaxTestDuration);
         Assert.IsFalse(options.TestTimingWarnOnly);
+        Assert.IsNull(options.RepoRoot);
     }
 
     /// <summary>Short options override configuration and all metric thresholds.</summary>
@@ -114,6 +115,15 @@ public sealed class CoverageOptionsTest
         Assert.AreEqual("focused-run", options.RunId);
     }
 
+    /// <summary>Repository root can point coverage at a consumer repository.</summary>
+    [TestMethod]
+    public void Parse_RepoRoot_ReturnsAbsolutePath()
+    {
+        var options = CoverageOptions.Parse(["--repo-root", "consumer"]);
+
+        Assert.AreEqual(Path.GetFullPath("consumer"), options.RepoRoot);
+    }
+
     /// <summary>Agent mode keeps only the artifacts needed for automated coverage decisions.</summary>
     [TestMethod]
     public void Parse_AgentMode_UsesJsonOnlyReports()
@@ -165,6 +175,13 @@ public sealed class CoverageOptionsTest
     public void Parse_EmptyOutputRoot_Throws()
     {
         Assert.ThrowsExactly<ArgumentException>(() => CoverageOptions.Parse(["--output-root", ""]));
+    }
+
+    /// <summary>Repository roots must not be empty.</summary>
+    [TestMethod]
+    public void Parse_EmptyRepoRoot_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => CoverageOptions.Parse(["--repo-root", ""]));
     }
 
     /// <summary>Run IDs must not be empty.</summary>

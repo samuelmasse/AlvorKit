@@ -10,6 +10,17 @@ public sealed class TestTimingCommandParserTest
     /// <summary>Portable absolute alternate repository root fixture used by parser tests.</summary>
     private static readonly string OtherRepoRoot = Path.Combine(Path.GetTempPath(), "alvorkit-testtiming-other-repo");
 
+    /// <summary>Creates reusable repository roots used by parse-only tests.</summary>
+    [TestInitialize]
+    public void Initialize()
+    {
+        Directory.CreateDirectory(RepoRoot);
+        Directory.CreateDirectory(OtherRepoRoot);
+        File.WriteAllText(Path.Combine(RepoRoot, "AlvorKit.slnx"), "<Solution />");
+        File.WriteAllText(Path.Combine(OtherRepoRoot, "Rombadil.slnx"), "<Solution />");
+        File.WriteAllText(Path.Combine(OtherRepoRoot, "Rombadil.Dev.slnx"), "<Solution />");
+    }
+
     /// <summary>Parse-only calls leave generated help to the command-line app.</summary>
     [TestMethod]
     public void Parse_Help_Throws()
@@ -23,7 +34,7 @@ public sealed class TestTimingCommandParserTest
     {
         var options = new TestTimingCommandParser().Parse([], RepoRoot);
 
-        CollectionAssert.AreEqual(TestTimingOptions.DefaultDotNetTestArguments.ToArray(), options.DotNetTestArguments.ToArray());
+        CollectionAssert.AreEqual(TestTimingOptions.DefaultDotNetTestArguments(RepoRoot).ToArray(), options.DotNetTestArguments.ToArray());
     }
 
     /// <summary>Timing options parse before forwarded dotnet test arguments.</summary>
@@ -55,7 +66,7 @@ public sealed class TestTimingCommandParserTest
         var options = new TestTimingCommandParser().Parse(["--repo-root", OtherRepoRoot, "--", "--filter", "Fast"], RepoRoot);
 
         Assert.AreEqual(Path.GetFullPath(OtherRepoRoot), options.RepoRoot);
-        CollectionAssert.AreEqual(new[] { "AlvorKit.slnx", "--filter", "Fast" }, options.DotNetTestArguments.ToArray());
+        CollectionAssert.AreEqual(new[] { "Rombadil.slnx", "--filter", "Fast" }, options.DotNetTestArguments.ToArray());
     }
 
     /// <summary>Forwarded dotnet test options receive the repository solution when no target is supplied.</summary>

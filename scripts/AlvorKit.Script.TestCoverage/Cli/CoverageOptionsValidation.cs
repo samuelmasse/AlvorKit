@@ -9,7 +9,8 @@ internal static class CoverageOptionsValidation
         int maxParallel,
         string? outputRoot,
         string? runId,
-        double maxTestDurationMilliseconds)
+        double maxTestDurationMilliseconds,
+        string? repoRoot)
     {
         thresholds.Validate();
         if (maxParallel < 1)
@@ -18,6 +19,8 @@ internal static class CoverageOptionsValidation
             throw new ArgumentOutOfRangeException(nameof(maxTestDurationMilliseconds), "Max test duration must be greater than zero milliseconds.");
         if (outputRoot is { Length: 0 })
             throw new ArgumentException("Output root must not be empty.", nameof(outputRoot));
+        if (repoRoot is { Length: 0 })
+            throw new ArgumentException("Repository root must not be empty.", nameof(repoRoot));
         if (runId is not null)
             CoverageRunIdValidator.Validate(runId);
     }

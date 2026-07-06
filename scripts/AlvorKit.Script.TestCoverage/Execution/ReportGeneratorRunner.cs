@@ -47,7 +47,7 @@ internal static class ReportGeneratorRunner
                 "-targetdir:" + output.HtmlReportDirectory,
                 "-sourcedirs:" + string.Join(";", SourceDirectories(repoRoot)),
                 "-reporttypes:Html",
-                "-title:AlvorKit Coverage",
+                "-title:" + ReportTitle(repoRoot),
             ]);
 
     /// <summary>Returns source roots that undo the repository PathMap used by script and source projects.</summary>
@@ -56,6 +56,10 @@ internal static class ReportGeneratorRunner
         Path.Combine(repoRoot, "src"),
         Path.Combine(repoRoot, "scripts"),
     ];
+
+    /// <summary>Builds the browser report title from the measured repository directory.</summary>
+    private static string ReportTitle(string repoRoot) =>
+        Path.GetFileName(Path.GetFullPath(repoRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)) + " Coverage";
 
     /// <summary>Recreates a directory so stale generated HTML cannot survive.</summary>
     private static void ResetDirectory(string path)

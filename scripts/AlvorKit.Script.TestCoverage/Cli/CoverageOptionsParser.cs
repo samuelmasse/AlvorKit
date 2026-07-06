@@ -43,7 +43,8 @@ internal sealed class CoverageOptionsParser
         Option<string> OutputRoot,
         Option<string> RunId,
         Option<string> MaxTestDuration,
-        Option<bool> TestTimingWarnOnly) CreateCliOptions() =>
+        Option<bool> TestTimingWarnOnly,
+        Option<string> RepoRoot) CreateCliOptions() =>
         (
             new("--configuration", "-c") { Description = "Build configuration." },
             new("--threshold", "-t") { Description = "Coverage threshold for every metric." },
@@ -60,7 +61,8 @@ internal sealed class CoverageOptionsParser
             new("--output-root") { Description = "Coverage output parent directory." },
             new("--run-id") { Description = "Stable coverage run directory name." },
             new("--max-test-duration-ms") { Description = "Per-test duration budget in milliseconds." },
-            new("--test-timing-warn-only") { Description = "Warn instead of failing on slow tests." });
+            new("--test-timing-warn-only") { Description = "Warn instead of failing on slow tests." },
+            new("--repo-root") { Description = "Repository root to measure." });
 
     /// <summary>Adds the coverage option set to the command.</summary>
     private static void AddOptions(
@@ -81,7 +83,8 @@ internal sealed class CoverageOptionsParser
             Option<string> OutputRoot,
             Option<string> RunId,
             Option<string> MaxTestDuration,
-            Option<bool> TestTimingWarnOnly) options)
+            Option<bool> TestTimingWarnOnly,
+            Option<string> RepoRoot) options)
     {
         command.Options.Add(options.Configuration);
         command.Options.Add(options.Threshold);
@@ -99,6 +102,7 @@ internal sealed class CoverageOptionsParser
         command.Options.Add(options.RunId);
         command.Options.Add(options.MaxTestDuration);
         command.Options.Add(options.TestTimingWarnOnly);
+        command.Options.Add(options.RepoRoot);
     }
 
     /// <summary>Creates immutable coverage options from parsed command-line values.</summary>
@@ -120,7 +124,8 @@ internal sealed class CoverageOptionsParser
             Option<string> OutputRoot,
             Option<string> RunId,
             Option<string> MaxTestDuration,
-            Option<bool> TestTimingWarnOnly) options)
+            Option<bool> TestTimingWarnOnly,
+            Option<string> RepoRoot) options)
     {
         var thresholds = Thresholds(parse, options);
         var parallel = IntOption(parse, options.MaxParallel, CoverageOptions.DefaultMaxParallel);
@@ -128,7 +133,8 @@ internal sealed class CoverageOptionsParser
         var reports = Reports(parse, options);
         var root = parse.GetValue(options.OutputRoot);
         var id = parse.GetValue(options.RunId);
-        CoverageOptionsValidation.Validate(thresholds, parallel, root, id, maxDuration);
+        var repoRoot = parse.GetValue(options.RepoRoot);
+        CoverageOptionsValidation.Validate(thresholds, parallel, root, id, maxDuration, repoRoot);
 
         return new(
             parse.GetValue(options.Configuration) ?? "Debug",
@@ -143,7 +149,8 @@ internal sealed class CoverageOptionsParser
             root,
             id,
             maxDuration,
-            parse.GetValue(options.TestTimingWarnOnly));
+            parse.GetValue(options.TestTimingWarnOnly),
+            repoRoot is null ? null : Path.GetFullPath(repoRoot));
     }
 
     /// <summary>Builds threshold settings from the all-metric and metric-specific options.</summary>
@@ -165,7 +172,8 @@ internal sealed class CoverageOptionsParser
             Option<string> OutputRoot,
             Option<string> RunId,
             Option<string> MaxTestDuration,
-            Option<bool> TestTimingWarnOnly) options)
+            Option<bool> TestTimingWarnOnly,
+            Option<string> RepoRoot) options)
     {
         var value = DoubleOption(parse, options.Threshold, double.NaN);
         var thresholds = double.IsNaN(value) ? CoverageThresholds.Default : CoverageThresholds.All(value);
@@ -196,7 +204,8 @@ internal sealed class CoverageOptionsParser
             Option<string> OutputRoot,
             Option<string> RunId,
             Option<string> MaxTestDuration,
-            Option<bool> TestTimingWarnOnly) options)
+            Option<bool> TestTimingWarnOnly,
+            Option<string> RepoRoot) options)
     {
         if (parse.GetValue(options.Agent))
             return CoverageReportModes.Agent;

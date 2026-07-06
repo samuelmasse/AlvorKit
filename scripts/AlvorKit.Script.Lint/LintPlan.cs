@@ -33,7 +33,7 @@ internal static class LintPlan
 
     /// <summary>Creates a solution-wide dotnet format command for full repository linting.</summary>
     public static IReadOnlyList<CommandSpec> DotNetFormatCommands(string repoRoot, bool fix) =>
-        DotNetFormatCommands(FindSolutionFile(repoRoot), repoRoot, fix);
+        DotNetFormatCommands(SolutionRoot.PrimarySolutionFileName(repoRoot), repoRoot, fix);
 
     /// <summary>Creates dotnet format commands for the scoped C# files grouped by owning project.</summary>
     public static IReadOnlyList<CommandSpec> DotNetFormatCommands(string repoRoot, bool fix, LintScope scope) =>
@@ -116,23 +116,6 @@ internal static class LintPlan
         if (includedFiles is { Count: > 0 })
             arguments.AddRange(["--include", .. includedFiles]);
         return arguments;
-    }
-
-    /// <summary>Finds the single solution file at the repository root used for full C# formatting checks.</summary>
-    private static string FindSolutionFile(string repoRoot)
-    {
-        var solutions = Directory.GetFiles(Path.GetFullPath(repoRoot), "*.slnx", SearchOption.TopDirectoryOnly)
-            .Concat(Directory.GetFiles(Path.GetFullPath(repoRoot), "*.sln", SearchOption.TopDirectoryOnly))
-            .Select(path => Path.GetFileName(path)!)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-
-        return solutions switch
-        {
-            [var single] => single,
-            [] => throw new InvalidOperationException($"No solution file found at '{repoRoot}' for repo-wide dotnet format."),
-            _ => throw new InvalidOperationException($"Multiple solution files found at '{repoRoot}'; repo-wide lint expects exactly one."),
-        };
     }
 
     /// <summary>Finds the nearest project file that owns a scoped C# source file.</summary>

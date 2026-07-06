@@ -56,6 +56,20 @@ public sealed class LintPlanTest
         Assert.AreEqual("dotnet format style AlvorPong.slnx", commands[1].Label);
     }
 
+    /// <summary>Ignores generated development solutions when planning repository-wide format.</summary>
+    [TestMethod]
+    public void DotNetFormatCommandsIgnoresGeneratedDevSolution()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.Write("Rombadil.slnx", "<Solution />");
+        workspace.Write("Rombadil.Dev.slnx", "<Solution />");
+
+        var commands = LintPlan.DotNetFormatCommands(workspace.Root, fix: false).ToArray();
+
+        Assert.AreEqual("dotnet format Rombadil.slnx", commands[0].Label);
+        Assert.AreEqual("dotnet format style Rombadil.slnx", commands[1].Label);
+    }
+
     /// <summary>Fails clearly when the linted repository root has no solution file.</summary>
     [TestMethod]
     public void DotNetFormatCommandsFailWithoutRootSolution()
@@ -65,7 +79,7 @@ public sealed class LintPlanTest
         var exception = Assert.ThrowsExactly<InvalidOperationException>(
             () => LintPlan.DotNetFormatCommands(workspace.Root, fix: false));
 
-        StringAssert.Contains(exception.Message, "No solution file");
+        StringAssert.Contains(exception.Message, "No primary solution file");
     }
 
     /// <summary>Plans dotnet format for scoped C# files under their owning project.</summary>

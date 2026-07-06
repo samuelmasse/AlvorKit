@@ -8,7 +8,7 @@ internal sealed class CoverageRunner(CoverageOptions options)
     /// <summary>Runs the full coverage workflow and returns an executable-style exit code.</summary>
     public async Task<int> RunAsync()
     {
-        var repoRoot = RepositoryPaths.FindRoot();
+        var repoRoot = Path.GetFullPath(options.RepoRoot ?? RepositoryPaths.FindRoot());
         var started = DateTimeOffset.UtcNow;
         var output = CoverageOutputPaths.Create(repoRoot, options, started);
         var selection = CoverageSelection.FromOptions(repoRoot, options);
