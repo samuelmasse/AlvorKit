@@ -97,10 +97,10 @@ switch only the host wrapper, not add demo-specific agent code.
 
 ## Start A Session
 
-Start launches the target project, sets `ALVORKIT_WINDOWING_AGENT=1` for the
-target process, waits until the game prints its generated command usage, and
-then writes JSON containing the session id, session directory, ready flag, and
-host process id.
+Start launches the target project, sets `ALVORKIT_WINDOWING_AGENT=1` and
+`ALVORKIT_AUDIO_SILENT=1` for the target process, waits until the game prints
+its generated command usage, and then writes JSON containing the session id,
+session directory, ready flag, and host process id.
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.AlvorSense -- start --id demo `
@@ -122,6 +122,10 @@ Useful options:
   it for multiple variables.
 - `--timeout <seconds>` controls startup, send, or stop waits. The default is
   30 seconds.
+
+AlvorSense silences AlvorKit miniaudio output by default so agent-driven game
+runs do not play through the user's speakers. To intentionally hear a target
+during an audio debugging run, pass `--env ALVORKIT_AUDIO_SILENT=0` on `start`.
 
 For high-DPI visual matching, pass
 `--env ALVORKIT_WINDOWING_AGENT_MONITOR_SCALE=2` or another positive scale.

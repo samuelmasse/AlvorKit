@@ -3,6 +3,7 @@
     <Folder Name="/Demos/">
         <Project Path="demos/AlvorKit.Demo/AlvorKit.Demo.csproj" DefaultStartup="true" />
         <Project Path="demos/AlvorKit.ECS.Demo/AlvorKit.ECS.Demo.csproj" />
+        <Project Path="demos/AlvorKit.ECS.Indexed.Demo/AlvorKit.ECS.Indexed.Demo.csproj" />
         <Project Path="demos/AlvorKit.ECS.Demo.Bench/AlvorKit.ECS.Demo.Bench.csproj" />
         <Project Path="demos/AlvorKit.Engine.Demo.Triangle/AlvorKit.Engine.Demo.Triangle.csproj" />
         <Project Path="demos/AlvorKit.Engine.Demo.Triangle3D/AlvorKit.Engine.Demo.Triangle3D.csproj" />
@@ -60,6 +61,7 @@
     </Folder>
 
     <Project Path="src/AlvorKit.ECS/AlvorKit.ECS.csproj" />
+    <Project Path="src/AlvorKit.ECS.Indexed/AlvorKit.ECS.Indexed.csproj" />
     <Project Path="src/AlvorKit.ECS.Generator/AlvorKit.ECS.Generator.csproj" />
     <Project Path="src/AlvorKit.UI.Generator/AlvorKit.UI.Generator.csproj" />
     <Project Path="src/AlvorKit.UI/AlvorKit.UI.csproj" />
@@ -81,6 +83,7 @@
     <Folder Name="/Tests/">
         <Project Path="tests/AlvorKit.Testing/AlvorKit.Testing.csproj" />
         <Project Path="tests/AlvorKit.ECS.Test/AlvorKit.ECS.Test.csproj" />
+        <Project Path="tests/AlvorKit.ECS.Indexed.Test/AlvorKit.ECS.Indexed.Test.csproj" />
         <Project Path="tests/AlvorKit.ECS.Generator.Test/AlvorKit.ECS.Generator.Test.csproj" />
         <Project Path="tests/AlvorKit.Injection.Test/AlvorKit.Injection.Test.csproj" />
         <Project Path="tests/AlvorKit.Mocking.Test/AlvorKit.Mocking.Test.csproj" />

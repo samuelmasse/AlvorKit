@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\src\AlvorKit.ECS\AlvorKit.ECS.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.ECS.Indexed\AlvorKit.ECS.Indexed.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.ECS" />
+        <Using Include="AlvorKit.ECS.Generator" />
+        <Using Include="AlvorKit.ECS.Indexed" />
+    </ItemGroup>
+
+</Project>
+

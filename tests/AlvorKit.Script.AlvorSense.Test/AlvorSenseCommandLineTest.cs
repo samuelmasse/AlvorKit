@@ -32,9 +32,10 @@ public sealed class AlvorSenseCommandLineTest
         Assert.AreEqual(TimeSpan.FromSeconds(4.5), command.Timeout);
         Assert.AreEqual("B", command.Environment["A"]);
         Assert.AreEqual("out/result.json", command.Environment["ALVOREYE_DEMO_RESULT_PATH"]);
+        Assert.AreEqual("1", command.Environment["ALVORKIT_AUDIO_SILENT"]);
     }
 
-    /// <summary>Start commands choose a project-derived id and current directory when optional values are omitted.</summary>
+    /// <summary>Start commands choose defaults and silence target audio when optional values are omitted.</summary>
     [TestMethod]
     public void Parse_StartCommandWithDefaults_ReturnsDerivedValues()
     {
@@ -45,7 +46,19 @@ public sealed class AlvorSenseCommandLineTest
         StringAssert.StartsWith(command.Id, "Game-");
         Assert.AreEqual(Directory.GetCurrentDirectory(), command.WorkingDirectory);
         Assert.AreEqual(TimeSpan.FromSeconds(30), command.Timeout);
-        Assert.AreEqual(0, command.Environment.Count);
+        Assert.AreEqual(1, command.Environment.Count);
+        Assert.AreEqual("1", command.Environment["ALVORKIT_AUDIO_SILENT"]);
+    }
+
+    /// <summary>Start commands allow explicit environment values to override AlvorSense defaults.</summary>
+    [TestMethod]
+    public void Parse_StartCommandWithAudioSilentOverride_ReturnsOverride()
+    {
+        var command = (AlvorSenseStartCommand)AlvorSenseCommandLine.Parse(
+            ["start", "--project", "demos/Game/Game.csproj", "--env", "ALVORKIT_AUDIO_SILENT=0"],
+            new StringReader(""));
+
+        Assert.AreEqual("0", command.Environment["ALVORKIT_AUDIO_SILENT"]);
     }
 
     /// <summary>Send commands read command text from standard input and ignore blanks and comments.</summary>

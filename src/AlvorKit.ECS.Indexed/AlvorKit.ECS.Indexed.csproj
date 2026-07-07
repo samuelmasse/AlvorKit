@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.ECS\AlvorKit.ECS.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.ECS.Indexed.Test" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.ECS" />
+    </ItemGroup>
+
+</Project>
+

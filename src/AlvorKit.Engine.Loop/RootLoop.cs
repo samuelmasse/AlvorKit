@@ -4,6 +4,8 @@ namespace AlvorKit.Engine.Loop;
 [ExcludeFromCodeCoverage]
 public static class RootLoop
 {
+    internal const string AudioSilentEnvironmentVariable = "ALVORKIT_AUDIO_SILENT";
+
     /// <summary>Creates a default GLFW/OpenGL host and starts the root loop with the requested first state.</summary>
     /// <typeparam name="TState">The concrete <see cref="State"/> type created before the first update.</typeparam>
     /// <param name="inject">Optional callback that seeds caller services after built-in registrations.</param>
@@ -126,9 +128,15 @@ public static class RootLoop
         var injector = new Injector();
         injector.Add<Fn>(new FnBackend());
         injector.Add<Ft>(new FtBackend());
-        injector.Add<Ma>(new MaBackend());
+        injector.Add<Ma>(CreateAudioBackend());
         injector.Add<Xxh>(new XxhBackend());
         return injector;
+    }
+
+    internal static Ma CreateAudioBackend()
+    {
+        var backend = new MaBackend();
+        return IsAudioSilentEnvironmentEnabled() ? new AgentSilentMa(backend) : backend;
     }
 
     private static RootScope CreateRootScope(Injector injector, WindowLoop window, RootGl gl)
@@ -165,4 +173,13 @@ public static class RootLoop
 
     private static bool IsAgentEnvironmentPresent() =>
         Environment.GetEnvironmentVariable(AgentGlfwWindowHost.AgentEnvironmentVariable) is not null;
+
+    private static bool IsAudioSilentEnvironmentEnabled()
+    {
+        var value = Environment.GetEnvironmentVariable(AudioSilentEnvironmentVariable);
+        if (value is not null)
+            return value != "0";
+
+        return IsAgentEnvironmentPresent();
+    }
 }

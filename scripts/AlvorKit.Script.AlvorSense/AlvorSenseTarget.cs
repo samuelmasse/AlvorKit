@@ -60,6 +60,7 @@ internal sealed class AlvorSenseTarget : IDisposable
             WorkingDirectory = manifest.WorkingDirectory
         };
         start.Environment["ALVORKIT_WINDOWING_AGENT"] = "1";
+        start.Environment[AlvorSenseEnvironment.AudioSilentVariable] = AlvorSenseEnvironment.EnabledValue;
         foreach (var pair in manifest.Environment)
             start.Environment[pair.Key] = pair.Value;
         start.ArgumentList.Add("run");

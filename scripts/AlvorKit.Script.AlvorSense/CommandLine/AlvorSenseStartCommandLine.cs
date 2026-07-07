@@ -39,7 +39,10 @@ internal static class AlvorSenseStartCommandLine
     /// <returns>Environment variables passed to the hosted game process.</returns>
     private static Dictionary<string, string> Environment(string[] args)
     {
-        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [AlvorSenseEnvironment.AudioSilentVariable] = AlvorSenseEnvironment.EnabledValue
+        };
         for (var i = 1; i < args.Length; i++)
         {
             if (args[i] != "--env")
