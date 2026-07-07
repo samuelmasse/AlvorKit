@@ -2,11 +2,30 @@ root = true
 
 [*]
 charset = utf-8
-end_of_line = crlf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[*.cs]
+[*.{cs,csproj,props,targets,json,yml,yaml,c,h}]
+max_line_length = 170
+
+[*.{cs.tmpl,csfrag.tmpl,csproj.tmpl,props.tmpl,ps1.tmpl,txt.tmpl}]
+max_line_length = 170
+
+[*.{cs,csproj}]
 indent_style = space
 indent_size = 4
-csharp_style_namespace_declarations = file_scoped:warning
+
+[*.{json,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.cs]
+csharp_style_namespace_declarations=file_scoped:warning
+csharp_style_prefer_primary_constructors=true:warning
+dotnet_style_collection_initializer=true:warning
+dotnet_style_prefer_collection_expression=true:warning
+dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.CA1822.severity = none
+dotnet_style_namespace_match_folder = false
+dotnet_diagnostic.CA1816.severity = none
+dotnet_diagnostic.CS1591.severity = none
