@@ -57,6 +57,25 @@ public class NewGameGeneratorTest
         Assert.IsFalse(menu.Contains("ActiveButton", StringComparison.Ordinal));
     }
 
+    /// <summary>Emits the documented sibling AlvorKit path and an actionable missing-clone hint.</summary>
+    [TestMethod]
+    public void GenerateEmitsSiblingAlvorKitRootAndCloneHint()
+    {
+        using var workspace = TempWorkspace.Create("AlvorKit.Script.NewGame");
+        var output = workspace.CreateDirectory("SampleInvaders");
+        var options = NewGameOptions.Parse(["SampleInvaders", "--output", output], AlvorKitRoot);
+
+        new NewGameGenerator().Generate(options);
+
+        var props = Read(output, "src/Directory.Build.props");
+        StringAssert.Contains(
+            props,
+            "<AlvorKitRoot>$([System.IO.Path]::GetFullPath('$(SampleInvadersRepositoryRoot)..\\AlvorKit\\'))</AlvorKitRoot>");
+        StringAssert.Contains(
+            props,
+            "Text=\"AlvorKit sibling clone not found at '$(AlvorKitRoot)'. Clone AlvorKit next to the SampleInvaders repository.\"");
+    }
+
     /// <summary>Keeps the starter source as a concrete project rather than a set of template fragments.</summary>
     [TestMethod]
     public void StarterSourceIsConcreteProject()

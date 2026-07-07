@@ -58,6 +58,12 @@ public class LevelAttribute : InjectorAttribute;
 public class LevelScope : InjectorScope<LevelAttribute>;
 ```
 
+In game projects, put those two marker files in a `Scope/` directory, such as
+`Scope/LevelAttribute.cs` and `Scope/LevelScope.cs`. They are registration
+plumbing rather than primary domain files, so they should not take the most
+visible root slots in a project folder. Keep the namespace flat unless the
+project already uses folder-based namespaces.
+
 Types that belong to the scope are marked with the matching attribute:
 
 ```csharp
@@ -513,6 +519,8 @@ systems first, backend or persistence systems next, core ownership last.
 
 - Keep the scope prefix on services that belong to a scope. `RootText` and
   `LevelChunks` are clearer than `TextService` or `ChunkManager`.
+- Put each game scope's `*Attribute` and `*Scope` marker files in a `Scope/`
+  directory.
 - Use `Root*` only for engine root-scope services.
 - Pick domain-specific scope names. `Level`, `Scene`, `Ship`, `Match`, and
   `Player` are all better than generic tiers when they match the game.

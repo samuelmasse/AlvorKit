@@ -11,7 +11,8 @@ internal sealed class NewGameStarterProject
     private const string SourceSolutionTemplateFile = SourceName + ".slnx.template";
     /// <summary>Relative AlvorKit path used by the starter source when built in place.</summary>
     private const string SourceAlvorKitRelativePath = @"..\..\..\..";
-
+    /// <summary>Relative AlvorKit path emitted into generated sibling game repositories.</summary>
+    private const string GeneratedAlvorKitRelativePath = @"..\AlvorKit";
     /// <summary>Text extensions that receive starter-name substitutions.</summary>
     private static readonly HashSet<string> TextExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -68,7 +69,7 @@ internal sealed class NewGameStarterProject
         return Encoding.UTF8.GetString(file.Bytes)
             .Replace(SourceTitle, options.Name.Title, StringComparison.Ordinal)
             .Replace(SourceName, options.Name.Identifier, StringComparison.Ordinal)
-            .Replace(SourceAlvorKitRelativePath, AlvorKitRelativePath(options), StringComparison.Ordinal);
+            .Replace(SourceAlvorKitRelativePath, GeneratedAlvorKitRelativePath, StringComparison.Ordinal);
     }
 
     /// <summary>Returns the generated repository solution file name.</summary>
@@ -115,10 +116,6 @@ internal sealed class NewGameStarterProject
         var fileName = Path.GetFileName(relativePath);
         return TextFileNames.Contains(fileName) || TextExtensions.Contains(Path.GetExtension(relativePath));
     }
-
-    /// <summary>Computes the generated repository's relative reference back to AlvorKit.</summary>
-    private static string AlvorKitRelativePath(NewGameOptions options) =>
-        Path.GetRelativePath(options.OutputPath, options.AlvorKitRoot).Replace('/', '\\');
 
     /// <summary>Builds solution project entries from the current starter project files.</summary>
     private IReadOnlyList<NewGameSolutionProject> SolutionProjects(NewGameOptions options)

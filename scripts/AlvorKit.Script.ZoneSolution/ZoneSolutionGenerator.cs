@@ -107,8 +107,8 @@ internal sealed class ZoneSolutionGenerator
         var folders = new Dictionary<string, XElement>(StringComparer.Ordinal);
         var projectPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var source in sourceDocuments)
-            AddProjects(root, folders, projectPaths, source.Document.Projects, [source.Repository.Name], outputDirectory);
+        foreach (var (repository, document) in sourceDocuments)
+            AddProjects(root, folders, projectPaths, document.Projects, [repository.Name], outputDirectory);
 
         return new(root);
     }

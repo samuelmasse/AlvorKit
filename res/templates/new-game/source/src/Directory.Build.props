@@ -30,7 +30,7 @@
 
     <Target Name="EnsureAlvorKitSibling" BeforeTargets="ResolveProjectReferences">
         <Error Condition="!Exists('$(AlvorKitRoot)AlvorKit.slnx')"
-            Text="AlvorKit sibling clone not found at '$(AlvorKitRoot)'." />
+            Text="AlvorKit sibling clone not found at '$(AlvorKitRoot)'. Clone AlvorKit next to the AlvorStarter repository." />
     </Target>
 
 </Project>
