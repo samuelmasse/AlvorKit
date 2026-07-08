@@ -51,7 +51,7 @@ public class GlfwWindowHostTest
         Assert.AreEqual((GlfwInputMode.RawMouseMotion, 1), glfw.InputModeCalls[1]);
     }
 
-    /// <summary>Verifies leaving disabled cursor mode disables GLFW raw mouse motion when it had been requested.</summary>
+    /// <summary>Verifies leaving disabled cursor mode disables GLFW raw mouse motion using cached support.</summary>
     [TestMethod]
     public void GlfwWindowHost_CapturedCursor_DisablesRawMouseMotionWhenSupported()
     {
@@ -69,7 +69,7 @@ public class GlfwWindowHostTest
 
         Assert.AreEqual(CursorMode.Captured, host.CursorMode);
         Assert.IsFalse(glfw.LastRawMouseMotion);
-        Assert.AreEqual(2, glfw.RawMouseMotionSupportedCalls);
+        Assert.AreEqual(1, glfw.RawMouseMotionSupportedCalls);
         Assert.AreEqual(2, glfw.InputModeCalls.Count);
         Assert.AreEqual((GlfwInputMode.Cursor, (int)GlfwCursorMode.Captured), glfw.InputModeCalls[0]);
         Assert.AreEqual((GlfwInputMode.RawMouseMotion, 0), glfw.InputModeCalls[1]);
