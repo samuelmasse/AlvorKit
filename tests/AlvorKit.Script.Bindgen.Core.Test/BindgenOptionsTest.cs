@@ -35,6 +35,26 @@ public sealed class BindgenOptionsTest
         Assert.AreEqual("out/bindgen-review/before", options.OutputRoot);
     }
 
+    /// <summary>The local setup shortcut targets the active generated binding root.</summary>
+    [TestMethod]
+    public void Parse_SetupLocal_ReturnsActiveLocalOutputRoot()
+    {
+        var options = BindgenOptions.Parse(["xxhash", "--setup-local"]);
+
+        Assert.AreEqual("xxhash", options.Selection);
+        Assert.AreEqual("out/bindgen", options.OutputRoot);
+    }
+
+    /// <summary>The local setup shortcut cannot be combined with a custom output root.</summary>
+    [TestMethod]
+    public void Parse_SetupLocalWithOutputRoot_Throws()
+    {
+        var exception = Assert.ThrowsException<ArgumentException>(
+            () => BindgenOptions.Parse(["xxhash", "--setup-local", "--output-root", "out/custom"]));
+
+        StringAssert.Contains(exception.Message, "--setup-local cannot be combined with --output-root");
+    }
+
     /// <summary>Unknown options fail fast instead of being treated as library selections.</summary>
     [TestMethod]
     public void Parse_RejectsUnknownOption()

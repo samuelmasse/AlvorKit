@@ -66,9 +66,11 @@ bodies belong in templates.
 ## Bindgen Boundaries
 
 Do not wire bindgen into normal restore or build targets. Run bindgen for the
-changed library, then build; consumers automatically use the exact local
-generated project when it exists under `out/bindgen`, and otherwise use the
-pinned package.
+changed library, then build. The bindgen default writes to non-active
+`out/generated/bindgen`; pass `--setup-local` only when the task intentionally
+needs consumers to use local generated binding projects. Consumers automatically
+use the exact local generated project when it exists under `out/bindgen`, and
+otherwise use the pinned package.
 
 Do not add `LOCAL_BINDINGS` or any other compile-time symbol to distinguish
 local generated bindings from packaged bindings. C# source and tests must

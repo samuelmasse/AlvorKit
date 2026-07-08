@@ -9,10 +9,18 @@ internal sealed record MathsGenOptions(string OutputRoot)
     /// <param name="execute">Action that executes generation with parsed options.</param>
     internal static RootCommand CreateRootCommand(Func<string> repoRoot, Func<MathsGenOptions, int> execute)
     {
-        var outputRoot = new Option<string>("--output-root", "--output") { Description = "Directory for generated source." };
+        var outputRoot = new Option<string>("--output-root", "--output")
+        {
+            Description = "Directory for generated source. Defaults to out/generated/mathgen."
+        };
+        var setupLocal = new Option<bool>("--setup-local")
+        {
+            Description = "Shortcut for --output-root out/mathgen to activate local project references."
+        };
         var command = new RootCommand("AlvorKit.Maths primitive source generator.");
         command.Options.Add(outputRoot);
-        command.SetAction(parse => execute(Options(parse, repoRoot(), outputRoot)));
+        command.Options.Add(setupLocal);
+        command.SetAction(parse => execute(Options(parse, repoRoot(), outputRoot, setupLocal)));
         return command;
     }
 
@@ -22,18 +30,40 @@ internal sealed record MathsGenOptions(string OutputRoot)
     /// <returns>The parsed generator options.</returns>
     internal static MathsGenOptions Parse(IReadOnlyList<string> args, string repoRoot)
     {
-        var outputRoot = new Option<string>("--output-root", "--output") { Description = "Directory for generated source." };
+        var outputRoot = new Option<string>("--output-root", "--output")
+        {
+            Description = "Directory for generated source. Defaults to out/generated/mathgen."
+        };
+        var setupLocal = new Option<bool>("--setup-local")
+        {
+            Description = "Shortcut for --output-root out/mathgen to activate local project references."
+        };
         var command = new RootCommand("AlvorKit.Maths primitive source generator.");
         command.Options.Add(outputRoot);
+        command.Options.Add(setupLocal);
         var result = command.Parse(args.ToArray());
         ThrowIfErrors(result);
 
-        return Options(result, repoRoot, outputRoot);
+        return Options(result, repoRoot, outputRoot, setupLocal);
     }
 
     /// <summary>Creates generator options from parsed command-line values.</summary>
-    private static MathsGenOptions Options(ParseResult parse, string repoRoot, Option<string> outputRoot) =>
-        new(Path.GetFullPath(parse.GetValue(outputRoot) ?? Path.Combine(repoRoot, "out", "mathgen")));
+    private static MathsGenOptions Options(
+        ParseResult parse,
+        string repoRoot,
+        Option<string> outputRoot,
+        Option<bool> setupLocal)
+    {
+        var configuredOutputRoot = parse.GetValue(outputRoot);
+        if (parse.GetValue(setupLocal))
+        {
+            if (parse.GetResult(outputRoot) is not null)
+                throw new ArgumentException("--setup-local cannot be combined with --output-root.");
+            configuredOutputRoot = Path.Combine(repoRoot, "out", "mathgen");
+        }
+
+        return new(Path.GetFullPath(configuredOutputRoot ?? Path.Combine(repoRoot, "out", "generated", "mathgen")));
+    }
 
     /// <summary>Throws an argument exception when System.CommandLine found parse errors.</summary>
     private static void ThrowIfErrors(ParseResult result)

@@ -140,9 +140,9 @@ dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --binding x
 The binding coverage path reads `native/<library>/conf/bindgen.yml`, measures
 both the generated API project and its `.Backend` project, and selects matching
 test projects by package or project reference. If this fails because
-`out/bindgen` is missing, run bindgen for that library first. Inspect the
-reported missing lines and methods; omit `--threshold 0` only when you intend to
-enforce the coverage gate for generated binding modules.
+`out/bindgen` is missing, run bindgen for that library with `--setup-local`
+first. Inspect the reported missing lines and methods; omit `--threshold 0`
+only when you intend to enforce the coverage gate for generated binding modules.
 
 The `--source-project` value may be a source project name, project file name, or
 repository-relative project directory or file path. Repeat `--source-project`

@@ -4,13 +4,13 @@ namespace AlvorKit.Script.MathsGen.Test;
 [TestClass]
 public sealed class MathsGenOptionsTest
 {
-    /// <summary>No arguments generate into the repository default output directory.</summary>
+    /// <summary>No arguments generate into a non-active repository default output directory.</summary>
     [TestMethod]
     public void Parse_DefaultsToRepositoryOutputRoot()
     {
         var options = MathsGenOptions.Parse([], "C:/repo");
 
-        Assert.AreEqual(Path.GetFullPath("C:/repo/out/mathgen"), options.OutputRoot);
+        Assert.AreEqual(Path.GetFullPath("C:/repo/out/generated/mathgen"), options.OutputRoot);
     }
 
     /// <summary>The long output option overrides the generated output directory.</summary>
@@ -29,6 +29,25 @@ public sealed class MathsGenOptionsTest
         var options = MathsGenOptions.Parse(["--output", "out/custom"], "C:/repo");
 
         Assert.AreEqual(Path.GetFullPath("out/custom"), options.OutputRoot);
+    }
+
+    /// <summary>The local setup shortcut targets the active generated primitives root.</summary>
+    [TestMethod]
+    public void Parse_SetupLocal_ReturnsActiveLocalOutputRoot()
+    {
+        var options = MathsGenOptions.Parse(["--setup-local"], "C:/repo");
+
+        Assert.AreEqual(Path.GetFullPath("C:/repo/out/mathgen"), options.OutputRoot);
+    }
+
+    /// <summary>The local setup shortcut cannot be combined with a custom output root.</summary>
+    [TestMethod]
+    public void Parse_SetupLocalWithOutputRoot_Throws()
+    {
+        var exception = Assert.ThrowsExactly<ArgumentException>(
+            () => MathsGenOptions.Parse(["--setup-local", "--output-root", "out/custom"], "C:/repo"));
+
+        StringAssert.Contains(exception.Message, "--setup-local cannot be combined with --output-root");
     }
 
     /// <summary>Generated help is handled by the command tree rather than parsed generator options.</summary>

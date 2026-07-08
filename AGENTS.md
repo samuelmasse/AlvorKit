@@ -119,10 +119,12 @@ asks to keep them; in Working Mode, list skipped generated-output checks or
 cleanup.
 
 Do not wire bindgen into normal restore or build targets. Run bindgen for the
-changed library, then build; consumers use the exact local generated project
-under `out/bindgen` when it exists and otherwise use the pinned package. Do not
-add `LOCAL_BINDINGS` or any other compile-time symbol to distinguish local
-generated bindings from packaged bindings.
+changed library, then build. The bindgen default writes to non-active
+`out/generated/bindgen`; pass `--setup-local` only when the task intentionally
+needs consumers to use local generated binding projects. Consumers use the exact
+local generated project under `out/bindgen` when it exists and otherwise use the
+pinned package. Do not add `LOCAL_BINDINGS` or any other compile-time symbol to
+distinguish local generated bindings from packaged bindings.
 
 Native package builds are intended for CI. Agents must never run
 `scripts/AlvorKit.Script.NativeBuild`, invoke native runtime package builds, or

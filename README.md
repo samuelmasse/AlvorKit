@@ -7,19 +7,23 @@ AlvorKit is a C# game development kit
 Projects use published binding packages by default. When an exact generated
 project exists under `out/bindgen`, consumers automatically use that local
 project instead of the pinned package for that binding. Build and restore
-intentionally do not run bindgen automatically. Generate the local project you
-are changing explicitly with:
+intentionally do not run bindgen automatically.
+
+The default bindgen output root is `out/generated/bindgen`, which is safe for
+inspection because it does not activate local project references. Generate into
+the active local project root only when you want consumers to use the generated
+project:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library>
+dotnet run --project scripts\AlvorKit.Script.Bindgen -- <library> --setup-local
 ```
 
 If the generated project is missing, consumers fall back to the pinned package
 version in `AlvorKit.Packages.props`. Use `all` only when bootstrapping every
 binding project or making a change that intentionally affects them all.
 
-To compare generator changes without overwriting the default local bindings,
-write snapshots under `out/` and diff them:
+To compare generator changes without activating local bindings, write snapshots
+under `out/` and diff them:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.Bindgen -- xxhash --output-root out\bindgen-review\xxhash-before
@@ -30,11 +34,13 @@ git diff --no-index -- out\bindgen-review\xxhash-before out\bindgen-review\xxhas
 ## Maths package development mode
 
 Projects use the published `AlvorKit.Maths.Primitives` package when
-`out/mathgen/AlvorKit.Maths.Primitives` is missing. Generate the local primitives
+`out/mathgen/AlvorKit.Maths.Primitives` is missing. The default MathsGen output
+root is `out/generated/mathgen`, which is safe for inspection because it does
+not activate local project references. Generate the active local primitives
 project only when changing the maths generator or generated primitive surface:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.MathsGen
+dotnet run --project scripts\AlvorKit.Script.MathsGen -- --setup-local
 ```
 
 The user-facing package is `AlvorKit.Maths`; it is a facade that brings in

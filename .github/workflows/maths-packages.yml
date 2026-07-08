@@ -49,7 +49,7 @@ jobs:
           done
 
       - name: Generate
-        run: dotnet run --project scripts/AlvorKit.Script.MathsGen
+        run: dotnet run --project scripts/AlvorKit.Script.MathsGen -- --setup-local
 
       - name: Test
         run: |

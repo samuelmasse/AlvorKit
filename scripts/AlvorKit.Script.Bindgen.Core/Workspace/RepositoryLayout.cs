@@ -16,13 +16,16 @@ public sealed class RepositoryLayout
     /// <summary>Absolute repository native package directory.</summary>
     public string NativeDirectory { get; }
 
-    /// <summary>Resolves an optional generated-output root and requires it to stay under the repository out directory.</summary>
-    public string? ResolveGeneratedOutputRoot(string? outputRoot)
-    {
-        if (string.IsNullOrWhiteSpace(outputRoot))
-            return null;
+    /// <summary>Absolute non-active output root used when bindgen is run without <c>--output-root</c>.</summary>
+    public string DefaultGeneratedOutputRoot =>
+        Path.Combine(Root, "out", "generated", "bindgen");
 
-        var resolved = Path.GetFullPath(Path.Combine(Root, outputRoot));
+    /// <summary>Resolves a generated-output root and requires it to stay under the repository out directory.</summary>
+    public string ResolveGeneratedOutputRoot(string? outputRoot)
+    {
+        var resolved = string.IsNullOrWhiteSpace(outputRoot)
+            ? Path.GetFullPath(DefaultGeneratedOutputRoot)
+            : Path.GetFullPath(Path.Combine(Root, outputRoot));
         var outRoot = Path.GetFullPath(Path.Combine(Root, "out"));
         if (!IsInsideOrEqual(resolved, outRoot))
             throw new InvalidOperationException("--output-root must resolve inside the repository out directory.");

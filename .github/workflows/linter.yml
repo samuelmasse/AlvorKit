@@ -20,10 +20,10 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Generate maths primitives
-        run: dotnet run --project scripts/AlvorKit.Script.MathsGen
+        run: dotnet run --project scripts/AlvorKit.Script.MathsGen -- --setup-local
 
       - name: Generate bindings
-        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- all --strict
+        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- all --strict --setup-local
 
       - name: Build source generators
         run: dotnet build src/AlvorKit.ECS.Generator/AlvorKit.ECS.Generator.csproj

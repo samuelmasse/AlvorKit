@@ -92,16 +92,17 @@ public sealed class RepositoryLayoutTest
         CollectionAssert.AreEqual(Array.Empty<string>(), layout.SelectedLibraries("all").ToArray());
     }
 
-    /// <summary>Missing generated-output roots keep the configured bindgen project paths.</summary>
+    /// <summary>Missing generated-output roots resolve to the non-active default output directory.</summary>
     [TestMethod]
-    public void ResolveGeneratedOutputRoot_AllowsMissingOverride()
+    public void ResolveGeneratedOutputRoot_DefaultsToGeneratedOutputDirectory()
     {
         using var workspace = TempWorkspace.Create();
         File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
+        var expected = Path.Combine(workspace.Root, "out", "generated", "bindgen");
 
-        Assert.IsNull(layout.ResolveGeneratedOutputRoot(null));
-        Assert.IsNull(layout.ResolveGeneratedOutputRoot(""));
+        Assert.AreEqual(expected, layout.ResolveGeneratedOutputRoot(null));
+        Assert.AreEqual(expected, layout.ResolveGeneratedOutputRoot(""));
     }
 
     /// <summary>Relative and absolute generated-output roots are normalized when they stay under out.</summary>

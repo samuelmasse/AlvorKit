@@ -3,7 +3,10 @@ namespace AlvorKit.Script.Bindgen;
 /// <summary>Command-line options accepted by the bindgen executable.</summary>
 /// <param name="Selection">Requested native library name, or <c>all</c> to generate every configured binding.</param>
 /// <param name="Strict">Whether validation gaps should fail the run instead of printing warnings or updating local artifacts.</param>
-/// <param name="OutputRoot">Optional repository-relative or absolute directory under <c>out/</c> for generated projects.</param>
+/// <param name="OutputRoot">
+/// Optional repository-relative or absolute directory under <c>out/</c> for generated projects.
+/// When omitted, bindgen writes to the non-active default output root.
+/// </param>
 public sealed record BindgenOptions(string Selection, bool Strict, string? OutputRoot)
 {
     /// <summary>Parses bindgen arguments into the selected library, strictness flag, and optional generated-output root.</summary>
@@ -15,11 +18,19 @@ public sealed record BindgenOptions(string Selection, bool Strict, string? Outpu
             Description = "Native library name, or all."
         };
         var strict = new Option<bool>("--strict") { Description = "Fail validation gaps instead of warning." };
-        var outputRoot = new Option<string>("--output-root", "--out") { Description = "Generated output root." };
+        var outputRoot = new Option<string>("--output-root", "--out")
+        {
+            Description = "Generated output root. Defaults to out/generated/bindgen."
+        };
+        var setupLocal = new Option<bool>("--setup-local")
+        {
+            Description = "Shortcut for --output-root out/bindgen to activate local project references."
+        };
         var command = new RootCommand("Native binding generator.");
         command.Arguments.Add(selection);
         command.Options.Add(strict);
         command.Options.Add(outputRoot);
+        command.Options.Add(setupLocal);
         var result = command.Parse(args.ToArray());
         ThrowIfErrors(result);
 
@@ -27,10 +38,18 @@ public sealed record BindgenOptions(string Selection, bool Strict, string? Outpu
         if (selected.StartsWith("-", StringComparison.Ordinal))
             throw new ArgumentException($"Unrecognized command or argument '{selected}'.");
 
+        var configuredOutputRoot = result.GetValue(outputRoot);
+        if (result.GetValue(setupLocal))
+        {
+            if (result.GetResult(outputRoot) is not null)
+                throw new ArgumentException("--setup-local cannot be combined with --output-root.");
+            configuredOutputRoot = "out/bindgen";
+        }
+
         return new(
             selected,
             result.GetValue(strict),
-            result.GetValue(outputRoot));
+            configuredOutputRoot);
     }
 
     /// <summary>Throws an argument exception when System.CommandLine found parse errors.</summary>

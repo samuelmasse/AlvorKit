@@ -14,6 +14,9 @@ internal sealed class GlfwWindowCallbacks(
     Action<WindowMouseButtonEvent> mouseUp,
     Action<WindowKeyEvent> keyDown,
     Action<WindowKeyEvent> keyUp,
+    Action<bool> focus,
+    Action<bool> iconify,
+    Action<bool> maximize,
     Action<WindowTextInputEvent> textInput)
 {
     /// <summary>Installs the callbacks used by <see cref="GlfwWindowHost"/>.</summary>
@@ -22,6 +25,9 @@ internal sealed class GlfwWindowCallbacks(
         glfw.SetWindowCloseCallback(window, (_) => closing());
         glfw.SetWindowPosCallback(window, (_, x, y) => move(new((x, y))));
         glfw.SetFramebufferSizeCallback(window, (_, width, height) => resize(new((checked((uint)width), checked((uint)height)))));
+        glfw.SetWindowFocusCallback(window, (_, focused) => focus(focused != 0));
+        glfw.SetWindowIconifyCallback(window, (_, iconified) => iconify(iconified != 0));
+        glfw.SetWindowMaximizeCallback(window, (_, maximized) => maximize(maximized != 0));
         glfw.SetCursorPosCallback(window, (_, x, y) => mouseMove(new(((float)x, (float)y))));
         glfw.SetScrollCallback(window, (_, x, y) => mouseWheel(new(((float)x, (float)y))));
         glfw.SetMouseButtonCallback(window, (_, button, action, _) => AcceptMouseButton(button, action));

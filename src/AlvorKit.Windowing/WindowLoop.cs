@@ -111,6 +111,7 @@ public sealed class WindowLoop
         if (host.IsExiting)
             return;
 
+        gamepads.Tick();
         mousePosition.Update();
 
         if (physical.Skips == 0 && host.IsFocused)

@@ -85,7 +85,7 @@ jobs:
       # The registry parser is strict by default: a missing command, unmapped C
       # type, or name collision fails generation outright.
       - name: Generate bindings
-        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- opengl
+        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- opengl --setup-local
 
       # Pack both generated projects: the public OpenGL API and the backend that
       # resolves function pointers through a platform proc loader.

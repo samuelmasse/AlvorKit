@@ -13,6 +13,13 @@
             Visible="false" />
     </ItemGroup>
 
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj')">
+        <None Include="$(AlvorKitRepositoryRoot)bin\AlvorKit.OpenGL\$(Configuration)\AlvorKit.OpenGL.xml"
+            CopyToOutputDirectory="PreserveNewest"
+            Link="AlvorKit.OpenGL.xml"
+            Visible="false" />
+    </ItemGroup>
+
     <ItemGroup>
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.OpenGL.Layer" />

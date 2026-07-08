@@ -27,6 +27,9 @@ public class GlfwWindowHost : IWindowHost, IDisposable
             OnMouseUp,
             OnKeyDown,
             OnKeyUp,
+            runtime.AcceptFocus,
+            runtime.AcceptIconify,
+            runtime.AcceptMaximize,
             OnTextInput);
         callbacks.Register();
     }

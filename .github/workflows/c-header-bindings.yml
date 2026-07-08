@@ -245,7 +245,7 @@ jobs:
       # and parser problems fail the release.
       - name: Generate bindings
         if: steps.versions.outputs.skip != 'true'
-        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- ${{ matrix.package.selection }} --strict
+        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- ${{ matrix.package.selection }} --strict --setup-local
 
       # Pack both generated projects for this library.
       - name: Pack bindings

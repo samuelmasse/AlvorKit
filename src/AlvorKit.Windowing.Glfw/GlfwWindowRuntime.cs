@@ -13,7 +13,11 @@ internal sealed class GlfwWindowRuntime
     private readonly GlfwCursorShapes cursorShapes;
     private string title = string.Empty;
     private CursorShape cursorShape;
+    private CursorMode cursorMode;
+    private bool isFocused;
+    private bool isVisible;
     private bool isVSyncEnabled;
+    private readonly bool rawMouseMotionSupported;
     private bool disposed;
 
     /// <summary>Creates a runtime bridge for a GLFW API instance and window handle supplied by the caller.</summary>
@@ -24,6 +28,10 @@ internal sealed class GlfwWindowRuntime
         mode = new(glfw, window);
         sizes = new(glfw, window);
         cursorShapes = new(glfw);
+        cursorMode = cursorModes.FromGlfw((GlfwCursorMode)glfw.GetInputMode(window, GlfwInputMode.Cursor));
+        isFocused = glfw.GetWindowAttrib(window, GlfwWindowHint.Focused) != 0;
+        isVisible = glfw.GetWindowAttrib(window, GlfwWindowHint.Visible) != 0;
+        rawMouseMotionSupported = glfw.RawMouseMotionSupported();
     }
 
     /// <summary>Gets the GLFW API supplied to this runtime.</summary>
@@ -36,13 +44,13 @@ internal sealed class GlfwWindowRuntime
     internal bool IsExiting => glfw.WindowShouldClose(window);
 
     /// <summary>Gets whether GLFW reports the window is focused.</summary>
-    internal bool IsFocused => glfw.GetWindowAttrib(window, GlfwWindowHint.Focused) != 0;
+    internal bool IsFocused => isFocused;
 
     /// <summary>Gets whether the runtime has placed the window in fullscreen mode.</summary>
     internal bool IsFullscreen => mode.IsFullscreen;
 
     /// <summary>Gets or sets whether the GLFW window is visible.</summary>
-    internal bool IsVisible { get => glfw.GetWindowAttrib(window, GlfwWindowHint.Visible) != 0; set => SetVisible(value); }
+    internal bool IsVisible { get => isVisible; set => SetVisible(value); }
 
     /// <summary>Gets or sets the drawable client size.</summary>
     internal Vec2u ClientSize { get => sizes.FramebufferSize; set => sizes.Set(value); }
@@ -62,7 +70,7 @@ internal sealed class GlfwWindowRuntime
     /// <summary>Gets or sets the AlvorKit cursor mode represented by GLFW input mode.</summary>
     internal CursorMode CursorMode
     {
-        get => cursorModes.FromGlfw((GlfwCursorMode)glfw.GetInputMode(window, GlfwInputMode.Cursor));
+        get => cursorMode;
         set => SetCursorMode(value);
     }
 
@@ -74,10 +82,10 @@ internal sealed class GlfwWindowRuntime
     }
 
     /// <summary>Gets or sets the last requested swap interval state.</summary>
-    internal bool IsVSyncEnabled { get => isVSyncEnabled; set { isVSyncEnabled = value; glfw.SwapInterval(value ? 1 : 0); } }
+    internal bool IsVSyncEnabled { get => isVSyncEnabled; set => SetVSync(value); }
 
     /// <summary>Gets or sets the last requested window title.</summary>
-    internal string Title { get => title; set { title = value; glfw.SetWindowTitle(window, value); } }
+    internal string Title { get => title; set => SetTitle(value); }
 
     /// <summary>Gets or sets the GLFW clipboard text for this window.</summary>
     internal string Clipboard { get { glfw.GetClipboardString(window, out var value); return value ?? string.Empty; } set => glfw.SetClipboardString(window, value); }
@@ -161,6 +169,15 @@ internal sealed class GlfwWindowRuntime
         }
     }
 
+    /// <summary>Accepts a GLFW focus callback and updates the cached observed focus state.</summary>
+    internal void AcceptFocus(bool value) => isFocused = value;
+
+    /// <summary>Accepts a GLFW iconify callback and updates the cached observed window state.</summary>
+    internal void AcceptIconify(bool value) => mode.AcceptIconify(value);
+
+    /// <summary>Accepts a GLFW maximize callback and updates the cached observed window state.</summary>
+    internal void AcceptMaximize(bool value) => mode.AcceptMaximize(value);
+
     /// <summary>Reads the GLFW cursor position and converts it to an AlvorKit vector.</summary>
     private Vec2 GetMousePosition()
     {
@@ -171,18 +188,23 @@ internal sealed class GlfwWindowRuntime
     /// <summary>Applies cursor mode and raw mouse motion state for mouselook-style capture.</summary>
     private void SetCursorMode(CursorMode value)
     {
+        if (cursorMode == value)
+            return;
+
         glfw.SetInputMode(window, GlfwInputMode.Cursor, cursorModes.ToGlfw(value));
-        if (glfw.RawMouseMotionSupported())
+        if (rawMouseMotionSupported)
             glfw.SetInputMode(window, GlfwInputMode.RawMouseMotion, value == CursorMode.Disabled);
+
+        cursorMode = value;
     }
 
     /// <summary>Applies a platform standard cursor shape through GLFW.</summary>
     private void SetCursorShape(CursorShape value)
     {
-        var cursor = cursorShapes.Get(value);
         if (value == cursorShape)
             return;
 
+        var cursor = cursorShapes.Get(value);
         glfw.SetCursor(window, cursor);
         cursorShape = value;
     }
@@ -190,8 +212,33 @@ internal sealed class GlfwWindowRuntime
     /// <summary>Applies the requested visibility through GLFW show and hide calls.</summary>
     private void SetVisible(bool value)
     {
+        if (isVisible == value)
+            return;
+
         if (value)
             glfw.ShowWindow(window);
         else glfw.HideWindow(window);
+
+        isVisible = value;
+    }
+
+    /// <summary>Applies the requested swap interval when it differs from the cached requested state.</summary>
+    private void SetVSync(bool value)
+    {
+        if (isVSyncEnabled == value)
+            return;
+
+        glfw.SwapInterval(value ? 1 : 0);
+        isVSyncEnabled = value;
+    }
+
+    /// <summary>Applies the requested title when it differs from the cached requested title.</summary>
+    private void SetTitle(string value)
+    {
+        if (title == value)
+            return;
+
+        glfw.SetWindowTitle(window, value);
+        title = value;
     }
 }
