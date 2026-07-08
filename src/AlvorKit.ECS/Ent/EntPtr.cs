@@ -3,23 +3,23 @@ namespace AlvorKit.ECS;
 [DebuggerTypeProxy(typeof(EntDebugView))]
 public readonly record struct EntPtr : IDisposable, IEntMut
 {
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static implicit operator Ent(EntPtr a) => new(a.ent.Index, a.ent.Generation);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static implicit operator EntMut(EntPtr a) => new(a.ent.Index, a.ent.Generation);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static implicit operator EntRef(EntPtr a) => new(null, a.ent.Index, a.ent.Generation);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static implicit operator EntRefMut(EntPtr a) => new(null, a.ent.Index, a.ent.Generation);
 
     private readonly EntMut ent;
 
-        public EntHandle Handle => ent.Handle;
+    public EntHandle Handle => ent.Handle;
 
-        public bool IsAlive => ent.IsAlive;
+    public bool IsAlive => ent.IsAlive;
     internal int Index => ent.Index;
     internal int Generation => ent.Generation;
     internal int PageIndex => ent.PageIndex;
@@ -27,7 +27,7 @@ public readonly record struct EntPtr : IDisposable, IEntMut
     internal EntAllocator? Allocator => ent.Allocator;
     internal EntRegView Registry => EntReg.View;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public EntPtr() : this(1) { }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -40,19 +40,19 @@ public readonly record struct EntPtr : IDisposable, IEntMut
         ent = new(index, generation);
     }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public T? Get<T, N>() => ent.Get<T, N>();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool Has<T, N>() => ent.Has<T, N>();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool Unset<T, N>() => ent.Unset<T, N>();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void Set<T, N>(in T value) => ent.Set<T, N>(value);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void Dispose()
     {
         int pageIndex = ent.Index >> EntReg.PageBits;
@@ -66,5 +66,5 @@ public readonly record struct EntPtr : IDisposable, IEntMut
         }
     }
 
-        public override string ToString() => ent.ToString();
+    public override string ToString() => ent.ToString();
 }

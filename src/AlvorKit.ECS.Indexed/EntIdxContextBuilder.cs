@@ -4,24 +4,24 @@ public class EntIdxContextBuilder
 {
     private readonly EntObj ent = new();
 
-        public EntObj Ent => ent;
+    public EntObj Ent => ent;
 
-        public void AddPre<T, N>(EntIdxPreHook<T> hook) where N : IComponent
+    public void AddPre<T, N>(EntIdxPreHook<T> hook) where N : IComponent
     {
         ValidateComponent<T, N>();
         Add<EntIdxPre<T, N>, EntIdxPreHook<T>>(hook);
     }
 
-        public void AddPost<T, N>(EntIdxPostHook hook) where N : IComponent
+    public void AddPost<T, N>(EntIdxPostHook hook) where N : IComponent
     {
         ValidateComponent<T, N>();
         Add<EntIdxPost<T, N>, EntIdxPostHook>(hook);
     }
 
-        public void AddPreDispose(EntIdxPreDisposeHook hook) =>
-        Add<EntIdxPreDispose, EntIdxPreDisposeHook>(hook);
+    public void AddPreDispose(EntIdxPreDisposeHook hook) =>
+    Add<EntIdxPreDispose, EntIdxPreDisposeHook>(hook);
 
-        public void AddBag<N>(EntIdxBagMut<N> bag) where N : IComponent
+    public void AddBag<N>(EntIdxBagMut<N> bag) where N : IComponent
     {
         ValidateBool<N>("marker");
         ThrowIfBagRegistered<EntIdxBagIndex<N>>();
@@ -31,9 +31,9 @@ public class EntIdxContextBuilder
         AddPre<int, EntIdxBagIndex<N>>(interceptor.RemoveWhenIndexUnsets);
     }
 
-        public void AddGatedBag<N, TGate>(EntIdxGatedBagMut<N, TGate> bag)
-        where N : IComponent
-        where TGate : IComponent
+    public void AddGatedBag<N, TGate>(EntIdxGatedBagMut<N, TGate> bag)
+    where N : IComponent
+    where TGate : IComponent
     {
         ValidateBool<N>("marker");
         ValidateBool<TGate>("gate");
@@ -45,7 +45,7 @@ public class EntIdxContextBuilder
         AddPre<int, EntIdxGatedBagIndex<N, TGate>>(interceptor.RemoveWhenIndexUnsets);
     }
 
-        protected void Add<P, PT>(PT hook)
+    protected void Add<P, PT>(PT hook)
     {
         ReadOnlyMemory<PT> hooks = ent.Get<ReadOnlyMemory<PT>, P>();
         var next = new PT[hooks.Length + 1];
@@ -77,4 +77,3 @@ public class EntIdxContextBuilder
                 $"Bag identity {typeof(TBagIndex).FullName} is already registered on this context.");
     }
 }
-

@@ -3,19 +3,19 @@ namespace AlvorKit.ECS;
 [DebuggerTypeProxy(typeof(EntDebugView))]
 public readonly record struct EntMut : IEntMut
 {
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static implicit operator Ent(EntMut a) => new(a.Index, a.Generation);
 
     internal readonly int Index;
     internal readonly int Generation;
 
-        public EntHandle Handle
+    public EntHandle Handle
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         get => new(Index, Generation);
     }
 
-        public bool IsAlive
+    public bool IsAlive
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         get => EntReg.PageGenerations[PageIndex][SubIndex] == Generation;
@@ -43,7 +43,7 @@ public readonly record struct EntMut : IEntMut
         Generation = generation;
     }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public T? Get<T, N>()
     {
         if (!IsAlive)
@@ -56,7 +56,7 @@ public readonly record struct EntMut : IEntMut
         return val.Generation == Generation ? val.Value : default;
     }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool Has<T, N>()
     {
         if (!IsAlive)
@@ -68,7 +68,7 @@ public readonly record struct EntMut : IEntMut
         return page[SubIndex].Generation == Generation;
     }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void Set<T, N>(in T value)
     {
         if (!IsAlive)
@@ -94,7 +94,7 @@ public readonly record struct EntMut : IEntMut
         val.Value = value;
     }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool Unset<T, N>()
     {
         if (!IsAlive)
@@ -148,5 +148,5 @@ public readonly record struct EntMut : IEntMut
         return page;
     }
 
-        public override string ToString() => Handle.ToString();
+    public override string ToString() => Handle.ToString();
 }

@@ -5,17 +5,17 @@ internal struct EntIdxBagStore<TIndex> where TIndex : IComponent
     private EntMutIdx[] ents = [default, default];
     private int count = 1;
 
-        public EntIdxBagStore()
+    public EntIdxBagStore()
     {
     }
 
-        internal readonly ReadOnlySpan<EntMutIdx> Ents => new(ents, 1, count - 1);
+    internal readonly ReadOnlySpan<EntMutIdx> Ents => new(ents, 1, count - 1);
 
-        internal readonly int Count => count - 1;
+    internal readonly int Count => count - 1;
 
-        internal readonly bool Contains(EntMutIdx ent) => ent.Get<int, TIndex>() > 0;
+    internal readonly bool Contains(EntMutIdx ent) => ent.Get<int, TIndex>() > 0;
 
-        internal void Add(EntMutIdx ent)
+    internal void Add(EntMutIdx ent)
     {
         if (count >= ents.Length)
             Array.Resize(ref ents, ents.Length * 2);
@@ -25,7 +25,7 @@ internal struct EntIdxBagStore<TIndex> where TIndex : IComponent
         count++;
     }
 
-        internal void Remove(EntMutIdx ent)
+    internal void Remove(EntMutIdx ent)
     {
         int index = ent.Get<int, TIndex>();
         if (index <= 0)

@@ -5,9 +5,9 @@ public readonly struct EntArena : IDisposable
     private readonly int index;
     private readonly int generation;
 
-        public bool IsAlive => index != 0 && EntReg.Allocators[index].Generation == generation;
+    public bool IsAlive => index != 0 && EntReg.Allocators[index].Generation == generation;
 
-        public int Allocated => Capacity - Free;
+    public int Allocated => Capacity - Free;
 
     internal int Index => index;
     internal int Generation => generation;
@@ -16,7 +16,7 @@ public readonly struct EntArena : IDisposable
     internal EntAllocator Allocator => EntReg.Allocators[index];
     internal EntRegView Registry => EntReg.View;
 
-        public EntArena()
+    public EntArena()
     {
         if (!EntReg.FreeAllocators.TryTake(out index))
         {
@@ -30,7 +30,7 @@ public readonly struct EntArena : IDisposable
         generation = Allocator.Generation;
     }
 
-        public EntPtr Alloc()
+    public EntPtr Alloc()
     {
         if (!IsAlive)
             throw new EntArenaDisposedException();
@@ -38,7 +38,7 @@ public readonly struct EntArena : IDisposable
         return new(index);
     }
 
-        public void Dispose()
+    public void Dispose()
     {
         if (!IsAlive)
             return;

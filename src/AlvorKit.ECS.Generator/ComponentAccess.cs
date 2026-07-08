@@ -2,7 +2,7 @@ namespace AlvorKit.ECS.Generator;
 
 internal static class ComponentAccess
 {
-        internal static string ToAccessString(Accessibility accessibility) => accessibility switch
+    internal static string ToAccessString(Accessibility accessibility) => accessibility switch
     {
         Accessibility.Internal => "internal",
         Accessibility.Protected => "protected",
@@ -11,7 +11,7 @@ internal static class ComponentAccess
         _ => "public"
     };
 
-        internal static string WiderAccess(string first, string second)
+    internal static string WiderAccess(string first, string second)
     {
         if (first == second)
             return first;
@@ -25,7 +25,7 @@ internal static class ComponentAccess
         return firstRank > secondRank ? first : second;
     }
 
-        private static int AccessRank(string access) => access switch
+    private static int AccessRank(string access) => access switch
     {
         "private" => 0,
         "protected" => 1,

@@ -2,7 +2,7 @@ namespace AlvorKit.ECS;
 
 public class EntDebugView(IEnt ent)
 {
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     public object[] Components
     {
         get
@@ -27,7 +27,7 @@ public class EntDebugView(IEnt ent)
         }
     }
 
-        [DebuggerDisplay("{Value}", Name = "{Name,nq}")]
+    [DebuggerDisplay("{Value}", Name = "{Name,nq}")]
     public readonly struct DebugViewComponent(string name, object? value)
     {
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -35,14 +35,14 @@ public class EntDebugView(IEnt ent)
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly object? value = value;
 
-                [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public string Name => name;
 
-                [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
         public object? Value => value;
     }
 
-        [DebuggerDisplay("{Value}", Name = "{Name,nq}")]
+    [DebuggerDisplay("{Value}", Name = "{Name,nq}")]
     public readonly struct DebugViewComponentPrimitive(string name, object? value)
     {
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -50,10 +50,10 @@ public class EntDebugView(IEnt ent)
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly object? value = value;
 
-                [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public string Name => name;
 
-                [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public object? Value => value;
     }
 }

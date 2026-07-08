@@ -6,9 +6,9 @@ public readonly record struct EntPtrIdx : IEntMut, IDisposable
     private readonly EntPtr ent;
     private readonly Ent context;
 
-        public static implicit operator EntMutIdx(EntPtrIdx a) => new(a);
+    public static implicit operator EntMutIdx(EntPtrIdx a) => new(a);
 
-        public static implicit operator Ent(EntPtrIdx a) => a.ent;
+    public static implicit operator Ent(EntPtrIdx a) => a.ent;
 
     internal EntPtrIdx(EntPtr ent, Ent context)
     {
@@ -16,15 +16,15 @@ public readonly record struct EntPtrIdx : IEntMut, IDisposable
         this.context = context;
     }
 
-        public EntHandle Handle => ent.Handle;
+    public EntHandle Handle => ent.Handle;
 
-        public bool IsAlive => ent.IsAlive;
+    public bool IsAlive => ent.IsAlive;
 
-        public T? Get<T, N>() => ent.Get<T, N>();
+    public T? Get<T, N>() => ent.Get<T, N>();
 
-        public bool Has<T, N>() => ent.Has<T, N>();
+    public bool Has<T, N>() => ent.Has<T, N>();
 
-        public void Set<T, N>(in T value)
+    public void Set<T, N>(in T value)
     {
         if (!IsAlive)
             return;
@@ -39,7 +39,7 @@ public readonly record struct EntPtrIdx : IEntMut, IDisposable
             hook(mut);
     }
 
-        public bool Unset<T, N>()
+    public bool Unset<T, N>()
     {
         if (!IsAlive || !ent.Has<T, N>())
             return false;
@@ -57,7 +57,7 @@ public readonly record struct EntPtrIdx : IEntMut, IDisposable
         return unset;
     }
 
-        public void Dispose()
+    public void Dispose()
     {
         if (!IsAlive)
             return;
@@ -70,6 +70,5 @@ public readonly record struct EntPtrIdx : IEntMut, IDisposable
         ent.Dispose();
     }
 
-        public override string ToString() => ent.ToString();
+    public override string ToString() => ent.ToString();
 }
-

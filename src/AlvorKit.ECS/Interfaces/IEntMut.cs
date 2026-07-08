@@ -2,9 +2,9 @@ namespace AlvorKit.ECS;
 
 public interface IEntMut : IEnt
 {
-        bool IsAlive { get; }
+    bool IsAlive { get; }
 
-        void Set<T, N>(in T value);
+    void Set<T, N>(in T value);
 
-        bool Unset<T, N>();
+    bool Unset<T, N>();
 }

@@ -5,7 +5,7 @@ public readonly record struct Ent : IEntRead
 {
     private readonly EntMut ent;
 
-        public EntHandle Handle => ent.Handle;
+    public EntHandle Handle => ent.Handle;
     internal bool IsAlive => ent.IsAlive;
     internal int Index => ent.Index;
     internal int Generation => ent.Generation;
@@ -17,11 +17,11 @@ public readonly record struct Ent : IEntRead
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     internal Ent(int index, int generation) => ent = new(index, generation);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public T? Get<T, N>() => ent.Get<T, N>();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool Has<T, N>() => ent.Has<T, N>();
 
-        public override string ToString() => ent.ToString();
+    public override string ToString() => ent.ToString();
 }

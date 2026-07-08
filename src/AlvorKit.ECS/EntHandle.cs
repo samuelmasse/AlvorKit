@@ -29,7 +29,7 @@ public readonly struct EntHandle
         get => Index & EntReg.PageMask;
     }
 
-        public override string ToString() => ToStringCycleDetection([]);
+    public override string ToString() => ToStringCycleDetection([]);
 
     internal string ToStringCycleDetection(HashSet<(int, int)> seen)
     {

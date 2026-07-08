@@ -3,13 +3,13 @@ namespace AlvorKit.ECS;
 [DebuggerTypeProxy(typeof(EntDebugView))]
 public readonly record struct EntRef : IEntRead
 {
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static explicit operator Ent(EntRef a) => new(a.ent.Index, a.ent.Generation);
 
     private readonly EntObj? obj;
     private readonly EntMut ent;
 
-        public EntHandle Handle => ent.Handle;
+    public EntHandle Handle => ent.Handle;
     internal bool IsAlive => ent.IsAlive;
     internal int Index => ent.Index;
     internal int Generation => ent.Generation;
@@ -25,11 +25,11 @@ public readonly record struct EntRef : IEntRead
         ent = new(index, generation);
     }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public T? Get<T, N>() => ent.Get<T, N>();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool Has<T, N>() => ent.Has<T, N>();
 
-        public override string ToString() => ent.ToString();
+    public override string ToString() => ent.ToString();
 }

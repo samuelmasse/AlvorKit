@@ -4,7 +4,7 @@ namespace AlvorKit.ECS.Generator;
 [ExcludeFromCodeCoverage]
 internal sealed class ComponentGenerator : IIncrementalGenerator
 {
-        public void Initialize(IncrementalGeneratorInitializationContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
             ComponentModelFactory.ComponentsAttributeName,
