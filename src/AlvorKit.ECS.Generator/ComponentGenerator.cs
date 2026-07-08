@@ -1,12 +1,10 @@
 namespace AlvorKit.ECS.Generator;
 
-/// <summary>Generates ECS component marker types and extension accessors from interfaces marked with <c>ComponentsAttribute</c>.</summary>
 [Generator]
 [ExcludeFromCodeCoverage]
 internal sealed class ComponentGenerator : IIncrementalGenerator
 {
-    /// <summary>Registers the component interface transform and source output.</summary>
-    public void Initialize(IncrementalGeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
             ComponentModelFactory.ComponentsAttributeName,

@@ -1,17 +1,14 @@
 namespace AlvorKit.ECS.Indexed;
 
-/// <summary>Represents a disposable indexed entity handle that runs hook pipelines on mutation.</summary>
 [DebuggerTypeProxy(typeof(EntDebugView))]
 public readonly record struct EntPtrIdx : IEntMut, IDisposable
 {
     private readonly EntPtr ent;
     private readonly Ent context;
 
-    /// <summary>Converts this pointer to a mutable indexed value handle.</summary>
-    public static implicit operator EntMutIdx(EntPtrIdx a) => new(a);
+        public static implicit operator EntMutIdx(EntPtrIdx a) => new(a);
 
-    /// <summary>Converts this pointer to a read-only base ECS handle.</summary>
-    public static implicit operator Ent(EntPtrIdx a) => a.ent;
+        public static implicit operator Ent(EntPtrIdx a) => a.ent;
 
     internal EntPtrIdx(EntPtr ent, Ent context)
     {
@@ -19,20 +16,15 @@ public readonly record struct EntPtrIdx : IEntMut, IDisposable
         this.context = context;
     }
 
-    /// <summary>Gets the stable handle for this entity generation.</summary>
-    public EntHandle Handle => ent.Handle;
+        public EntHandle Handle => ent.Handle;
 
-    /// <summary>Returns whether this handle still points at a live entity generation.</summary>
-    public bool IsAlive => ent.IsAlive;
+        public bool IsAlive => ent.IsAlive;
 
-    /// <summary>Gets the component value for the requested value and marker types, or the default value when absent.</summary>
-    public T? Get<T, N>() => ent.Get<T, N>();
+        public T? Get<T, N>() => ent.Get<T, N>();
 
-    /// <summary>Returns whether this entity currently has the requested component.</summary>
-    public bool Has<T, N>() => ent.Has<T, N>();
+        public bool Has<T, N>() => ent.Has<T, N>();
 
-    /// <summary>Sets a component after pre hooks run and before post hooks run.</summary>
-    public void Set<T, N>(in T value)
+        public void Set<T, N>(in T value)
     {
         if (!IsAlive)
             return;
@@ -47,8 +39,7 @@ public readonly record struct EntPtrIdx : IEntMut, IDisposable
             hook(mut);
     }
 
-    /// <summary>Unsets a present component through the pre and post hook pipeline.</summary>
-    public bool Unset<T, N>()
+        public bool Unset<T, N>()
     {
         if (!IsAlive || !ent.Has<T, N>())
             return false;
@@ -66,8 +57,7 @@ public readonly record struct EntPtrIdx : IEntMut, IDisposable
         return unset;
     }
 
-    /// <summary>Runs pre-dispose hooks, clears components through indexed unsets, and returns the slot.</summary>
-    public void Dispose()
+        public void Dispose()
     {
         if (!IsAlive)
             return;
@@ -80,7 +70,6 @@ public readonly record struct EntPtrIdx : IEntMut, IDisposable
         ent.Dispose();
     }
 
-    /// <summary>Formats this entity and selected components for diagnostics.</summary>
-    public override string ToString() => ent.ToString();
+        public override string ToString() => ent.ToString();
 }
 

@@ -1,25 +1,21 @@
 namespace AlvorKit.ECS;
 
-/// <summary>Represents a mutable value handle to an entity generation.</summary>
 [DebuggerTypeProxy(typeof(EntDebugView))]
 public readonly record struct EntMut : IEntMut
 {
-    /// <summary>Converts a mutable handle to a read-only handle for the same entity generation.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static implicit operator Ent(EntMut a) => new(a.Index, a.Generation);
 
     internal readonly int Index;
     internal readonly int Generation;
 
-    /// <summary>Gets the stable handle for this entity generation.</summary>
-    public EntHandle Handle
+        public EntHandle Handle
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         get => new(Index, Generation);
     }
 
-    /// <summary>Returns whether this handle still points at a live entity generation.</summary>
-    public bool IsAlive
+        public bool IsAlive
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         get => EntReg.PageGenerations[PageIndex][SubIndex] == Generation;
@@ -47,8 +43,7 @@ public readonly record struct EntMut : IEntMut
         Generation = generation;
     }
 
-    /// <summary>Gets the component value for the requested value and marker types, or the default value when absent.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public T? Get<T, N>()
     {
         if (!IsAlive)
@@ -61,8 +56,7 @@ public readonly record struct EntMut : IEntMut
         return val.Generation == Generation ? val.Value : default;
     }
 
-    /// <summary>Returns whether this entity currently has the requested component.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool Has<T, N>()
     {
         if (!IsAlive)
@@ -74,8 +68,7 @@ public readonly record struct EntMut : IEntMut
         return page[SubIndex].Generation == Generation;
     }
 
-    /// <summary>Sets the component value for the requested value and marker types.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void Set<T, N>(in T value)
     {
         if (!IsAlive)
@@ -101,8 +94,7 @@ public readonly record struct EntMut : IEntMut
         val.Value = value;
     }
 
-    /// <summary>Removes the requested component and returns whether it was present.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool Unset<T, N>()
     {
         if (!IsAlive)
@@ -156,6 +148,5 @@ public readonly record struct EntMut : IEntMut
         return page;
     }
 
-    /// <summary>Formats this entity and selected components for diagnostics.</summary>
-    public override string ToString() => Handle.ToString();
+        public override string ToString() => Handle.ToString();
 }

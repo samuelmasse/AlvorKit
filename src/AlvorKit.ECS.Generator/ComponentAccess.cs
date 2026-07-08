@@ -1,10 +1,8 @@
 namespace AlvorKit.ECS.Generator;
 
-/// <summary>Maps Roslyn accessibility values to generated C# access text.</summary>
 internal static class ComponentAccess
 {
-    /// <summary>Returns source text for a declared accessibility value.</summary>
-    internal static string ToAccessString(Accessibility accessibility) => accessibility switch
+        internal static string ToAccessString(Accessibility accessibility) => accessibility switch
     {
         Accessibility.Internal => "internal",
         Accessibility.Protected => "protected",
@@ -13,8 +11,7 @@ internal static class ComponentAccess
         _ => "public"
     };
 
-    /// <summary>Returns the wider of two generated accessor modifiers.</summary>
-    internal static string WiderAccess(string first, string second)
+        internal static string WiderAccess(string first, string second)
     {
         if (first == second)
             return first;
@@ -28,8 +25,7 @@ internal static class ComponentAccess
         return firstRank > secondRank ? first : second;
     }
 
-    /// <summary>Returns a comparable rank for generated C# access text.</summary>
-    private static int AccessRank(string access) => access switch
+        private static int AccessRank(string access) => access switch
     {
         "private" => 0,
         "protected" => 1,

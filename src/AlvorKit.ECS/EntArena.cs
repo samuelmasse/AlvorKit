@@ -1,16 +1,13 @@
 namespace AlvorKit.ECS;
 
-/// <summary>Owns a disposable arena allocator for manually managed ECS entities.</summary>
 public readonly struct EntArena : IDisposable
 {
     private readonly int index;
     private readonly int generation;
 
-    /// <summary>Returns whether the arena has not been disposed.</summary>
-    public bool IsAlive => index != 0 && EntReg.Allocators[index].Generation == generation;
+        public bool IsAlive => index != 0 && EntReg.Allocators[index].Generation == generation;
 
-    /// <summary>Gets the number of currently allocated live entities in this arena.</summary>
-    public int Allocated => Capacity - Free;
+        public int Allocated => Capacity - Free;
 
     internal int Index => index;
     internal int Generation => generation;
@@ -19,8 +16,7 @@ public readonly struct EntArena : IDisposable
     internal EntAllocator Allocator => EntReg.Allocators[index];
     internal EntRegView Registry => EntReg.View;
 
-    /// <summary>Creates an arena backed by a reusable allocator slot.</summary>
-    public EntArena()
+        public EntArena()
     {
         if (!EntReg.FreeAllocators.TryTake(out index))
         {
@@ -34,8 +30,7 @@ public readonly struct EntArena : IDisposable
         generation = Allocator.Generation;
     }
 
-    /// <summary>Allocates a new disposable entity owned by this arena.</summary>
-    public EntPtr Alloc()
+        public EntPtr Alloc()
     {
         if (!IsAlive)
             throw new EntArenaDisposedException();
@@ -43,8 +38,7 @@ public readonly struct EntArena : IDisposable
         return new(index);
     }
 
-    /// <summary>Disposes the arena, releases all pages, and invalidates entities allocated from it.</summary>
-    public void Dispose()
+        public void Dispose()
     {
         if (!IsAlive)
             return;

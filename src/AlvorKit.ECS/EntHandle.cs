@@ -1,6 +1,5 @@
 namespace AlvorKit.ECS;
 
-/// <summary>Stores the index and generation identity for an entity.</summary>
 public readonly struct EntHandle
 {
     internal readonly int Index;
@@ -30,8 +29,7 @@ public readonly struct EntHandle
         get => Index & EntReg.PageMask;
     }
 
-    /// <summary>Formats this handle and selected components for diagnostics.</summary>
-    public override string ToString() => ToStringCycleDetection([]);
+        public override string ToString() => ToStringCycleDetection([]);
 
     internal string ToStringCycleDetection(HashSet<(int, int)> seen)
     {
