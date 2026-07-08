@@ -50,18 +50,18 @@ public class EntIdxContextBuilder
     /// <typeparam name="N">The bool marker component.</typeparam>
     /// <typeparam name="TGate">The bool gate component.</typeparam>
     /// <param name="bag">The mutable bag maintained by registered interceptors.</param>
-    public void AddBag<N, TGate>(EntIdxBagMut<N, TGate> bag)
+    public void AddGatedBag<N, TGate>(EntIdxGatedBagMut<N, TGate> bag)
         where N : IComponent
         where TGate : IComponent
     {
         ValidateBool<N>("marker");
         ValidateBool<TGate>("gate");
-        ThrowIfBagRegistered<EntIdxBagIndex<N, TGate>>();
+        ThrowIfBagRegistered<EntIdxGatedBagIndex<N, TGate>>();
 
-        var interceptor = new EntIdxBagInterceptor<N, TGate>(bag);
+        var interceptor = new EntIdxGatedBagInterceptor<N, TGate>(bag);
         AddPost<bool, N>(interceptor.Update);
         AddPost<bool, TGate>(interceptor.Update);
-        AddPre<int, EntIdxBagIndex<N, TGate>>(interceptor.RemoveWhenIndexUnsets);
+        AddPre<int, EntIdxGatedBagIndex<N, TGate>>(interceptor.RemoveWhenIndexUnsets);
     }
 
     /// <summary>Appends a hook to a context-owned hook list component.</summary>
@@ -99,19 +99,5 @@ public class EntIdxContextBuilder
             throw new EntIdxRegistrationException(
                 $"Bag identity {typeof(TBagIndex).FullName} is already registered on this context.");
     }
-}
-
-/// <summary>Registers indexed ECS hooks and bags for one context with a shared loaded gate.</summary>
-/// <typeparam name="TLoaded">The bool component used as the loaded gate.</typeparam>
-public class EntIdxContextBuilder<TLoaded> : EntIdxContextBuilder where TLoaded : IComponent
-{
-    /// <summary>Creates a context builder and validates the loaded gate component type.</summary>
-    public EntIdxContextBuilder() => ValidateBool<TLoaded>("loaded gate");
-
-    /// <summary>Registers a bag gated by the builder's loaded component.</summary>
-    /// <typeparam name="N">The bool marker component.</typeparam>
-    /// <param name="bag">The mutable bag maintained by registered interceptors.</param>
-    public void AddBagLoaded<N>(EntIdxBagMut<N, TLoaded> bag) where N : IComponent =>
-        AddBag<N, TLoaded>(bag);
 }
 

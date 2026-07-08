@@ -1,5 +1,6 @@
 <Solution>
     <Project Path="src/AlvorStarter/AlvorStarter.csproj" DefaultStartup="true" />
     <Project Path="src/AlvorStarter.App/AlvorStarter.App.csproj" />
+    <Project Path="src/AlvorStarter.App.Frontend/AlvorStarter.App.Frontend.csproj" />
     <Project Path="src/AlvorStarter.Menus/AlvorStarter.Menus.csproj" />
 </Solution>

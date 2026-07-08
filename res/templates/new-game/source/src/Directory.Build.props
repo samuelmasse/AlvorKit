@@ -18,16 +18,6 @@
         <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
     </PropertyGroup>
 
-    <ItemGroup>
-        <Using Include="AlvorKit.Engine" />
-        <Using Include="AlvorKit.Engine.Loop" />
-        <Using Include="AlvorKit.Graphics2D" />
-        <Using Include="AlvorKit.Graphics2D.Fonts" />
-        <Using Include="AlvorKit.Injection" />
-        <Using Include="AlvorKit.Maths" />
-        <Using Include="AlvorKit.Windowing" />
-    </ItemGroup>
-
     <Target Name="EnsureAlvorKitSibling" BeforeTargets="ResolveProjectReferences">
         <Error Condition="!Exists('$(AlvorKitRoot)AlvorKit.slnx')"
             Text="AlvorKit sibling clone not found at '$(AlvorKitRoot)'. Clone AlvorKit next to the AlvorStarter repository." />

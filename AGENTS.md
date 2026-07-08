@@ -199,6 +199,13 @@ centralize them.
   code; reserve static members for constants, operators, pure domain functions
   with no collaborator dependency, and framework-required entry points.
 
+## Project Split Model
+
+Before creating or reorganizing game projects, package boundaries, frontend,
+backend, server, protocol, or menu packages, read
+[docs/ProjectSplitModel.md](docs/ProjectSplitModel.md). Keep dependency
+direction consistent with the pure/frontend/menu/backend/server split.
+
 ## Game Scope Organization
 
 Before creating or reorganizing game dependency-injection scopes,

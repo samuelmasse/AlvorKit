@@ -1,4 +1,4 @@
-namespace AlvorStarter.App;
+namespace AlvorStarter.Menus;
 
 /// <summary>Blend-backed UI style for Alvor Starter.</summary>
 [App]

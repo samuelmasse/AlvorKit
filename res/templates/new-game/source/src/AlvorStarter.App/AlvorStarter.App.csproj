@@ -1,19 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
-        <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
-        <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
-        <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.UI\AlvorKit.UI.csproj" />
-        <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.UI.Blend\AlvorKit.UI.Blend.csproj" />
+        <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.Injection\AlvorKit.Injection.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.ECS" />
-        <Using Include="AlvorKit.OpenGL" />
-        <Using Include="AlvorKit.OpenGL.Layer" />
-        <Using Include="AlvorKit.UI" />
-        <Using Include="AlvorKit.UI.Blend" />
+        <Using Include="AlvorKit.Injection" />
     </ItemGroup>
 
 </Project>

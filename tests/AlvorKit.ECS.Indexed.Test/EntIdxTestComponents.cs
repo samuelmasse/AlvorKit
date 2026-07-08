@@ -8,7 +8,7 @@ public abstract class EntIdxManualIntComponent : IComponent
 [Components]
 public interface IEntIdxTestComponents
 {
-    public bool IsLoaded { get; set; }
+    public bool IsReady { get; set; }
     public bool IsThing { get; set; }
     public bool IsOther { get; set; }
     public bool IsGateA { get; set; }

@@ -15,18 +15,19 @@ public class NewGameGeneratorTest
         var result = new NewGameGenerator().Generate(options);
 
         Assert.AreEqual(output, result.OutputPath);
-        Assert.AreEqual(20, result.FileCount);
+        Assert.AreEqual(21, result.FileCount);
         AssertFile(output, "AGENTS.md");
         AssertFile(output, "HelloAlvor.slnx");
         AssertFile(output, "src/Directory.Build.props");
         AssertFile(output, "src/HelloAlvor/Program.cs");
         AssertFile(output, "src/HelloAlvor.App/HelloAlvor.App.csproj");
         AssertFile(output, "src/HelloAlvor.App/AppScope.cs");
-        AssertFile(output, "src/HelloAlvor.App/AppStyle.cs");
-        AssertFile(output, "src/HelloAlvor.App/AppGlTriangle.cs");
-        AssertFile(output, "src/HelloAlvor.App/AppSpriteScene.cs");
+        AssertFile(output, "src/HelloAlvor.App/AppCounter.cs");
+        AssertFile(output, "src/HelloAlvor.App.Frontend/HelloAlvor.App.Frontend.csproj");
+        AssertFile(output, "src/HelloAlvor.App.Frontend/AppGlTriangle.cs");
+        AssertFile(output, "src/HelloAlvor.App.Frontend/AppSpriteScene.cs");
         AssertFile(output, "src/HelloAlvor.Menus/HelloAlvor.Menus.csproj");
-        AssertFile(output, "src/HelloAlvor.Menus/AppCounter.cs");
+        AssertFile(output, "src/HelloAlvor.Menus/AppStyle.cs");
         AssertFile(output, "src/HelloAlvor.Menus/AppMainMenu.cs");
         Assert.IsFalse(File.Exists(Path(output, "AlvorStarter.slnx.template")));
         StringAssert.Contains(Read(output, "src/HelloAlvor.Menus/AppMainMenu.cs"), "Hello Alvor");
@@ -48,13 +49,37 @@ public class NewGameGeneratorTest
         var solution = Read(output, "SampleGame.slnx");
         StringAssert.Contains(solution, "<Project Path=\"src/SampleGame/SampleGame.csproj\" DefaultStartup=\"true\" />");
         StringAssert.Contains(solution, "<Project Path=\"src/SampleGame.App/SampleGame.App.csproj\" />");
+        StringAssert.Contains(solution, "<Project Path=\"src/SampleGame.App.Frontend/SampleGame.App.Frontend.csproj\" />");
         StringAssert.Contains(solution, "<Project Path=\"src/SampleGame.Menus/SampleGame.Menus.csproj\" />");
-        StringAssert.Contains(Read(output, "src/SampleGame.App/AppGlTriangle.cs"), "gl.DrawArrays");
-        StringAssert.Contains(Read(output, "src/SampleGame.App/AppSpriteScene.cs"), "sprites.Batch.Draw");
-        StringAssert.Contains(Read(output, "src/SampleGame.App/AppSpriteScene.cs"), "HELLO ALVOR");
+        StringAssert.Contains(Read(output, "src/SampleGame.App.Frontend/AppGlTriangle.cs"), "gl.DrawArrays");
+        StringAssert.Contains(Read(output, "src/SampleGame.App.Frontend/AppSpriteScene.cs"), "sprites.Batch.Draw");
         var menu = Read(output, "src/SampleGame.Menus/AppMainMenu.cs");
         StringAssert.Contains(menu, "OnClickF(counter.Increment)");
         Assert.IsFalse(menu.Contains("ActiveButton", StringComparison.Ordinal));
+    }
+
+    /// <summary>Keeps generated project references aligned with the pure, frontend, and menu package split.</summary>
+    [TestMethod]
+    public void GenerateKeepsProjectSplitDependenciesClean()
+    {
+        using var workspace = TempWorkspace.Create("AlvorKit.Script.NewGame");
+        var output = workspace.CreateDirectory("SplitGame");
+        var options = NewGameOptions.Parse(["SplitGame", "--output", output], AlvorKitRoot);
+
+        new NewGameGenerator().Generate(options);
+
+        var app = Read(output, "src/SplitGame.App/SplitGame.App.csproj");
+        AssertDoesNotContain(app, "AlvorKit.Engine.Loop");
+        AssertDoesNotContain(app, "AlvorKit.UI");
+        AssertDoesNotContain(app, "AlvorKit.OpenGL");
+        AssertDoesNotContain(app, "AlvorKit.Windowing");
+        AssertDoesNotContain(app, "SplitGame.App.Frontend");
+        AssertDoesNotContain(app, "SplitGame.Menus");
+
+        var frontend = Read(output, "src/SplitGame.App.Frontend/SplitGame.App.Frontend.csproj");
+        StringAssert.Contains(frontend, "AlvorKit.Engine.csproj");
+        AssertDoesNotContain(frontend, "AlvorKit.Engine.Loop");
+        AssertDoesNotContain(frontend, "SplitGame.Menus");
     }
 
     /// <summary>Emits the documented sibling AlvorKit path and an actionable missing-clone hint.</summary>
@@ -86,8 +111,11 @@ public class NewGameGeneratorTest
         AssertFile(root, "AlvorStarter.slnx.template");
         AssertFile(root, "src/AlvorStarter/Program.cs");
         AssertFile(root, "src/AlvorStarter.App/AppScope.cs");
-        AssertFile(root, "src/AlvorStarter.App/AppGlTriangle.cs");
+        AssertFile(root, "src/AlvorStarter.App/AppCounter.cs");
+        AssertFile(root, "src/AlvorStarter.App.Frontend/AppGlTriangle.cs");
+        AssertFile(root, "src/AlvorStarter.App.Frontend/AppSpriteScene.cs");
         AssertFile(root, "src/AlvorStarter.Menus/AppStarterState.cs");
+        AssertFile(root, "src/AlvorStarter.Menus/AppStyle.cs");
         AssertFile(root, "src/AlvorStarter.Menus/AppMainMenu.cs");
         StringAssert.Contains(Read(root, "src/AlvorStarter.Menus/AppStarterState.cs"), "namespace AlvorStarter.Menus;");
     }
@@ -104,7 +132,7 @@ public class NewGameGeneratorTest
 
         Assert.IsFalse(Directory.Exists(Path(output, "bin")));
         Assert.IsFalse(Directory.Exists(Path(output, "obj")));
-        Assert.AreEqual(20, Directory.GetFiles(output, "*", SearchOption.AllDirectories).Length);
+        Assert.AreEqual(21, Directory.GetFiles(output, "*", SearchOption.AllDirectories).Length);
     }
 
     /// <summary>Rejects names that cannot become a C# namespace and project name.</summary>
@@ -140,6 +168,9 @@ public class NewGameGeneratorTest
 
     private static string Read(string root, string relativePath) =>
         File.ReadAllText(Path(root, relativePath));
+
+    private static void AssertDoesNotContain(string text, string unexpected) =>
+        Assert.IsFalse(text.Contains(unexpected, StringComparison.Ordinal), $"Did not expect '{unexpected}'.");
 
     private static string Path(string root, string relativePath) =>
         System.IO.Path.Combine(root, relativePath.Replace('/', System.IO.Path.DirectorySeparatorChar));

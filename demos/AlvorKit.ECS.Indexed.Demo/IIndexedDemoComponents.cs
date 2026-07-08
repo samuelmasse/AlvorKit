@@ -13,8 +13,8 @@ public interface IIndexedDemoComponents
     /// <summary>A health value observed by pre and post hooks.</summary>
     [ComponentToString] int Health { get; set; }
 
-    /// <summary>The loaded gate used by the demo's loaded projectile bag.</summary>
-    bool IsLoaded { get; set; }
+    /// <summary>The readiness gate used by the demo's gated projectile bag.</summary>
+    bool IsReady { get; set; }
 
     /// <summary>A marker for projectile entities.</summary>
     bool IsProjectile { get; set; }
@@ -22,4 +22,3 @@ public interface IIndexedDemoComponents
     /// <summary>A plain marker used by an ungated bag.</summary>
     bool IsScratched { get; set; }
 }
-

@@ -17,7 +17,7 @@ public class EntIdxBagTest
         EntMutIdx firstMut = first;
         EntMutIdx secondMut = second;
 
-        first.IsLoaded = true;
+        first.IsReady = true;
         Assert.AreEqual(0, bag.Count);
 
         first.IsThing = true;
@@ -37,8 +37,8 @@ public class EntIdxBagTest
     public void EntIdxBag_GatedMembership_FollowsMarkerAndGateTransitions()
     {
         var context = new EntIdxContextBuilder();
-        var bag = new EntIdxBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsLoaded>();
-        context.AddBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsLoaded>(bag);
+        var bag = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
+        context.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(bag);
 
         using var arena = new EntIdxArena(context.Ent);
         var entity = arena.Alloc();
@@ -49,7 +49,7 @@ public class EntIdxBagTest
         entity.IsThing = true;
         AssertBagState(bag, mut, false);
 
-        entity.IsLoaded = true;
+        entity.IsReady = true;
         AssertBagState(bag, mut, true);
 
         entity.IsThing = false;
@@ -58,23 +58,23 @@ public class EntIdxBagTest
         entity.IsThing = true;
         AssertBagState(bag, mut, true);
 
-        entity.IsLoaded = false;
+        entity.IsReady = false;
         AssertBagState(bag, mut, false);
 
-        entity.IsLoaded = true;
+        entity.IsReady = true;
         AssertBagState(bag, mut, true);
 
         Assert.IsTrue(entity.UnsetIsThing());
         AssertBagState(bag, mut, false);
 
-        entity.IsLoaded = false;
-        entity.IsLoaded = true;
+        entity.IsReady = false;
+        entity.IsReady = true;
         AssertBagState(bag, mut, false);
 
         entity.IsThing = true;
         AssertBagState(bag, mut, true);
 
-        Assert.IsTrue(entity.UnsetIsLoaded());
+        Assert.IsTrue(entity.UnsetIsReady());
         AssertBagState(bag, mut, false);
     }
 
@@ -83,14 +83,14 @@ public class EntIdxBagTest
     public void EntIdxBag_GatedMembership_AllowsGateBeforeMarker()
     {
         var context = new EntIdxContextBuilder();
-        var bag = new EntIdxBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsLoaded>();
-        context.AddBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsLoaded>(bag);
+        var bag = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
+        context.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(bag);
 
         using var arena = new EntIdxArena(context.Ent);
         var entity = arena.Alloc();
         EntMutIdx mut = entity;
 
-        entity.IsLoaded = true;
+        entity.IsReady = true;
         AssertBagState(bag, mut, false);
 
         entity.IsThing = true;
@@ -103,12 +103,12 @@ public class EntIdxBagTest
     {
         var context = new EntIdxContextBuilder();
         var plain = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
-        var gateA = new EntIdxBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsGateA>();
-        var gateB = new EntIdxBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsGateB>();
+        var gateA = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsGateA>();
+        var gateB = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsGateB>();
 
         context.AddBag(plain);
-        context.AddBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsGateA>(gateA);
-        context.AddBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsGateB>(gateB);
+        context.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsGateA>(gateA);
+        context.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsGateB>(gateB);
 
         using var arena = new EntIdxArena(context.Ent);
         var entity = arena.Alloc();
@@ -198,14 +198,14 @@ public class EntIdxBagTest
         var context = new EntIdxContextBuilder();
         using var arena = new EntIdxArena(context.Ent);
         var dummy = arena.Alloc();
-        dummy.Set<int, EntIdxBagIndex<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsLoaded>>(42);
+        dummy.Set<int, EntIdxGatedBagIndex<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>>(42);
 
-        var bag = new EntIdxBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsLoaded>();
-        context.AddBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsLoaded>(bag);
+        var bag = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
+        context.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(bag);
 
         var entity = arena.Alloc();
         entity.IsThing = true;
-        entity.IsLoaded = true;
+        entity.IsReady = true;
         Assert.AreEqual(1, bag.Count);
 
         entity.Dispose();
@@ -266,7 +266,7 @@ public class EntIdxBagTest
         Assert.AreEqual(expected, bag.Ents.Length == 1);
     }
 
-    private static void AssertBagState<N, TGate>(EntIdxBagMut<N, TGate> bag, EntMutIdx entity, bool expected)
+    private static void AssertBagState<N, TGate>(EntIdxGatedBagMut<N, TGate> bag, EntMutIdx entity, bool expected)
         where N : IComponent
         where TGate : IComponent
     {

@@ -30,7 +30,7 @@ internal sealed class EntIdxBagInterceptor<N>(EntIdxBagMut<N> bag) where N : ICo
 /// <summary>Maintains a gated marker bag from indexed hook callbacks.</summary>
 /// <typeparam name="N">The bool marker component type.</typeparam>
 /// <typeparam name="TGate">The bool gate component type.</typeparam>
-internal sealed class EntIdxBagInterceptor<N, TGate>(EntIdxBagMut<N, TGate> bag)
+internal sealed class EntIdxGatedBagInterceptor<N, TGate>(EntIdxGatedBagMut<N, TGate> bag)
     where N : IComponent
     where TGate : IComponent
 {
@@ -56,4 +56,3 @@ internal sealed class EntIdxBagInterceptor<N, TGate>(EntIdxBagMut<N, TGate> bag)
             bag.Remove(ent);
     }
 }
-

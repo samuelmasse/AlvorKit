@@ -80,17 +80,10 @@ public class EntIdxContextBuilder
 
     public void AddBag<N>(EntIdxBagMut<N> bag)
         where N : IComponent;                     // membership = marker
-    public void AddBag<N, TGate>(EntIdxBagMut<N, TGate> bag)
+    public void AddGatedBag<N, TGate>(EntIdxGatedBagMut<N, TGate> bag)
         where N : IComponent where TGate : IComponent;  // marker && gate
 
     protected void Add<P, PT>(PT hook);           // internal machinery
-}
-
-public class EntIdxContextBuilder<TLoaded> : EntIdxContextBuilder
-    where TLoaded : IComponent
-{
-    public void AddBagLoaded<N>(EntIdxBagMut<N, TLoaded> bag)
-        where N : IComponent;                     // AddBag<N, TLoaded>
 }
 ```
 
@@ -99,23 +92,18 @@ Naming is deliberate and truthful:
 - `AddBag<N>` — plain marker bag. Contains every live entity whose marker is
   true. This replaces Craftdig's `AddBagUnloaded`, whose name wrongly read as
   "unloaded-only" when it meant "loaded-or-not".
-- `AddBag<N, TGate>` — the general primitive: marker && gate. Any bool marker
-  can gate a bag (`IsLoaded`, `IsActive`, ...). `TGate` is not inferrable from
-  the parameter, so call sites spell both type arguments; the generic builder
-  exists to remove that noise for the common gate.
-- `AddBagLoaded<N>` — sugar on the generic builder for the scope-wide loaded
-  gate. This replaces Craftdig's `AddBag`, and fixes its hidden dependency on
-  `WorldComponents.IsLoaded`.
+- `AddGatedBag<N, TGate>` — the general primitive: marker && gate. Any bool marker
+  can gate a bag (`IsReady`, `IsActive`, ...). `TGate` is not inferrable from
+  every call shape, but named bag wrapper types usually infer cleanly.
 
 The bag identity is the marker plus its gate. `AddBag<N>` owns the plain
-marker-only identity, while `AddBag<N, TGate>` and `AddBagLoaded<N>` own
+marker-only identity, while `AddGatedBag<N, TGate>` owns
 separate gated identities. This means a scope may maintain `all monsters`,
-`loaded monsters`, and `visible monsters` as distinct bags over the same marker;
+`ready monsters`, and `visible monsters` as distinct bags over the same marker;
 only an exact duplicate `(marker, gate)` registration is rejected.
 
-The base and generic builders never declare same-signature methods with
-different gating; the static type of a builder reference must never decide bag
-semantics.
+The bag parameter type carries the gating semantics; the static type of a
+builder reference must never decide whether a bag is plain or gated.
 
 Hook lists are stored as `ReadOnlyMemory<delegate>` components on the
 builder's `EntObj` context entity, keyed by internal marker types
@@ -139,7 +127,7 @@ public class EntIdxBagMut<N> where N : IComponent
     internal void Remove(EntMutIdx ent);
 }
 
-public class EntIdxBagMut<N, TGate>
+public class EntIdxGatedBagMut<N, TGate>
     where N : IComponent
     where TGate : IComponent
 {
@@ -158,7 +146,7 @@ public class EntIdxBag<N>(EntIdxBagMut<N> bag) where N : IComponent
     public bool Contains(EntMutIdx ent);
 }
 
-public class EntIdxBag<N, TGate>(EntIdxBagMut<N, TGate> bag)
+public class EntIdxGatedBag<N, TGate>(EntIdxGatedBagMut<N, TGate> bag)
     where N : IComponent
     where TGate : IComponent
 {
@@ -207,11 +195,11 @@ public class EntIdxRegistrationException : Exception;
 ```
 
 Thrown at registration time (load time) for: a marker or gate whose generated
-value type is not `bool` in `AddBag*`, a `(T, N)` pair where
-`N.Component.ValueType != typeof(T)` in `AddPre`/`AddPost`, a non-bool
-`TLoaded` at generic-builder construction, and a duplicate bag registration
-for the same marker+gate identity on the same context. All checks read the
-`IComponent.Component` static metadata, so they cost nothing after loading.
+value type is not `bool` in `AddBag`/`AddGatedBag`, a `(T, N)` pair where
+`N.Component.ValueType != typeof(T)` in `AddPre`/`AddPost`, and a duplicate bag
+registration for the same marker+gate identity on the same context. All checks
+read the `IComponent.Component` static metadata, so they cost nothing after
+loading.
 
 Without these checks the failures are silent: a mistyped `(T, N)` pair
 registers hooks that no write ever fires, and a non-bool gate makes a bag
@@ -341,25 +329,24 @@ handles before tearing the scope down.
 ### Bag Semantics
 
 The dense bag keeps Craftdig's proven slot layout, but the back-index key is
-per bag identity. Plain bags use `EntIdxBagIndex<N>`; gated bags use
-`EntIdxBagIndex<N, TGate>` so different gates over one marker do not collide:
+per bag identity. The storage mechanics live in one internal
+`EntIdxBagStore<TIndex>`; plain bags instantiate it with `EntIdxBagIndex<N>`,
+and gated bags instantiate it with `EntIdxGatedBagIndex<N, TGate>` so different
+gates over one marker do not collide:
 
 ```csharp
-public class EntIdxBagMut<N, TGate>
-    where N : IComponent
-    where TGate : IComponent
+internal struct EntIdxBagStore<TIndex> where TIndex : IComponent
 {
     private EntMutIdx[] ents = [default, default];
     private int count = 1;
 
     public ReadOnlySpan<EntMutIdx> Ents => new(ents, 1, count - 1);
     public int Count => count - 1;
-    public bool Contains(EntMutIdx ent) =>
-        ent.Get<int, EntIdxBagIndex<N, TGate>>() > 0;
+    public bool Contains(EntMutIdx ent) => ent.Get<int, TIndex>() > 0;
 
     internal void Add(EntMutIdx ent)
     {
-        ent.Set<int, EntIdxBagIndex<N, TGate>>(count);
+        ent.Set<int, TIndex>(count);
         if (count >= ents.Length)
             Array.Resize(ref ents, ents.Length * 2);
         ents[count++] = ent;
@@ -370,19 +357,19 @@ public class EntIdxBagMut<N, TGate>
         if (!Contains(ent))
             return;
 
-        int index = ent.Get<int, EntIdxBagIndex<N, TGate>>();
+        int index = ent.Get<int, TIndex>();
         ref var last = ref ents[count - 1];
         ents[index] = last;
-        last.Set<int, EntIdxBagIndex<N, TGate>>(index);
+        last.Set<int, TIndex>(index);
         last = default;
-        ent.Set<int, EntIdxBagIndex<N, TGate>>(-1);
+        ent.Set<int, TIndex>(-1);
         count--;
     }
 }
 ```
 
-`EntIdxBagMut<N>` is the same implementation shape specialized to the plain
-marker-only identity and uses `EntIdxBagIndex<N>`.
+`EntIdxBagMut<N>` and `EntIdxGatedBagMut<N, TGate>` are thin public wrappers
+over this store with different index key types.
 
 Slot 0 is reserved so `0` (the unset default of the internal
 `EntIdxBagIndex<...>` int component) means "never in this bag". Removal writes
@@ -390,11 +377,11 @@ Slot 0 is reserved so `0` (the unset default of the internal
 hook below removes on `0` only, so the bag's own internal writes never
 re-trigger removal.
 
-`AddBag<N, TGate>` registers three hooks:
+`AddGatedBag<N, TGate>` registers three hooks:
 
 1. post on `(bool, N)` — recompute membership when the marker changes
 2. post on `(bool, TGate)` — recompute membership when the gate changes
-3. pre on `(int, EntIdxBagIndex<N, TGate>)` — the **index backstop**: remove
+3. pre on `(int, EntIdxGatedBagIndex<N, TGate>)` — the **index backstop**: remove
    from the bag when the index component is unset (pre hook receives
    `default` = 0 while the old index is still readable)
 
@@ -414,8 +401,8 @@ add/remove — noise. Bypassing the pipeline for internal writes is not worth an
 `InternalsVisibleTo` into the base package, and suppressing the unset-time
 backstop would reintroduce the ordering bug.
 
-One bag per marker+gate identity per context, enforced: two `AddBag<N, TGate>`
-registrations would share `EntIdxBagIndex<N, TGate>` and duplicate the same
+One bag per marker+gate identity per context, enforced: two `AddGatedBag<N, TGate>`
+registrations would share `EntIdxGatedBagIndex<N, TGate>` and duplicate the same
 derived state. The duplicate registration throws `EntIdxRegistrationException`
 (detected by the backstop hook already existing for that bag index component on
 the context). Different gates over the same marker use different index
@@ -488,7 +475,7 @@ namespace MyGame.Run;
 public interface IRunComponents
 {
     [ComponentToString] RunEntityKind Kind { get; set; }
-    [ComponentToString] bool IsLoaded { get; set; }
+    [ComponentToString] bool IsReady { get; set; }
     [ComponentToString] bool IsProjectile { get; set; }
     bool IsEnemy { get; set; }
     Vec2 Position { get; set; }
@@ -508,7 +495,7 @@ need:
 ```csharp
 [Run]
 public sealed class RunEntIdxContextBuilder :
-    EntIdxContextBuilder<RunComponents.IsLoaded>;
+    EntIdxContextBuilder;
 
 [Run]
 public sealed class RunEntArena(RunEntIdxContextBuilder context) :
@@ -516,15 +503,15 @@ public sealed class RunEntArena(RunEntIdxContextBuilder context) :
 
 [Run]
 public sealed class RunProjectileBagMut :
-    EntIdxBagMut<RunComponents.IsProjectile, RunComponents.IsLoaded>;
+    EntIdxGatedBagMut<RunComponents.IsProjectile, RunComponents.IsReady>;
 
 [Run]
 public sealed class RunProjectileBag(RunProjectileBagMut bag) :
-    EntIdxBag<RunComponents.IsProjectile, RunComponents.IsLoaded>(bag);
+    EntIdxGatedBag<RunComponents.IsProjectile, RunComponents.IsReady>(bag);
 ```
 
-Scopes without streaming state use the non-generic `EntIdxContextBuilder` and
-plain `AddBag`. Scope hierarchies reuse loader code by subclassing builders
+Scopes use `EntIdxContextBuilder` with plain `AddBag` or gated `AddGatedBag`.
+Scope hierarchies reuse loader code by subclassing builders
 (`DimensionEntIdxContextBuilder : WorldEntIdxContextBuilder`); each scope
 instance has its own context entity, so hooks never leak between scopes.
 
@@ -542,7 +529,7 @@ public sealed class RunLoader(
 {
     public void Run()
     {
-        context.AddBagLoaded(projectileBag);
+        context.AddGatedBag(projectileBag);
         context.AddBag(seerBag);
         context.AddPost<Vec2, RunComponents.Position>(spatialIndex.Intercept);
         context.AddPre<Guid, RunComponents.Id>(entIndex.Intercept);
@@ -570,15 +557,15 @@ public sealed class RunProjectileSpawner(RunEntArena arena)
             .Velocity(velocity)
             .Ttl(1.5f)
             .IsProjectile(true)
-            .IsLoaded(true);
+            .IsReady(true);
     }
 }
 ```
 
 Set data components before flipping membership markers: bag hooks fire
 immediately, so an entity is visible to bag consumers the instant its marker
-and gate are both true. Flipping `IsLoaded` last means the bag never exposes a
-half-initialized entity. (Craftdig follows this convention already:
+and gate are both true. Flipping the gate last means the bag never exposes a
+half-initialized entity. (Craftdig follows this convention with its own gate:
 `PlayerCommonState.Load` and the chunk receivers set data first, `IsLoaded`
 last.)
 
@@ -801,7 +788,7 @@ Measured shape of the code paths (verify with the benchmark plan below):
 - Marker toggle with a bag transition: interceptor reads (2–3 component
   `Get`s) plus `Add`/`Remove`, whose internal index `Set` runs a near-empty
   pipeline — tens of ns.
-- Gate toggle (`IsLoaded`): O(gated bags in the context) interceptor runs per
+- Gate toggle (for example, Craftdig's `IsLoaded`): O(gated bags in the context) interceptor runs per
   entity. Craftdig's per-context maximum today is 3; chunk streaming
   multiplies this per entity load/unload. Linear, small, and the scaling axis
   to watch.
@@ -899,8 +886,8 @@ Summary of every deliberate divergence, for the migration:
 
 | Area | Craftdig | Engine |
 |---|---|---|
-| Loaded gating | Hardcoded `WorldComponents.IsLoaded` | `AddBag<N, TGate>` + `EntIdxContextBuilder<TLoaded>` |
-| Bag names | `AddBag` (gated), `AddBagUnloaded` | `AddBagLoaded` (gated), `AddBag` (plain) |
+| Loaded gating | Hardcoded `WorldComponents.IsLoaded` | `EntIdxGatedBagMut<N, TGate>` + `AddGatedBag<N, TGate>` |
+| Bag names | `AddBag` (gated), `AddBagUnloaded` | `AddGatedBag` (gated), `AddBag` (plain) |
 | Pre-hook delegate | `Action<EntMutIdx, T>` | `EntIdxPreHook<T>` with `in T` |
 | Liveness | Hooks run on dead handles | Guards in Set/Unset/Dispose |
 | Unset | `Set(default)` + `Unset`; wrong return on absent | Has-guarded pipeline; post observes absent |
@@ -926,20 +913,21 @@ src/AlvorKit.ECS.Indexed/
     AlvorKit.ECS.Indexed.csproj      (ref AlvorKit.ECS;
                                       InternalsVisibleTo AlvorKit.ECS.Indexed.Test)
     EntIdxArena.cs
-    EntIdxContextBuilder.cs          (base + generic TLoaded builder)
+    EntIdxContextBuilder.cs          (hook, plain bag, and gated bag registration)
     EntIdxHooks.cs                   (3 public delegates + internal marker keys
                                       EntIdxPre/EntIdxPost/EntIdxPreDispose)
     EntIdxRegistrationException.cs
     Ent/EntPtrIdx.cs
     Ent/EntMutIdx.cs
-    Bag/EntIdxBagMut.cs
+    Bag/EntIdxBagMut.cs             (public plain/gated mutable wrappers)
     Bag/EntIdxBag.cs
     Bag/EntIdxBagIndex.cs            (internal, : IComponent, int value)
+    Bag/EntIdxBagStore.cs            (internal dense slot storage)
     Bag/EntIdxBagInterceptor.cs      (internal, gated + ungated arities)
 
 tests/AlvorKit.ECS.Indexed.Test/
     AlvorKit.ECS.Indexed.Test.csproj (refs ECS, ECS.Indexed, generator analyzer)
-    EntIdxTestComponents.cs          ([Components] fixture: IsLoaded, IsThing,
+    EntIdxTestComponents.cs          ([Components] fixture: IsReady, IsThing,
                                       IsOther, Id Guid, Value int, Name string?)
     ... test files per plan below
 
@@ -982,14 +970,13 @@ Tests (`EntIdxHookTest`, `EntIdxUnsetTest`, `EntIdxDisposeTest`,
 - dispose: pre-dispose order, per-component unset hooks fire during clear,
   slot returned, second dispose is a complete no-op
 - two builders/arenas: hooks never cross contexts
-- validation: mismatched `(T, N)` throws; non-bool `TLoaded` throws
+- validation: mismatched `(T, N)` throws; non-bool bag markers or gates throw
 
 ### Stage 2 — Bags
 
 Files: `Bag/EntIdxBagMut.cs`, `Bag/EntIdxBag.cs`, `Bag/EntIdxBagIndex.cs`,
 `Bag/EntIdxBagInterceptor.cs`; extend `EntIdxContextBuilder.cs` with
-`AddBag<N>`, `AddBag<N, TGate>`, the per marker+gate duplicate guard, and the generic
-`EntIdxContextBuilder<TLoaded>` with `AddBagLoaded<N>`.
+`AddBag<N>`, `AddGatedBag<N, TGate>`, and the per marker+gate duplicate guard.
 
 Tests (`EntIdxBagTest`, `EntIdxBagDisposeOrderTest`, `EntIdxBagIterationTest`,
 `EntIdxKeyIndexTest`):
@@ -1046,14 +1033,12 @@ Craftdig as part of this migration rather than as separate Craftdig patches.
    centralizes ECS wiring (its `src/Directory.Build.props` already carries the
    `AlvorKit.ECS` using).
 2. Delete the 12 files in `Craftdig.World/Ent`.
-3. Rebase builders: `WorldEntIdxContextBuilder :
-   EntIdxContextBuilder<WorldComponents.IsLoaded>` and
-   `DimensionChunkEntIdxContextBuilder :
-   EntIdxContextBuilder<WorldComponents.IsLoaded>`
+3. Rebase builders: `WorldEntIdxContextBuilder : EntIdxContextBuilder` and
+   `DimensionChunkEntIdxContextBuilder : EntIdxContextBuilder`
    (`DimensionEntIdxContextBuilder` inherits the world builder and follows).
-4. Rename bag registrations — 6 call sites: `AddBag` → `AddBagLoaded` in
+4. Rename bag registrations — 6 call sites: `AddBag` → `AddGatedBag` in
    `WorldLoader` (dimension bag) and `DimensionLoader` (player, rigid, chunk);
-   those loaded bag wrapper types become `EntIdxBagMut<N, WorldComponents.IsLoaded>`.
+   those loaded bag wrapper types become `EntIdxGatedBagMut<N, WorldComponents.IsLoaded>`.
    `AddBagUnloaded` → `AddBag` in `DimensionLoader` (seer) and
    `WorldServerLoader` (scratched).
 5. Add `in` to pre-hook handler signatures — about 6 methods:
@@ -1076,7 +1061,7 @@ MVP (this package, stages above):
 
 - indexed arena and handles with guarded pipelines
 - pre/post/pre-dispose hooks with `in T` delegates
-- plain, gated, and loaded bags with the backstop hook and per marker+gate duplicate guard
+- plain and gated bags with the backstop hook and per marker+gate duplicate guard
 - registration validation via `IComponent` metadata
 - `Count`/`Contains` on bags
 - contract-pinning tests and benchmarks

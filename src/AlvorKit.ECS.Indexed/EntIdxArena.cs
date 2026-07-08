@@ -4,7 +4,7 @@ namespace AlvorKit.ECS.Indexed;
 /// <param name="context">The context entity that stores hook lists.</param>
 public class EntIdxArena(EntObj context) : IDisposable
 {
-    private EntArena arena = new();
+    private readonly EntArena arena = new();
 
     /// <summary>Gets the number of live entities allocated from this arena.</summary>
     public int Allocated => arena.Allocated;

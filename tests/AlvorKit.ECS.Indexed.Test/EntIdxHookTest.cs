@@ -11,9 +11,9 @@ public class EntIdxHookTest
         var events = new List<string>();
 
         context.AddPre<int, EntIdxTestComponents.Value>(
-            (EntMutIdx ent, in int value) => events.Add($"pre1 old={ent.Value} new={value}"));
+            (ent, in value) => events.Add($"pre1 old={ent.Value} new={value}"));
         context.AddPre<int, EntIdxTestComponents.Value>(
-            (EntMutIdx ent, in int value) => events.Add($"pre2 old={ent.Value} new={value}"));
+            (ent, in value) => events.Add($"pre2 old={ent.Value} new={value}"));
         context.AddPost<int, EntIdxTestComponents.Value>(
             ent => events.Add($"post1 current={ent.Value}"));
         context.AddPost<int, EntIdxTestComponents.Value>(
@@ -45,7 +45,7 @@ public class EntIdxHookTest
         var events = new List<string>();
 
         context.AddPre<int, EntIdxTestComponents.Value>(
-            (EntMutIdx ent, in int value) => events.Add($"pre has={ent.HasValue} value={value}"));
+            (ent, in value) => events.Add($"pre has={ent.HasValue} value={value}"));
         context.AddPost<int, EntIdxTestComponents.Value>(
             ent => events.Add($"post has={ent.HasValue}"));
 
@@ -65,7 +65,7 @@ public class EntIdxHookTest
         var events = new List<string>();
 
         context.AddPre<int, EntIdxTestComponents.Value>(
-            (EntMutIdx ent, in int value) => events.Add($"pre old={ent.Value} incoming={value} has={ent.HasValue}"));
+            (ent, in value) => events.Add($"pre old={ent.Value} incoming={value} has={ent.HasValue}"));
         context.AddPost<int, EntIdxTestComponents.Value>(
             ent => events.Add($"post value={ent.Value} has={ent.HasValue}"));
 
@@ -95,9 +95,9 @@ public class EntIdxHookTest
         var index = new Dictionary<Guid, EntMutIdx>();
 
         context.AddPre<int, EntIdxTestComponents.Value>(
-            (EntMutIdx ent, in int value) => events.Add($"value {value}"));
+            (ent, in value) => events.Add($"value {value}"));
         context.AddPre<Guid, EntIdxTestComponents.Id>(
-            (EntMutIdx ent, in Guid value) =>
+            (ent, in value) =>
             {
                 if (value != default)
                     index.Add(value, ent);
@@ -129,7 +129,7 @@ public class EntIdxHookTest
 
         context.AddPreDispose(ent => events.Add($"dispose value={ent.Value} has={ent.HasValue}"));
         context.AddPre<int, EntIdxTestComponents.Value>(
-            (EntMutIdx ent, in int value) => events.Add($"pre value={value} old={ent.Value}"));
+            (ent, in value) => events.Add($"pre value={value} old={ent.Value}"));
         context.AddPost<int, EntIdxTestComponents.Value>(
             ent => events.Add($"post has={ent.HasValue}"));
 
@@ -187,7 +187,7 @@ public class EntIdxHookTest
         var index = new Dictionary<Guid, EntMutIdx>();
 
         context.AddPre<Guid, EntIdxTestComponents.Id>(
-            (EntMutIdx ent, in Guid value) =>
+            (ent, in value) =>
             {
                 if (ent.Id == value)
                     return;

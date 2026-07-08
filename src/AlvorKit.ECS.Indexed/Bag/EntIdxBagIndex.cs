@@ -11,9 +11,8 @@ internal abstract class EntIdxBagIndex<N> : IComponent
 /// <summary>Component key storing an entity's dense slot in a gated marker bag.</summary>
 /// <typeparam name="N">The marker component type.</typeparam>
 /// <typeparam name="TGate">The gate component type.</typeparam>
-internal abstract class EntIdxBagIndex<N, TGate> : IComponent
+internal abstract class EntIdxGatedBagIndex<N, TGate> : IComponent
 {
     /// <summary>Gets metadata for the integer bag slot component.</summary>
-    public static EntComponent Component => new(typeof(int), typeof(EntIdxBagIndex<N, TGate>));
+    public static EntComponent Component => new(typeof(int), typeof(EntIdxGatedBagIndex<N, TGate>));
 }
-

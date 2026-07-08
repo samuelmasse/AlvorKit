@@ -20,7 +20,7 @@ public class EntIdxBag<N>(EntIdxBagMut<N> bag) where N : IComponent
 /// <typeparam name="N">The bool marker component type.</typeparam>
 /// <typeparam name="TGate">The bool gate component type.</typeparam>
 /// <param name="bag">The mutable bag maintained by the indexed context.</param>
-public class EntIdxBag<N, TGate>(EntIdxBagMut<N, TGate> bag)
+public class EntIdxGatedBag<N, TGate>(EntIdxGatedBagMut<N, TGate> bag)
     where N : IComponent
     where TGate : IComponent
 {
