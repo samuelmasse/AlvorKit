@@ -1,8 +1,8 @@
 namespace AlvorKit.ECS;
 
-internal struct EntArchLoc(int allocatorId, int archId, int row)
+internal struct EntArchLoc(int allocId, int archId, int row)
 {
-    public int AllocatorId = allocatorId;
-    public int ArchId = archId;
-    public int Row = row;
+    internal int AllocId = allocId;
+    internal int ArchId = archId;
+    internal int Row = row;
 }
