@@ -1,0 +1,47 @@
+namespace AlvorKit.ECS.Demo.Bench;
+
+/// <summary>Builds the stable AFR-02 archetypal scenario catalog.</summary>
+internal static class EcsArchBenchScenarios
+{
+    internal static EcsArchBenchScenario[] Create(ReadOnlySpan<int> widths)
+    {
+        var scenarios = new List<EcsArchBenchScenario>();
+        foreach (int width in widths)
+        {
+            string suffix = $"k{width:00}";
+            scenarios.Add(new($"arch-get-present-{suffix}", "point", "op", width));
+            scenarios.Add(new($"arch-get-absent-{suffix}", "point", "op", width));
+            scenarios.Add(new($"arch-has-present-{suffix}", "point", "op", width));
+            scenarios.Add(new($"arch-has-absent-{suffix}", "point", "op", width));
+            scenarios.Add(new($"arch-set-existing-{suffix}", "point", "op", width));
+        }
+
+        scenarios.AddRange(
+        [
+            new("arch-get-wide-k08", "value-shape", "op", 8),
+            new("arch-set-wide-k08", "value-shape", "op", 8),
+            new("arch-get-reference-k08", "value-shape", "op", 8),
+            new("arch-set-reference-k08", "value-shape", "op", 8),
+            new("arch-get-ref-struct-k08", "value-shape", "op", 8),
+            new("arch-set-ref-struct-k08", "value-shape", "op", 8),
+            new("arch-add-cached-k08", "structural", "move", 8),
+            new("arch-add-growth-k08", "growth", "move", 8),
+            new("arch-add-unknown-k08", "structural", "move", 8),
+            new("arch-remove-cached-k08", "structural", "move", 8),
+            new("arch-remove-unknown-k08", "structural", "move", 8),
+            new("arch-compact-first-k08", "compaction", "move", 8),
+            new("arch-compact-middle-k08", "compaction", "move", 8),
+            new("arch-compact-last-k08", "compaction", "move", 8),
+            new("arch-create-unique-gray", "catalog", "arch"),
+            new("arch-low-occupancy", "footprint", "arch"),
+            new("arch-high-occupancy", "footprint", "row"),
+            new("arch-concurrent-get-a01", "concurrency", "op", 8),
+            new("arch-concurrent-get-many", "concurrency", "op", 8),
+            new("arch-concurrent-set-a01", "concurrency", "op", 8),
+            new("arch-concurrent-set-many", "concurrency", "op", 8),
+            new("arch-concurrent-resolve-many", "concurrency", "move", 8),
+        ]);
+
+        return [.. scenarios];
+    }
+}

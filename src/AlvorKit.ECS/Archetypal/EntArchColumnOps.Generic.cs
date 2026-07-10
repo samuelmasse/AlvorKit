@@ -43,4 +43,30 @@ internal sealed class EntArchColumnOps<T, N, A> : EntArchColumnOps
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
             EntArchColumn<T, N, A>.Values[allocId][archId][row] = default!;
     }
+
+    internal override void AccumulateMetrics(ref EntArchMetrics metrics)
+    {
+        var valuesByAlloc = EntArchColumn<T, N, A>.Values;
+        metrics.AddColumnArray(valuesByAlloc);
+
+        for (int allocId = 0; allocId < valuesByAlloc.Length; allocId++)
+        {
+            var valuesByArch = valuesByAlloc[allocId];
+            if (valuesByArch == null)
+                continue;
+
+            metrics.AddColumnArray(valuesByArch);
+
+            for (int archId = 0; archId < valuesByArch.Length; archId++)
+            {
+                var values = valuesByArch[archId];
+                if (values == null || values.Length == 0)
+                    continue;
+
+                metrics.ComponentBufferCount++;
+                metrics.ComponentCapacity += values.LongLength;
+                metrics.AddComponentArray(values, EntArchRows<A>.CountAt(allocId, archId));
+            }
+        }
+    }
 }

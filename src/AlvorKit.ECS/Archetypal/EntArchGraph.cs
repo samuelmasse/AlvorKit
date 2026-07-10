@@ -37,6 +37,50 @@ internal static class EntArchGraph<A>
         get => archCapacity;
     }
 
+    internal static void AccumulateMetrics(ref EntArchMetrics metrics)
+    {
+        metrics.RegisteredFieldCount = nextFieldId - FirstFieldId;
+        metrics.FieldCapacity = fieldCapacity;
+        metrics.MaterializedArchCount = nextArchId - FirstArchId;
+        metrics.ArchCapacity = archCapacity;
+        metrics.SignatureMembershipCount = packedFieldCount;
+        metrics.SignatureMembershipCapacity = packedFieldIds.Length;
+
+        metrics.AddCatalogArray(packedFieldIds, packedFieldCount);
+        metrics.AddCatalogArray(signatureRanges, nextArchId);
+        metrics.AddCatalogArray(transitions, nextArchId);
+        metrics.AddCatalogArray(columnOps, nextFieldId);
+
+        for (int archId = 0; archId < transitions.Length; archId++)
+        {
+            var transitionsByField = transitions[archId];
+            metrics.TransitionCellCapacity += transitionsByField.LongLength;
+            metrics.AddCatalogArray(transitionsByField, archId < nextArchId ? nextFieldId : 0);
+        }
+
+        // Arch 0 contains outside-group sentinels. Add self-loops encode field presence, not structural edges.
+        for (int archId = TransitionRootArchId; archId < nextArchId; archId++)
+        {
+            var transitionsByField = transitions[archId];
+
+            for (int fieldId = FirstFieldId; fieldId < nextFieldId; fieldId++)
+            {
+                ref var transition = ref transitionsByField[fieldId];
+
+                if (transition.AddArchId != UnresolvedTransitionArchId && transition.AddArchId != archId)
+                    metrics.DirectedStructuralEdgeCount++;
+
+                if (transition.RemoveArchId != UnresolvedTransitionArchId)
+                    metrics.DirectedStructuralEdgeCount++;
+            }
+        }
+
+        metrics.AddCatalogObjects(1L + metrics.RegisteredFieldCount);
+
+        for (int fieldId = FirstFieldId; fieldId < nextFieldId; fieldId++)
+            columnOps[fieldId].AccumulateMetrics(ref metrics);
+    }
+
     internal static int RegisterField(EntArchColumnOps ops)
     {
         lock (Sync)

@@ -6,6 +6,41 @@ internal static class EntArchRows<A>
 
     private static EntArchRowSet[][] rowsByAlloc = [];
 
+    internal static void AccumulateMetrics(ref EntArchMetrics metrics)
+    {
+        metrics.AllocDirectoryCapacity = rowsByAlloc.Length;
+        metrics.AddRowArray(rowsByAlloc);
+
+        foreach (var rowsByArch in rowsByAlloc)
+        {
+            if (rowsByArch == null)
+                continue;
+
+            metrics.AllocDirectoryCount++;
+            metrics.ArchDirectorySlotCapacity += rowsByArch.LongLength;
+            metrics.AddRowArray(rowsByArch);
+
+            foreach (ref var rows in rowsByArch.AsSpan())
+            {
+                if (rows.Ents == null)
+                    continue;
+
+                metrics.RetainedStateCount++;
+                metrics.RowCapacity += rows.Ents.LongLength;
+                metrics.RowSlack += rows.Ents.LongLength - rows.Count;
+                metrics.AddEntArray(rows.Ents, rows.Count);
+
+                if (rows.Count == 0)
+                    continue;
+
+                metrics.ActiveStateCount++;
+                metrics.ActiveRowCount += rows.Count;
+            }
+        }
+    }
+
+    internal static int CountAt(int allocId, int archId) => rowsByAlloc[allocId][archId].Count;
+
     internal static int Append(int allocId, int archId, EntMut ent)
     {
         EnsureAllocCapacity(allocId);
