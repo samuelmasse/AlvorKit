@@ -22,7 +22,8 @@ internal static class EntArchGraph<A>
     private static int archCapacity;
     private static int packedFieldCount;
     private static int[] packedFieldIds = new int[InitialPackedFieldCapacity];
-    private static EntArchSignatureRange[] signatureRanges = [];
+    // Real arch IDs and their packed signatures are appended in the same order, so the previous end is the next start.
+    private static int[] signatureEnds = [];
     private static EntArchTransition[][] transitions = [[]];
     private static EntArchColumnOps[] columnOps = [];
 
@@ -47,7 +48,7 @@ internal static class EntArchGraph<A>
         metrics.SignatureMembershipCapacity = packedFieldIds.Length;
 
         metrics.AddCatalogArray(packedFieldIds, packedFieldCount);
-        metrics.AddCatalogArray(signatureRanges, nextArchId);
+        metrics.AddCatalogArray(signatureEnds, nextArchId);
         metrics.AddCatalogArray(transitions, nextArchId);
         metrics.AddCatalogArray(columnOps, nextFieldId);
 
@@ -125,8 +126,9 @@ internal static class EntArchGraph<A>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static ReadOnlySpan<int> FieldIds(int archId)
     {
-        var range = signatureRanges[archId];
-        return new(packedFieldIds, range.Start, range.Count);
+        int start = signatureEnds[archId - 1];
+        int end = signatureEnds[archId];
+        return new(packedFieldIds, start, end - start);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -142,10 +144,7 @@ internal static class EntArchGraph<A>
 
             var srcFieldIds = FieldIds(srcArchId);
             Span<int> dstFieldIds = stackalloc int[srcFieldIds.Length + 1];
-
-            srcFieldIds.CopyTo(dstFieldIds);
-            dstFieldIds[^1] = fieldId;
-            dstFieldIds.Sort();
+            InsertFieldId(srcFieldIds, fieldId, dstFieldIds);
 
             int dstArchId = FindBySignature(dstFieldIds);
             if (dstArchId == NoArchId)
@@ -203,7 +202,7 @@ internal static class EntArchGraph<A>
             Array.Resize(ref packedFieldIds, (int)BitOperations.RoundUpToPowerOf2((uint)nextPackedFieldCount));
 
         fieldIds.CopyTo(packedFieldIds.AsSpan(start, fieldIds.Length));
-        signatureRanges[archId] = new(start, fieldIds.Length);
+        signatureEnds[archId] = nextPackedFieldCount;
         packedFieldCount = nextPackedFieldCount;
 
         foreach (int fieldId in fieldIds)
@@ -243,7 +242,7 @@ internal static class EntArchGraph<A>
         if (requiredArchCapacity != archCapacity)
         {
             Array.Resize(ref transitions, requiredArchCapacity);
-            Array.Resize(ref signatureRanges, requiredArchCapacity);
+            Array.Resize(ref signatureEnds, requiredArchCapacity);
             archCapacity = requiredArchCapacity;
 
             for (int archId = 0; archId < transitions.Length; archId++)
@@ -257,4 +256,15 @@ internal static class EntArchGraph<A>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ref EntArchTransition Transition(int archId, int fieldId) =>
         ref transitions[archId][fieldId];
+
+    private static void InsertFieldId(ReadOnlySpan<int> srcFieldIds, int fieldId, Span<int> dstFieldIds)
+    {
+        int insertionIndex = 0;
+        while (insertionIndex < srcFieldIds.Length && srcFieldIds[insertionIndex] < fieldId)
+            insertionIndex++;
+
+        srcFieldIds[..insertionIndex].CopyTo(dstFieldIds);
+        dstFieldIds[insertionIndex] = fieldId;
+        srcFieldIds[insertionIndex..].CopyTo(dstFieldIds[(insertionIndex + 1)..]);
+    }
 }

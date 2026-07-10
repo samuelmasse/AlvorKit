@@ -101,6 +101,39 @@ public sealed class EntArchetypalTest
         ExitAddOrderArch(second);
     }
 
+    /// <summary>Verifies adding a field between two sorted IDs preserves the canonical signature.</summary>
+    [TestMethod]
+    public void Archetypal_AddMiddleField_PreservesCanonicalSignature()
+    {
+        using var arena = new EntArena();
+        EntMut first = arena.Alloc();
+        EntMut second = arena.Alloc();
+        int lowFieldId = EntArchColumn<int, LowField, MiddleInsertionArch>.FieldId;
+        int middleFieldId = EntArchColumn<int, MiddleField, MiddleInsertionArch>.FieldId;
+        int highFieldId = EntArchColumn<int, HighField, MiddleInsertionArch>.FieldId;
+
+        first.SetArchetypal<int, LowField, MiddleInsertionArch>(10);
+        first.SetArchetypal<int, HighField, MiddleInsertionArch>(30);
+        first.SetArchetypal<int, MiddleField, MiddleInsertionArch>(20);
+
+        second.SetArchetypal<int, MiddleField, MiddleInsertionArch>(21);
+        second.SetArchetypal<int, HighField, MiddleInsertionArch>(31);
+        second.SetArchetypal<int, LowField, MiddleInsertionArch>(11);
+
+        int firstArchId = first.Get<EntArchLoc, MiddleInsertionArch>().ArchId;
+        int secondArchId = second.Get<EntArchLoc, MiddleInsertionArch>().ArchId;
+        CollectionAssert.AreEqual(
+            new[] { lowFieldId, middleFieldId, highFieldId },
+            EntArchGraph<MiddleInsertionArch>.FieldIds(firstArchId).ToArray());
+        Assert.AreEqual(firstArchId, secondArchId);
+        Assert.AreEqual(10, first.GetArchetypal<int, LowField, MiddleInsertionArch>());
+        Assert.AreEqual(20, first.GetArchetypal<int, MiddleField, MiddleInsertionArch>());
+        Assert.AreEqual(30, first.GetArchetypal<int, HighField, MiddleInsertionArch>());
+
+        ExitMiddleInsertionArch(first);
+        ExitMiddleInsertionArch(second);
+    }
+
     /// <summary>Verifies a resolved add and remove relationship caches both inverse transition directions.</summary>
     [TestMethod]
     public void Archetypal_ResolvedRelationship_ReusesInverseTransitions()
@@ -161,15 +194,27 @@ public sealed class EntArchetypalTest
         Assert.IsFalse(ent.Has<EntArchLoc, AddOrderArch>());
     }
 
+    private static void ExitMiddleInsertionArch(EntMut ent)
+    {
+        ent.UnsetArchetypal<int, LowField, MiddleInsertionArch>();
+        ent.UnsetArchetypal<int, MiddleField, MiddleInsertionArch>();
+        ent.UnsetArchetypal<int, HighField, MiddleInsertionArch>();
+        Assert.IsFalse(ent.Has<EntArchLoc, MiddleInsertionArch>());
+    }
+
     private sealed record RefBox(int Value);
 
     private readonly record struct C0;
     private readonly record struct C1;
     private readonly record struct C2;
     private readonly record struct C3;
+    private readonly record struct LowField;
+    private readonly record struct MiddleField;
+    private readonly record struct HighField;
     private readonly record struct SingletonArch;
     private readonly record struct ReductionArch;
     private readonly record struct AddOrderArch;
+    private readonly record struct MiddleInsertionArch;
     private readonly record struct InverseArch;
     private readonly record struct FirstIndependentArch;
     private readonly record struct SecondIndependentArch;

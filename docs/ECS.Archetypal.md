@@ -28,10 +28,11 @@ This work is focused on the archetypal implementation itself. Ent lifecycle,
 arena disposal, sparse-component integration, and other interaction with the
 rest of the Ent system are intentionally out of scope.
 
-The agreed improvements are:
+Progress through the agreed improvements:
 
-1. Add collision-checked hash indexing for arch signatures.
-2. Preserve sorted signatures by insertion instead of sorting after an add.
+1. Complete: store cumulative signature ends and preserve sorted signatures by
+   insertion.
+2. Next: add collision-checked hash indexing for arch signatures.
 3. Reduce the initial row capacity from 16 to 4.
 4. Replace dense transition rows with a shared sparse edge arena.
 5. Consider precomputed reference-field lists for tail clearing.
@@ -89,9 +90,10 @@ grows.
 ### Representation
 
 The existing packed, sorted field IDs remain the canonical signatures. AFR-10
-replaces `EntArchSignatureRange` with cumulative packed-field ends, but that
-metadata change does not alter signature identity. The hash index narrows the
-set of signatures that must be compared; it does not replace exact comparison.
+now stores one cumulative packed-field end per arch; the previous end is the
+next signature's start. This metadata change does not alter signature identity.
+The hash index narrows the set of signatures that must be compared; it does not
+replace exact comparison.
 
 The initial implementation should use:
 
@@ -152,23 +154,19 @@ the current graph mutation model.
 
 ## Preserve Sorted Signatures by Insertion
 
-`ResolveAdd` currently copies the already sorted src signature, appends the new
-field ID, and sorts the entire result.
-
-The src signature is known to be sorted, and `ResolveAdd` is reached only for a
-field that is absent. The implementation should instead:
+`ResolveAdd` now uses the fact that the src signature is sorted and that the
+new field is absent:
 
 1. Find the new field ID's insertion position.
 2. Copy the src prefix before that position.
 3. Write the new field ID.
 4. Copy the remaining src suffix.
 
-This is linear in the signature length, avoids an unnecessary general-purpose
-sort, and makes the canonical-signature invariant visible in the code.
+This is linear in the signature length, avoids a general-purpose sort, and
+makes the canonical-signature invariant visible in the code.
 
-For the expected small signatures, a linear search for the insertion position
-is likely preferable to a binary search. This can be changed later if measured
-signature sizes justify it.
+The insertion position currently uses a linear search. This can change later if
+measured signature sizes justify a different strategy.
 
 `ResolveRemove` already preserves ordering by copying the ranges on either side
 of the removed field.
@@ -347,10 +345,10 @@ delegate dispatch make it unsuitable as the only performance measurement.
 
 ## Implementation Order
 
-1. Add direct archetypal tests and baseline measurements.
-2. Replace signature ranges with cumulative ends and replace add-then-sort with
-   sorted insertion.
-3. Add the collision-correct signature hash index.
+1. Complete: add direct archetypal tests and baseline measurements.
+2. Complete: replace signature ranges with cumulative ends and replace
+   add-then-sort with sorted insertion.
+3. Next: add the collision-correct signature hash index.
 4. Change the initial row capacity from 16 to 4.
 5. Add immutable packed field layouts and sparse membership lookup.
 6. Replace the dense transition matrix with the shared sparse edge arena.

@@ -1,7 +1,7 @@
 # Epic: Archetype Footprint Reduction
 
-> Status: in progress. AFR-01 and AFR-02 are implemented and verified; Phase 1
-> runtime changes have not started.
+> Status: in progress. AFR-01, AFR-02, and AFR-10 are implemented and verified.
+> AFR-11 is next.
 
 ## Related Documents
 
@@ -16,7 +16,8 @@
 | --- | --- | --- |
 | AFR-01 | Complete | Direct behavior, graph, compaction, reference-tail, and alloc-owner concurrency tests |
 | AFR-02 | Complete | Isolated benchmark workers, versioned reports, and quiescent footprint diagnostics |
-| AFR-10 onward | Planned | Runtime representation changes have not started |
+| AFR-10 | Complete | Four-byte cumulative signature ends and linear sorted insertion |
+| AFR-11 onward | Planned | Signature hash indexing is next |
 
 ## Outcome
 
@@ -309,6 +310,33 @@ Acceptance:
 - Signature metadata is four bytes per arch before shared capacity slack.
 - Add resolution performs no general-purpose sort.
 - Every materialized signature remains exact and sorted.
+
+Implementation result:
+
+- `signatureEnds[archId]` stores the cumulative packed-field end. Because real
+  arch IDs and signatures are appended in the same order, the previous end is
+  the current start.
+- `InsertFieldId` performs one ordered scan and two span copies. No duplicate
+  branch is required because add resolution is reached only for an absent
+  field.
+- Exact variable-width signatures, middle insertion, canonical interning, arch
+  growth, and different-alloc concurrency pass all 77 ECS tests.
+- Across all 47 AFR-02 cases, logical catalog bytes and estimated managed bytes
+  fell by exactly `4 × ArchCapacity`; object counts and every row/component
+  metric were unchanged.
+
+Selected quick-profile comparisons:
+
+| Case | AFR-02 logical bytes | AFR-10 logical bytes | Delta |
+| --- | ---: | ---: | ---: |
+| Point access at `K = 32` | 107,040 | 106,784 | -256 |
+| Unknown add at `K = 8` | 412,384 | 410,336 | -2,048 |
+| 128 Gray-code signatures | 211,872 | 210,848 | -1,024 |
+| Four-alloc concurrent resolution | 1,328,064 | 1,323,968 | -4,096 |
+
+The complete comparison report is generated at:
+
+`out/ecs-archetypal/afr10-cumulative-ends-quick.json`
 
 ### AFR-11 — Collision-Correct Signature Hash Index
 

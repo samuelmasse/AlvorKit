@@ -64,11 +64,15 @@ combinatorial. The design goal is not to conceal that cost. It is to ensure
 that each materialized signature pays only for its actual fields and observed
 relationships.
 
-## Current Rectangular Costs
+## Epic-Start Rectangular Costs
+
+This section describes the representation measured by AFR-02 before runtime
+changes began. AFR-10 has since replaced the eight-byte signature range with a
+four-byte cumulative end; the dense graph and alloc-local costs remain.
 
 ### Group-Global Transition Matrix
 
-The current graph stores one `EntArchTransition` containing two `int` values for
+At epic start, the graph stored one `EntArchTransition` containing two `int` values for
 every `(arch-capacity slot, field-capacity slot)` pair. Its raw cell payload is:
 
 \[
@@ -81,7 +85,7 @@ The jagged layout also retains approximately one managed array object per arch
 capacity slot. On a 64-bit runtime, an array is approximately 24 bytes before
 its aligned element payload.
 
-Ignoring outer-array headers and spare capacity, the logical current cost for
+Ignoring outer-array headers and spare capacity, the logical baseline cost for
 one real arch with `K` fields is approximately:
 
 \[
@@ -104,7 +108,7 @@ sufficient footprint design for sparse power-set exploration.
 
 ### Alloc-Local Directories and Buffers
 
-The current alloc-local directories retain approximately this much metadata for
+The baseline alloc-local directories retain approximately this much metadata for
 every arch-capacity slot in an alloc:
 
 \[
@@ -153,7 +157,8 @@ arch is sufficient:
 For arch `i`, the start is the previous arch's end and the count is the
 difference between the current and previous ends.
 
-This replaces the current 8-byte `(Start, Count)` range with one 4-byte value.
+AFR-10 replaced the baseline 8-byte `(Start, Count)` range with this 4-byte
+value.
 
 ### Collision-Correct Signature Index
 
