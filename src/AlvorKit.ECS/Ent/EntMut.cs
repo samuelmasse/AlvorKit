@@ -1,7 +1,7 @@
 namespace AlvorKit.ECS;
 
 [DebuggerTypeProxy(typeof(EntDebugView))]
-public readonly record struct EntMut : IEntMut
+public readonly partial record struct EntMut : IEntMut
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static implicit operator Ent(EntMut a) => new(a.Index, a.Generation);
