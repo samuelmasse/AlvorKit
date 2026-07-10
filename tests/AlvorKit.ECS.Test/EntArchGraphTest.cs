@@ -3,9 +3,9 @@ namespace AlvorKit.ECS.Test;
 [TestClass]
 public sealed class EntArchGraphTest
 {
-    /// <summary>Verifies all non-empty four-field subsets survive arch growth and reuse canonical IDs.</summary>
+    /// <summary>Verifies all non-empty four-field subsets survive catalog growth and reuse canonical IDs.</summary>
     [TestMethod]
-    public void ArchetypalGraph_AllFourFieldSubsets_SurviveArchCapacityGrowth()
+    public void ArchetypalGraph_AllFourFieldSubsets_SurviveCatalogGrowth()
     {
         using var arena = new EntArena();
         EntMut ent = arena.Alloc();
@@ -25,6 +25,19 @@ public sealed class EntArchGraphTest
 
         Assert.IsTrue(EntArchGraph<SubsetArch>.ArchCapacity > initialCapacity);
         Assert.AreEqual(15, archIds.Skip(1).Distinct().Count());
+
+        var metrics = EntArchDiagnostics<SubsetArch>.Capture();
+        Assert.AreEqual(15, metrics.SignatureIndexCount);
+        Assert.AreEqual(32, metrics.SignatureIndexCapacity);
+
+        int middleFieldId = EntArchColumn<int, S1, SubsetArch>.FieldId;
+        Assert.AreEqual(
+            EntArchGraph<SubsetArch>.UnresolvedTransitionArchId,
+            EntArchGraph<SubsetArch>.GetAddArchId(archIds[0b0101], middleFieldId));
+        SetSubset(ent, 0b0101, reverse: false);
+        ent.SetArchetypal<int, S1, SubsetArch>(1);
+        Assert.AreEqual(archIds[0b0111], ent.Get<EntArchLoc, SubsetArch>().ArchId);
+        ExitSubset(ent);
 
         for (int mask = archIds.Length - 1; mask >= 1; mask--)
         {

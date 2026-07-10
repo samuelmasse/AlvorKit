@@ -12,6 +12,7 @@ internal static class EntArchGraph<A>
     private const int InitialFieldCapacity = 16;
     private const int InitialArchCapacity = 16;
     private const int InitialPackedFieldCapacity = 4096;
+    private const int InitialSignatureIndexCapacity = 16;
 
     // Guards group-global graph/catalog mutations and jagged-array outer growth.
     internal static readonly object Sync = new();
@@ -24,6 +25,7 @@ internal static class EntArchGraph<A>
     private static int[] packedFieldIds = new int[InitialPackedFieldCapacity];
     // Real arch IDs and their packed signatures are appended in the same order, so the previous end is the next start.
     private static int[] signatureEnds = [];
+    private static int[] signatureArchIds = [];
     private static EntArchTransition[][] transitions = [[]];
     private static EntArchColumnOps[] columnOps = [];
 
@@ -46,9 +48,12 @@ internal static class EntArchGraph<A>
         metrics.ArchCapacity = archCapacity;
         metrics.SignatureMembershipCount = packedFieldCount;
         metrics.SignatureMembershipCapacity = packedFieldIds.Length;
+        metrics.SignatureIndexCount = metrics.MaterializedArchCount;
+        metrics.SignatureIndexCapacity = signatureArchIds.Length;
 
         metrics.AddCatalogArray(packedFieldIds, packedFieldCount);
         metrics.AddCatalogArray(signatureEnds, nextArchId);
+        metrics.AddCatalogArray(signatureArchIds, metrics.SignatureIndexCount);
         metrics.AddCatalogArray(transitions, nextArchId);
         metrics.AddCatalogArray(columnOps, nextFieldId);
 
@@ -146,9 +151,10 @@ internal static class EntArchGraph<A>
             Span<int> dstFieldIds = stackalloc int[srcFieldIds.Length + 1];
             InsertFieldId(srcFieldIds, fieldId, dstFieldIds);
 
-            int dstArchId = FindBySignature(dstFieldIds);
+            ulong signatureHash = EntArchSignatureIndex.Hash(dstFieldIds);
+            int dstArchId = FindBySignature(dstFieldIds, signatureHash);
             if (dstArchId == NoArchId)
-                dstArchId = CreateFromSignature(dstFieldIds);
+                dstArchId = CreateFromSignature(dstFieldIds, signatureHash);
 
             transition.AddArchId = dstArchId;
             Transition(dstArchId, fieldId).RemoveArchId = srcArchId;
@@ -171,9 +177,10 @@ internal static class EntArchGraph<A>
             srcFieldIds[..removedFieldIndex].CopyTo(dstFieldIds);
             srcFieldIds[(removedFieldIndex + 1)..].CopyTo(dstFieldIds[removedFieldIndex..]);
 
-            int dstArchId = FindBySignature(dstFieldIds);
+            ulong signatureHash = EntArchSignatureIndex.Hash(dstFieldIds);
+            int dstArchId = FindBySignature(dstFieldIds, signatureHash);
             if (dstArchId == NoArchId)
-                dstArchId = CreateFromSignature(dstFieldIds);
+                dstArchId = CreateFromSignature(dstFieldIds, signatureHash);
 
             transition.RemoveArchId = dstArchId;
             Transition(dstArchId, fieldId).AddArchId = srcArchId;
@@ -181,18 +188,13 @@ internal static class EntArchGraph<A>
         }
     }
 
-    private static int FindBySignature(ReadOnlySpan<int> fieldIds)
-    {
-        for (int archId = FirstArchId; archId < nextArchId; archId++)
-        {
-            if (FieldIds(archId).SequenceEqual(fieldIds))
-                return archId;
-        }
+    private static int FindBySignature(ReadOnlySpan<int> fieldIds, ulong signatureHash) =>
+        EntArchSignatureIndex.Find(signatureArchIds, signatureHash, fieldIds, packedFieldIds, signatureEnds);
 
-        return NoArchId;
-    }
+    private static int CreateFromSignature(ReadOnlySpan<int> fieldIds) =>
+        CreateFromSignature(fieldIds, EntArchSignatureIndex.Hash(fieldIds));
 
-    private static int CreateFromSignature(ReadOnlySpan<int> fieldIds)
+    private static int CreateFromSignature(ReadOnlySpan<int> fieldIds, ulong signatureHash)
     {
         int archId = AllocateArchId();
         int start = packedFieldCount;
@@ -204,6 +206,9 @@ internal static class EntArchGraph<A>
         fieldIds.CopyTo(packedFieldIds.AsSpan(start, fieldIds.Length));
         signatureEnds[archId] = nextPackedFieldCount;
         packedFieldCount = nextPackedFieldCount;
+
+        EnsureSignatureIndexCapacity(nextArchId - FirstArchId);
+        EntArchSignatureIndex.Insert(signatureArchIds, signatureHash, archId);
 
         foreach (int fieldId in fieldIds)
             Transition(archId, fieldId).AddArchId = archId;
@@ -224,6 +229,26 @@ internal static class EntArchGraph<A>
             EnsureCapacity(fieldCapacity, archCapacity * 2);
 
         return nextArchId++;
+    }
+
+    private static void EnsureSignatureIndexCapacity(int requiredCount)
+    {
+        // Grow before the next insertion would exceed a 75% load.
+        int maxCount = signatureArchIds.Length - (signatureArchIds.Length >> 2);
+        if (requiredCount <= maxCount)
+            return;
+
+        var previousArchIds = signatureArchIds;
+        int nextCapacity = previousArchIds.Length == 0
+            ? InitialSignatureIndexCapacity
+            : previousArchIds.Length * 2;
+        signatureArchIds = new int[nextCapacity];
+
+        foreach (int archId in previousArchIds)
+        {
+            if (archId != NoArchId)
+                EntArchSignatureIndex.Insert(signatureArchIds, EntArchSignatureIndex.Hash(FieldIds(archId)), archId);
+        }
     }
 
     private static void EnsureCapacity(int requiredFieldCapacity, int requiredArchCapacity)

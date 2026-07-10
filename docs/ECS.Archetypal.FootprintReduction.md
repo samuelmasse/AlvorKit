@@ -1,7 +1,7 @@
 # Epic: Archetype Footprint Reduction
 
-> Status: in progress. AFR-01, AFR-02, and AFR-10 are implemented and verified.
-> AFR-11 is next.
+> Status: in progress. AFR-01, AFR-02, AFR-10, and AFR-11 are implemented and
+> verified. AFR-12 is next.
 
 ## Related Documents
 
@@ -17,7 +17,8 @@
 | AFR-01 | Complete | Direct behavior, graph, compaction, reference-tail, and alloc-owner concurrency tests |
 | AFR-02 | Complete | Isolated benchmark workers, versioned reports, and quiescent footprint diagnostics |
 | AFR-10 | Complete | Four-byte cumulative signature ends and linear sorted insertion |
-| AFR-11 onward | Planned | Signature hash indexing is next |
+| AFR-11 | Complete | Collision-correct arch-ID-only open-addressed signature index |
+| AFR-12 onward | Planned | Initial row capacity four is next |
 
 ## Outcome
 
@@ -342,13 +343,19 @@ The complete comparison report is generated at:
 
 Purpose: replace the quadratic scan of all historical signatures.
 
-Initial implementation:
+Implementation:
 
-- Hash the complete sorted signature without allocation.
-- Narrow candidates through a shared hash index.
-- Confirm every candidate through exact packed-signature comparison.
-- Insert the new arch only after its canonical signature is stored.
-- Keep all lookup and insertion under the existing catalog lock.
+- Store only arch IDs in one group-global, power-of-two `int[]`.
+- Use `NoArchId`/zero as the empty slot and linear probing. Signatures are
+  append-only, so deletion markers are unnecessary.
+- Hash the signature length and every sorted field ID without allocation.
+- Confirm every occupied candidate through exact packed-signature comparison;
+  a hash is never treated as signature identity.
+- Grow before exceeding 75% occupancy and recompute hashes from the immutable
+  packed signatures during rehash.
+- Insert a new arch only after its canonical signature and cumulative end have
+  been stored.
+- Keep lookup, insertion, and growth under the existing catalog lock.
 
 Acceptance:
 
@@ -358,11 +365,58 @@ Acceptance:
 - Cold creation scales with signature work and expected hash probing rather than
   scanning all `M` existing arches.
 
-Follow-up decision:
+Implementation result:
 
-- Begin with the clearest shared index.
-- Replace it with an arch-ID-only open-address table only if AFR-02 measurements
-  show worthwhile retained-byte savings.
+- `ResolveAdd` and `ResolveRemove` compute the proposed signature hash once and
+  reuse it if a missing signature must be created.
+- Forced equal-hash signatures are distinguished by their exact packed field
+  IDs. The growth test crosses the 75% threshold and then forces an unresolved
+  edge to find a signature that predates the rehash.
+- All 78 focused ECS tests pass. Point access and cached transitions do not
+  consult the index.
+- All 47 benchmark cases match the exact retained-footprint prediction. For
+  `M` materialized arches and table capacity `C`, the index adds `4C` logical
+  bytes, `4C + 24` estimated managed bytes on x64, and one managed array. Every
+  unrelated catalog, row, and component metric is unchanged.
+- `C` is the smallest power of two of at least 16 for which `M <= 0.75C`.
+  Consequently, retained table payload varies from approximately 5.33 bytes
+  per arch at the growth threshold to 10.67 bytes per arch immediately after
+  doubling. The often-quoted 5.33-byte value is not the general retained cost.
+
+Selected median timing comparisons:
+
+| Case | AFR-10 | AFR-11 | Change |
+| --- | ---: | ---: | ---: |
+| Unknown add, `K = 8` | 8,185.94 ns/move | 2,498.44 ns/move | 3.28x faster |
+| Unknown remove, `K = 8` | 9,898.44 ns/move | 2,488.28 ns/move | 3.98x faster |
+| Four-alloc concurrent resolution | 16,588.28 ns/move | 1,823.83 ns/move | 9.10x faster |
+| Present get, `K = 32` | 12.73 ns/op | 12.82 ns/op | Within run noise |
+
+The AFR-11 cold-resolution values use seven isolated samples; the AFR-10 quick
+baseline used three. The concurrent case is inherently noisier, but the result
+is large enough to show the benefit of shortening the catalog-lock section.
+Point, cached-transition, and compaction cases remain allocation-free.
+Index-array growth adds cold allocations to creation cases; it does not make
+lookup allocate.
+
+A separate seven-sample unique-creation sweep measured 32.41 μs/arch at 128
+arches, 17.50 μs/arch at 512, and 7.34 μs/arch at 2,048. The per-arch cost no
+longer rises with catalog size; the decreasing values reflect fixed worker and
+first-use costs being amortized over more creations.
+
+Representative retained totals:
+
+| Case | AFR-10 logical bytes | AFR-11 logical bytes | Index capacity |
+| --- | ---: | ---: | ---: |
+| Point access at `K = 32` | 106,784 | 107,040 | 64 |
+| 128 Gray-code signatures | 210,848 | 211,872 | 256 |
+| Unknown add at `K = 8` | 410,336 | 414,432 | 1,024 |
+| Unknown remove at `K = 8` | 406,432 | 410,528 | 1,024 |
+| Four-alloc concurrent resolution | 1,323,968 | 1,332,160 | 2,048 |
+
+The complete comparison report is generated at:
+
+`out/ecs-archetypal/afr11-signature-index-quick.json`
 
 ### AFR-12 — Initial Row Capacity Four
 

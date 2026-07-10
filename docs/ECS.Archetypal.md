@@ -32,8 +32,8 @@ Progress through the agreed improvements:
 
 1. Complete: store cumulative signature ends and preserve sorted signatures by
    insertion.
-2. Next: add collision-checked hash indexing for arch signatures.
-3. Reduce the initial row capacity from 16 to 4.
+2. Complete: add collision-checked hash indexing for arch signatures.
+3. Next: reduce the initial row capacity from 16 to 4.
 4. Replace dense transition rows with a shared sparse edge arena.
 5. Consider precomputed reference-field lists for tail clearing.
 
@@ -59,10 +59,11 @@ transition under the existing graph lock. It adds no synchronization to
 `GetArchetypal`, `HasArchetypal`, overwriting an existing field, or alloc-local
 row operations. No `Volatile` access is added to those paths.
 
-## Current Signature Lookup Cost
+## Previous Signature Lookup Cost
 
+Before AFR-11,
 [`EntArchGraph<A>.FindBySignature`](../src/AlvorKit.ECS/Archetypal/EntArchGraph.cs)
-currently scans every existing arch and compares its packed signature with the
+scanned every existing arch and compared its packed signature with the
 requested signature.
 
 If `M` unique arches are created, the scan considers this many prior arch
@@ -81,9 +82,9 @@ Examples:
 | 32,767 | 536,821,761 |
 | 117,010 | 6,845,611,545 |
 
-Cached transitions avoid this scan after an edge has been resolved, but first
-materialization becomes increasingly expensive as the historical arch count
-grows.
+Cached transitions avoided this scan after an edge was resolved, but first
+materialization became increasingly expensive as the historical arch count
+grew. AFR-11 replaces that catalog scan with expected constant probing.
 
 ## Signature Hash Index
 
@@ -95,21 +96,20 @@ next signature's start. This metadata change does not alter signature identity.
 The hash index narrows the set of signatures that must be compared; it does not
 replace exact comparison.
 
-The initial implementation should use:
+The implementation uses:
 
-- A `Dictionary<ulong, int>` mapping a 64-bit signature hash to the first arch
-  ID in that hash chain.
-- An `int[]` indexed by arch ID containing the next arch ID with the same
-  signature hash.
+- One power-of-two `int[]` containing only arch IDs.
+- Linear probing with a maximum load of 75%.
+- Zero as the empty-slot marker. Real arch IDs begin above zero.
 - The existing packed signatures for exact collision resolution.
 
-The dictionary handles collisions between its `ulong` keys. The additional arch
-chain handles the separate case where two different signatures produce the same
-64-bit signature hash.
+The catalog is append-only, so the table needs neither deletion markers nor
+tombstones. Hashes are not retained in the table. Every occupied candidate in a
+probe sequence is checked against the exact packed field IDs, including when
+different signatures have the same 64-bit hash.
 
-No arrays, lists, or signature objects should be allocated per lookup. The
-dictionary and chain arrays allocate only when the catalog grows, alongside the
-existing cold arch-creation allocations.
+No array, list, or signature object is allocated per lookup. The table allocates
+only when it is first created or doubled during cold catalog growth.
 
 ### Hash Requirements
 
@@ -129,10 +129,11 @@ correctness in the event of a hash collision.
 Finding an arch becomes:
 
 1. Hash the proposed sorted signature.
-2. Read the chain head for that hash.
-3. Compare the requested field IDs with the packed signature for that arch.
-4. Follow the same-hash chain until an exact match is found.
-5. Return `NoArchId` when the chain has no exact match.
+2. Fold the high and low hash halves and mask into the power-of-two table.
+3. Return `NoArchId` when the slot is empty.
+4. Compare an occupied candidate's packed signature with the requested field
+   IDs.
+5. Return the candidate on an exact match; otherwise advance to the next slot.
 
 In the expected case, only one packed signature is compared. Creating `M`
 unique arches changes from a quadratic catalog scan toward linear catalog work,
@@ -141,10 +142,10 @@ fields in the new arch.
 
 ### Insertion
 
-`CreateFromSignature` should add each real arch to the hash index after its
-packed signature and boundary metadata have been stored. The new arch becomes
-the head of the same-hash chain, and its chain entry points at the previous
-head.
+`CreateFromSignature` adds each real arch to the hash index after its packed
+signature and boundary metadata have been stored. Growth scans the previous
+table and recomputes hashes from those immutable packed signatures, so no hash
+field is retained per arch.
 
 The transition-only root and the outside-group state are not real signatures
 and should not be inserted into the index.
@@ -348,8 +349,8 @@ delegate dispatch make it unsuitable as the only performance measurement.
 1. Complete: add direct archetypal tests and baseline measurements.
 2. Complete: replace signature ranges with cumulative ends and replace
    add-then-sort with sorted insertion.
-3. Next: add the collision-correct signature hash index.
-4. Change the initial row capacity from 16 to 4.
+3. Complete: add the collision-correct signature hash index.
+4. Next: change the initial row capacity from 16 to 4.
 5. Add immutable packed field layouts and sparse membership lookup.
 6. Replace the dense transition matrix with the shared sparse edge arena.
 7. Continue through alloc-local sparse states and shared block allocators using

@@ -165,25 +165,31 @@ value.
 The signature index must always confirm a candidate by comparing the exact
 packed field IDs. A hash narrows candidates but is not identity.
 
-The clearest initial implementation may use a managed dictionary and collision
-chains. The practical footprint floor is a shared open-address table containing
-only arch IDs. At a load factor `α`, its payload is:
+AFR-11 uses a shared open-address table containing only arch IDs. At a load
+factor `α`, its payload is:
 
 \[
 \frac{4M}{\alpha}
 \]
 
-At `α = 0.75`, this is approximately:
+At exactly `α = 0.75`, this is approximately:
 
 \[
 5.33M
 \]
 
+The table has a minimum capacity of 16 and doubles before an insertion would
+exceed 75% occupancy. Retained payload therefore varies from approximately
+`5.33M` immediately before growth to `10.67M` immediately after growth. Cost
+models and reports must use the actual table capacity rather than treating
+5.33 bytes per arch as a fixed retained cost.
+
 The requested signature supplies the probe hash. Each occupied candidate is
 confirmed against its packed signature. Rehashing can recompute hashes from the
 canonical stored signatures, so a hash does not have to be retained per arch.
 
-No signature object or array is created for an arch.
+No signature object or array is created for an arch. Zero marks an empty slot,
+and append-only arch creation means no tombstone is required.
 
 ### Sparse Structural Edges
 
@@ -221,13 +227,14 @@ storage.
 Without field-layout metadata, the sparse global catalog is approximately:
 
 \[
-13.33M + 4S + 12E
+(13.33 \text{ to } 18.67)M + 4S + 12E
 \]
 
-The `13.33M` term consists of:
+The range of linear `M` terms consists of:
 
 - 4 bytes for the cumulative signature end.
-- Approximately 5.33 bytes for the signature index at 75% occupancy.
+- Between approximately 5.33 and 10.67 retained bytes for the signature index
+  under 75%-threshold doubling.
 - 4 bytes for the sparse edge head.
 
 The shared composite allocator requires an immutable layout entry for each
@@ -235,7 +242,7 @@ materialized field membership. If the common layout entry is 4 bytes, the
 formula becomes:
 
 \[
-13.33M + 8S + 12E + I
+(13.33 \text{ to } 18.67)M + 8S + 12E + I
 \]
 
 If some layouts require a wider representation, use the measured average `L`:
@@ -614,7 +621,7 @@ The epic must measure rather than assume:
   search.
 - Present-field versus absent-field lookup costs.
 - The observed transition degree distribution `D`.
-- Dictionary-based versus custom signature-index retained bytes.
+- Signature-index capacity and load across representative catalogs.
 - Monolithic slab growth cost and LOH behavior.
 - Slab fragmentation by component-size distribution.
 - Aligned versus unaligned reference-free access for large structs and vectors.

@@ -3,7 +3,7 @@ namespace AlvorKit.ECS.Demo.Bench;
 /// <summary>Coordinates core measurements and isolated archetypal worker samples.</summary>
 internal sealed class EcsBenchCoordinator(EcsBenchOptions options)
 {
-    private const int ReportSchemaVersion = 1;
+    private const int ReportSchemaVersion = 2;
 
     internal int Run()
     {
