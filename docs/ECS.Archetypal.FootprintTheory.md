@@ -695,9 +695,29 @@ transition handling.
 
 ## Capacity and Fragmentation
 
-The initial row capacity should be four:
+AFR-12 sets the initial row capacity to four:
 
 `4 -> 8 -> 16 -> 32 -> ...`
+
+Relative to the previous initial capacity of 16:
+
+| Peak state occupancy | Previous capacity | AFR-12 capacity |
+| ---: | ---: | ---: |
+| 1–4 | 16 | 4 |
+| 5–8 | 16 | 8 |
+| 9 or more | Same power of two | Same power of two |
+
+For one retained state, the logical payload change is:
+
+\[
+(C_{new} - C_{old})\left(8 + \sum_j sizeof(T_j)\right)
+\]
+
+The eight-byte term is the row's `EntMut`. Array headers cancel because the
+number of retained arrays does not change. States that grow past four rows pay
+additional transient replacement arrays even when their final capacity is the
+same; retained capacity and growth allocation must therefore be reported
+separately.
 
 Power-of-two row capacities make block size classes and reuse straightforward.
 The physical footprint then contains two forms of slack:

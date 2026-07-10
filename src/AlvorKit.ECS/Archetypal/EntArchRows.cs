@@ -2,7 +2,7 @@ namespace AlvorKit.ECS;
 
 internal static class EntArchRows<A>
 {
-    private const int InitialRowCapacity = 16;
+    private const int InitialRowCapacity = 4;
 
     private static EntArchRowSet[][] rowsByAlloc = [];
 

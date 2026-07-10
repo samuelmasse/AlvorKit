@@ -33,9 +33,10 @@ Progress through the agreed improvements:
 1. Complete: store cumulative signature ends and preserve sorted signatures by
    insertion.
 2. Complete: add collision-checked hash indexing for arch signatures.
-3. Next: reduce the initial row capacity from 16 to 4.
-4. Replace dense transition rows with a shared sparse edge arena.
-5. Consider precomputed reference-field lists for tail clearing.
+3. Complete: reduce the initial row capacity from 16 to 4.
+4. Next: add packed immutable field layouts and sparse membership lookup.
+5. Replace dense transition rows with a shared sparse edge arena.
+6. Consider precomputed reference-field lists for tail clearing.
 
 Specialized storage for `EntArchLoc` was considered but is deferred because it
 would couple this work to the sparse page and generation systems.
@@ -172,24 +173,21 @@ measured signature sizes justify a different strategy.
 `ResolveRemove` already preserves ordering by copying the ranges on either side
 of the removed field.
 
-## Reduce Initial Row Capacity
+## Initial Row Capacity Four
 
-[`EntArchRows<A>`](../src/AlvorKit.ECS/Archetypal/EntArchRows.cs) currently gives
-a newly occupied `(allocId, archId)` row set an initial capacity of 16.
+[`EntArchRows<A>`](../src/AlvorKit.ECS/Archetypal/EntArchRows.cs) gives a newly
+occupied `(allocId, archId)` row set an initial capacity of four.
 
 That capacity is applied to:
 
 - The row set's `EntMut[]`.
 - Every component column in the arch.
 
-An arch containing one Ent therefore reserves sixteen slots in every parallel
-array. This is costly when a workload materializes many rare arches.
-
-The initial capacity should be reduced to 4 while retaining normal doubling:
+The normal doubling sequence is:
 
 `4 -> 8 -> 16 -> 32 -> ...`
 
-Four is a compromise between sparse-arch memory and growth cost:
+Four is the measured compromise between sparse-arch memory and growth cost:
 
 - A one-row arch wastes at most three initial slots per array rather than
   fifteen.
@@ -197,8 +195,11 @@ Four is a compromise between sparse-arch memory and growth cost:
   at one.
 - Row indexing and steady-state component access remain unchanged.
 
-This change should be measured independently from hash indexing so allocation
-and timing effects remain attributable.
+AFR-12 measured this independently from hash indexing. Across the 47-case quick
+profile, retained row/component capacity fell in every case without changing
+catalog data, used payload, or managed object counts. Point access remained
+unchanged. States that grow beyond four rows pay the additional `4 -> 8` and
+`8 -> 16` intermediate resize allocations.
 
 ## Replace Dense Transitions With a Sparse Edge Arena
 
@@ -350,8 +351,8 @@ delegate dispatch make it unsuitable as the only performance measurement.
 2. Complete: replace signature ranges with cumulative ends and replace
    add-then-sort with sorted insertion.
 3. Complete: add the collision-correct signature hash index.
-4. Next: change the initial row capacity from 16 to 4.
-5. Add immutable packed field layouts and sparse membership lookup.
+4. Complete: change the initial row capacity from 16 to 4.
+5. Next: add immutable packed field layouts and sparse membership lookup.
 6. Replace the dense transition matrix with the shared sparse edge arena.
 7. Continue through alloc-local sparse states and shared block allocators using
    the dependency order in the

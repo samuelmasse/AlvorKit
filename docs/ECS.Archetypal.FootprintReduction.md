@@ -1,7 +1,7 @@
 # Epic: Archetype Footprint Reduction
 
-> Status: in progress. AFR-01, AFR-02, AFR-10, and AFR-11 are implemented and
-> verified. AFR-12 is next.
+> Status: in progress. AFR-01, AFR-02, AFR-10, AFR-11, and AFR-12 are
+> implemented and verified. AFR-20 is next.
 
 ## Related Documents
 
@@ -18,7 +18,8 @@
 | AFR-02 | Complete | Isolated benchmark workers, versioned reports, and quiescent footprint diagnostics |
 | AFR-10 | Complete | Four-byte cumulative signature ends and linear sorted insertion |
 | AFR-11 | Complete | Collision-correct arch-ID-only open-addressed signature index |
-| AFR-12 onward | Planned | Initial row capacity four is next |
+| AFR-12 | Complete | Initial row capacity four with power-of-two growth |
+| AFR-20 onward | Planned | Packed immutable field-layout metadata is next |
 
 ## Outcome
 
@@ -437,6 +438,52 @@ Acceptance:
 - First activation reserves four rows in every current parallel buffer.
 - Existing growth and compaction behavior remains unchanged.
 - Allocation and timing effects are reported separately from catalog changes.
+
+Implementation result:
+
+- `EntArchRows<A>` now starts at four rows and retains the existing doubling
+  sequence: `4 -> 8 -> 16 -> 32 -> ...`.
+- A focused test verifies exact row and component capacities after the first
+  activation, at four rows, and across the first growth to eight. It also
+  verifies retained values and row locations. All 79 ECS tests pass.
+- No metric or report-schema change was needed. Existing row, Ent, and
+  component slack metrics already isolate this capacity change. Shared-slab
+  fragmentation does not exist until the later allocator tasks.
+- Across all 47 benchmark cases, catalog metrics, active and used counts,
+  column-directory bytes, and every managed object count are unchanged. Only
+  retained row/component capacity and slack decreased.
+
+Selected retained-footprint comparisons:
+
+| Case | AFR-11 logical bytes | AFR-12 logical bytes | Delta |
+| --- | ---: | ---: | ---: |
+| Point access at `K = 8` | 23,712 | 21,216 | -2,496 |
+| Point access at `K = 32` | 107,040 | 78,624 | -28,416 |
+| 128 Gray-code signatures | 211,872 | 177,984 | -33,888 |
+| 128 low-occupancy arches | 211,872 | 177,984 | -33,888 |
+| High-occupancy setup | 53,216 | 46,928 | -6,288 |
+| Unknown add at `K = 8` | 414,432 | 216,144 | -198,288 |
+| Unknown remove at `K = 8` | 410,528 | 215,168 | -195,360 |
+| Four-alloc concurrent resolution | 1,332,160 | 822,256 | -509,904 |
+
+For Gray creation and low occupancy, aggregate row capacity falls from 2,048
+to 512 and aggregate component capacity from 7,200 to 1,800. Both retain the
+same 890 managed objects.
+
+Point access remains unchanged: the `K = 32` present-get median is 12.82 ns in
+AFR-11 and 12.83 ns in AFR-12. Cached add/remove and compaction remain at zero
+allocated bytes per move, with timing differences within cross-run variation.
+
+The dedicated growth case exposes the intended cost. Its retained footprint
+falls from 51,168 to 49,584 bytes, while the added `4 -> 8` and `8 -> 16`
+intermediate arrays increase measured allocation from 78.375 to 83.8125 bytes
+per move. The three-sample quick median changes from 422.27 to 430.08 ns per
+move. This cost applies to growth, not to steady-state access or pre-sized
+movement.
+
+The complete comparison report is generated at:
+
+`out/ecs-archetypal/afr12-initial-capacity-four-quick.json`
 
 ## Phase 2: Sparse Global Metadata
 
