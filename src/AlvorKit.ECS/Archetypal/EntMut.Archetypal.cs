@@ -5,6 +5,8 @@ namespace AlvorKit.ECS;
 //   arch, and dense row. EntArchColumn<T, N, A> stores component values at that same alloc/arch/row coordinate.
 // - EntArchGraph<A> is shared by the group. Its lock serializes field registration, arch creation, transition caching,
 //   and jagged-array outer growth. Runtime rows and component columns remain partitioned by alloc.
+// - Every canonical packed signature has parallel immutable field layouts. Reference-free entries store byte-column
+//   prefixes; reference-containing entries store type-local columns. The graph publishes both together under its lock.
 // - One thread exclusively owns an alloc's data for a given group. Reads, writes, and row changes inside that alloc are
 //   intentionally unsynchronized. Multiple threads may use the same group and arch concurrently only through different allocs.
 // - Structural changes move an Ent between dense arch row sets. Adding copies every src field; removing copies only the

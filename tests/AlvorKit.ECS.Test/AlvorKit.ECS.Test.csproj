@@ -9,6 +9,7 @@
     <ItemGroup>
         <Using Include="AlvorKit.ECS" />
         <Using Include="AlvorKit.ECS.Generator" />
+        <Using Include="System.Runtime.CompilerServices" />
     </ItemGroup>
 
 </Project>

@@ -20,6 +20,7 @@ public sealed class EntArchGraphTest
             archIds[mask] = archId;
 
             CollectionAssert.AreEqual(ExpectedFieldIds(mask), EntArchGraph<SubsetArch>.FieldIds(archId).ToArray());
+            AssertReferenceFreeLayouts(archId);
             ExitSubset(ent);
         }
 
@@ -29,6 +30,9 @@ public sealed class EntArchGraphTest
         var metrics = EntArchDiagnostics<SubsetArch>.Capture();
         Assert.AreEqual(15, metrics.SignatureIndexCount);
         Assert.AreEqual(32, metrics.SignatureIndexCapacity);
+        Assert.AreEqual(32, metrics.SignatureMembershipCount);
+        Assert.AreEqual(metrics.SignatureMembershipCount, metrics.FieldLayoutCount);
+        Assert.IsTrue(metrics.FieldLayoutCapacity >= metrics.FieldLayoutCount);
 
         int middleFieldId = EntArchColumn<int, S1, SubsetArch>.FieldId;
         Assert.AreEqual(
@@ -44,6 +48,7 @@ public sealed class EntArchGraphTest
             SetSubset(ent, mask, reverse: true);
             Assert.AreEqual(archIds[mask], ent.Get<EntArchLoc, SubsetArch>().ArchId);
             CollectionAssert.AreEqual(ExpectedFieldIds(mask), EntArchGraph<SubsetArch>.FieldIds(archIds[mask]).ToArray());
+            AssertReferenceFreeLayouts(archIds[mask]);
             ExitSubset(ent);
         }
     }
@@ -58,12 +63,14 @@ public sealed class EntArchGraphTest
 
         ent.SetArchetypal<int, F00, FieldGrowthArch>(10);
         int singletonArchId = ent.Get<EntArchLoc, FieldGrowthArch>().ArchId;
+        var singletonLayout = EntArchGraph<FieldGrowthArch>.FieldLayouts(singletonArchId).ToArray();
 
         RegisterRemainingGrowthFields();
         int lastFieldId = EntArchColumn<int, F15, FieldGrowthArch>.FieldId;
 
         Assert.AreEqual(singletonArchId, EntArchGraph<FieldGrowthArch>.GetSingletonArchId(firstFieldId));
         Assert.IsTrue(EntArchGraph<FieldGrowthArch>.ContainsField(singletonArchId, firstFieldId));
+        CollectionAssert.AreEqual(singletonLayout, EntArchGraph<FieldGrowthArch>.FieldLayouts(singletonArchId).ToArray());
 
         ent.SetArchetypal<int, F15, FieldGrowthArch>(15);
         int pairArchId = ent.Get<EntArchLoc, FieldGrowthArch>().ArchId;
@@ -71,6 +78,9 @@ public sealed class EntArchGraphTest
         Assert.AreEqual(15, ent.GetArchetypal<int, F15, FieldGrowthArch>());
         Assert.AreEqual(pairArchId, EntArchGraph<FieldGrowthArch>.GetAddArchId(singletonArchId, lastFieldId));
         Assert.AreEqual(singletonArchId, EntArchGraph<FieldGrowthArch>.GetRemoveArchId(pairArchId, lastFieldId));
+        var pairLayouts = EntArchGraph<FieldGrowthArch>.FieldLayouts(pairArchId);
+        Assert.AreEqual(Unsafe.SizeOf<EntMut>(), pairLayouts[0].BytePrefix);
+        Assert.AreEqual(Unsafe.SizeOf<EntMut>() + Unsafe.SizeOf<int>(), pairLayouts[1].BytePrefix);
 
         Assert.IsTrue(ent.UnsetArchetypal<int, F15, FieldGrowthArch>());
         Assert.AreEqual(singletonArchId, ent.Get<EntArchLoc, FieldGrowthArch>().ArchId);
@@ -121,6 +131,19 @@ public sealed class EntArchGraphTest
         ent.UnsetArchetypal<int, S2, SubsetArch>();
         ent.UnsetArchetypal<int, S3, SubsetArch>();
         Assert.IsFalse(ent.Has<EntArchLoc, SubsetArch>());
+    }
+
+    private static void AssertReferenceFreeLayouts(int archId)
+    {
+        var fieldIds = EntArchGraph<SubsetArch>.FieldIds(archId);
+        var layouts = EntArchGraph<SubsetArch>.FieldLayouts(archId);
+        Assert.AreEqual(fieldIds.Length, layouts.Length);
+
+        for (int fieldIndex = 0; fieldIndex < layouts.Length; fieldIndex++)
+        {
+            Assert.IsFalse(layouts[fieldIndex].ContainsReferences);
+            Assert.AreEqual(Unsafe.SizeOf<EntMut>() + fieldIndex * Unsafe.SizeOf<int>(), layouts[fieldIndex].BytePrefix);
+        }
     }
 
     private static void RegisterRemainingGrowthFields()

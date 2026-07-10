@@ -8,6 +8,9 @@ internal static class EntArchColumn<T, N, A>
     static EntArchColumn()
     {
         Values = [];
-        FieldId = EntArchGraph<A>.RegisterField(new EntArchColumnOps<T, N, A>());
+        FieldId = EntArchGraph<A>.RegisterField(
+            new EntArchColumnOps<T, N, A>(),
+            Unsafe.SizeOf<T>(),
+            EntArchStorageClass<T, A>.Id);
     }
 }

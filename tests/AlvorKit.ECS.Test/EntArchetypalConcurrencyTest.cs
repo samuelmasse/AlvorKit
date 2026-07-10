@@ -15,10 +15,11 @@ public sealed class EntArchetypalConcurrencyTest
         var archIds = new int[ownerCount];
         var firstValues = new int[ownerCount];
         var secondValues = new int[ownerCount];
+        var layoutSnapshots = new EntArchFieldLayout[ownerCount][];
 
         Parallel.Invoke(
-            () => ResolveColdArch(0, barrier, allocIds, archIds, firstValues, secondValues),
-            () => ResolveColdArch(1, barrier, allocIds, archIds, firstValues, secondValues));
+            () => ResolveColdArch(0, barrier, allocIds, archIds, firstValues, secondValues, layoutSnapshots),
+            () => ResolveColdArch(1, barrier, allocIds, archIds, firstValues, secondValues, layoutSnapshots));
 
         Assert.AreNotEqual(allocIds[0], allocIds[1]);
         Assert.AreEqual(archIds[0], archIds[1]);
@@ -26,6 +27,10 @@ public sealed class EntArchetypalConcurrencyTest
         Assert.AreEqual(11, secondValues[0]);
         Assert.AreEqual(20, firstValues[1]);
         Assert.AreEqual(21, secondValues[1]);
+        CollectionAssert.AreEqual(layoutSnapshots[0], layoutSnapshots[1]);
+        Assert.AreEqual(2, layoutSnapshots[0].Length);
+        Assert.AreEqual(Unsafe.SizeOf<EntMut>(), layoutSnapshots[0][0].BytePrefix);
+        Assert.AreEqual(Unsafe.SizeOf<EntMut>() + Unsafe.SizeOf<int>(), layoutSnapshots[0][1].BytePrefix);
     }
 
     /// <summary>Verifies concurrent owners can repeatedly read and write one warm arch through different allocs.</summary>
@@ -69,7 +74,8 @@ public sealed class EntArchetypalConcurrencyTest
         int[] allocIds,
         int[] archIds,
         int[] firstValues,
-        int[] secondValues)
+        int[] secondValues,
+        EntArchFieldLayout[][] layoutSnapshots)
     {
         using var arena = new EntArena();
         EntMut ent = arena.Alloc();
@@ -89,6 +95,7 @@ public sealed class EntArchetypalConcurrencyTest
         archIds[owner] = loc.ArchId;
         firstValues[owner] = ent.GetArchetypal<int, C0, ColdResolutionArch>();
         secondValues[owner] = ent.GetArchetypal<int, C1, ColdResolutionArch>();
+        layoutSnapshots[owner] = EntArchGraph<ColdResolutionArch>.FieldLayouts(loc.ArchId).ToArray();
 
         ent.UnsetArchetypal<int, C0, ColdResolutionArch>();
         ent.UnsetArchetypal<int, C1, ColdResolutionArch>();

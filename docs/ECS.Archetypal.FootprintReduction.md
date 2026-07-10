@@ -1,7 +1,7 @@
 # Epic: Archetype Footprint Reduction
 
-> Status: in progress. AFR-01, AFR-02, AFR-10, AFR-11, and AFR-12 are
-> implemented and verified. AFR-20 is next.
+> Status: in progress. AFR-01, AFR-02, AFR-10, AFR-11, AFR-12, and AFR-20 are
+> implemented and verified. AFR-21 is next.
 
 ## Related Documents
 
@@ -19,7 +19,8 @@
 | AFR-10 | Complete | Four-byte cumulative signature ends and linear sorted insertion |
 | AFR-11 | Complete | Collision-correct arch-ID-only open-addressed signature index |
 | AFR-12 | Complete | Initial row capacity four with power-of-two growth |
-| AFR-20 onward | Planned | Packed immutable field-layout metadata is next |
+| AFR-20 | Complete | Four-byte packed immutable field layouts and compact field metadata |
+| AFR-21 onward | Planned | Sparse membership lookup is next |
 
 ## Outcome
 
@@ -65,8 +66,8 @@ Field count remains unbounded by a fixed-width signature mask.
 
 - Exact sorted signatures remain the authority for arch identity.
 - Hash collisions always resolve through exact signature comparison.
-- A reference-free `T` uses the shared alloc-local byte allocator.
-- A reference-containing `T` uses a typed GC-visible allocator shared by fields
+- A reference-free `T` uses the shared alloc-local byte store.
+- A reference-containing `T` uses a typed GC-visible store shared by fields
   with that same `T`.
 - Reference-free blocks intentionally remain dirty when released.
 - Reference-containing blocks are cleared before reuse.
@@ -83,9 +84,9 @@ with the rest of the Ent system remain outside this epic.
 - No fixed-width arch mask.
 - No global arch-ID eviction or reuse.
 - No new public query or iteration API.
-- No native-memory allocator in the initial implementation.
+- No native storage for reference-containing values; they remain GC-visible.
 - No general-purpose defensive validation of controlled internal states.
-- No global shared allocator on alloc-local hot paths.
+- No group-global shared store on alloc-local hot paths.
 - No `ArrayPool<T>.Shared` replacement for active arch storage.
 
 ## Epic Acceptance Criteria
@@ -174,8 +175,10 @@ flowchart LR
     R --> S
     Q --> T["AFR-50 Final verification"]
     S --> T
-    T --> U["AFR-51 Final measurements"]
-    U --> V["AFR-52 Reconcile documentation"]
+    B --> X["AFR-51 Final MethodImpl tuning"]
+    T --> X
+    X --> U["AFR-52 Final measurements"]
+    U --> V["AFR-53 Reconcile documentation"]
 ```
 
 ## Task Summary
@@ -193,7 +196,7 @@ flowchart LR
 | AFR-23 | Remove dense transition matrix | AFR-22 | Eliminate `O(MN)` graph |
 | AFR-30 | Sparse alloc-local state index | AFR-23 | Alloc storage proportional to active states |
 | AFR-31 | Change `loc` from `ArchId` to `StateId` | AFR-30 | Direct hot state access |
-| AFR-32 | Shared reference-free byte slab | AFR-20, AFR-02 | One value allocator per alloc/group |
+| AFR-32 | Shared reference-free byte slab | AFR-20, AFR-02 | One byte store per alloc/group |
 | AFR-33 | Typed reference-containing slabs | AFR-20, AFR-02 | GC-correct shared storage per `T` |
 | AFR-34 | Composite block layout and point access | AFR-31, AFR-32, AFR-33 | Zero per-field arrays on hot path |
 | AFR-35 | Move, append, remove, and compaction cutover | AFR-34 | Structural use of shared blocks |
@@ -203,8 +206,9 @@ flowchart LR
 | AFR-42 | Reference-tail clearing through layouts | AFR-33, AFR-35 | Clear only GC-relevant storage |
 | AFR-43 | Remove legacy row and column buffers | AFR-36, AFR-40, AFR-42 | One storage model remains |
 | AFR-50 | Concurrency, growth, and correctness gate | AFR-41, AFR-43 | Full focused verification |
-| AFR-51 | Final performance and footprint report | AFR-50 | Measured epic outcome |
-| AFR-52 | Reconcile implementation documentation | AFR-51 | Docs match implemented constants and shapes |
+| AFR-51 | Final `MethodImplOptions` tuning | AFR-02, AFR-50 | Evidence-based annotations on settled hot paths |
+| AFR-52 | Final performance and footprint report | AFR-51 | Measured epic outcome |
+| AFR-53 | Reconcile implementation documentation | AFR-52 | Docs match implemented constants and shapes |
 
 ## Phase 0: Baseline and Safety Net
 
@@ -431,7 +435,7 @@ Changes:
 
 - Change the initial row capacity from 16 to 4.
 - Preserve power-of-two growth.
-- Record row slack separately from allocator fragmentation.
+- Record row slack separately from slab fragmentation.
 
 Acceptance:
 
@@ -448,7 +452,7 @@ Implementation result:
   verifies retained values and row locations. All 79 ECS tests pass.
 - No metric or report-schema change was needed. Existing row, Ent, and
   component slack metrics already isolate this capacity change. Shared-slab
-  fragmentation does not exist until the later allocator tasks.
+  fragmentation does not exist until the later store tasks.
 - Across all 47 benchmark cases, catalog metrics, active and used counts,
   column-directory bytes, and every managed object count are unchanged. Only
   retained row/component capacity and slack decreased.
@@ -506,6 +510,86 @@ Acceptance:
 - Layout entries are immutable after arch creation.
 - Ordinary point access can obtain the layout from the field's local ordinal.
 - No per-arch layout object is created.
+
+Implementation result:
+
+- `packedFieldLayouts` is parallel to `packedFieldIds` over the same cumulative
+  signature ranges. It starts empty and grows independently to the smallest
+  power of two that covers the current membership count, avoiding a 16 KiB
+  layout allocation in small groups merely because the older field-ID array
+  starts at 4,096 entries.
+- `EntArchFieldLayout` is exactly four bytes. A nonnegative encoded value is a
+  reference-free byte prefix. A negative value is the bitwise complement of a
+  reference-containing type-local column. The sign therefore also supplies the
+  clearing classification without a second flag or sentinel value.
+- Reference-free prefixes begin after `EntMut` and advance only by the byte
+  widths of earlier reference-free fields. Reference-containing memberships do
+  not advance the planned byte-slab prefix.
+- Field registration records an eight-byte `(ByteWidth, StorageClassId)` value.
+  Storage class zero names shared byte storage; each exact reference-containing
+  `T` receives one positive class ID shared by every `N` in the same group `A`.
+  This is `O(N)` field metadata rather than duplicated `O(S)` metadata.
+- Cold layout compilation obtains a typed column by counting earlier fields
+  with the same positive storage class. That is allocation-free and quadratic
+  only in a new signature's reference-containing memberships. A reusable count
+  table can make it linear later without changing retained metadata if wide,
+  reference-heavy creation measures poorly.
+- The existing dense `EntArchColumnOps[]` remains separate. Structural
+  copy/clear/resize therefore keeps its previous eight-byte ops-directory
+  stride while AFR-20 metadata is touched only during cold arch creation.
+- Layouts are completely written before the signature end, hash-index entry,
+  or transition publishes the new arch. No lock, `Volatile` read, or managed
+  allocation was added to ordinary point access.
+
+For `N` registered fields, field-directory capacity `F`, `S` used signature
+memberships, and layout capacity `H`, AFR-20 adds:
+
+\[
+\begin{aligned}
+\text{logical retained} &= 8F + 4H \\
+\text{logical used} &= 8(N + 1) + 4S \\
+\text{logical slack} &= 8(F - N - 1) + 4(H - S)
+\end{aligned}
+\]
+
+The extra `1` is the reserved field-ID slot. For a materialized catalog on
+x64, the estimated managed increase is `8F + align8(4H) + 48` bytes: the two
+payloads plus two array headers. There are two additional group-global managed
+arrays and still no object per arch. All 47 AFR-12 comparisons match these
+formulas exactly; every row, component, alloc-state, and storage-object metric
+is unchanged.
+
+Representative retained deltas:
+
+| Case | `F` | `S` | `H` | Logical delta | Estimated managed delta |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Present get, `K = 1` | 16 | 1 | 1 | +132 B | +184 B |
+| Present get, `K = 8` | 16 | 36 | 64 | +384 B | +432 B |
+| Present get, `K = 32` | 64 | 528 | 1,024 | +4,608 B | +4,656 B |
+| 128 Gray-code signatures | 64 | 450 | 512 | +2,560 B | +2,608 B |
+| Unknown add, `K = 8` | 16 | 3,249 | 4,096 | +16,512 B | +16,560 B |
+| Four-alloc concurrent resolution | 16 | 6,200 | 8,192 | +32,896 B | +32,944 B |
+
+All 25 ordinary point cases and all six value-shape cases remain at zero
+allocated bytes per operation. Their quick-profile medians range from 2.7%
+faster to 0.7% slower than AFR-12, which is run variation around unchanged
+code. Cached structural cases also remain allocation-free. Layout-array growth
+is intentionally a cold catalog allocation: the 128-signature Gray and
+low-occupancy cases allocate 4,304 additional bytes in total, while unknown
+add/remove incur no extra timed allocation when existing layout capacity is
+sufficient. The seven-sample cold sweep measures 33.07 microseconds per Gray
+arch against the 32.98 microsecond AFR-12 quick median; concurrent cold
+resolution remains noisier and is not used to claim a speed change.
+
+Focused tests verify the four-byte representation, mixed byte widths,
+reference types, reference-containing structs, same-`T`/different-`N` typed
+columns, canonical add order, catalog growth, and concurrent publication. All
+80 ECS tests pass.
+
+The complete reports are generated at:
+
+- `out/ecs-archetypal/afr20-packed-field-layouts-quick.json`
+- `out/ecs-archetypal/afr20-packed-field-layouts-cold.json`
 
 ### AFR-21 — Sparse Membership Lookup
 
@@ -608,23 +692,28 @@ Acceptance:
 ### AFR-32 — Shared Reference-Free Byte Slab
 
 Purpose: store `EntMut` and every reference-free component type in one
-alloc-local byte allocator.
+alloc-local byte store.
 
 Deliverables:
 
 - Reference classification at field registration.
-- Geometrically growing byte backing storage.
+- A measured choice between geometrically growing managed byte backing and
+  uninitialized native backing obtained with `NativeMemory.Alloc`.
 - Block allocate, grow, copy, and release primitives. AFR-40 adds reusable
   free-list rent and return.
 - Offset-based block handles.
 - Typed unaligned read, write, and copy helpers for closed generic `T`.
 - The explicit policy that released reference-free storage remains dirty.
+- Deterministic `NativeMemory.Free` ownership and separate native retained-byte
+  metrics if native backing is selected.
 
 Acceptance:
 
 - Different reference-free `T` and `N` values share the same byte backing
-  allocator within the alloc/group ownership partition.
+  store within the alloc/group ownership partition.
 - Released reference-free blocks are not cleared.
+- Native backing is allocated with `NativeMemory.Alloc`, not
+  `NativeMemory.AllocZeroed`; no code assumes fresh or returned bytes are zero.
 - Every row is overwritten before `Count` exposes it.
 - No active arch owns a reference-free `T[]`.
 
@@ -635,7 +724,7 @@ references.
 
 Deliverables:
 
-- One typed allocator per distinct closed `T` in an alloc/group partition.
+- One typed store per distinct closed `T` in an alloc/group partition.
 - Sharing across differently named fields `N` with the same `T`.
 - Typed block allocate, grow, copy, clear, and release primitives. AFR-40 adds
   reusable free-list rent and return.
@@ -645,7 +734,7 @@ Acceptance:
 
 - The GC can observe every stored reference through typed managed arrays.
 - A released block contains no references from its previous owner.
-- Fields with the same `T` share one typed backing allocator. AFR-40 adds its
+- Fields with the same `T` share one typed backing store. AFR-40 adds its
   reusable free lists.
 - No active arch owns a dedicated reference-containing `T[]`.
 
@@ -667,8 +756,8 @@ Reference-containing state layout:
 Hot-path requirements:
 
 - `loc -> state -> field ordinal -> layout -> block -> row`.
-- No signature hash, sparse edge lookup, alloc state-map lookup, allocator
-  operation, shared lock, or virtual column operation.
+- No signature hash, sparse edge lookup, alloc state-map lookup, block
+  rent/return, shared lock, or virtual column operation.
 - Closed generic code selects byte versus typed storage.
 
 Acceptance:
@@ -842,7 +931,7 @@ Acceptance:
 - Source scans find no retained dense `M × N` representation.
 - Builds, focused tests, and the demo pass with only shared blocks active.
 
-## Phase 5: Final Verification and Documentation
+## Phase 5: Final Verification, Tuning, and Documentation
 
 ### AFR-50 — Concurrency, Growth, and Correctness Gate
 
@@ -864,7 +953,53 @@ Acceptance:
 - No managed allocation appears in steady-state point operations.
 - No cross-alloc row, block, or free-list mutation is observed.
 
-### AFR-51 — Final Performance and Footprint Report
+### AFR-51 — Final `MethodImplOptions` Tuning
+
+Purpose: determine whether explicit JIT hints improve the settled archetypal
+hot paths relative to the runtime's default decisions. This is deliberately the
+last tuning task after the storage, membership, movement, reuse, and correctness
+work is complete.
+
+Variants:
+
+- No `MethodImpl` attribute.
+- `MethodImplOptions.AggressiveInlining` only.
+- `MethodImplOptions.AggressiveOptimization` only.
+- `AggressiveInlining | AggressiveOptimization`.
+
+Measure the variants independently for:
+
+- `GetArchetypal`, `HasArchetypal`, and existing-field `SetArchetypal`.
+- Small membership, layout, state, and block-address helpers reached by those
+  methods.
+- Cached add/remove and compaction entry points where an annotation could trade
+  code size for structural throughput.
+
+Required evidence:
+
+- Warm steady-state latency using the AFR-02 point and structural cases.
+- Cold worker startup and first-call cost, because an option that improves the
+  final tier may still increase JIT cost.
+- Generated-code size and observed inlining decisions for representative
+  widths, rather than inferring behavior from the attribute name.
+- Runtime, architecture, tiered-compilation, and dynamic-PGO settings recorded
+  with the results.
+- Repeated isolated samples sufficient to distinguish a small effect from the
+  existing run-to-run noise.
+
+Acceptance:
+
+- Select a policy per method family; do not apply one combination to the entire
+  subsystem by convention.
+- Keep the default when no repeatable benefit exceeds measurement noise.
+- Remove redundant or harmful annotations and document any retained exception
+  with its measured tradeoff.
+- All variants preserve behavior and steady-state zero-allocation requirements.
+- Rerun the focused correctness gate after applying the selected policy.
+- A no-change result is valid when the JIT default matches or beats every
+  explicit option.
+
+### AFR-52 — Final Performance and Footprint Report
 
 Compare baseline and final results for every AFR-02 scenario.
 
@@ -890,7 +1025,7 @@ Acceptance:
 - Any hot-path regression has an explicit measured reason and accepted
   footprint benefit.
 
-### AFR-52 — Reconcile Implementation Documentation
+### AFR-53 — Reconcile Implementation Documentation
 
 Update:
 
@@ -898,7 +1033,7 @@ Update:
 - [Theory and cost model](ECS.Archetypal.FootprintTheory.md)
 - Source design comments affected by the implemented layout
 
-Record measured thresholds, actual layout widths, allocator page sizes,
+Record measured thresholds, actual layout widths, store page sizes,
 empty-state budget, and any rejected theoretical optimization.
 
 ## Implementation Discipline
@@ -911,8 +1046,9 @@ empty-state budget, and any rejected theoretical optimization.
 - Preserve approved vocabulary: `Ent`, `loc`, `src`, `dst`, `arch`, and `alloc`.
 - Keep generic parameters `T`, `N`, and `A` compact.
 - Do not add defensive branches for states excluded by controlled invariants.
-- Measure before adding an adaptive index, pages, native memory, or additional
-  encoding complexity.
+- Measure before adding an adaptive index, pages, or additional encoding
+  complexity. Treat managed bytes and uninitialized `NativeMemory.Alloc`
+  backing as first-class AFR-32 candidates and compare them directly.
 
 ## Definition of Done
 

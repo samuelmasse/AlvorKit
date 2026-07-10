@@ -34,9 +34,10 @@ Progress through the agreed improvements:
    insertion.
 2. Complete: add collision-checked hash indexing for arch signatures.
 3. Complete: reduce the initial row capacity from 16 to 4.
-4. Next: add packed immutable field layouts and sparse membership lookup.
-5. Replace dense transition rows with a shared sparse edge arena.
-6. Consider precomputed reference-field lists for tail clearing.
+4. Complete: add four-byte packed immutable field layouts.
+5. Next: move membership lookup to the packed signature.
+6. Replace dense transition rows with a shared sparse edge arena.
+7. Consider precomputed reference-field lists for tail clearing.
 
 Specialized storage for `EntArchLoc` was considered but is deferred because it
 would couple this work to the sparse page and generation systems.
@@ -201,6 +202,37 @@ catalog data, used payload, or managed object counts. Point access remained
 unchanged. States that grow beyond four rows pay the additional `4 -> 8` and
 `8 -> 16` intermediate resize allocations.
 
+## Packed Immutable Field Layouts
+
+AFR-20 adds `packedFieldLayouts` beside the exact packed field IDs. Both arrays
+use the same cumulative signature range, so a local field ordinal addresses the
+field ID and its storage layout without an object or dense `(arch, field)` cell.
+
+Each `EntArchFieldLayout` is one four-byte encoded integer:
+
+- A nonnegative value is a reference-free byte-column prefix beginning after
+  `EntMut`.
+- A negative value is the bitwise complement of a reference-containing
+  type-local column.
+- The sign also says whether released storage requires reference clearing.
+
+Reference-containing fields with the same exact `T` share a storage class even
+when `N` differs. A different reference-containing `T` starts its own typed
+column sequence. The graph records byte width and storage class once per
+registered field, not once per materialized membership.
+
+The layout array starts empty and grows independently from the older 4,096-slot
+field-ID array. Layouts and field IDs are written before the signature index or
+transitions publish a new arch. Ordinary point access does not consume this
+metadata yet, so `Get`, `Has`, and existing-field `Set` remain unchanged and
+allocation-free. AFR-21 will use the local ordinal returned by sparse
+membership lookup; the shared stores will consume the layout in AFR-32 through
+AFR-35.
+
+The ops directory remains a separate dense reference array. Current structural
+copy, clear, and resize therefore preserve their prior lookup stride until the
+shared-block cutover removes reference-free handler dispatch.
+
 ## Replace Dense Transitions With a Sparse Edge Arena
 
 [`EntArchGraph<A>.EnsureCapacity`](../src/AlvorKit.ECS/Archetypal/EntArchGraph.cs)
@@ -250,9 +282,10 @@ virtual dispatch for value-only columns that intentionally do no clearing.
 At field registration, column operations should expose whether their value type
 is or contains references.
 
-When an arch is created, the graph can build a second packed signature
-containing only the reference-containing field IDs. As with the full signature,
-one cumulative packed end per arch is sufficient to locate the entries.
+AFR-20 now records reference classification in every packed layout. Tail
+clearing can scan those entries without recomputing the classification. A
+second packed sequence containing only reference-containing fields remains an
+optional optimization if that scan is still measurable.
 
 Tail clearing would then iterate the reference-only signature:
 
@@ -274,7 +307,7 @@ The optimization adds:
 
 It provides little benefit when most fields contain references. It should
 therefore follow hash indexing, sorted insertion, the sparse transition cutover,
-and the row-capacity change. The composite allocator's immutable field layouts
+and the row-capacity change. The composite storage's immutable field layouts
 may provide the same classification without a second packed signature. Retain
 separate reference-only metadata only if structural benchmarks show a useful
 improvement.
@@ -352,9 +385,10 @@ delegate dispatch make it unsuitable as the only performance measurement.
    add-then-sort with sorted insertion.
 3. Complete: add the collision-correct signature hash index.
 4. Complete: change the initial row capacity from 16 to 4.
-5. Next: add immutable packed field layouts and sparse membership lookup.
-6. Replace the dense transition matrix with the shared sparse edge arena.
-7. Continue through alloc-local sparse states and shared block allocators using
+5. Complete: add immutable four-byte packed field layouts.
+6. Next: move field membership to the packed signature.
+7. Replace the dense transition matrix with the shared sparse edge arena.
+8. Continue through alloc-local sparse states and shared block stores using
    the dependency order in the
    [Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md).
 

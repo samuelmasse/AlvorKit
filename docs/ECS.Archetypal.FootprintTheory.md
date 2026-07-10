@@ -237,18 +237,23 @@ The range of linear `M` terms consists of:
   under 75%-threshold doubling.
 - 4 bytes for the sparse edge head.
 
-The shared composite allocator requires an immutable layout entry for each
+The shared composite storage requires an immutable layout entry for each
 materialized field membership. If the common layout entry is 4 bytes, the
 formula becomes:
 
 \[
-(13.33 \text{ to } 18.67)M + 8S + 12E + I
+(13.33 \text{ to } 18.67)M + 8S + 12E + 8C_F + I
 \]
+
+`C_F` is the capacity of the registered-field metadata directory. AFR-20 adds
+one eight-byte `(ByteWidth, StorageClassId)` value per capacity slot so byte
+width and storage class remain `O(N)` facts rather than being repeated for
+every membership.
 
 If some layouts require a wider representation, use the measured average `L`:
 
 \[
-13.33M + (4 + L)S + 12E + I
+(13.33 \text{ to } 18.67)M + (4 + L)S + 12E + 8C_F + I
 \]
 
 `I` is zero for arches using direct packed-signature search. When immutable
@@ -256,7 +261,10 @@ micro-indexes are built only for wide signatures, `I` remains proportional to
 the memberships in those indexed signatures and therefore remains `O(S)`.
 
 All values are logical payload estimates. Shared-array headers, geometric
-growth slack, alignment, and allocator fragmentation remain additional terms.
+growth slack, alignment, and slab fragmentation remain additional terms.
+In the implemented capacity form, `H` layout slots retain `4H` bytes while
+exactly `S` entries, or `4S` bytes, are used. `H` is the smallest power of two
+covering `S`. The registered-field directory similarly retains `8C_F` bytes.
 
 ### Sparse Example
 
@@ -280,11 +288,11 @@ approximately:
 13.33M + 4S + 12E = 7,733,000\text{ bytes}
 \]
 
-With a 4-byte layout entry per membership and no optional micro-index, it costs
-approximately:
+With a 4-byte layout entry per membership, a field-metadata capacity of 1,024,
+and no optional micro-index, it costs approximately:
 
 \[
-11,733,000\text{ bytes}
+11,741,192\text{ bytes}
 \]
 
 The sparse cost depends on materialized signatures and observed edges; it is
@@ -372,13 +380,13 @@ that map only to find or create the dst state.
 This changes the meaning of one existing location field; it does not require a
 specialized page or generation store for `EntArchLoc`.
 
-## Composite Allocators
+## Composite Storage
 
-### Reference-Free Byte Allocator
+### Reference-Free Byte Store
 
 Every closed `T` for which
 `RuntimeHelpers.IsReferenceOrContainsReferences<T>()` is false can share one
-alloc-local byte allocator.
+alloc-local byte store.
 
 The composite reference-free block for one active state contains column-major
 storage for:
@@ -393,6 +401,19 @@ address can be expressed as:
 \[
 blockBase + C \times prefixBytes + Row \times sizeof(T)
 \]
+
+AFR-20 encodes that layout in one four-byte value:
+
+- `encoded >= 0` is the reference-free byte prefix.
+- `encoded < 0` is `~typeColumn` for reference-containing storage.
+
+The sign is therefore also the clearing classification. Prefixes start after
+`EntMut`; reference-containing fields do not advance them. A type-column value
+counts only earlier fields with the same exact `T`, so different `N` fields can
+share one typed store without interlacing their columns with another type.
+The initial cold compiler can obtain that count by scanning earlier fields;
+only measurement of wide reference-heavy signatures should justify a reusable
+per-storage-class count table.
 
 The closed generic access method knows `T`, so element size and typed reads or
 writes can be specialized by the JIT. An aligned layout may be introduced for
@@ -530,13 +551,13 @@ fields, where dispatch and address discovery dominate each assignment. Wide
 values increasingly become memory-copy bound, and reference-heavy arches retain
 typed work, so neither should be promised the same relative improvement.
 
-### Reference-Containing Typed Allocators
+### Reference-Containing Typed Stores
 
 A `T` that is or contains references must remain in typed managed `T[]` storage
 so the GC observes its correct descriptor.
 
-Use one alloc-local typed allocator per distinct reference-containing `T`, not
-one allocator per field name `N`. Differently named fields with the same value
+Use one alloc-local typed store per distinct reference-containing `T`, not one
+store per field name `N`. Differently named fields with the same value
 type can share backing pages and free lists.
 
 For one arch, all fields using the same reference-containing `T` can occupy
@@ -544,10 +565,10 @@ adjacent columns in one typed block. The layout entry records the type-local
 column ordinal.
 
 A released reference-containing block must be cleared before it is returned to
-the allocator. This is different from the deliberate dirty-data policy for
+the typed store. This is different from the deliberate dirty-data policy for
 reference-free blocks.
 
-### Allocator Scope
+### Store Scope
 
 Slabs and free lists are shared across arches within one alloc ownership
 partition. They are not mutated across allocs.
@@ -555,19 +576,21 @@ partition. They are not mutated across allocs.
 This preserves the threading model:
 
 - One owning thread mutates one alloc's blocks and free lists for the group.
-- Different alloc owners use independent allocators concurrently.
+- Different alloc owners use independent stores concurrently.
 - A higher-level page supplier may be shared only on cold page-growth paths;
   supplied pages then become alloc-local.
 
 ### Monolithic Slabs and Pages
 
-The first implementation can use geometrically growing monolithic arrays. A
-block handle is an offset, so array growth preserves logical addresses after
-copying.
+The first implementation can use geometrically growing monolithic backing. A
+managed store replaces its byte array; a native store allocates a larger
+uninitialized region, copies live blocks, and frees the old region. A block
+handle is an offset, so either growth strategy preserves logical addresses.
 
-If whole-slab copying or LOH behavior becomes measurable, move to typed or byte
-pages with alloc-local power-of-two free lists. Pages should be introduced from
-measurement, not assumed necessary initially.
+If whole-slab copying, LOH behavior, or native relocation cost becomes
+measurable, move to typed or byte pages with alloc-local power-of-two free
+lists. Pages should be introduced from measurement, not assumed necessary
+initially.
 
 `ArrayPool<T>.Shared` is not a replacement for this design. It retains live
 arrays per active arch, commonly over-rents, retains returned memory globally,
@@ -581,7 +604,7 @@ For row capacity `C`, the unavoidable component payload is:
 C\left(8 + \sum_j S_j\right)
 \]
 
-The 8-byte term is `EntMut`. No allocator can reduce this payload without
+The 8-byte term is `EntMut`. No storage scheme can reduce this payload without
 compressing component values.
 
 The remaining target overhead is:
@@ -590,7 +613,7 @@ The remaining target overhead is:
 - Amortized sparse `archId -> stateId` index storage.
 - One handle for the reference-free composite block.
 - One handle per distinct reference-containing `T` used by the arch.
-- Allocator fragmentation and shared page headers.
+- Slab fragmentation and shared page headers.
 
 ### Seven Reference-Free `int` Fields
 
@@ -647,7 +670,7 @@ The first three operations do not consult:
 - The sparse transition arena.
 - The alloc's `archId -> stateId` map.
 - A shared lock.
-- An allocator free list.
+- A store free list.
 
 Closed generic access should use the byte or typed slab directly. Reference-free
 structural movement should use the type-erased byte path measured by AFR-36.
@@ -725,7 +748,7 @@ The physical footprint then contains two forms of slack:
 - Unused rows within an active state's current capacity.
 - Free or partially used space inside shared slabs or pages.
 
-The implementation should report these separately. Hiding allocator
+The implementation should report these separately. Hiding slab
 fragmentation inside a single retained-byte number makes regressions difficult
 to diagnose.
 
@@ -759,9 +782,26 @@ global definition eviction.
 
 ### Native Storage
 
-Native byte arenas may eventually reduce managed pressure for reference-free
-values. They do not reduce physical payload and add manual lifetime, alignment,
-and unsafe-access complexity. Begin with managed byte slabs and measure first.
+Uninitialized `NativeMemory.Alloc` backing is a first-class candidate for the
+reference-free byte store, alongside managed byte arrays. It fits the deliberate
+dirty-byte policy: newly allocated and returned storage is never assumed to be
+zero, and every row is initialized before `Count` exposes it.
+
+Native backing does not reduce physical component payload, but it can avoid
+managed slab objects, GC scanning pressure, and large-object-heap behavior. It
+also requires explicit ownership. A native implementation must:
+
+- pair every successful allocation with deterministic `NativeMemory.Free`;
+- retain offsets or block handles rather than persistent interior pointers;
+- use native-sized arithmetic when deriving addresses from capacity and byte
+  prefixes;
+- report native retained bytes separately from estimated managed bytes;
+- preserve the same alloc/group ownership partition and single-owner mutation;
+- never store a value that is or contains references.
+
+AFR-32 should compare managed and native backing directly. It should use
+`NativeMemory.Alloc`, not `NativeMemory.AllocZeroed`; zeroing would spend work
+that the reference-free reuse contract intentionally avoids.
 
 ## Empirical Questions
 
@@ -772,15 +812,20 @@ The epic must measure rather than assume:
 - Present-field versus absent-field lookup costs.
 - The observed transition degree distribution `D`.
 - Signature-index capacity and load across representative catalogs.
-- Monolithic slab growth cost and LOH behavior.
+- Managed-array versus uninitialized `NativeMemory.Alloc` byte backing,
+  including relocation cost, retained native bytes, and GC/LOH behavior.
+- Monolithic slab growth cost.
 - Slab fragmentation by component-size distribution.
 - Aligned versus unaligned reference-free access for large structs and vectors.
 - Point-access cost relative to the current jagged arrays.
+- Default JIT behavior versus `AggressiveInlining`, `AggressiveOptimization`,
+  and their combination on the final point and structural paths, including
+  cold JIT cost, generated-code size, and observed inlining decisions.
 - Cold signature creation before and after hash indexing.
 - Reference-tail clearing and reference-block reuse costs.
 
 The stress demo remains an integration check. Dedicated benchmarks must isolate
-catalog creation, point access, structural movement, allocator growth, and
+catalog creation, point access, structural movement, store growth, and
 retained memory.
 
 ## Theoretical Acceptance Conditions
