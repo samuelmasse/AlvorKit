@@ -402,6 +402,134 @@ correctness requirement.
 Reference-free blocks are intentionally left dirty when released. Every row is
 overwritten before becoming visible through `Count`.
 
+### Type-Erasure Boundary for Reference-Free Values
+
+The public API is closed generic because callers read and write a particular
+`T`, and `T`, `N`, and `A` identify a field. That does not require closed
+generic code throughout the storage implementation.
+
+For a reference-free field, closed generic code is required only at two
+boundaries:
+
+1. Registration uses `T` to record the field ID, byte width, storage class, and
+   any measured alignment class.
+2. Public access uses the closed generic tuple to obtain its field ID. `Get`
+   and `Set` additionally use `T` to perform a typed unaligned read or write.
+
+After registration, block allocation, growth, movement, compaction, released
+tail handling, and retained-byte metrics need only immutable layout metadata
+and byte-block handles. `N` remains part of field identity but has no role in a
+reference-free copy. The structural layer can therefore erase both `T` and `N`
+for these operations. `A` continues to select the independent arch group and
+its alloc-local storage; type erasure does not merge group ownership.
+
+The correct storage test is:
+
+```csharp
+RuntimeHelpers.IsReferenceOrContainsReferences<T>() == false
+```
+
+The C# `unmanaged` category is sufficient but is not the implementation
+boundary. The public methods intentionally keep unconstrained `T`, and the
+runtime test classifies the actual closed type. Interop blittability is also
+not required: internal relocation may copy the managed representation of
+reference-free booleans, characters, enums, padded structs, and explicit-layout
+structs without interpreting those bytes.
+
+Reference-containing values cannot cross this boundary. Storing their bytes in
+a `byte[]` would hide references from the GC and bypass required write barriers.
+They remain in typed GC-visible storage.
+
+### Why Reinterpreting the Current Arrays Is Insufficient
+
+The current graph stores one `EntArchColumnOps<T, N, A>` object and one static
+`T[][][]` directory per registered field. The generic type is currently how a
+heterogeneous `fieldId` finds its storage. Consequently, constructing a byte
+span inside `EntArchColumnOps.Copy` would still pay for:
+
+- The `fieldId -> EntArchColumnOps` lookup.
+- A virtual call through the heterogeneous handler array.
+- The alloc and arch levels of the jagged typed directory.
+- One independently allocated component array per active membership.
+
+It would also replace a JIT-known fixed-size assignment with a variable-size
+copy. That is likely worse for 1-, 2-, 4-, and 8-byte values. The useful change
+begins only after the shared byte slab and immutable block layouts exist; at
+that point the physical storage is already bytes and no cast is required.
+
+Today a move dispatches `Copy` once per retained field, optionally dispatches
+another `Copy` for every src field during swap-back compaction, and dispatches
+`Clear` for every src field. For an all-reference-free arch, every `Clear` call
+returns without writing. A `K = 8` remove therefore performs 15 virtual calls
+when no compaction is needed and 23 when swap-back is required.
+
+After that cutover, a reference-free field also needs no
+`EntArchColumnOps<T, N, A>` object. Its registry entry can be value metadata,
+while its closed generic static retains only field identity and the public
+typed access boundary. This can reduce handler objects and structural generic
+code footprint. The much larger removal of per-membership arrays belongs to
+the shared-slab tasks rather than to byte copying by itself; startup, JIT code,
+and managed object counts should be reported separately.
+
+### Structural Byte Movement
+
+The planned column-major block layout keeps each component column contiguous.
+Moving one row therefore still performs one copy for each retained
+reference-free membership. A single whole-row copy is not generally available
+without switching to row-major storage and giving up column iteration locality.
+
+For one membership, the structural loop obtains:
+
+- The src block offset and column prefix.
+- The dst block offset and column prefix.
+- The src and dst rows and capacities.
+- The immutable element byte width.
+
+It then copies exactly that value's managed bytes. The default complexity is
+`O(K + B)`, where `K` is the retained reference-free field count and `B` is the
+number of bytes copied. No virtual or generic dispatch is required.
+
+`Span<byte>` is allocation-free and provides a clear, overlap-safe copy, but it
+is not automatically the fastest per-value kernel. The implementation should
+measure:
+
+- Direct 1-, 2-, 4-, 8-, and 16-byte loads/stores.
+- `Unsafe.CopyBlockUnaligned` for runtime-known widths.
+- `Span<byte>.CopyTo` for wider values and block growth.
+- Packed unaligned columns versus explicitly aligned wide columns.
+
+Offsets rather than spans or pointers remain in persistent state. Every
+operation reacquires a GC-tracked byref or span from the current slab, so a slab
+resize cannot leave a stale interior pointer.
+
+Correctness requires:
+
+- Copying between layouts for the same field ID and exact byte width.
+- Addressing `columnBase + row * width` with the correct state capacity.
+- Completing every destination write before publishing its row through
+  `Count`.
+- Leaving reference-free tails dirty rather than adding a clearing pass.
+- Using typed copy and clear operations for every reference-containing storage
+  class.
+- Preserving alloc ownership; mutable byte slabs and free lists remain local to
+  one alloc owner.
+
+Raw padding bytes may be relocated but must never become signature identity,
+equality, hashing, or serialization input.
+
+The current all-`int`, `K = 8` measurements show why this is worth isolating.
+Cached add is 487.11 ns/move and cached remove is 537.89 ns/move. First and
+middle compaction are 594.14 and 589.84 ns/move, while last-row removal is
+440.23 ns/move. The roughly 150 ns difference includes the extra eight-field
+compaction loop, or about 19 ns per field for its loop, lookup, virtual dispatch,
+and four-byte assignment. This is evidence of removable overhead, not a
+prediction of the byte path's final speedup.
+
+The likely percentage win is largest for arches with many small reference-free
+fields, where dispatch and address discovery dominate each assignment. Wide
+values increasingly become memory-copy bound, and reference-heavy arches retain
+typed work, so neither should be promised the same relative improvement.
+
 ### Reference-Containing Typed Allocators
 
 A `T` that is or contains references must remain in typed managed `T[]` storage
@@ -521,9 +649,11 @@ The first three operations do not consult:
 - A shared lock.
 - An allocator free list.
 
-Closed generic access should use the byte or typed slab directly. Virtual
-column operations remain acceptable for heterogeneous structural copying,
-growth, and clearing, but not for ordinary point reads or writes.
+Closed generic access should use the byte or typed slab directly. Reference-free
+structural movement should use the type-erased byte path measured by AFR-36.
+Typed dispatch remains acceptable where reference-containing storage requires
+GC-visible copy and clear operations, but not for ordinary point reads or
+writes.
 
 Bulk iteration should resolve field layout once before entering the row loop,
 then traverse the contiguous column range directly.

@@ -163,10 +163,13 @@ flowchart LR
     M --> N
     N --> O["AFR-35 Move and compaction cutover"]
     O --> P["AFR-40 Reuse and empty-state budget"]
+    O --> W["AFR-36 Type-erased reference-free movement"]
+    B --> W
     G --> Q["AFR-41 Adaptive field micro-index"]
     B --> Q
     O --> R["AFR-42 Reference-tail clearing"]
     P --> S["AFR-43 Remove legacy buffers"]
+    W --> S
     R --> S
     Q --> T["AFR-50 Final verification"]
     S --> T
@@ -193,10 +196,11 @@ flowchart LR
 | AFR-33 | Typed reference-containing slabs | AFR-20, AFR-02 | GC-correct shared storage per `T` |
 | AFR-34 | Composite block layout and point access | AFR-31, AFR-32, AFR-33 | Zero per-field arrays on hot path |
 | AFR-35 | Move, append, remove, and compaction cutover | AFR-34 | Structural use of shared blocks |
+| AFR-36 | Type-erased reference-free movement | AFR-02, AFR-35 | No generic or virtual reference-free movement |
 | AFR-40 | Block reuse and bounded empty-state cache | AFR-12, AFR-35 | No object allocation on reusable activation |
 | AFR-41 | Decide adaptive immutable field micro-index | AFR-02, AFR-21 | Measured wide-arch lookup policy |
 | AFR-42 | Reference-tail clearing through layouts | AFR-33, AFR-35 | Clear only GC-relevant storage |
-| AFR-43 | Remove legacy row and column buffers | AFR-40, AFR-42 | One storage model remains |
+| AFR-43 | Remove legacy row and column buffers | AFR-36, AFR-40, AFR-42 | One storage model remains |
 | AFR-50 | Concurrency, growth, and correctness gate | AFR-41, AFR-43 | Full focused verification |
 | AFR-51 | Final performance and footprint report | AFR-50 | Measured epic outcome |
 | AFR-52 | Reconcile implementation documentation | AFR-51 | Docs match implemented constants and shapes |
@@ -646,6 +650,61 @@ Acceptance:
   compaction, reference fields, and several component sizes.
 - No stale reference remains in a cleared tail.
 - Dirty reference-free bytes are never observable.
+
+### AFR-36 — Type-Erased Reference-Free Movement
+
+Purpose: remove closed generic column-handler dispatch from reference-free
+structural operations after the shared-byte-block cutover, while selecting the
+copy primitive from measurements rather than assuming that `Span<byte>` is
+always faster.
+
+Why this follows AFR-35:
+
+- The current `T[][][]` storage uses the closed generic column type to locate
+  each heterogeneous array. Reinterpreting one current element as bytes would
+  retain the virtual handler call and the jagged-array lookup.
+- AFR-20, AFR-32, AFR-34, and AFR-35 provide immutable field widths and offsets,
+  alloc-local byte storage, and the structural block path required for useful
+  type erasure.
+
+Changes:
+
+- Use `RuntimeHelpers.IsReferenceOrContainsReferences<T>() == false` at field
+  registration as the storage boundary. This reference-free category is the
+  actual GC requirement; a public `unmanaged` constraint is not required.
+- Retain `T` only where registration needs its size/classification and where
+  public point access must materialize or store a typed value.
+- Drive reference-free block growth, retained-field movement, and swap-back
+  compaction from immutable byte widths and block offsets.
+- Compare `Span<byte>.CopyTo`, `Unsafe.CopyBlockUnaligned`, and direct small-size
+  copy forms. Keep the simplest measured winner for each useful size class.
+- Perform no reference-free tail clear or handler dispatch. Dirty bytes remain
+  outside `Count` until overwritten.
+- Keep reference-containing values in typed GC-visible slabs with typed copy
+  and clearing operations.
+
+Non-goals:
+
+- Do not add a generic constraint to the stable public API.
+- Do not copy reference-containing values through byte storage.
+- Do not change the column-major layout merely to obtain one whole-row copy.
+- Do not add per-edge copy-plan objects or `O(EK)` retained metadata. Revisit
+  copy plans only if direct layout traversal is measured as a remaining cost.
+
+Acceptance:
+
+- Reference-free move, block growth, and compaction perform no
+  `EntArchColumnOps` virtual call and access no closed generic column storage.
+- Tests cover widths 1, 4, 8, 16, and 64 bytes, including padded or odd-sized
+  structs, plus mixed reference-containing arches.
+- Cached add, cached remove, and first/middle/last compaction allocate zero
+  bytes and preserve every component and repaired `loc`.
+- Reference-free tails remain dirty and unobservable; reference-containing
+  tails remain GC-correct.
+- No retained metadata is added beyond the existing `O(S)` immutable layouts.
+- AFR-02 comparisons cover `K = 1, 8, 32` and value widths 4, 8, 16, and 64.
+  Variants that regress small fixed-size values are recorded and rejected.
+- Point access is unchanged or remains within the accepted measurement noise.
 
 ## Phase 4: Reuse and Hot-Path Adaptation
 
