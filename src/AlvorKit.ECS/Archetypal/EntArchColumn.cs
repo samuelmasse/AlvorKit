@@ -17,11 +17,12 @@ internal static class EntArchColumn<T, N, A>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static T[]? ValuesAt(int allocId, int archId)
     {
-        if (archId == EntArchGraph<A>.NoArchId || Values.Length <= allocId)
+        var valuesByAlloc = Values;
+        if ((uint)allocId >= (uint)valuesByAlloc.Length)
             return null;
 
-        var valuesByArch = Values[allocId];
-        if (valuesByArch == null || valuesByArch.Length <= archId)
+        var valuesByArch = valuesByAlloc[allocId];
+        if (valuesByArch == null || (uint)archId >= (uint)valuesByArch.Length)
             return null;
 
         return valuesByArch[archId];

@@ -35,6 +35,71 @@ public sealed class EntArchetypalTest
         Assert.IsFalse(ent.UnsetArchetypal<int, C0, SingletonArch>());
     }
 
+    /// <summary>Verifies the column lookup's null slots and exact directory boundaries.</summary>
+    [TestMethod]
+    public void Archetypal_ValuesAt_UsesDirectoryBoundsAndNullSlots()
+    {
+        using var firstArena = new EntArena();
+        using var secondArena = new EntArena();
+        EntMut ent = secondArena.Alloc();
+
+        ent.SetArchetypal<int, C0, ValuesAtBoundsArch>(17);
+
+        var loc = ent.Get<EntArchLoc, ValuesAtBoundsArch>();
+        var valuesByAlloc = EntArchColumn<int, C0, ValuesAtBoundsArch>.Values;
+        var valuesByArch = valuesByAlloc[loc.AllocId];
+        Assert.AreSame(valuesByArch[loc.ArchId], EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(
+            loc.AllocId,
+            loc.ArchId));
+        Assert.IsNull(EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(
+            loc.AllocId,
+            EntArchGraph<ValuesAtBoundsArch>.NoArchId));
+        Assert.IsNull(EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(firstArena.Index, loc.ArchId));
+        Assert.IsNull(EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(valuesByAlloc.Length, loc.ArchId));
+        Assert.IsNull(EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(
+            loc.AllocId,
+            valuesByArch.Length));
+
+        Assert.IsTrue(ent.UnsetArchetypal<int, C0, ValuesAtBoundsArch>());
+    }
+
+    /// <summary>Verifies Set enters, moves a middle row, repairs compaction, and overwrites in place.</summary>
+    [TestMethod]
+    public void Archetypal_SetFromMiddleRow_RepairsCompactedLoc()
+    {
+        using var arena = new EntArena();
+        EntMut[] ents = [arena.Alloc(), arena.Alloc(), arena.Alloc(), arena.Alloc()];
+        for (int i = 0; i < ents.Length; i++)
+            ents[i].SetArchetypal<int, C0, SetMiddleRowArch>(100 + i);
+
+        var srcLoc = ents[1].Get<EntArchLoc, SetMiddleRowArch>();
+        var lastLoc = ents[3].Get<EntArchLoc, SetMiddleRowArch>();
+        Assert.AreEqual(1, srcLoc.Row);
+        Assert.AreEqual(3, lastLoc.Row);
+        Assert.AreEqual(srcLoc.ArchId, lastLoc.ArchId);
+
+        ents[1].SetArchetypal<long, C1, SetMiddleRowArch>(200L);
+
+        var dstLoc = ents[1].Get<EntArchLoc, SetMiddleRowArch>();
+        var compactedLoc = ents[3].Get<EntArchLoc, SetMiddleRowArch>();
+        Assert.AreNotEqual(srcLoc.ArchId, dstLoc.ArchId);
+        Assert.AreEqual(0, dstLoc.Row);
+        Assert.AreEqual(srcLoc.ArchId, compactedLoc.ArchId);
+        Assert.AreEqual(srcLoc.Row, compactedLoc.Row);
+        Assert.AreEqual(101, ents[1].GetArchetypal<int, C0, SetMiddleRowArch>());
+        Assert.AreEqual(200L, ents[1].GetArchetypal<long, C1, SetMiddleRowArch>());
+        Assert.AreEqual(103, ents[3].GetArchetypal<int, C0, SetMiddleRowArch>());
+
+        ents[1].SetArchetypal<long, C1, SetMiddleRowArch>(201L);
+
+        Assert.AreEqual(dstLoc, ents[1].Get<EntArchLoc, SetMiddleRowArch>());
+        Assert.AreEqual(201L, ents[1].GetArchetypal<long, C1, SetMiddleRowArch>());
+
+        Assert.IsTrue(ents[1].UnsetArchetypal<long, C1, SetMiddleRowArch>());
+        foreach (EntMut ent in ents)
+            Assert.IsTrue(ent.UnsetArchetypal<int, C0, SetMiddleRowArch>());
+    }
+
     /// <summary>Verifies reduction retains every dst field and re-adding a removed field preserves those values.</summary>
     [TestMethod]
     public void Archetypal_Reduction_PreservesRetainedFields()
@@ -217,6 +282,8 @@ public sealed class EntArchetypalTest
     private readonly record struct MiddleField;
     private readonly record struct HighField;
     private readonly record struct SingletonArch;
+    private readonly record struct ValuesAtBoundsArch;
+    private readonly record struct SetMiddleRowArch;
     private readonly record struct ReductionArch;
     private readonly record struct AddOrderArch;
     private readonly record struct MiddleInsertionArch;

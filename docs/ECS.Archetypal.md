@@ -1,7 +1,11 @@
 # ECS Archetypal Implementation Direction
 
-> Status: working implementation direction. This document records the next
-> internal improvements under consideration; it is not a finalized design.
+> Status: working implementation direction. AFR-25A's `SetArchetypal`
+> structural slow-path split was measured and rejected, and AFR-25B's
+> `ValuesAt` address-path simplification was measured and accepted. Direct
+> `EntArchLoc` storage is deferred; `Unsafe.Add` row access is the next
+> independent prototype. This document records internal improvements under
+> consideration; it is not a finalized design.
 
 The broader footprint work is tracked by the
 [Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md) and
@@ -60,13 +64,21 @@ Progress through the agreed improvements:
    singleton directory and shared sparse edge arena.
 7. Complete: establish AFR-24's formal Release point-path attribution and
    generated-code baseline.
-8. Next: complete AFR-25's direct-address prototypes and AFR-26's decision
-   gate.
-9. Build AFR-30's sparse alloc-local state index only after the point-addressing
-   representation passes that gate.
+8. Complete: measure and reject AFR-25A's `SetArchetypal` structural slow-path
+   split because reduced code size did not improve existing-field latency.
+9. Complete: simplify `ValuesAt` by snapshotting its outer directory, using
+   unsigned bounds checks, and relying on the permanent null arch-zero slot.
+10. Next: compare indexed row access with `Unsafe.Add` in complete Release
+    `Get` and existing-field `Set` callers.
+11. Deferred: measure specialized/direct `EntArchLoc` storage when this work is
+    resumed; it does not block the independent row-access candidate.
+12. Build AFR-30's sparse alloc-local state index only after the point-addressing
+    representation passes AFR-26's gate.
 
-Specialized storage for `EntArchLoc` was considered but is deferred because it
-would couple this work to the sparse page and generation systems.
+The deferred `EntArchLoc` prototype will isolate the direct address sequence
+first. A production cutover would still require an explicit ownership and
+lifecycle design; the prototype will not silently expand this work into a
+general sparse-page or generation-system redesign.
 
 ## Threading Contract
 
@@ -332,6 +344,48 @@ The packed signature remains the structural authority and the parallel layouts
 remain available for the shared-block cutover. They are no longer on the
 ordinary point path.
 
+### Rejected `SetArchetypal` Structural Split
+
+AFR-25A extracted the missing-column structural body into a private
+`NoInlining` helper while retaining the existing-column lookup and store in the
+hot caller. Forwarding `in T` made the JIT stack-home the scalar loop value for
+the possible cold call. Passing the helper value by value removed that spill
+and substantially reduced generated code, but the two reversed Release sweeps
+were latency-neutral overall: their aggregate median deltas were -0.652% and
++0.067%.
+
+The scalar exact/specialized rotating cases were repeatably slower even after
+the spill was removed. Concrete class regressed 2.00%/3.30%, concrete struct
+4.49%/2.12%, and generic struct 1.90%/2.10%. Because existing-field latency is
+the acceptance gate, smaller code did not justify the change. Production API
+and behavior stayed unchanged, and the temporary candidate and benchmark
+scaffold were removed.
+
+### Accepted `ValuesAt` Address Simplification
+
+AFR-25B kept the existing closed-generic jagged directory while simplifying its
+hot lookup. `ValuesAt` now snapshots the outer directory once, performs unsigned
+bounds checks for `allocId` and `archId`, and relies on arch slot zero remaining
+permanently null instead of branching explicitly on `archId == 0`.
+
+This sequence removes three compare/branch pairs from exact and specialized
+callers. In the generic-shared helper it also reduces static directory loads and
+branches. It does not change storage ownership, publication, or the public API.
+No `Volatile` operation was added: one thread still owns each alloc's
+group-local columns, and different alloc owners may concurrently use the same
+group and arch.
+
+The complete optimized Release sweep measured a -5.60% median candidate delta:
+-5.89% for `Get` and -4.28% for existing-field `Set`. There were no cell
+regressions, managed allocations, or garbage collections. A shorter
+reverse-order confirmation retained 6.6% through 9.5% improvements for the
+exact scalar sentinels; after tiering settled, generic-class scalar `Get` and
+`Set` improved by 2.76% and 2.17%. An unchanged-path A/A check was neutral.
+
+The optimization is now production code, while its temporary comparison harness
+has been removed. The next independent point-path experiment compares the final
+indexed row load/store with `Unsafe.Add` after `ValuesAt` resolves the column.
+
 ## Sparse Transition Edge Arena
 
 AFR-22 and AFR-23 removed the dense `arch capacity × field capacity`
@@ -462,13 +516,13 @@ may provide the same classification without a second packed signature. Retain
 separate reference-only metadata only if structural benchmarks show a useful
 improvement.
 
-## Deferred: Specialized Location Storage
+## Deferred Prototype: Direct Location Storage
 
 [`EntArchLoc`](../src/AlvorKit.ECS/Archetypal/EntArchLoc.cs) is currently stored
 through the ordinary sparse component path with `Get<EntArchLoc, A>()`,
 `Set<EntArchLoc, A>()`, and `Unset<EntArchLoc, A>()`.
 
-A specialized `EntArchLocStorage<A>` could potentially:
+A specialized/direct `EntArchLocStorage<A>` could potentially:
 
 - Return a location by reference for structural updates.
 - Avoid repeated generic sparse lookups when a move reads and then writes the
@@ -476,13 +530,17 @@ A specialized `EntArchLocStorage<A>` could potentially:
 - Derive `allocId` from the Ent's page rather than storing it in every location.
 - Use a location-specific page layout.
 
-Those changes require direct involvement in page allocation, generation
-validation, sparse reset behavior, and Ent lifecycle. They also make the
-archetypal package less independent from the rest of the Ent implementation.
+This prototype is intentionally deferred. When resumed, it should first isolate
+whether bypassing the ordinary generic sparse-component lookup improves the
+complete existing-component address sequence. It must compare the production
+and candidate callers in the same optimized Release build, using the rotating
+call-shape matrix and generated-code inspection established by AFR-24. A result
+that only reduces code size or structural-update cost is insufficient.
 
-Location specialization is not needed for signature hashing, sorted insertion,
-row-capacity reduction, sparse transitions, or shared block allocation. It is
-therefore deferred from this focused archetypal work.
+Production integration would require direct involvement in page allocation,
+generation validation, sparse reset behavior, and Ent lifecycle. Those wider
+changes remain outside this focused prototype until the direct location path
+wins the point-latency gate.
 
 The epic may change the meaning of the existing middle `EntArchLoc` integer from
 `ArchId` to alloc-local `StateId`. That preserves the current sparse storage and
@@ -495,6 +553,7 @@ here.
 
 Focused archetypal coverage includes:
 
+- Set-driven movement from a non-tail row repairing the compacted Ent's loc.
 - Different field-add orders resolving to the same arch ID.
 - Removing and re-adding a field reusing inverse transitions.
 - A forced signature-hash collision resolving by exact signature comparison.
@@ -534,6 +593,12 @@ the only performance measurement.
 All accepted benchmarks and disassembly must use an optimized Release build.
 Debug output is never accepted or cited as performance evidence.
 
+Benchmark iteration is deliberately staged. Begin with quick scalar sentinels,
+then run longer generic-class cases only when canonical-sharing behavior needs
+to settle. Reserve the 5-million-operation, seven-sample full matrix for final
+confirmation of a promising candidate. Use reverse-order or A/A checks when a
+short result may instead reflect tiering or process drift.
+
 ## Implementation Order
 
 1. Complete: add direct archetypal tests and baseline measurements.
@@ -548,11 +613,17 @@ Debug output is never accepted or cited as performance evidence.
    the singleton directory and shared sparse edge arena.
 8. Complete: establish AFR-24's formal concrete and generic point-path baseline
    and generated-code attribution.
-9. Next: prototype faster direct address paths in AFR-25 and select one only
-   through AFR-26's same-build performance gate.
-10. Build AFR-30's sparse alloc-local state model off-path after the locator
+9. Complete: measure and reject AFR-25A's `SetArchetypal` structural slow-path
+   split; smaller generated code did not improve existing-field latency.
+10. Complete: accept AFR-25B's simplified `ValuesAt` directory access after its
+    complete Release point-path comparison.
+11. Next: compare indexed row access with `Unsafe.Add` in complete Release point
+    callers, using the staged benchmark workflow before the final full sweep.
+12. Deferred: measure specialized/direct `EntArchLoc` storage and addressing;
+    retain the same AFR-26 performance gate when the work resumes.
+13. Build AFR-30's sparse alloc-local state model off-path after the locator
     decision; do not assume that `StateId` belongs in `loc` before it wins.
-11. Continue through shared block stores using
+14. Continue through shared block stores using
    the dependency order in the
    [Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md).
 

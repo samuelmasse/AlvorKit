@@ -1,9 +1,12 @@
 # Epic: Archetype Footprint Reduction
 
 > Status: in progress. AFR-01, AFR-02, AFR-10, AFR-11, AFR-12, AFR-20, AFR-21,
-> AFR-22, AFR-23, and AFR-24 are implemented and verified. AFR-25 and AFR-26
-> are next; no alloc-state, `loc`, or shared-block shape is selected before
-> those direct-address prototype and decision tasks complete.
+> AFR-22, AFR-23, and AFR-24 are implemented and verified. AFR-25 is in
+> progress: AFR-25A's `SetArchetypal` slow-path split was measured and rejected,
+> and AFR-25B's `ValuesAt` directory simplification was measured and accepted.
+> Specialized direct `loc` storage is deferred; `Unsafe.Add` row access is the
+> next local prototype. AFR-26 remains the representation decision gate; no
+> alloc-state, `loc`, or shared-block shape is selected before it completes.
 
 ## Related Documents
 
@@ -26,7 +29,9 @@
 | AFR-22 | Complete | Twelve-byte records in one shared sparse transition-edge arena |
 | AFR-23 | Complete | Dense transition matrix, root arch, and transition self-loops removed |
 | AFR-24 | Complete | 64 full point callers, ten absolute stages, paired Release sweeps, and generated-code attribution |
-| AFR-25 | Next | Same-build direct-address prototypes against the current production path |
+| AFR-25A | Complete — rejected | Missing-field `Set` slow-path split reduced code size but did not improve the rotating full caller |
+| AFR-25B | Complete — accepted | Single-snapshot `ValuesAt` directory access with unsigned alloc/arch bounds checks |
+| AFR-25 | In progress | `Unsafe.Add` row access next; specialized `EntArchLoc` storage deferred |
 | AFR-26 | Planned | Speed-first representation and go/no-go decision gate |
 | AFR-30 onward | Blocked by AFR-26 | No state, `loc`, or shared-block commitment before the point-path gate |
 
@@ -1110,40 +1115,156 @@ storage decision.
 #### AFR-25 Handoff
 
 AFR-24 makes no class-to-struct public marker recommendation and selects no new
-storage or `loc` representation. The first AFR-25 prototype is the smallest
-local code-shape test:
+storage or `loc` representation. It handed off the following smallest local
+code-shape test as AFR-25A:
 
 > Extract the missing-field structural portion of `SetArchetypal` into a
 > private `NoInlining` helper, leaving the existing-column check and write in
 > the small public hot caller.
 
-The prototype must preserve public behavior and the alloc-owner threading
-model, remain same-build selectable rather than creating dual production
-storage, and measure all 32 Set cells under the rotating and one-Ent matrix.
-Acceptance requires a repeatable rotating win with zero allocation and no Get
-change; smaller generated code alone is not acceptance. If it does not improve
-the full caller, remove it and test the independent `ValuesAt` snapshot/static
-holder candidates next. Shared storage, `Unsafe.Add`, and public marker changes
-remain unapproved by isolated-stage evidence.
+The prototype preserved public behavior and the alloc-owner threading model and
+ran as a same-build selectable candidate across all 32 Set cells. It was
+rejected because the much smaller generated caller did not produce a repeatable
+rotating win. The production and demo scaffolding were removed. AFR-25B then
+improved the current `ValuesAt` directory path without changing its storage
+shape. Specialized direct `EntArchLoc` storage is deferred; shared storage,
+`Unsafe.Add`, and public marker changes remain unapproved by isolated-stage
+evidence.
 
 ### AFR-25 — Direct-Address Prototypes
 
 Purpose: find the fastest complete existing-component address sequence before
 committing to sparse states or shared blocks.
 
+Status: in progress. AFR-25A is complete and rejected, AFR-25B is complete and
+accepted, specialized direct `EntArchLoc` storage is deferred, and `Unsafe.Add`
+row access is next.
+
+#### AFR-25A — `SetArchetypal` Slow-Path Split
+
+AFR-25A extracted the missing-field structural branch behind a private
+`NoInlining` helper while retaining the existing-column check and write in the
+hot caller. The public `SetArchetypal(in T)` signature, behavior, storage, and
+threading model remained unchanged. The candidate and original production body
+were selectable in the same Release binary so runtime, tiering, PGO, fixture,
+and process isolation were identical.
+
+The initial helper accepted its cold value parameter as `in T`. Release
+disassembly showed that this made the benchmark loop counter address-exposed
+and introduced stack reloads in the hot loop. Its candidate-minus-baseline
+rotating aggregate medians were +0.13% and +0.51% in the paired sweeps, while
+individual scalar cells repeatedly regressed by 7.45–11.02%. This version was
+not a valid way to realize the intended small caller.
+
+Changing only the private cold helper parameter to by-value removed that spill;
+the public API remained `in T`. It also reduced the Tier1-OSR scalar rotating
+candidate callers substantially in the same binary:
+
+| Call shape | A shape | Baseline bytes | Candidate bytes |
+| --- | --- | ---: | ---: |
+| Concrete | Class | 5,389 | 725 |
+| Concrete | Struct | 5,343 | 709 |
+| Generic | Class | 4,623 | 1,114 |
+| Generic | Struct | 4,476 | 709 |
+
+The refined candidate still failed the latency gate. Its rotating aggregate
+medians were -0.66% and +0.07% across the paired sweeps, inside the established
+noise envelope and inconsistent in sign. More importantly, the repeat scalar
+exact/specialized cells regressed by 1.90–4.49% in one sweep and 2.10–3.30% in
+the other. All candidate and baseline cases allocated zero managed bytes and
+reported no collections. Generated-code inspection also found one extra Ent
+version reload in the candidate's hot loop.
+
+AFR-25A is therefore rejected. Reducing the compiled caller by several
+kilobytes is useful attribution, but code size is not an acceptance result and
+does not offset a repeatable full-caller regression. The candidate helper,
+production branch, benchmark cases, and demo dispatch scaffolding were removed;
+production remains on the original single `SetArchetypal` implementation.
+
+Release evidence is retained under:
+
+- `out/ecs-archetypal/afr25a-set-split-report.md`
+- `out/ecs-archetypal/afr25a-set-split-ab-a.json`
+- `out/ecs-archetypal/afr25a-set-split-ab-b.json`
+- `out/ecs-archetypal/afr25a-set-split-byvalue-rotating-a.json`
+- `out/ecs-archetypal/afr25a-set-split-byvalue-rotating-b.json`
+- `out/ecs-archetypal/afr25a-codegen/`
+
+#### AFR-25B — `ValuesAt` Directory Simplification
+
+AFR-25B retained the closed-generic directory representation and changed only
+how `ValuesAt(allocId, archId)` reads it. The method now snapshots the outer
+`Values` directory once, validates the alloc and arch indices with unsigned
+bounds checks, and returns the selected slot. Arch zero means the Ent is
+outside the group; its directory slot is intentionally null. That invariant makes the previous
+explicit `archId == 0` branch unnecessary. The unsigned checks also express the
+controlled nonnegative-index contract while removing redundant implicit array
+bounds checks. The point path still performs no locking or `Volatile` access.
+
+A same-build A/A scalar control established that the harness was not inventing
+the result: its two aggregate candidate-minus-baseline medians were +0.24% and
+-0.13%, and every cell stayed within the ±1.75% noise band. The full Release A
+sweep then ran all 32 `Get`/existing-field `Set` cells for 5,000,000 operations,
+ten warmup bodies, and seven isolated samples. Candidate-minus-baseline medians
+were:
+
+| Scope | Median change |
+| --- | ---: |
+| All 32 cells | -5.60% |
+| All `Get` cells | -5.89% |
+| All `Set` cells | -4.28% |
+
+Twenty-nine of 32 cells improved beyond the ±1.75% band, none regressed, and
+every case reported zero managed bytes per operation and no collections. After
+the user requested a shorter iteration loop, a reverse scalar exact/specialized
+check used 1,000,000 operations, ten warmup bodies, and three isolated samples. Those
+cells confirmed improvements from -6.56% through -9.46%. Generic-class callers
+need the longer 5,000,000-operation run to settle; a focused three-sample check
+at that length still improved `Get` by 2.76% and `Set` by 2.17%.
+
+Release generated code moved in the same direction. The exact scalar `Get`
+caller shrank from 393 to 364 Tier1-OSR bytes and from 359 to 343 FullOpts bytes.
+The out-of-line generic `ValuesAt` helper shrank from 111 to 91 Tier1 bytes and
+from 111 to 90 FullOpts bytes. Complete scalar rotating `Set` callers changed as
+follows:
+
+| Call shape | A shape | Tier1-OSR bytes | FullOpts bytes |
+| --- | --- | ---: | ---: |
+| Concrete | Class | 5,389 → 5,359 | 1,568 → 1,539 |
+| Concrete | Struct | 5,343 → 5,322 | 1,487 → 1,467 |
+| Generic | Class | 4,623 → 4,623 | 2,266 → 2,266 |
+| Generic | Struct | 4,476 → 4,440 | 1,354 → 1,334 |
+
+AFR-25B is accepted. The temporary same-build candidate and benchmark dispatch
+were removed, and the simplified `ValuesAt` implementation is now the sole
+production path. Evidence is retained under:
+
+- `out/ecs-archetypal/afr25b-values-snapshot-report.md`
+- `out/ecs-archetypal/afr25b-values-snapshot-aa-scalar-a.json`
+- `out/ecs-archetypal/afr25b-values-snapshot-aa-scalar-b.json`
+- `out/ecs-archetypal/afr25b-values-snapshot-ab-a.json`
+- `out/ecs-archetypal/afr25b-values-snapshot-quick-scalar-b.json`
+- `out/ecs-archetypal/afr25b-values-snapshot-quick-generic-class-b.json`
+- `out/ecs-archetypal/afr25b-public-scalar-exact.json`
+- `out/ecs-archetypal/afr25b-public-scalar-generic-class.json`
+- `out/ecs-archetypal/afr25b-codegen/`
+
+Specialized direct `EntArchLoc` storage remains a valid future experiment, but
+is explicitly deferred. The next AFR-25 prototype compares ordinary
+`values[loc.Row]` access with `Unsafe.Add` in the complete rotating `Get` and
+existing-field `Set` callers. It must preserve direct known-value indexing,
+swap-back repair, and alloc-owner isolation. AFR-25A should not be repeated
+unless a later loc representation materially changes the caller and warrants a
+new same-build test.
+
 Immediate local candidates:
 
-- Extract the missing-field structural branch of `SetArchetypal` into a
-  `NoInlining` slow method, leaving the existing-field check and write in a
-  small hot caller. Measure this against the current approximately 2,104-byte
-  inlined caller; do not assume smaller code is faster.
-- Snapshot the closed-generic `Values` directory once, use unsigned bounds
-  checks where they express the controlled indices, and test removal of a
-  redundant `archId == 0` check only when the directory invariants already
-  exclude access. Each change is an independent A/B variant.
 - Compare normal `values[row]` with `Unsafe.Add` row access. Keep `Unsafe.Add`
   only if generated code and full-caller measurements show a repeatable gain;
   removing one apparent bounds check is not sufficient evidence.
+- Later, prototype specialized direct `EntArchLoc` storage instead of resolving
+  loc through the generic sparse component path. Measure the full `Get` and
+  existing-field `Set` callers; an isolated loc-stage win is not acceptance.
 - Split cold `FieldId` registration and type-initializer work from the hot
   `Values` holder so ordinary access does not inherit an avoidable class
   constructor check.
@@ -1165,6 +1286,20 @@ Every variant must execute as a same-build Release A/B full caller under the
 AFR-24 rotating workload. Report retained bytes and objects after latency, not
 instead of latency. Signature scans, ordinal hashes, general sparse maps, edge
 lookup, and `Volatile` remain disqualified from the ordinary point path.
+
+Use a staged benchmark workflow so iteration does not wait on the complete
+matrix:
+
+1. Build Release and screen the scalar exact/specialized rotating callers first
+   with 1,000,000 operations, ten warmups, and three isolated samples.
+2. Inspect representative Release generated code and reverse the quick case
+   order only when the signal is promising or suspicious.
+3. Run focused longer generic-class cases only after the scalar sentinel passes;
+   AFR-24 and AFR-25B show that this shape needs 5,000,000 operations and ten
+   warmups to settle reliably.
+4. Reserve the full 32-cell, 5,000,000-operation, ten-warmup, seven-isolate sweep
+   for a final promising candidate. It is the acceptance gate, not the default
+   edit/measure loop.
 
 Acceptance:
 

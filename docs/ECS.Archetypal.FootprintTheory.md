@@ -1,6 +1,10 @@
 # Archetype Footprint Reduction: Theory and Cost Model
 
-> Status: AFR-24 is complete; AFR-25 and AFR-26 are next in the
+> Status: AFR-24 is complete, AFR-25A's `SetArchetypal` structural slow-path
+> split was measured and rejected, and AFR-25B's `ValuesAt` address-path
+> simplification was measured and accepted. Specialized/direct `EntArchLoc`
+> storage is explicitly deferred. The next independent point-path candidate is
+> `Unsafe.Add` row access, followed by AFR-26's decision gate in the
 > [Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md).
 > AFR-21 through AFR-24 have established the direct point-access, sparse
 > global-catalog, and call-shape baselines described here. Later shared-storage
@@ -433,6 +437,14 @@ The lookup is `O(1)` with respect to signature width, registered field count,
 and structural degree. It performs no hashing, packed scan, managed allocation,
 lock acquisition, or `Volatile` operation.
 
+AFR-25B simplified this lookup without changing its directory shape. `ValuesAt`
+now snapshots its outer closed-generic directory once, uses unsigned bounds
+checks for both nonnegative IDs, and relies on the permanent null arch-zero slot
+instead of testing `archId == 0` separately. Exact and specialized callers lose
+three compare/branch pairs. The generic-shared helper also performs fewer static
+loads and branches. This is an address-sequence optimization only: it neither
+changes the public API nor adds synchronization.
+
 ### Exact Signatures Remain Canonical
 
 The direct column is a point-access presence and value slot; it is not arch
@@ -526,6 +538,58 @@ Before treating those numbers as the general absent-field cost, add a case in
 which the same field is warm in another arch of the same alloc. This caveat does
 not affect the present happy-path result or its width independence.
 
+### AFR-25A Rejected Structural Slow-Path Split
+
+AFR-25A tested whether moving the missing-field body of `SetArchetypal` into a
+private `NoInlining` helper would make the existing-field caller faster. The
+existing-column lookup and direct row store remained in the hot caller; only
+singleton/add resolution, movement, and first-value initialization moved to the
+cold helper.
+
+The first candidate forwarded the value to that helper as `in T`. Even though
+the helper was not called by the measured existing-field branch, the JIT
+stack-homed the scalar loop value so that its address remained available to the
+cold call. That spill made the exact/specialized scalar rotating cases
+repeatably slower: concrete class regressed 11.02% and 10.94%, concrete struct
+9.70% and 10.26%, and generic struct 7.91% and 7.45% across the two Release
+sweeps.
+
+Passing the cold-helper value by value removed that spill. It also reduced the
+representative scalar rotating caller from 4,476–5,389 bytes to 709–1,114 bytes
+under Tier1-OSR, and from 1,354–2,266 bytes to 650–1,015 bytes under FullOpts.
+That code-size reduction did not produce a point-latency win. The aggregate
+median candidate delta was -0.652% in one sweep and +0.067% in the reversed
+sweep, while scalar concrete class, concrete struct, and generic struct still
+regressed by 2.00%/3.30%, 4.49%/2.12%, and 1.90%/2.10%, respectively.
+
+The latency gate therefore rejected both forms. Production
+`SetArchetypal` behavior and its public API remain unchanged, and the temporary
+candidate and benchmark scaffold were removed. This result is also a warning
+against treating smaller generated code as a proxy for a faster point path:
+cold-call ABI requirements can affect the branch that never takes the call.
+
+### AFR-25B Accepted `ValuesAt` Address Simplification
+
+AFR-25B tested the simplified outer-directory snapshot and unsigned bounds-check
+sequence in the complete rotating `Get` and existing-field `Set` callers. The
+full optimized Release sweep reported a -5.60% median candidate delta across
+the matrix: -5.89% for `Get` and -4.28% for `Set`. No measured cell regressed,
+and every case remained allocation-free with no garbage collections.
+
+A shorter reverse-order confirmation retained 6.6% through 9.5% improvements
+for the exact scalar sentinels. After the generic-class tiering result settled,
+its scalar `Get` and `Set` improvements were 2.76% and 2.17%, respectively. An
+A/A run of the unchanged path was neutral, supporting attribution to the
+candidate rather than sweep order. Disassembly agreed with the latency result:
+exact and specialized callers removed three compare/branch pairs, while the
+generic-shared helper reduced static loads and branches.
+
+The production change was therefore accepted. The temporary comparison harness
+was removed, the public API stayed stable, and the point path remains
+allocation-free, lock-free, and free of `Volatile`. The ownership model is also
+unchanged: a single thread owns each alloc's group-local rows and columns, while
+different alloc owners may concurrently use the same group and arch.
+
 ### Shared-Slab Cutover Gate
 
 AFR-34 and the later shared-slab work are expected to remove the current
@@ -578,8 +642,9 @@ Structural movement uses that map only to find or create the dst state.
 
 `StateId` is not predetermined. The current `(AllocId, ArchId, Row)` shape or
 another same-size direct locator remains preferable unless the complete
-candidate point path wins the AFR-24 through AFR-26 gate. No candidate requires
-a specialized page or generation store for `EntArchLoc`.
+candidate point path wins the AFR-24 through AFR-26 gate. Specialized/direct
+`EntArchLoc` storage is explicitly deferred; its independent result would not
+select `StateId` or authorize a broader Ent lifecycle redesign.
 
 ## Composite Storage
 
@@ -928,6 +993,13 @@ loc -> closed-generic direct slot/handle -> column base -> row
 The storage address may change; the direct, constant-time lookup contract may
 not.
 
+AFR-25A showed that shrinking `SetArchetypal` by isolating its structural body
+does not by itself shorten this address chain. AFR-25B then improved the second
+step by simplifying `ValuesAt`'s directory access. Specialized/direct
+`EntArchLoc` storage is deferred; the next independent same-build Release
+prototype compares ordinary indexed row access with `Unsafe.Add` after the
+column has been resolved.
+
 ### Operation Costs
 
 | Operation | Point or structural path |
@@ -1158,9 +1230,16 @@ AFR-24 resolved the initial call-shape and stage questions: generic
 reference-type canonical sharing is the expensive case, value-type generic
 instantiations specialize to approximately concrete-call cost, and the
 loc/directory/raw-row baselines above isolate where future point-path changes
-must improve generated code. The remaining epic must measure rather than
-assume:
+must improve generated code. AFR-25A then rejected the structural slow-path
+split because its large code-size reduction did not improve existing-field
+latency. AFR-25B accepted the simplified `ValuesAt` directory sequence after a
+-5.60% full-sweep median result with no regressions. The remaining epic must
+measure rather than assume:
 
+- Whether `Unsafe.Add` improves terminal row access after column resolution in
+  complete same-build Release `Get` and existing-field `Set` callers.
+- When revisited, whether specialized/direct `EntArchLoc` storage reduces the
+  complete point-address sequence; this investigation is currently deferred.
 - Whether the AFR-34/shared-slab direct slot or handle matches or improves the
   current present, absent, value-shape, and signature-width point results.
 - Column-resolution and contiguous `Span<T>` iteration cost after shared-slab
@@ -1193,6 +1272,13 @@ retained memory.
 
 Every performance measurement and disassembly used for a decision must come
 from an optimized Release build. Debug artifacts are not valid evidence.
+
+Iteration uses staged evidence so every prototype does not pay the cost of the
+full formal matrix. Start with quick scalar sentinels. Run longer generic-class
+cases only when canonical-sharing behavior remains uncertain, and reserve the
+5-million-operation, seven-sample full sweep for final confirmation of a
+promising candidate. Reverse order or A/A checks remain available when a short
+result may reflect tiering or process drift.
 
 ## Theoretical Acceptance Conditions
 
