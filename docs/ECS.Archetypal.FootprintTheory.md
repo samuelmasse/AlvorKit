@@ -2,10 +2,12 @@
 
 > Status: AFR-24 is complete, AFR-25A's `SetArchetypal` structural slow-path
 > split was measured and rejected, and AFR-25B's `ValuesAt` address-path and
-> AFR-25C's unchecked terminal row access were measured and accepted.
-> Specialized/direct `EntArchLoc` storage remains explicitly deferred and is
-> not automatically the next candidate. AFR-26's decision gate
-> follows the current AFR-25 work in the
+> AFR-25C's unchecked terminal row access and AFR-25D's cold registration split
+> were measured and accepted. AFR-25E's value-type key was rejected. AFR-26
+> retains `(AllocId, ArchId, Row)` and the direct closed-generic typed column as
+> the production speed reference. Shared-storage prototypes that did not pass
+> that complete point-path gate were removed before commit. The next design
+> starts from its final direct locator and contiguous iteration view in the
 > [Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md).
 > AFR-21 through AFR-24 have established the direct point-access, sparse
 > global-catalog, and call-shape baselines described here. Later shared-storage
@@ -1182,6 +1184,14 @@ A bounded empty-state cache should be expressed as a retained-byte budget rather
 than only a count of empty arches, because capacity and component width can vary
 substantially.
 
+`Memory<T>` can describe a slice of a large managed `T[]` without allocating a
+second backing array. It does not remove the stored backing reference, offset,
+and length, and `Memory<T>.Span` must recover the backing representation. It is
+therefore a useful shared-page and iteration control, not an assumed point-path
+winner. A custom exact-`T` array-plus-offset locator is the leaner managed
+comparison; reference-free native storage may instead publish a direct base
+address. In every case the allocator runs only during structural work.
+
 ## Alternatives Not Selected Initially
 
 ### Fixed-Width Signature Masks
@@ -1267,13 +1277,19 @@ latency. AFR-25B accepted the simplified `ValuesAt` directory sequence after a
 -5.60% full-sweep median result with no regressions. AFR-25C accepted typed
 `Unsafe.Add` terminal row access: it removed the final bounds check, improved
 specialized scalar `Get` most strongly, produced a smaller `Set` gain, and did
-not produce a repeatable broad regression. The remaining epic must measure
-rather than assume:
+not produce a repeatable broad regression. AFR-25D then moved precise field
+registration off absent and existing point access, improving shared
+generic-class callers without changing exact paths. AFR-25E failed to force
+specialization through an internal value-type key. AFR-26 consequently retains
+the direct typed-array representation. The remaining epic must measure rather
+than assume:
 
 - When revisited, whether specialized/direct `EntArchLoc` storage reduces the
   complete point-address sequence; this investigation is currently deferred.
-- Whether the AFR-34/shared-slab direct slot or handle matches or improves the
-  current present, absent, value-shape, and signature-width point results.
+- Whether a shared-slab direct locator matches or improves the current present,
+  absent, value-shape, and signature-width point results.
+- Whether a custom array-plus-offset locator beats or ties an array-backed
+  `Memory<T>` control for reference-containing point access.
 - Column-resolution and contiguous `Span<T>` iteration cost after shared-slab
   cutover.
 - The observed transition degree distribution `D`.

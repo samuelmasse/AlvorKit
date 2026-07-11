@@ -9,6 +9,9 @@ namespace AlvorKit.ECS;
 //   point access goes directly through its closed-generic column at alloc/arch/row; it does not search the signature or graph.
 //   Packed membership and sparse transition edges are used only while resolving structural changes. Reference-free layouts
 //   store byte-column prefixes, while reference-containing layouts store type-local columns.
+// - EntArchColumn is the beforefieldinit hot Values holder. Its FieldId forwards to the precise EntArchColumnOps initializer,
+//   so absent Get, Has, and Unset do not register unused fields or allocate their ops. A live structural Set registers the
+//   field before resolving an arch; the CLR runs that initializer once and graph publication remains locked.
 // - After a column lookup succeeds, point access uses the subsystem-owned loc as a valid row and skips the final array bounds
 //   check. Append and Move return a capacity-backed row, Move copies retained fields, and the checked first write initializes
 //   a new field before point access resumes. Swap-back repairs the moved Ent's loc immediately. The resulting typed managed
@@ -25,6 +28,7 @@ namespace AlvorKit.ECS;
 //   singleton row set and unsets EntArchLoc<A>.
 public readonly partial record struct EntMut
 {
+    /// <summary>Gets an archetypal component or the default value when this Ent does not have the field.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public T? GetArchetypal<T, N, A>()
     {
@@ -39,6 +43,7 @@ public readonly partial record struct EntMut
             loc.Row);
     }
 
+    /// <summary>Returns whether this Ent currently has the specified archetypal field.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool HasArchetypal<T, N, A>()
     {
@@ -47,6 +52,7 @@ public readonly partial record struct EntMut
         return EntArchColumn<T, N, A>.ValuesAt(loc.AllocId, loc.ArchId) != null;
     }
 
+    /// <summary>Overwrites an existing archetypal component or structurally adds the missing field.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void SetArchetypal<T, N, A>(in T value)
     {
@@ -90,10 +96,10 @@ public readonly partial record struct EntMut
         EntArchColumn<T, N, A>.Values[loc.AllocId][loc.ArchId][loc.Row] = value;
     }
 
+    /// <summary>Structurally removes an archetypal field and returns whether it was present.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool UnsetArchetypal<T, N, A>()
     {
-        int fieldId = EntArchColumn<T, N, A>.FieldId;
         var loc = Get<EntArchLoc, A>();
         int srcArchId = loc.ArchId;
 
@@ -107,6 +113,7 @@ public readonly partial record struct EntMut
         }
         else
         {
+            int fieldId = EntArchColumn<T, N, A>.FieldId;
             int dstArchId = EntArchGraph<A>.GetTransitionArchId(srcArchId, fieldId);
             if (dstArchId == EntArchGraph<A>.UnresolvedTransitionArchId)
                 dstArchId = EntArchGraph<A>.ResolveRemove(srcArchId, fieldId);

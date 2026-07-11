@@ -63,6 +63,41 @@ public sealed class EntArchetypalTest
         Assert.IsTrue(ent.UnsetArchetypal<int, C0, ValuesAtBoundsArch>());
     }
 
+    /// <summary>Verifies cold point operations do not register a field until a live structural Set needs it.</summary>
+    [TestMethod]
+    public void Archetypal_ColdPointOperations_RegisterOnlyFirstLiveSet()
+    {
+        using var arena = new EntArena();
+        EntMut ent = arena.Alloc();
+        EntPtr deadPtr = arena.Alloc();
+        EntMut deadEnt = deadPtr;
+        deadPtr.Dispose();
+
+        var metrics = EntArchDiagnostics<ColdRegistrationArch>.Capture();
+        Assert.AreEqual(0, metrics.RegisteredFieldCount);
+        Assert.AreEqual(0, metrics.MaterializedArchCount);
+
+        Assert.AreEqual(0, ent.GetArchetypal<int, ColdGetField, ColdRegistrationArch>());
+        Assert.IsFalse(ent.HasArchetypal<int, ColdHasField, ColdRegistrationArch>());
+        Assert.IsFalse(ent.UnsetArchetypal<int, ColdUnsetField, ColdRegistrationArch>());
+        deadEnt.SetArchetypal<int, ColdDeadSetField, ColdRegistrationArch>(4);
+
+        metrics = EntArchDiagnostics<ColdRegistrationArch>.Capture();
+        Assert.AreEqual(0, metrics.RegisteredFieldCount);
+        Assert.AreEqual(0, metrics.MaterializedArchCount);
+
+        ent.SetArchetypal<int, ColdSetField, ColdRegistrationArch>(5);
+        ent.SetArchetypal<int, ColdSetField, ColdRegistrationArch>(6);
+
+        metrics = EntArchDiagnostics<ColdRegistrationArch>.Capture();
+        Assert.AreEqual(1, metrics.RegisteredFieldCount);
+        Assert.AreEqual(1, metrics.MaterializedArchCount);
+        Assert.AreEqual(6, ent.GetArchetypal<int, ColdSetField, ColdRegistrationArch>());
+        Assert.IsTrue(ent.HasArchetypal<int, ColdSetField, ColdRegistrationArch>());
+
+        Assert.IsTrue(ent.UnsetArchetypal<int, ColdSetField, ColdRegistrationArch>());
+    }
+
     /// <summary>Verifies Set enters, moves a middle row, repairs compaction, and overwrites in place.</summary>
     [TestMethod]
     public void Archetypal_SetFromMiddleRow_RepairsCompactedLoc()
@@ -348,6 +383,12 @@ public sealed class EntArchetypalTest
     private readonly record struct HighField;
     private readonly record struct SingletonArch;
     private readonly record struct ValuesAtBoundsArch;
+    private readonly record struct ColdGetField;
+    private readonly record struct ColdHasField;
+    private readonly record struct ColdUnsetField;
+    private readonly record struct ColdDeadSetField;
+    private readonly record struct ColdSetField;
+    private readonly record struct ColdRegistrationArch;
     private readonly record struct SetMiddleRowArch;
     private readonly record struct ReductionArch;
     private readonly record struct AddOrderArch;

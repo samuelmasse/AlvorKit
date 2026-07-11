@@ -2,10 +2,12 @@
 
 > Status: working implementation direction. AFR-25A's `SetArchetypal`
 > structural slow-path split was measured and rejected, and AFR-25B's
-> `ValuesAt` address-path simplification and AFR-25C's `Unsafe.Add` row access
-> were measured and accepted. Specialized/direct `EntArchLoc` storage remains
-> explicitly deferred and is not automatically the next prototype. This document records
-> internal improvements under consideration; it is not a finalized design.
+> `ValuesAt` address-path simplification, AFR-25C's `Unsafe.Add` row access, and
+> AFR-25D's cold field-registration split were measured and accepted. AFR-25E's
+> internal value-type column key was rejected. AFR-26 retains the current direct
+> `(AllocId, ArchId, Row)` and closed-generic column representation as the speed
+> reference. Shared-storage prototypes that did not pass that point gate were
+> removed before commit.
 
 The broader footprint work is tracked by the
 [Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md) and
@@ -70,10 +72,16 @@ Progress through the agreed improvements:
    unsigned bounds checks, and relying on the permanent null arch-zero slot.
 10. Complete: replace the final indexed row load/store with `Unsafe.Add` after
     `ValuesAt` has resolved a non-null column.
-11. Deferred: measure specialized/direct `EntArchLoc` storage when that wider
+11. Complete: separate the hot column directory from precise field
+    registration so absent point operations do not register unused fields.
+12. Complete: reject the internal value-type column key because it retained
+    canonical generic sharing.
+13. Complete: retain the current direct representation as the AFR-26 speed
+    reference.
+14. Next: design large shared backing allocations around a precomputed direct
+    locator and contiguous `Span<T>` iteration.
+15. Deferred: measure specialized/direct `EntArchLoc` storage when that wider
     lifecycle work is deliberately resumed.
-12. Build AFR-30's sparse alloc-local state index only after the point-addressing
-    representation passes AFR-26's gate.
 
 The deferred `EntArchLoc` prototype will isolate the direct address sequence
 first. A production cutover would still require an explicit ownership and
@@ -437,6 +445,43 @@ The production point path now combines AFR-25B's simplified directory lookup
 with AFR-25C's unchecked final row access. Specialized/direct `EntArchLoc`
 storage remains explicitly deferred; a later task must deliberately resume it.
 
+### Cold Field Registration and the Selected Point Representation
+
+AFR-25D separates the hot column directory from precise field registration.
+`EntArchColumn<T, N, A>` owns only `Values`, `ValuesAt`, and a forwarding
+`FieldId` property. The existing `EntArchColumnOps<T, N, A>` owns the precise
+static constructor that registers the field.
+
+This preserves `beforefieldinit` on the hot values holder. An absent `Get`,
+`Has`, or `Unset`, and a `Set` on a dead Ent, do not register an otherwise
+unused field. The first live structural `Set` requests `FieldId` and performs
+the registration under the graph lock. The split adds no new production
+generic type and no per-field object.
+
+The gain is concentrated in shared generic callers using a class group marker.
+The final scalar measurements improved generic-class `Get` by roughly 30% and
+existing-field `Set` by roughly 17% to 20%, while exact and generic-struct paths
+remained near their previous 1.7 to 1.8 ns range. All measured point cases
+remained allocation-free.
+
+AFR-25E tested whether wrapping `A` in an internal value-type key would force
+exact generic specialization. It did not: class-group callers remained
+canonical shared code and struct-group callers were already specialized. The
+candidate was removed.
+
+AFR-26 therefore retains this production address sequence:
+
+```text
+EntArchLoc = (AllocId, ArchId, Row)
+closed generic field -> alloc directory -> arch slot -> typed T[] -> row
+```
+
+Existing-component access does not consult signatures, transition edges, state
+maps, field ordinals, allocators, or free lists. Any future shared backing store
+must publish an equally direct locator during structural work and must preserve
+contiguous span iteration. `Memory<T>` is a valid managed slice control, but it
+is not assumed to be faster than a custom array-plus-offset locator.
+
 ## Sparse Transition Edge Arena
 
 AFR-22 and AFR-23 removed the dense `arch capacity × field capacity`
@@ -670,12 +715,14 @@ short result may instead reflect tiering or process drift.
     complete Release point-path comparison.
 11. Complete: accept AFR-25C's `Unsafe.Add` final row access after staged Release
     behavior, latency, allocation, and generated-code checks.
-12. Deferred: measure specialized/direct `EntArchLoc` storage and addressing;
+12. Complete: accept AFR-25D's cold registration split after Release point and
+    initialization-boundary checks.
+13. Complete: reject AFR-25E's internal value-type key after paired timing and
+    generated-code checks.
+14. Complete: retain the current direct point representation as AFR-26.
+15. Next: prototype a large-allocation store only after defining its final
+    direct point locator and contiguous iteration view.
+16. Deferred: measure specialized/direct `EntArchLoc` storage and addressing;
     retain the same AFR-26 performance gate when the work deliberately resumes.
-13. Build AFR-30's sparse alloc-local state model off-path after the locator
-    decision; do not assume that `StateId` belongs in `loc` before it wins.
-14. Continue through shared block stores using
-   the dependency order in the
-   [Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md).
 
 Each step preserves the public API and can be reviewed and measured separately.

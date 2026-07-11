@@ -1,7 +1,21 @@
 namespace AlvorKit.ECS;
 
+/// <summary>Performs cold structural operations and precise registration for one exact field.</summary>
 internal sealed class EntArchColumnOps<T, N, A> : EntArchColumnOps
 {
+    /// <summary>The graph field ID assigned when structural code first initializes this exact field.</summary>
+    internal static readonly int FieldId;
+
+    /// <summary>Registers the field without imposing a precise initializer on the hot values holder.</summary>
+    static EntArchColumnOps()
+    {
+        // Keep registration precise and cold while EntArchColumn remains eligible for beforefieldinit hot access.
+        FieldId = EntArchGraph<A>.RegisterField(
+            new EntArchColumnOps<T, N, A>(),
+            Unsafe.SizeOf<T>(),
+            EntArchStorageClass<T, A>.Id);
+    }
+
     internal override void Resize(int allocId, int archId, int capacity)
     {
         if (EntArchColumn<T, N, A>.Values.Length <= allocId)

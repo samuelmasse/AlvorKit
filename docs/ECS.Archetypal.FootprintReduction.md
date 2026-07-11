@@ -1,13 +1,11 @@
 # Epic: Archetype Footprint Reduction
 
 > Status: in progress. AFR-01, AFR-02, AFR-10, AFR-11, AFR-12, AFR-20, AFR-21,
-> AFR-22, AFR-23, and AFR-24 are implemented and verified. AFR-25 is in
-> progress: AFR-25A's `SetArchetypal` slow-path split was measured and rejected,
-> while AFR-25B's `ValuesAt` directory simplification and AFR-25C's typed
-> `Unsafe.Add` row access were measured and accepted. Specialized direct `loc`
-> storage remains explicitly deferred. AFR-26 remains the representation
-> decision gate; no alloc-state, `loc`, or shared-block shape is selected before
-> it completes.
+> AFR-22, AFR-23, and AFR-24 are implemented and verified. AFR-25 is complete:
+> AFR-25A and AFR-25E were rejected, while AFR-25B, AFR-25C, and AFR-25D were
+> accepted. AFR-26 retains `(AllocId, ArchId, Row)` and direct closed-generic
+> typed columns as the production speed reference. Shared-storage experiments
+> that did not pass that point gate were removed before commit.
 
 ## Related Documents
 
@@ -33,9 +31,11 @@
 | AFR-25A | Complete — rejected | Missing-field `Set` slow-path split reduced code size but did not improve the rotating full caller |
 | AFR-25B | Complete — accepted | Single-snapshot `ValuesAt` directory access with unsigned alloc/arch bounds checks |
 | AFR-25C | Complete — accepted | Typed `Unsafe.Add` for the final existing-component row load/store |
-| AFR-25 | In progress | Next direct-address prototype not yet selected; specialized direct `EntArchLoc` remains deferred |
-| AFR-26 | Planned | Speed-first representation and go/no-go decision gate |
-| AFR-30 onward | Blocked by AFR-26 | No state, `loc`, or shared-block commitment before the point-path gate |
+| AFR-25D | Complete — accepted | Cold field registration moved off absent and existing point access |
+| AFR-25E | Complete — rejected | An internal value-type key retained canonical generic sharing |
+| AFR-25 | Complete | Local point-path candidates resolved; specialized direct `EntArchLoc` remains deferred |
+| AFR-26 | Complete | Current direct loc and typed column directory retained as the speed reference |
+| Shared allocation | Next | Design the final direct locator and contiguous iteration view before allocator integration |
 
 ## Outcome
 
@@ -1139,9 +1139,9 @@ evidence.
 Purpose: find the fastest complete existing-component address sequence before
 committing to sparse states or shared blocks.
 
-Status: in progress. AFR-25A is complete and rejected. AFR-25B and AFR-25C are
-complete and accepted. Specialized direct `EntArchLoc` storage remains
-explicitly deferred; completing AFR-25C does not automatically resume it.
+Status: complete. AFR-25A and AFR-25E were rejected. AFR-25B, AFR-25C, and
+AFR-25D were accepted. Specialized direct `EntArchLoc` storage remains
+explicitly deferred.
 
 #### AFR-25A — `SetArchetypal` Slow-Path Split
 
@@ -1415,20 +1415,15 @@ sparse-component retrieval in the complete rotating `Get` and existing-field
 `Set` callers. AFR-25A should not be repeated unless a later loc representation
 materially changes the caller and warrants a new same-build test.
 
-Immediate local candidates:
+AFR-25D moved precise field registration to the already-required closed-generic
+column-ops type. The hot values holder retains `beforefieldinit`, so absent
+point operations and dead-Ent `Set` calls do not register unused fields. The
+change improved generic-class scalar `Get` by roughly 30% and existing-field
+`Set` by roughly 17% to 20% without regressing exact or generic-struct paths.
 
-- Split cold `FieldId` registration and type-initializer work from the hot
-  `Values` holder so ordinary access does not inherit an avoidable class
-  constructor check.
-- Test a value-type group specialization or internal value-type proxy without
-  changing the public `<T, N, A>` API, adding a public constraint, boxing, or
-  allocating a proxy per call. Pursue it only if the AFR-24 call-site matrix
-  shows a benefit for real generic callers; the concrete sealed-class probe is
-  already evidence that struct `A` is not inherently required.
-- Later, when explicitly resumed, prototype specialized direct `EntArchLoc`
-  storage instead of resolving loc through the generic sparse component path.
-  Measure the full `Get` and existing-field `Set` callers; an isolated loc-stage
-  win is not acceptance.
+AFR-25E then tested an internal value-type key. It did not force exact code for
+class-group generic callers and added no value to already-specialized struct
+callers, so the candidate was removed.
 
 Direct shared-storage locator candidates:
 
@@ -1472,6 +1467,11 @@ Acceptance:
 
 Purpose: make an explicit go/no-go decision before AFR-30, AFR-31, AFR-32,
 AFR-33, or AFR-34 fixes the new representation.
+
+Decision: retain the current `(AllocId, ArchId, Row)` loc and closed-generic
+typed column directory. Existing-component access remains the direct AFR-26
+reference. Future shared allocation begins with its final point locator and
+contiguous iteration view, not with an inactive allocator or state table.
 
 Decision order:
 
@@ -2065,11 +2065,13 @@ optimization.
 
 ## Implementation Discipline
 
-- Use the completed AFR-24 baseline, then complete AFR-25 and AFR-26 before
-  implementing a production alloc-state, `loc`, or shared-block cutover.
-- Build AFR-30 through AFR-33 as directly testable inactive pieces. Treat
-  AFR-34, AFR-35, and AFR-42 as one coordinated production cutover train so no
-  public path depends on half-integrated storage.
+- Use the completed AFR-24 through AFR-26 baseline before changing production
+  alloc-state, `loc`, or shared-block addressing.
+- Prototype the final direct locator and contiguous iteration view before
+  implementing allocator, free-list, or state-table machinery around it.
+- Treat point access, movement, clearing, and legacy-buffer removal as one
+  coordinated cutover train so production never depends on half-integrated
+  storage.
 - Keep each intermediate state buildable and directly testable.
 - Avoid production dual storage. New structures may be tested independently
   before cutover, but the hot path should have one source of truth.
@@ -2083,9 +2085,9 @@ optimization.
 - Keep generic parameters `T`, `N`, and `A` compact.
 - Do not add defensive branches for states excluded by controlled invariants.
 - Measure direct flat and paged locators before adding encoding complexity.
-  Treat managed bytes and uninitialized `NativeMemory.Alloc` backing as
-  first-class AFR-32 candidates, but compare full-caller latency before retained
-  footprint.
+  Treat custom array-plus-offset slices, `Memory<T>` controls, and uninitialized
+  `NativeMemory.Alloc` backing as candidates, but compare complete point callers
+  before retained footprint.
 
 ## Definition of Done
 

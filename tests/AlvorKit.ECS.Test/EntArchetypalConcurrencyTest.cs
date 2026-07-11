@@ -107,6 +107,43 @@ public sealed class EntArchetypalConcurrencyTest
         }
     }
 
+    /// <summary>Verifies concurrent first Sets register one field and share one singleton across different allocs.</summary>
+    [TestMethod]
+    public void Archetypal_ConcurrentFirstSet_DifferentAllocsRegistersOnce()
+    {
+        const int ownerCount = 2;
+        var before = EntArchDiagnostics<ConcurrentFirstSetArch>.Capture();
+        Assert.AreEqual(0, before.RegisteredFieldCount);
+        Assert.AreEqual(0, before.MaterializedArchCount);
+
+        using var barrier = new Barrier(ownerCount);
+        var allocIds = new int[ownerCount];
+        var archIds = new int[ownerCount];
+        var values = new int[ownerCount];
+        var columns = new int[ownerCount][];
+
+        Parallel.Invoke(
+            () => FirstSet(0, barrier, allocIds, archIds, values, columns),
+            () => FirstSet(1, barrier, allocIds, archIds, values, columns));
+
+        var metrics = EntArchDiagnostics<ConcurrentFirstSetArch>.Capture();
+        Assert.AreEqual(1, metrics.RegisteredFieldCount);
+        Assert.AreEqual(1, metrics.MaterializedArchCount);
+        Assert.AreEqual(1, metrics.SingletonArchCount);
+        Assert.AreNotEqual(allocIds[0], allocIds[1]);
+        Assert.AreEqual(archIds[0], archIds[1]);
+        Assert.AreEqual(10, values[0]);
+        Assert.AreEqual(20, values[1]);
+        for (int owner = 0; owner < ownerCount; owner++)
+        {
+            Assert.IsNotNull(columns[owner]);
+            Assert.AreSame(
+                columns[owner],
+                EntArchColumn<int, ConcurrentFirstSetField, ConcurrentFirstSetArch>
+                    .Values[allocIds[owner]][archIds[owner]]);
+        }
+    }
+
     private static void ResolveColdArch(
         int owner,
         Barrier barrier,
@@ -215,6 +252,30 @@ public sealed class EntArchetypalConcurrencyTest
         valid[owner] = ownerValid;
     }
 
+    private static void FirstSet(
+        int owner,
+        Barrier barrier,
+        int[] allocIds,
+        int[] archIds,
+        int[] values,
+        int[][] columns)
+    {
+        using var arena = new EntArena();
+        EntMut ent = arena.Alloc();
+        barrier.SignalAndWait();
+
+        int value = (owner + 1) * 10;
+        ent.SetArchetypal<int, ConcurrentFirstSetField, ConcurrentFirstSetArch>(value);
+        var loc = ent.Get<EntArchLoc, ConcurrentFirstSetArch>();
+        allocIds[owner] = loc.AllocId;
+        archIds[owner] = loc.ArchId;
+        values[owner] = ent.GetArchetypal<int, ConcurrentFirstSetField, ConcurrentFirstSetArch>();
+        columns[owner] = EntArchColumn<int, ConcurrentFirstSetField, ConcurrentFirstSetArch>
+            .ValuesAt(loc.AllocId, loc.ArchId)!;
+
+        Assert.IsTrue(ent.UnsetArchetypal<int, ConcurrentFirstSetField, ConcurrentFirstSetArch>());
+    }
+
     private static void ExitWarmArch(EntMut ent)
     {
         ent.UnsetArchetypal<int, C0, WarmAccessArch>();
@@ -226,4 +287,6 @@ public sealed class EntArchetypalConcurrencyTest
     private readonly record struct C2;
     private readonly record struct ColdResolutionArch;
     private readonly record struct WarmAccessArch;
+    private readonly record struct ConcurrentFirstSetField;
+    private readonly record struct ConcurrentFirstSetArch;
 }

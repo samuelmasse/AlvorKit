@@ -1,19 +1,19 @@
 namespace AlvorKit.ECS;
 
+/// <summary>Stores the direct alloc/arch column directory used by point access for one exact field.</summary>
 internal static class EntArchColumn<T, N, A>
 {
-    internal static readonly int FieldId;
-    internal static T[][][] Values;
+    /// <summary>Maps alloc and arch IDs to their typed component arrays without registering the field.</summary>
+    internal static T[][][] Values = [];
 
-    static EntArchColumn()
+    /// <summary>Gets the registered field ID, initializing the cold column operations on first structural use.</summary>
+    internal static int FieldId
     {
-        Values = [];
-        FieldId = EntArchGraph<A>.RegisterField(
-            new EntArchColumnOps<T, N, A>(),
-            Unsafe.SizeOf<T>(),
-            EntArchStorageClass<T, A>.Id);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => EntArchColumnOps<T, N, A>.FieldId;
     }
 
+    /// <summary>Returns the typed column for an alloc and arch, or null when the field is absent.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static T[]? ValuesAt(int allocId, int archId)
     {
