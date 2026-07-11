@@ -2,10 +2,10 @@
 
 > Status: working implementation direction. AFR-25A's `SetArchetypal`
 > structural slow-path split was measured and rejected, and AFR-25B's
-> `ValuesAt` address-path simplification was measured and accepted. Direct
-> `EntArchLoc` storage is deferred; `Unsafe.Add` row access is the next
-> independent prototype. This document records internal improvements under
-> consideration; it is not a finalized design.
+> `ValuesAt` address-path simplification and AFR-25C's `Unsafe.Add` row access
+> were measured and accepted. Specialized/direct `EntArchLoc` storage remains
+> explicitly deferred and is not automatically the next prototype. This document records
+> internal improvements under consideration; it is not a finalized design.
 
 The broader footprint work is tracked by the
 [Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md) and
@@ -68,10 +68,10 @@ Progress through the agreed improvements:
    split because reduced code size did not improve existing-field latency.
 9. Complete: simplify `ValuesAt` by snapshotting its outer directory, using
    unsigned bounds checks, and relying on the permanent null arch-zero slot.
-10. Next: compare indexed row access with `Unsafe.Add` in complete Release
-    `Get` and existing-field `Set` callers.
-11. Deferred: measure specialized/direct `EntArchLoc` storage when this work is
-    resumed; it does not block the independent row-access candidate.
+10. Complete: replace the final indexed row load/store with `Unsafe.Add` after
+    `ValuesAt` has resolved a non-null column.
+11. Deferred: measure specialized/direct `EntArchLoc` storage when that wider
+    lifecycle work is deliberately resumed.
 12. Build AFR-30's sparse alloc-local state index only after the point-addressing
     representation passes AFR-26's gate.
 
@@ -383,8 +383,59 @@ exact scalar sentinels; after tiering settled, generic-class scalar `Get` and
 `Set` improved by 2.76% and 2.17%. An unchanged-path A/A check was neutral.
 
 The optimization is now production code, while its temporary comparison harness
-has been removed. The next independent point-path experiment compares the final
-indexed row load/store with `Unsafe.Add` after `ValuesAt` resolves the column.
+has been removed. AFR-25C subsequently optimized the final row access without
+changing the directory representation.
+
+### Accepted `Unsafe.Add` Row Access
+
+AFR-25C replaces only the final `values[loc.Row]` load or existing-field store
+with `Unsafe.Add` over
+`MemoryMarshal.GetArrayDataReference(values)`. It does so only after `ValuesAt`
+has returned a non-null column. Structural creation and movement continue to use
+ordinary indexed access; the public API and storage representation are
+unchanged.
+
+The unchecked access relies on an existing controlled invariant rather than
+adding validation to the hot path. Append and move establish a capacity-backed
+dst row, retained fields are copied, and the checked first write initializes a
+new field before point access resumes. Row and column capacities grow together,
+and swap-back compaction repairs the moved Ent's `loc` before subsequent access.
+One thread owns a given alloc's group-local rows and columns, so another thread
+cannot observe a transient row update in that alloc. Different alloc owners may
+still use the same group and arch concurrently.
+
+Consequently, AFR-25C adds no row bounds check, impossible-state branch, lock,
+`Volatile` operation, or managed allocation. The address remains a managed
+`ref T`; assignments through it preserve the GC write barrier for reference
+types and structs that contain references. It is not converted to a native
+pointer or untyped byte address.
+
+The unchanged-path A/A control remained within ±0.91%. In the quick scalar
+exact/specialized comparison, the candidate won all six forward cases by 1.83%
+through 6.43%. The reversed comparison also won every case except one noisy
+baseline outlier; stable wins were approximately 1.88% through 4.63% or more.
+Generic-class `Get` improved by about 1.00% to 1.21%, while generic-class `Set`
+was neutral at +0.31% and -0.16%. Broad value and reference shapes showed no
+repeatable regression after candidate-first retests. Every measured case
+remained at 0 B/op.
+
+Release code generation confirms that the final terminal array bounds check is
+gone. Representative generated-code sizes changed as follows:
+
+| Caller | FullOpts baseline -> final public | Paired Tier1 baseline -> candidate |
+| --- | ---: | ---: |
+| Concrete `Get` | 343 -> 337 | 364 -> 358 |
+| Concrete `Set` | 1,539 -> 1,525 | 6,318 -> 6,306 |
+| Generic-class `Get` | 542 -> 533 | 617 -> 608 |
+| Generic-class `Set` | 2,266 -> 2,242 | 5,834 -> 5,819 |
+
+The Set Tier1 size is sensitive to its synthesized PGO inline profile, so the
+Tier1 column uses the same-build paired capture rather than comparing two
+different post-promotion profiles.
+
+The production point path now combines AFR-25B's simplified directory lookup
+with AFR-25C's unchecked final row access. Specialized/direct `EntArchLoc`
+storage remains explicitly deferred; a later task must deliberately resume it.
 
 ## Sparse Transition Edge Arena
 
@@ -617,10 +668,10 @@ short result may instead reflect tiering or process drift.
    split; smaller generated code did not improve existing-field latency.
 10. Complete: accept AFR-25B's simplified `ValuesAt` directory access after its
     complete Release point-path comparison.
-11. Next: compare indexed row access with `Unsafe.Add` in complete Release point
-    callers, using the staged benchmark workflow before the final full sweep.
+11. Complete: accept AFR-25C's `Unsafe.Add` final row access after staged Release
+    behavior, latency, allocation, and generated-code checks.
 12. Deferred: measure specialized/direct `EntArchLoc` storage and addressing;
-    retain the same AFR-26 performance gate when the work resumes.
+    retain the same AFR-26 performance gate when the work deliberately resumes.
 13. Build AFR-30's sparse alloc-local state model off-path after the locator
     decision; do not assume that `StateId` belongs in `loc` before it wins.
 14. Continue through shared block stores using

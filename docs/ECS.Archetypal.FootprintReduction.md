@@ -3,10 +3,11 @@
 > Status: in progress. AFR-01, AFR-02, AFR-10, AFR-11, AFR-12, AFR-20, AFR-21,
 > AFR-22, AFR-23, and AFR-24 are implemented and verified. AFR-25 is in
 > progress: AFR-25A's `SetArchetypal` slow-path split was measured and rejected,
-> and AFR-25B's `ValuesAt` directory simplification was measured and accepted.
-> Specialized direct `loc` storage is deferred; `Unsafe.Add` row access is the
-> next local prototype. AFR-26 remains the representation decision gate; no
-> alloc-state, `loc`, or shared-block shape is selected before it completes.
+> while AFR-25B's `ValuesAt` directory simplification and AFR-25C's typed
+> `Unsafe.Add` row access were measured and accepted. Specialized direct `loc`
+> storage remains explicitly deferred. AFR-26 remains the representation
+> decision gate; no alloc-state, `loc`, or shared-block shape is selected before
+> it completes.
 
 ## Related Documents
 
@@ -31,7 +32,8 @@
 | AFR-24 | Complete | 64 full point callers, ten absolute stages, paired Release sweeps, and generated-code attribution |
 | AFR-25A | Complete — rejected | Missing-field `Set` slow-path split reduced code size but did not improve the rotating full caller |
 | AFR-25B | Complete — accepted | Single-snapshot `ValuesAt` directory access with unsigned alloc/arch bounds checks |
-| AFR-25 | In progress | `Unsafe.Add` row access next; specialized `EntArchLoc` storage deferred |
+| AFR-25C | Complete — accepted | Typed `Unsafe.Add` for the final existing-component row load/store |
+| AFR-25 | In progress | Next direct-address prototype not yet selected; specialized direct `EntArchLoc` remains deferred |
 | AFR-26 | Planned | Speed-first representation and go/no-go decision gate |
 | AFR-30 onward | Blocked by AFR-26 | No state, `loc`, or shared-block commitment before the point-path gate |
 
@@ -1127,8 +1129,9 @@ ran as a same-build selectable candidate across all 32 Set cells. It was
 rejected because the much smaller generated caller did not produce a repeatable
 rotating win. The production and demo scaffolding were removed. AFR-25B then
 improved the current `ValuesAt` directory path without changing its storage
-shape. Specialized direct `EntArchLoc` storage is deferred; shared storage,
-`Unsafe.Add`, and public marker changes remain unapproved by isolated-stage
+shape, and AFR-25C removed the final row bounds check with a typed managed-byref
+access. Specialized direct `EntArchLoc` storage remains explicitly deferred;
+shared storage and public marker changes remain unapproved by isolated-stage
 evidence.
 
 ### AFR-25 — Direct-Address Prototypes
@@ -1136,9 +1139,9 @@ evidence.
 Purpose: find the fastest complete existing-component address sequence before
 committing to sparse states or shared blocks.
 
-Status: in progress. AFR-25A is complete and rejected, AFR-25B is complete and
-accepted, specialized direct `EntArchLoc` storage is deferred, and `Unsafe.Add`
-row access is next.
+Status: in progress. AFR-25A is complete and rejected. AFR-25B and AFR-25C are
+complete and accepted. Specialized direct `EntArchLoc` storage remains
+explicitly deferred; completing AFR-25C does not automatically resume it.
 
 #### AFR-25A — `SetArchetypal` Slow-Path Split
 
@@ -1249,22 +1252,171 @@ production path. Evidence is retained under:
 - `out/ecs-archetypal/afr25b-public-scalar-generic-class.json`
 - `out/ecs-archetypal/afr25b-codegen/`
 
-Specialized direct `EntArchLoc` storage remains a valid future experiment, but
-is explicitly deferred. The next AFR-25 prototype compares ordinary
-`values[loc.Row]` access with `Unsafe.Add` in the complete rotating `Get` and
-existing-field `Set` callers. It must preserve direct known-value indexing,
-swap-back repair, and alloc-owner isolation. AFR-25A should not be repeated
-unless a later loc representation materially changes the caller and warrants a
-new same-build test.
+#### AFR-25C — Typed `Unsafe.Add` Row Access
+
+AFR-25C changed only the last existing-component row access after `ValuesAt`
+has returned a non-null typed column. `GetArchetypal` now loads through a typed
+managed byref, and the existing-field branch of `SetArchetypal` stores through
+the same form:
+
+```csharp
+return Unsafe.Add(
+    ref MemoryMarshal.GetArrayDataReference(values),
+    loc.Row);
+```
+
+```csharp
+Unsafe.Add(
+    ref MemoryMarshal.GetArrayDataReference(values),
+    loc.Row) = value;
+```
+
+The candidate does not use a native pointer, reinterpret the column as bytes,
+or change column ownership. The structural path's first write into a newly
+resolved dst arch deliberately remains ordinary checked array indexing. That
+write is not the recurring existing-field point path and was outside this
+prototype's scope.
+
+The unchecked final row operation relies on the existing controlled valid-row
+invariant rather than adding replacement defensive branches:
+
+- An active Ent's `EntArchLoc` identifies its alloc-local arch and a row below
+  that active arch's count.
+- `Append` and `Move` publish a row backed by the Ent and component column
+  capacities before the resulting `loc` is used by point access.
+- Swap-back compaction repairs the moved Ent's `loc` to the vacated row as part
+  of the same alloc-owner operation.
+- One thread owns an alloc's group-local rows and columns, so a second thread
+  cannot observe and mutate an intermediate compaction state in that alloc.
+- Different threads may still write the same global arch through different
+  allocs because their rows and columns are independent.
+
+Consequently, a non-null `ValuesAt(loc.AllocId, loc.ArchId)` result on the
+existing-component path and the maintained `loc.Row` invariant provide the
+required valid element. AFR-25C does not add a negative-row branch, a second
+length check, an empty-column check, or a reference-type special case for
+states that the controlled implementation cannot produce. The directory-level
+alloc/arch bounds and null checks accepted in AFR-25B remain unchanged.
+
+`MemoryMarshal.GetArrayDataReference(values)` returns a managed byref and
+`Unsafe.Add` advances it in units of the exact closed generic `T`. The result
+therefore remains GC-tracked. Reference values and structs containing
+references use normal typed assignments and retain the runtime's write-barrier
+helpers; this is not the type-erased byte movement considered later for
+reference-free structural work.
+
+##### Staged Release Measurement
+
+The candidate used a deliberately short staged protocol to keep iteration
+time reasonable. Every measurement and generated-code capture was Release:
+
+1. Same-build A/A duplicates established the harness floor for scalar
+   exact/specialized and settled generic-class callers.
+2. Candidate-versus-baseline scalar exact/specialized callers ran forward and
+   reverse at 1,000,000 operations, ten warmup bodies, and three isolated
+   samples.
+3. Generic-class callers ran forward and reverse at 5,000,000 operations, ten
+   warmup bodies, and three isolated samples so their shared generic code had
+   time to settle.
+4. Short wide reference-free, reference, and reference-containing-struct
+   screens checked the remaining caller and group-marker shapes.
+5. Only suspicious positive cells were repeated candidate-first, followed by
+   public-path confirmation and generated-code inspection.
+
+Candidate-minus-baseline percentages are negative when the candidate is
+faster. The scalar A/A controls remained inside the established noise band:
+
+| Op | Concrete class | Concrete struct | Generic struct |
+| --- | ---: | ---: | ---: |
+| Get | +0.22% | -0.43% | +0.25% |
+| Set | -0.85% | -0.84% | -0.31% |
+
+The settled generic-class A/A controls were -0.57% for `Get` and -0.91% for
+`Set`. Against those controls, the candidate's scalar exact/specialized results
+were:
+
+| Op | Call/group shape | Forward | Reverse |
+| --- | --- | ---: | ---: |
+| Get | Concrete class | -5.37% | Noisy baseline outlier; excluded |
+| Get | Concrete struct | -6.43% | -3.80% |
+| Get | Generic struct | -4.94% | -4.63% |
+| Set | Concrete class | -1.83% | -1.88% |
+| Set | Concrete struct | -1.84% | -2.80% |
+| Set | Generic struct | -1.87% | -4.51% |
+
+The reverse concrete-class `Get` process contained a baseline outlier and is
+reported rather than used to strengthen or weaken the result. The other five
+reverse cells retained the candidate's direction. Generic-class `Get` changed
+by -1.21% forward and -1.00% reverse; generic-class `Set` changed by +0.31%
+forward and -0.16% reverse. These shared-generic cells are neutral rather than
+a claimed speedup, but they show no repeatable regression.
+
+All broad shape screens reported 0 managed B/op. Two apparent regressions in
+the first screen disappeared in the targeted candidate-first repeat: reference
+`Set` with concrete-class `A` measured 2.6053 ns/op for the candidate versus
+2.6223 ns/op for baseline (-0.65%), and reference `Get` with concrete-struct `A`
+measured 1.9439 versus 2.0230 ns/op (-3.91%). No suspicious broad-shape cell
+retained a positive result after its order-controlled repeat.
+
+After promotion, short public-path confirmation produced these scalar medians,
+all at 0 managed B/op:
+
+| Op | Concrete class | Concrete struct | Generic struct | Generic class |
+| --- | ---: | ---: | ---: | ---: |
+| Get | 1.74 ns | 1.73 ns | 1.73 ns | 6.75 ns |
+| Set | 1.80 ns | 1.78 ns | 1.76 ns | 7.22 ns |
+
+The full 32-cell, 5,000,000-operation, ten-warmup, seven-isolate sweep was not
+run for AFR-25C. This is an intentional departure from the longest final sweep
+described by the general workflow below, made to avoid another multi-minute
+iteration gate. Acceptance instead uses the same-build A/A controls, paired
+forward/reverse scalar results, settled generic-class results, every remaining
+value-shape screen, suspicious-only order-controlled retests, public-path
+confirmation, zero-allocation results, and matching generated-code evidence.
+This exception is recorded so the shorter evidence is not later mistaken for
+the seven-isolate protocol.
+
+##### Generated Code and Decision
+
+Release captures show the expected local change: the final row bounds check is
+gone while the ordinary GC assignment helpers remain for reference and
+reference-containing stores. Complete scalar rotating caller sizes changed as
+follows:
+
+| Caller | FullOpts baseline → final public | Paired Tier1-OSR baseline → candidate |
+| --- | ---: | ---: |
+| Concrete `Get` | 343 → 337 | 364 → 358 |
+| Concrete `Set` | 1,539 → 1,525 | 6,318 → 6,306 |
+| Generic-class `Get` | 542 → 533 | 617 → 608 |
+| Generic-class `Set` | 2,266 → 2,242 | 5,834 → 5,819 |
+
+Synthesized PGO changes the inlining profile and total Tier1 size of the large
+Set caller between independent processes. The Tier1 column therefore reports
+the causal same-build baseline/candidate pair; FullOpts supplies the stable
+post-promotion public comparison.
+
+Representative FullOpts reference `Set` code shrank from 1,594 to 1,580 bytes,
+and reference-containing-struct `Set` shrank from 1,717 to 1,703 bytes. The
+implementation therefore removes one recurring bounds check without replacing
+it with an impossible-state branch, pointer conversion, or untracked store.
+
+AFR-25C is accepted. Its scope remains narrow: typed final-row load/store on
+the existing-component path only. Release evidence is retained under:
+
+- `out/ecs-archetypal/afr25c-unsafe-row-aa-*.json`
+- `out/ecs-archetypal/afr25c-unsafe-row-candidate-*.json`
+- `out/ecs-archetypal/afr25c-public-scalar-*.json`
+- `out/ecs-archetypal/afr25c-codegen/`
+
+Specialized direct `EntArchLoc` storage remains a valid experiment, but it is
+still explicitly deferred. Completing `Unsafe.Add` does not automatically
+resume it. If it is deliberately revisited, it should measure bypassing generic
+sparse-component retrieval in the complete rotating `Get` and existing-field
+`Set` callers. AFR-25A should not be repeated unless a later loc representation
+materially changes the caller and warrants a new same-build test.
 
 Immediate local candidates:
 
-- Compare normal `values[row]` with `Unsafe.Add` row access. Keep `Unsafe.Add`
-  only if generated code and full-caller measurements show a repeatable gain;
-  removing one apparent bounds check is not sufficient evidence.
-- Later, prototype specialized direct `EntArchLoc` storage instead of resolving
-  loc through the generic sparse component path. Measure the full `Get` and
-  existing-field `Set` callers; an isolated loc-stage win is not acceptance.
 - Split cold `FieldId` registration and type-initializer work from the hot
   `Values` holder so ordinary access does not inherit an avoidable class
   constructor check.
@@ -1273,6 +1425,10 @@ Immediate local candidates:
   allocating a proxy per call. Pursue it only if the AFR-24 call-site matrix
   shows a benefit for real generic callers; the concrete sealed-class probe is
   already evidence that struct `A` is not inherently required.
+- Later, when explicitly resumed, prototype specialized direct `EntArchLoc`
+  storage instead of resolving loc through the generic sparse component path.
+  Measure the full `Get` and existing-field `Set` callers; an isolated loc-stage
+  win is not acceptance.
 
 Direct shared-storage locator candidates:
 

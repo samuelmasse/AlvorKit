@@ -100,6 +100,69 @@ public sealed class EntArchetypalTest
             Assert.IsTrue(ent.UnsetArchetypal<int, C0, SetMiddleRowArch>());
     }
 
+    /// <summary>Verifies point access reads and writes valid nonzero and swap-back-repaired rows.</summary>
+    [TestMethod]
+    public void Archetypal_PointAccess_ReadsAndWritesValidRepairedRows()
+    {
+        using var arena = new EntArena();
+        EntMut[] ents = [arena.Alloc(), arena.Alloc(), arena.Alloc(), arena.Alloc()];
+        var boxes = new RefBox[ents.Length];
+
+        Assert.IsNull(ents[0].GetArchetypal<RefBox, C1, RowAccessArch>());
+        for (int i = 0; i < ents.Length; i++)
+        {
+            boxes[i] = new(i);
+            ents[i].SetArchetypal<int, C0, RowAccessArch>(100 + i);
+            ents[i].SetArchetypal<RefBox, C1, RowAccessArch>(boxes[i]);
+            ents[i].SetArchetypal<RowPayload, C2, RowAccessArch>(new(boxes[i], 200 + i));
+        }
+
+        Assert.AreEqual(2, ents[2].Get<EntArchLoc, RowAccessArch>().Row);
+        Assert.AreEqual(102, ents[2].GetArchetypal<int, C0, RowAccessArch>());
+        Assert.AreSame(boxes[2], ents[2].GetArchetypal<RefBox, C1, RowAccessArch>());
+        Assert.AreEqual(new RowPayload(boxes[2], 202),
+            ents[2].GetArchetypal<RowPayload, C2, RowAccessArch>());
+
+        var replacement = new RefBox(12);
+        ents[2].SetArchetypal<int, C0, RowAccessArch>(112);
+        ents[2].SetArchetypal<RefBox, C1, RowAccessArch>(replacement);
+        ents[2].SetArchetypal<RowPayload, C2, RowAccessArch>(new(replacement, 212));
+        Assert.AreEqual(112, ents[2].GetArchetypal<int, C0, RowAccessArch>());
+        Assert.AreSame(replacement, ents[2].GetArchetypal<RefBox, C1, RowAccessArch>());
+        Assert.AreEqual(new RowPayload(replacement, 212),
+            ents[2].GetArchetypal<RowPayload, C2, RowAccessArch>());
+
+        var middleLoc = ents[1].Get<EntArchLoc, RowAccessArch>();
+        Assert.AreEqual(1, middleLoc.Row);
+        Assert.AreEqual(3, ents[3].Get<EntArchLoc, RowAccessArch>().Row);
+        ents[1].SetArchetypal<long, C3, RowAccessArch>(300L);
+
+        var repairedLoc = ents[3].Get<EntArchLoc, RowAccessArch>();
+        Assert.AreEqual(middleLoc.ArchId, repairedLoc.ArchId);
+        Assert.AreEqual(middleLoc.Row, repairedLoc.Row);
+        Assert.AreEqual(103, ents[3].GetArchetypal<int, C0, RowAccessArch>());
+        Assert.AreSame(boxes[3], ents[3].GetArchetypal<RefBox, C1, RowAccessArch>());
+        Assert.AreEqual(new RowPayload(boxes[3], 203),
+            ents[3].GetArchetypal<RowPayload, C2, RowAccessArch>());
+
+        var movedReplacement = new RefBox(13);
+        ents[3].SetArchetypal<int, C0, RowAccessArch>(113);
+        ents[3].SetArchetypal<RefBox, C1, RowAccessArch>(movedReplacement);
+        ents[3].SetArchetypal<RowPayload, C2, RowAccessArch>(new(movedReplacement, 213));
+        Assert.AreEqual(113, ents[3].GetArchetypal<int, C0, RowAccessArch>());
+        Assert.AreSame(movedReplacement, ents[3].GetArchetypal<RefBox, C1, RowAccessArch>());
+        Assert.AreEqual(new RowPayload(movedReplacement, 213),
+            ents[3].GetArchetypal<RowPayload, C2, RowAccessArch>());
+
+        Assert.IsTrue(ents[1].UnsetArchetypal<long, C3, RowAccessArch>());
+        foreach (EntMut ent in ents)
+        {
+            Assert.IsTrue(ent.UnsetArchetypal<RowPayload, C2, RowAccessArch>());
+            Assert.IsTrue(ent.UnsetArchetypal<RefBox, C1, RowAccessArch>());
+            Assert.IsTrue(ent.UnsetArchetypal<int, C0, RowAccessArch>());
+        }
+    }
+
     /// <summary>Verifies reduction retains every dst field and re-adding a removed field preserves those values.</summary>
     [TestMethod]
     public void Archetypal_Reduction_PreservesRetainedFields()
@@ -274,6 +337,8 @@ public sealed class EntArchetypalTest
 
     private sealed record RefBox(int Value);
 
+    private readonly record struct RowPayload(RefBox Ref, int Value);
+
     private readonly record struct C0;
     private readonly record struct C1;
     private readonly record struct C2;
@@ -290,4 +355,5 @@ public sealed class EntArchetypalTest
     private readonly record struct InverseArch;
     private readonly record struct FirstIndependentArch;
     private readonly record struct SecondIndependentArch;
+    private readonly record struct RowAccessArch;
 }

@@ -9,6 +9,10 @@ namespace AlvorKit.ECS;
 //   point access goes directly through its closed-generic column at alloc/arch/row; it does not search the signature or graph.
 //   Packed membership and sparse transition edges are used only while resolving structural changes. Reference-free layouts
 //   store byte-column prefixes, while reference-containing layouts store type-local columns.
+// - After a column lookup succeeds, point access uses the subsystem-owned loc as a valid row and skips the final array bounds
+//   check. Append and Move return a capacity-backed row, Move copies retained fields, and the checked first write initializes
+//   a new field before point access resumes. Swap-back repairs the moved Ent's loc immediately. The resulting typed managed
+//   byref preserves GC write barriers.
 // - One thread exclusively owns an alloc's data for a given group. Reads, writes, and row changes inside that alloc are
 //   intentionally unsynchronized. Multiple threads may use the same group and arch concurrently only through different allocs.
 // - Structural changes move an Ent between dense arch row sets. Adding copies every src field; removing copies only the
@@ -30,7 +34,9 @@ public readonly partial record struct EntMut
         if (values == null)
             return default;
 
-        return values[loc.Row];
+        return Unsafe.Add(
+            ref MemoryMarshal.GetArrayDataReference(values),
+            loc.Row);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -50,7 +56,9 @@ public readonly partial record struct EntMut
 
         if (values != null)
         {
-            values[loc.Row] = value;
+            Unsafe.Add(
+                ref MemoryMarshal.GetArrayDataReference(values),
+                loc.Row) = value;
             return;
         }
 

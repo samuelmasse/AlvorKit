@@ -1,10 +1,11 @@
 # Archetype Footprint Reduction: Theory and Cost Model
 
 > Status: AFR-24 is complete, AFR-25A's `SetArchetypal` structural slow-path
-> split was measured and rejected, and AFR-25B's `ValuesAt` address-path
-> simplification was measured and accepted. Specialized/direct `EntArchLoc`
-> storage is explicitly deferred. The next independent point-path candidate is
-> `Unsafe.Add` row access, followed by AFR-26's decision gate in the
+> split was measured and rejected, and AFR-25B's `ValuesAt` address-path and
+> AFR-25C's unchecked terminal row access were measured and accepted.
+> Specialized/direct `EntArchLoc` storage remains explicitly deferred and is
+> not automatically the next candidate. AFR-26's decision gate
+> follows the current AFR-25 work in the
 > [Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md).
 > AFR-21 through AFR-24 have established the direct point-access, sparse
 > global-catalog, and call-shape baselines described here. Later shared-storage
@@ -590,6 +591,36 @@ allocation-free, lock-free, and free of `Volatile`. The ownership model is also
 unchanged: a single thread owns each alloc's group-local rows and columns, while
 different alloc owners may concurrently use the same group and arch.
 
+### AFR-25C Accepted Unchecked Terminal Row Access
+
+AFR-25C replaces only the final `values[loc.Row]` load or existing-field store
+after `ValuesAt` has returned a non-null column. At that point, `loc.Row` is a
+subsystem-owned index: append and move operations return a valid row,
+swap-back compaction repairs the moved Ent's loc immediately, and the
+single-thread-per-alloc ownership rule prevents another thread from observing
+or mutating an intermediate alloc-local row state. Column capacity tracks the
+corresponding Ent rows and does not shrink while point access can address them.
+
+Those invariants justify obtaining the typed array-data reference with
+`MemoryMarshal.GetArrayDataReference(values)` and applying `Unsafe.Add` with
+`loc.Row`. They do not authorize unchecked alloc/arch directory access or
+unchecked structural writes: `ValuesAt` retains its directory bounds and null
+checks, and movement, append, compaction, and first-value initialization retain
+their structural contracts.
+
+The resulting value is a managed typed byref, not a raw pointer. It remains
+visible to the GC, so stores of classes and reference-containing structs retain
+the required write barriers. Reference-containing columns must never replace
+this operation with native pointers, byte stores, or another type-erased write
+that hides references from the GC.
+
+Complete optimized Release callers showed the strongest repeatable gains in
+specialized scalar `Get`, at approximately 5% through 6%; specialized scalar
+`Set` improved by approximately 2%. Generic-class results were modest to
+neutral, with no repeatable broad regression. Generated code removed the final
+array bounds check, every measured path remained at zero managed allocation,
+and the candidate was accepted.
+
 ### Shared-Slab Cutover Gate
 
 AFR-34 and the later shared-slab work are expected to remove the current
@@ -994,11 +1025,11 @@ The storage address may change; the direct, constant-time lookup contract may
 not.
 
 AFR-25A showed that shrinking `SetArchetypal` by isolating its structural body
-does not by itself shorten this address chain. AFR-25B then improved the second
-step by simplifying `ValuesAt`'s directory access. Specialized/direct
-`EntArchLoc` storage is deferred; the next independent same-build Release
-prototype compares ordinary indexed row access with `Unsafe.Add` after the
-column has been resolved.
+does not by itself shorten this address chain. AFR-25B improved the second step
+by simplifying `ValuesAt`'s directory access, and AFR-25C removed the final
+array bounds check after a column has been resolved and its subsystem-owned row
+has been established as valid. Specialized/direct `EntArchLoc` storage remains
+an independent point-address candidate, but is explicitly deferred.
 
 ### Operation Costs
 
@@ -1233,11 +1264,12 @@ loc/directory/raw-row baselines above isolate where future point-path changes
 must improve generated code. AFR-25A then rejected the structural slow-path
 split because its large code-size reduction did not improve existing-field
 latency. AFR-25B accepted the simplified `ValuesAt` directory sequence after a
--5.60% full-sweep median result with no regressions. The remaining epic must
-measure rather than assume:
+-5.60% full-sweep median result with no regressions. AFR-25C accepted typed
+`Unsafe.Add` terminal row access: it removed the final bounds check, improved
+specialized scalar `Get` most strongly, produced a smaller `Set` gain, and did
+not produce a repeatable broad regression. The remaining epic must measure
+rather than assume:
 
-- Whether `Unsafe.Add` improves terminal row access after column resolution in
-  complete same-build Release `Get` and existing-field `Set` callers.
 - When revisited, whether specialized/direct `EntArchLoc` storage reduces the
   complete point-address sequence; this investigation is currently deferred.
 - Whether the AFR-34/shared-slab direct slot or handle matches or improves the
