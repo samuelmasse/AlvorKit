@@ -4,10 +4,11 @@ internal static class EntArchGraph<A>
 {
     internal const int NoArchId = 0;
     internal const int UnresolvedTransitionArchId = NoArchId;
-    internal const int OutsideGroupArchId = -1;
+    internal const int NoFieldOrdinal = -1;
 
-    private const int TransitionRootArchId = 1;
-    private const int FirstArchId = 2;
+    private const int NoEdgeIndex = 0;
+    private const int FirstArchId = 1;
+    private const int FirstEdgeIndex = 1;
     private const int FirstFieldId = 1;
     private const int FirstStorageClassId = 1;
     private const int InitialFieldCapacity = 16;
@@ -15,21 +16,27 @@ internal static class EntArchGraph<A>
     private const int InitialPackedFieldCapacity = 4096;
     private const int InitialSignatureIndexCapacity = 16;
 
-    // Guards group-global graph/catalog mutations and jagged-array outer growth.
+    // Guards group-global graph/catalog mutations and shared-array growth.
     internal static readonly object Sync = new();
 
     private static int nextFieldId = FirstFieldId;
     private static int nextArchId = FirstArchId;
+    private static int nextEdgeIndex = FirstEdgeIndex;
     private static int nextStorageClassId = FirstStorageClassId;
     private static int fieldCapacity;
     private static int archCapacity;
     private static int packedFieldCount;
+    private static int singletonArchCount;
     private static int[] packedFieldIds = new int[InitialPackedFieldCapacity];
     private static EntArchFieldLayout[] packedFieldLayouts = [];
+    // Structural resolution holds Sync, so one reusable buffer supports unbounded signature widths without stack growth.
+    private static int[] signatureScratch = [];
     // Real arch IDs and their packed signatures are appended in the same order, so the previous end is the next start.
     private static int[] signatureEnds = [];
     private static int[] signatureArchIds = [];
-    private static EntArchTransition[][] transitions = [[]];
+    private static int[] edgeHeads = [];
+    private static EntArchEdge[] edges = [];
+    private static int[] singletonArchIds = [];
     private static EntArchColumnOps[] columnOps = [];
     private static EntArchField[] fields = [];
 
@@ -56,38 +63,24 @@ internal static class EntArchGraph<A>
         metrics.FieldLayoutCapacity = packedFieldLayouts.Length;
         metrics.SignatureIndexCount = metrics.MaterializedArchCount;
         metrics.SignatureIndexCapacity = signatureArchIds.Length;
+        metrics.SignatureScratchCapacity = signatureScratch.Length;
+        metrics.SingletonArchCount = singletonArchCount;
+        metrics.SingletonDirectoryCapacity = singletonArchIds.Length;
+        metrics.StoredTransitionEdgeCount = nextEdgeIndex - FirstEdgeIndex;
+        metrics.TransitionEdgeCapacity = edges.Length;
+        metrics.EdgeHeadCapacity = edgeHeads.Length;
+        metrics.DirectedStructuralEdgeCount = metrics.StoredTransitionEdgeCount + 2L * singletonArchCount;
 
         metrics.AddCatalogArray(packedFieldIds, packedFieldCount);
         metrics.AddCatalogArray(packedFieldLayouts, packedFieldCount);
+        metrics.AddCatalogArray(signatureScratch, 0);
         metrics.AddCatalogArray(signatureEnds, nextArchId);
         metrics.AddCatalogArray(signatureArchIds, metrics.SignatureIndexCount);
-        metrics.AddCatalogArray(transitions, nextArchId);
+        metrics.AddCatalogArray(edgeHeads, nextArchId);
+        metrics.AddCatalogArray(edges, edges.Length == 0 ? 0 : nextEdgeIndex);
+        metrics.AddCatalogArray(singletonArchIds, nextFieldId);
         metrics.AddCatalogArray(columnOps, nextFieldId);
         metrics.AddCatalogArray(fields, nextFieldId);
-
-        for (int archId = 0; archId < transitions.Length; archId++)
-        {
-            var transitionsByField = transitions[archId];
-            metrics.TransitionCellCapacity += transitionsByField.LongLength;
-            metrics.AddCatalogArray(transitionsByField, archId < nextArchId ? nextFieldId : 0);
-        }
-
-        // Arch 0 contains outside-group sentinels. Add self-loops encode field presence, not structural edges.
-        for (int archId = TransitionRootArchId; archId < nextArchId; archId++)
-        {
-            var transitionsByField = transitions[archId];
-
-            for (int fieldId = FirstFieldId; fieldId < nextFieldId; fieldId++)
-            {
-                ref var transition = ref transitionsByField[fieldId];
-
-                if (transition.AddArchId != UnresolvedTransitionArchId && transition.AddArchId != archId)
-                    metrics.DirectedStructuralEdgeCount++;
-
-                if (transition.RemoveArchId != UnresolvedTransitionArchId)
-                    metrics.DirectedStructuralEdgeCount++;
-            }
-        }
 
         metrics.AddCatalogObjects(1L + metrics.RegisteredFieldCount);
 
@@ -119,31 +112,32 @@ internal static class EntArchGraph<A>
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int GetSingletonArchId(int fieldId) =>
-        Transition(TransitionRootArchId, fieldId).AddArchId;
+        Volatile.Read(ref singletonArchIds[fieldId]);
 
     internal static int ResolveSingleton(int fieldId)
     {
         lock (Sync)
         {
-            ref var transition = ref Transition(TransitionRootArchId, fieldId);
-            if (transition.AddArchId != UnresolvedTransitionArchId)
-                return transition.AddArchId;
+            int archId = singletonArchIds[fieldId];
+            if (archId != NoArchId)
+                return archId;
 
             return CreateFromSignature([fieldId]);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static bool ContainsField(int archId, int fieldId) =>
-        Transition(archId, fieldId).AddArchId == archId;
+    internal static int FindFieldOrdinal(int archId, int fieldId)
+    {
+        if (archId == NoArchId)
+            return NoFieldOrdinal;
+
+        return FieldIds(archId).IndexOf(fieldId);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static int GetAddArchId(int archId, int fieldId) =>
-        Transition(archId, fieldId).AddArchId;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static int GetRemoveArchId(int archId, int fieldId) =>
-        Transition(archId, fieldId).RemoveArchId;
+    internal static int GetTransitionArchId(int archId, int fieldId) =>
+        FindEdgeArchId(archId, fieldId);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static ReadOnlySpan<int> FieldIds(int archId)
@@ -162,27 +156,30 @@ internal static class EntArchGraph<A>
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static bool IsSingleton(int archId) =>
+        signatureEnds[archId] - signatureEnds[archId - 1] == 1;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static EntArchColumnOps ColumnOps(int fieldId) => columnOps[fieldId];
 
     internal static int ResolveAdd(int srcArchId, int fieldId)
     {
         lock (Sync)
         {
-            ref var transition = ref Transition(srcArchId, fieldId);
-            if (transition.AddArchId != UnresolvedTransitionArchId)
-                return transition.AddArchId;
+            int dstArchId = FindEdgeArchId(srcArchId, fieldId);
+            if (dstArchId != UnresolvedTransitionArchId)
+                return dstArchId;
 
             var srcFieldIds = FieldIds(srcArchId);
-            Span<int> dstFieldIds = stackalloc int[srcFieldIds.Length + 1];
+            Span<int> dstFieldIds = SignatureScratch(srcFieldIds.Length + 1);
             InsertFieldId(srcFieldIds, fieldId, dstFieldIds);
 
             ulong signatureHash = EntArchSignatureIndex.Hash(dstFieldIds);
-            int dstArchId = FindBySignature(dstFieldIds, signatureHash);
+            dstArchId = FindBySignature(dstFieldIds, signatureHash);
             if (dstArchId == NoArchId)
                 dstArchId = CreateFromSignature(dstFieldIds, signatureHash);
 
-            transition.AddArchId = dstArchId;
-            Transition(dstArchId, fieldId).RemoveArchId = srcArchId;
+            CacheEdgePair(srcArchId, fieldId, dstArchId);
             return dstArchId;
         }
     }
@@ -191,24 +188,23 @@ internal static class EntArchGraph<A>
     {
         lock (Sync)
         {
-            ref var transition = ref Transition(srcArchId, fieldId);
-            if (transition.RemoveArchId != UnresolvedTransitionArchId)
-                return transition.RemoveArchId;
+            int dstArchId = FindEdgeArchId(srcArchId, fieldId);
+            if (dstArchId != UnresolvedTransitionArchId)
+                return dstArchId;
 
             var srcFieldIds = FieldIds(srcArchId);
-            int removedFieldIndex = srcFieldIds.IndexOf(fieldId);
-            Span<int> dstFieldIds = stackalloc int[srcFieldIds.Length - 1];
+            int fieldOrdinal = srcFieldIds.IndexOf(fieldId);
+            Span<int> dstFieldIds = SignatureScratch(srcFieldIds.Length - 1);
 
-            srcFieldIds[..removedFieldIndex].CopyTo(dstFieldIds);
-            srcFieldIds[(removedFieldIndex + 1)..].CopyTo(dstFieldIds[removedFieldIndex..]);
+            srcFieldIds[..fieldOrdinal].CopyTo(dstFieldIds);
+            srcFieldIds[(fieldOrdinal + 1)..].CopyTo(dstFieldIds[fieldOrdinal..]);
 
             ulong signatureHash = EntArchSignatureIndex.Hash(dstFieldIds);
-            int dstArchId = FindBySignature(dstFieldIds, signatureHash);
+            dstArchId = FindBySignature(dstFieldIds, signatureHash);
             if (dstArchId == NoArchId)
                 dstArchId = CreateFromSignature(dstFieldIds, signatureHash);
 
-            transition.RemoveArchId = dstArchId;
-            Transition(dstArchId, fieldId).AddArchId = srcArchId;
+            CacheEdgePair(srcArchId, fieldId, dstArchId);
             return dstArchId;
         }
     }
@@ -238,14 +234,11 @@ internal static class EntArchGraph<A>
         EnsureSignatureIndexCapacity(nextArchId - FirstArchId);
         EntArchSignatureIndex.Insert(signatureArchIds, signatureHash, archId);
 
-        foreach (int fieldId in fieldIds)
-            Transition(archId, fieldId).AddArchId = archId;
-
         if (fieldIds.Length == 1)
         {
             int fieldId = fieldIds[0];
-            Transition(TransitionRootArchId, fieldId).AddArchId = archId;
-            Transition(archId, fieldId).RemoveArchId = OutsideGroupArchId;
+            Volatile.Write(ref singletonArchIds[fieldId], archId);
+            singletonArchCount++;
         }
 
         return archId;
@@ -279,37 +272,69 @@ internal static class EntArchGraph<A>
         }
     }
 
+    private static Span<int> SignatureScratch(int requiredLength)
+    {
+        if (signatureScratch.Length < requiredLength)
+            Array.Resize(ref signatureScratch, (int)BitOperations.RoundUpToPowerOf2((uint)requiredLength));
+
+        return signatureScratch.AsSpan(0, requiredLength);
+    }
+
     private static void EnsureCapacity(int requiredFieldCapacity, int requiredArchCapacity)
     {
         if (requiredFieldCapacity != fieldCapacity)
         {
-            for (int archId = 0; archId < transitions.Length; archId++)
-                Array.Resize(ref transitions[archId], requiredFieldCapacity);
-
-            // A default loc is outside the group, so arch 0 must never look like a field-presence self-loop.
-            transitions[NoArchId].AsSpan().Fill(new(OutsideGroupArchId, UnresolvedTransitionArchId));
             Array.Resize(ref columnOps, requiredFieldCapacity);
             Array.Resize(ref fields, requiredFieldCapacity);
+            Array.Resize(ref singletonArchIds, requiredFieldCapacity);
             fieldCapacity = requiredFieldCapacity;
         }
 
         if (requiredArchCapacity != archCapacity)
         {
-            Array.Resize(ref transitions, requiredArchCapacity);
             Array.Resize(ref signatureEnds, requiredArchCapacity);
+            Array.Resize(ref edgeHeads, requiredArchCapacity);
             archCapacity = requiredArchCapacity;
-
-            for (int archId = 0; archId < transitions.Length; archId++)
-            {
-                if (transitions[archId] == null)
-                    transitions[archId] = new EntArchTransition[fieldCapacity];
-            }
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static ref EntArchTransition Transition(int archId, int fieldId) =>
-        ref transitions[archId][fieldId];
+    private static int FindEdgeArchId(int archId, int fieldId)
+    {
+        int edgeIndex = Volatile.Read(ref edgeHeads[archId]);
+        var publishedEdges = edges;
+        while (edgeIndex != NoEdgeIndex)
+        {
+            ref readonly var edge = ref publishedEdges[edgeIndex];
+            if (edge.FieldId == fieldId)
+                return edge.DstArchId;
+
+            edgeIndex = edge.NextEdgeIndex;
+        }
+
+        return UnresolvedTransitionArchId;
+    }
+
+    private static void CacheEdgePair(int srcArchId, int fieldId, int dstArchId)
+    {
+        EnsureEdgeCapacity(nextEdgeIndex + 2);
+        int srcEdgeIndex = nextEdgeIndex++;
+        int dstEdgeIndex = nextEdgeIndex++;
+
+        edges[srcEdgeIndex] = new(fieldId, dstArchId, edgeHeads[srcArchId]);
+        edges[dstEdgeIndex] = new(fieldId, srcArchId, edgeHeads[dstArchId]);
+
+        Volatile.Write(ref edgeHeads[srcArchId], srcEdgeIndex);
+        Volatile.Write(ref edgeHeads[dstArchId], dstEdgeIndex);
+    }
+
+    private static void EnsureEdgeCapacity(int requiredLength)
+    {
+        if (edges.Length >= requiredLength)
+            return;
+
+        Array.Resize(ref edges, (int)BitOperations.RoundUpToPowerOf2((uint)requiredLength));
+    }
 
     private static void InsertFieldId(ReadOnlySpan<int> srcFieldIds, int fieldId, Span<int> dstFieldIds)
     {

@@ -3,7 +3,7 @@ namespace AlvorKit.ECS.Test;
 [TestClass]
 public sealed class EntArchetypalTest
 {
-    /// <summary>Verifies a singleton field enters and exits its arch group through the public API.</summary>
+    /// <summary>Verifies a singleton field enters, overwrites in place, and exits its arch group through the public API.</summary>
     [TestMethod]
     public void Archetypal_SingletonEntryAndExit_UpdatesPresenceAndLoc()
     {
@@ -22,6 +22,11 @@ public sealed class EntArchetypalTest
         Assert.AreEqual(arena.Index, loc.AllocId);
         Assert.IsTrue(loc.ArchId > EntArchGraph<SingletonArch>.NoArchId);
         Assert.AreEqual(0, loc.Row);
+
+        ent.SetArchetypal<int, C0, SingletonArch>(43);
+
+        Assert.AreEqual(loc, ent.Get<EntArchLoc, SingletonArch>());
+        Assert.AreEqual(43, ent.GetArchetypal<int, C0, SingletonArch>());
 
         Assert.IsTrue(ent.UnsetArchetypal<int, C0, SingletonArch>());
         Assert.IsFalse(ent.Has<EntArchLoc, SingletonArch>());
@@ -147,8 +152,8 @@ public sealed class EntArchetypalTest
         ent.SetArchetypal<long, C1, InverseArch>(20L);
         int pairArchId = ent.Get<EntArchLoc, InverseArch>().ArchId;
 
-        Assert.AreEqual(pairArchId, EntArchGraph<InverseArch>.GetAddArchId(singletonArchId, secondFieldId));
-        Assert.AreEqual(singletonArchId, EntArchGraph<InverseArch>.GetRemoveArchId(pairArchId, secondFieldId));
+        Assert.AreEqual(pairArchId, EntArchGraph<InverseArch>.GetTransitionArchId(singletonArchId, secondFieldId));
+        Assert.AreEqual(singletonArchId, EntArchGraph<InverseArch>.GetTransitionArchId(pairArchId, secondFieldId));
 
         Assert.IsTrue(ent.UnsetArchetypal<long, C1, InverseArch>());
         Assert.AreEqual(singletonArchId, ent.Get<EntArchLoc, InverseArch>().ArchId);

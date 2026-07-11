@@ -1,7 +1,9 @@
 # Epic: Archetype Footprint Reduction
 
-> Status: in progress. AFR-01, AFR-02, AFR-10, AFR-11, AFR-12, and AFR-20 are
-> implemented and verified. AFR-21 is next.
+> Status: in progress. AFR-01, AFR-02, AFR-10, AFR-11, AFR-12, AFR-20, AFR-21,
+> AFR-22, AFR-23, and AFR-24 are implemented and verified. AFR-25 and AFR-26
+> are next; no alloc-state, `loc`, or shared-block shape is selected before
+> those direct-address prototype and decision tasks complete.
 
 ## Related Documents
 
@@ -20,24 +22,62 @@
 | AFR-11 | Complete | Collision-correct arch-ID-only open-addressed signature index |
 | AFR-12 | Complete | Initial row capacity four with power-of-two growth |
 | AFR-20 | Complete | Four-byte packed immutable field layouts and compact field metadata |
-| AFR-21 onward | Planned | Sparse membership lookup is next |
+| AFR-21 | Complete | Direct closed-generic column membership on the ordinary point path |
+| AFR-22 | Complete | Twelve-byte records in one shared sparse transition-edge arena |
+| AFR-23 | Complete | Dense transition matrix, root arch, and transition self-loops removed |
+| AFR-24 | Complete | 64 full point callers, ten absolute stages, paired Release sweeps, and generated-code attribution |
+| AFR-25 | Next | Same-build direct-address prototypes against the current production path |
+| AFR-26 | Planned | Speed-first representation and go/no-go decision gate |
+| AFR-30 onward | Blocked by AFR-26 | No state, `loc`, or shared-block commitment before the point-path gate |
 
 ## Outcome
 
-Replace dense arch-by-field metadata and per-active-arch arrays with sparse
-catalog structures and alloc-local shared blocks while preserving the public
-archetypal API and the existing ownership model.
+Preserve or improve existing-component `Get` and `Set` latency first, then
+reduce structural-management cost, individual managed C# object allocations,
+retained managed object count, and total retained footprint where doing so does
+not weaken that ordinary happy path. The public archetypal API and the existing
+ownership model remain stable.
 
 The completed implementation should retain memory in proportion to materialized
 signatures, observed transitions, active alloc-local states, and actual
 component payload:
 
 \[
-O(M + S + E + R + Q + \text{payload})
+O(M + S + E + R + Q + L + \text{payload})
 \]
 
-It must not retain an `M × N` graph or alloc-local directory, and it must not
-allocate storage for unexplored signatures from the possible power set.
+`L` is measured direct-locator capacity. It may be a compact flat or paged
+table when that is the fastest point representation; minimizing `L` is
+secondary to the existing-component latency gate.
+
+The completed global graph already avoids `M × N` transition storage. Future
+alloc-local storage should remain proportional to explored state where a direct
+representation can meet the point-path gate. A compact flat or paged direct
+locator may deliberately retain more slack than a hash or packed search when
+that is required to preserve `Get` and `Set` speed.
+
+Among representations that pass the speed gate, prefer a few large shared
+buffers or pages over per-arch, per-state, per-membership, per-block, or
+free-list-node arrays and objects. Reference-free payload and metadata may move
+to uninitialized native allocations when that reduces GC-visible objects and
+passes ownership and speed tests. Native bytes remain retained memory: moving a
+payload outside the GC heap reduces managed bytes and objects, not total bytes.
+Retained managed object count should therefore scale with shared page/buffer
+count, registered fields, and reference-containing storage classes, not with
+materialized arches, active states, memberships, blocks, or free-list entries.
+
+## Priority Order
+
+1. Existing-component `Get` and `Set` latency, direct addressing, and zero
+   allocation are the primary objective. A repeatable regression is rejected;
+   footprint savings do not compensate for slowing this path.
+2. Add/remove management speed, compaction cost, managed allocation events,
+   retained managed object count, managed bytes, native bytes, and total bytes
+   are the second tier. Structural work may use locks, sparse-edge scans, and
+   cold allocation where required by its existing ownership model.
+3. Cold catalog creation, signature construction, and graph growth are the
+   third tier. Optimize them after the two higher tiers unless they impose an
+   unbounded correctness or memory problem.
 
 ## Stable Public API
 
@@ -66,17 +106,28 @@ Field count remains unbounded by a fixed-width signature mask.
 
 - Exact sorted signatures remain the authority for arch identity.
 - Hash collisions always resolve through exact signature comparison.
-- A reference-free `T` uses the shared alloc-local byte store.
-- A reference-containing `T` uses a typed GC-visible store shared by fields
-  with that same `T`.
+- A reference-free `T` may use the current direct typed column or an AFR-26
+  selected alloc-local byte store.
+- A reference-containing `T` always remains in typed GC-visible storage. A
+  selected shared store may be shared by fields with that same `T`.
+- Reference-free payload and reference-free allocator metadata may use shared
+  native pages obtained with `NativeMemory.Alloc`, never
+  `NativeMemory.AllocZeroed`, when the speed-passing design reduces managed
+  objects. Their owner deterministically calls `NativeMemory.Free`.
+- Values that are or contain references remain in large typed managed buffers
+  or pages so the GC can see them; they are never copied into native byte
+  storage merely to reduce object count.
 - Reference-free blocks intentionally remain dirty when released.
 - Reference-containing blocks are cleared before reuse.
 - Dense row compaction remains swap-back and repairs the moved Ent's `loc`.
 
 ### Scope
 
-Ent lifecycle, arena disposal, sparse page integration, and other interaction
-with the rest of the Ent system remain outside this epic.
+Ent lifecycle, wiring archetypal-owner release into wider arena teardown,
+sparse page integration, and other interaction with the rest of the Ent system
+remain outside this epic. Any selected native store still implements and tests
+its own deterministic release primitive; only the external lifecycle trigger is
+out of scope.
 
 ## Non-Goals
 
@@ -88,6 +139,9 @@ with the rest of the Ent system remain outside this epic.
 - No general-purpose defensive validation of controlled internal states.
 - No group-global shared store on alloc-local hot paths.
 - No `ArrayPool<T>.Shared` replacement for active arch storage.
+- No public generic constraint, group-marker conversion, or API overload is
+  introduced to obtain an internal class/value-type specialization. Any proxy
+  or specialization remains an implementation detail.
 
 ## Epic Acceptance Criteria
 
@@ -104,44 +158,106 @@ with the rest of the Ent system remain outside this epic.
 - Dirty reference-free blocks are never observable through an active row.
 - Different alloc owners can use the same group concurrently.
 
-### Footprint
+### Primary: Existing-Component Point Path
+
+- Existing-component `Get` and `Set` are measured and accepted before `Has`,
+  absent access, structural movement, footprint, or cold catalog results are
+  used to choose a representation.
+- Their full caller remains `O(1)`, directly indexed from known values, and free
+  of signature scans or hashes, sparse-edge or state-map lookup, locks,
+  `Volatile`, virtual dispatch, and managed allocation.
+- Candidate and baseline run as same-build A/B cases under the same runtime,
+  tiering, PGO, warmup, and process-isolation settings.
+- Every timing, attribution, generated-code, inlining, and disassembly result is
+  produced from Release configuration. Debug output may diagnose a test but is
+  never accepted, compared, or cited as performance evidence.
+- Measurements compare concrete and generic call sites for both class and
+  struct `A`, plus scalar and wide reference-free `T`, reference `T`, and
+  reference-containing structs. This matrix diagnoses sharing; it does not
+  require production groups to use struct `A`.
+- Measurements rotate across multiple hot Ents, arches, and allocs so the JIT
+  cannot turn a single-Ent loop into a hoisted or cached special case.
+- Staged cases attribute `loc` retrieval, `ValuesAt`, and the final row access
+  separately, while the full caller remains the acceptance result.
+- Generated-code review records generic sharing or specialization, inlining,
+  caller size, dependent loads, branches, and retained or eliminated bounds
+  checks.
+- Any repeatable regression outside the established same-build noise envelope
+  rejects the candidate. There is no accepted footprint-for-latency exchange.
+
+### Secondary: Structural Management and Footprint
 
 - No retained group-global structure has `O(MN)` cells.
-- No retained alloc-local structure has one slot for every global
-  `(arch, field)` pair.
+- No group-global dense `(arch, field)` matrix returns. Any alloc-local flat or
+  paged direct-locator slack is measured explicitly and exists only because it
+  passed the primary latency gate.
 - Materializing a global arch creates no managed object when shared catalog
   arrays or pages have spare capacity.
 - Activating an alloc-local state creates no managed object when suitable free
   blocks are available.
 - Global object count scales with shared arrays/pages and registered fields, not
   materialized arches.
-- Alloc-local object count scales with slab pages and storage classes, not
-  active arch-field memberships.
+- Alloc-local object count should scale with shared pages and storage classes
+  among candidates that pass the primary gate; the fallback may retain current
+  direct column objects rather than accept slower addressing.
+- State records, block descriptors, and free-list links are value entries in
+  shared buffers or pages. The selected representation does not allocate one
+  managed object or array per arch, state, membership, block, or free-list node.
+- Native backing is reported separately and included in total retained bytes.
+  A decrease in managed bytes or objects is not described as eliminating the
+  memory when equivalent bytes moved native.
 - The initial row capacity is four.
+- Cached add/remove and compaction remain allocation-free where the settled
+  storage model permits it, but their latency is evaluated only after the point
+  gate passes.
+- Footprint is compared only among candidates that satisfy the primary gate.
+- Reports include managed allocation events, retained managed object count,
+  managed bytes, native bytes, total bytes, shared page count, capacity slack,
+  and fragmentation.
 
-### Hot Path
+### Current Hot-Path Contract
 
-- `EntArchLoc` addresses an alloc-local state directly.
-- Ordinary point access does not consult the signature hash index, sparse edge
-  arena, or alloc `archId -> stateId` map.
-- Small-signature membership uses a contiguous packed lookup.
-- Wide-signature indexing is introduced only where measurement shows a win.
-- Reference-free access performs direct typed reads and writes over the shared
-  byte block.
-- Reference-containing access performs direct typed array access over its
-  shared typed block.
+- `EntArchLoc` carries the direct identifiers needed by the accepted point path.
+  Whether that remains `ArchId` or becomes `StateId` is deliberately undecided.
+- Ordinary `Get`, `Has`, and existing-field `Set` use the closed-generic
+  `EntArchColumn<T, N, A>.ValuesAt(allocId, archId)` directory lookup. Presence
+  is the resulting column reference being non-null, and value access is one
+  direct row index into that same array.
+- Ordinary point access is `O(1)` and does not consult the packed signature,
+  signature hash index, sparse edge arena, alloc `archId -> stateId` map, or a
+  membership hash table.
+- Ordinary point access contains no catalog lock or `Volatile` operation.
+- A future storage cutover must preserve direct field-specialized indexing and
+  equal or improve the selected AFR-26 point path. Footprint reduction alone
+  does not justify replacing it with a signature scan or hash lookup.
+- Current reference-free and reference-containing access performs direct typed
+  array reads and writes. A future byte or typed shared block is accepted only
+  if its complete caller meets the same gate.
 - Heterogeneous virtual dispatch remains outside ordinary point reads and
   writes.
 - Steady-state `Get`, `Has`, and existing-field `Set` allocate zero bytes.
 
-### Measurement
+### Tertiary: Cold Catalog and Final Measurement
 
-- Baseline and final results report elapsed time, steady-state allocations,
-  retained bytes, object count, shared capacity slack, and slab fragmentation.
+- Baseline and final results report elapsed time, managed allocation events,
+  retained managed object count, managed bytes, native bytes, total bytes,
+  shared page count, capacity slack, and slab fragmentation.
 - Measurements separate catalog creation, point access, structural movement,
   block growth, and block reuse.
-- Any point-access regression is either removed or recorded with an explicit
-  measured footprint tradeoff before the epic is considered complete.
+- Cold signature creation and graph growth remain visible in reports but do not
+  select a representation over a faster existing-component point path.
+
+## Fallback Policy
+
+If no shared-block or sparse-state locator equals or improves the current
+direct `ValuesAt` path, the production point representation remains in place.
+The epic then continues with structural reuse, bounded retention, catalog
+improvements, and any footprint reductions that leave existing-component
+`Get` and `Set` unchanged. A flat or paged direct table with deliberate slack is
+preferable to putting a hash, packed scan, or unpredictable branch chain into
+every point access. The fallback reports its remaining per-arch, per-state, and
+per-membership managed objects explicitly; it does not claim the secondary
+object-reduction goal was achieved when the speed gate prevented that cutover.
 
 ## Dependency Overview
 
@@ -152,29 +268,30 @@ flowchart LR
     B["AFR-02 Baseline measurements"] --> D
     C --> E["AFR-11 Signature hash index"]
     C --> F["AFR-20 Packed field layouts"]
-    F --> G["AFR-21 Sparse membership"]
+    F --> G["AFR-21 Direct point membership"]
     E --> H["AFR-22 Sparse edge arena"]
     G --> H
-    H --> I["AFR-23 Remove dense graph"]
-    I --> J["AFR-30 Sparse alloc states"]
-    J --> K["AFR-31 loc uses StateId"]
-    F --> L["AFR-32 Reference-free byte slab"]
-    F --> M["AFR-33 Typed reference slabs"]
+    H --> I["AFR-23 Remove dense graph and root"]
+    I --> Y["AFR-24 Hot attribution and codegen"]
+    B --> Y
+    Y --> Z["AFR-25 Direct-address prototypes"]
+    Z --> AA["AFR-26 Speed-first decision gate"]
+    AA --> J["AFR-30 Inactive alloc-state prototype"]
+    J --> K["AFR-31 loc-shape decision gate"]
+    AA --> L["AFR-32 Reference-free byte slab"]
+    AA --> M["AFR-33 Typed reference slabs"]
     K --> N["AFR-34 Composite block integration"]
     L --> N
     M --> N
     N --> O["AFR-35 Move and compaction cutover"]
-    O --> P["AFR-40 Reuse and empty-state budget"]
-    O --> W["AFR-36 Type-erased reference-free movement"]
-    B --> W
-    G --> Q["AFR-41 Adaptive field micro-index"]
-    B --> Q
     O --> R["AFR-42 Reference-tail clearing"]
-    P --> S["AFR-43 Remove legacy buffers"]
-    W --> S
-    R --> S
-    Q --> T["AFR-50 Final verification"]
-    S --> T
+    R --> Q["AFR-41 Immediate point-path gate"]
+    Y --> Q
+    Q --> S["AFR-43 Remove legacy buffers"]
+    S --> P["AFR-40 Reuse and empty-state budget"]
+    S --> W["AFR-36 Optional structural tuning"]
+    P --> T["AFR-50 Final verification"]
+    W --> T
     B --> X["AFR-51 Final MethodImpl tuning"]
     T --> X
     X --> U["AFR-52 Final measurements"]
@@ -191,21 +308,24 @@ flowchart LR
 | AFR-11 | Collision-correct signature hash index | AFR-10 | Expected constant candidate lookup |
 | AFR-12 | Initial row capacity four | AFR-01, AFR-02 | Lower sparse-row payload |
 | AFR-20 | Packed immutable field-layout metadata | AFR-10 | Storage addressing per membership |
-| AFR-21 | Sparse membership lookup | AFR-20 | Remove presence dependence on dense graph |
-| AFR-22 | Shared sparse transition-edge arena | AFR-11, AFR-21 | `O(E)` transition cache |
-| AFR-23 | Remove dense transition matrix | AFR-22 | Eliminate `O(MN)` graph |
-| AFR-30 | Sparse alloc-local state index | AFR-23 | Alloc storage proportional to active states |
-| AFR-31 | Change `loc` from `ArchId` to `StateId` | AFR-30 | Direct hot state access |
-| AFR-32 | Shared reference-free byte slab | AFR-20, AFR-02 | One byte store per alloc/group |
-| AFR-33 | Typed reference-containing slabs | AFR-20, AFR-02 | GC-correct shared storage per `T` |
-| AFR-34 | Composite block layout and point access | AFR-31, AFR-32, AFR-33 | Zero per-field arrays on hot path |
-| AFR-35 | Move, append, remove, and compaction cutover | AFR-34 | Structural use of shared blocks |
-| AFR-36 | Type-erased reference-free movement | AFR-02, AFR-35 | No generic or virtual reference-free movement |
-| AFR-40 | Block reuse and bounded empty-state cache | AFR-12, AFR-35 | No object allocation on reusable activation |
-| AFR-41 | Decide adaptive immutable field micro-index | AFR-02, AFR-21 | Measured wide-arch lookup policy |
-| AFR-42 | Reference-tail clearing through layouts | AFR-33, AFR-35 | Clear only GC-relevant storage |
-| AFR-43 | Remove legacy row and column buffers | AFR-36, AFR-40, AFR-42 | One storage model remains |
-| AFR-50 | Concurrency, growth, and correctness gate | AFR-41, AFR-43 | Full focused verification |
+| AFR-21 | Direct closed-generic membership | AFR-20 | `O(1)` point presence and value access without graph lookup |
+| AFR-22 | Shared sparse transition-edge arena | AFR-11, AFR-21 | Twelve-byte records and an `O(E)` structural cache |
+| AFR-23 | Remove dense transition matrix and root | AFR-22 | Eliminate `O(MN)` graph storage and per-arch transition objects |
+| AFR-24 | Hot-path attribution and codegen baseline | AFR-02, AFR-23 | Same-build staged cost and generated-code evidence |
+| AFR-25 | Direct-address prototypes | AFR-24 | Measured local and shared-storage address candidates |
+| AFR-26 | Speed-first representation decision | AFR-25 | Proceed, revise, or retain current point storage |
+| AFR-30 | Inactive sparse alloc-state prototype | AFR-26 | Shared state metadata without per-state objects |
+| AFR-31 | `loc` shape and direct-address gate | AFR-25, AFR-30 | Choose `ArchId`, `StateId`, or another same-size internal shape by measurement |
+| AFR-32 | Shared reference-free byte slab | AFR-20, AFR-26 | Large managed/native pages without per-block objects |
+| AFR-33 | Typed reference-containing slabs | AFR-20, AFR-26 | Large GC-visible typed pages shared per `T` |
+| AFR-34 | Composite block layout and point integration | AFR-31, AFR-32, AFR-33 | Direct offsets into shared pages for the inactive cutover |
+| AFR-35 | Move, append, remove, and compaction integration | AFR-34 | Allocation-free cached movement over shared blocks |
+| AFR-42 | Reference-tail clearing integration | AFR-33, AFR-35 | Allocation-free GC-correct shared-range clearing |
+| AFR-41 | Immediate direct point-path gate | AFR-24, AFR-34, AFR-35, AFR-42 | Accept or reject the integrated cutover by existing `Get`/`Set` latency |
+| AFR-43 | Remove legacy row and column buffers | AFR-41 | Remove per-arch/state/membership buffer objects |
+| AFR-36 | Optional type-erased structural movement | AFR-43 | Secondary add/remove tuning only when measured useful |
+| AFR-40 | Block reuse and bounded empty-state cache | AFR-43 | Index-based reuse without block or free-list-node objects |
+| AFR-50 | Concurrency, growth, and correctness gate | AFR-36, AFR-40, AFR-43 | Full focused verification |
 | AFR-51 | Final `MethodImplOptions` tuning | AFR-02, AFR-50 | Evidence-based annotations on settled hot paths |
 | AFR-52 | Final performance and footprint report | AFR-51 | Measured epic outcome |
 | AFR-53 | Reconcile implementation documentation | AFR-52 | Docs match implemented constants and shapes |
@@ -262,6 +382,11 @@ Report:
 - Managed object count.
 - Catalog capacity and slack.
 - Row capacity slack.
+
+AFR-24 and AFR-26 extend the later comparison schema with managed allocation
+events, native retained bytes, total retained bytes, shared page counts, and
+fragmentation. Historical AFR-02 reports remain unchanged and are not treated
+as evidence that unreported native bytes are zero in future designs.
 
 Acceptance:
 
@@ -591,76 +716,536 @@ The complete reports are generated at:
 - `out/ecs-archetypal/afr20-packed-field-layouts-quick.json`
 - `out/ecs-archetypal/afr20-packed-field-layouts-cold.json`
 
-### AFR-21 — Sparse Membership Lookup
+### AFR-21 — Direct Closed-Generic Membership
 
 Purpose: remove field-presence dependence on a dense transition cell.
 
-Initial implementation:
+Implementation result:
 
-- Search the exact packed signature and return the local field ordinal.
-- Measure contiguous span search and binary search across the AFR-02 widths.
-- Keep field lookup immutable and allocation-free.
+- Ordinary point access does not search the signature at all.
+  `EntArchColumn<T, N, A>.ValuesAt(allocId, archId)` uses the closed generic
+  field to index its alloc and arch directories directly and returns the
+  active `T[]`, or null when the field is absent.
+- `Get` loads that column once and indexes `values[loc.Row]`. `Has` is the null
+  check. Existing-field `Set` writes the same row and returns before any
+  structural logic. These paths are `O(1)` and independent of signature width.
+- The exact packed signature remains the authority for arch identity and
+  structural layout. In production, its `IndexOf` search is now confined to
+  construction of an uncached removal signature. The public removal path has
+  already established presence through `ValuesAt`, and a cached removal does
+  not scan the signature.
+- No transition self-loop, signature hash, ordinal hash, sparse edge, catalog
+  lock, virtual column operation, or `Volatile` access occurs in ordinary
+  `Get`, `Has`, or existing-field `Set`.
 
-Acceptance:
+#### Rejected ordinal-hash experiment
 
-- Membership cost depends on `K`, not `N`.
-- The returned ordinal directly addresses packed field-layout metadata.
-- `Get`, `Has`, and existing-field `Set` no longer require a transition
-  self-loop.
+The benchmark compared contiguous `IndexOf`, binary search, a compact immutable
+ordinal hash, and an ideal direct-index lower bound at `K = 1, 4, 8, 16, 32`.
+The ordinal hash looked inexpensive as an isolated lookup kernel, but inserting
+it into the real caller approximately doubled end-to-end point latency for
+`K >= 4`. That constant cost is unacceptable on the dominant happy path, even
+though the algorithm is expected constant time. The production prototype was
+removed; the benchmark case remains as evidence for the rejected design.
+
+The accepted design instead uses direct closed-generic column indexing. Across
+seven isolated samples, the schema-5 generic benchmark-harness medians are:
+
+| Width | Present `Get` | Present `Has` | Existing `Set` |
+| ---: | ---: | ---: | ---: |
+| `K = 1` | 8.75 ns | 8.50 ns | 9.70 ns |
+| `K = 4` | 8.83 ns | 8.49 ns | 9.71 ns |
+| `K = 8` | 8.72 ns | 8.46 ns | 9.73 ns |
+| `K = 16` | 8.74 ns | 8.48 ns | 9.69 ns |
+| `K = 32` | 8.78 ns | 8.48 ns | 9.68 ns |
+
+The ranges are 8.716–8.826 ns for present `Get`, 8.461–8.500 ns for present
+`Has`, and 9.682–9.729 ns for existing `Set`. Every case allocates zero bytes
+per operation and the absence of a width trend confirms that no `K`-dependent
+lookup remains. Against the AFR-20 quick medians, the ranges are approximately
+30.4–31.9% faster for `Get`, 21.8–22.4% faster for `Has`, and 25.7–26.8% faster
+for existing `Set`. These reports compare representations consistently, but
+AFR-24 does not treat their absolute values as production-call latency because
+the harness carries `A` through a generic call site.
 
 ### AFR-22 — Shared Sparse Transition-Edge Arena
 
 Purpose: replace one transition cell for every `(arch, field)` pair with storage
 only for observed relationships.
 
-Representation:
+Implementation result:
 
-- One edge-head index per arch.
-- Shared append-only arrays for `fieldId`, `dstArchId`, and `nextEdge`.
-- Two directed entries for one resolved add/remove relationship.
-- Shared capacity growth under the catalog lock.
+- `edgeHeads` is one `int[A]` directory indexed by arch ID. Each nonzero entry
+  is the first record in one linked adjacency list.
+- The shared append-only `EntArchEdge[]` arena stores
+  `(FieldId, DstArchId, NextEdgeIndex)` as one 12-byte value record. Index zero
+  is reserved as `NoEdgeIndex`; no edge-node object is created.
+- Resolving one non-singleton add/remove relationship appends two directed
+  records. A cached structural lookup walks only the observed degree `D` of the
+  src arch, so retained transition storage is `O(A + E)` rather than `O(AF)`.
+- Singleton entry uses a separate direct `int[F]` directory. Singleton removal
+  returns to `NoArchId` without storing an edge to an empty arch. This keeps the
+  common outside-group transition direct while avoiding a root adjacency list.
+- Unknown resolution is serialized by the existing catalog lock. It rechecks
+  the edge after acquiring the lock, interns or finds the exact dst signature,
+  fills both edge records, and then publishes their heads.
 
-Acceptance:
+Only structural publication needs acquire/release operations. Readers use an
+acquire read of a singleton or edge head; creators initialize the immutable
+arch or edge data before the corresponding release write. Ordinary point
+access never reads either directory and therefore pays no `Volatile` cost.
+Arena, head, and singleton capacity growth is group-global and occurs only
+under the catalog lock.
 
-- Transition storage is `O(M + E)`, not `O(MN)`.
-- Cached lookup cost depends on observed degree `D`.
-- Resolving an unknown edge interns or finds the exact dst signature.
-- Both directions are cached atomically with respect to catalog mutation.
-- No edge-node object is created.
+Focused coverage verifies the 12-byte record size, bidirectional edge reuse,
+arena growth, even directed-edge counts, direct singleton publication, field
+growth without edge creation, and concurrent cold publication from different
+alloc owners.
 
 ### AFR-23 — Remove the Dense Transition Matrix
 
 Purpose: complete the global sparse cutover.
 
-Changes:
+Implementation result:
 
-- Switch structural resolution to the sparse edge arena.
-- Switch membership to AFR-21.
-- Remove transition self-loops, dense rows, and unused-capacity allocation.
-- Remove the transition-only root representation if it no longer serves a
-  separate purpose.
-- Preserve `NoArchId` as the outside-group location state.
+- The dense jagged transition matrix, its per-arch row arrays, and every
+  membership self-loop are gone. `TransitionCellCapacity` remains in schema 5
+  as a migration guard and reports zero.
+- The transition-only root arch is gone. `NoArchId = 0` still means outside the
+  group, while the first real arch now uses `FirstArchId = 1`. There is no
+  materialized empty signature.
+- Arch growth resizes cumulative signature ends and `edgeHeads`; field growth
+  resizes field metadata and the singleton directory. Neither operation loops
+  over the other dimension or creates an object per arch.
+- Unknown add/remove signature construction now takes a span from one
+  graph-owned, power-of-two `signatureScratch` array while holding the catalog
+  lock. This replaces unbounded `stackalloc` for an intentionally unbounded
+  field count. The scratch array grows only on cold structural resolution, has
+  no durable entries, and is reported entirely as catalog slack.
+- Materializing an arch creates no managed object while the shared packed
+  signature, layout, signature-index, arch, edge, and scratch capacities have
+  room.
+
+#### Exact retained-footprint change
+
+Let `A` be equal arch-directory capacity in both representations, `F` equal
+field-directory capacity including the reserved field slot, `Ce` the new edge
+arena capacity in 12-byte records, and `C` the new scratch capacity in `int`
+entries. At those equal capacities, the logical catalog-payload delta from
+AFR-20 is exactly:
+
+\[
+\Delta_{logical} = -4A - 8AF + 12Ce + 4F + 4C
+\]
+
+The terms are the new `4A` edge heads replacing an `8A` outer reference array,
+removal of the `8AF` dense transition cells, and addition of the 12-byte edge
+arena, four-byte singleton directory, and four-byte scratch entries. The
+scratch contribution is retained capacity only; its used logical length is
+zero.
+
+On x64, when `Ce > 0` and `C > 0`, all four new arrays are owned objects. The
+managed estimate and catalog-object deltas are then:
+
+\[
+\begin{aligned}
+\Delta_{managed} &= 72 - 28A - 8AF + 12Ce + 4F + 4C \\
+\Delta_{objects} &= 3 - A
+\end{aligned}
+\]
+
+The object equation compares four new shared arrays with the old outer array
+plus `A` dense row arrays. The managed equation adds their 24-byte x64 array
+headers to the logical equation. When the edge arena or scratch is still empty,
+its shared empty array is not an owned object, so the schema-5 diagnostics give
+the exact lower header and object count. Actual before/after totals can also
+cross a power-of-two capacity boundary because removing the root changes when
+arch capacity grows; the equations deliberately isolate the representation
+change at equal capacities.
+
+The final comparable quick report shows the expected benefit for sparse
+exploration:
+
+| Scenario | AFR-20 logical retained | AFR-23 logical retained | Delta |
+| --- | ---: | ---: | ---: |
+| Present point access, `K = 1` | 19,444 B | 17,396 B | -2,048 B |
+| Present point access, `K = 8` | 21,600 B | 19,776 B | -1,824 B |
+| Present point access, `K = 32` | 83,232 B | 51,360 B | -31,872 B |
+| Unknown add, `K = 8` | 232,656 B | 177,488 B | -55,168 B |
+| 128 Gray-code signatures | 180,544 B | 51,808 B | -128,736 B |
+| 128 low-occupancy arches | 180,544 B | 51,808 B | -128,736 B |
+| Four-alloc concurrent resolution | 855,152 B | 744,688 B | -110,464 B |
+
+This cutover intentionally trades dense constant-time structural cells for an
+`O(D)` linked scan of observed edges. Add, remove, and arch construction are
+structural operations; the ordinary no-add/no-remove path remains direct and
+`O(1)`. The arena can approach dense storage only if the program actually
+observes a dense set of transitions, while the expected sparse exploration of
+the signature power set retains only those relationships that occurred.
+
+#### Reports and verification
+
+The schema-5 reports are:
+
+- `out/ecs-archetypal/afr21-23-direct-column-final.json` — seven-sample point
+  sweep for all five widths.
+- `out/ecs-archetypal/afr21-23-structural-final.json` — seven-sample value-shape
+  and structural sweep.
+- `out/ecs-archetypal/afr21-23-sparse-global-final-quick.json` — full comparable
+  quick profile and retained-footprint results.
+
+The rejected lookup evidence remains in
+`out/ecs-archetypal/afr21-membership-kernels-with-hash.json` and
+`out/ecs-archetypal/afr21-23-sparse-global-quick.json`. Focused graph, public
+behavior, compaction, reference-tail, and concurrent alloc-owner tests pass
+with no public API change.
+
+## Phase 3: Hot-Path Attribution and Decision Gates
+
+### AFR-24 — Hot-Path Attribution and Codegen Baseline
+
+Status: complete. AFR-24 changed the benchmark surface and documentation, not
+production archetypal behavior or representation.
+
+Purpose: explain the existing-component `Get` and `Set` cost before changing
+the state, `loc`, or storage representation. The earlier 8.72 ns `Get` and
+9.73 ns `Set` results remain useful historical generic-harness measurements,
+but they are not the production-call baseline.
+
+#### Measurement Shape
+
+The opt-in AFR-24 catalog contains 74 cases while the default archetypal
+catalog remains exactly 47:
+
+- 64 complete public callers: four value shapes × `Get`/`Set` ×
+  concrete/generic-in-`A` call site × sealed-class/readonly-struct `A` ×
+  one/1,024-Ent working set.
+- Four changing-Ent `loc` stages and four supplied-changing-`loc`
+  `ValuesAt(...).Length` stages across the same call-site and `A` shapes.
+- Two final-row stages with supplied changing column references and rows.
+
+The 64 full cases use 48 named `NoInlining` benchmark kernels. Concrete kernels
+hardcode `T`, `N`, and the exact `A`; generic kernels are generic only in
+unconstrained `A`. The public ECS methods remain eligible for inlining inside
+those kernels. Delegates are invoked once around the timed loop, and the loops
+contain no allocation, boxing, interface dispatch, `Volatile`, or artificial
+anti-hoisting operation.
+
+The rotating fixture is deliberately larger than one sparse page:
+
+| Workload | Ents | Allocs/pages | Active arches | Active states | Rows/state | Role |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| One Ent | 1 | 1 | 1 | 1 | 1 | Loop-invariance diagnostic |
+| Rotating scalar | 1,024 | 4 | 16 | 64 | 16 | Acceptance workload |
+| Rotating other shapes | 1,024 | 4 | 16 | 64 | 16 | Acceptance workload |
+
+Ents are interleaved with `alloc = i & 3` and
+`signature = (i >> 2) & 15`. The loop therefore changes alloc/page on every
+operation and arch every four operations. Scalar setup materializes 16 arches.
+Other shapes materialize one target singleton plus the same 16 target-bearing
+signatures, or 17 arches total; mask-only arches are not retained. A pre-timing
+fixture check verifies four distinct alloc IDs, four Ent pages, 16 active arch
+IDs, 64 alloc/arch pairs, and nonzero target values. One thread owns all four
+allocs, so this remains inside the alloc-owner threading contract.
+
+#### Release Artifacts and Environment
+
+The primary baseline used the already-built Release DLL under .NET 10.0.9 on
+Windows 10.0.26200, x64, workstation GC, 32 reported logical processors, and a
+10 MHz `Stopwatch` frequency. `ReadyToRun` was disabled; tiered compilation,
+quick JIT for loops, and dynamic PGO were enabled. Each case ran in a fresh
+worker process for 5,000,000 operations, ten warmup bodies, and seven measured
+samples. Sweep B reversed the 64-case order from sweep A.
+
+Primary timing artifacts:
+
+- `out/ecs-archetypal/afr24-hot-path-report.md`
+- `out/ecs-archetypal/afr24-hot-path-steady-a.json`
+- `out/ecs-archetypal/afr24-hot-path-steady-b.json`
+- `out/ecs-archetypal/afr24-hot-stage-steady-a.json`
+- `out/ecs-archetypal/afr24-hot-stage-steady-b.json`
+
+The earlier three-warmup sweeps are retained separately as tier-settling
+evidence in `afr24-hot-path-sweep-a.json` and
+`afr24-hot-path-sweep-b.json`. Release disassembly and its paired, non-timing
+worker results are under `out/ecs-archetypal/afr24-codegen/`. JIT-logging runs
+are not latency evidence.
+
+In every timing report, `A/B` means the independent sweep-A and sweep-B median
+in nanoseconds per operation.
+
+#### Full-Caller Results
+
+##### Rotating Acceptance Matrix
+
+| Value | Op | Concrete class A/B | Concrete struct A/B | Generic class A/B | Generic struct A/B |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Scalar | Get | 1.955 / 1.934 | 1.957 / 1.940 | 6.026 / 6.053 | 1.936 / 1.943 |
+| Scalar | Set | 1.913 / 1.916 | 1.921 / 1.939 | 6.275 / 6.278 | 1.917 / 1.923 |
+| Wide reference-free | Get | 2.054 / 2.061 | 2.059 / 2.094 | 6.048 / 6.034 | 2.077 / 2.067 |
+| Wide reference-free | Set | 2.462 / 2.425 | 2.430 / 2.458 | 6.826 / 6.744 | 2.418 / 2.424 |
+| Reference | Get | 2.127 / 2.124 | 2.113 / 2.142 | 6.154 / 6.212 | 2.113 / 2.118 |
+| Reference | Set | 2.496 / 2.477 | 2.392 / 2.393 | 6.728 / 6.774 | 2.394 / 2.409 |
+| Reference-containing struct | Get | 2.156 / 2.133 | 2.134 / 2.133 | 6.156 / 6.152 | 2.133 / 2.142 |
+| Reference-containing struct | Set | 3.648 / 3.664 | 3.688 / 3.691 | 8.122 / 8.086 | 3.710 / 3.725 |
+
+All 64 full callers measured 0 managed B/op. Across the 32 rotating medians,
+the median absolute sweep-to-sweep change was 0.44% and the maximum was 1.73%.
+The generic-class/concrete-class ratio was 2.86–3.13x for `Get` and 2.21–3.28x
+for `Set`, depending on value shape and sweep. Generic-struct and
+concrete-struct results stayed within approximately 0.99–1.01x. Concrete class
+and concrete struct results were generally within 4.1%, with no marker shape
+winning every case.
+
+The result is a call-site specialization result, not a reason to require struct
+group markers. A concrete sealed-class caller and a value-type-specialized
+generic caller both reach the direct path. A method that remains generic in a
+reference-type `A` uses canonical shared code and retains generic-context/static
+addressing work.
+
+##### Single-Ent Diagnostic Matrix
+
+| Value | Op | Concrete class A/B | Concrete struct A/B | Generic class A/B | Generic struct A/B |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Scalar | Get | 1.782 / 1.785 | 1.757 / 1.760 | 5.734 / 5.748 | 1.776 / 1.759 |
+| Scalar | Set | 2.110 / 2.125 | 2.149 / 2.159 | 6.368 / 6.320 | 1.925 / 1.923 |
+| Wide reference-free | Get | 1.797 / 1.808 | 1.800 / 1.794 | 5.721 / 5.750 | 1.786 / 1.797 |
+| Wide reference-free | Set | 2.767 / 2.500 | 2.478 / 2.535 | 6.587 / 6.540 | 2.386 / 2.212 |
+| Reference | Get | 1.849 / 1.867 | 1.848 / 1.858 | 5.891 / 5.963 | 1.858 / 1.860 |
+| Reference | Set | 2.666 / 2.689 | 2.762 / 2.780 | 6.741 / 6.732 | 2.600 / 2.586 |
+| Reference-containing struct | Get | 1.889 / 1.894 | 1.888 / 1.896 | 5.894 / 6.011 | 1.905 / 1.884 |
+| Reference-containing struct | Set | 3.828 / 3.827 | 3.869 / 3.856 | 7.861 / 8.121 | 3.610 / 3.569 |
+
+Across all 64 cells, including these diagnostic cases, the median absolute
+repeat change was 0.52%. The 9.67% maximum came from the single-Ent wide
+concrete-class `Set`; the rotating counterpart differed by only 1.52%. The
+single-Ent caller removes the changing Ent-array load and mask, but Release
+disassembly still performs the liveness, `loc`, directory, and row work inside
+the loop. No result relies on an artificially opaque or volatile load. Storage
+decisions therefore use the rotating table, not this diagnostic table.
+
+#### Absolute Stage Attribution
+
+These are separate absolute kernels. They must not be subtracted from the full
+caller, added together, or interpreted as algebraic components: each has its
+own supplied inputs, loop control, register allocation, inlining context, and
+bounds-check opportunities.
+
+| Stage | Call shape | A shape | Sweep A | Sweep B | Supplied input |
+| --- | --- | --- | ---: | ---: | --- |
+| `loc` | Concrete | Class | 1.179 | 1.164 | Changing Ent |
+| `loc` | Concrete | Struct | 1.163 | 1.159 | Changing Ent |
+| `loc` | Generic | Class | 2.537 | 2.540 | Changing Ent |
+| `loc` | Generic | Struct | 1.168 | 1.176 | Changing Ent |
+| `ValuesAt` directory | Concrete | Class | 0.724 | 0.717 | Changing cached `loc` |
+| `ValuesAt` directory | Concrete | Struct | 0.717 | 0.714 | Changing cached `loc` |
+| `ValuesAt` directory | Generic | Class | 2.224 | 2.224 | Changing cached `loc` |
+| `ValuesAt` directory | Generic | Struct | 0.718 | 0.720 | Changing cached `loc` |
+| Final row Get | — | — | 0.329 | 0.333 | Changing column and row |
+| Final row Set | — | — | 0.297 | 0.297 | Changing column and row |
+
+The stages reinforce the full-caller result: canonical generic-class context
+adds cost to both sparse `loc` access and column-static resolution, while
+concrete class and specialized struct forms coincide. They do not justify
+putting a stage-specific cache or lookup into the public caller by themselves.
+
+#### Tier-Settling Evidence
+
+The first paired sweeps used three warmups and exposed two generic-class `Get`
+modes across fresh workers: approximately 5.7–6.4 ns and 13.0–13.6 ns. Changing
+case order did not remove the split. The associated generic-class stages were
+4.408/4.415 ns for `loc` and 8.365/8.323 ns for `ValuesAt`.
+
+Ten warmups made all eight generic-class `Get` cells unimodal and produced the
+5.734–6.212 ns steady medians in the full matrix. The generic-class stage
+medians settled to 2.537/2.540 ns and 2.224/2.224 ns. Release disassembly shows
+the out-of-line canonical `ValuesAt` moving from 172-byte Tier0 through a
+247-byte instrumented version to a 111-byte Tier1 version. `Set` was already
+stable with three warmups and did not materially move at ten.
+
+The three-warmup reports are not discarded: they document a real fresh-process
+tiering transition. The architectural baseline uses the ten-warmup paired
+results so a race in helper promotion is not mistaken for storage cost. Final
+`MethodImplOptions` tuning remains AFR-51 work after the representation settles.
+
+#### Generated-Code Evidence
+
+The following sizes are for the complete rotating scalar benchmark kernel,
+including loop and final checksum. They compare like-shaped callers; they are
+not the isolated public-method size. Tier1-OSR used synthesized PGO under the
+timing runtime. FullOpts is a separate Release control with tiering disabled.
+
+| Op | Call shape | A shape | Tier1-OSR bytes | FullOpts bytes | Point-path code shape |
+| --- | --- | --- | ---: | ---: | --- |
+| Get | Concrete | Class | 393 | 359 | Public API and `ValuesAt` inline; exact static bases |
+| Get | Concrete | Struct | 393 | 359 | Same specialized direct code |
+| Get | Generic | Class | 617 | 542 | Public API inline; `ValuesAt` call and generic-context helpers remain |
+| Get | Generic | Struct | 393 | 359 | Value-type specialization matches concrete code |
+| Set | Concrete | Class | 6,344 | 1,568 | Existing-field fast branch direct; structural slow path remains in caller |
+| Set | Concrete | Struct | 6,273 | 1,487 | Existing-field fast branch direct; structural slow path remains in caller |
+| Set | Generic | Class | 5,834 | 2,266 | Generic helpers plus structural slow path remain |
+| Set | Generic | Struct | 5,667 | 1,354 | Specialized fast branch, structural slow path remains |
+
+No rotating kernel retains a call to `GetArchetypal` or `SetArchetypal`. The
+generic-class `Get` Tier1-OSR caller retains one `ValuesAt` call, five
+runtime-handle helper sites, and one GC-static-base helper site. Concrete class
+and generic struct inline the directory access and have the same 393-byte code
+size. Their sole range-failure target is shared by the controlled bounds
+guards.
+
+The existing-field `Set` fast branch is direct indexing in the hot loop, which
+explains why concrete and specialized rotating Set remain fast. Nevertheless,
+the same compiled method also contains missing-field work for singleton
+resolution, `ResolveAdd`, `Append`/`Move`, page or directory growth, sparse loc
+writeback, locking, allocation, and exceptional paths. The formal capture
+therefore replaces the earlier approximate 2,104-byte observation: depending
+on call shape, the default Tier1-OSR benchmark caller is 5,667–6,344 bytes.
+
+Single-Ent scalar `Get` was 362 bytes versus 393 bytes for rotating concrete
+class code and 621 versus 617 bytes for generic class code. The fixed caller
+eliminates rotating Ent selection, but it does not hoist away the complete
+`loc` and value lookup. Its lower latency is still diagnostic rather than a
+storage decision.
+
+#### AFR-25 Handoff
+
+AFR-24 makes no class-to-struct public marker recommendation and selects no new
+storage or `loc` representation. The first AFR-25 prototype is the smallest
+local code-shape test:
+
+> Extract the missing-field structural portion of `SetArchetypal` into a
+> private `NoInlining` helper, leaving the existing-column check and write in
+> the small public hot caller.
+
+The prototype must preserve public behavior and the alloc-owner threading
+model, remain same-build selectable rather than creating dual production
+storage, and measure all 32 Set cells under the rotating and one-Ent matrix.
+Acceptance requires a repeatable rotating win with zero allocation and no Get
+change; smaller generated code alone is not acceptance. If it does not improve
+the full caller, remove it and test the independent `ValuesAt` snapshot/static
+holder candidates next. Shared storage, `Unsafe.Add`, and public marker changes
+remain unapproved by isolated-stage evidence.
+
+### AFR-25 — Direct-Address Prototypes
+
+Purpose: find the fastest complete existing-component address sequence before
+committing to sparse states or shared blocks.
+
+Immediate local candidates:
+
+- Extract the missing-field structural branch of `SetArchetypal` into a
+  `NoInlining` slow method, leaving the existing-field check and write in a
+  small hot caller. Measure this against the current approximately 2,104-byte
+  inlined caller; do not assume smaller code is faster.
+- Snapshot the closed-generic `Values` directory once, use unsigned bounds
+  checks where they express the controlled indices, and test removal of a
+  redundant `archId == 0` check only when the directory invariants already
+  exclude access. Each change is an independent A/B variant.
+- Compare normal `values[row]` with `Unsafe.Add` row access. Keep `Unsafe.Add`
+  only if generated code and full-caller measurements show a repeatable gain;
+  removing one apparent bounds check is not sufficient evidence.
+- Split cold `FieldId` registration and type-initializer work from the hot
+  `Values` holder so ordinary access does not inherit an avoidable class
+  constructor check.
+- Test a value-type group specialization or internal value-type proxy without
+  changing the public `<T, N, A>` API, adding a public constraint, boxing, or
+  allocating a proxy per call. Pursue it only if the AFR-24 call-site matrix
+  shows a benefit for real generic callers; the concrete sealed-class probe is
+  already evidence that struct `A` is not inherently required.
+
+Direct shared-storage locator candidates:
+
+- A flat compact handle table, used as the direct-index speed ceiling even if
+  its slack is not the final footprint choice.
+- A state-local paged directory indexed by the closed-generic `fieldId`.
+- A field-local paged directory indexed by the candidate state or arch ID.
+- The current closed-generic `ValuesAt` directory as the production reference.
+
+Every variant must execute as a same-build Release A/B full caller under the
+AFR-24 rotating workload. Report retained bytes and objects after latency, not
+instead of latency. Signature scans, ordinal hashes, general sparse maps, edge
+lookup, and `Volatile` remain disqualified from the ordinary point path.
 
 Acceptance:
 
-- No retained group-global array has one cell per `(arch, field)` pair.
-- Materializing an arch with spare shared capacity creates no managed object.
-- Current public behavior and threading tests pass.
+- At least one complete direct-address candidate is compared with the current
+  path for every AFR-24 shape and class/struct group variant.
+- A candidate's reported win survives the rotating multi-Ent cases and is not
+  limited to a staged kernel.
+- All accepted variants allocate zero bytes and preserve the public API and
+  alloc-owner threading model.
+- Prototypes remain inactive; production continues to have one point-storage
+  source of truth.
 
-## Phase 3: Sparse Alloc States and Shared Blocks
+### AFR-26 — Speed-First Representation Decision
 
-### AFR-30 — Sparse Alloc-Local State Index
+Purpose: make an explicit go/no-go decision before AFR-30, AFR-31, AFR-32,
+AFR-33, or AFR-34 fixes the new representation.
 
-Purpose: make alloc-local metadata proportional to active or intentionally
-retained states.
+Decision order:
+
+1. Existing-component `Get` and `Set` full-caller latency across the AFR-24
+   matrix.
+2. Point-path code shape, zero allocation, and ownership correctness.
+3. Structural add/remove performance, managed allocation events, retained
+   managed object count, managed bytes, native bytes, total bytes, page count,
+   slack, and fragmentation.
+4. Cold catalog and activation cost.
+
+Allowed outcomes:
+
+- Proceed with a shared-block design and its selected flat or paged direct
+  locator because it equals or improves the current production point path.
+- Keep `ArchId` and the current direct column storage while accepting measured
+  local hot-path improvements from AFR-25.
+- Retain a somewhat larger direct locator because it is faster than a more
+  compact search or hash, then reduce objects and slack around that locator.
+- Select large shared managed or native pages over per-state or per-membership
+  arrays when both candidates pass the point gate. Native backing is selected
+  only with deterministic ownership and complete native-byte accounting.
+- Stop the shared-block cutover and continue only secondary structural,
+  retention, and catalog work that cannot affect the point path.
+
+`StateId` is not a predetermined result. AFR-26 records which information the
+winning address sequence needs in `loc`; AFR-31 later verifies the concrete
+same-size shape using the chosen state prototype. No result changes the public
+archetypal API or expands this epic into Ent lifecycle integration.
+
+Acceptance:
+
+- Proceed only when same-build, repeated evidence shows no existing-component
+  `Get` or `Set` regression outside the AFR-24 noise envelope.
+- Reject a candidate with a repeatable point regression even if its footprint,
+  add/remove time, or cold construction time improves.
+- Record the selected representation, rejected alternatives, codegen evidence,
+  managed allocation events, retained managed object count, managed/native/total
+  byte formulas, page count, slack, fragmentation, and explicit fallback before
+  implementation begins.
+- A native candidate may claim fewer managed objects and managed bytes, but it
+  reports the transferred native bytes in total retained memory and never calls
+  that transfer memory elimination.
+
+## Phase 4: Inactive Alloc-State and Shared-Store Prototypes
+
+### AFR-30 — Inactive Sparse Alloc-Local State Prototype
+
+Purpose: implement the AFR-26 state representation without changing production
+point access.
 
 Representation:
 
-- A sparse alloc-local `archId -> stateId` index.
-- A dense state array.
+- A structural-only sparse alloc-local state index using the key selected by
+  AFR-26.
+- Dense state records stored in one shared array or page set, not one object per
+  state.
 - Recyclable state IDs.
 - State metadata containing `ArchId`, `Count`, capacity/order, and block-handle
   ranges.
+- Index-based free-state links stored in shared metadata rather than one managed
+  free-list node per state.
+- Reference-free state/index metadata may use shared `NativeMemory.Alloc`
+  pages when that reduces managed objects, preserves direct addressing, and has
+  deterministic `NativeMemory.Free` ownership.
 
 Acceptance:
 
@@ -668,26 +1253,41 @@ Acceptance:
   directory entry for it.
 - Destination lookup is expected constant time in the sparse state index.
 - State mutation remains single-owner and lock-free.
+- The prototype is exercised directly by tests and benchmarks; public
+  `GetArchetypal` and `SetArchetypal` still use the accepted production path.
+- No state-map lookup is proposed for ordinary point access.
+- Activation with spare shared capacity creates no state object, metadata
+  array, or free-list-node object.
+- Diagnostics report metadata allocation events, retained managed objects,
+  managed/native/total bytes, page count, slack, and recycled-state capacity.
 
-### AFR-31 — Change `loc` From `ArchId` to `StateId`
+### AFR-31 — `loc` Shape and Direct-Address Gate
 
-Purpose: prevent the alloc-local sparse map from entering the ordinary point
-path.
+Purpose: choose the fastest same-size internal `loc` shape using the real
+AFR-30 prototype. `StateId` is one candidate, not the task's required result.
 
-The three stored integers become:
+Compare at least:
 
-- `AllocId`
-- `StateId`
-- `Row`
+- `(AllocId, ArchId, Row)`, retaining the current shape.
+- `(AllocId, StateId, Row)`, where the state supplies the global `ArchId`.
+- Any AFR-26 direct-locator handle that fits the existing three-integer size and
+  preserves swap-back repair.
 
-The state supplies the global `ArchId`.
+The structural `archId -> state` map may resolve dst activation, but it does not
+enter the ordinary caller in any accepted shape.
 
 Acceptance:
 
 - `EntArchLoc` retains its existing size.
-- `Get`, `Has`, and existing-field `Set` index the dense state directly.
+- Existing-component `Get` and `Set` meet the AFR-24 same-build gate using the
+  complete proposed address sequence.
 - Structural movement uses the state index only for dst lookup.
-- Swap-back repair updates `Row` while retaining the same `StateId`.
+- Swap-back repair updates `Row` while retaining whichever stable state or arch
+  handle AFR-26 selected.
+- The winning shape remains inactive until AFR-34, AFR-35, and AFR-42 are ready
+  for one integrated cutover.
+- Flat or paged locator storage is shared; it does not create a locator array or
+  object for each state or membership.
 
 ### AFR-32 — Shared Reference-Free Byte Slab
 
@@ -699,9 +1299,14 @@ Deliverables:
 - Reference classification at field registration.
 - A measured choice between geometrically growing managed byte backing and
   uninitialized native backing obtained with `NativeMemory.Alloc`.
+- A few large alloc-local pages or arenas for reference-free payload and
+  reference-free metadata, rather than one managed or native allocation per
+  state, membership, or block.
 - Block allocate, grow, copy, and release primitives. AFR-40 adds reusable
   free-list rent and return.
 - Offset-based block handles.
+- Block descriptors and free-list links stored as value entries in shared
+  metadata; no managed object is allocated per block or free-list node.
 - Typed unaligned read, write, and copy helpers for closed generic `T`.
 - The explicit policy that released reference-free storage remains dirty.
 - Deterministic `NativeMemory.Free` ownership and separate native retained-byte
@@ -714,8 +1319,20 @@ Acceptance:
 - Released reference-free blocks are not cleared.
 - Native backing is allocated with `NativeMemory.Alloc`, not
   `NativeMemory.AllocZeroed`; no code assumes fresh or returned bytes are zero.
+- Native pages are freed deterministically by their owning alloc/group store,
+  including partial-construction and growth-failure cleanup paths.
 - Every row is overwritten before `Count` exposes it.
 - No active arch owns a reference-free `T[]`.
+- No active arch or state owns an individual native allocation. Sub-blocks are
+  offsets into shared pages or arenas.
+- Reports distinguish managed allocation events, retained managed objects,
+  managed bytes, native bytes, total bytes, page count, slack, and
+  fragmentation. Moving payload native is recorded as a category transfer, not
+  a reduction in total memory.
+- The store is tested through the AFR-26 locator in inactive prototypes; it
+  does not replace production point access by itself.
+- Full existing-component reads and writes remain eligible for AFR-34 only when
+  same-build results meet the AFR-24 gate.
 
 ### AFR-33 — Typed Reference-Containing Slabs
 
@@ -726,9 +1343,13 @@ Deliverables:
 
 - One typed store per distinct closed `T` in an alloc/group partition.
 - Sharing across differently named fields `N` with the same `T`.
+- Large typed managed buffers or pages shared by active states, rather than one
+  `T[]` per arch, state, membership, or block.
 - Typed block allocate, grow, copy, clear, and release primitives. AFR-40 adds
   reusable free-list rent and return.
 - Type-local column ordinals for multiple same-`T` fields in one arch.
+- Offset/index block descriptors and free-list links in shared metadata, with no
+  object per typed block or free-list node.
 
 Acceptance:
 
@@ -737,38 +1358,71 @@ Acceptance:
 - Fields with the same `T` share one typed backing store. AFR-40 adds its
   reusable free lists.
 - No active arch owns a dedicated reference-containing `T[]`.
+- Values that are or contain references remain in typed managed buffers; native
+  storage is not an object-count shortcut for GC-visible values.
+- Reports include typed-page count, retained managed object count, managed
+  bytes, capacity slack, and fragmentation.
+- Inactive full-caller prototypes cover reference and reference-containing
+  struct shapes before the integrated cutover.
+- GC-visible storage does not justify an extra point-path search, hash, virtual
+  call, or generic-harness artifact.
+
+## Phase 5: Integrated Storage Cutover and Immediate Point Gate
 
 ### AFR-34 — Composite Block Layout and Point Access
 
 Purpose: connect immutable field layouts with alloc-local blocks while keeping
-ordinary access direct.
+ordinary access direct. AFR-34 prepares an inactive point implementation; it
+does not switch production storage before AFR-35 and AFR-42 are complete.
 
 Reference-free state layout:
 
 - One block containing `EntMut` and all reference-free columns.
 - Column-major addressing through capacity, byte prefix, row, and element size.
+- The block is an offset/range in a shared managed or native page, not an
+  individually allocated array or native region.
 
 Reference-containing state layout:
 
 - One block per distinct reference-containing `T`.
 - Adjacent columns for differently named fields sharing that `T`.
+- Typed blocks are ranges in shared typed managed buffers, not one `T[]` per
+  state or membership.
 
 Hot-path requirements:
 
-- `loc -> state -> field ordinal -> layout -> block -> row`.
+- `loc -> state -> direct closed-generic field slot/layout -> block -> row`.
+- A field slot or layout needed by point access is obtained by direct indexing
+  from already-known values. It is not rediscovered by scanning or hashing the
+  arch signature.
 - No signature hash, sparse edge lookup, alloc state-map lookup, block
-  rent/return, shared lock, or virtual column operation.
+  rent/return, shared lock, `Volatile` operation, or virtual column operation.
 - Closed generic code selects byte versus typed storage.
 
 Acceptance:
 
 - `Get`, `Has`, and existing-field `Set` allocate zero bytes.
 - Reference-free and reference-containing point access pass behavior tests.
-- AFR-02 records present and absent lookup costs for every signature width.
+- Same-build AFR-24 cases record concrete and generic call sites, present and
+  absent access, every signature width, and every value shape.
+- The complete existing-component `Get` and `Set` callers equal or improve the
+  selected AFR-26 production baseline. A staged address-kernel win is not
+  sufficient.
+- If shared storage cannot meet that gate, its point-addressing design is
+  revised or abandoned; its footprint benefit is not sufficient reason to
+  accept a regression.
+- With latency tied, prefer the candidate with fewer managed allocation events
+  and retained managed objects, then compare managed/native/total bytes, page
+  count, slack, and fragmentation.
 
 ### AFR-35 — Move and Compaction Cutover
 
 Purpose: replace current per-arch arrays in structural operations.
+
+AFR-34, AFR-35, and AFR-42 are one production cutover train. Their internal
+pieces remain directly testable, but the public path does not dual-write old
+and new storage and does not switch until point addressing, structural writes,
+compaction, and reference clearing all use the same representation.
 
 Changes:
 
@@ -779,6 +1433,8 @@ Changes:
 - Clear only reference-containing src tail storage.
 - Preserve dirty reference-free tail bytes.
 - Update state counts only after required writes are complete.
+- Grow shared pages geometrically rather than allocating an array or object for
+  each dst state, block, or membership.
 
 Acceptance:
 
@@ -786,22 +1442,120 @@ Acceptance:
   compaction, reference fields, and several component sizes.
 - No stale reference remains in a cleared tail.
 - Dirty reference-free bytes are never observable.
+- Add/remove and compaction performance is reported as the second tier after
+  existing-component `Get` and `Set` pass. A structural improvement cannot
+  offset a point regression.
+- Cached movement allocates no managed object, native block, or free-list node;
+  page growth is reported separately as a structural allocation event.
 
-### AFR-36 — Type-Erased Reference-Free Movement
+### AFR-42 — Reference-Tail Clearing Integration
 
-Purpose: remove closed generic column-handler dispatch from reference-free
-structural operations after the shared-byte-block cutover, while selecting the
-copy primitive from measurements rather than assuming that `Span<byte>` is
-always faster.
+Purpose: complete GC-correct structural behavior on the same storage used by
+AFR-34 and AFR-35 before production switches.
 
-Why this follows AFR-35:
+Changes:
 
-- The current `T[][][]` storage uses the closed generic column type to locate
-  each heterogeneous array. Reinterpreting one current element as bytes would
-  retain the virtual handler call and the jagged-array lookup.
-- AFR-20, AFR-32, AFR-34, and AFR-35 provide immutable field widths and offsets,
-  alloc-local byte storage, and the structural block path required for useful
-  type erasure.
+- Use immutable storage classification from AFR-20.
+- Iterate only reference-containing storage classes during tail cleanup.
+- Clear released reference blocks before reuse.
+- Leave reference-free bytes dirty.
+- Clear typed shared-buffer ranges without creating temporary arrays, lists, or
+  per-block cleanup objects.
+
+Acceptance:
+
+- Value-only arches perform no reference-clear dispatch.
+- Mixed arches clear exactly their reference-containing tail storage.
+- Reference-retention tests and structural benchmarks pass.
+- AFR-34, AFR-35, and AFR-42 expose one complete inactive representation to
+  AFR-41; none independently switches the public path or dual-writes storage.
+
+### AFR-41 — Immediate Direct Point-Path Gate
+
+Purpose: prevent later shared-storage work from recovering footprint by making
+the ordinary happy path slower.
+
+AFR-21 already resolved the point-membership question. A compact ordinal hash
+approximately doubled end-to-end point latency for `K >= 4`, while direct
+closed-generic column indexing produced width-independent `O(1)` access. AFR-41
+therefore cannot replace direct point indexing with a signature scan, ordinal
+hash, sparse map, or adaptive micro-index.
+
+Work:
+
+- Compare the complete AFR-34/35/42 representation with the selected AFR-26
+  production baseline as same-build Release A/B callers.
+- Repeat the AFR-24 concrete-versus-generic matrix for class and struct `A`,
+  rotating across multiple hot Ents, arches, rows, and allocs. The gate does not
+  accept a single-Ent or staged-kernel result.
+- Keep present `Get` and existing `Set` primary. Record `Has`, absent access,
+  structural latency, managed allocation events, retained managed object count,
+  managed/native/total bytes, page count, slack, and fragmentation after those
+  results.
+- Inspect the generated address sequence and inlining before introducing
+  another lookup abstraction. Direct array indexing from known values is the
+  target, not merely expected-constant complexity.
+- Keep packed `IndexOf` on the cold uncached-removal construction path unless a
+  separate structural benchmark demonstrates that another immutable index is
+  worth its retained bytes. Such an index must remain outside ordinary point
+  access.
+- Record the rejected ordinal-hash experiment as a permanent design constraint
+  so a later footprint task does not accidentally reintroduce it.
+
+Acceptance:
+
+- `Get`, `Has`, and existing `Set` contain no signature scan or hash, sparse
+  edge or state-map lookup, lock, `Volatile`, virtual dispatch, or allocation.
+- Existing-component `Get` and `Set` latency is width-independent across
+  `K = 1, 4, 8, 16, 32` and equals or beats the selected production baseline in
+  repeated same-build seven-sample comparisons.
+- Any structural-only index is justified independently and is not counted as a
+  point-path optimization.
+- If the integrated representation fails, production remains on the AFR-26
+  fallback. Footprint and structural improvements do not override the result.
+- If point latency ties, the secondary decision explicitly favors fewer
+  individual managed objects and allocation events; moving the same retained
+  bytes native is not counted as a total-memory reduction.
+
+### AFR-43 — Remove Legacy Row and Column Buffers
+
+Purpose: leave one production storage model only after AFR-41 accepts it.
+
+Remove or replace:
+
+- Per-active-arch `EntMut[]` ownership.
+- Per-active-membership `T[]` ownership.
+- Dense alloc-by-arch row directories.
+- Dense typed column arch directories.
+- Obsolete resize/copy/clear operations tied to jagged arrays.
+- Per-state or per-block allocator objects and object-linked free-list nodes.
+
+Acceptance:
+
+- No production hot path dual-writes old and new storage.
+- Source scans find no retained dense `M × N` representation.
+- Builds, focused tests, and the demo pass with only shared blocks active.
+- Source and diagnostics show shared pages/buffers rather than one managed array
+  or object per arch, state, membership, block, or free-list node.
+- Removing dormant code is followed by the AFR-24 point sweep because changed
+  caller size and inlining can alter generated code even when data flow is the
+  same.
+
+## Phase 6: Secondary Structural and Retention Work
+
+### AFR-36 — Optional Type-Erased Reference-Free Movement
+
+Purpose: improve reference-free add/remove management after the production
+point path is accepted. This task is optional when the measured structural
+benefit does not justify its complexity or retained metadata.
+
+Why this follows AFR-43:
+
+- The former `T[][][]` storage used the closed generic column type to locate
+  each heterogeneous array. Reinterpreting one old element as bytes would have
+  retained the virtual handler call and jagged-array lookup.
+- AFR-20, AFR-32, AFR-34, AFR-35, and AFR-43 provide immutable field widths and
+  offsets, alloc-local byte storage, and one settled structural block path.
 
 Changes:
 
@@ -826,6 +1580,8 @@ Non-goals:
 - Do not change the column-major layout merely to obtain one whole-row copy.
 - Do not add per-edge copy-plan objects or `O(EK)` retained metadata. Revisit
   copy plans only if direct layout traversal is measured as a remaining cost.
+- Do not introduce delegate, strategy, descriptor, or work-item objects per
+  move. Type erasure must operate over existing shared metadata and spans.
 
 Acceptance:
 
@@ -838,100 +1594,45 @@ Acceptance:
 - Reference-free tails remain dirty and unobservable; reference-containing
   tails remain GC-correct.
 - No retained metadata is added beyond the existing `O(S)` immutable layouts.
+- No structural allocation event or retained managed object is added per block,
+  move, edge, or copied membership.
 - AFR-02 comparisons cover `K = 1, 8, 32` and value widths 4, 8, 16, and 64.
   Variants that regress small fixed-size values are recorded and rejected.
-- Point access is unchanged or remains within the accepted measurement noise.
-
-## Phase 4: Reuse and Hot-Path Adaptation
+- AFR-24 confirms that point access is unchanged. Structural speed cannot be
+  purchased with a point regression.
 
 ### AFR-40 — Block Reuse and Bounded Empty-State Cache
 
-Purpose: ensure repeated activation does not recreate arrays or retain
-unbounded empty storage.
+Purpose: reduce repeated activation allocation and empty-storage retention
+after the point representation has been accepted.
 
 Changes:
 
 - Power-of-two block size classes or equivalent exact reusable classes.
-- Rent and return operations over alloc-local free lists.
-- State-ID recycling.
+- Rent and return operations over alloc-local index-based free lists stored in
+  shared metadata.
+- Recycle the selected stable state handle when the AFR-26 design has one.
 - Empty-state retention measured by bytes rather than only state count.
 - Oldest-empty release when the byte budget is exceeded.
 - Separate reporting for row slack and slab fragmentation.
+- Release whole empty native pages with deterministic `NativeMemory.Free` when
+  the retention budget requires it; individual blocks remain offsets and never
+  own separate native allocations.
 
 Acceptance:
 
 - Reactivating an arch can reuse state and blocks without object allocation.
+- Rent/return creates no managed free-list node, block object, closure, or
+  collection allocation.
 - The empty-state byte budget is enforced by the owning thread without locks.
 - Reference-containing free blocks are clear.
 - Reference-free free blocks remain dirty.
+- Existing-component `Get` and `Set` code and AFR-24 results remain unchanged.
+- Reports separate managed allocation events, retained managed object count,
+  managed bytes, native bytes, total bytes, shared page count, free capacity,
+  row slack, and slab fragmentation before and after reuse.
 
-### AFR-41 — Adaptive Immutable Field Micro-Index
-
-Purpose: retain a fast wide-arch point path without allocating an `M × N`
-membership structure.
-
-This is a measured decision task. If no tested signature width benefits from a
-micro-index, record that result and keep packed lookup for every arch; the task
-is complete without adding the optional table.
-
-Decision rule:
-
-- Keep contiguous packed lookup while it wins.
-- Build an immutable ordinal table only beyond the measured width threshold.
-
-Representation:
-
-- Shared packed slots containing `ordinal + 1`.
-- Exact confirmation through the packed field ID.
-- Narrow ordinal storage where the signature width permits it.
-
-Acceptance:
-
-- Any threshold comes from AFR-02 measurements.
-- If a table is selected, its storage is proportional to indexed memberships,
-  it is immutable, and it creates no per-arch object.
-- If a table is selected, wide-arch present and absent lookups improve over
-  contiguous search.
-- If no table is selected, the benchmark result and retained packed strategy
-  are recorded.
-
-### AFR-42 — Reference-Tail Clearing Through Layouts
-
-Purpose: avoid heterogeneous clearing dispatch for fields that cannot retain
-references.
-
-Changes:
-
-- Use immutable storage classification from AFR-20.
-- Iterate only reference-containing storage classes during tail cleanup.
-- Clear released reference blocks before reuse.
-- Leave reference-free bytes dirty.
-
-Acceptance:
-
-- Value-only arches perform no reference-clear dispatch.
-- Mixed arches clear exactly their reference-containing tail storage.
-- Reference-retention tests and structural benchmarks pass.
-
-### AFR-43 — Remove Legacy Row and Column Buffers
-
-Purpose: leave one production storage model.
-
-Remove or replace:
-
-- Per-active-arch `EntMut[]` ownership.
-- Per-active-membership `T[]` ownership.
-- Dense alloc-by-arch row directories.
-- Dense typed column arch directories.
-- Obsolete resize/copy/clear operations tied to jagged arrays.
-
-Acceptance:
-
-- No production hot path dual-writes old and new storage.
-- Source scans find no retained dense `M × N` representation.
-- Builds, focused tests, and the demo pass with only shared blocks active.
-
-## Phase 5: Final Verification, Tuning, and Documentation
+## Phase 7: Final Verification, Tuning, and Documentation
 
 ### AFR-50 — Concurrency, Growth, and Correctness Gate
 
@@ -942,7 +1643,9 @@ Verify:
 - Edge-arena growth.
 - Byte-slab growth and reuse.
 - Typed-slab growth, clearing, and reuse.
-- Sparse state-index growth and state-ID recycling.
+- Deterministic freeing of every owned native page, including partial setup and
+  growth failure.
+- Sparse state-index growth and recycling of the AFR-26 selected state handle.
 - Cold concurrent graph resolution from different allocs.
 - Warm concurrent point access from different allocs.
 - All compaction positions and mixed storage classes.
@@ -951,14 +1654,23 @@ Acceptance:
 
 - Focused tests pass repeatedly.
 - No managed allocation appears in steady-state point operations.
+- No managed object or array is allocated per arch, state, membership, block,
+  move, or free-list node in the accepted shared-store path.
+- Native retained-byte accounting returns to zero when the owning store is
+  released; moving bytes native does not hide them from total-memory reports.
 - No cross-alloc row, block, or free-list mutation is observed.
+- The AFR-41 existing-component `Get`/`Set` gate still passes after optional
+  structural and retention work.
 
 ### AFR-51 — Final `MethodImplOptions` Tuning
 
 Purpose: determine whether explicit JIT hints improve the settled archetypal
-hot paths relative to the runtime's default decisions. This is deliberately the
-last tuning task after the storage, membership, movement, reuse, and correctness
-work is complete.
+hot paths relative to the runtime's default decisions. Broad MethodImpl tuning
+stays here, after storage, addressing, movement, reuse, and correctness settle.
+AFR-24 inspects generated code earlier to choose an architecture; it does not
+turn into an early annotation sweep. AFR-25's focused `NoInlining` slow-path
+split is an address/caller-shape candidate; AFR-51 still owns the broad policy
+comparison across settled methods.
 
 Variants:
 
@@ -977,6 +1689,8 @@ Measure the variants independently for:
 
 Required evidence:
 
+- Release configuration for every timing and generated-code comparison; no
+  Debug timing or disassembly is accepted or cited.
 - Warm steady-state latency using the AFR-02 point and structural cases.
 - Cold worker startup and first-call cost, because an option that improves the
   final tier may still increase JIT cost.
@@ -1005,25 +1719,45 @@ Compare baseline and final results for every AFR-02 scenario.
 
 Report:
 
-- Global bytes per materialized arch.
-- Bytes per active alloc-local state.
-- Object count per global arch and active state.
+- Managed allocation events for catalog creation, state activation, page
+  growth, block reuse, cached movement, and cold movement.
+- Retained managed object count globally, per active alloc-local state, and by
+  storage class.
+- Managed bytes, native bytes, and total bytes globally and per active state.
+- Managed and native shared page/buffer counts, capacities, used bytes, slack,
+  and fragmentation.
+- Managed objects and arrays attributable to materialized arches, active states,
+  memberships, blocks, and free-list nodes; each category should be zero in an
+  accepted shared-store design.
 - Signature-index capacity and load.
 - Average and percentile observed edge degree `D`.
 - Active row slack.
-- Byte-slab and typed-slab fragmentation.
+- Byte-slab and typed-slab page occupancy and fragmentation.
 - Point-operation latency.
 - Structural-operation latency.
 - Cold signature creation time.
+- Native ownership and deterministic-free totals before setup, at peak, and
+  after owner release.
 
 Acceptance:
 
 - Global metadata follows `O(M + S + E)`.
-- Alloc-local metadata follows active states and storage classes.
-- Object creation follows shared capacity growth rather than arch
-  materialization or activation.
-- Any hot-path regression has an explicit measured reason and accepted
-  footprint benefit.
+- The selected alloc-local locator reports its capacity, page occupancy, and
+  slack relative to active states and memberships. If AFR-26 retained the
+  current direct columns, the remaining cost is reported rather than hidden or
+  removed through a slower point path.
+- Object creation follows growth of a small number of shared buffers/pages when
+  the speed-passing design supports shared stores. It does not follow arch,
+  state, membership, block, or free-list-node counts; the fallback reports any
+  current activation objects explicitly.
+- Native bytes are added to managed bytes in every total. A managed-object or
+  managed-byte reduction caused by `NativeMemory.Alloc` is reported as lower GC
+  pressure, not eliminated memory.
+- Every native page has deterministic `NativeMemory.Free` ownership and the
+  post-release retained native total is zero.
+- Existing-component `Get` and `Set` equal or improve the selected AFR-26
+  production baseline. No structural or footprint benefit excuses a repeatable
+  regression.
 
 ### AFR-53 — Reconcile Implementation Documentation
 
@@ -1033,26 +1767,40 @@ Update:
 - [Theory and cost model](ECS.Archetypal.FootprintTheory.md)
 - Source design comments affected by the implemented layout
 
-Record measured thresholds, actual layout widths, store page sizes,
-empty-state budget, and any rejected theoretical optimization.
+Record measured thresholds, actual layout widths, store page sizes, managed and
+native page ownership, retained managed object count, allocation events,
+managed/native/total bytes, empty-state budget, and any rejected theoretical
+optimization.
 
 ## Implementation Discipline
 
-- Complete tasks in dependency order; do not combine catalog, alloc-state, and
-  slab cutovers into one unreviewable change.
+- Use the completed AFR-24 baseline, then complete AFR-25 and AFR-26 before
+  implementing a production alloc-state, `loc`, or shared-block cutover.
+- Build AFR-30 through AFR-33 as directly testable inactive pieces. Treat
+  AFR-34, AFR-35, and AFR-42 as one coordinated production cutover train so no
+  public path depends on half-integrated storage.
 - Keep each intermediate state buildable and directly testable.
 - Avoid production dual storage. New structures may be tested independently
   before cutover, but the hot path should have one source of truth.
+- Prefer shared large buffers/pages and index-based descriptors/free lists over
+  per-arch, per-state, per-membership, per-block, or free-list-node objects.
+- `NativeMemory.Alloc` is permitted for reference-free payload and metadata
+  only with deterministic `NativeMemory.Free`, ownership tests, and complete
+  native-byte accounting. Never use `NativeMemory.AllocZeroed`, and never
+  describe moving bytes native as eliminating their memory.
 - Preserve approved vocabulary: `Ent`, `loc`, `src`, `dst`, `arch`, and `alloc`.
 - Keep generic parameters `T`, `N`, and `A` compact.
 - Do not add defensive branches for states excluded by controlled invariants.
-- Measure before adding an adaptive index, pages, or additional encoding
-  complexity. Treat managed bytes and uninitialized `NativeMemory.Alloc`
-  backing as first-class AFR-32 candidates and compare them directly.
+- Measure direct flat and paged locators before adding encoding complexity.
+  Treat managed bytes and uninitialized `NativeMemory.Alloc` backing as
+  first-class AFR-32 candidates, but compare full-caller latency before retained
+  footprint.
 
 ## Definition of Done
 
 The epic is complete when all required AFR tasks are complete, the public API
-is unchanged, focused verification passes, the final measurement report
-demonstrates sparse retained structures, and implementation documentation
-matches the code that actually shipped.
+is unchanged, focused verification passes, existing-component `Get` and `Set`
+equal or improve the accepted AFR-26 baseline, the final report records the
+resulting structural cost, managed allocation events, retained managed object
+count, managed/native/total bytes, page count, slack, and fragmentation, and
+implementation documentation matches the code that actually shipped.

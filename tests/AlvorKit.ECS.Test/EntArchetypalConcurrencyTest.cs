@@ -3,23 +3,44 @@ namespace AlvorKit.ECS.Test;
 [TestClass]
 public sealed class EntArchetypalConcurrencyTest
 {
-    /// <summary>Verifies cold resolution from different alloc owners interns one exact global arch.</summary>
+    /// <summary>Verifies cold alloc owners intern one arch and observe the same immutable catalog metadata.</summary>
     [TestMethod]
     public void Archetypal_ConcurrentColdResolution_DifferentAllocsInternSameArch()
     {
         const int ownerCount = 2;
         _ = EntArchColumn<int, C0, ColdResolutionArch>.FieldId;
         _ = EntArchColumn<int, C1, ColdResolutionArch>.FieldId;
+        _ = EntArchColumn<int, C2, ColdResolutionArch>.FieldId;
         using var barrier = new Barrier(ownerCount);
         var allocIds = new int[ownerCount];
         var archIds = new int[ownerCount];
         var firstValues = new int[ownerCount];
         var secondValues = new int[ownerCount];
         var layoutSnapshots = new EntArchFieldLayout[ownerCount][];
+        var ordinalSnapshots = new int[ownerCount][];
+        var transitionSnapshots = new int[ownerCount][];
 
         Parallel.Invoke(
-            () => ResolveColdArch(0, barrier, allocIds, archIds, firstValues, secondValues, layoutSnapshots),
-            () => ResolveColdArch(1, barrier, allocIds, archIds, firstValues, secondValues, layoutSnapshots));
+            () => ResolveColdArch(
+                0,
+                barrier,
+                allocIds,
+                archIds,
+                firstValues,
+                secondValues,
+                layoutSnapshots,
+                ordinalSnapshots,
+                transitionSnapshots),
+            () => ResolveColdArch(
+                1,
+                barrier,
+                allocIds,
+                archIds,
+                firstValues,
+                secondValues,
+                layoutSnapshots,
+                ordinalSnapshots,
+                transitionSnapshots));
 
         Assert.AreNotEqual(allocIds[0], allocIds[1]);
         Assert.AreEqual(archIds[0], archIds[1]);
@@ -31,6 +52,24 @@ public sealed class EntArchetypalConcurrencyTest
         Assert.AreEqual(2, layoutSnapshots[0].Length);
         Assert.AreEqual(Unsafe.SizeOf<EntMut>(), layoutSnapshots[0][0].BytePrefix);
         Assert.AreEqual(Unsafe.SizeOf<EntMut>() + Unsafe.SizeOf<int>(), layoutSnapshots[0][1].BytePrefix);
+        CollectionAssert.AreEqual(ordinalSnapshots[0], ordinalSnapshots[1]);
+        CollectionAssert.AreEqual(
+            new[] { 0, 1, EntArchGraph<ColdResolutionArch>.NoFieldOrdinal },
+            ordinalSnapshots[0]);
+        CollectionAssert.AreEqual(transitionSnapshots[0], transitionSnapshots[1]);
+
+        int pairArchId = archIds[0];
+        int firstSingletonArchId = transitionSnapshots[0][0];
+        int secondSingletonArchId = transitionSnapshots[0][1];
+        Assert.AreEqual(EntArchGraph<ColdResolutionArch>.NoArchId, transitionSnapshots[0][2]);
+        Assert.AreEqual(pairArchId, transitionSnapshots[0][3]);
+        Assert.AreEqual(firstSingletonArchId, transitionSnapshots[0][4]);
+        Assert.AreEqual(pairArchId, transitionSnapshots[0][5]);
+        Assert.AreEqual(secondSingletonArchId, transitionSnapshots[0][6]);
+
+        var metrics = EntArchDiagnostics<ColdResolutionArch>.Capture();
+        Assert.AreEqual(0L, metrics.TransitionCellCapacity);
+        Assert.AreEqual(4, metrics.StoredTransitionEdgeCount);
     }
 
     /// <summary>Verifies concurrent owners can repeatedly read and write one warm arch through different allocs.</summary>
@@ -75,7 +114,9 @@ public sealed class EntArchetypalConcurrencyTest
         int[] archIds,
         int[] firstValues,
         int[] secondValues,
-        EntArchFieldLayout[][] layoutSnapshots)
+        EntArchFieldLayout[][] layoutSnapshots,
+        int[][] ordinalSnapshots,
+        int[][] transitionSnapshots)
     {
         using var arena = new EntArena();
         EntMut ent = arena.Alloc();
@@ -90,12 +131,41 @@ public sealed class EntArchetypalConcurrencyTest
             ent.SetArchetypal<int, C1, ColdResolutionArch>(11);
         else ent.SetArchetypal<int, C0, ColdResolutionArch>(20);
 
+        barrier.SignalAndWait();
+
         var loc = ent.Get<EntArchLoc, ColdResolutionArch>();
         allocIds[owner] = loc.AllocId;
         archIds[owner] = loc.ArchId;
         firstValues[owner] = ent.GetArchetypal<int, C0, ColdResolutionArch>();
         secondValues[owner] = ent.GetArchetypal<int, C1, ColdResolutionArch>();
         layoutSnapshots[owner] = EntArchGraph<ColdResolutionArch>.FieldLayouts(loc.ArchId).ToArray();
+        ordinalSnapshots[owner] =
+        [
+            EntArchGraph<ColdResolutionArch>.FindFieldOrdinal(
+                loc.ArchId,
+                EntArchColumn<int, C0, ColdResolutionArch>.FieldId),
+            EntArchGraph<ColdResolutionArch>.FindFieldOrdinal(
+                loc.ArchId,
+                EntArchColumn<int, C1, ColdResolutionArch>.FieldId),
+            EntArchGraph<ColdResolutionArch>.FindFieldOrdinal(
+                loc.ArchId,
+                EntArchColumn<int, C2, ColdResolutionArch>.FieldId),
+        ];
+        int firstFieldId = EntArchColumn<int, C0, ColdResolutionArch>.FieldId;
+        int secondFieldId = EntArchColumn<int, C1, ColdResolutionArch>.FieldId;
+        int firstSingletonArchId = EntArchGraph<ColdResolutionArch>.GetSingletonArchId(firstFieldId);
+        int secondSingletonArchId = EntArchGraph<ColdResolutionArch>.GetSingletonArchId(secondFieldId);
+        transitionSnapshots[owner] =
+        [
+            firstSingletonArchId,
+            secondSingletonArchId,
+            EntArchGraph<ColdResolutionArch>.GetSingletonArchId(
+                EntArchColumn<int, C2, ColdResolutionArch>.FieldId),
+            EntArchGraph<ColdResolutionArch>.GetTransitionArchId(firstSingletonArchId, secondFieldId),
+            EntArchGraph<ColdResolutionArch>.GetTransitionArchId(loc.ArchId, secondFieldId),
+            EntArchGraph<ColdResolutionArch>.GetTransitionArchId(secondSingletonArchId, firstFieldId),
+            EntArchGraph<ColdResolutionArch>.GetTransitionArchId(loc.ArchId, firstFieldId),
+        ];
 
         ent.UnsetArchetypal<int, C0, ColdResolutionArch>();
         ent.UnsetArchetypal<int, C1, ColdResolutionArch>();
@@ -153,6 +223,7 @@ public sealed class EntArchetypalConcurrencyTest
 
     private readonly record struct C0;
     private readonly record struct C1;
+    private readonly record struct C2;
     private readonly record struct ColdResolutionArch;
     private readonly record struct WarmAccessArch;
 }

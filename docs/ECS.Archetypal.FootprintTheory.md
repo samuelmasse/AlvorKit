@@ -1,19 +1,20 @@
 # Archetype Footprint Reduction: Theory and Cost Model
 
-> Status: working theory for the
+> Status: AFR-24 is complete; AFR-25 and AFR-26 are next in the
 > [Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md).
-> The model defines the intended asymptotic behavior, practical byte targets,
-> object-count targets, and hot-path constraints. Measurements taken during the
-> epic may refine constants and thresholds without changing the sparse design.
+> AFR-21 through AFR-24 have established the direct point-access, sparse
+> global-catalog, and call-shape baselines described here. Later shared-storage
+> work may refine constants, but it must preserve the measured hot-path
+> contract.
 
-The current dense implementation is recorded in the
+The epic-start dense implementation is recorded in the
 [AFR-01 and AFR-02 baseline](ECS.Archetypal.FootprintBaseline.md).
 
 ## Objective
 
-The archetypal implementation should allocate storage only for arch signatures,
-transitions, alloc-local states, and component blocks that have actually been
-observed.
+The archetypal implementation should allocate storage only for registered
+fields, materialized arch signatures, observed transitions, alloc-local states,
+and component blocks that have actually been observed.
 
 The possible non-empty power set for `N` registered fields is:
 
@@ -29,7 +30,7 @@ materialized arches and registered fields.
 The target is:
 
 \[
-O(M + S + E + R + Q + \text{payload})
+O(N + M + S + E + R + Q + \text{payload})
 \]
 
 not:
@@ -41,6 +42,17 @@ O(MN)
 The public archetypal API remains unchanged, and the number of fields in a group
 is not bounded by a fixed-width mask.
 
+This memory target is subordinate to the execution target. Existing-component
+`Get` and `Set` latency is optimized first; structural add/remove and movement
+are second; cold catalog work is third. Footprint comparisons select only among
+representations that equal or improve the accepted same-build point path.
+
+Here, footprint means both total retained bytes and allocation topology. A
+design is better when it retains fewer total bytes, creates fewer individual
+managed objects, and performs fewer managed or native allocation events under
+the same workload. Moving bytes outside the GC heap can improve GC behavior and
+object count, but it does not make those bytes disappear from total footprint.
+
 ## Terms
 
 | Symbol | Meaning |
@@ -48,21 +60,86 @@ is not bounded by a fixed-width mask.
 | `N` | Number of registered fields in the arch group |
 | `P` | Number of possible non-empty signatures, `2^N - 1` |
 | `M` | Number of materialized global arch signatures |
-| `Kᵢ` | Number of fields in materialized arch `i` |
-| `S` | Total materialized field memberships, `ΣKᵢ` |
-| `E` | Number of cached directed structural transitions |
+| `K_i` | Number of fields in materialized arch `i` |
+| `S` | Total materialized field memberships, `\sum K_i` |
+| `E` | Number of stored directed structural edges, excluding implicit empty/singleton transitions |
 | `D` | Average cached directed transitions per arch, `E / M` |
 | `R` | Number of active alloc-local arch states |
 | `Q` | Number of active alloc-local storage-class handles |
 | `C` | Row capacity of one active alloc-local arch state |
-| `Sⱼ` | Stored size of component field `j` |
-| `L` | Bytes of immutable layout metadata per field membership |
-| `I` | Retained bytes in optional immutable wide-signature micro-indexes |
+| `S_j` | Stored size of component field `j` |
+| `C_a` | Capacity of an arch-indexed catalog array |
+| `C_f` | Capacity of a registered-field-indexed catalog array |
+| `C_p` | Capacity of the packed field-ID array |
+| `C_l` | Capacity of the parallel packed field-layout array |
+| `C_i` | Capacity of the open-address signature index |
+| `C_e` | Capacity of the sparse directed-edge arena |
+| `C_s` | Capacity of the group-global structural signature scratch array |
+| `B_ml` | Managed logical retained payload bytes, excluding object headers and alignment |
+| `B_me` | Estimated managed retained bytes, including owned object headers and aligned payload |
+| `B_n` | Native retained bytes requested from native allocation APIs |
+| `B_t` | Total retained bytes, `B_me + B_n` |
+| `O_m` | Number of individually owned managed objects |
+| `A_m` | Cumulative managed allocation events in the measured workload |
+| `A_n` | Cumulative native allocation events in the measured workload |
+| `G` | Retained shared slab or page count |
+| `W` | Retained row slack, free-page space, internal fragmentation, and alignment waste |
 
 `M` can still grow very large because archetype variety is inherently
 combinatorial. The design goal is not to conceal that cost. It is to ensure
 that each materialized signature pays only for its actual fields and observed
 relationships.
+
+## Footprint and Allocation Accounting
+
+The primary retained-byte equation is:
+
+\[
+B_t = B_{me} + B_n
+\]
+
+`B_ml` remains useful because it is deterministic from array capacities and
+element widths. `B_me` adds estimated managed object and array headers plus
+payload alignment. `B_n` is the sum of the requested capacities of every live
+native allocation owned by the group and its alloc-local stores. The runtime's
+allocator metadata and physical-page residency may add platform-specific cost,
+so reports must identify `B_me` as an estimate rather than imply byte-perfect
+process accounting.
+
+Bytes alone do not describe GC and startup pressure. One 4 MiB page and 65,536
+independent 64-byte arrays can retain comparable payload while having radically
+different object traversal, allocation, and teardown behavior. The model
+therefore treats these as independent outputs:
+
+| Metric | Required meaning |
+| --- | --- |
+| Managed logical retained bytes | Capacity payload owned by managed arrays and value tables |
+| Estimated managed retained bytes | Managed logical bytes plus estimated owned headers and alignment |
+| Native retained bytes | Requested capacity of every currently live native allocation |
+| Total retained bytes | Estimated managed retained bytes plus native retained bytes |
+| Managed object count | Individually owned managed arrays and objects; runtime-shared empty arrays are excluded |
+| Managed allocation event count | Cumulative owned managed allocations and replacement allocations during the scenario |
+| Native allocation event count | Cumulative `NativeMemory.Alloc` calls that successfully create owned regions |
+| Total allocation event count | Managed plus native allocation events |
+| Page count | Retained pages split by reference-free native, reference-free managed, and typed managed kinds |
+| Used payload bytes | Bytes occupied by live rows and required live metadata |
+| Slack and fragmentation | Row slack, free retained block bytes, page-tail waste, size-class waste, and alignment padding, reported separately |
+
+Allocation-event counters are workload counters, not snapshot properties. A
+fresh-process benchmark can compare them directly; a long-running process must
+report the interval or reset point. Slab replacement counts both the new
+allocation and the retired allocation's transient peak, even if only one region
+remains in the retained snapshot.
+
+Native storage may lower `B_me` and `O_m`, but every live native byte remains in
+`B_n` and therefore in `B_t`. Reports may separately claim lower GC-managed
+footprint or fewer managed objects; they must not claim a total-byte reduction
+unless `B_t` actually falls.
+
+All speed evidence used to accept one footprint representation over another
+must come from optimized Release builds. Point-access latency remains the first
+gate; a smaller `B_t`, `O_m`, or allocation-event count does not justify a
+slower happy path.
 
 ## Epic-Start Rectangular Costs
 
@@ -193,78 +270,103 @@ and append-only arch creation means no tombstone is required.
 
 ### Sparse Structural Edges
 
-The transition cache should store only observed directed edges.
-
-Each arch receives one 4-byte edge-head index:
-
-\[
-4M
-\]
-
-Each directed edge stores three `int` values:
-
-- `fieldId`
-- `dstArchId`
-- `nextEdge`
-
-Its cost is:
+AFR-22 stores only observed directed edges. `edgeHeads` is one shared
+`int[C_a]`; each slot is the head of that arch's linked edge chain:
 
 \[
-12E
+4C_a
 \]
 
-An add/remove relationship is cached in both directions, so resolving one new
-undirected relationship normally appends two directed entries.
+The shared `EntArchEdge[C_e]` arena stores three `int` values per directed
+edge:
 
-Lookup is proportional to the observed degree `D`, not the registered field
-count `N`. When edge density is low, this is substantially smaller than a dense
-toggle table. If measurements later find large `D` values, a shared sparse hash
-or an immutable per-arch edge index can be introduced while preserving `O(E)`
-storage.
+- `FieldId`
+- `DstArchId`
+- `NextEdgeIndex`
+
+Its retained payload is:
+
+\[
+12C_e
+\]
+
+Index zero is the no-edge sentinel. Resolving one new non-empty relationship
+appends two directed records, one for each direction. Empty/singleton
+relationships are not stored in the arena. They use the direct
+`singletonArchIds` field directory instead:
+
+\[
+4C_f
+\]
+
+Edge lookup is proportional to the observed degree `D`, not the registered
+field count `N`. It is structural-only: ordinary `Get`, `Has`, and existing
+`Set` do not traverse this chain. If measurements later find large structural
+degrees, the edge representation can be specialized without changing point
+access.
+
+The catalog lock serializes edge creation and arena growth. A resolver writes
+complete edge records before release-publishing their head indexes; concurrent
+structural readers acquire-read those heads before traversing the immutable
+records. The singleton directory uses the same acquire/release publication
+discipline. These `Volatile` operations are deliberately absent from the point
+path.
+
+Building an uncached destination signature uses one group-global
+`int[C_s]` scratch array:
+
+\[
+4C_s
+\]
+
+Scratch growth and use occur under the catalog lock. Its capacity follows the
+widest structurally constructed signature, not `M * N`, and it is never
+consulted by ordinary point access.
 
 ### Global Footprint Formula
 
-Without field-layout metadata, the sparse global catalog is approximately:
+The implemented AFR-21 through AFR-23 graph payload is best expressed in
+actual retained capacities rather than an average bytes-per-arch estimate:
 
 \[
-(13.33 \text{ to } 18.67)M + 4S + 12E
+B_{graph} =
+4C_p + 4C_l + 4C_s + 4C_i + 8C_a + 4C_f + 12C_e
 \]
 
-The range of linear `M` terms consists of:
+The terms correspond directly to the shared arrays:
 
-- 4 bytes for the cumulative signature end.
-- Between approximately 5.33 and 10.67 retained bytes for the signature index
-  under 75%-threshold doubling.
-- 4 bytes for the sparse edge head.
+- `4C_p`: packed exact field IDs.
+- `4C_l`: parallel four-byte field layouts.
+- `4C_s`: structural destination-signature scratch.
+- `4C_i`: open-address signature-index slots containing arch IDs.
+- `4C_a`: cumulative signature ends.
+- `4C_a`: sparse edge heads.
+- `4C_f`: the direct field-to-singleton-arch directory.
+- `12C_e`: three-int directed edge records.
 
-The shared composite storage requires an immutable layout entry for each
-materialized field membership. If the common layout entry is 4 bytes, the
-formula becomes:
+This is a retained-capacity formula. It includes reserved sentinel slots and
+geometric slack, which is why substituting `M`, `S`, or `E` directly can
+understate a real snapshot. In particular, the signature index must use its
+actual `C_i`, and the edge arena must use `C_e`, not `12E`.
+
+The current catalog also retains the registered-field arrays. Each field slot
+has an eight-byte `EntArchField` and one `EntArchColumnOps` reference. With
+pointer size `p`, their additional payload is:
 
 \[
-(13.33 \text{ to } 18.67)M + 8S + 12E + 8C_F + I
+(8 + p)C_f
 \]
 
-`C_F` is the capacity of the registered-field metadata directory. AFR-20 adds
-one eight-byte `(ByteWidth, StorageClassId)` value per capacity slot so byte
-width and storage class remain `O(N)` facts rather than being repeated for
-every membership.
-
-If some layouts require a wider representation, use the measured average `L`:
+On a 64-bit runtime, the full logical catalog-array payload is therefore:
 
 \[
-(13.33 \text{ to } 18.67)M + (4 + L)S + 12E + 8C_F + I
+B_{catalog} = B_{graph} + 16C_f
 \]
 
-`I` is zero for arches using direct packed-signature search. When immutable
-micro-indexes are built only for wide signatures, `I` remains proportional to
-the memberships in those indexed signatures and therefore remains `O(S)`.
-
-All values are logical payload estimates. Shared-array headers, geometric
-growth slack, alignment, and slab fragmentation remain additional terms.
-In the implemented capacity form, `H` layout slots retain `4H` bytes while
-exactly `S` entries, or `4S` bytes, are used. `H` is the smallest power of two
-covering `S`. The registered-field directory similarly retains `8C_F` bytes.
+The registered handler objects, shared-array headers, alignment, runtime type
+data, and GC fragmentation are additional managed costs. They are reported
+separately from logical payload. No per-arch transition array or per-arch
+membership-index object remains.
 
 ### Sparse Example
 
@@ -275,72 +377,168 @@ Consider:
 - Average `K = 10`, so `S = 1,000,000`.
 - Average `D = 2`, so `E = 200,000`.
 
-The raw current two-int transition matrix costs:
+Assume the corresponding geometric capacities are:
+
+- `C_a = 131,072` and `C_f = 1,024`.
+- `C_p = C_l = 1,048,576`.
+- `C_i = C_e = 262,144`.
+- `C_s = 16`, because the widest structurally constructed signature in this
+  example fits that scratch capacity.
+
+The former dense two-int transition cells alone would retain:
 
 \[
-8MN = 800,000,000\text{ bytes}
+8C_aC_f = 1,073,741,824\text{ bytes}
 \]
 
-The sparse catalog without layout metadata or optional micro-indexes costs
-approximately:
+The complete implemented sparse graph arrays, including exact signatures,
+layouts, hash index, scratch, singleton directory, edge heads, and edge arena,
+retain:
 
 \[
-13.33M + 4S + 12E = 7,733,000\text{ bytes}
+B_{graph} = 13,635,648\text{ bytes}
 \]
 
-With a 4-byte layout entry per membership, a field-metadata capacity of 1,024,
-and no optional micro-index, it costs approximately:
+Adding the registered-field metadata and handler-reference arrays on a 64-bit
+runtime gives:
 
 \[
-11,741,192\text{ bytes}
+B_{catalog} = 13,652,032\text{ bytes}
 \]
 
-The sparse cost depends on materialized signatures and observed edges; it is
-independent of the unexplored portion of the power set.
+These are logical payload figures, not estimated managed bytes. The sparse cost
+depends on registered fields, materialized signatures, the widest constructed
+signature, and observed edges. It is independent of the unexplored portion of
+the power set and contains no `C_a * C_f` term.
 
-## Sparse Membership and Immutable Layout Lookup
+## Direct Point Membership and Exact Structural Signatures
 
-The dense transition matrix currently doubles as the field-presence index.
-Removing it requires a sparse membership strategy that remains fast enough for
-`GetArchetypal`, `HasArchetypal`, and overwriting an existing field.
+AFR-21 does not search a packed signature to answer a point-access membership
+question. The closed generic `EntArchColumn<T, N, A>` already identifies one
+field and owns its alloc/arch column directory. Its `ValuesAt(allocId, archId)`
+lookup returns the existing `T[]` column or `null`:
 
-### Small Signatures
+```text
+closed generic field -> alloc slot -> arch slot -> T[] or null
+```
 
-For small `K`, search the contiguous packed field span. A span search has:
+That one result answers both questions needed by the public point operations:
 
-- No auxiliary memory.
-- No hashing.
-- Good cache locality.
-- Potential runtime vectorization.
+- A non-null column means the field is present in the arch.
+- `column[row]` is the component value.
 
-The initial implementation should measure `ReadOnlySpan<int>.IndexOf` and a
-sorted binary search. A threshold should be chosen from data rather than fixed
-in the theory.
+`GetArchetypal` reuses the returned column for its load, `HasArchetypal` tests
+it for null, and existing-field `SetArchetypal` writes through it and returns.
+The lookup is `O(1)` with respect to signature width, registered field count,
+and structural degree. It performs no hashing, packed scan, managed allocation,
+lock acquisition, or `Volatile` operation.
 
-### Wide Signatures
+### Exact Signatures Remain Canonical
 
-For wider arches, build an immutable open-address micro-index when the arch is
-created. The shared index slab stores `ordinal + 1`, not duplicate field IDs.
+The direct column is a point-access presence and value slot; it is not arch
+identity. Sorted packed field IDs remain the canonical signature, and the
+global signature hash index always confirms a candidate against those exact
+IDs. Parallel packed layouts remain the structural movement metadata.
 
-Lookup becomes:
+No point operation searches for a field ordinal. The only field-membership
+ordinal scan is an uncached structural removal, where the resolver finds the
+removed field in the src signature before copying the retained IDs into the
+locked group-global scratch array. Cached removal follows its sparse edge.
+Structural addition also uses scratch to construct the dst signature, but the
+point path never reads or writes scratch.
 
-1. Hash `fieldId` into the arch's table.
-2. Read the candidate ordinal.
-3. Confirm `packedFieldIds[start + ordinal] == fieldId`.
-4. Probe until an exact match or an empty slot is found.
+### Rejected Ordinal Hash
 
-The ordinal directly addresses the parallel packed layout entry.
+AFR-21 measured an immutable per-arch ordinal hash before accepting the direct
+column path. Its isolated probe kernel was inexpensive, but its end-to-end
+directory, hash, probe, confirmation, and layout traversal approximately
+doubled point-access time for `K = 4` through `K = 32`: present `Get` was about
+26.70–26.77 ns and `Has` about 24.93–25.09 ns. The ordinal hash was therefore
+removed from the production point path.
 
-Normal signatures can use 16-bit ordinals. At a practical load factor, the
-index is expected to add roughly 3–4 bytes per indexed membership. Very large
-signatures can use a wider table.
+The AFR-21 direct-column benchmark, whose worker is generic in `A`, was flat
+across `K = 1, 4, 8, 16, 32`:
 
-The table is immutable after arch creation. Hot reads therefore require no
-lock, dictionary, allocation, or mutable shared-state traversal.
+| Operation | Median range | Managed allocation |
+| --- | ---: | ---: |
+| Present `Get` | 8.716–8.826 ns | 0 B/op |
+| Absent `Get` | 6.605–6.674 ns | 0 B/op |
+| Present `Has` | 8.456–8.500 ns | 0 B/op |
+| Absent `Has` | 6.370–6.467 ns | 0 B/op |
+| Existing `Set` | 9.682–9.733 ns | 0 B/op |
 
-An optional constant-size membership filter can reject many absent fields before
-scanning. Any filter result remains advisory and must be confirmed against the
-exact signature.
+These measurements make direct, width-independent lookup part of the design
+contract rather than an optional optimization, but their absolute values are
+specific to a generic-shared call shape.
+
+### AFR-24 Call-Shape Baseline
+
+AFR-24 replaced the preliminary single-row probe with paired seven-sample
+steady-state sweeps on Release .NET 10.0.9. Each cell performed 5,000,000
+operations after ten warmups and rotated through 1,024 Ents distributed across
+four allocs and four Ent pages, 16 active arches, 64 alloc-local states, and 16
+rows per state. Every measured point case allocated zero bytes per operation.
+
+The formal matrix crossed concrete and generic-in-`A` callers with sealed-class
+and readonly-struct group markers. Across the paired A/B sweep orders and the
+measured value shapes:
+
+- Generic-class rotating `Get` cost 2.86–3.13 times its matching
+  concrete-class case.
+- Generic-class rotating existing-field `Set` cost 2.21–3.28 times its
+  matching concrete-class case.
+- Generic-struct and concrete-struct cases stayed within approximately
+  0.99–1.01 times one another.
+- Concrete class and concrete struct markers were generally within about 4.1%
+  of one another, with no universal winner.
+
+The distinction is therefore generic reference-type canonical sharing versus
+value-type specialization, not an inherent penalty for using a class as the
+group marker. A concrete caller gives the JIT an exact reference-type marker
+and can inline through its closed-generic static storage. A caller generic in a
+reference-type `A` uses canonical shared code and retains generic-context and
+static-base work. A value-type `A` receives a specialized instantiation, so its
+generic caller can approach the concrete caller's generated code and latency.
+
+The warmup count is part of the measurement contract. With only three warmups,
+the generic-class helper exhibited two tiering modes near 6 ns/op and 13 ns/op.
+Ten warmups stabilized the paired steady-state sweeps and prevented a tiering
+transition from being mistaken for a call-shape or storage effect.
+
+AFR-24 also measured stages inside the point path. These are absolute kernel
+latencies, not additive components to sum into the end-to-end `Get` or `Set`
+time:
+
+| Steady stage | Concrete class A/B | Concrete struct A/B | Generic class A/B | Generic struct A/B |
+| --- | ---: | ---: | ---: | ---: |
+| Loc retrieval | 1.179 / 1.164 ns | 1.163 / 1.159 ns | 2.537 / 2.540 ns | 1.168 / 1.176 ns |
+| `ValuesAt` directory resolution | 0.724 / 0.717 ns | 0.717 / 0.714 ns | 2.224 / 2.224 ns | 0.718 / 0.720 ns |
+
+The final cached-row kernels measured 0.329 / 0.333 ns for a raw row load and
+0.297 / 0.297 ns for a raw row store across the A/B sweeps. These raw-row
+figures isolate the terminal array operation after column resolution; they do
+not represent a public point-access call and must not be subtracted from or
+added to the other stage measurements.
+
+The absent cases above use a field whose outer column directory has never been
+allocated in that worker, so they measure the best-case missing-column exit.
+Before treating those numbers as the general absent-field cost, add a case in
+which the same field is warm in another arch of the same alloc. This caveat does
+not affect the present happy-path result or its width independence.
+
+### Shared-Slab Cutover Gate
+
+AFR-34 and the later shared-slab work are expected to remove the current
+per-field jagged column directories. That footprint improvement cannot replace
+`ValuesAt` with a signature scan, ordinal hash, dictionary, or another
+higher-constant point lookup. The shared-storage design must first provide an
+equally direct `O(1)` field-to-column slot or handle, and benchmarks must show
+point access matching or improving on the direct-column path before cutover.
+
+This constraint does not imply interlaced component rows. Current `T[]` columns
+are contiguous, and future composite storage remains column-major. Iteration
+resolves a column once, exposes it as a `Span<T>` or `ReadOnlySpan<T>`, and then
+walks contiguous elements without repeating point lookup inside the row loop.
 
 ## Alloc-Local Sparse States
 
@@ -367,18 +565,21 @@ release its blocks and recycle its `stateId`.
 
 ### Location Semantics
 
-`EntArchLoc` can retain its current three-int footprint while storing:
+AFR-31 can compare retaining the current three-int meaning with a candidate
+three-int shape storing:
 
 - `AllocId`
 - `StateId`
 - `Row`
 
-The dense state supplies the global `ArchId`. Normal value access therefore
-does not consult the sparse `archId -> stateId` map. Structural movement uses
-that map only to find or create the dst state.
+In that candidate, the dense state supplies the global `ArchId`. Normal value
+access therefore does not consult the sparse `archId -> stateId` map.
+Structural movement uses that map only to find or create the dst state.
 
-This changes the meaning of one existing location field; it does not require a
-specialized page or generation store for `EntArchLoc`.
+`StateId` is not predetermined. The current `(AllocId, ArchId, Row)` shape or
+another same-size direct locator remains preferable unless the complete
+candidate point path wins the AFR-24 through AFR-26 gate. No candidate requires
+a specialized page or generation store for `EntArchLoc`.
 
 ## Composite Storage
 
@@ -387,6 +588,14 @@ specialized page or generation store for `EntArchLoc`.
 Every closed `T` for which
 `RuntimeHelpers.IsReferenceOrContainsReferences<T>()` is false can share one
 alloc-local byte store.
+
+The store may be backed by large managed `byte[]` pages or by large
+uninitialized native pages from `NativeMemory.Alloc`. Native backing is a
+candidate for both reference-free payload and reference-free store metadata:
+packed state descriptors, page descriptors, size-class heads, block handles,
+and free ranges contain no GC references and do not require managed objects.
+The managed alternative uses shared value arrays for the same metadata. AFR-32
+must compare both; moving metadata native is not assumed to be faster.
 
 The composite reference-free block for one active state contains column-major
 storage for:
@@ -401,6 +610,13 @@ address can be expressed as:
 \[
 blockBase + C \times prefixBytes + Row \times sizeof(T)
 \]
+
+One integer block handle identifies a page and offset, directly or through a
+packed state table. Allocating a state carves a range from an existing page; it
+does not allocate a managed block object, a native region, or a linked-list node
+for that block. Free-list links and size-class membership live in page-local
+headers or shared packed value tables. Object and allocation-event counts
+therefore scale with page growth, not active state count.
 
 AFR-20 encodes that layout in one four-byte value:
 
@@ -564,6 +780,17 @@ For one arch, all fields using the same reference-containing `T` can occupy
 adjacent columns in one typed block. The layout entry records the type-local
 column ordinal.
 
+The typed store allocates large `T[]` pages and suballocates multiple arch-state
+blocks from each page. One typed page is one managed array object and one
+managed allocation event, not one object per field membership or per block.
+Its free-list and block metadata should use packed integer/value tables rather
+than managed node objects.
+
+Native memory cannot contain `T` values that are or contain references. Native
+metadata may describe typed blocks only when it contains no managed reference;
+the actual `T[]` page roots and any directory holding those roots remain
+GC-visible managed storage so pages cannot move out of reach of the collector.
+
 A released reference-containing block must be cleared before it is returned to
 the typed store. This is different from the deliberate dirty-data policy for
 reference-free blocks.
@@ -580,17 +807,50 @@ This preserves the threading model:
 - A higher-level page supplier may be shared only on cold page-growth paths;
   supplied pages then become alloc-local.
 
-### Monolithic Slabs and Pages
+### Shared Slabs and Large Pages
 
-The first implementation can use geometrically growing monolithic backing. A
-managed store replaces its byte array; a native store allocates a larger
-uninitialized region, copies live blocks, and frees the old region. A block
-handle is an offset, so either growth strategy preserves logical addresses.
+Storage is acquired in large shared pages, not one allocation per arch state or
+component block. Within one alloc and group:
 
-If whole-slab copying, LOH behavior, or native relocation cost becomes
-measurable, move to typed or byte pages with alloc-local power-of-two free
-lists. Pages should be introduced from measurement, not assumed necessary
-initially.
+- One reference-free byte store supplies blocks to every arch state.
+- One typed managed store per distinct reference-containing `T` supplies typed
+  blocks to every arch state using that `T`.
+- Page directories, size-class heads, and block descriptors are packed shared
+  tables. A free block is represented by integer offsets or indexes, never by a
+  managed node object.
+
+A monolithic slab is the one-page form of this design. Geometric replacement is
+simple and can be a useful first measurement, but every growth event allocates
+the larger region, temporarily retains old and new capacity, copies live data,
+and then retires the old region. A multi-page store instead appends a page and
+keeps existing page-relative handles stable. It trades one extra page selection
+for lower growth-copy and transient-peak costs.
+
+A stable block handle contains or resolves to `pageIndex`, `offset`, and the
+size/capacity class. Mutable state stores handles, not interior managed byrefs.
+For managed pages, each operation reacquires a GC-tracked byref from the current
+array. For native pages, the owning page directory holds the base pointer and
+requested byte count; transient addresses are derived from that owned base and
+native-sized handle arithmetic. Point access uses already-resolved state and
+layout metadata rather than a validation or lookup layer.
+
+Native page ownership is deterministic:
+
+- The alloc/group reference-free store owns every pointer returned by
+  `NativeMemory.Alloc` and records its exact requested capacity.
+- Store teardown calls `NativeMemory.Free` exactly once for every still-owned
+  page. A finalizer is not the ownership mechanism.
+- Individual block release returns a range to the owning page's free lists; it
+  never frees an interior pointer.
+- No state handle, span, byref, or page descriptor may outlive its owning store.
+- Ownership transfer, if introduced, must update one authoritative page table;
+  duplicated raw-pointer ownership is forbidden.
+
+Reference-free native pages are allocated with `NativeMemory.Alloc`, not
+`NativeMemory.AllocZeroed`. New and recycled bytes are dirty by contract and are
+fully initialized before row publication. Typed managed pages retain normal GC
+allocation and clearing rules because reference-containing values cannot be
+stored natively.
 
 `ArrayPool<T>.Shared` is not a replacement for this design. It retains live
 arrays per active arch, commonly over-rents, retains returned memory globally,
@@ -606,6 +866,11 @@ C\left(8 + \sum_j S_j\right)
 
 The 8-byte term is `EntMut`. No storage scheme can reduce this payload without
 compressing component values.
+
+This lower bound contributes to total retained bytes whether its page is a
+managed array or a native region. Native placement can change GC scanning,
+managed object count, and header/alignment overhead; it cannot subtract the
+live component bytes from `B_t`.
 
 The remaining target overhead is:
 
@@ -645,31 +910,43 @@ approximately 424 bytes currently.
 
 ## Hot-Path Model
 
-Sparse catalog storage must not place a general-purpose dictionary lookup on
-ordinary component access.
+Sparse catalog storage must not place a general-purpose dictionary, signature
+scan, or ordinal hash on ordinary component access.
 
-The intended point-access chain is:
+The implemented AFR-21 point-access chain is:
 
 ```text
-loc -> alloc-local state -> field ordinal -> layout -> block -> row
+loc -> closed-generic column directory[alloc][arch] -> T[][row]
 ```
+
+After shared slabs replace the current directory, the permitted shape is:
+
+```text
+loc -> closed-generic direct slot/handle -> column base -> row
+```
+
+The storage address may change; the direct, constant-time lookup contract may
+not.
 
 ### Operation Costs
 
-| Operation | Shared sparse work |
+| Operation | Point or structural path |
 | --- | --- |
-| `HasArchetypal` | Immutable signature or micro-index lookup |
-| `GetArchetypal` | Same lookup, then one block address calculation and load |
-| Existing-field `SetArchetypal` | Same lookup, then one block address calculation and store |
-| Missing-field `SetArchetypal` | Sparse structural-edge lookup and row movement |
-| `UnsetArchetypal` | Sparse structural-edge lookup and row movement |
+| `HasArchetypal` | Direct closed-generic column lookup and null test |
+| `GetArchetypal` | Same lookup, then one indexed row load |
+| Existing-field `SetArchetypal` | Same lookup, then one indexed row store |
+| Missing-field `SetArchetypal` | Direct miss, singleton/edge resolution, optional structural scratch, and row movement |
+| `UnsetArchetypal` | Direct presence test, singleton/edge resolution, uncached signature scan/scratch, and row movement |
 
 The first three operations do not consult:
 
 - The signature hash index.
+- The packed exact signature and field layouts.
 - The sparse transition arena.
 - The alloc's `archId -> stateId` map.
 - A shared lock.
+- `Volatile` publication.
+- Structural signature scratch.
 - A store free list.
 
 Closed generic access should use the byte or typed slab directly. Reference-free
@@ -678,26 +955,44 @@ Typed dispatch remains acceptable where reference-containing storage requires
 GC-visible copy and clear operations, but not for ordinary point reads or
 writes.
 
-Bulk iteration should resolve field layout once before entering the row loop,
-then traverse the contiguous column range directly.
+Bulk iteration obtains the contiguous column once before entering the row loop,
+then traverses a `Span<T>` or `ReadOnlySpan<T>` directly. The column-major
+shared-slab plan preserves this shape; it does not interlace component values
+by row.
 
 ## Object-Count Target
 
-| Layer | Current scaling | Target scaling |
+| Layer | Before its reduction | Implemented or target scaling |
 | --- | --- | --- |
-| Transition arrays | One per arch-capacity slot | Shared edge-arena pages |
+| Transition cache | One array per arch-capacity slot | One shared edge-head array and one shared edge arena; pages only if measurement justifies them |
 | Signature storage | Shared arrays | Shared arrays |
 | Signature hash | Shared structures | Shared structures |
-| Alloc row storage | One `EntMut[]` per active state | Shared alloc-local byte pages |
-| Reference-free fields | One `T[]` per active membership | Shared byte pages |
-| Reference-containing fields | One `T[]` per active membership | Typed pages per distinct `T` |
+| Alloc row storage | One `EntMut[]` per active state | Shared alloc-local reference-free pages |
+| Reference-free fields | One `T[]` per active membership | Shared managed or native byte pages |
+| Reference-containing fields | One `T[]` per active membership | Shared typed managed pages per distinct `T` |
+| State and block metadata | Per-state arrays or objects | Packed shared managed value arrays or native tables |
+| Free blocks | Potential node per free range | Integer offsets in page-local or shared packed free lists |
+| Page directory | Not applicable to per-block arrays | One packed directory per store, grown geometrically |
 
 After shared capacity is available, materializing a global arch should create no
 managed object. Activating an alloc-local state should create no managed object
 when suitable blocks already exist in its alloc-local free lists.
 
-Object creation should scale with shared array or slab-page growth, not with `M`,
-`R`, or `S` directly.
+It should also perform no allocation event in that case. State activation
+updates packed descriptors and free-list indexes only. Page growth is the
+allocation boundary:
+
+- A managed reference-free page creates one `byte[]` object and one managed
+  allocation event.
+- A native reference-free page creates no managed payload object and one native
+  allocation event; page-directory growth is counted separately.
+- A typed reference-containing page creates one `T[]` object and one managed
+  allocation event.
+
+No state block, typed block, free range, or size-class entry gets its own
+managed wrapper or linked-list node. Object creation and allocation events
+should scale with shared catalog-array and page growth, not directly with `M`,
+`R`, `S`, or the number of free blocks.
 
 ## Threading Model
 
@@ -705,16 +1000,20 @@ The sparse design preserves the existing contract:
 
 - Signature interning, global arch creation, and shared edge insertion are
   serialized by the group catalog lock.
-- Arch signatures, field layouts, and wide-signature micro-indexes are immutable
-  after publication.
+- Arch signatures and field layouts are immutable after publication.
+- The group-global signature scratch array is grown and used only while holding
+  the catalog lock.
+- Structural edge records are initialized before release-publishing their head
+  indexes. Structural readers acquire-read a head before following its immutable
+  chain; singleton publication follows the same rule.
 - Alloc-local states, byte slabs, typed slabs, and free lists are mutated only
   by the owning thread for that alloc and group.
 - Different alloc owners may concurrently use the same global arch and group.
 
-`GetArchetypal`, `HasArchetypal`, and overwriting an existing field remain free
-of locks, managed allocations, and `Volatile` operations. Any publication
-mechanism required for newly appended shared edges belongs only to structural
-transition handling.
+`GetArchetypal`, `HasArchetypal`, and overwriting an existing field use only the
+owning alloc's direct column slots. They remain free of locks, managed
+allocations, and `Volatile` operations. Acquire/release publication and shared
+scratch belong only to structural transition handling.
 
 ## Capacity and Fragmentation
 
@@ -743,14 +1042,38 @@ same; retained capacity and growth allocation must therefore be reported
 separately.
 
 Power-of-two row capacities make block size classes and reuse straightforward.
-The physical footprint then contains two forms of slack:
+The physical footprint then contains several distinct forms of slack:
 
 - Unused rows within an active state's current capacity.
-- Free or partially used space inside shared slabs or pages.
+- Size-class rounding inside a live block.
+- Alignment padding between columns or blocks.
+- Free retained blocks available for reuse.
+- Unusable page-tail space that cannot satisfy the next block request.
 
-The implementation should report these separately. Hiding slab
-fragmentation inside a single retained-byte number makes regressions difficult
-to diagnose.
+The implementation should report these separately. Hiding page fragmentation
+inside a single retained-byte number makes regressions difficult to diagnose,
+while excluding free or tail bytes would understate `B_t`.
+
+Page size is a direct object/event-versus-slack tradeoff. Larger pages provide:
+
+- Fewer managed objects for managed backing.
+- Fewer managed or native allocation events.
+- Fewer page-directory entries and less frequent directory growth.
+- More room to reuse blocks across arches before another page is required.
+
+They can also retain more unused tail capacity, increase transient bytes when a
+monolithic slab grows, and make low-occupancy allocs disproportionately
+expensive. Smaller pages reduce worst-case retained slack but increase object
+count, allocation-event count, page-directory traffic, and page-selection/TLB
+pressure. The implementation should benchmark a small set of power-of-two page
+classes against observed block-size distributions rather than select one
+unexplained constant for every store.
+
+Each report must split page counts and retained capacities by reference-free
+managed, reference-free native, and typed managed pages. For each kind, report
+used payload, reusable free bytes, internal/size-class waste, alignment waste,
+and page-tail waste. Allocation-event totals and transient peak growth bytes
+remain separate from the retained snapshot.
 
 A bounded empty-state cache should be expressed as a retained-byte budget rather
 than only a count of empty arches, because capacity and component width can vary
@@ -771,7 +1094,8 @@ They do not match sparse power-set exploration.
 ### One Dictionary Per Arch
 
 Per-arch dictionaries multiply object headers, bucket arrays, entry arrays, and
-poor cache locality. Shared packed or slab-backed indexes are required.
+poor cache locality. Global structural indexes must be shared and packed;
+ordinary point access uses the direct closed-generic slot instead.
 
 ### Global Arch Eviction
 
@@ -782,42 +1106,81 @@ global definition eviction.
 
 ### Native Storage
 
-Uninitialized `NativeMemory.Alloc` backing is a first-class candidate for the
-reference-free byte store, alongside managed byte arrays. It fits the deliberate
-dirty-byte policy: newly allocated and returned storage is never assumed to be
-zero, and every row is initialized before `Count` exposes it.
+Uninitialized `NativeMemory.Alloc` backing is a first-class candidate for both
+reference-free payload pages and reference-free store metadata. Eligible data
+includes composite byte columns, packed state/page descriptors, block-handle
+tables, size-class heads, and free-range metadata. Native allocation occurs per
+large page or geometrically grown shared table, never per state block.
 
-Native backing does not reduce physical component payload, but it can avoid
-managed slab objects, GC scanning pressure, and large-object-heap behavior. It
-also requires explicit ownership. A native implementation must:
+Native backing can remove managed slab objects, GC scanning pressure, and
+large-object-heap behavior. It does not reduce the unavoidable component
+payload, and allocator placement does not hide memory from the cost model. An
+`X`-byte managed page moved to an `X`-byte native page may reduce `B_me` and
+`O_m`, but it still contributes `X` bytes to `B_n` and approximately the same
+amount to `B_t`.
 
-- pair every successful allocation with deterministic `NativeMemory.Free`;
-- retain offsets or block handles rather than persistent interior pointers;
-- use native-sized arithmetic when deriving addresses from capacity and byte
-  prefixes;
-- report native retained bytes separately from estimated managed bytes;
-- preserve the same alloc/group ownership partition and single-owner mutation;
-- never store a value that is or contains references.
+The native contract is:
 
-AFR-32 should compare managed and native backing directly. It should use
-`NativeMemory.Alloc`, not `NativeMemory.AllocZeroed`; zeroing would spend work
-that the reference-free reuse contract intentionally avoids.
+- Allocate with `NativeMemory.Alloc`, never `NativeMemory.AllocZeroed`. New and
+  recycled reference-free bytes are intentionally dirty.
+- Initialize every value that becomes visible before publishing the dst row's
+  `Count`.
+- Record each page's owner, base pointer, and exact requested capacity in one
+  authoritative store page table.
+- Pair every successful page/table allocation with exactly one deterministic
+  `NativeMemory.Free` during replacement or owning-store teardown.
+- Release blocks into packed alloc-local free lists; never allocate or free a
+  native region for an individual block and never free an interior pointer.
+- Retain stable integer page/offset handles in state. Do not duplicate owning
+  raw pointers in per-block managed wrapper objects.
+- Use native-sized arithmetic when deriving addresses from capacity, offsets,
+  and byte prefixes.
+- Preserve the alloc/group ownership partition and single-owner mutation model.
+- Report requested native capacity, native allocation events, native page
+  count, used bytes, and every native slack category alongside managed metrics.
+
+No value that is or contains references may enter native payload or be hidden
+inside native metadata. Reference-containing component pages remain typed
+managed `T[]` buffers, and their managed roots remain visible to the GC.
+
+AFR-32 should compare managed and native page/table combinations under the same
+workloads. The comparison must report `B_ml`, `B_me`, `B_n`, `B_t`, `O_m`,
+allocation events, page counts, and fragmentation together, then apply the
+Release point-speed gate. Native storage is selected for measured total-system
+benefit, not because moving a byte outside the GC makes it disappear from the
+report.
 
 ## Empirical Questions
 
-The epic must measure rather than assume:
+AFR-21 resolved the point-membership question: the ordinal hash lost
+end-to-end, and direct closed-generic column lookup is the benchmark reference.
+AFR-24 resolved the initial call-shape and stage questions: generic
+reference-type canonical sharing is the expensive case, value-type generic
+instantiations specialize to approximately concrete-call cost, and the
+loc/directory/raw-row baselines above isolate where future point-path changes
+must improve generated code. The remaining epic must measure rather than
+assume:
 
-- The signature size where an immutable micro-index beats contiguous span
-  search.
-- Present-field versus absent-field lookup costs.
+- Whether the AFR-34/shared-slab direct slot or handle matches or improves the
+  current present, absent, value-shape, and signature-width point results.
+- Column-resolution and contiguous `Span<T>` iteration cost after shared-slab
+  cutover.
 - The observed transition degree distribution `D`.
 - Signature-index capacity and load across representative catalogs.
-- Managed-array versus uninitialized `NativeMemory.Alloc` byte backing,
-  including relocation cost, retained native bytes, and GC/LOH behavior.
-- Monolithic slab growth cost.
-- Slab fragmentation by component-size distribution.
+- Managed-array versus uninitialized `NativeMemory.Alloc` backing for both
+  reference-free payload and packed reference-free metadata, including point
+  cost, relocation, GC/LOH behavior, and deterministic teardown.
+- Monolithic replacement versus appended large pages, including transient peak
+  bytes, copy cost, page-selection cost, and stable-handle behavior.
+- Page-size classes by component/block distribution, reporting managed and
+  native allocation events, page counts, total retained bytes, reusable free
+  bytes, size-class waste, alignment waste, and page-tail waste.
+- Typed managed page sizes and reuse for reference-containing values, including
+  clear cost and managed object/allocation-event count.
+- Verification that state activation and block reuse create no per-block
+  managed wrapper or free-list node.
 - Aligned versus unaligned reference-free access for large structs and vectors.
-- Point-access cost relative to the current jagged arrays.
+- Point-access cost relative to the accepted direct-column benchmark.
 - Default JIT behavior versus `AggressiveInlining`, `AggressiveOptimization`,
   and their combination on the final point and structural paths, including
   cold JIT cost, generated-code size, and observed inlining decisions.
@@ -828,19 +1191,37 @@ The stress demo remains an integration check. Dedicated benchmarks must isolate
 catalog creation, point access, structural movement, store growth, and
 retained memory.
 
+Every performance measurement and disassembly used for a decision must come
+from an optimized Release build. Debug artifacts are not valid evidence.
+
 ## Theoretical Acceptance Conditions
 
 The final design satisfies the theory when:
 
 - No retained structure is proportional to unexplored power-set signatures.
-- Global metadata is `O(M + S + E)`.
+- Global metadata is `O(N + M + S + E)` with no `M × N` term.
 - Alloc-local metadata is proportional to active or retained states and their
   actual storage classes, not `M × N`.
 - Global arch materialization creates no object when shared arrays have spare
   capacity.
-- Alloc-local activation creates no object when free blocks are available.
+- Alloc-local activation creates no object or allocation event when free blocks
+  are available.
+- No state block, component block, free range, or size-class entry has its own
+  managed wrapper or linked-list node.
 - Reference-free blocks remain intentionally dirty on reuse.
-- Reference-containing blocks are cleared before reuse.
+- Reference-free native pages and tables use uninitialized allocation and every
+  owned allocation is released deterministically exactly once.
+- Reference-containing payload remains in typed managed buffers and is cleared
+  before reuse.
+- Reports separate managed logical bytes, estimated managed bytes, native
+  retained bytes, total retained bytes, managed object count, managed/native
+  allocation-event counts, page counts, and slack/fragmentation categories.
+- Native retained bytes are included in total footprint; moving storage native
+  is never reported as making its physical payload disappear.
 - Exact signatures resolve hash collisions.
-- Ordinary point access remains allocation-free and lock-free.
+- Ordinary point access is faster than the accepted pre-change same-build
+  reference, direct `O(1)`, allocation-free, lock-free, and free of `Volatile`,
+  signature scans, and hashing.
+- Every performance or disassembly claim used for acceptance comes from an
+  optimized Release artifact.
 - Different alloc owners continue to operate concurrently on the same group.

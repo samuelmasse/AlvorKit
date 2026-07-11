@@ -15,8 +15,14 @@ internal struct EntArchMetrics
     internal int FieldLayoutCapacity;
     internal int SignatureIndexCount;
     internal int SignatureIndexCapacity;
+    internal int SignatureScratchCapacity;
+    internal int SingletonArchCount;
+    internal int SingletonDirectoryCapacity;
     internal long DirectedStructuralEdgeCount;
     internal long TransitionCellCapacity;
+    internal int StoredTransitionEdgeCount;
+    internal int TransitionEdgeCapacity;
+    internal int EdgeHeadCapacity;
 
     internal int AllocDirectoryCount;
     internal int AllocDirectoryCapacity;

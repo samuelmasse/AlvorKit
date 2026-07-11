@@ -3,19 +3,25 @@ namespace AlvorKit.ECS.Demo.Bench;
 /// <summary>Coordinates core measurements and isolated archetypal worker samples.</summary>
 internal sealed class EcsBenchCoordinator(EcsBenchOptions options)
 {
-    private const int ReportSchemaVersion = 3;
+    private const int ReportSchemaVersion = 5;
 
     internal int Run()
     {
         var catalog = EcsArchBenchScenarios.Create(options.Widths);
+        var membershipStudy = EcsArchBenchScenarios.CreateMembershipStudy(options.Widths);
+        var hotPathStudy = EcsArchBenchScenarios.CreateHotPathStudy();
         if (options.List)
         {
             foreach (var scenario in catalog)
                 Console.WriteLine(scenario.Id);
+            foreach (var scenario in membershipStudy)
+                Console.WriteLine(scenario.Id);
+            foreach (var scenario in hotPathStudy)
+                Console.WriteLine(scenario.Id);
             return 0;
         }
 
-        var selected = Select(catalog);
+        var selected = Select(catalog, membershipStudy, hotPathStudy);
         PrintEnvironment(selected.Length);
 
         EcsBenchResult[] coreResults = [];
@@ -40,7 +46,10 @@ internal sealed class EcsBenchCoordinator(EcsBenchOptions options)
         return 0;
     }
 
-    private EcsArchBenchScenario[] Select(EcsArchBenchScenario[] catalog)
+    private EcsArchBenchScenario[] Select(
+        EcsArchBenchScenario[] catalog,
+        EcsArchBenchScenario[] membershipStudy,
+        EcsArchBenchScenario[] hotPathStudy)
     {
         if (options.Cases.Length == 0)
             return catalog;
@@ -50,9 +59,27 @@ internal sealed class EcsBenchCoordinator(EcsBenchOptions options)
         {
             string requested = options.Cases[i];
             int index = Array.FindIndex(catalog, scenario => scenario.Id.Equals(requested, StringComparison.Ordinal));
-            if (index < 0)
-                throw new ArgumentOutOfRangeException("--cases", $"Unknown archetypal case '{requested}'. Use --list to inspect IDs.");
-            selected[i] = catalog[index];
+            if (index >= 0)
+            {
+                selected[i] = catalog[index];
+                continue;
+            }
+
+            index = Array.FindIndex(membershipStudy, scenario => scenario.Id.Equals(requested, StringComparison.Ordinal));
+            if (index >= 0)
+            {
+                selected[i] = membershipStudy[index];
+                continue;
+            }
+
+            index = Array.FindIndex(hotPathStudy, scenario => scenario.Id.Equals(requested, StringComparison.Ordinal));
+            if (index >= 0)
+            {
+                selected[i] = hotPathStudy[index];
+                continue;
+            }
+
+            throw new ArgumentOutOfRangeException("--cases", $"Unknown archetypal case '{requested}'. Use --list to inspect IDs.");
         }
 
         return selected;

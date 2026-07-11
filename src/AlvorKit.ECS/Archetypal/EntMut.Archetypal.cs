@@ -5,8 +5,10 @@ namespace AlvorKit.ECS;
 //   arch, and dense row. EntArchColumn<T, N, A> stores component values at that same alloc/arch/row coordinate.
 // - EntArchGraph<A> is shared by the group. Its lock serializes field registration, arch creation, transition caching,
 //   and jagged-array outer growth. Runtime rows and component columns remain partitioned by alloc.
-// - Every canonical packed signature has parallel immutable field layouts. Reference-free entries store byte-column
-//   prefixes; reference-containing entries store type-local columns. The graph publishes both together under its lock.
+// - Every canonical packed signature is the immutable field-membership authority and has parallel field layouts. Ordinary
+//   point access goes directly through its closed-generic column at alloc/arch/row; it does not search the signature or graph.
+//   Packed membership and sparse transition edges are used only while resolving structural changes. Reference-free layouts
+//   store byte-column prefixes, while reference-containing layouts store type-local columns.
 // - One thread exclusively owns an alloc's data for a given group. Reads, writes, and row changes inside that alloc are
 //   intentionally unsynchronized. Multiple threads may use the same group and arch concurrently only through different allocs.
 // - Structural changes move an Ent between dense arch row sets. Adding copies every src field; removing copies only the
@@ -22,58 +24,61 @@ public readonly partial record struct EntMut
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public T? GetArchetypal<T, N, A>()
     {
-        int fieldId = EntArchColumn<T, N, A>.FieldId;
         var loc = Get<EntArchLoc, A>();
+        var values = EntArchColumn<T, N, A>.ValuesAt(loc.AllocId, loc.ArchId);
 
-        if (!EntArchGraph<A>.ContainsField(loc.ArchId, fieldId))
+        if (values == null)
             return default;
 
-        return EntArchColumn<T, N, A>.Values[loc.AllocId][loc.ArchId][loc.Row];
+        return values[loc.Row];
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool HasArchetypal<T, N, A>()
     {
-        int fieldId = EntArchColumn<T, N, A>.FieldId;
         var loc = Get<EntArchLoc, A>();
 
-        return EntArchGraph<A>.ContainsField(loc.ArchId, fieldId);
+        return EntArchColumn<T, N, A>.ValuesAt(loc.AllocId, loc.ArchId) != null;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void SetArchetypal<T, N, A>(in T value)
     {
-        int fieldId = EntArchColumn<T, N, A>.FieldId;
         var loc = Get<EntArchLoc, A>();
         int srcArchId = loc.ArchId;
-        int dstArchId = EntArchGraph<A>.GetAddArchId(srcArchId, fieldId);
+        var values = EntArchColumn<T, N, A>.ValuesAt(loc.AllocId, srcArchId);
 
-        if (dstArchId != srcArchId)
+        if (values != null)
         {
-            if (!IsAlive)
-                return;
-
-            if (srcArchId == EntArchGraph<A>.NoArchId)
-            {
-                dstArchId = EntArchGraph<A>.GetSingletonArchId(fieldId);
-                if (dstArchId == EntArchGraph<A>.UnresolvedTransitionArchId)
-                    dstArchId = EntArchGraph<A>.ResolveSingleton(fieldId);
-
-                loc.AllocId = EntReg.PageAllocators[PageIndex];
-                loc.Row = EntArchRows<A>.Append(loc.AllocId, dstArchId, this);
-            }
-            else
-            {
-                if (dstArchId == EntArchGraph<A>.UnresolvedTransitionArchId)
-                    dstArchId = EntArchGraph<A>.ResolveAdd(srcArchId, fieldId);
-
-                loc.Row = EntArchRows<A>.Move(loc.AllocId, srcArchId, loc.Row, dstArchId, srcArchId);
-            }
-
-            loc.ArchId = dstArchId;
-            Set<EntArchLoc, A>(loc);
+            values[loc.Row] = value;
+            return;
         }
 
+        if (!IsAlive)
+            return;
+
+        int fieldId = EntArchColumn<T, N, A>.FieldId;
+        int dstArchId;
+        if (srcArchId == EntArchGraph<A>.NoArchId)
+        {
+            dstArchId = EntArchGraph<A>.GetSingletonArchId(fieldId);
+            if (dstArchId == EntArchGraph<A>.UnresolvedTransitionArchId)
+                dstArchId = EntArchGraph<A>.ResolveSingleton(fieldId);
+
+            loc.AllocId = EntReg.PageAllocators[PageIndex];
+            loc.Row = EntArchRows<A>.Append(loc.AllocId, dstArchId, this);
+        }
+        else
+        {
+            dstArchId = EntArchGraph<A>.GetTransitionArchId(srcArchId, fieldId);
+            if (dstArchId == EntArchGraph<A>.UnresolvedTransitionArchId)
+                dstArchId = EntArchGraph<A>.ResolveAdd(srcArchId, fieldId);
+
+            loc.Row = EntArchRows<A>.Move(loc.AllocId, srcArchId, loc.Row, dstArchId, srcArchId);
+        }
+
+        loc.ArchId = dstArchId;
+        Set<EntArchLoc, A>(loc);
         EntArchColumn<T, N, A>.Values[loc.AllocId][loc.ArchId][loc.Row] = value;
     }
 
@@ -84,17 +89,17 @@ public readonly partial record struct EntMut
         var loc = Get<EntArchLoc, A>();
         int srcArchId = loc.ArchId;
 
-        if (!EntArchGraph<A>.ContainsField(srcArchId, fieldId))
+        if (EntArchColumn<T, N, A>.ValuesAt(loc.AllocId, srcArchId) == null)
             return false;
 
-        int dstArchId = EntArchGraph<A>.GetRemoveArchId(srcArchId, fieldId);
-        if (dstArchId == EntArchGraph<A>.OutsideGroupArchId)
+        if (EntArchGraph<A>.IsSingleton(srcArchId))
         {
             EntArchRows<A>.Remove(loc.AllocId, srcArchId, loc.Row);
             Unset<EntArchLoc, A>();
         }
         else
         {
+            int dstArchId = EntArchGraph<A>.GetTransitionArchId(srcArchId, fieldId);
             if (dstArchId == EntArchGraph<A>.UnresolvedTransitionArchId)
                 dstArchId = EntArchGraph<A>.ResolveRemove(srcArchId, fieldId);
 

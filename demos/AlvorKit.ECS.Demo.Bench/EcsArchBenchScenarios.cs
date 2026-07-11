@@ -44,4 +44,66 @@ internal static class EcsArchBenchScenarios
 
         return [.. scenarios];
     }
+
+    /// <summary>Builds the opt-in AFR-21 membership-kernel study cases.</summary>
+    internal static EcsArchBenchScenario[] CreateMembershipStudy(ReadOnlySpan<int> widths)
+    {
+        var scenarios = new List<EcsArchBenchScenario>(widths.Length * 16);
+        foreach (int width in widths)
+        {
+            string suffix = $"k{width:00}";
+            AddMembershipCases(scenarios, "indexof", suffix, width);
+            AddMembershipCases(scenarios, "binary", suffix, width);
+            AddMembershipCases(scenarios, "ordinalhash", suffix, width);
+            AddMembershipCases(scenarios, "ideal-direct", suffix, width);
+        }
+
+        return [.. scenarios];
+    }
+
+    /// <summary>Builds the opt-in AFR-24 point-call and attribution study cases.</summary>
+    internal static EcsArchBenchScenario[] CreateHotPathStudy()
+    {
+        string[] shapes = ["scalar", "wide", "reference", "refstruct"];
+        string[] operations = ["get", "set"];
+        string[] callSites = ["concrete", "generic"];
+        string[] groups = ["class", "struct"];
+        string[] workingSets = ["one", "r1024"];
+        var scenarios = new List<EcsArchBenchScenario>(74);
+
+        foreach (string shape in shapes)
+            foreach (string operation in operations)
+                foreach (string callSite in callSites)
+                    foreach (string group in groups)
+                        foreach (string workingSet in workingSets)
+                        {
+                            scenarios.Add(new(
+                                $"arch-hot-full-{shape}-{operation}-{callSite}-{group}-{workingSet}",
+                                "hot-path",
+                                "op"));
+                        }
+
+        foreach (string callSite in callSites)
+            foreach (string group in groups)
+            {
+                scenarios.Add(new($"arch-hot-stage-loc-{callSite}-{group}-r1024", "hot-path-stage", "op"));
+                scenarios.Add(new(
+                    $"arch-hot-stage-directory-{callSite}-{group}-r1024",
+                    "hot-path-stage",
+                    "op"));
+            }
+
+        foreach (string operation in operations)
+            scenarios.Add(new($"arch-hot-stage-row-{operation}-r1024", "hot-path-stage", "op"));
+
+        return [.. scenarios];
+    }
+
+    private static void AddMembershipCases(List<EcsArchBenchScenario> scenarios, string algorithm, string suffix, int width)
+    {
+        scenarios.Add(new($"arch-membership-{algorithm}-present-first-{suffix}", "membership-kernel", "lookup", width));
+        scenarios.Add(new($"arch-membership-{algorithm}-present-rotating-{suffix}", "membership-kernel", "lookup", width));
+        scenarios.Add(new($"arch-membership-{algorithm}-absent-interior-{suffix}", "membership-kernel", "lookup", width));
+        scenarios.Add(new($"arch-membership-{algorithm}-absent-high-{suffix}", "membership-kernel", "lookup", width));
+    }
 }
