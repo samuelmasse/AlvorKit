@@ -7,7 +7,7 @@ internal static class XmlDocText
     internal static string CleanLine(string line)
     {
         line = line.Trim();
-        foreach (var marker in new[] { "/**!", "/*!<", "/*!", "/**", "/*" })
+        foreach (var marker in new[] { "/**!", "/*!<", "/*!", "/**", "/*", "//" })
             if (line.StartsWith(marker))
                 line = line[marker.Length..];
         if (line.EndsWith("*/"))
@@ -43,7 +43,7 @@ internal static class XmlDocText
         const string noiseTags =
             "win32|macos|linux|x11|wayland|egl|wgl|glx|osmesa|nsgl|posix|unix|"
             + "note|remarks?|warning|attention|thread_safety|errors?|sa|see|since|"
-            + "pointer_lifetime|reentrancy|analysis|par|callback_signature|glfw3|link|endlink";
+            + "pointer_lifetime|reentrancy|analysis|par|callback_signature|typedef|glfw3|link|endlink";
         text = Regex.Replace(text,
             @"@(?:" + noiseTags + @")\b\s*",
             "");

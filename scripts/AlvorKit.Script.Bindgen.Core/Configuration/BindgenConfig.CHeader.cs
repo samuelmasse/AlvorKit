@@ -69,6 +69,9 @@ public sealed partial class BindgenConfig
     /// <summary>Native functions kept public but de-emphasized as advanced raw binding members.</summary>
     public string[] AdvancedFunctions { get; set; } = [];
 
+    /// <summary>Native functions whose pointer parameters must not receive managed string convenience overloads.</summary>
+    public Dictionary<string, string> StringSkip { get; set; } = [];
+
     /// <summary>Maps OS platform names to native functions exported only by that platform's native library builds.</summary>
     public Dictionary<string, string[]> PlatformFunctions { get; set; } = [];
 

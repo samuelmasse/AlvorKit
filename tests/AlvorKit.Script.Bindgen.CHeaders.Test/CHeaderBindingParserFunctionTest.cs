@@ -62,6 +62,25 @@ public sealed class CHeaderBindingParserFunctionTest
         Assert.AreEqual("arg0", unnamed.Parameters.Single().ManagedName);
     }
 
+    /// <summary>Configured string skips preserve raw pointer parameters without emitting unsafe convenience overloads.</summary>
+    [TestMethod]
+    public void Parse_StringSkipKeepsRawPointerWithoutStringConvenience()
+    {
+        using var workspace = TempWorkspace.Create();
+        var source = workspace.CreateDirectory("source");
+        var translationUnit = CHeaderParserHarness.WriteHeader(workspace, source, """
+            void test_free(const char* ownedPointer);
+            """);
+        var config = CHeaderTestConfig.Create();
+        config.StringSkip = new() { ["test_free"] = "native function takes ownership" };
+
+        var parameter = CHeaderParserHarness.Parse(translationUnit, source, config).Functions.Single().Parameters.Single();
+
+        Assert.AreEqual("nint", parameter.ManagedType);
+        Assert.AreEqual("nint", parameter.InteropType);
+        Assert.IsFalse(parameter.HasStringConvenience);
+    }
+
     /// <summary>Unsupported parameter types skip only the affected function and record the reason.</summary>
     [TestMethod]
     public void Parse_SkipsUnsupportedParameterType()
