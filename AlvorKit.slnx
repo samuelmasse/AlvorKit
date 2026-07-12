@@ -35,6 +35,8 @@
             Path="demos/AlvorKit.Graphics2D.Fonts.Demo/AlvorKit.Graphics2D.Fonts.Demo.csproj" />
         <Project Path="demos/AlvorKit.Script.AlvorEye.Demo/AlvorKit.Script.AlvorEye.Demo.csproj" />
         <Project Path="demos/AlvorKit.Windowing.Demo/AlvorKit.Windowing.Demo.csproj" />
+        <Project
+            Path="demos/AlvorKit.Windowing.Demo.FileDialogs/AlvorKit.Windowing.Demo.FileDialogs.csproj" />
     </Folder>
 
     <Folder Name="/Script/">
