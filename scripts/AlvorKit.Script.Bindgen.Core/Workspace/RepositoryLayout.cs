@@ -37,12 +37,12 @@ public sealed class RepositoryLayout
     public static RepositoryLayout FindFrom(string startDirectory) =>
         new(ProjectRoot.FindFrom(startDirectory));
 
-    /// <summary>Returns either a requested library name or every native library with bindgen metadata.</summary>
+    /// <summary>Returns a requested library or every configured binding with an active revision marker.</summary>
     public IEnumerable<string> SelectedLibraries(string selection)
     {
         var libraries = BindgenLibraries().ToArray();
         if (selection == "all")
-            return libraries;
+            return libraries.Where(HasBindingRevision);
 
         var selected = libraries.FirstOrDefault(library => string.Equals(library, selection, StringComparison.OrdinalIgnoreCase));
         return selected is not null
@@ -59,6 +59,10 @@ public sealed class RepositoryLayout
                 .OfType<string>()
                 .Order(StringComparer.OrdinalIgnoreCase)
             : [];
+
+    /// <summary>Returns whether a configured library has been activated for aggregate generation.</summary>
+    private bool HasBindingRevision(string library) =>
+        File.Exists(Path.Combine(NativeDirectory, library, "version", "BINDING_REVISION"));
 
     /// <summary>Returns true when a resolved path is the expected directory or one of its descendants.</summary>
     private static bool IsInsideOrEqual(string path, string directory)
