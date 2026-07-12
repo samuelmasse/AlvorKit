@@ -69,7 +69,7 @@ handing off.
 Check for raw source or Doxygen leakage:
 
 ```powershell
-rg -n -P "@callback_signature|@brief|@param|@return|@name|@\{|@\}|@code|@endcode|#define|/\*|\*/|\\brief|\\param|\\return" out\bindgen\<BindingProject>
+rg -n -P "@callback_signature|@typedef|@brief|@param|@return|@name|@\{|@\}|@code|@endcode|#define|/\*|\*/|\\brief|\\param|\\return" out\bindgen\<BindingProject>
 ```
 
 Check for generator/meta wording:

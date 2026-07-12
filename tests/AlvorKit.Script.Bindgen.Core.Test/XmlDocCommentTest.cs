@@ -12,6 +12,22 @@ public sealed class XmlDocCommentTest
         Assert.IsNull(XmlDocComment.Parse("   "));
     }
 
+    /// <summary>C++ line-comment markers are removed from record and field documentation.</summary>
+    [TestMethod]
+    public void CleanLine_StripsCppLineCommentMarkers()
+    {
+        Assert.AreEqual("The native handle.", XmlDocComment.CleanLine("// The native handle."));
+    }
+
+    /// <summary>Doxygen declaration markers are removed while preserving their public prose.</summary>
+    [TestMethod]
+    public void Parse_StripsTypedefMarkerFromSummary()
+    {
+        var comment = XmlDocComment.Parse("/** @typedef UTF-8 filter item. */");
+
+        Assert.AreEqual("UTF-8 filter item.", comment!.Summary);
+    }
+
     /// <summary>Doxygen brief, parameter, and return directives become XML-doc-ready text.</summary>
     [TestMethod]
     public void Parse_NormalizesDoxygenSummaryParametersAndReturns()

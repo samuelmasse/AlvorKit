@@ -16,6 +16,7 @@ internal sealed class CHeaderParameterBinder(BindgenConfig config, CHeaderParseS
         }
 
         var isString = niceType == "string";
+        var hasStringConvenience = isString && !config.StringSkip.ContainsKey(function.Name);
         var isBool = niceType == "bool" || (modifier.Length == 0 && config.BoolParams.GetValueOrDefault(function.Name, []).Contains(parameter.Name));
         var managedType = isString ? "nint" : isBool ? "bool" : niceType;
         var interopType = isString ? "nint" : isBool
@@ -36,7 +37,7 @@ internal sealed class CHeaderParameterBinder(BindgenConfig config, CHeaderParseS
             managedType,
             interopType,
             modifier,
-            HasStringConvenience: isString,
+            HasStringConvenience: hasStringConvenience,
             IsUntypedPointer: IsUntypedPointer(modifier, isString, managedType, canonical),
             IsConstPointee: IsConstPointee(canonical),
             IsSizeT: modifier.Length == 0 && CHeaderNameMapper.CleanTypeSpelling(parameter.Type.Handle) == "size_t",
