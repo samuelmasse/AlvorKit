@@ -27,11 +27,11 @@ public static class RootLoop
         glfw.Terminate();
     }
 
-    private static void Run(IWindowHost host, RootGl gl, Type bootState, Action<Injector>? inject)
+    private static void Run(IWindowHost host, IFileDialogHost fileDialogs, RootGl gl, Type bootState, Action<Injector>? inject)
     {
         var window = new WindowLoop(host);
         var injector = CreateInjector();
-        var root = CreateRootScope(injector, window, gl);
+        var root = CreateRootScope(injector, window, fileDialogs, gl);
         inject?.Invoke(injector);
 
         var state = root.Get<RootState>();
@@ -99,9 +99,10 @@ public static class RootLoop
 
         var gl = new GlBackend(glfw.GetProcAddress);
         var rootGl = new RootGl(gl);
+        using var fileDialogs = new GlfwFileDialogHost(glfw, nativeWindow);
         using var window = new AgentGlfwWindowHost(glfw, nativeWindow, rootGl);
 
-        Run(window, rootGl, bootState, injector =>
+        Run(window, fileDialogs, rootGl, bootState, injector =>
         {
             injector.Add<Gl>(gl);
             injector.Add<Glfw>(glfw);
@@ -139,7 +140,7 @@ public static class RootLoop
         return IsAudioSilentEnvironmentEnabled() ? new AgentSilentMa(backend) : backend;
     }
 
-    private static RootScope CreateRootScope(Injector injector, WindowLoop window, RootGl gl)
+    private static RootScope CreateRootScope(Injector injector, WindowLoop window, IFileDialogHost fileDialogs, RootGl gl)
     {
         var root = injector.Scope<RootScope>()
             .With(gl)
@@ -149,6 +150,7 @@ public static class RootLoop
             .With(new RootInput(window))
             .With(new RootKeyboard(window))
             .With(new RootMouse(window))
+            .With(new RootFileDialogs(fileDialogs))
             .With(new RootScreen(window))
             .With(new RootSprites(new(gl)));
 

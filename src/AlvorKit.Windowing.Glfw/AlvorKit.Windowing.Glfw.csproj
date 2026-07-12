@@ -13,15 +13,27 @@
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj" />
     </ItemGroup>
 
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.NFDe.Backend\AlvorKit.NFDe.Backend.csproj')">
+        <PackageReference Include="AlvorKit.NFDe.Backend" Version="$(NfdeBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.NFDe.Backend\AlvorKit.NFDe.Backend.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.NFDe.Backend\AlvorKit.NFDe.Backend.csproj" />
+    </ItemGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Windowing.Test" />
         <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.GLFW" />
+        <Using Include="AlvorKit.NFDe" />
         <Using Include="AlvorKit.Windowing" />
+        <Using Include="System.Collections.Concurrent" />
+        <Using Include="System.Runtime.ExceptionServices" />
         <Using Include="System.Runtime.Versioning" />
     </ItemGroup>
 
