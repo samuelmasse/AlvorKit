@@ -1,0 +1,100 @@
+kind: c-header
+namespace: AlvorKit.NFDe
+apiClass: Nfd
+apiSummary: The UTF-8 Native File Dialog Extended API from <c>nfd.h</c>.
+backendClass: NfdBackend
+nativeClass: NfdNative
+nativeLibrary: nfd
+prefix: NFD_
+extraPrefixes:
+  - nfd
+workDir: nfde-build
+sourceDir: nativefiledialog-extended-{tag}
+header: src/include/nfd.h
+includeSubdir: src/include
+sourceUrl: https://github.com/btzy/nativefiledialog-extended/archive/refs/tags/v{tag}.tar.gz
+apiProject: out/bindgen/AlvorKit.NFDe
+backendProject: out/bindgen/AlvorKit.NFDe.Backend
+tuLines:
+  - "#include <nfd.h>"
+extraDefines:
+  - NFD_PORTAL
+constants:
+  NFD_WINDOW_HANDLE_TYPE_UNSET: 0
+  NFD_WINDOW_HANDLE_TYPE_WINDOWS: 1
+  NFD_WINDOW_HANDLE_TYPE_COCOA: 2
+  NFD_WINDOW_HANDLE_TYPE_X11: 3
+typeRenames:
+  nfdresult_t: NfdResult
+  nfdu8filteritem_t: NfdUtf8FilterItem
+  nfdwindowhandle_t: NfdWindowHandle
+  nfdopendialogu8args_t: NfdOpenDialogUtf8Args
+  nfdsavedialogu8args_t: NfdSaveDialogUtf8Args
+  nfdpickfolderu8args_t: NfdPickFolderUtf8Args
+  nfdpathsetenum_t: NfdPathSetEnumerator
+typeAliases:
+  nfdpathsetsize_t: CULong
+  nfdversion_t: nuint
+transparentStructs:
+  - nfdu8filteritem_t
+  - nfdwindowhandle_t
+  - nfdopendialogu8args_t
+  - nfdsavedialogu8args_t
+  - nfdpickfolderu8args_t
+  - nfdpathsetenum_t
+enumGroups:
+  NfdWindowHandleType:
+    documentation: Native window handle type constants matching <c>NFD_WINDOW_HANDLE_TYPE_*</c>.
+    prefix: NFD_WINDOW_HANDLE_TYPE_
+outParams:
+  NFD_OpenDialogU8:
+    - outPath
+  NFD_OpenDialogU8_With_Impl:
+    - outPath
+  NFD_OpenDialogMultipleU8:
+    - outPaths
+  NFD_OpenDialogMultipleU8_With_Impl:
+    - outPaths
+  NFD_SaveDialogU8:
+    - outPath
+  NFD_SaveDialogU8_With_Impl:
+    - outPath
+  NFD_PickFolderU8:
+    - outPath
+  NFD_PickFolderU8_With_Impl:
+    - outPath
+  NFD_PickFolderMultipleU8:
+    - outPaths
+  NFD_PickFolderMultipleU8_With_Impl:
+    - outPaths
+  NFD_PathSet_GetCount:
+    - count
+  NFD_PathSet_GetPathU8:
+    - outPath
+  NFD_PathSet_GetEnum:
+    - outEnumerator
+  NFD_PathSet_EnumNextU8:
+    - outPath
+advancedFunctions:
+  - NFD_OpenDialogU8_With_Impl
+  - NFD_OpenDialogMultipleU8_With_Impl
+  - NFD_SaveDialogU8_With_Impl
+  - NFD_PickFolderU8_With_Impl
+  - NFD_PickFolderMultipleU8_With_Impl
+stringSkip:
+  NFD_PathSet_FreePathU8: The pointer is native-owned memory to release, not caller text to marshal.
+skip:
+  NFD_FreePathN: UTF-8 binding uses NFD_FreePathU8; the native character width differs by platform.
+  NFD_OpenDialogN: UTF-8 binding uses NFD_OpenDialogU8; the native character width differs by platform.
+  NFD_OpenDialogN_With_Impl: UTF-8 binding uses NFD_OpenDialogU8_With_Impl; the native character width differs by platform.
+  NFD_OpenDialogMultipleN: UTF-8 binding uses NFD_OpenDialogMultipleU8; the native character width differs by platform.
+  NFD_OpenDialogMultipleN_With_Impl: UTF-8 binding uses NFD_OpenDialogMultipleU8_With_Impl; the native character width differs by platform.
+  NFD_SaveDialogN: UTF-8 binding uses NFD_SaveDialogU8; the native character width differs by platform.
+  NFD_SaveDialogN_With_Impl: UTF-8 binding uses NFD_SaveDialogU8_With_Impl; the native character width differs by platform.
+  NFD_PickFolderN: UTF-8 binding uses NFD_PickFolderU8; the native character width differs by platform.
+  NFD_PickFolderN_With_Impl: UTF-8 binding uses NFD_PickFolderU8_With_Impl; the native character width differs by platform.
+  NFD_PickFolderMultipleN: UTF-8 binding uses NFD_PickFolderMultipleU8; the native character width differs by platform.
+  NFD_PickFolderMultipleN_With_Impl: UTF-8 binding uses NFD_PickFolderMultipleU8_With_Impl; the native character width differs by platform.
+  NFD_PathSet_GetPathN: UTF-8 binding uses NFD_PathSet_GetPathU8; the native character width differs by platform.
+  NFD_PathSet_FreePathN: UTF-8 binding uses NFD_PathSet_FreePathU8; the native character width differs by platform.
+  NFD_PathSet_EnumNextN: UTF-8 binding uses NFD_PathSet_EnumNextU8; the native character width differs by platform.
