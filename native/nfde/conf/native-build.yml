@@ -1,0 +1,61 @@
+kind: cmake
+sourcePatches:
+  - path: src/include/nfd.h
+    search: |-
+      #else
+      typedef unsigned int nfdpathsetsize_t;
+      #endif  // _WIN32, __APPLE__
+    replace: |-
+      #else
+      typedef unsigned long nfdpathsetsize_t;
+      #endif  // _WIN32, __APPLE__
+windows:
+  cmakeOutput: src/bin/nfd.dll
+  cmakeOptions:
+    - -DBUILD_SHARED_LIBS=ON
+    - -DNFD_BUILD_TESTS=OFF
+    - -DNFD_BUILD_SDL2_TESTS=OFF
+    - -DNFD_INSTALL=OFF
+    - -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=bin
+    - -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=bin
+    - -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=lib
+linux:
+  packages:
+    - build-essential
+    - cmake
+    - pkg-config
+  nativePackages:
+    - libdbus-1-dev
+  armArchitecture: armhf
+  armPackages:
+    - gcc-arm-linux-gnueabihf
+    - g++-arm-linux-gnueabihf
+    - libdbus-1-dev:armhf
+  cmakeOutput: src/bin/libnfd.so
+  cmakeOptions:
+    - -DBUILD_SHARED_LIBS=ON
+    - -DNFD_BUILD_TESTS=OFF
+    - -DNFD_BUILD_SDL2_TESTS=OFF
+    - -DNFD_INSTALL=OFF
+    - -DNFD_PORTAL=ON
+    - -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=bin
+    - -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=bin
+    - -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=lib
+  ridEnvironment:
+    linux-arm:
+      PKG_CONFIG_LIBDIR: /usr/lib/arm-linux-gnueabihf/pkgconfig:/usr/share/pkgconfig
+  allowedDependencies:
+    - ld-linux
+    - libc.so.6
+    - libdbus-1.so.3
+    - libgcc_s.so.1
+macos:
+  cmakeOutput: src/bin/libnfd.dylib
+  cmakeOptions:
+    - -DBUILD_SHARED_LIBS=ON
+    - -DNFD_BUILD_TESTS=OFF
+    - -DNFD_BUILD_SDL2_TESTS=OFF
+    - -DNFD_INSTALL=OFF
+    - -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=bin
+    - -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=bin
+    - -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=lib

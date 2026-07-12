@@ -74,8 +74,8 @@ internal static class NativeBuildPlanner
                 "-DCMAKE_CXX_COMPILER=" + target.LinuxCxxCompiler,
                 "-DCMAKE_BUILD_TYPE=Release",
                 .. platform.CMakeOptionsFor(target)
-            ]),
-            new("cmake", ["--build", library.BuildDirectory(target), "-j"]),
+            ], Environment: platform.EnvironmentFor(target)),
+            new("cmake", ["--build", library.BuildDirectory(target), "-j"], Environment: platform.EnvironmentFor(target)),
             new(target.LinuxStrip, [library.OutputFile(target)])
         ];
 

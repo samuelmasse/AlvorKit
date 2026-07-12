@@ -30,7 +30,15 @@ internal sealed class ProcessRunner : IProcessRunner
     }
 
     /// <summary>Starts a process with shell expansion disabled.</summary>
-    private static Process Start(CommandSpec command, bool redirect)
+    private Process Start(CommandSpec command, bool redirect)
+    {
+        var startInfo = CreateStartInfo(command, redirect);
+        return Process.Start(startInfo)
+            ?? throw new InvalidOperationException($"Could not start {command.FileName}.");
+    }
+
+    /// <summary>Creates a shell-free process start configuration for one command.</summary>
+    internal ProcessStartInfo CreateStartInfo(CommandSpec command, bool redirect)
     {
         var startInfo = new ProcessStartInfo(command.FileName)
         {
@@ -40,9 +48,11 @@ internal sealed class ProcessRunner : IProcessRunner
         };
         if (command.WorkingDirectory is not null)
             startInfo.WorkingDirectory = command.WorkingDirectory;
+        if (command.Environment is not null)
+            foreach (var (name, value) in command.Environment)
+                startInfo.Environment[name] = value;
         foreach (var arg in command.Arguments)
             startInfo.ArgumentList.Add(arg);
-        return Process.Start(startInfo)
-            ?? throw new InvalidOperationException($"Could not start {command.FileName}.");
+        return startInfo;
     }
 }
