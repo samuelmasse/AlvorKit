@@ -160,6 +160,33 @@ public sealed class NativeBuildPlannerTest
         }
     }
 
+    /// <summary>Linux CMake planning merges common and RID-specific child-process environment values.</summary>
+    [TestMethod]
+    public void CMakeLinuxCommands_IncludesMergedRidEnvironment()
+    {
+        var context = LoadCMakeContext(out var root);
+        try
+        {
+            var platform = new PlatformBuildConfig
+            {
+                CMakeOutput = "src/sample.so",
+                Environment = new() { ["COMMON"] = "base", ["TARGET"] = "common" },
+                RidEnvironment = new() { ["linux-arm"] = new() { ["TARGET"] = "arm", ["ARM_ONLY"] = "yes" } }
+            };
+
+            var commands = NativeBuildPlanner.CMakeLinuxCommands(context, TargetRid.Parse("linux-arm"), platform);
+
+            Assert.AreEqual("base", commands[0].Environment!["COMMON"]);
+            Assert.AreEqual("arm", commands[0].Environment!["TARGET"]);
+            Assert.AreEqual("yes", commands[1].Environment!["ARM_ONLY"]);
+            Assert.IsNull(commands[2].Environment);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     /// <summary>Windows CMake script requires the VS Clang component when a manifest requests ClangCL.</summary>
     [TestMethod]
     public void CMakeWindowsScript_WhenClangClRequested_RequiresClangComponent()

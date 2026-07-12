@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <PackageLicenseExpression>Zlib</PackageLicenseExpression>
+        <Description>Native File Dialog Extended $(Version) binaries for win (x64, x86, arm64), Linux
+            portal (x64, arm, arm64), and macOS (x64, arm64)</Description>
+        <RepositoryUrl>https://github.com/btzy/nativefiledialog-extended</RepositoryUrl>
+    </PropertyGroup>
+
+</Project>

@@ -28,4 +28,17 @@ public sealed class NativeBuildConfigTest
             CollectionAssert.Contains(options, "-DFASTNOISE2_FASTSIMD_FEATURE_SETS=FEATURE_SETS;SCALAR");
         }
     }
+
+    /// <summary>NFDe uses the portal backend and target pkg-config paths for the cross-built Linux ARM package.</summary>
+    [TestMethod]
+    public void NfdeManifest_LinuxUsesPortalAndArmPkgConfig()
+    {
+        var context = LibraryBuildContext.Load(RepositoryLayout.FindFrom(AppContext.BaseDirectory), "nfde");
+        var linux = context.Build.Linux;
+
+        CollectionAssert.Contains(linux.CMakeOptions, "-DNFD_PORTAL=ON");
+        CollectionAssert.Contains(linux.ArmPackages, "libdbus-1-dev:armhf");
+        StringAssert.Contains(linux.EnvironmentFor(TargetRid.Parse("linux-arm"))["PKG_CONFIG_LIBDIR"], "arm-linux-gnueabihf");
+        Assert.AreEqual(1, context.Build.SourcePatches.Length);
+    }
 }

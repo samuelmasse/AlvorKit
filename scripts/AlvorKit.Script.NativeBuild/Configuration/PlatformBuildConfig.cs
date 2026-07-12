@@ -21,6 +21,12 @@ internal sealed class PlatformBuildConfig
     /// <summary>Additional CMake configure options keyed by runtime identifier.</summary>
     public Dictionary<string, string[]> RidCMakeOptions { get; init; } = [];
 
+    /// <summary>Environment variables applied to build processes on this platform.</summary>
+    public Dictionary<string, string> Environment { get; init; } = [];
+
+    /// <summary>Environment variable overrides keyed by runtime identifier.</summary>
+    public Dictionary<string, Dictionary<string, string>> RidEnvironment { get; init; } = [];
+
     /// <summary>Path to the built CMake output relative to the build directory.</summary>
     public string? CMakeOutput { get; init; }
 
@@ -41,4 +47,16 @@ internal sealed class PlatformBuildConfig
         RidCMakeOptions.TryGetValue(target.Value, out var ridOptions)
             ? CMakeOptions.Concat(ridOptions)
             : CMakeOptions;
+
+    /// <summary>Returns common environment variables with matching RID values applied last.</summary>
+    public IReadOnlyDictionary<string, string> EnvironmentFor(TargetRid target)
+    {
+        if (!RidEnvironment.TryGetValue(target.Value, out var ridEnvironment))
+            return Environment;
+
+        var result = new Dictionary<string, string>(Environment, StringComparer.Ordinal);
+        foreach (var (name, value) in ridEnvironment)
+            result[name] = value;
+        return result;
+    }
 }
