@@ -2,6 +2,13 @@
 
 AlvorKit is a C# game development kit
 
+## Entity-component system
+
+AlvorKit games use the AlvorKit ECS for game entities. Start with the
+[AlvorKit ECS guide](docs/ECS.md) for generated components, entity and arena
+ownership, and the Indexed context, hook, bag, iteration, and teardown pattern
+used by AlvorKit game repositories.
+
 ## Binding development mode
 
 Projects use published binding packages by default. When an exact generated

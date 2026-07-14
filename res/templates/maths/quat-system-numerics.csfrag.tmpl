@@ -1,8 +1,8 @@
     /// <summary>Converts to a System.Numerics quaternion.</summary>
-    public static explicit operator System.Numerics.Quaternion({{TypeName}} value) =>
-        new(value.X, value.Y, value.Z, value.W);
+    public static implicit operator System.Numerics.Quaternion({{TypeName}} value) =>
+        value.packed;
 
     /// <summary>Converts from a System.Numerics quaternion.</summary>
-    public static explicit operator {{TypeName}}(System.Numerics.Quaternion value) =>
-        new(value.X, value.Y, value.Z, value.W);
+    public static implicit operator {{TypeName}}(System.Numerics.Quaternion value) =>
+        FromPacked(value);
 

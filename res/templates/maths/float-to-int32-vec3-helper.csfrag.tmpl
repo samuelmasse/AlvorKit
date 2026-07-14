@@ -1,0 +1,6 @@
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vec3i {{MethodName}}({{InputType}} value)
+    {
+        var converted = System.Runtime.Intrinsics.Vector128.ConvertToInt32({{PackedExpression}});
+        return new(converted[0], converted[1], converted[2]);
+    }

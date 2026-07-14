@@ -1,0 +1,45 @@
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vec4i ConvertToInt32Packed(Vec4d value, int mode)
+    {
+        if (!System.Runtime.Intrinsics.X86.Avx.IsSupported)
+        {
+            return mode switch
+            {
+                1 => new(
+                    (int)ScalarMath.Floor(value.X),
+                    (int)ScalarMath.Floor(value.Y),
+                    (int)ScalarMath.Floor(value.Z),
+                    (int)ScalarMath.Floor(value.W)),
+                2 => new(
+                    (int)ScalarMath.Ceiling(value.X),
+                    (int)ScalarMath.Ceiling(value.Y),
+                    (int)ScalarMath.Ceiling(value.Z),
+                    (int)ScalarMath.Ceiling(value.W)),
+                3 => new(
+                    (int)ScalarMath.Round(value.X),
+                    (int)ScalarMath.Round(value.Y),
+                    (int)ScalarMath.Round(value.Z),
+                    (int)ScalarMath.Round(value.W)),
+                _ => new((int)value.X, (int)value.Y, (int)value.Z, (int)value.W),
+            };
+        }
+
+        var packed = Unsafe.BitCast<Vec4d, System.Runtime.Intrinsics.Vector256<double>>(value);
+        packed = mode switch
+        {
+            1 => System.Runtime.Intrinsics.Vector256.Floor(packed),
+            2 => System.Runtime.Intrinsics.Vector256.Ceiling(packed),
+            3 => System.Runtime.Intrinsics.Vector256.Round(packed),
+            _ => packed,
+        };
+        var clamped = System.Runtime.Intrinsics.Vector256.ClampNative(
+            packed,
+            System.Runtime.Intrinsics.Vector256.Create((double)int.MinValue),
+            System.Runtime.Intrinsics.Vector256.Create((double)int.MaxValue));
+        packed = System.Runtime.Intrinsics.Vector256.ConditionalSelect(
+            System.Runtime.Intrinsics.Vector256.Equals(packed, packed),
+            clamped,
+            System.Runtime.Intrinsics.Vector256<double>.Zero);
+        var converted = System.Runtime.Intrinsics.X86.Avx.ConvertToVector128Int32WithTruncation(packed);
+        return Unsafe.BitCast<System.Runtime.Intrinsics.Vector128<int>, Vec4i>(converted);
+    }

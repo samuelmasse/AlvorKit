@@ -23,7 +23,9 @@ internal static class BoolFunctionsEmitter
     private static void EmitSelect(VectorSpec vector, MemberBlock members, ScalarSpec scalar)
     {
         var typeName = scalar.VectorName(vector.Dimension);
-        var expression = $"new({string.Join(", ", vector.Components.Select(c => $"ScalarMath.Select({c}, whenTrue.{c}, whenFalse.{c})"))})";
+        var expression = BooleanSelectExpression.Supports(vector, scalar)
+            ? BooleanSelectExpression.Select(vector, scalar)
+            : $"new({string.Join(", ", vector.Components.Select(c => $"ScalarMath.Select({c}, whenTrue.{c}, whenFalse.{c})"))})";
         members.Append(NumericFunctionsEmitter.Method($"Selects {scalar.Description} components using this mask.", "readonly", typeName, "Select",
             $"{typeName} whenTrue, {typeName} whenFalse", expression));
     }

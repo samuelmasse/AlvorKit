@@ -278,6 +278,10 @@ Loader services can depend on their parent scope services. A `LevelLoader` can
 consume `LevelChunks`, `LevelPlayerBagMut`, or other `[Level]` services while
 itself being cached in `LevelLoaderScope`.
 
+Game entities, entity contexts, arenas, and bags must follow the ownership and
+registration contracts in [`ECS.md`](ECS.md). The long-lived scope owns those
+objects; its loader scope only performs their ordered registration and setup.
+
 ```csharp
 [LevelLoader]
 public class LevelLoader(

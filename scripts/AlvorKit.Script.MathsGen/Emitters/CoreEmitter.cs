@@ -15,6 +15,7 @@ internal static class CoreEmitter
                 ("Name", "ComponentStrideBytes"), ("Value", "4")));
 
         EmitFields(vector, members);
+        EmitPackedFloatStorage(vector, members);
         members.Append(MathsTemplate.Fragment("scalar-constructor.csfrag.tmpl", ("TypeName", vector.TypeName),
             ("ScalarType", vector.Scalar.CSharpName), ("Arguments", string.Join(", ", Enumerable.Repeat("value", vector.Dimension)))));
         EmitFactories(vector, members);
@@ -25,6 +26,19 @@ internal static class CoreEmitter
             ("MaxIndex", (vector.Dimension - 1).ToString(CultureInfo.InvariantCulture))));
         members.Append(MathsTemplate.Fragment("deconstruct.csfrag.tmpl", ("Parameters", DeconstructParameters(vector)),
             ("Assignments", DeconstructAssignments(vector))));
+    }
+
+    /// <summary>Emits the private intrinsic storage view used by single-precision packed operations.</summary>
+    private static void EmitPackedFloatStorage(VectorSpec vector, MemberBlock members)
+    {
+        if (vector.Scalar.Kind != ScalarKind.Float)
+            return;
+
+        var dimension = vector.Dimension.ToString(CultureInfo.InvariantCulture);
+        members.Append(MathsTemplate.Fragment("packed-system-field.csfrag.tmpl", ("Dimension", dimension)));
+        members.Append(MathsTemplate.Fragment("packed-system-constructor.csfrag.tmpl",
+            ("TypeName", vector.TypeName), ("Dimension", dimension),
+            ("Arguments", string.Join(", ", Enumerable.Repeat(vector.Scalar.ZeroLiteral, vector.Dimension)))));
     }
 
     /// <summary>Emits primary coordinate fields and their color/texture aliases.</summary>

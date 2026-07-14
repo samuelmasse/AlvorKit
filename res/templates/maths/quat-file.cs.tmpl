@@ -7,7 +7,7 @@ namespace AlvorKit.Maths;
 /// <param name="y">The Y component of the vector part.</param>
 /// <param name="z">The Z component of the vector part.</param>
 /// <param name="w">The scalar component.</param>
-[StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.{{LayoutKind}})]
 [DebuggerDisplay("{ToString(),nq}")]
 [ExcludeFromCodeCoverage]
 public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z, {{ScalarType}} w)
@@ -20,18 +20,18 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
     public const int SizeInBytes = {{SizeBytes}};
 
     /// <summary>The X component of the vector part.</summary>
-    public {{ScalarType}} X = x;
+    {{XFieldOffset}}public {{ScalarType}} X = x;
 
     /// <summary>The Y component of the vector part.</summary>
-    public {{ScalarType}} Y = y;
+    {{YFieldOffset}}public {{ScalarType}} Y = y;
 
     /// <summary>The Z component of the vector part.</summary>
-    public {{ScalarType}} Z = z;
+    {{ZFieldOffset}}public {{ScalarType}} Z = z;
 
     /// <summary>The scalar component.</summary>
-    public {{ScalarType}} W = w;
+    {{WFieldOffset}}public {{ScalarType}} W = w;
 
-    /// <summary>Creates a quaternion from vector and scalar parts.</summary>
+{{PackedStorage}}    /// <summary>Creates a quaternion from vector and scalar parts.</summary>
     public {{TypeName}}({{Vector3Type}} vector, {{ScalarType}} scalar)
         : this(vector.X, vector.Y, vector.Z, scalar)
     {
@@ -192,7 +192,7 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
     public readonly {{ScalarType}} Length => ScalarMath.Sqrt(LengthSquared);
 
     /// <summary>Gets this quaternion divided by its length.</summary>
-    public readonly {{TypeName}} Normalized => this / Length;
+    public readonly {{TypeName}} Normalized => Normalize(this);
 
     /// <summary>Gets this quaternion divided by its length, or identity when its length is zero.</summary>
     public readonly {{TypeName}} NormalizedOrIdentity => NormalizedOr(Identity);
@@ -211,13 +211,13 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
             return false;
         }
 
-        result = this / ScalarMath.Sqrt(lengthSquared);
+        result = Normalize(this);
         return true;
     }
 
     /// <summary>Returns value divided by its length.</summary>
     public static {{TypeName}} Normalize({{TypeName}} value) =>
-        value.Normalized;
+        {{NormalizeExpression}};
 
     /// <summary>Returns the dot product of two quaternions.</summary>
     public static {{ScalarType}} Dot({{TypeName}} left, {{TypeName}} right) =>
@@ -231,7 +231,7 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
 
     /// <summary>Returns the conjugate quaternion.</summary>
     public static {{TypeName}} Conjugate({{TypeName}} value) =>
-        new(-value.X, -value.Y, -value.Z, value.W);
+        {{ConjugateExpression}};
 
     /// <summary>Returns the inverse quaternion.</summary>
     public static {{TypeName}} Invert({{TypeName}} value) =>
@@ -267,71 +267,7 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
     public readonly bool IsNormalized({{ScalarType}} epsilon) =>
         IsNormalized(this, epsilon);
 
-    /// <summary>Adds two quaternions component by component.</summary>
-    public static {{TypeName}} operator +({{TypeName}} left, {{TypeName}} right) =>
-        new(left.X + right.X, left.Y + right.Y, left.Z + right.Z, left.W + right.W);
-
-    /// <summary>Adds a scalar to each quaternion component.</summary>
-    public static {{TypeName}} operator +({{TypeName}} left, {{ScalarType}} right) =>
-        new(left.X + right, left.Y + right, left.Z + right, left.W + right);
-
-    /// <summary>Adds a scalar to each quaternion component.</summary>
-    public static {{TypeName}} operator +({{ScalarType}} left, {{TypeName}} right) =>
-        new(left + right.X, left + right.Y, left + right.Z, left + right.W);
-
-    /// <summary>Returns this quaternion unchanged.</summary>
-    public static {{TypeName}} operator +({{TypeName}} value) =>
-        value;
-
-    /// <summary>Subtracts two quaternions component by component.</summary>
-    public static {{TypeName}} operator -({{TypeName}} left, {{TypeName}} right) =>
-        new(left.X - right.X, left.Y - right.Y, left.Z - right.Z, left.W - right.W);
-
-    /// <summary>Subtracts a scalar from each quaternion component.</summary>
-    public static {{TypeName}} operator -({{TypeName}} left, {{ScalarType}} right) =>
-        new(left.X - right, left.Y - right, left.Z - right, left.W - right);
-
-    /// <summary>Subtracts each quaternion component from a scalar.</summary>
-    public static {{TypeName}} operator -({{ScalarType}} left, {{TypeName}} right) =>
-        new(left - right.X, left - right.Y, left - right.Z, left - right.W);
-
-    /// <summary>Negates each quaternion component.</summary>
-    public static {{TypeName}} operator -({{TypeName}} value) =>
-        new(-value.X, -value.Y, -value.Z, -value.W);
-
-    /// <summary>Concatenates two rotations using the Hamilton product.</summary>
-    public static {{TypeName}} operator *({{TypeName}} left, {{TypeName}} right) =>
-        new(
-            (left.W * right.X) + (left.X * right.W) + (left.Y * right.Z) - (left.Z * right.Y),
-            (left.W * right.Y) + (left.Y * right.W) + (left.Z * right.X) - (left.X * right.Z),
-            (left.W * right.Z) + (left.Z * right.W) + (left.X * right.Y) - (left.Y * right.X),
-            (left.W * right.W) - (left.X * right.X) - (left.Y * right.Y) - (left.Z * right.Z));
-
-    /// <summary>Multiplies each quaternion component by a scalar.</summary>
-    public static {{TypeName}} operator *({{TypeName}} left, {{ScalarType}} right) =>
-        new(left.X * right, left.Y * right, left.Z * right, left.W * right);
-
-    /// <summary>Multiplies each quaternion component by a scalar.</summary>
-    public static {{TypeName}} operator *({{ScalarType}} left, {{TypeName}} right) =>
-        right * left;
-
-    /// <summary>Rotates a vector by a normalized quaternion.</summary>
-    public static {{Vector3Type}} operator *({{TypeName}} rotation, {{Vector3Type}} vector) =>
-        TransformVector(rotation, vector);
-
-    /// <summary>Divides one quaternion by another using the inverse of the right operand.</summary>
-    public static {{TypeName}} operator /({{TypeName}} left, {{TypeName}} right) =>
-        left * Invert(right);
-
-    /// <summary>Divides each quaternion component by a scalar.</summary>
-    public static {{TypeName}} operator /({{TypeName}} left, {{ScalarType}} right) =>
-        new(left.X / right, left.Y / right, left.Z / right, left.W / right);
-
-    /// <summary>Divides a scalar by each quaternion component.</summary>
-    public static {{TypeName}} operator /({{ScalarType}} left, {{TypeName}} right) =>
-        new(left / right.X, left / right.Y, left / right.Z, left / right.W);
-
-    /// <summary>Adds two quaternions component by component.</summary>
+{{HamiltonHelper}}{{ArithmeticOperators}}    /// <summary>Adds two quaternions component by component.</summary>
     public static {{TypeName}} Add({{TypeName}} left, {{TypeName}} right) =>
         left + right;
 
@@ -603,21 +539,22 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
             new {{Vector4Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{OneLiteral}}));
     }
 
-    /// <summary>Rotates a vector by a normalized quaternion.</summary>
-    public static {{Vector3Type}} TransformVector({{TypeName}} rotation, {{Vector3Type}} vector)
-    {
-        var uv = {{Vector3Type}}.Cross(rotation.Vector, vector);
-        var uuv = {{Vector3Type}}.Cross(rotation.Vector, uv);
-        return vector + (((uv * rotation.W) + uuv) * {{TwoLiteral}});
-    }
-
-    /// <summary>Linearly interpolates between two quaternions without normalizing.</summary>
+{{TransformVectorMember}}    /// <summary>Linearly interpolates between two quaternions without normalizing.</summary>
     public static {{TypeName}} Lerp({{TypeName}} from, {{TypeName}} to, {{ScalarType}} amount) =>
-        (from * ({{OneLiteral}} - amount)) + (to * amount);
+        new(
+            (from.X * ({{OneLiteral}} - amount)) + (to.X * amount),
+            (from.Y * ({{OneLiteral}} - amount)) + (to.Y * amount),
+            (from.Z * ({{OneLiteral}} - amount)) + (to.Z * amount),
+            (from.W * ({{OneLiteral}} - amount)) + (to.W * amount));
 
     /// <summary>Linearly interpolates between two quaternions and normalizes the result.</summary>
-    public static {{TypeName}} Nlerp({{TypeName}} from, {{TypeName}} to, {{ScalarType}} amount) =>
-        Normalize(Lerp(from, Dot(from, to) < {{ZeroLiteral}} ? -to : to, amount));
+    public static {{TypeName}} Nlerp({{TypeName}} from, {{TypeName}} to, {{ScalarType}} amount)
+    {
+        var end = Dot(from, to) < {{ZeroLiteral}} ? -to : to;
+        var value = Lerp(from, end, amount);
+        var length = ScalarMath.Sqrt(Dot(value, value));
+        return new(value.X / length, value.Y / length, value.Z / length, value.W / length);
+    }
 
     /// <summary>Spherically interpolates along the shortest arc.</summary>
     public static {{TypeName}} Slerp({{TypeName}} from, {{TypeName}} to, {{ScalarType}} amount)
@@ -634,8 +571,14 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
             return Nlerp(from, end, amount);
 
         var angle = ScalarMath.Acos(cosTheta);
-        return ((ScalarMath.Sin(({{OneLiteral}} - amount) * angle) * from) + (ScalarMath.Sin(amount * angle) * end)) /
-            ScalarMath.Sin(angle);
+        var fromScale = ScalarMath.Sin(({{OneLiteral}} - amount) * angle);
+        var toScale = ScalarMath.Sin(amount * angle);
+        var divisor = ScalarMath.Sin(angle);
+        return new(
+            ((from.X * fromScale) + (end.X * toScale)) / divisor,
+            ((from.Y * fromScale) + (end.Y * toScale)) / divisor,
+            ((from.Z * fromScale) + (end.Z * toScale)) / divisor,
+            ((from.W * fromScale) + (end.W * toScale)) / divisor);
     }
 
     /// <summary>Spherically interpolates with extra spins along the arc.</summary>
@@ -654,7 +597,14 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
 
         var angle = ScalarMath.Acos(cosTheta);
         var phi = angle + (extraSpins * {{PiLiteral}});
-        return ((ScalarMath.Sin(angle - (amount * phi)) * from) + (ScalarMath.Sin(amount * phi) * end)) / ScalarMath.Sin(angle);
+        var fromScale = ScalarMath.Sin(angle - (amount * phi));
+        var toScale = ScalarMath.Sin(amount * phi);
+        var divisor = ScalarMath.Sin(angle);
+        return new(
+            ((from.X * fromScale) + (end.X * toScale)) / divisor,
+            ((from.Y * fromScale) + (end.Y * toScale)) / divisor,
+            ((from.Z * fromScale) + (end.Z * toScale)) / divisor,
+            ((from.W * fromScale) + (end.W * toScale)) / divisor);
     }
 
     /// <summary>Interpolates between quaternions using squad control points.</summary>

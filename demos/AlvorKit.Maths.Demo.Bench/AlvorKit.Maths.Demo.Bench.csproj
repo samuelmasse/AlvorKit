@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <ServerGarbageCollection>false</ServerGarbageCollection>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+        <ProjectReference Include="..\..\src\AlvorKit.Maths\AlvorKit.Maths.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Maths" />
+        <Using Include="BenchmarkDotNet.Attributes" />
+        <Using Include="BenchmarkDotNet.Configs" />
+        <Using Include="BenchmarkDotNet.Diagnosers" />
+        <Using Include="BenchmarkDotNet.Order" />
+        <Using Include="BenchmarkDotNet.Running" />
+        <Using Include="System.Runtime.CompilerServices" />
+        <Using Include="System.Runtime.Intrinsics" />
+        <Using Include="System.Runtime.Intrinsics.X86" />
+    </ItemGroup>
+
+</Project>

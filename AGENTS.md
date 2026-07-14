@@ -216,6 +216,15 @@ root/game/world/level/player services, loader scopes, or state transitions, read
 prefixes, attributes, service names, and constructor dependency ordering
 consistent with that guide.
 
+## Game Entities And ECS
+
+AlvorKit game templates and game repositories must use AlvorKit ECS for game
+entities. Before creating or significantly changing generated component
+declarations, entity handles or arenas, Indexed contexts, hooks, bags, indexes,
+or entity lifetime, read [docs/ECS.md](docs/ECS.md). Keep game behavior in
+injected systems and services, keep entity state in components, and follow the
+guide's ownership, registration, mutation, iteration, and teardown contracts.
+
 ## GL Object Ownership
 
 Before creating, deleting, or wiring the lifetime of any GL object (buffers,

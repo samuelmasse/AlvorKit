@@ -1,14 +1,15 @@
 # ECS.Indexed
 
 `AlvorKit.ECS.Indexed` is the engine package for observed mutation and
-maintained indexes on top of `AlvorKit.ECS`. It is the engine extraction of the
-indexed ECS layer proven in Craftdig (`Craftdig.World/Ent`), rebuilt in the
-shape we want rather than copied: Craftdig informs the design, and migration
-must stay possible, but the engine contract is the authority.
+maintained indexes on top of `AlvorKit.ECS`. It provides the engine-owned
+contracts for hooks, maintained bags, indexed handles, and scoped arena
+lifetime.
 
-Strategy: **build this package first**, then migrate Craftdig onto it. The
-analysis behind every decision and the full implementation plan are part of
-this document.
+Start with the game-facing [`ECS.md`](ECS.md) guide for component declaration,
+arena ownership, scoped composition, registration, iteration, and teardown.
+This document is the detailed Indexed API and mutation-contract reference. Its
+later analysis and implementation-plan sections are retained as historical
+design records.
 
 The base `AlvorKit.ECS` package owns storage, handles, generated components,
 and arena lifetime, and stays zero-overhead. `AlvorKit.ECS.Indexed` adds:
@@ -62,10 +63,9 @@ public delegate void EntIdxPreDisposeHook(EntMutIdx ent);
 ```
 
 Pre hooks take the new value by `in` to avoid copying large component structs
-per hook per call. This diverges from Craftdig (`Action<EntMutIdx, T>`) on
-purpose: delegate types are the public API, and changing them later is the one
-breaking change that gets more expensive with every consumer. Post and dispose
-hooks have the same shape as Craftdig; method groups adapt without edits.
+per hook per call. The dedicated delegate types are public API, so their
+signatures are explicit and stable. Post and dispose hooks accept ordinary
+method groups without adapters.
 
 ### Context Builder
 
@@ -90,8 +90,7 @@ public class EntIdxContextBuilder
 Naming is deliberate and truthful:
 
 - `AddBag<N>` — plain marker bag. Contains every live entity whose marker is
-  true. This replaces Craftdig's `AddBagUnloaded`, whose name wrongly read as
-  "unloaded-only" when it meant "loaded-or-not".
+  true, regardless of any separate loaded or ready state.
 - `AddGatedBag<N, TGate>` — the general primitive: marker && gate. Any bool marker
   can gate a bag (`IsReady`, `IsActive`, ...). `TGate` is not inferrable from
   every call shape, but named bag wrapper types usually infer cleanly.
@@ -108,11 +107,10 @@ builder reference must never decide whether a bag is plain or gated.
 Hook lists are stored as `ReadOnlyMemory<delegate>` components on the
 builder's `EntObj` context entity, keyed by internal marker types
 (`EntIdxPre<T, N>`, `EntIdxPost<T, N>`, `EntIdxPreDispose`). This is
-Craftdig's design and it is kept intentionally: it gives O(1) per
-(context, T, N) hook lookup with no dictionaries, per-context isolation for
-free, and reference cleanup through the existing `PageRefFields` machinery
-when the context entity dies. The marker types are engine implementation
-detail and are `internal`, unlike Craftdig where they are public.
+intentional: it gives O(1) per `(context, T, N)` hook lookup with no
+dictionaries, per-context isolation for free, and reference cleanup through
+the existing `PageRefFields` machinery when the context entity dies. The
+marker types are internal engine implementation details.
 
 ### Bags
 
@@ -157,9 +155,8 @@ public class EntIdxGatedBag<N, TGate>(EntIdxGatedBagMut<N, TGate> bag)
 ```
 
 `Add`/`Remove` are `internal`: bag membership is derived state, maintained
-only by the interceptors that registration installs. Craftdig already obeys
-this rule by convention (verified: no gameplay call sites); the engine makes
-it a compile-time rule so a bag can never disagree with its marker. The
+only by the interceptors that registration installs. The engine enforces this
+at compile time so a bag cannot be mutated independently of its marker. The
 `Mut`/read split follows AlvorKit style: the `Mut` type is what a loader
 registers, the read type is what systems inject.
 
@@ -182,11 +179,10 @@ The arena holds the context `EntObj` in a strong field. This is a required
 invariant, not a convenience: handles only carry the value-typed `Ent` view of
 the context, which does not keep the `EntObj` alive. If nothing referenced it,
 the finalizer would recycle the context entity and every hook in the scope
-would silently stop firing. Craftdig gets this right today only implicitly,
-through primary-constructor capture.
+would silently stop firing. The arena therefore owns that strong reference as
+part of its lifetime contract.
 
-`EntIdxArena` implements `IDisposable` properly (Craftdig has a `virtual
-Dispose()` without the interface) and exposes `IsAlive`.
+`EntIdxArena` implements `IDisposable` and exposes `IsAlive`.
 
 ### Registration Errors
 
@@ -219,11 +215,11 @@ Set<T, N>(in value):
     run post hooks for (T, N)                 // observe current state
 ```
 
-The liveness guard is a deliberate fix over Craftdig, where hooks run even
-when the base write will no-op. That gap lets a `Set<Guid, Id>` on a dead
-handle insert a permanently stale entry into a GUID index (the pre hook reads
-the old id as `default`, skips the remove, and adds the dead handle under the
-new id). Dead handles must be inert end to end.
+The liveness guard prevents hooks from running when the base write will no-op.
+Without it, a `Set<Guid, Id>` on a dead handle could insert a permanently stale
+entry into a GUID index: the pre hook would read the old id as `default`, skip
+the remove, and add the dead handle under the new id. Dead handles are inert
+end to end.
 
 Set does not perform change detection; hooks that need it compare against
 `ent.Get<T, N>()` themselves (the dirty-tracker pattern). Equality is not free
@@ -241,14 +237,10 @@ Unset<T, N>():
     return true
 ```
 
-This replaces Craftdig's `Set(default)` + `Unset` composition, which had three
-defects: unsetting an absent component momentarily *created* it (the base set
-stamps the generation), the return value was `true` even when nothing was
-present, and hooks fired for no-op unsets. It also cleans the observable
-order: post hooks now see the honest final state (`Has == false`), where
-Craftdig's post hooks saw present-with-default. Every audited consumer reads
-via `Get` and behaves identically under both orders; `Has`-based hooks only
-work correctly under the new one.
+Unset is a direct operation rather than `Set(default)` followed by a raw unset.
+Composing those operations would momentarily create an absent component, return
+the wrong result for a no-op unset, and fire hooks unnecessarily. Post hooks
+observe the honest final state with `Has == false`.
 
 ### Dispose
 
@@ -260,10 +252,9 @@ Dispose():
     base Dispose()                            // generation bump, slot return
 ```
 
-The liveness guard fixes another Craftdig gap: the base `EntPtr.Dispose` is
-CAS-guarded, but the hook layer was not, so a double dispose re-fired
-pre-dispose hooks and re-ran `Clear` on a dead handle. Craftdig survives by
-accident (its dispose tracker reads `Ploc` as null on dead handles).
+The liveness guard makes Indexed disposal idempotent. Without it, a double
+dispose could re-fire pre-dispose hooks and re-run `Clear` even though the base
+`EntPtr.Dispose` had already rejected the dead handle.
 
 Pre-dispose hooks run while every component is still readable — this is where
 persistence erase and network teardown belong. `Clear` then fires the full
@@ -299,20 +290,19 @@ views instead of maintaining them. Bags and game-side indexes still hold
 now-dead handles; they are not reset, and `Count`/`Ents` are no longer meaningful
 after the owning arena is disposed. This is harmless only under the intended
 lifecycle: bag and index instances die with the same scope. Consumers that
-outlive the arena must check `IsAlive`, the way Craftdig's
-`WorldEntPersister.Write` already does. If a game needs delete semantics
-(persistence erase, index removal), it disposes the individual `EntPtrIdx`
-handles before tearing the scope down.
+outlive the arena must check `IsAlive`. If a game needs delete semantics such
+as persistence erasure or index removal, it disposes the individual
+`EntPtrIdx` handles before tearing the scope down.
 
 ### Hook Rules
 
 - **Order.** Hooks run in registration order. Loaders therefore control
   ordering: register trackers before or after indexes deliberately.
 - **Reentrancy is supported.** Hooks may set other components; the nested
-  write runs its own full pipeline. Craftdig relies on this (the dirty tracker
-  sets `IsDirty` inside a pre hook; bag removal nests an index write inside
-  the unset pipeline). A pre hook that sets its own `(T, N)` recurses without
-  bound — that is a bug in the hook, not something the engine detects.
+  write runs its own full pipeline. Dirty trackers may set a dirty marker, and
+  bag removal nests an index write inside the unset pipeline. A pre hook that
+  sets its own `(T, N)` recurses without bound — that is a bug in the hook,
+  not something the engine detects.
 - **Hooks must not throw.** There is no rollback: a pre-hook throw skips the
   write and all post hooks; a post-hook throw leaves earlier post hooks
   applied. A throw leaves indexes and storage inconsistent by design.
@@ -328,8 +318,8 @@ handles before tearing the scope down.
 
 ### Bag Semantics
 
-The dense bag keeps Craftdig's proven slot layout, but the back-index key is
-per bag identity. The storage mechanics live in one internal
+The dense bag uses a slot layout whose back-index key is per bag identity. The
+storage mechanics live in one internal
 `EntIdxBagStore<TIndex>`; plain bags instantiate it with `EntIdxBagIndex<N>`,
 and gated bags instantiate it with `EntIdxGatedBagIndex<N, TGate>` so different
 gates over one marker do not collide:
@@ -442,8 +432,8 @@ public void Stream()
 ```
 
 Mutating *other* components during iteration is fine and is the normal system
-shape (Craftdig's rigid tick mutates `Position`/`Velocity` while walking the
-rigid bag).
+shape, such as mutating `Position` and `Velocity` while walking a rigid-body
+bag.
 
 ## Package Setup
 
@@ -474,6 +464,7 @@ namespace MyGame.Run;
 [Components]
 public interface IRunComponents
 {
+    Guid Id { get; set; }
     [ComponentToString] RunEntityKind Kind { get; set; }
     [ComponentToString] bool IsReady { get; set; }
     [ComponentToString] bool IsProjectile { get; set; }
@@ -565,9 +556,7 @@ public sealed class RunProjectileSpawner(RunEntArena arena)
 Set data components before flipping membership markers: bag hooks fire
 immediately, so an entity is visible to bag consumers the instant its marker
 and gate are both true. Flipping the gate last means the bag never exposes a
-half-initialized entity. (Craftdig follows this convention with its own gate:
-`PlayerCommonState.Load` and the chunk receivers set data first, `IsLoaded`
-last.)
+half-initialized entity.
 
 Indexed scopes must mutate through `EntPtrIdx`/`EntMutIdx`. The bypass surface
 is structurally narrow — `EntMut`'s constructor is internal, `Ent` is
@@ -606,9 +595,9 @@ removed. Dispose cleanup is automatic through the Clear contract — unsetting
 ### Dirty Tracking
 
 Trackers are closed generic classes, one per saved component, registered by
-game-side discovery. This is Craftdig's real shape (a generic method group
-`Intercept<T, N>` cannot be passed to `AddPre<T, N>` — `N` does not appear in
-the delegate signature, so inference fails):
+game-side discovery. A generic method group `Intercept<T, N>` cannot be passed
+to `AddPre<T, N>` because `N` does not appear in the delegate signature, so
+inference fails:
 
 ```csharp
 [World]
@@ -629,11 +618,11 @@ public sealed class WorldComponentTracker<T, N>(WorldEntDirty dirty)
 }
 ```
 
-Craftdig pairs this with an array-component variant (arrays cannot satisfy
-`IEquatable<T>`), a per-component bit index, and an `IsLoading` suppression
-flag so loading does not mark dirty. All of that stays game policy; the engine
-supplies only the typed hooks. Note the pattern: suppression flags on the
-entity, never raw-handle bypass.
+Games may pair this with an array-component variant because arrays cannot
+satisfy `IEquatable<T>`, a per-component bit index, and an `IsLoading`
+suppression flag so loading does not mark dirty. All of that stays game policy;
+the engine supplies only the typed hooks. Suppression belongs in entity state,
+never in raw-handle bypass.
 
 ### Spatial Index
 
@@ -696,16 +685,17 @@ public sealed class WorldEntDisposeTracker(WorldEntPersister persister)
 context.AddPreDispose(disposeTracker.InterceptDispose);
 ```
 
-## Analysis
+## Historical Analysis
 
-This section records the audit of Craftdig's implementation and consumers that
-produced the design above. File references are to the Craftdig repo
-(`Craftdig/src/...`) and to `src/AlvorKit.ECS`.
+This section records the pre-migration audit of Craftdig's former game-local
+implementation and consumers that produced the engine design above. Craftdig
+has since migrated to `AlvorKit.ECS.Indexed`. File references describe the
+repository shape at the time of the audit and may no longer exist.
 
 ### Craftdig Consumer Inventory
 
-The indexed layer is 12 files in `Craftdig.World/Ent`. Consumers, verified by
-sweep:
+At extraction time, the game-local indexed layer consisted of 12 files in
+`Craftdig.World/Ent`. Its consumers, verified by sweep, were:
 
 - **Six bags**: `WorldDimensionBag` (IsDimensionScope, loaded),
   `DimensionPlayerBag` (IsPlayer, loaded), `DimensionRigidBag` (IsRigid,
@@ -880,7 +870,7 @@ example of the archetype path the main document rejected — per-component
 relocation machinery, deferred commands, and table-level change detection,
 each a cost the package's dense slots avoid.
 
-## Differences From Craftdig
+## Differences From Pre-Migration Craftdig
 
 Summary of every deliberate divergence, for the migration:
 
@@ -904,7 +894,11 @@ dense bag layout with slot 0 and the `-1` sentinel, the backstop hook, the
 Clear-fires-hooks dispose path, immediate (non-deferred) maintenance — is kept
 from Craftdig on purpose.
 
-## Implementation Plan
+## Historical Implementation Plan
+
+The package and its Craftdig migration are complete. The following staged plan
+is retained to explain how the implementation and its contract tests were
+introduced.
 
 ### Project Layout
 
@@ -1024,36 +1018,18 @@ table into this document. Then run the repo lint script and focused coverage
 - Every contract in this document has at least one pinning test.
 - Source files at or below 250 lines with complete XML docs.
 
-## Craftdig Migration (Later, Separate Effort)
+## Craftdig Migration Record
 
-Craftdig stays untouched until the package ships. The engine guards ship to
-Craftdig as part of this migration rather than as separate Craftdig patches.
+Craftdig completed the migration by referencing `AlvorKit.ECS.Indexed`,
+removing its game-local indexed layer, rebasing its world and dimension context
+builders on `EntIdxContextBuilder`, and rebasing its arenas on `EntIdxArena`.
+Loaded bags now use `EntIdxGatedBagMut<N, WorldComponents.IsLoaded>`, while
+unloaded-inclusive bags use `EntIdxBagMut<N>`.
 
-1. Reference `AlvorKit.ECS.Indexed` and add the using where Craftdig
-   centralizes ECS wiring (its `src/Directory.Build.props` already carries the
-   `AlvorKit.ECS` using).
-2. Delete the 12 files in `Craftdig.World/Ent`.
-3. Rebase builders: `WorldEntIdxContextBuilder : EntIdxContextBuilder` and
-   `DimensionChunkEntIdxContextBuilder : EntIdxContextBuilder`
-   (`DimensionEntIdxContextBuilder` inherits the world builder and follows).
-4. Rename bag registrations — 6 call sites: `AddBag` → `AddGatedBag` in
-   `WorldLoader` (dimension bag) and `DimensionLoader` (player, rigid, chunk);
-   those loaded bag wrapper types become `EntIdxGatedBagMut<N, WorldComponents.IsLoaded>`.
-   `AddBagUnloaded` → `AddBag` in `DimensionLoader` (seer) and
-   `WorldServerLoader` (scratched).
-5. Add `in` to pre-hook handler signatures — about 6 methods:
-   `WorldEntIndex.Intercept`, `WorldComponentTracker<T, N>` and the array
-   variant, and the server scratch trackers. Post and dispose handlers adapt
-   via method-group conversion with no edits.
-6. Audit the behavior deltas: any direct `Unset<T, N>` call sites (return
-   value now accurate; no hooks when absent), any reliance on hooks firing for
-   dead handles (none expected), and the now-throwing registration errors.
-7. Run Craftdig's tests plus a world load/unload smoke (chunk streaming
-   exercises gate toggles, dispose, and persistence hooks together).
-
-Craftdig-specific policy stays in Craftdig: `IsLoaded` itself,
-saved-component discovery, dirty bit layout, persistence, GUID index, player
-sync, chunk and spatial indexes.
+Craftdig-specific policy remains in Craftdig: `IsLoaded`, saved-component
+discovery, dirty bit layout, persistence, GUID indexes, player synchronization,
+and chunk and spatial indexes. Those are examples of game-owned policy built on
+the engine hook and bag contracts, not responsibilities of this package.
 
 ## Feature Decisions
 

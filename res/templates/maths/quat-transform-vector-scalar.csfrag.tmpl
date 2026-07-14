@@ -1,0 +1,14 @@
+    /// <summary>Rotates a vector by a normalized quaternion.</summary>
+    public static {{Vector3Type}} TransformVector({{TypeName}} rotation, {{Vector3Type}} vector)
+    {
+        var uvX = (rotation.Y * vector.Z) - (rotation.Z * vector.Y);
+        var uvY = (rotation.Z * vector.X) - (rotation.X * vector.Z);
+        var uvZ = (rotation.X * vector.Y) - (rotation.Y * vector.X);
+        var uuvX = (rotation.Y * uvZ) - (rotation.Z * uvY);
+        var uuvY = (rotation.Z * uvX) - (rotation.X * uvZ);
+        var uuvZ = (rotation.X * uvY) - (rotation.Y * uvX);
+        return new(
+            vector.X + (((uvX * rotation.W) + uuvX) * {{TwoLiteral}}),
+            vector.Y + (((uvY * rotation.W) + uuvY) * {{TwoLiteral}}),
+            vector.Z + (((uvZ * rotation.W) + uuvZ) * {{TwoLiteral}}));
+    }

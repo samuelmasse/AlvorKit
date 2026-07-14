@@ -1,0 +1,12 @@
+    /// <summary>Returns the squared distance between two points.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float DistanceSquared({{TypeName}} left, {{TypeName}} right)
+    {
+{{DifferenceDeclarations}}
+        return {{SquaredSum}};
+    }
+
+    /// <summary>Returns the distance between two points.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float Distance({{TypeName}} left, {{TypeName}} right) =>
+        ScalarMath.Sqrt(DistanceSquared(left, right));

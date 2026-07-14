@@ -1,0 +1,8 @@
+    /// <summary>Provides a runtime-recognized packed view over the public components.</summary>
+    [FieldOffset(0)]
+    private System.Numerics.Quaternion packed;
+
+    /// <summary>Creates a quaternion from its packed System.Numerics representation.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Quat FromPacked(System.Numerics.Quaternion value) =>
+        System.Runtime.CompilerServices.Unsafe.BitCast<System.Numerics.Quaternion, Quat>(value);

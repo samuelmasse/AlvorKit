@@ -1,0 +1,23 @@
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vec4b IsPowerOfTwoPacked(Vec4i value)
+    {
+        var packed = PackUInt32(value);
+        var bitTest = System.Runtime.Intrinsics.Vector128.Equals(
+            packed & (packed - System.Runtime.Intrinsics.Vector128.Create(1U)),
+            System.Runtime.Intrinsics.Vector128<uint>.Zero);
+        var signed = Unsafe.BitCast<
+            System.Runtime.Intrinsics.Vector128<uint>,
+            System.Runtime.Intrinsics.Vector128<int>>(packed);
+        var positiveSigned = System.Runtime.Intrinsics.Vector128.GreaterThan(
+            signed,
+            System.Runtime.Intrinsics.Vector128<int>.Zero);
+        var positive = Unsafe.BitCast<
+            System.Runtime.Intrinsics.Vector128<int>,
+            System.Runtime.Intrinsics.Vector128<uint>>(positiveSigned);
+        var result = bitTest & positive;
+        return new(
+            result[0] != 0U,
+            result[1] != 0U,
+            result[2] != 0U,
+            result[3] != 0U);
+    }

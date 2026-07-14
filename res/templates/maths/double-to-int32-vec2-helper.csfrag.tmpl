@@ -1,0 +1,33 @@
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vec2i ConvertToInt32Packed(Vec2d value, int mode)
+    {
+        if (!System.Runtime.Intrinsics.X86.Sse2.IsSupported)
+        {
+            return mode switch
+            {
+                1 => new((int)ScalarMath.Floor(value.X), (int)ScalarMath.Floor(value.Y)),
+                2 => new((int)ScalarMath.Ceiling(value.X), (int)ScalarMath.Ceiling(value.Y)),
+                3 => new((int)ScalarMath.Round(value.X), (int)ScalarMath.Round(value.Y)),
+                _ => new((int)value.X, (int)value.Y),
+            };
+        }
+
+        var packed = Unsafe.BitCast<Vec2d, System.Runtime.Intrinsics.Vector128<double>>(value);
+        packed = mode switch
+        {
+            1 => System.Runtime.Intrinsics.Vector128.Floor(packed),
+            2 => System.Runtime.Intrinsics.Vector128.Ceiling(packed),
+            3 => System.Runtime.Intrinsics.Vector128.Round(packed),
+            _ => packed,
+        };
+        var clamped = System.Runtime.Intrinsics.Vector128.ClampNative(
+            packed,
+            System.Runtime.Intrinsics.Vector128.Create((double)int.MinValue),
+            System.Runtime.Intrinsics.Vector128.Create((double)int.MaxValue));
+        packed = System.Runtime.Intrinsics.Vector128.ConditionalSelect(
+            System.Runtime.Intrinsics.Vector128.Equals(packed, packed),
+            clamped,
+            System.Runtime.Intrinsics.Vector128<double>.Zero);
+        var converted = System.Runtime.Intrinsics.X86.Sse2.ConvertToVector128Int32WithTruncation(packed);
+        return new(converted[0], converted[1]);
+    }

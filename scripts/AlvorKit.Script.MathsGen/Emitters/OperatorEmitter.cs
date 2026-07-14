@@ -53,7 +53,11 @@ internal static class OperatorEmitter
             EmitArithmeticPair(vector, members, op);
 
         members.Append(Operator("Returns whether every component is true.", "bool", "true", $"{vector.TypeName} value", "value.All"));
-        members.Append(Operator("Returns whether every component is false.", "bool", "false", $"{vector.TypeName} value", "value.None"));
+        var falseOperator = Operator("Returns whether every component is false.", "bool", "false", $"{vector.TypeName} value",
+            vector.Dimension == 3
+                ? string.Join(" && ", vector.Components.Select(component => $"!value.{component}"))
+                : "value.None");
+        members.Append(vector.Dimension == 3 ? Inline(falseOperator) : falseOperator);
         EmitEquality(vector, members, "mask");
     }
 
@@ -77,13 +81,63 @@ internal static class OperatorEmitter
     {
         var target = vector with { Scalar = resultScalar };
         var scalar = vector.Scalar.CSharpName;
-        members.Append(Operator($"Applies {description} between each component and a scalar.", target.TypeName, op,
-            $"{vector.TypeName} left, {scalar} right", New(target, component => Cast(target, $"left.{component}") + $" {op} " + Cast(target, "right"))));
-        members.Append(Operator($"Applies {description} between a scalar and each component.", target.TypeName, op,
-            $"{scalar} left, {vector.TypeName} right", New(target, component => Cast(target, "left") + $" {op} " + Cast(target, $"right.{component}"))));
-        members.Append(Operator($"Applies {description} component by component.", target.TypeName, op,
-            $"{vector.TypeName} left, {vector.TypeName} right",
-            New(target, component => Cast(target, $"left.{component}") + $" {op} " + Cast(target, $"right.{component}"))));
+        var vectorScalarSummary = $"Applies {description} between each component and a scalar.";
+        members.Append(VectorScalarOperator(vectorScalarSummary, vector, target, op, scalar));
+        var scalarVectorSummary = $"Applies {description} between a scalar and each component.";
+        members.Append(ScalarVectorOperator(scalarVectorSummary, vector, target, op, scalar));
+        var vectorPairSummary = $"Applies {description} component by component.";
+        members.Append(VectorPairOperator(vectorPairSummary, vector, target, op));
+    }
+
+    /// <summary>Renders a scalar-vector operator, using System.Numerics SIMD for supported single-precision arithmetic.</summary>
+    private static string ScalarVectorOperator(string summary, VectorSpec vector, VectorSpec target, string op, string scalar)
+    {
+        var scalarExpression = New(target, component => Cast(target, "left") + $" {op} " + Cast(target, $"right.{component}"));
+        if (op == "*" && vector.Scalar.Kind == ScalarKind.Float)
+            return Operator(summary, target.TypeName, op, $"{scalar} left, {vector.TypeName} right", "new(left * right.packed)");
+
+        return Operator(summary, target.TypeName, op, $"{scalar} left, {vector.TypeName} right", scalarExpression);
+    }
+
+    /// <summary>Renders a vector-scalar operator, using measured packed paths for supported floating-point arithmetic.</summary>
+    private static string VectorScalarOperator(string summary, VectorSpec vector, VectorSpec target, string op, string scalar)
+    {
+        var scalarExpression = New(target, component => Cast(target, $"left.{component}") + $" {op} " + Cast(target, "right"));
+        if ((op is "*" or "/") && vector.Scalar.Kind == ScalarKind.Float)
+            return Operator(summary, target.TypeName, op, $"{vector.TypeName} left, {scalar} right", $"new(left.packed {op} right)");
+
+        if (DoubleVectorExpression.SupportsVectorScalar(vector, op))
+            return Operator(summary, target.TypeName, op, $"{vector.TypeName} left, {scalar} right",
+                DoubleVectorExpression.VectorScalar(vector, "left", op, "right"));
+
+        return Operator(summary, target.TypeName, op, $"{vector.TypeName} left, {scalar} right", scalarExpression);
+    }
+
+    /// <summary>Renders a vector-pair operator, using measured packed paths for supported arithmetic.</summary>
+    private static string VectorPairOperator(string summary, VectorSpec vector, VectorSpec target, string op)
+    {
+        var scalarExpression = New(target, component => Cast(target, $"left.{component}") + $" {op} " + Cast(target, $"right.{component}"));
+        if ((op is "+" or "-" or "*" or "/") && vector.Scalar.Kind == ScalarKind.Float)
+            return Operator(summary, target.TypeName, op, $"{vector.TypeName} left, {vector.TypeName} right",
+                $"new(left.packed {op} right.packed)");
+
+        if (DoubleVectorExpression.SupportsBinary(vector, op))
+            return Operator(summary, target.TypeName, op, $"{vector.TypeName} left, {vector.TypeName} right",
+                DoubleVectorExpression.Binary(vector, "left", op, "right"));
+
+        if ((op is "+" or "-" or "*" or "&" or "|" or "^") && Int32Vector128Expression.Supports(vector))
+            return Operator(summary, target.TypeName, op, $"{vector.TypeName} left, {vector.TypeName} right",
+                Int32Vector128Expression.Binary(vector, "left", op, "right"));
+
+        if ((op is "&" or "|" or "^") && Int32Vector64Expression.Supports(vector))
+            return Operator(summary, target.TypeName, op, $"{vector.TypeName} left, {vector.TypeName} right",
+                Int32Vector64Expression.Binary(vector, "left", op, "right"));
+
+        if ((op is "+" or "-" or "*" or "&" or "|" or "^") && Int64VectorExpression.Supports(vector))
+            return Operator(summary, target.TypeName, op, $"{vector.TypeName} left, {vector.TypeName} right",
+                Int64VectorExpression.Binary(vector, "left", op, "right"));
+
+        return Operator(summary, target.TypeName, op, $"{vector.TypeName} left, {vector.TypeName} right", scalarExpression);
     }
 
     /// <summary>Emits a C#-promoted unary operator.</summary>
@@ -100,7 +154,35 @@ internal static class OperatorEmitter
             return;
 
         var target = vector with { Scalar = resultScalar };
-        members.Append(Operator(summary, target.TypeName, op, $"{vector.TypeName} value", New(target, expression)));
+        var resultExpression = New(target, expression);
+        if (op == "-" && vector.Scalar.Kind == ScalarKind.Float)
+            resultExpression = "new(-value.packed)";
+        else if (DoubleVectorExpression.SupportsUnary(vector, op))
+        {
+            resultExpression = DoubleVectorExpression.Unary(vector, op, "value");
+        }
+        else if (op == "-" && vector.Scalar.Kind == ScalarKind.Int && Int32Vector128Expression.Supports(vector))
+        {
+            resultExpression = Int32Vector128Expression.Unary(vector, op, "value");
+        }
+        else if (op == "-" && vector.Scalar.Kind == ScalarKind.Int64 && Int64VectorExpression.Supports(vector))
+        {
+            resultExpression = Int64VectorExpression.Unary(vector, op, "value");
+        }
+        else if (op == "~" && Int32Vector64Expression.Supports(vector))
+        {
+            resultExpression = Int32Vector64Expression.Unary(vector, op, "value");
+        }
+        else if (op == "~" && Int32Vector128Expression.Supports(vector))
+        {
+            resultExpression = Int32Vector128Expression.Unary(vector, op, "value");
+        }
+        else if (op == "~" && Int64VectorExpression.Supports(vector))
+        {
+            resultExpression = Int64VectorExpression.Unary(vector, op, "value");
+        }
+
+        members.Append(Operator(summary, target.TypeName, op, $"{vector.TypeName} value", resultExpression));
     }
 
     /// <summary>Emits C#-promoted shift operators.</summary>
@@ -118,12 +200,20 @@ internal static class OperatorEmitter
             (">>>", "right without sign extension"),
         })
         {
+            var scalarCountExpression = Int32Vector128Expression.Supports(vector)
+                ? Int32Vector128Expression.Shift(vector, "left", op, "right")
+                : Int64VectorExpression.Supports(vector)
+                    ? Int64VectorExpression.Shift(vector, "left", op, "right")
+                    : New(target, component => $"{Cast(target, $"left.{component}")} {op} right");
             members.Append(Operator($"Shifts each component {description} by a scalar bit count.", target.TypeName, op,
                 $"{vector.TypeName} left, int right",
-                New(target, component => $"{Cast(target, $"left.{component}")} {op} right")));
+                scalarCountExpression));
+            var vectorCountFallback = New(target, component => $"{Cast(target, $"left.{component}")} {op} right.{component}");
+            var vectorCountExpression = Int32VariableShiftExpression.Supports(vector)
+                ? Int32VariableShiftExpression.Shift(vector, op, vectorCountFallback)
+                : vectorCountFallback;
             members.Append(Operator($"Shifts each component {description} by matching integer-vector bit counts.", target.TypeName, op,
-                $"{vector.TypeName} left, {vector.IntTypeName} right",
-                New(target, component => $"{Cast(target, $"left.{component}")} {op} right.{component}")));
+                $"{vector.TypeName} left, {vector.IntTypeName} right", vectorCountExpression));
         }
     }
 
@@ -212,6 +302,14 @@ internal static class OperatorEmitter
     private static string Operator(string summary, string returnType, string op, string parameters, string expression) =>
         MathsTemplate.Fragment("operator-expression.csfrag.tmpl", ("Summary", summary), ("ReturnType", returnType),
             ("Operator", op), ("Parameters", parameters), ("Expression", expression));
+
+    /// <summary>Marks a measured tiny operator for aggressive inlining.</summary>
+    private static string Inline(string declaration)
+    {
+        var firstLineEnd = declaration.IndexOf(Environment.NewLine, StringComparison.Ordinal);
+        return declaration.Insert(firstLineEnd + Environment.NewLine.Length,
+            $"    [MethodImpl(MethodImplOptions.AggressiveInlining)]{Environment.NewLine}");
+    }
 
     /// <summary>Returns XML-safe operator wording for documentation.</summary>
     private static string OperatorDescription(string op) => op switch

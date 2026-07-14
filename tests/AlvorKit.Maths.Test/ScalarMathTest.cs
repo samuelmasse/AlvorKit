@@ -4,13 +4,27 @@ namespace AlvorKit.Maths.Test;
 [TestClass]
 public sealed class ScalarMathTest
 {
-    /// <summary>Common numeric helpers preserve existing vector component semantics.</summary>
+    /// <summary>Common numeric helpers preserve native Min/Max and regular System vector Clamp/Abs semantics.</summary>
     [TestMethod]
     public void CommonHelpers_Work()
     {
-        Assert.AreEqual(1f, ScalarMath.Min(float.NaN, 1f));
-        Assert.IsTrue(float.IsNaN(ScalarMath.Min(1f, float.NaN)));
-        Assert.AreEqual(-0f, ScalarMath.Abs(-0f));
+        var floatNaN = BitConverter.Int32BitsToSingle(unchecked((int)0xFFC12345));
+        var doubleNaN = BitConverter.Int64BitsToDouble(unchecked((long)0xFFF8123456789ABC));
+        var halfNaN = BitConverter.Int16BitsToHalf(unchecked((short)0xFE11));
+
+        AssertSameBits(float.Min(floatNaN, 1f), ScalarMath.Min(floatNaN, 1f));
+        AssertSameBits(float.Min(1f, floatNaN), ScalarMath.Min(1f, floatNaN));
+        AssertSameBits(float.Max(-0f, 0f), ScalarMath.Max(-0f, 0f));
+        AssertSameBits(double.Min(doubleNaN, 1d), ScalarMath.Min(doubleNaN, 1d));
+        AssertSameBits(Half.Max(halfNaN, (Half)1f), ScalarMath.Max(halfNaN, (Half)1f));
+        Assert.AreEqual(0, BitConverter.SingleToInt32Bits(ScalarMath.Abs(-0f)));
+        Assert.AreEqual(0L, BitConverter.DoubleToInt64Bits(ScalarMath.Abs(-0d)));
+        Assert.AreEqual((short)0, BitConverter.HalfToInt16Bits(ScalarMath.Abs((Half)(-0f))));
+        Assert.AreEqual(int.MinValue, ScalarMath.Abs(int.MinValue));
+        AssertSameBits(SystemClamp(floatNaN, 0f, 1f), ScalarMath.Clamp(floatNaN, 0f, 1f));
+        AssertSameBits(SystemClamp(2f, 3f, 1f), ScalarMath.Clamp(2f, 3f, 1f));
+        AssertSameBits(SystemClamp(-0d, 0d, 1d), ScalarMath.Clamp(-0d, 0d, 1d));
+        AssertSameBits(SystemClamp(doubleNaN, 0d, 1d), ScalarMath.Saturate(doubleNaN));
         Assert.AreEqual(0f, ScalarMath.Saturate(-1f));
         Assert.AreEqual(0.5f, ScalarMath.Saturate(0.5f));
         Assert.AreEqual(1f, ScalarMath.Saturate(2f));
@@ -59,4 +73,25 @@ public sealed class ScalarMathTest
         Assert.IsFalse(ScalarMath.IsPowerOfTwo(-2));
         Assert.IsFalse(ScalarMath.IsPowerOfTwo(int.MinValue));
     }
+
+    private static float SystemClamp(float value, float min, float max) =>
+        System.Runtime.Intrinsics.Vector128.Clamp(
+            System.Runtime.Intrinsics.Vector128.Create(value),
+            System.Runtime.Intrinsics.Vector128.Create(min),
+            System.Runtime.Intrinsics.Vector128.Create(max))[0];
+
+    private static double SystemClamp(double value, double min, double max) =>
+        System.Runtime.Intrinsics.Vector128.Clamp(
+            System.Runtime.Intrinsics.Vector128.Create(value),
+            System.Runtime.Intrinsics.Vector128.Create(min),
+            System.Runtime.Intrinsics.Vector128.Create(max))[0];
+
+    private static void AssertSameBits(float expected, float actual) =>
+        Assert.AreEqual(BitConverter.SingleToInt32Bits(expected), BitConverter.SingleToInt32Bits(actual));
+
+    private static void AssertSameBits(double expected, double actual) =>
+        Assert.AreEqual(BitConverter.DoubleToInt64Bits(expected), BitConverter.DoubleToInt64Bits(actual));
+
+    private static void AssertSameBits(Half expected, Half actual) =>
+        Assert.AreEqual(BitConverter.HalfToInt16Bits(expected), BitConverter.HalfToInt16Bits(actual));
 }

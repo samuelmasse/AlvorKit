@@ -25,9 +25,17 @@ internal static class ConversionEmitter
         var sourceType = source.VectorName(target.Dimension);
         var conversion = VectorCatalog.IsImplicitConversion(source, target.Scalar) ? "implicit" : "explicit";
         var summary = $"{conversion.ToUpperInvariant()[0]}{conversion[1..]}ly converts a {sourceType} to a {target.TypeName}.";
-        var args = target.Components.Select(component => CastComponent(target.Scalar, source, $"value.{component}"));
+        var sourceVector = new VectorSpec(target.Dimension, source);
+        var expression = target.Scalar.Kind == ScalarKind.Int && FloatToInt32Expression.Supports(sourceVector)
+            ? FloatToInt32Expression.Convert(sourceVector, "value")
+            : target.Scalar.Kind == ScalarKind.Int && DoubleToInt32Expression.Supports(sourceVector)
+                ? DoubleToInt32Expression.Convert(sourceVector, "value", 0)
+                : NumericFunctionsEmitter.NewRaw(
+                    target.Components.Select(component => CastComponent(target.Scalar, source, $"value.{component}")));
         members.Append(MathsTemplate.Fragment("conversion-expression.csfrag.tmpl", ("Summary", summary), ("ConversionKind", conversion),
-            ("TypeName", target.TypeName), ("SourceType", sourceType), ("Expression", NumericFunctionsEmitter.NewRaw(args))));
+            ("TypeName", target.TypeName), ("SourceType", sourceType), ("Expression", expression)));
+        if (target.Scalar.Kind == ScalarKind.Int && source.Kind == ScalarKind.Float && target.Dimension == 3)
+            members.Append(FloatToInt32Expression.TargetHelper(target));
     }
 
     /// <summary>Emits an explicit conversion from a higher-dimension source vector.</summary>
@@ -51,13 +59,13 @@ internal static class ConversionEmitter
             ("ConversionKind", "implicit"),
             ("TypeName", vector.TypeName),
             ("SourceType", systemType),
-            ("Expression", $"new({ComponentArguments(vector, "value")})")));
+            ("Expression", "new(value)")));
         members.Append(MathsTemplate.Fragment("conversion-expression.csfrag.tmpl",
             ("Summary", $"Implicitly converts a {vector.TypeName} to a {systemType}."),
             ("ConversionKind", "implicit"),
             ("TypeName", systemType),
             ("SourceType", vector.TypeName),
-            ("Expression", $"new({ComponentArguments(vector, "value")})")));
+            ("Expression", "value.packed")));
     }
 
     /// <summary>Returns the generated tuple type for one vector.</summary>

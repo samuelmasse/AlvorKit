@@ -88,7 +88,8 @@ public sealed class GeneratedQuaternionTest
     public void GeneratedQuaternionConversionsAndRelations_Work()
     {
         var value = new Quat(1f, 2f, 3f, 4f);
-        var system = (System.Numerics.Quaternion)value;
+        System.Numerics.Quaternion system = value;
+        Quat roundTrip = system;
         Quatd doubleValue = value;
         var floatValue = (Quat)doubleValue;
         (float x, float y, float z, float w) = value;
@@ -96,7 +97,7 @@ public sealed class GeneratedQuaternionTest
         var almost = new Quat(1.001f, 2f, 3f, 4f);
 
         Assert.AreEqual(1f, system.X);
-        Assert.AreEqual(value, (Quat)system);
+        Assert.AreEqual(value, roundTrip);
         Assert.AreEqual(new Quatd(1d, 2d, 3d, 4d), doubleValue);
         Assert.AreEqual(value, floatValue);
         Assert.AreEqual(value, tupleValue);
@@ -138,7 +139,7 @@ public sealed class GeneratedQuaternionTest
 
     private static System.Numerics.Quaternion ToSystemNumerics<TQuat>(TQuat value)
         where TQuat : struct, IQuatSystemNumerics<TQuat> =>
-        (System.Numerics.Quaternion)value;
+        value;
 
     private static TMatrix CreateRotationGeneric<TMatrix, TScalar, TVector3, TVector4, TQuat, TMatrix3>(TQuat rotation)
         where TMatrix : struct, IMat4QuaternionRotation<TMatrix, TScalar, TVector3, TVector4, TQuat, TMatrix3>

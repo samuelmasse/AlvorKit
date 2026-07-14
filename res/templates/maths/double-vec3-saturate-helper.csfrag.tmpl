@@ -1,0 +1,9 @@
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vec3d SaturatePacked(Vec3d value)
+    {
+        var packed = System.Runtime.Intrinsics.Vector256.Clamp(
+            System.Runtime.Intrinsics.Vector256.Create(value.X, value.Y, value.Z, 0d),
+            System.Runtime.Intrinsics.Vector256<double>.Zero,
+            System.Runtime.Intrinsics.Vector256.Create(1d));
+        return new(packed[0], packed[1], packed[2]);
+    }

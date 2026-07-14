@@ -135,27 +135,13 @@
     /// <summary>Attempts to invert a compact 2D affine transform.</summary>
     public static bool TryInvert({{TypeName}} value, out {{TypeName}} result)
     {
-        var det = value.Determinant;
-        if (det == {{ZeroLiteral}})
-        {
-            result = default;
-            return false;
-        }
-
-        var invDet = {{OneLiteral}} / det;
-        result = new {{TypeName}}(
-            new {{Vector2Type}}(value.Column1.Y * invDet, -value.Column0.Y * invDet),
-            new {{Vector2Type}}(-value.Column1.X * invDet, value.Column0.X * invDet),
-            new {{Vector2Type}}(
-                ((value.Column1.X * value.Column2.Y) - (value.Column1.Y * value.Column2.X)) * invDet,
-                ((value.Column0.Y * value.Column2.X) - (value.Column0.X * value.Column2.Y)) * invDet));
-        return true;
+{{TryInvertBody}}
     }
 
     /// <summary>Transforms a 2D point using the compact affine transform.</summary>
     public static {{Vector2Type}} TransformPoint({{TypeName}} value, {{Vector2Type}} point) =>
-        (value.Column0 * point.X) + (value.Column1 * point.Y) + value.Column2;
+        {{TransformPointExpression}};
 
     /// <summary>Transforms a 2D direction vector without applying translation.</summary>
     public static {{Vector2Type}} TransformVector({{TypeName}} value, {{Vector2Type}} vector) =>
-        (value.Column0 * vector.X) + (value.Column1 * vector.Y);
+        {{TransformVectorExpression}};

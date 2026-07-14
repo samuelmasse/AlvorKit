@@ -10,6 +10,12 @@ internal static class QuaternionFileEmitter
             ("TypeSummary", TypeSummary(quaternion)),
             ("TypeName", quaternion.TypeName),
             ("ScalarType", quaternion.Scalar.CSharpName),
+            ("LayoutKind", quaternion.Scalar.Kind == ScalarKind.Float ? "Explicit" : "Sequential"),
+            ("XFieldOffset", FieldOffset(quaternion, 0)),
+            ("YFieldOffset", FieldOffset(quaternion, 1)),
+            ("ZFieldOffset", FieldOffset(quaternion, 2)),
+            ("WFieldOffset", FieldOffset(quaternion, 3)),
+            ("PackedStorage", PackedStorage(quaternion)),
             ("Suffix", quaternion.Scalar.Suffix),
             ("Vector3Type", quaternion.Vector3TypeName),
             ("Vector4Type", quaternion.Vector4TypeName),
@@ -29,9 +35,66 @@ internal static class QuaternionFileEmitter
             ("ToleranceLiteral", ToleranceLiteral(quaternion.Scalar)),
             ("PositiveInfinityLiteral", $"{quaternion.Scalar.CSharpName}.PositiveInfinity"),
             ("PiLiteral", $"{quaternion.Scalar.CSharpName}.Pi"),
+            ("RegisterType", QuaternionSimdExpression.RegisterType(quaternion)),
+            ("RegisterApi", QuaternionSimdExpression.RegisterApi(quaternion)),
+            ("HamiltonHelper", HamiltonHelper(quaternion)),
+            ("ArithmeticOperators", ArithmeticOperators(quaternion)),
+            ("ConjugateExpression", QuaternionSimdExpression.Conjugate(quaternion, "value")),
+            ("NormalizeExpression", NormalizeExpression(quaternion)),
+            ("TransformVectorMember", TransformVectorMember(quaternion)),
             ("CrossScalarConversions", CrossScalarConversions(quaternion)),
             ("SystemNumericsConversions", SystemNumericsConversions(quaternion)),
             ("ImplementedInterfaces", ImplementedInterfaces(quaternion)));
+
+    private static string ArithmeticOperators(QuaternionSpec quaternion) =>
+        MathsTemplate.Fragment(
+            "quat-operators-simd.csfrag.tmpl",
+            ("TypeName", quaternion.TypeName),
+            ("ScalarType", quaternion.Scalar.CSharpName),
+            ("Vector3Type", quaternion.Vector3TypeName),
+            ("RegisterType", QuaternionSimdExpression.RegisterType(quaternion)),
+            ("RegisterApi", QuaternionSimdExpression.RegisterApi(quaternion)),
+            ("PairAddExpression", QuaternionSimdExpression.Binary(quaternion, "left", "+", "right")),
+            ("VectorScalarAddExpression", QuaternionSimdExpression.VectorScalar(quaternion, "left", "+", "right")),
+            ("ScalarVectorAddExpression", QuaternionSimdExpression.ScalarVector(quaternion, "left", "+", "right")),
+            ("PairSubtractExpression", QuaternionSimdExpression.Binary(quaternion, "left", "-", "right")),
+            ("VectorScalarSubtractExpression", QuaternionSimdExpression.VectorScalar(quaternion, "left", "-", "right")),
+            ("ScalarVectorSubtractExpression", QuaternionSimdExpression.ScalarVector(quaternion, "left", "-", "right")),
+            ("NegateExpression", QuaternionSimdExpression.Unary(quaternion, "-", "value")),
+            ("HamiltonExpression", HamiltonExpression(quaternion)),
+            ("ScaleExpression", QuaternionSimdExpression.VectorScalar(quaternion, "left", "*", "right")),
+            ("DivideScalarExpression", QuaternionSimdExpression.VectorScalar(quaternion, "left", "/", "right")),
+            ("ScalarDivideExpression", QuaternionSimdExpression.ScalarVector(quaternion, "left", "/", "right")));
+
+    private static string HamiltonExpression(QuaternionSpec quaternion) =>
+        MathsTemplate.Fragment(
+            quaternion.Scalar.Kind == ScalarKind.Float
+                ? "quat-hamilton-system.csfrag.tmpl"
+                : "quat-hamilton-packed-double.csfrag.tmpl",
+            ("TypeName", quaternion.TypeName));
+
+    private static string HamiltonHelper(QuaternionSpec quaternion) =>
+        quaternion.Scalar.Kind == ScalarKind.Double
+            ? MathsTemplate.Fragment("quat-hamilton-packed-double-helper.csfrag.tmpl", ("TypeName", quaternion.TypeName))
+            : string.Empty;
+
+    private static string NormalizeExpression(QuaternionSpec quaternion) =>
+        quaternion.Scalar.Kind == ScalarKind.Float
+            ? "FromPacked(System.Numerics.Quaternion.Normalize(value.packed))"
+            : "value / value.Length";
+
+    private static string TransformVectorMember(QuaternionSpec quaternion) =>
+        MathsTemplate.Fragment(
+            quaternion.Scalar.Kind == ScalarKind.Float
+                ? "quat-transform-vector.csfrag.tmpl"
+                : "quat-transform-vector-scalar.csfrag.tmpl",
+            ("TypeName", quaternion.TypeName),
+            ("ScalarType", quaternion.Scalar.CSharpName),
+            ("Vector3Type", quaternion.Vector3TypeName),
+            ("RegisterType", QuaternionSimdExpression.RegisterType(quaternion)),
+            ("RegisterApi", QuaternionSimdExpression.RegisterApi(quaternion)),
+            ("ZeroLiteral", quaternion.Scalar.ZeroLiteral),
+            ("TwoLiteral", quaternion.Scalar.TwoLiteral));
 
     private static string ImplementedInterfaces(QuaternionSpec quaternion)
     {
@@ -73,6 +136,16 @@ internal static class QuaternionFileEmitter
     private static string SystemNumericsConversions(QuaternionSpec quaternion) =>
         quaternion.Scalar.Kind == ScalarKind.Float
             ? MathsTemplate.Fragment("quat-system-numerics.csfrag.tmpl", ("TypeName", quaternion.TypeName))
+            : string.Empty;
+
+    private static string FieldOffset(QuaternionSpec quaternion, int component) =>
+        quaternion.Scalar.Kind == ScalarKind.Float
+            ? $"[FieldOffset({(component * quaternion.Scalar.SizeBytes).ToString(CultureInfo.InvariantCulture)})]{Environment.NewLine}    "
+            : string.Empty;
+
+    private static string PackedStorage(QuaternionSpec quaternion) =>
+        quaternion.Scalar.Kind == ScalarKind.Float
+            ? MathsTemplate.Fragment("quat-packed-system-storage.csfrag.tmpl")
             : string.Empty;
 
     private static string HalfLiteral(ScalarSpec scalar) => scalar.Kind == ScalarKind.Float ? "0.5f" : "0.5d";

@@ -1,0 +1,7 @@
+    /// <summary>Creates a matrix from its equal-layout System.Numerics storage view.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private {{TypeName}}({{PackedType}} value)
+        : this({{Arguments}})
+    {
+        packed = value;
+    }

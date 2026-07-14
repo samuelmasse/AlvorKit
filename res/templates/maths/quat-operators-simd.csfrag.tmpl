@@ -1,0 +1,59 @@
+    /// <summary>Adds two quaternions component by component.</summary>
+    public static {{TypeName}} operator +({{TypeName}} left, {{TypeName}} right) =>
+        {{PairAddExpression}};
+
+    /// <summary>Adds a scalar to each quaternion component.</summary>
+    public static {{TypeName}} operator +({{TypeName}} left, {{ScalarType}} right) =>
+        {{VectorScalarAddExpression}};
+
+    /// <summary>Adds a scalar to each quaternion component.</summary>
+    public static {{TypeName}} operator +({{ScalarType}} left, {{TypeName}} right) =>
+        {{ScalarVectorAddExpression}};
+
+    /// <summary>Returns this quaternion unchanged.</summary>
+    public static {{TypeName}} operator +({{TypeName}} value) =>
+        value;
+
+    /// <summary>Subtracts two quaternions component by component.</summary>
+    public static {{TypeName}} operator -({{TypeName}} left, {{TypeName}} right) =>
+        {{PairSubtractExpression}};
+
+    /// <summary>Subtracts a scalar from each quaternion component.</summary>
+    public static {{TypeName}} operator -({{TypeName}} left, {{ScalarType}} right) =>
+        {{VectorScalarSubtractExpression}};
+
+    /// <summary>Subtracts each quaternion component from a scalar.</summary>
+    public static {{TypeName}} operator -({{ScalarType}} left, {{TypeName}} right) =>
+        {{ScalarVectorSubtractExpression}};
+
+    /// <summary>Negates each quaternion component.</summary>
+    public static {{TypeName}} operator -({{TypeName}} value) =>
+        {{NegateExpression}};
+
+    /// <summary>Concatenates two rotations using the Hamilton product.</summary>
+    public static {{TypeName}} operator *({{TypeName}} left, {{TypeName}} right) =>
+{{HamiltonExpression}}
+
+    /// <summary>Multiplies each quaternion component by a scalar.</summary>
+    public static {{TypeName}} operator *({{TypeName}} left, {{ScalarType}} right) =>
+        {{ScaleExpression}};
+
+    /// <summary>Multiplies each quaternion component by a scalar.</summary>
+    public static {{TypeName}} operator *({{ScalarType}} left, {{TypeName}} right) =>
+        right * left;
+
+    /// <summary>Rotates a vector by a normalized quaternion.</summary>
+    public static {{Vector3Type}} operator *({{TypeName}} rotation, {{Vector3Type}} vector) =>
+        TransformVector(rotation, vector);
+
+    /// <summary>Divides one quaternion by another using the inverse of the right operand.</summary>
+    public static {{TypeName}} operator /({{TypeName}} left, {{TypeName}} right) =>
+        left * Invert(right);
+
+    /// <summary>Divides each quaternion component by a scalar.</summary>
+    public static {{TypeName}} operator /({{TypeName}} left, {{ScalarType}} right) =>
+        {{DivideScalarExpression}};
+
+    /// <summary>Divides a scalar by each quaternion component.</summary>
+    public static {{TypeName}} operator /({{ScalarType}} left, {{TypeName}} right) =>
+        {{ScalarDivideExpression}};

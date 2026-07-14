@@ -1,0 +1,15 @@
+        var det = value.Determinant;
+        if (det == {{ZeroLiteral}})
+        {
+            result = default;
+            return false;
+        }
+
+        var invDet = {{OneLiteral}} / det;
+        result = new {{TypeName}}(
+            new {{Vector2Type}}(value.Column1.Y * invDet, -value.Column0.Y * invDet),
+            new {{Vector2Type}}(-value.Column1.X * invDet, value.Column0.X * invDet),
+            new {{Vector2Type}}(
+                ((value.Column1.X * value.Column2.Y) - (value.Column1.Y * value.Column2.X)) * invDet,
+                ((value.Column0.Y * value.Column2.X) - (value.Column0.X * value.Column2.Y)) * invDet));
+        return true;

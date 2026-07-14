@@ -6,8 +6,8 @@ public interface IPlane3SystemNumerics<TSelf>
     where TSelf : struct, IPlane3SystemNumerics<TSelf>
 {
     /// <summary>Converts a single-precision plane to <see cref="System.Numerics.Plane" />.</summary>
-    static abstract explicit operator System.Numerics.Plane(TSelf value);
+    static abstract implicit operator System.Numerics.Plane(TSelf value);
 
     /// <summary>Converts a <see cref="System.Numerics.Plane" /> to a single-precision plane.</summary>
-    static abstract explicit operator TSelf(System.Numerics.Plane value);
+    static abstract implicit operator TSelf(System.Numerics.Plane value);
 }

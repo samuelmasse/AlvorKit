@@ -1,0 +1,69 @@
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static System.Runtime.Intrinsics.Vector128<uint> PackUInt32({{TypeName}} value) =>
+        {{PackExpression}};
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vec4i StoreInt32(System.Runtime.Intrinsics.Vector128<uint> value) =>
+        Unsafe.BitCast<System.Runtime.Intrinsics.Vector128<uint>, Vec4i>(value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static System.Runtime.Intrinsics.Vector128<uint> BitCountPacked(System.Runtime.Intrinsics.Vector128<uint> value)
+    {
+        var bytes = Unsafe.BitCast<
+            System.Runtime.Intrinsics.Vector128<uint>,
+            System.Runtime.Intrinsics.Vector128<byte>>(value);
+        var nibbleMask = System.Runtime.Intrinsics.Vector128.Create((byte)0x0f);
+        var lookup = System.Runtime.Intrinsics.Vector128.Create(
+            (byte)0, 1, 1, 2, 1, 2, 2, 3,
+            1, 2, 2, 3, 2, 3, 3, 4);
+        var low = System.Runtime.Intrinsics.X86.Ssse3.Shuffle(lookup, bytes & nibbleMask);
+        var words = Unsafe.BitCast<
+            System.Runtime.Intrinsics.Vector128<uint>,
+            System.Runtime.Intrinsics.Vector128<ushort>>(value);
+        var highNibbles = Unsafe.BitCast<
+            System.Runtime.Intrinsics.Vector128<ushort>,
+            System.Runtime.Intrinsics.Vector128<byte>>(
+                System.Runtime.Intrinsics.X86.Sse2.ShiftRightLogical(words, 4)) & nibbleMask;
+        var high = System.Runtime.Intrinsics.X86.Ssse3.Shuffle(lookup, highNibbles);
+        var byteCounts = System.Runtime.Intrinsics.X86.Sse2.Add(low, high);
+        var pairCounts = System.Runtime.Intrinsics.X86.Ssse3.MultiplyAddAdjacent(
+            byteCounts,
+            System.Runtime.Intrinsics.Vector128.Create((sbyte)1));
+        return Unsafe.BitCast<
+            System.Runtime.Intrinsics.Vector128<int>,
+            System.Runtime.Intrinsics.Vector128<uint>>(
+                System.Runtime.Intrinsics.X86.Sse2.MultiplyAddAdjacent(
+                    pairCounts,
+                    System.Runtime.Intrinsics.Vector128.Create((short)1)));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static System.Runtime.Intrinsics.Vector128<uint> LeadingZeroCountPacked(
+        System.Runtime.Intrinsics.Vector128<uint> value) =>
+        System.Runtime.Intrinsics.X86.Avx512CD.VL.IsSupported
+            ? System.Runtime.Intrinsics.X86.Avx512CD.VL.LeadingZeroCount(value)
+            : System.Runtime.Intrinsics.Arm.AdvSimd.LeadingZeroCount(value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static System.Runtime.Intrinsics.Vector128<uint> TrailingZeroCountPacked(
+        System.Runtime.Intrinsics.Vector128<uint> value)
+    {
+        var isolated = value & (System.Runtime.Intrinsics.Vector128<uint>.Zero - value);
+        return System.Runtime.Intrinsics.Vector128.Create(32U)
+            - LeadingZeroCountPacked(isolated - System.Runtime.Intrinsics.Vector128.Create(1U));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static System.Runtime.Intrinsics.Vector128<uint> FindLeastSignificantBitPacked(
+        System.Runtime.Intrinsics.Vector128<uint> value)
+    {
+        var isolated = value & (System.Runtime.Intrinsics.Vector128<uint>.Zero - value);
+        return System.Runtime.Intrinsics.Vector128.Create(31U) - LeadingZeroCountPacked(isolated);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static System.Runtime.Intrinsics.Vector128<uint> FindMostSignificantBitPacked(
+        System.Runtime.Intrinsics.Vector128<uint> value) =>
+        System.Runtime.Intrinsics.Vector128.Create(31U) - LeadingZeroCountPacked(value);
+
+{{PowerOfTwoHelper}}

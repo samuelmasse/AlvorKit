@@ -19,6 +19,11 @@ OpenGL, windowing, audio, menu, or frontend packages. Frontend packages should
 use `AlvorKit.Engine`, not `AlvorKit.Engine.Loop`; loop ownership belongs in the
 executable or menu/composition layer.
 
+Game entities must use AlvorKit ECS. Before adding players, enemies,
+projectiles, items, chunks, or other mutable simulated objects, read
+`../AlvorKit/docs/ECS.md` for component declaration, entity ownership, Indexed
+bags and hooks, iteration, and teardown.
+
 Run it from the repository root:
 
 ```powershell

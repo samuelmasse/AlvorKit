@@ -31,12 +31,28 @@ internal static class MatrixCoreEmitter
         for (var column = 0; column < matrix.Columns; column++)
         {
             members.Append(MathsTemplate.Fragment("matrix-column-field.csfrag.tmpl",
+                ("FieldOffset", ColumnFieldOffset(matrix, column)),
                 ("ColumnType", matrix.ColumnTypeName),
                 ("Name", matrix.ColumnNames[column]),
                 ("Initializer", matrix.ColumnParameters[column]),
                 ("Column", column.ToString(CultureInfo.InvariantCulture))));
         }
+
+        if (MatrixSystemNumericsEmitter.SupportsPackedStorage(matrix))
+        {
+            members.Append(MathsTemplate.Fragment("matrix-packed-system-field.csfrag.tmpl",
+                ("PackedType", MatrixSystemNumericsEmitter.PackedType(matrix))));
+            members.Append(MathsTemplate.Fragment("matrix-packed-system-constructor.csfrag.tmpl",
+                ("TypeName", matrix.TypeName),
+                ("PackedType", MatrixSystemNumericsEmitter.PackedType(matrix)),
+                ("Arguments", string.Join(", ", Enumerable.Repeat("default", matrix.Columns)))));
+        }
     }
+
+    private static string ColumnFieldOffset(MatrixSpec matrix, int column) =>
+        MatrixSystemNumericsEmitter.SupportsPackedStorage(matrix)
+            ? $"[FieldOffset({(column * matrix.Rows * matrix.Scalar.SizeBytes).ToString(CultureInfo.InvariantCulture)})]{Environment.NewLine}    "
+            : string.Empty;
 
     private static void EmitConstructors(MatrixSpec matrix, MemberBlock members)
     {
@@ -66,7 +82,7 @@ internal static class MatrixCoreEmitter
             OuterProductExpression(matrix)));
         members.Append(NumericFunctionsEmitter.Method("Linearly interpolates between two matrices component by component.", "static",
             matrix.TypeName, "Lerp", $"{matrix.TypeName} from, {matrix.TypeName} to, {matrix.Scalar.CSharpName} amount",
-            MatrixExpression.New(matrix, (column, row) => $"ScalarMath.Lerp(from[{column}, {row}], to[{column}, {row}], amount)")));
+            LerpExpression(matrix)));
         members.Append(NumericFunctionsEmitter.Property("Gets the zero matrix.", "static", matrix.TypeName, "Zero", "default"));
         if (matrix.IsSquare)
             members.Append(NumericFunctionsEmitter.Property("Gets the identity matrix.", "static", matrix.TypeName,
@@ -141,6 +157,13 @@ internal static class MatrixCoreEmitter
     private static string OuterProductExpression(MatrixSpec matrix) =>
         MatrixExpression.New(matrix, (column, row) =>
             $"columnVector.{MatrixSpec.RowComponent(row)} * rowVector.{MatrixSpec.ColumnComponent(column)}");
+
+    private static string LerpExpression(MatrixSpec matrix) =>
+        matrix.Scalar.Kind == ScalarKind.Float || MatrixColumnExpression.IsDoubleFourByFour(matrix)
+            ? MatrixColumnExpression.New(matrix,
+                column => $"from.Column{column} + ((to.Column{column} - from.Column{column}) * amount)")
+            : MatrixExpression.New(matrix,
+                (column, row) => $"ScalarMath.Lerp(from[{column}, {row}], to[{column}, {row}], amount)");
 
     private static string DiagonalComponents(MatrixSpec matrix)
     {

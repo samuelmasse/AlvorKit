@@ -45,4 +45,17 @@ public sealed class GeneratedPlaneTest
         Assert.AreEqual(PlaneIntersectionKind.Positive, plane.Classify(new Vec3d(0d, 0d, 2d)));
         Assert.AreEqual(new Vec3d(1d, 2d, 0d), plane.ProjectPoint(new Vec3d(1d, 2d, 3d)));
     }
+
+    /// <summary>Single-precision planes convert implicitly to and from their layout-compatible System type.</summary>
+    [TestMethod]
+    public void GeneratedPlaneSystemNumericsConversions_AreImplicit()
+    {
+        var value = new Plane3(new Vec3(-0f, 2f, float.NaN), -4f);
+        System.Numerics.Plane system = value;
+        Plane3 roundTrip = system;
+
+        Assert.AreEqual(value, roundTrip);
+        Assert.AreEqual(value.Normal, (Vec3)system.Normal);
+        Assert.AreEqual(value.Offset, system.D);
+    }
 }

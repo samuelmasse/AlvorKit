@@ -1,0 +1,9 @@
+    /// <summary>Rotates a vector by a normalized quaternion.</summary>
+    public static {{Vector3Type}} TransformVector({{TypeName}} rotation, {{Vector3Type}} vector)
+    {
+        var rotationVector = new System.Numerics.Vector3(rotation.X, rotation.Y, rotation.Z);
+        System.Numerics.Vector3 input = vector;
+        var uv = System.Numerics.Vector3.Cross(rotationVector, input);
+        var uuv = System.Numerics.Vector3.Cross(rotationVector, uv);
+        return input + (((uv * rotation.W) + uuv) * {{TwoLiteral}});
+    }

@@ -6,8 +6,8 @@ public interface IQuatSystemNumerics<TSelf>
     where TSelf : struct, IQuatSystemNumerics<TSelf>
 {
     /// <summary>Converts to a System.Numerics quaternion.</summary>
-    static abstract explicit operator System.Numerics.Quaternion(TSelf value);
+    static abstract implicit operator System.Numerics.Quaternion(TSelf value);
 
     /// <summary>Converts from a System.Numerics quaternion.</summary>
-    static abstract explicit operator TSelf(System.Numerics.Quaternion value);
+    static abstract implicit operator TSelf(System.Numerics.Quaternion value);
 }

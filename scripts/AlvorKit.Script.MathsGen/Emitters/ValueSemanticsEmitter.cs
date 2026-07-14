@@ -18,8 +18,10 @@ internal static class ValueSemanticsEmitter
             ("HashComponents", string.Join(", ", vector.Components)),
             ("EqualScalarExpression", ValueSemanticsScalarEmitter.EqualScalarExpression(vector))));
 
-    /// <summary>Returns the component-wise equality expression.</summary>
+    /// <summary>Returns the exact equality expression selected for this scalar representation.</summary>
     private static string EqualityExpression(VectorSpec vector) =>
-        string.Join(" && ", vector.Components.Select(component => $"EqualScalar({component}, other.{component})"));
+        vector.Scalar.Kind == ScalarKind.Float
+            ? "packed.Equals(other.packed)"
+            : string.Join(" && ", vector.Components.Select(component => $"EqualScalar({component}, other.{component})"));
 
 }

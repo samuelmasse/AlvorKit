@@ -1,0 +1,7 @@
+    /// <summary>Returns this vector divided by its length, or fallback when its length is zero.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly {{TypeName}} NormalizedOr({{TypeName}} fallback)
+    {
+        var lengthSquared = LengthSquared;
+        return lengthSquared > {{ZeroLiteral}} ? this / {{SqrtExpression}} : fallback;
+    }

@@ -22,8 +22,12 @@ internal static class NumericFunctionsEmitter
             members.Append(Property("Gets this vector divided by its length.", "readonly", vector.TypeName, "Normalized", "this / Length"));
             members.Append(Property("Gets this vector divided by its length, or zero when its length is zero.", "readonly",
                 vector.TypeName, "NormalizedOrZero", "NormalizedOr(default)"));
-            members.Append(Method("Returns this vector divided by its length, or fallback when its length is zero.", "readonly", vector.TypeName,
-                "NormalizedOr", $"{vector.TypeName} fallback", $"LengthSquared > {vector.Scalar.ZeroLiteral} ? this / Length : fallback"));
+            if (vector.Scalar.Kind == ScalarKind.Half)
+                members.Append(MathsTemplate.Fragment("normalized-or.csfrag.tmpl", ("TypeName", vector.TypeName),
+                    ("ZeroLiteral", vector.Scalar.ZeroLiteral), ("SqrtExpression", Sqrt(vector, "lengthSquared"))));
+            else
+                members.Append(Method("Returns this vector divided by its length, or fallback when its length is zero.", "readonly", vector.TypeName,
+                    "NormalizedOr", $"{vector.TypeName} fallback", $"LengthSquared > {vector.Scalar.ZeroLiteral} ? this / Length : fallback"));
             members.Append(Method("Returns value divided by its length.", "static", vector.TypeName, "Normalize",
                 $"{vector.TypeName} value", "value.Normalized"));
             members.Append(MathsTemplate.Fragment("try-normalize.csfrag.tmpl", ("TypeName", vector.TypeName),
@@ -37,39 +41,112 @@ internal static class NumericFunctionsEmitter
         if (vector.Dimension == 2 && vector.Scalar.IsSigned)
             EmitPlanarHelpers(vector, members);
 
-        members.Append(Method("Returns the squared distance between two points.", "static", vector.Scalar.CSharpName, "DistanceSquared",
-            $"{vector.TypeName} left, {vector.TypeName} right", vector.Scalar.CastArithmetic("(left - right).LengthSquared")));
-        members.Append(Method("Returns the distance between two points.", "static", LengthType(vector), "Distance",
-            $"{vector.TypeName} left, {vector.TypeName} right", "(left - right).Length"));
+        if (vector.Scalar.Kind == ScalarKind.Float)
+            members.Append(FloatDistanceMethods(vector));
+        else
+        {
+            members.Append(Method("Returns the squared distance between two points.", "static", vector.Scalar.CSharpName, "DistanceSquared",
+                $"{vector.TypeName} left, {vector.TypeName} right", vector.Scalar.CastArithmetic("(left - right).LengthSquared")));
+            members.Append(Method("Returns the distance between two points.", "static", LengthType(vector), "Distance",
+                $"{vector.TypeName} left, {vector.TypeName} right", "(left - right).Length"));
+        }
     }
 
     /// <summary>Emits min, max, clamp, and absolute-value helpers.</summary>
     private static void EmitCommon(VectorSpec vector, MemberBlock members)
     {
         members.Append(Method("Returns the component-wise minimum of two vectors.", "static", vector.TypeName, "Min",
-            $"{vector.TypeName} left, {vector.TypeName} right", New(vector, c => $"ScalarMath.Min(left.{c}, right.{c})")));
+            $"{vector.TypeName} left, {vector.TypeName} right", NativeOrComponentWise(vector, "MinNative",
+                ["left", "right"], c => $"ScalarMath.Min(left.{c}, right.{c})")));
         members.Append(Method("Returns the component-wise maximum of two vectors.", "static", vector.TypeName, "Max",
-            $"{vector.TypeName} left, {vector.TypeName} right", New(vector, c => $"ScalarMath.Max(left.{c}, right.{c})")));
+            $"{vector.TypeName} left, {vector.TypeName} right", NativeOrComponentWise(vector, "MaxNative",
+                ["left", "right"], c => $"ScalarMath.Max(left.{c}, right.{c})")));
         members.Append(Method("Constrains each component between matching minimum and maximum components.", "static", vector.TypeName, "Clamp",
             $"{vector.TypeName} value, {vector.TypeName} min, {vector.TypeName} max",
-            New(vector, c => $"ScalarMath.Clamp(value.{c}, min.{c}, max.{c})")));
+            NativeOrComponentWise(vector, "ClampNative", ["value", "min", "max"],
+                c => $"ScalarMath.Clamp(value.{c}, min.{c}, max.{c})")));
         members.Append(Method("Constrains each component between scalar minimum and maximum values.", "static", vector.TypeName, "Clamp",
             $"{vector.TypeName} value, {vector.Scalar.CSharpName} min, {vector.Scalar.CSharpName} max",
-            $"Clamp(value, new {vector.TypeName}(min), new {vector.TypeName}(max))"));
+            ScalarClampExpression(vector)));
         if (vector.Scalar.IsSigned)
             members.Append(Method("Returns the absolute value of each component.", "static", vector.TypeName, "Abs",
-                $"{vector.TypeName} value", New(vector, c => $"ScalarMath.Abs(value.{c})")));
+                $"{vector.TypeName} value", AbsExpression(vector)));
     }
 
-    /// <summary>Emits a 3D cross product.</summary>
-    private static void EmitCross(VectorSpec vector, MemberBlock members) =>
+    /// <summary>Lets RyuJIT broadcast float bounds once instead of reconstructing repository vectors in hot loops.</summary>
+    private static string ScalarClampExpression(VectorSpec vector)
+    {
+        if (vector.Scalar.Kind != ScalarKind.Float)
+            return $"Clamp(value, new {vector.TypeName}(min), new {vector.TypeName}(max))";
+
+        var systemType = FloatVectorExpression.SystemType(vector);
+        return $"new({systemType}.Clamp(value.packed, new {systemType}(min), new {systemType}(max)))";
+    }
+
+    /// <summary>Uses a measured packed function for supported vectors and component expressions otherwise.</summary>
+    private static string NativeOrComponentWise(
+        VectorSpec vector,
+        string method,
+        IReadOnlyList<string> arguments,
+        Func<string, string> componentExpression)
+    {
+        if (vector.Scalar.Kind == ScalarKind.Float)
+        {
+            var systemMethod = RegularBoundsMethod(method);
+            return FloatVectorExpression.Function(vector, systemMethod, [.. arguments]);
+        }
+        if (vector.Scalar.Kind == ScalarKind.Double &&
+            (vector.Dimension == 2 && method == "MinNative" || vector.Dimension == 4 && method is "MaxNative" or "ClampNative"))
+        {
+            var packedMethod = RegularBoundsMethod(method);
+            return DoubleVectorExpression.Function(vector, packedMethod, arguments);
+        }
+        if (vector.Dimension == 3 && vector.Scalar.Kind == ScalarKind.Int && method == "MinNative")
+            return New(vector, c => $"left.{c} < right.{c} ? left.{c} : right.{c}");
+        if (vector.Dimension == 3 && vector.Scalar.Kind == ScalarKind.UInt && method == "MaxNative")
+            return New(vector, c => $"left.{c} > right.{c} ? left.{c} : right.{c}");
+        if (Int32Vector128Expression.Supports(vector))
+            return Int32Vector128Expression.Function(vector, method[..^"Native".Length], arguments);
+        if (Int64VectorExpression.Supports(vector))
+            return Int64VectorExpression.Function(vector, method[..^"Native".Length], arguments);
+
+        return New(vector, componentExpression);
+    }
+
+    /// <summary>Maps legacy native-method selectors to the regular System floating-point contract.</summary>
+    private static string RegularBoundsMethod(string method) => method switch
+    {
+        "MinNative" => "Min",
+        "MaxNative" => "Max",
+        "ClampNative" => "Clamp",
+        _ => method,
+    };
+
+    /// <summary>Uses the matching packed System.Numerics absolute value for float vectors.</summary>
+    private static string AbsExpression(VectorSpec vector)
+    {
+        if (vector.Scalar.Kind != ScalarKind.Float)
+            return New(vector, c => $"ScalarMath.Abs(value.{c})");
+
+        return FloatVectorExpression.Function(vector, "Abs", "value");
+    }
+
+    /// <summary>Emits a 3D cross product, using System.Numerics SIMD for single-precision vectors.</summary>
+    private static void EmitCross(VectorSpec vector, MemberBlock members)
+    {
+        var fallback = NewRaw(vector, [
+            "(left.Y * right.Z) - (left.Z * right.Y)",
+            "(left.Z * right.X) - (left.X * right.Z)",
+            "(left.X * right.Y) - (left.Y * right.X)",
+        ]);
+        var expression = vector.Scalar.Kind == ScalarKind.Float
+            ? $"System.Runtime.Intrinsics.Vector128.IsHardwareAccelerated{Environment.NewLine}" +
+                $"            ? new(System.Numerics.Vector3.Cross(left.packed, right.packed)){Environment.NewLine}" +
+                $"            : {fallback.Replace(Environment.NewLine, $"{Environment.NewLine}    ", StringComparison.Ordinal)}"
+            : fallback;
         members.Append(Method("Returns the cross product of two vectors.", "static", vector.TypeName, "Cross",
-            $"{vector.TypeName} left, {vector.TypeName} right",
-            NewRaw(vector, [
-                "(left.Y * right.Z) - (left.Z * right.Y)",
-                "(left.Z * right.X) - (left.X * right.Z)",
-                "(left.X * right.Y) - (left.Y * right.X)",
-            ])));
+            $"{vector.TypeName} left, {vector.TypeName} right", expression));
+    }
 
     /// <summary>Emits 2D perpendicular vectors and scalar cross product helpers.</summary>
     private static void EmitPlanarHelpers(VectorSpec vector, MemberBlock members)
@@ -132,4 +209,21 @@ internal static class NumericFunctionsEmitter
     /// <summary>Returns a sum expression over all components.</summary>
     private static string Sum(VectorSpec vector, Func<string, string> expression) =>
         vector.Scalar.CastArithmetic(string.Join(" + ", vector.Components.Select(expression)));
+
+    /// <summary>Returns the measured direct ordered float-distance methods.</summary>
+    private static string FloatDistanceMethods(VectorSpec vector)
+    {
+        var declarations = string.Join(Environment.NewLine,
+            vector.Components.Select(component =>
+                $"        var {component.ToLowerInvariant()} = left.{component} - right.{component};"));
+        var sum = string.Join(" + ", vector.Components.Select(component =>
+        {
+            var local = component.ToLowerInvariant();
+            return $"({local} * {local})";
+        }));
+        return MathsTemplate.Fragment("float-distance-direct.csfrag.tmpl",
+            ("TypeName", vector.TypeName),
+            ("DifferenceDeclarations", declarations),
+            ("SquaredSum", sum));
+    }
 }

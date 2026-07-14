@@ -24,6 +24,7 @@ internal static class MatrixFileEmitter
             "matrix-file.cs.tmpl",
             ("TypeSummary", TypeSummary(matrix)),
             ("ParameterDocs", ParameterDocs(matrix)),
+            ("LayoutKind", MatrixSystemNumericsEmitter.SupportsPackedStorage(matrix) ? "Explicit" : "Sequential"),
             ("TypeName", matrix.TypeName),
             ("ConstructorParameters", ConstructorParameters(matrix)),
             ("ImplementedInterfaces", ImplementedInterfaces(matrix)),

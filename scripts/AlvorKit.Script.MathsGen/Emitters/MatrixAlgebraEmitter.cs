@@ -12,7 +12,7 @@ internal static class MatrixAlgebraEmitter
             matrix.TransposeTypeName, "Transpose", $"{matrix.TypeName} value", Transpose(matrix, "value")));
         members.Append(NumericFunctionsEmitter.Method("Multiplies matrices component by component.", "static",
             matrix.TypeName, "ComponentMultiply", $"{matrix.TypeName} left, {matrix.TypeName} right",
-            MatrixExpression.New(matrix, (column, row) => $"left[{column}, {row}] * right[{column}, {row}]")));
+            ComponentMultiply(matrix)));
         if (!matrix.IsSquare)
             return;
 
@@ -38,8 +38,21 @@ internal static class MatrixAlgebraEmitter
     private static string Transpose(MatrixSpec matrix, string value)
     {
         var target = new MatrixSpec(matrix.Rows, matrix.Columns, matrix.Scalar);
+        if (matrix.Columns == 4 && matrix.Rows == 4 && matrix.Scalar == VectorCatalog.Float)
+        {
+            return $"new(System.Numerics.Matrix4x4.Transpose({value}.packed))";
+        }
+
+        if (matrix.Columns == 4 && matrix.Rows == 4)
+            return MatrixColumnExpression.New(target, column => $"{value}.Row{column}");
+
         return MatrixExpression.New(target, (column, row) => $"{value}[{row}, {column}]");
     }
+
+    private static string ComponentMultiply(MatrixSpec matrix) =>
+        MatrixColumnExpression.SupportsPair(matrix, "*")
+            ? MatrixColumnExpression.Pair(matrix, "left", "*", "right")
+            : MatrixExpression.New(matrix, (column, row) => $"left[{column}, {row}] * right[{column}, {row}]");
 
     private static ScalarSpec DeterminantScalar(ScalarSpec scalar) =>
         ScalarPromotion.BinaryNumericResult(scalar, scalar) ?? scalar;
@@ -97,7 +110,10 @@ internal static class MatrixAlgebraEmitter
     private static string Sign(int column, int row) => (column + row) % 2 == 0 ? string.Empty : "-";
 
     private static void EmitInverse(MatrixSpec matrix, MemberBlock members) =>
-        members.Append(MathsTemplate.Fragment("matrix-inverse.csfrag.tmpl",
+        members.Append(MathsTemplate.Fragment(
+            matrix.Columns == 4 && matrix.Rows == 4 && matrix.Scalar.Kind == ScalarKind.Float
+                ? "matrix-inverse-system4.csfrag.tmpl"
+                : "matrix-inverse.csfrag.tmpl",
             ("TypeName", matrix.TypeName),
             ("ScalarType", matrix.Scalar.CSharpName),
             ("ZeroLiteral", matrix.Scalar.ZeroLiteral),

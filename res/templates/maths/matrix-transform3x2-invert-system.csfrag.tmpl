@@ -1,0 +1,6 @@
+        Unsafe.SkipInit(out result);
+        if (System.Numerics.Matrix3x2.Invert(value.packed, out result.packed))
+            return true;
+
+        result = default;
+        return false;

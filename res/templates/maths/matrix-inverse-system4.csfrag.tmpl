@@ -1,0 +1,21 @@
+    /// <summary>Gets the inverse of this matrix.</summary>
+    public readonly {{TypeName}} Inverted =>
+        Invert(this);
+
+    /// <summary>Returns the inverse of a matrix.</summary>
+    public static {{TypeName}} Invert({{TypeName}} value) =>
+        TryInvert(value, out var result)
+            ? result
+            : throw new InvalidOperationException("Matrix is singular and cannot be inverted.");
+
+    /// <summary>Attempts to invert a matrix.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryInvert({{TypeName}} value, out {{TypeName}} result)
+    {
+        Unsafe.SkipInit(out result);
+        if (System.Numerics.Matrix4x4.Invert(value.packed, out result.packed))
+            return true;
+
+        result = default;
+        return false;
+    }

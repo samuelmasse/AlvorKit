@@ -3,29 +3,32 @@ namespace AlvorKit.Maths;
 /// <summary>Provides scalar math helpers shared by vector component operations.</summary>
 public static class ScalarMath
 {
-    /// <summary>Returns the smaller of two values using vector-style comparison semantics.</summary>
+    /// <summary>Returns the smaller of two values using regular System vector semantics.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(T left, T right)
         where T : INumber<T> =>
-        left < right ? left : right;
+        T.Min(left, right);
 
-    /// <summary>Returns the larger of two values using vector-style comparison semantics.</summary>
+    /// <summary>Returns the larger of two values using regular System vector semantics.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(T left, T right)
         where T : INumber<T> =>
-        left > right ? left : right;
+        T.Max(left, right);
 
-    /// <summary>Constrains a value between inclusive minimum and maximum bounds.</summary>
+    /// <summary>Constrains a value using regular System vector minimum and maximum semantics.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Clamp<T>(T value, T min, T max)
         where T : INumber<T> =>
-        Min(Max(value, min), max);
+        T.Min(T.Max(value, min), max);
 
-    /// <summary>Returns the absolute value using vector-style signed-zero semantics.</summary>
+    /// <summary>Returns the absolute value using regular System vector semantics for IEEE floating-point values.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Abs<T>(T value)
         where T : INumber<T> =>
-        value < T.Zero ? -value : value;
+        typeof(T) == typeof(sbyte) || typeof(T) == typeof(short) || typeof(T) == typeof(int) ||
+        typeof(T) == typeof(long) || typeof(T) == typeof(nint) || typeof(T) == typeof(Int128)
+            ? (value < T.Zero ? -value : value)
+            : T.Abs(value);
 
     /// <summary>Linearly interpolates between two values without clamping amount.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
