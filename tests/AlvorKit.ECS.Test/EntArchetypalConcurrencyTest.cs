@@ -85,12 +85,13 @@ public sealed class EntArchetypalConcurrencyTest
         var allocIds = new int[ownerCount];
         var archIds = new int[ownerCount];
         var valid = new bool[ownerCount];
+        using var barrier = new Barrier(ownerCount);
 
         Parallel.For(
             0,
             ownerCount,
             new ParallelOptions { MaxDegreeOfParallelism = ownerCount },
-            owner => ExerciseWarmArch(owner, entsPerOwner, allocIds, archIds, valid));
+            owner => ExerciseWarmArch(owner, entsPerOwner, barrier, allocIds, archIds, valid));
 
         Assert.AreEqual(ownerCount, allocIds.Distinct().Count());
         for (int owner = 0; owner < ownerCount; owner++)
@@ -201,11 +202,13 @@ public sealed class EntArchetypalConcurrencyTest
     private static void ExerciseWarmArch(
         int owner,
         int entsPerOwner,
+        Barrier barrier,
         int[] allocIds,
         int[] archIds,
         bool[] valid)
     {
         using var arena = new EntArena();
+        barrier.SignalAndWait();
         var ents = new EntMut[entsPerOwner];
         bool ownerValid = true;
 

@@ -99,7 +99,10 @@ public class Vector2Benchmarks : VectorBenchmarksBase
             case VectorOperation.Bounds: for (var i = 0; i < BatchSize; i++) alvorOutput[i] = Vec2.Clamp(Vec2.Abs(alvorLeft[i] - alvorRight[i]), 0.25f, 5f); break;
             case VectorOperation.Dot: for (var i = 0; i < BatchSize; i++) ScalarOutput[i] = Vec2.Dot(alvorLeft[i], alvorRight[i]); break;
             case VectorOperation.Normalize: for (var i = 0; i < BatchSize; i++) alvorOutput[i] = Vec2.Normalize(alvorLeft[i]); break;
-            case VectorOperation.ValueSemantics: for (var i = 0; i < BatchSize; i++) IntOutput[i] = alvorLeft[i].Equals(alvorRight[i]) ? 0 : alvorLeft[i].GetHashCode(); break;
+            case VectorOperation.ValueSemantics:
+                for (var i = 0; i < BatchSize; i++)
+                    IntOutput[i] = alvorLeft[i].Equals(alvorRight[i]) ? 0 : alvorLeft[i].GetHashCode();
+                break;
         }
     }
 
@@ -112,11 +115,25 @@ public class Vector2Benchmarks : VectorBenchmarksBase
             case VectorOperation.PairMultiply: for (var i = 0; i < BatchSize; i++) systemOutput[i] = systemLeft[i] * systemRight[i]; break;
             case VectorOperation.Scale: for (var i = 0; i < BatchSize; i++) systemOutput[i] = systemLeft[i] * Scalar[i]; break;
             case VectorOperation.Divide: for (var i = 0; i < BatchSize; i++) systemOutput[i] = systemLeft[i] / Scalar[i]; break;
-            case VectorOperation.Lerp: for (var i = 0; i < BatchSize; i++) systemOutput[i] = System.Numerics.Vector2.Lerp(systemLeft[i], systemRight[i], Amount[i]); break;
-            case VectorOperation.Bounds: for (var i = 0; i < BatchSize; i++) systemOutput[i] = System.Numerics.Vector2.Clamp(System.Numerics.Vector2.Abs(systemLeft[i] - systemRight[i]), new(0.25f), new(5f)); break;
+            case VectorOperation.Lerp:
+                for (var i = 0; i < BatchSize; i++)
+                    systemOutput[i] = System.Numerics.Vector2.Lerp(systemLeft[i], systemRight[i], Amount[i]);
+                break;
+            case VectorOperation.Bounds:
+                for (var i = 0; i < BatchSize; i++)
+                {
+                    systemOutput[i] = System.Numerics.Vector2.Clamp(
+                        System.Numerics.Vector2.Abs(systemLeft[i] - systemRight[i]),
+                        new(0.25f),
+                        new(5f));
+                }
+                break;
             case VectorOperation.Dot: for (var i = 0; i < BatchSize; i++) ScalarOutput[i] = System.Numerics.Vector2.Dot(systemLeft[i], systemRight[i]); break;
             case VectorOperation.Normalize: for (var i = 0; i < BatchSize; i++) systemOutput[i] = System.Numerics.Vector2.Normalize(systemLeft[i]); break;
-            case VectorOperation.ValueSemantics: for (var i = 0; i < BatchSize; i++) IntOutput[i] = systemLeft[i].Equals(systemRight[i]) ? 0 : systemLeft[i].GetHashCode(); break;
+            case VectorOperation.ValueSemantics:
+                for (var i = 0; i < BatchSize; i++)
+                    IntOutput[i] = systemLeft[i].Equals(systemRight[i]) ? 0 : systemLeft[i].GetHashCode();
+                break;
         }
     }
 }
@@ -181,7 +198,10 @@ public class Vector3Benchmarks : VectorBenchmarksBase
             case VectorOperation.Bounds: for (var i = 0; i < BatchSize; i++) alvorOutput[i] = Vec3.Clamp(Vec3.Abs(alvorLeft[i] - alvorRight[i]), 0.25f, 5f); break;
             case VectorOperation.Dot: for (var i = 0; i < BatchSize; i++) ScalarOutput[i] = Vec3.Dot(alvorLeft[i], alvorRight[i]); break;
             case VectorOperation.Normalize: for (var i = 0; i < BatchSize; i++) alvorOutput[i] = Vec3.Normalize(alvorLeft[i]); break;
-            case VectorOperation.ValueSemantics: for (var i = 0; i < BatchSize; i++) IntOutput[i] = alvorLeft[i].Equals(alvorRight[i]) ? 0 : alvorLeft[i].GetHashCode(); break;
+            case VectorOperation.ValueSemantics:
+                for (var i = 0; i < BatchSize; i++)
+                    IntOutput[i] = alvorLeft[i].Equals(alvorRight[i]) ? 0 : alvorLeft[i].GetHashCode();
+                break;
             case VectorOperation.Cross: for (var i = 0; i < BatchSize; i++) alvorOutput[i] = Vec3.Cross(alvorLeft[i], alvorRight[i]); break;
         }
     }
@@ -195,11 +215,25 @@ public class Vector3Benchmarks : VectorBenchmarksBase
             case VectorOperation.PairMultiply: for (var i = 0; i < BatchSize; i++) systemOutput[i] = systemLeft[i] * systemRight[i]; break;
             case VectorOperation.Scale: for (var i = 0; i < BatchSize; i++) systemOutput[i] = systemLeft[i] * Scalar[i]; break;
             case VectorOperation.Divide: for (var i = 0; i < BatchSize; i++) systemOutput[i] = systemLeft[i] / Scalar[i]; break;
-            case VectorOperation.Lerp: for (var i = 0; i < BatchSize; i++) systemOutput[i] = System.Numerics.Vector3.Lerp(systemLeft[i], systemRight[i], Amount[i]); break;
-            case VectorOperation.Bounds: for (var i = 0; i < BatchSize; i++) systemOutput[i] = System.Numerics.Vector3.Clamp(System.Numerics.Vector3.Abs(systemLeft[i] - systemRight[i]), new(0.25f), new(5f)); break;
+            case VectorOperation.Lerp:
+                for (var i = 0; i < BatchSize; i++)
+                    systemOutput[i] = System.Numerics.Vector3.Lerp(systemLeft[i], systemRight[i], Amount[i]);
+                break;
+            case VectorOperation.Bounds:
+                for (var i = 0; i < BatchSize; i++)
+                {
+                    systemOutput[i] = System.Numerics.Vector3.Clamp(
+                        System.Numerics.Vector3.Abs(systemLeft[i] - systemRight[i]),
+                        new(0.25f),
+                        new(5f));
+                }
+                break;
             case VectorOperation.Dot: for (var i = 0; i < BatchSize; i++) ScalarOutput[i] = System.Numerics.Vector3.Dot(systemLeft[i], systemRight[i]); break;
             case VectorOperation.Normalize: for (var i = 0; i < BatchSize; i++) systemOutput[i] = System.Numerics.Vector3.Normalize(systemLeft[i]); break;
-            case VectorOperation.ValueSemantics: for (var i = 0; i < BatchSize; i++) IntOutput[i] = systemLeft[i].Equals(systemRight[i]) ? 0 : systemLeft[i].GetHashCode(); break;
+            case VectorOperation.ValueSemantics:
+                for (var i = 0; i < BatchSize; i++)
+                    IntOutput[i] = systemLeft[i].Equals(systemRight[i]) ? 0 : systemLeft[i].GetHashCode();
+                break;
             case VectorOperation.Cross: for (var i = 0; i < BatchSize; i++) systemOutput[i] = System.Numerics.Vector3.Cross(systemLeft[i], systemRight[i]); break;
         }
     }
@@ -264,7 +298,10 @@ public class Vector4Benchmarks : VectorBenchmarksBase
             case VectorOperation.Bounds: for (var i = 0; i < BatchSize; i++) alvorOutput[i] = Vec4.Clamp(Vec4.Abs(alvorLeft[i] - alvorRight[i]), 0.25f, 5f); break;
             case VectorOperation.Dot: for (var i = 0; i < BatchSize; i++) ScalarOutput[i] = Vec4.Dot(alvorLeft[i], alvorRight[i]); break;
             case VectorOperation.Normalize: for (var i = 0; i < BatchSize; i++) alvorOutput[i] = Vec4.Normalize(alvorLeft[i]); break;
-            case VectorOperation.ValueSemantics: for (var i = 0; i < BatchSize; i++) IntOutput[i] = alvorLeft[i].Equals(alvorRight[i]) ? 0 : alvorLeft[i].GetHashCode(); break;
+            case VectorOperation.ValueSemantics:
+                for (var i = 0; i < BatchSize; i++)
+                    IntOutput[i] = alvorLeft[i].Equals(alvorRight[i]) ? 0 : alvorLeft[i].GetHashCode();
+                break;
         }
     }
 
@@ -277,11 +314,25 @@ public class Vector4Benchmarks : VectorBenchmarksBase
             case VectorOperation.PairMultiply: for (var i = 0; i < BatchSize; i++) systemOutput[i] = systemLeft[i] * systemRight[i]; break;
             case VectorOperation.Scale: for (var i = 0; i < BatchSize; i++) systemOutput[i] = systemLeft[i] * Scalar[i]; break;
             case VectorOperation.Divide: for (var i = 0; i < BatchSize; i++) systemOutput[i] = systemLeft[i] / Scalar[i]; break;
-            case VectorOperation.Lerp: for (var i = 0; i < BatchSize; i++) systemOutput[i] = System.Numerics.Vector4.Lerp(systemLeft[i], systemRight[i], Amount[i]); break;
-            case VectorOperation.Bounds: for (var i = 0; i < BatchSize; i++) systemOutput[i] = System.Numerics.Vector4.Clamp(System.Numerics.Vector4.Abs(systemLeft[i] - systemRight[i]), new(0.25f), new(5f)); break;
+            case VectorOperation.Lerp:
+                for (var i = 0; i < BatchSize; i++)
+                    systemOutput[i] = System.Numerics.Vector4.Lerp(systemLeft[i], systemRight[i], Amount[i]);
+                break;
+            case VectorOperation.Bounds:
+                for (var i = 0; i < BatchSize; i++)
+                {
+                    systemOutput[i] = System.Numerics.Vector4.Clamp(
+                        System.Numerics.Vector4.Abs(systemLeft[i] - systemRight[i]),
+                        new(0.25f),
+                        new(5f));
+                }
+                break;
             case VectorOperation.Dot: for (var i = 0; i < BatchSize; i++) ScalarOutput[i] = System.Numerics.Vector4.Dot(systemLeft[i], systemRight[i]); break;
             case VectorOperation.Normalize: for (var i = 0; i < BatchSize; i++) systemOutput[i] = System.Numerics.Vector4.Normalize(systemLeft[i]); break;
-            case VectorOperation.ValueSemantics: for (var i = 0; i < BatchSize; i++) IntOutput[i] = systemLeft[i].Equals(systemRight[i]) ? 0 : systemLeft[i].GetHashCode(); break;
+            case VectorOperation.ValueSemantics:
+                for (var i = 0; i < BatchSize; i++)
+                    IntOutput[i] = systemLeft[i].Equals(systemRight[i]) ? 0 : systemLeft[i].GetHashCode();
+                break;
         }
     }
 }
