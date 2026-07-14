@@ -1,7 +1,7 @@
 namespace AlvorKit.UI.Blend;
 
 /// <summary>Applies Blender-inspired recipes to AlvorKit UI nodes, using the embedded Inter faces from <see cref="RootInter"/>.</summary>
-public class BlendStyle(RootInter inter, RootGl gl, RootUiScale scale, RootKeyboard keyboard)
+public class BlendStyle(RootInter inter, GlLayer gl, RootUiScale scale, RootKeyboard keyboard)
 {
     private readonly Font font = inter.Regular;
     private readonly Font emphasisFont = inter.SemiBold;

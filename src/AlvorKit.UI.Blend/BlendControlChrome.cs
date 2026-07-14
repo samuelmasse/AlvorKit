@@ -1,7 +1,7 @@
 namespace AlvorKit.UI.Blend;
 
 /// <summary>Generates reusable rounded control edge textures for the Blend style.</summary>
-public class BlendControlChrome(RootGl gl, RootUiScale scale)
+public class BlendControlChrome(GlLayer gl, RootUiScale scale)
 {
     private const int CoverageSamples = 64;
     private readonly Dictionary<BlendControlCapKey, Texture2D> caps = [];
