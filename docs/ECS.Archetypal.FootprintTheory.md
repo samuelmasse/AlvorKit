@@ -5,14 +5,14 @@
 > AFR-25C's unchecked terminal row access and AFR-25D's cold registration split
 > were measured and accepted. AFR-25E's value-type key was rejected. AFR-26
 > retains `(AllocId, ArchId, Row)` and the direct closed-generic typed column as
-> the production speed reference. Shared-storage prototypes that did not pass
-> that complete point-path gate were removed before commit. The next design
-> starts from its final direct locator and contiguous iteration view in the
+> the production speed reference. Shared allocation is deferred; AFR-27 instead
+> bounds retained direct-array capacity through exact typed pooling, shrink
+> hysteresis, and complete return when an alloc/arch state reaches zero rows.
+> The current plan remains in the
 > [Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md).
 > AFR-21 through AFR-24 have established the direct point-access, sparse
-> global-catalog, and call-shape baselines described here. Later shared-storage
-> work may refine constants, but it must preserve the measured hot-path
-> contract.
+> global-catalog, and call-shape baselines described here. Shared storage is
+> deferred; any later capacity work must preserve the measured hot-path contract.
 
 The epic-start dense implementation is recorded in the
 [AFR-01 and AFR-02 baseline](ECS.Archetypal.FootprintBaseline.md).
@@ -950,9 +950,16 @@ fully initialized before row publication. Typed managed pages retain normal GC
 allocation and clearing rules because reference-containing values cannot be
 stored natively.
 
-`ArrayPool<T>.Shared` is not a replacement for this design. It retains live
-arrays per active arch, commonly over-rents, retains returned memory globally,
-requires reference clearing, and introduces shared-pool synchronization.
+`ArrayPool<T>.Shared` is not used for active arch storage because its minimum
+and bucket contract can over-rent sparse states. AFR-27 instead uses exact
+power-of-two arrays with a dense stack for each `(T, capacity)`. Each stack
+starts empty, grows in powers of two with observed return demand, and is
+synchronized only on structural rent, return, growth, and trim operations. This
+keeps the direct typed representation without reserving machine-dependent slots
+for every instantiated bucket. Cached payload follows the recent structural
+high-water mark rather than processor count. Opportunistic Gen2 trimming gives
+a bucket one observed collection interval of grace, then drops both its arrays
+and stack metadata if no rent or return used that bucket during the interval.
 
 ## Active-State Lower Bound
 
@@ -1134,17 +1141,23 @@ Relative to the previous initial capacity of 16:
 | 5–8 | 16 | 8 |
 | 9 or more | Same power of two | Same power of two |
 
-For one retained state, the logical payload change is:
+AFR-27 preserves this sequence exactly: physical array length equals logical
+capacity. Diagnostics therefore report the direct arrays' exact retained
+lengths while active.
+
+For one active state, the logical payload change is:
 
 \[
 (C_{new} - C_{old})\left(8 + \sum_j sizeof(T_j)\right)
 \]
 
-The eight-byte term is the row's `EntMut`. Array headers cancel because the
-number of retained arrays does not change. States that grow past four rows pay
-additional transient replacement arrays even when their final capacity is the
-same; retained capacity and growth allocation must therefore be reported
-separately.
+The eight-byte term is the row's `EntMut`. While the state is active, it owns
+one row array and one array per field. Below 25% occupancy its logical capacity
+halves; at zero rows all of those arrays return to the shared pool and the
+alloc/arch state retains no direct payload buffer. Growth or shrink may reuse a
+pooled bucket without allocating, but allocation is still possible when the
+required bucket is empty. Pool-retained buffers are not owned by the arch state
+and are outside its quiescent retained-state snapshot.
 
 Power-of-two row capacities make block size classes and reuse straightforward.
 The physical footprint then contains several distinct forms of slack:
@@ -1281,15 +1294,16 @@ not produce a repeatable broad regression. AFR-25D then moved precise field
 registration off absent and existing point access, improving shared
 generic-class callers without changing exact paths. AFR-25E failed to force
 specialization through an internal value-type key. AFR-26 consequently retains
-the direct typed-array representation. The remaining epic must measure rather
-than assume:
+the direct typed-array representation. AFR-27 keeps that point shape and changes
+only structural capacity ownership: direct arrays come from exact typed pools,
+halve below 25% occupancy, and return completely at zero rows. The remaining
+epic must measure rather than assume:
 
 - When revisited, whether specialized/direct `EntArchLoc` storage reduces the
   complete point-address sequence; this investigation is currently deferred.
-- Whether a shared-slab direct locator matches or improves the current present,
-  absent, value-shape, and signature-width point results.
-- Whether a custom array-plus-offset locator beats or ties an array-backed
-  `Memory<T>` control for reference-containing point access.
+- Exact-pool hit rate and opportunistic post-Gen2 trimming under representative
+  multi-alloc arch churn.
+- Structural copy and pool traffic caused by the 25% shrink threshold.
 - Column-resolution and contiguous `Span<T>` iteration cost after shared-slab
   cutover.
 - The observed transition degree distribution `D`.

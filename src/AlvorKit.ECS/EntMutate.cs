@@ -14,6 +14,9 @@ public static class EntMutate
             if (!ent.IsAlive)
                 return;
 
+            var handle = ent.Handle;
+            new EntMut(handle.Index, handle.Generation).ResetArchetypal();
+
             foreach (var field in EntReg.PageFields.Fields(ent.Handle.PageIndex))
             {
                 if (field.Has(ent))

@@ -38,6 +38,25 @@ public readonly struct EntArena : IDisposable
         return new(index);
     }
 
+    /// <summary>Begins allocation of an Ent directly in one final archetypal shape.</summary>
+    public EntArchCreate<A> AllocArchetypal<A>()
+    {
+        if (!IsAlive)
+            throw new EntArenaDisposedException();
+
+        return new(this);
+    }
+
+    /// <summary>Begins an alloc-scoped archetypal query for group <typeparamref name="A"/>.</summary>
+    public EntArchQuery<A> QueryArchetypal<A>()
+    {
+        if (!IsAlive)
+            throw new EntArenaDisposedException();
+
+        Allocator.DrainPendingArchetypal();
+        return new(index);
+    }
+
     public void Dispose()
     {
         if (!IsAlive)
@@ -48,6 +67,7 @@ public readonly struct EntArena : IDisposable
             if (!IsAlive)
                 return;
 
+            Allocator.ClearArchetypal();
             for (int i = Allocator.Pages.Length - 1; i >= 0; i--)
                 ReleasePage(Allocator.Pages[i]);
 

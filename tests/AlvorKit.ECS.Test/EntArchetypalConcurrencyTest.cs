@@ -3,7 +3,7 @@ namespace AlvorKit.ECS.Test;
 [TestClass]
 public sealed class EntArchetypalConcurrencyTest
 {
-    /// <summary>Verifies cold alloc owners intern one arch and observe the same immutable catalog metadata.</summary>
+    /// <summary>Verifies cold alloc owners intern one arch and observe the same immutable signature and transitions.</summary>
     [TestMethod]
     public void Archetypal_ConcurrentColdResolution_DifferentAllocsInternSameArch()
     {
@@ -16,7 +16,6 @@ public sealed class EntArchetypalConcurrencyTest
         var archIds = new int[ownerCount];
         var firstValues = new int[ownerCount];
         var secondValues = new int[ownerCount];
-        var layoutSnapshots = new EntArchFieldLayout[ownerCount][];
         var ordinalSnapshots = new int[ownerCount][];
         var transitionSnapshots = new int[ownerCount][];
 
@@ -28,7 +27,6 @@ public sealed class EntArchetypalConcurrencyTest
                 archIds,
                 firstValues,
                 secondValues,
-                layoutSnapshots,
                 ordinalSnapshots,
                 transitionSnapshots),
             () => ResolveColdArch(
@@ -38,7 +36,6 @@ public sealed class EntArchetypalConcurrencyTest
                 archIds,
                 firstValues,
                 secondValues,
-                layoutSnapshots,
                 ordinalSnapshots,
                 transitionSnapshots));
 
@@ -48,10 +45,6 @@ public sealed class EntArchetypalConcurrencyTest
         Assert.AreEqual(11, secondValues[0]);
         Assert.AreEqual(20, firstValues[1]);
         Assert.AreEqual(21, secondValues[1]);
-        CollectionAssert.AreEqual(layoutSnapshots[0], layoutSnapshots[1]);
-        Assert.AreEqual(2, layoutSnapshots[0].Length);
-        Assert.AreEqual(Unsafe.SizeOf<EntMut>(), layoutSnapshots[0][0].BytePrefix);
-        Assert.AreEqual(Unsafe.SizeOf<EntMut>() + Unsafe.SizeOf<int>(), layoutSnapshots[0][1].BytePrefix);
         CollectionAssert.AreEqual(ordinalSnapshots[0], ordinalSnapshots[1]);
         CollectionAssert.AreEqual(
             new[] { 0, 1, EntArchGraph<ColdResolutionArch>.NoFieldOrdinal },
@@ -137,10 +130,9 @@ public sealed class EntArchetypalConcurrencyTest
         for (int owner = 0; owner < ownerCount; owner++)
         {
             Assert.IsNotNull(columns[owner]);
-            Assert.AreSame(
-                columns[owner],
+            Assert.IsNull(
                 EntArchColumn<int, ConcurrentFirstSetField, ConcurrentFirstSetArch>
-                    .Values[allocIds[owner]][archIds[owner]]);
+                    .Values[allocIds[owner]]);
         }
     }
 
@@ -151,7 +143,6 @@ public sealed class EntArchetypalConcurrencyTest
         int[] archIds,
         int[] firstValues,
         int[] secondValues,
-        EntArchFieldLayout[][] layoutSnapshots,
         int[][] ordinalSnapshots,
         int[][] transitionSnapshots)
     {
@@ -175,7 +166,6 @@ public sealed class EntArchetypalConcurrencyTest
         archIds[owner] = loc.ArchId;
         firstValues[owner] = ent.GetArchetypal<int, C0, ColdResolutionArch>();
         secondValues[owner] = ent.GetArchetypal<int, C1, ColdResolutionArch>();
-        layoutSnapshots[owner] = EntArchGraph<ColdResolutionArch>.FieldLayouts(loc.ArchId).ToArray();
         ordinalSnapshots[owner] =
         [
             EntArchGraph<ColdResolutionArch>.FindFieldOrdinal(

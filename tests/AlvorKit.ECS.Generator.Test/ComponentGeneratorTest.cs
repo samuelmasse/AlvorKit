@@ -20,6 +20,7 @@ public sealed class ComponentGeneratorTest
                     NullableType: "int",
                     AddToString: false,
                     LazyInitialize: false,
+                    Archetypal: false,
                     IsDelegate: false,
                     Comment: "/// <summary>Current health.</summary>",
                     GetAccess: "public",
@@ -30,6 +31,7 @@ public sealed class ComponentGeneratorTest
                     NullableType: "string?",
                     AddToString: false,
                     LazyInitialize: false,
+                    Archetypal: false,
                     IsDelegate: false,
                     Comment: null,
                     GetAccess: "public",
@@ -62,6 +64,7 @@ public sealed class ComponentGeneratorTest
                     NullableType: "System.Collections.Generic.List<int>?",
                     AddToString: false,
                     LazyInitialize: true,
+                    Archetypal: false,
                     IsDelegate: false,
                     Comment: null,
                     GetAccess: "public",
@@ -72,6 +75,7 @@ public sealed class ComponentGeneratorTest
                     NullableType: "System.Action",
                     AddToString: false,
                     LazyInitialize: false,
+                    Archetypal: false,
                     IsDelegate: true,
                     Comment: null,
                     GetAccess: "public",
@@ -82,6 +86,7 @@ public sealed class ComponentGeneratorTest
                     NullableType: "int",
                     AddToString: true,
                     LazyInitialize: false,
+                    Archetypal: false,
                     IsDelegate: false,
                     Comment: null,
                     GetAccess: "public",
@@ -95,6 +100,46 @@ public sealed class ComponentGeneratorTest
         StringAssert.Contains(source, "var value = ent.Get<System.Collections.Generic.List<int>?, AdvancedComponents.Inventory>();");
         StringAssert.Contains(source, "value = new();");
         StringAssert.Contains(source, "[ComponentToString]");
+    }
+
+    /// <summary>Archetypal properties route every generated entity operation through their generated component group.</summary>
+    [TestMethod]
+    public void Emit_WithArchetypalProperty_EmitsGroupedArchetypalAccessors()
+    {
+        var source = ComponentSourceEmitter.Emit(new(
+            Namespace: "Fixture",
+            InterfaceName: "IMotionComponents",
+            ClassName: "MotionComponents",
+            Properties:
+            [
+                new(
+                    Name: "Position",
+                    ValueType: "Fixture.Position",
+                    NullableType: "Fixture.Position",
+                    AddToString: false,
+                    LazyInitialize: false,
+                    Archetypal: true,
+                    IsDelegate: false,
+                    Comment: null,
+                    GetAccess: "public",
+                    SetAccess: "public")
+            ],
+            SkipBuilder: false,
+            Access: "public"));
+
+        StringAssert.Contains(
+            source,
+            "ent.HasArchetypal<Fixture.Position, MotionComponents.Position, MotionComponents>()");
+        StringAssert.Contains(
+            source,
+            "ent.GetArchetypal<Fixture.Position, MotionComponents.Position, MotionComponents>()");
+        StringAssert.Contains(
+            source,
+            "ent.SetArchetypal<Fixture.Position, MotionComponents.Position, MotionComponents>(value)");
+        StringAssert.Contains(
+            source,
+            "ent.UnsetArchetypal<Fixture.Position, MotionComponents.Position, MotionComponents>()");
+        StringAssert.Contains(source, "public EntMutator<T> Position(in Fixture.Position value)");
     }
 
     /// <summary>SkipBuilder suppresses builder-style mutator extensions while keeping normal accessors.</summary>
@@ -154,6 +199,7 @@ public sealed class ComponentGeneratorTest
             NullableType: "int",
             AddToString: false,
             LazyInitialize: false,
+            Archetypal: false,
             IsDelegate: false,
             Comment: null,
             GetAccess: "public",
@@ -208,6 +254,7 @@ public sealed class ComponentGeneratorTest
                     NullableType: "int",
                     AddToString: false,
                     LazyInitialize: false,
+                    Archetypal: false,
                     IsDelegate: false,
                     Comment: null,
                     GetAccess: "public",

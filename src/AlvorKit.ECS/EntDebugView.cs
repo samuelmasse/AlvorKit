@@ -7,15 +7,23 @@ public class EntDebugView(IEnt ent)
     {
         get
         {
-            var fields = EntReg.Fields.ToArray()
-                .Where(x => x.Has(ent)).OrderBy(x => x.NameType().Name).ToArray();
+            var handle = ent.Handle;
+            var valueEnt = new Ent(handle.Index, handle.Generation);
+            EntComponentView[] views;
+            lock (EntReg.Lock)
+                views = [.. EntReg.ComponentViews];
+
+            var fields = views
+                .Where(x => x.Has(valueEnt))
+                .OrderBy(x => x.DebugName())
+                .ToArray();
 
             var comps = new object[fields.Length];
 
             for (int i = 0; i < fields.Length; i++)
             {
-                string name = fields[i].NameType().Name;
-                object? value = fields[i].Get(ent);
+                string name = fields[i].DebugName();
+                object? value = fields[i].Get(valueEnt);
 
                 if (value == null || value.GetType().IsPrimitive || value.GetType() == typeof(string))
                     comps[i] = new DebugViewComponentPrimitive(name, value);

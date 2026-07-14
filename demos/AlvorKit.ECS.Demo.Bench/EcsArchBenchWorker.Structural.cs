@@ -19,7 +19,7 @@ internal sealed partial class EcsArchBenchWorker
             EcsArchBenchShapes.SetSevenFillers<A>(ents[i]);
         }
 
-        // Populate both sides once so the measured pass reuses row and column capacity.
+        // Populate both sides once so the measured pass can rent pre-sized returned buffers.
         for (int i = 0; i < ents.Length; i++)
             ents[i].SetArchetypal<int, FToggle, A>(i);
         for (int i = 0; i < ents.Length; i++)

@@ -5,6 +5,7 @@
         <Project Path="demos/AlvorKit.ECS.Demo/AlvorKit.ECS.Demo.csproj" />
         <Project Path="demos/AlvorKit.ECS.Indexed.Demo/AlvorKit.ECS.Indexed.Demo.csproj" />
         <Project Path="demos/AlvorKit.ECS.Demo.Bench/AlvorKit.ECS.Demo.Bench.csproj" />
+        <Project Path="demos/AlvorKit.ECS.Demo.QueryBench/AlvorKit.ECS.Demo.QueryBench.csproj" />
         <Project Path="demos/AlvorKit.Engine.Demo.Triangle/AlvorKit.Engine.Demo.Triangle.csproj" />
         <Project Path="demos/AlvorKit.Engine.Demo.Triangle3D/AlvorKit.Engine.Demo.Triangle3D.csproj" />
         <Project Path="demos/AlvorKit.Engine.Demo.TextureCube/AlvorKit.Engine.Demo.TextureCube.csproj" />

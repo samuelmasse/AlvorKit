@@ -23,5 +23,11 @@ public readonly record struct Ent : IEntRead
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool Has<T, N>() => ent.Has<T, N>();
 
+    /// <inheritdoc />
+    public T? GetArchetypal<T, N, A>() => ent.GetArchetypal<T, N, A>();
+
+    /// <inheritdoc />
+    public bool HasArchetypal<T, N, A>() => ent.HasArchetypal<T, N, A>();
+
     public override string ToString() => ent.ToString();
 }

@@ -4,8 +4,9 @@
 > AFR-22, AFR-23, and AFR-24 are implemented and verified. AFR-25 is complete:
 > AFR-25A and AFR-25E were rejected, while AFR-25B, AFR-25C, and AFR-25D were
 > accepted. AFR-26 retains `(AllocId, ArchId, Row)` and direct closed-generic
-> typed columns as the production speed reference. Shared-storage experiments
-> that did not pass that point gate were removed before commit.
+> typed columns as the production speed reference. Shared allocation is no
+> longer planned; AFR-27 applies bounded pooled capacity to the retained direct
+> arrays instead.
 
 ## Related Documents
 
@@ -35,7 +36,8 @@
 | AFR-25E | Complete — rejected | An internal value-type key retained canonical generic sharing |
 | AFR-25 | Complete | Local point-path candidates resolved; specialized direct `EntArchLoc` remains deferred |
 | AFR-26 | Complete | Current direct loc and typed column directory retained as the speed reference |
-| Shared allocation | Next | Design the final direct locator and contiguous iteration view before allocator integration |
+| AFR-27 | Complete | Exact typed power-of-two pools, 25% shrink hysteresis, and complete state return at zero entities |
+| Shared allocation | Deferred | Retain direct typed columns and reduce their retained capacity through pooling |
 
 ## Outcome
 
@@ -145,7 +147,7 @@ out of scope.
 - No native storage for reference-containing values; they remain GC-visible.
 - No general-purpose defensive validation of controlled internal states.
 - No group-global shared store on alloc-local hot paths.
-- No `ArrayPool<T>.Shared` replacement for active arch storage.
+- No default `ArrayPool<T>.Shared` over-renting for active arch storage.
 - No public generic constraint, group-marker conversion, or API overload is
   introduced to obtain an internal class/value-type specialization. Any proxy
   or specialization remains an implementation detail.
@@ -1516,7 +1518,45 @@ Acceptance:
   reports the transferred native bytes in total retained memory and never calls
   that transfer memory elimination.
 
+### AFR-27 — Pooled Direct Capacity
+
+Purpose: reduce high-water retention without changing the direct typed-array
+point representation selected by AFR-26.
+
+Policy:
+
+- Rent row and component arrays from one exact internal pool per closed `T`.
+- Share that pool across every archetypal field name, group, arch, and alloc
+  using the same `T`; do not type-erase managed arrays.
+- Begin at logical capacity four and double when full.
+- After removal, retain exactly 25% occupancy and halve once when occupancy is
+  strictly lower.
+- At zero rows, return the row array and every component array, clear the
+  alloc/arch state slot, and reset logical capacity to zero.
+- Clear reference-containing arrays before returning them to a bucket. Leave
+  reference-free arrays intentionally dirty.
+- Keep alloc and arch directory arrays; only the per-state row and component
+  buffers are returned.
+
+Each `(T, capacity)` bucket is a dense stack that starts without a backing
+reference array and grows in powers of two according to observed return demand.
+A short per-bucket lock makes rent and return O(1), with amortized O(1) stack
+growth and without a wrapper or linked node per returned component array. This
+removes machine-dependent processor-count reservations. Retention follows the
+recent structural high-water mark for that exact bucket until it becomes
+inactive. The first pool operation after a Gen2 change scans the buckets and
+drops cached buffers only when their bucket was also unused throughout the
+preceding observed Gen2 interval. This one-interval grace period prevents the
+first row return in a structural burst from discarding the component buffers
+that the same burst is about to rent. Trimming also releases the bucket's stack
+metadata. Point access retains the same closed-generic directory lookup and
+typed terminal byref; bucket synchronization and shrink checks exist only on
+structural paths.
+
 ## Phase 4: Inactive Alloc-State and Shared-Store Prototypes
+
+The remaining shared-store phases are deferred. They remain as theoretical
+design notes rather than the active implementation plan.
 
 ### AFR-30 — Inactive Sparse Alloc-Local State Prototype
 

@@ -4,6 +4,7 @@ namespace AlvorKit.ECS.Generator;
 internal static class ComponentModelFactory
 {
     internal const string ComponentsAttributeName = "AlvorKit.ECS.Generator.ComponentsAttribute";
+    internal const string ArchetypalAttributeName = "AlvorKit.ECS.Generator.ArchetypalAttribute";
 
     private static readonly SymbolDisplayFormat NullableFriendlyFormat = new(
     typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
@@ -50,6 +51,7 @@ internal static class ComponentModelFactory
         NullableType: property.Type.ToDisplayString(NullableFriendlyFormat),
         AddToString: HasAttribute(property, "ComponentToStringAttribute"),
         LazyInitialize: HasAttribute(property, "ComponentLazyInitializeAttribute"),
+        Archetypal: HasAttribute(property, ArchetypalAttributeName),
         IsDelegate: property.Type.TypeKind == TypeKind.Delegate,
         Comment: ReadXmlComment(property, cancellationToken),
         GetAccess: ComponentAccess.ToAccessString(property.GetMethod!.DeclaredAccessibility),
@@ -60,7 +62,9 @@ internal static class ComponentModelFactory
         .Any(argument => argument.Key == "SkipBuilder" && argument.Value.Value is true));
 
     private static bool HasAttribute(IPropertySymbol property, string attributeName) =>
-    property.GetAttributes().Any(attribute => attribute.AttributeClass?.Name == attributeName);
+    property.GetAttributes().Any(attribute =>
+        attribute.AttributeClass?.Name == attributeName ||
+        attribute.AttributeClass?.ToDisplayString() == attributeName);
 
     private static string? ReadXmlComment(IPropertySymbol property, CancellationToken cancellationToken)
     {

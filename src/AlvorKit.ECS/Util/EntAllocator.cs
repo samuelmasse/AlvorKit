@@ -4,6 +4,9 @@ internal class EntAllocator(int allocatorIndex, bool exclusive)
 {
     private readonly List<int> pages = [];
     private readonly ConcurrentBag<int> free = [];
+    // The alloc owner is the sole reader and writer. Finalizers publish only through pendingArchCleanup.
+    private readonly List<EntArchGroupOps> archGroups = [];
+    private readonly ConcurrentQueue<EntMut> pendingArchCleanup = [];
 
     private int nextIndex;
     private int limitIndex;
@@ -89,10 +92,44 @@ internal class EntAllocator(int allocatorIndex, bool exclusive)
 
     internal void Add(int index) => free.Add(index);
 
+    internal void RegisterArchGroup(EntArchGroupOps group) => archGroups.Add(group);
+
+    internal void RemoveArchetypal(EntMut ent)
+    {
+        foreach (EntArchGroupOps group in archGroups)
+            group.Remove(ent);
+
+        DrainPendingArchetypal();
+    }
+
+    internal void QueueArchetypalCleanup(EntMut ent) => pendingArchCleanup.Enqueue(ent);
+
+    internal void DrainPendingArchetypal()
+    {
+        if (pendingArchCleanup.IsEmpty)
+            return;
+
+        while (pendingArchCleanup.TryDequeue(out EntMut ent))
+        {
+            foreach (EntArchGroupOps group in archGroups)
+                group.Remove(ent);
+        }
+    }
+
+    internal void ClearArchetypal()
+    {
+        while (pendingArchCleanup.TryDequeue(out _)) { }
+        foreach (EntArchGroupOps group in archGroups)
+            group.ClearAlloc(allocatorIndex);
+        archGroups.Clear();
+    }
+
     internal void Clear()
     {
         pages.Clear();
         free.Clear();
+        archGroups.Clear();
+        while (pendingArchCleanup.TryDequeue(out _)) { }
         nextIndex = 0;
         limitIndex = 0;
     }

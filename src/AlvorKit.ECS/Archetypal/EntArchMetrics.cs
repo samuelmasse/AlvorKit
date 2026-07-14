@@ -11,8 +11,6 @@ internal struct EntArchMetrics
     internal int ArchCapacity;
     internal int SignatureMembershipCount;
     internal int SignatureMembershipCapacity;
-    internal int FieldLayoutCount;
-    internal int FieldLayoutCapacity;
     internal int SignatureIndexCount;
     internal int SignatureIndexCapacity;
     internal int SignatureScratchCapacity;

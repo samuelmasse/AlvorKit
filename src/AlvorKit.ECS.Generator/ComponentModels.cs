@@ -6,6 +6,7 @@ internal sealed record PropertyModel(
     string NullableType,
     bool AddToString,
     bool LazyInitialize,
+    bool Archetypal,
     bool IsDelegate,
     string? Comment,
     string GetAccess,

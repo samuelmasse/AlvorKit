@@ -10,7 +10,6 @@ internal static class EntArchGraph<A>
     private const int FirstArchId = 1;
     private const int FirstEdgeIndex = 1;
     private const int FirstFieldId = 1;
-    private const int FirstStorageClassId = 1;
     private const int InitialFieldCapacity = 16;
     private const int InitialArchCapacity = 16;
     private const int InitialPackedFieldCapacity = 4096;
@@ -22,13 +21,11 @@ internal static class EntArchGraph<A>
     private static int nextFieldId = FirstFieldId;
     private static int nextArchId = FirstArchId;
     private static int nextEdgeIndex = FirstEdgeIndex;
-    private static int nextStorageClassId = FirstStorageClassId;
     private static int fieldCapacity;
     private static int archCapacity;
     private static int packedFieldCount;
     private static int singletonArchCount;
     private static int[] packedFieldIds = new int[InitialPackedFieldCapacity];
-    private static EntArchFieldLayout[] packedFieldLayouts = [];
     // Structural resolution holds Sync, so one reusable buffer supports unbounded signature widths without stack growth.
     private static int[] signatureScratch = [];
     // Real arch IDs and their packed signatures are appended in the same order, so the previous end is the next start.
@@ -38,7 +35,6 @@ internal static class EntArchGraph<A>
     private static EntArchEdge[] edges = [];
     private static int[] singletonArchIds = [];
     private static EntArchColumnOps[] columnOps = [];
-    private static EntArchField[] fields = [];
 
     static EntArchGraph()
     {
@@ -59,8 +55,6 @@ internal static class EntArchGraph<A>
         metrics.ArchCapacity = archCapacity;
         metrics.SignatureMembershipCount = packedFieldCount;
         metrics.SignatureMembershipCapacity = packedFieldIds.Length;
-        metrics.FieldLayoutCount = packedFieldCount;
-        metrics.FieldLayoutCapacity = packedFieldLayouts.Length;
         metrics.SignatureIndexCount = metrics.MaterializedArchCount;
         metrics.SignatureIndexCapacity = signatureArchIds.Length;
         metrics.SignatureScratchCapacity = signatureScratch.Length;
@@ -72,7 +66,6 @@ internal static class EntArchGraph<A>
         metrics.DirectedStructuralEdgeCount = metrics.StoredTransitionEdgeCount + 2L * singletonArchCount;
 
         metrics.AddCatalogArray(packedFieldIds, packedFieldCount);
-        metrics.AddCatalogArray(packedFieldLayouts, packedFieldCount);
         metrics.AddCatalogArray(signatureScratch, 0);
         metrics.AddCatalogArray(signatureEnds, nextArchId);
         metrics.AddCatalogArray(signatureArchIds, metrics.SignatureIndexCount);
@@ -80,7 +73,6 @@ internal static class EntArchGraph<A>
         metrics.AddCatalogArray(edges, edges.Length == 0 ? 0 : nextEdgeIndex);
         metrics.AddCatalogArray(singletonArchIds, nextFieldId);
         metrics.AddCatalogArray(columnOps, nextFieldId);
-        metrics.AddCatalogArray(fields, nextFieldId);
 
         metrics.AddCatalogObjects(1L + metrics.RegisteredFieldCount);
 
@@ -88,15 +80,7 @@ internal static class EntArchGraph<A>
             columnOps[fieldId].AccumulateMetrics(ref metrics);
     }
 
-    internal static int RegisterStorageClass()
-    {
-        lock (Sync)
-        {
-            return nextStorageClassId++;
-        }
-    }
-
-    internal static int RegisterField(EntArchColumnOps ops, int byteWidth, int storageClassId)
+    internal static int RegisterField(EntArchColumnOps ops)
     {
         lock (Sync)
         {
@@ -105,8 +89,18 @@ internal static class EntArchGraph<A>
 
             int fieldId = nextFieldId++;
             columnOps[fieldId] = ops;
-            fields[fieldId] = new(byteWidth, storageClassId);
+            lock (EntReg.Lock)
+                EntReg.ComponentViews.Add(ops);
             return fieldId;
+        }
+    }
+
+    internal static void ClearAllocColumns(int allocId)
+    {
+        lock (Sync)
+        {
+            for (int fieldId = FirstFieldId; fieldId < nextFieldId; fieldId++)
+                columnOps[fieldId].ClearAlloc(allocId);
         }
     }
 
@@ -123,6 +117,24 @@ internal static class EntArchGraph<A>
                 return archId;
 
             return CreateFromSignature([fieldId]);
+        }
+    }
+
+    internal static int ResolveSignature<TInit>()
+        where TInit : struct, IEntArchInit<A>
+    {
+        lock (Sync)
+        {
+            Span<int> fieldIds = SignatureScratch(TInit.FieldCount);
+            TInit.WriteFieldIds(fieldIds);
+            fieldIds.Sort();
+
+            ulong signatureHash = EntArchSignatureIndex.Hash(fieldIds);
+            EnsureSignatureIndexCapacity(1);
+            int archId = FindBySignature(fieldIds, signatureHash);
+            return archId == NoArchId
+                ? CreateFromSignature(fieldIds, signatureHash)
+                : archId;
         }
     }
 
@@ -145,14 +157,6 @@ internal static class EntArchGraph<A>
         int start = signatureEnds[archId - 1];
         int end = signatureEnds[archId];
         return new(packedFieldIds, start, end - start);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static ReadOnlySpan<EntArchFieldLayout> FieldLayouts(int archId)
-    {
-        int start = signatureEnds[archId - 1];
-        int end = signatureEnds[archId];
-        return new(packedFieldLayouts, start, end - start);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -223,11 +227,7 @@ internal static class EntArchGraph<A>
 
         if (packedFieldIds.Length < nextPackedFieldCount)
             Array.Resize(ref packedFieldIds, (int)BitOperations.RoundUpToPowerOf2((uint)nextPackedFieldCount));
-        if (packedFieldLayouts.Length < nextPackedFieldCount)
-            Array.Resize(ref packedFieldLayouts, (int)BitOperations.RoundUpToPowerOf2((uint)nextPackedFieldCount));
-
         fieldIds.CopyTo(packedFieldIds.AsSpan(start, fieldIds.Length));
-        CreateFieldLayouts(fieldIds, packedFieldLayouts.AsSpan(start, fieldIds.Length));
         signatureEnds[archId] = nextPackedFieldCount;
         packedFieldCount = nextPackedFieldCount;
 
@@ -285,7 +285,6 @@ internal static class EntArchGraph<A>
         if (requiredFieldCapacity != fieldCapacity)
         {
             Array.Resize(ref columnOps, requiredFieldCapacity);
-            Array.Resize(ref fields, requiredFieldCapacity);
             Array.Resize(ref singletonArchIds, requiredFieldCapacity);
             fieldCapacity = requiredFieldCapacity;
         }
@@ -347,28 +346,4 @@ internal static class EntArchGraph<A>
         srcFieldIds[insertionIndex..].CopyTo(dstFieldIds[(insertionIndex + 1)..]);
     }
 
-    private static void CreateFieldLayouts(ReadOnlySpan<int> fieldIds, Span<EntArchFieldLayout> layouts)
-    {
-        int bytePrefix = Unsafe.SizeOf<EntMut>();
-
-        for (int fieldIndex = 0; fieldIndex < fieldIds.Length; fieldIndex++)
-        {
-            ref readonly var field = ref fields[fieldIds[fieldIndex]];
-            if (!field.ContainsReferences)
-            {
-                layouts[fieldIndex] = EntArchFieldLayout.ReferenceFree(bytePrefix);
-                bytePrefix += field.ByteWidth;
-                continue;
-            }
-
-            int typeColumn = 0;
-            for (int previousIndex = 0; previousIndex < fieldIndex; previousIndex++)
-            {
-                if (fields[fieldIds[previousIndex]].StorageClassId == field.StorageClassId)
-                    typeColumn++;
-            }
-
-            layouts[fieldIndex] = EntArchFieldLayout.ReferenceContaining(typeColumn);
-        }
-    }
 }

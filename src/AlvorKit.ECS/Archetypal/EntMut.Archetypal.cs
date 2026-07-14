@@ -5,10 +5,9 @@ namespace AlvorKit.ECS;
 //   arch, and dense row. EntArchColumn<T, N, A> stores component values at that same alloc/arch/row coordinate.
 // - EntArchGraph<A> is shared by the group. Its lock serializes field registration, arch creation, transition caching,
 //   and jagged-array outer growth. Runtime rows and component columns remain partitioned by alloc.
-// - Every canonical packed signature is the immutable field-membership authority and has parallel field layouts. Ordinary
+// - Every canonical packed signature is the immutable field-membership authority. Ordinary
 //   point access goes directly through its closed-generic column at alloc/arch/row; it does not search the signature or graph.
-//   Packed membership and sparse transition edges are used only while resolving structural changes. Reference-free layouts
-//   store byte-column prefixes, while reference-containing layouts store type-local columns.
+//   Packed membership and sparse transition edges are used only while resolving structural changes.
 // - EntArchColumn is the beforefieldinit hot Values holder. Its FieldId forwards to the precise EntArchColumnOps initializer,
 //   so absent Get, Has, and Unset do not register unused fields or allocate their ops. A live structural Set registers the
 //   field before resolving an arch; the CLR runs that initializer once and graph publication remains locked.
@@ -18,8 +17,20 @@ namespace AlvorKit.ECS;
 //   byref preserves GC write barriers.
 // - One thread exclusively owns an alloc's data for a given group. Reads, writes, and row changes inside that alloc are
 //   intentionally unsynchronized. Multiple threads may use the same group and arch concurrently only through different allocs.
+// - Span queries are alloc-scoped and filter only nonempty alloc-local arch states. A typed selection chain resolves each
+//   requested column once per chunk, after which Ent and component iteration is aligned span indexing. Structural changes in
+//   the same alloc/group are forbidden while an enumerator, chunk, or span is active; different alloc owners remain independent.
+// - When a new Ent's complete shape is known, AllocArchetypal builds a typed value chain and appends directly to that final arch.
+//   Each closed builder shape resolves and caches its canonical arch once, so repeated construction performs no transition walk
+//   and never occupies intermediate row sets. Sequential Set remains the structural API for genuine incremental shape changes.
 // - Structural changes move an Ent between dense arch row sets. Adding copies every src field; removing copies only the
 //   fields retained by dst. The transitioned Ent receives its new loc after the move.
+// - Row and component arrays use one exact power-of-two pool per T across all arch groups and allocs. Capacity starts at four,
+//   doubles when full, and halves below 25% occupancy. A zero-row alloc/arch state returns all arrays. Each size uses an
+//   O(1)-amortized synchronized stack that grows with observed return demand instead of reserving per-thread slots. A Gen2
+//   change ages inactive buckets, and a later Gen2 change drops those still unused, including their stack metadata. Cached
+//   reference arrays are cleared before publication; reference-free arrays remain dirty. Pool synchronization exists only on
+//   structural paths; point access stays direct and typed.
 // - Removing a src row uses swap-back compaction: the last Ent and all its fields fill the hole, and that Ent's loc is
 //   repaired immediately. Reference-containing fields are cleared at the old tail for GC correctness. Fields without
 //   references and the tail Ent slot are intentionally left dirty beyond Count. This avoids unnecessary writes and shifting
@@ -71,6 +82,11 @@ public readonly partial record struct EntMut
         if (!IsAlive)
             return;
 
+        EntAllocator alloc = EntReg.Allocators[EntReg.PageAllocators[PageIndex]];
+        alloc.DrainPendingArchetypal();
+        loc = Get<EntArchLoc, A>();
+        srcArchId = loc.ArchId;
+
         int fieldId = EntArchColumn<T, N, A>.FieldId;
         int dstArchId;
         if (srcArchId == EntArchGraph<A>.NoArchId)
@@ -105,6 +121,10 @@ public readonly partial record struct EntMut
 
         if (EntArchColumn<T, N, A>.ValuesAt(loc.AllocId, srcArchId) == null)
             return false;
+
+        EntReg.Allocators[loc.AllocId].DrainPendingArchetypal();
+        loc = Get<EntArchLoc, A>();
+        srcArchId = loc.ArchId;
 
         if (EntArchGraph<A>.IsSingleton(srcArchId))
         {

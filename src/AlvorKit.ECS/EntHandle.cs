@@ -47,17 +47,20 @@ public readonly struct EntHandle
         sb.Append(" { ");
 
         var ent = new Ent(Index, Generation);
-        var fields = EntReg.PageFields.Fields(PageIndex)
-            .ToArray()
+        EntComponentView[] views;
+        lock (EntReg.Lock)
+            views = [.. EntReg.ComponentViews];
+
+        var fields = views
             .Where(x => x.Has(ent) &&
                 x.NameType().CustomAttributes.Any(a => a.AttributeType.Name.Contains("ComponentToString")))
-            .OrderBy(x => x.NameType().Name).ToArray();
+            .OrderBy(x => x.StringName()).ToArray();
 
         if (fields.Length > 0)
         {
             for (int i = 0; i < fields.Length; i++)
             {
-                string name = fields[i].NameType().Name.Replace("Component", "");
+                string name = fields[i].StringName();
                 object? value = fields[i].Get(ent);
 
                 if (i > 0)

@@ -1,9 +1,12 @@
 namespace AlvorKit.ECS;
 
-internal abstract class EntField
+internal abstract class EntField : EntComponentView
 {
-    internal abstract Type NameType();
-    internal abstract Type ValueType();
+    internal override Type? ArchGroupType() => null;
+    internal abstract override Type NameType();
+    internal abstract override Type ValueType();
+    internal abstract override bool Has(Ent ent);
+    internal abstract override object? Get(Ent ent);
     internal abstract bool Has<T>(T ent) where T : IEnt;
     internal abstract object? Get<T>(T ent) where T : IEnt;
     internal abstract bool Unset<T>(T ent) where T : IEntMut;
@@ -16,6 +19,8 @@ internal class EntField<T, N> : EntField
 {
     internal override Type NameType() => typeof(N);
     internal override Type ValueType() => typeof(T);
+    internal override bool Has(Ent ent) => ent.Has<T, N>();
+    internal override object? Get(Ent ent) => ent.Get<T, N>();
     internal override bool Has<T1>(T1 ent) => ent.Has<T, N>();
     internal override object? Get<T1>(T1 ent) => ent.Get<T, N>();
     internal override bool Unset<T1>(T1 ent) => ent.Unset<T, N>();

@@ -45,6 +45,7 @@ public class EntObj : IEntMut
         ref int generation = ref EntReg.PageGenerations[pageIndex][subIndex];
 
         generation++;
+        ent.QueueArchetypalCleanup();
         ent.Reset();
         generation++;
         EntReg.Allocators[EntReg.PageAllocators[pageIndex]].Add(ent.Index);
@@ -56,11 +57,23 @@ public class EntObj : IEntMut
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool Has<T, N>() => ent.Has<T, N>();
 
+    /// <inheritdoc />
+    public T? GetArchetypal<T, N, A>() => ent.GetArchetypal<T, N, A>();
+
+    /// <inheritdoc />
+    public bool HasArchetypal<T, N, A>() => ent.HasArchetypal<T, N, A>();
+
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool Unset<T, N>() => ent.Unset<T, N>();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void Set<T, N>(in T value) => ent.Set<T, N>(value);
+
+    /// <inheritdoc />
+    public void SetArchetypal<T, N, A>(in T value) => ent.SetArchetypal<T, N, A>(value);
+
+    /// <inheritdoc />
+    public bool UnsetArchetypal<T, N, A>() => ent.UnsetArchetypal<T, N, A>();
 
     public override string ToString() => ent.ToString();
 }

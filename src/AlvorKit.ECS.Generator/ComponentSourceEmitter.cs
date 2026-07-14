@@ -41,8 +41,8 @@ internal static class ComponentSourceEmitter
         ("GetProperties", Join(model.Properties.Select(property => GetProperty(model, property)))));
 
     private static string HasProperty(InterfaceModel model, PropertyModel property) =>
-    ComponentTemplate.RenderFragment(
-        "has-property.csfrag.tmpl",
+        ComponentTemplate.RenderFragment(
+        property.Archetypal ? "has-property-archetypal.csfrag.tmpl" : "has-property.csfrag.tmpl",
         ("Comment", Comment(property, "        ")),
         ("Access", property.GetAccess),
         ("Name", property.Name),
@@ -50,8 +50,8 @@ internal static class ComponentSourceEmitter
         ("Type", property.NullableType));
 
     private static string GetProperty(InterfaceModel model, PropertyModel property) =>
-    ComponentTemplate.RenderFragment(
-        "get-property.csfrag.tmpl",
+        ComponentTemplate.RenderFragment(
+        property.Archetypal ? "get-property-archetypal.csfrag.tmpl" : "get-property.csfrag.tmpl",
         ("Comment", Comment(property, "        ")),
         ("Access", property.GetAccess),
         ("Type", property.NullableType),
@@ -71,8 +71,15 @@ internal static class ComponentSourceEmitter
     private static string MutatingProperty(InterfaceModel model, PropertyModel property)
     {
         var access = ComponentAccess.WiderAccess(property.GetAccess, property.SetAccess);
+        string template = property.Archetypal
+            ? property.LazyInitialize
+                ? "mutating-property-lazy-archetypal.csfrag.tmpl"
+                : "mutating-property-archetypal.csfrag.tmpl"
+            : property.LazyInitialize
+                ? "mutating-property-lazy.csfrag.tmpl"
+                : "mutating-property.csfrag.tmpl";
         return ComponentTemplate.RenderFragment(
-            property.LazyInitialize ? "mutating-property-lazy.csfrag.tmpl" : "mutating-property.csfrag.tmpl",
+            template,
             ("Comment", Comment(property, "        ")),
             ("Access", access),
             ("Type", property.NullableType),
@@ -84,8 +91,8 @@ internal static class ComponentSourceEmitter
     }
 
     private static string UnsetMethod(InterfaceModel model, PropertyModel property) =>
-    ComponentTemplate.RenderFragment(
-        "unset-method.csfrag.tmpl",
+        ComponentTemplate.RenderFragment(
+        property.Archetypal ? "unset-method-archetypal.csfrag.tmpl" : "unset-method.csfrag.tmpl",
         ("Comment", Comment(property, "        ")),
         ("Access", property.SetAccess),
         ("Name", property.Name),

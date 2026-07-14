@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <ServerGarbageCollection>false</ServerGarbageCollection>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.ECS\AlvorKit.ECS.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.ECS" />
+    </ItemGroup>
+
+</Project>

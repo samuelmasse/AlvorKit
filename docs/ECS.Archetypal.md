@@ -1,92 +1,78 @@
-# ECS Archetypal Implementation Direction
+# ECS Archetypal Components
 
-> Status: working implementation direction. AFR-25A's `SetArchetypal`
-> structural slow-path split was measured and rejected, and AFR-25B's
-> `ValuesAt` address-path simplification, AFR-25C's `Unsafe.Add` row access, and
-> AFR-25D's cold field-registration split were measured and accepted. AFR-25E's
-> internal value-type column key was rejected. AFR-26 retains the current direct
-> `(AllocId, ArchId, Row)` and closed-generic column representation as the speed
-> reference. Shared-storage prototypes that did not pass that point gate were
-> removed before commit.
+> Status: direct typed columns, sparse canonical signatures, sparse transition
+> edges, exact pooled capacity, lifecycle integration, generated declaration,
+> debugger discovery, `ComponentToString` integration, final-shape allocation,
+> and alloc-scoped span queries with explicit-SIMD support are implemented.
+> Per-Ent query accessors and further query
+> alternatives remain in the Release experiment matrix in the
+> [feature-completion plan](ECS.Archetypal.Features.md).
 
-The broader footprint work is tracked by the
-[Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md) and
-its [theory and cost model](ECS.Archetypal.FootprintTheory.md). This document
-retains the detailed catalog decisions that feed the epic. Where an earlier
-dense-layout suggestion conflicts with the epic, the sparse epic design wins.
-The pre-change behavior and measurement surface are recorded in the
-[AFR-01 and AFR-02 baseline](ECS.Archetypal.FootprintBaseline.md).
+The earlier [footprint reduction epic](ECS.Archetypal.FootprintReduction.md),
+[theory](ECS.Archetypal.FootprintTheory.md), and
+[baseline](ECS.Archetypal.FootprintBaseline.md) are historical design records.
+They are not the active package backlog.
+
+The current Release comparison is consolidated in the standalone
+[archetypal benchmark report](ECS.Archetypal.BenchmarkReport.html).
 
 ## Scope
 
-The public archetypal API remains stable:
+The direct public archetypal API is:
 
 - `GetArchetypal<T, N, A>()`
 - `HasArchetypal<T, N, A>()`
 - `SetArchetypal<T, N, A>(in T value)`
 - `UnsetArchetypal<T, N, A>()`
+- `EntArena.AllocArchetypal<A>()`
+- `EntArena.QueryArchetypal<A>().With<T, N>()`
 
-The implementation must continue to support an unbounded number of registered
-fields in an arch group. Seven fields is the current demo size, not a system
-limit. Consequently, an arch ID cannot be a fixed-width component bit mask.
+The implementation supports an unbounded number of registered fields in a
+group. An arch ID is not a fixed-width component mask.
 
-This work is focused on the archetypal implementation itself. Ent lifecycle,
-arena disposal, sparse-component integration, and other interaction with the
-rest of the Ent system are intentionally out of scope.
+Generated component interfaces may mark individual properties with
+`[Archetypal]`. Marked properties use the generated component-group type as `A`;
+unmarked properties retain ordinary sparse storage. `Clear`, `EntPtr.Dispose`,
+`EntObj` finalization, and `EntArena.Dispose` all participate in archetypal
+lifecycle.
 
-Defining ownership and deterministic release for any archetypal native buffer
-is in scope; redesigning general Ent lifecycle is not. No native candidate is
-accepted without a concrete owner and matching `NativeMemory.Free` path.
+## Generated Declaration
 
-## Optimization Priority
+`[Archetypal]` applies to one property in a `[Components]` interface. The source
+generator emits the same property, `Has`, `Unset`, lazy-initialization, and
+builder surfaces as an ordinary component, but routes their storage operations
+through the generated component-group type:
 
-The optimization order is explicit:
+```csharp
+[Components]
+public interface IMotionComponents
+{
+    string Name { get; set; }
 
-1. Existing-component `GetArchetypal` and `SetArchetypal` latency is the
-   primary objective.
-2. Structural add/remove, movement, compaction, retained bytes, managed object
-   count, and managed allocation events are the second objective.
-3. Cold catalog construction and diagnostics are the third objective.
+    [Archetypal]
+    Position Position { get; set; }
+}
+```
 
-Constant-time complexity alone is not sufficient for the first objective. The
-complete generated address sequence, call shape, loads, branches, bounds
-checks, and inlining determine whether a design is acceptable. A footprint or
-structural improvement cannot justify slowing existing-field reads or writes.
+`Name` remains sparse. `Position` uses `MotionComponents` as `A`. Archetypal
+reads are part of `IEnt`; archetypal mutation is part of `IEntMut`, so every Ent
+wrapper supports the generated accessors consistently.
 
-Progress through the agreed improvements:
+## Lifecycle Integration
 
-1. Complete: store cumulative signature ends and preserve sorted signatures by
-   insertion.
-2. Complete: add collision-checked hash indexing for arch signatures.
-3. Complete: reduce the initial row capacity from 16 to 4.
-4. Complete: add four-byte packed immutable field layouts.
-5. Complete: use each closed-generic column directly for ordinary membership
-   and point access.
-6. Complete: replace dense transition rows and their root/self-loops with a
-   singleton directory and shared sparse edge arena.
-7. Complete: establish AFR-24's formal Release point-path attribution and
-   generated-code baseline.
-8. Complete: measure and reject AFR-25A's `SetArchetypal` structural slow-path
-   split because reduced code size did not improve existing-field latency.
-9. Complete: simplify `ValuesAt` by snapshotting its outer directory, using
-   unsigned bounds checks, and relying on the permanent null arch-zero slot.
-10. Complete: replace the final indexed row load/store with `Unsafe.Add` after
-    `ValuesAt` has resolved a non-null column.
-11. Complete: separate the hot column directory from precise field
-    registration so absent point operations do not register unused fields.
-12. Complete: reject the internal value-type column key because it retained
-    canonical generic sharing.
-13. Complete: retain the current direct representation as the AFR-26 speed
-    reference.
-14. Next: design large shared backing allocations around a precomputed direct
-    locator and contiguous `Span<T>` iteration.
-15. Deferred: measure specialized/direct `EntArchLoc` storage when that wider
-    lifecycle work is deliberately resumed.
+Each alloc records the archetype groups it has used. `Clear` asks those groups
+to remove the Ent before clearing ordinary sparse fields. Removal compacts the
+dense row, repairs the moved Ent's loc, and clears the removed loc.
 
-The deferred `EntArchLoc` prototype will isolate the direct address sequence
-first. A production cutover would still require an explicit ownership and
-lifecycle design; the prototype will not silently expand this work into a
-general sparse-page or generation-system redesign.
+`EntPtr.Dispose` removes the claimed generation before returning its index.
+`EntArena.Dispose` bulk-releases all alloc-local row and component arrays before
+recycling pages and the allocator ID. `EntObj` finalization queues archetypal
+cleanup because the finalizer thread is not the alloc owner; the owner drains
+that cleanup before later structural operations.
+
+The debugger and `EntHandle.ToString` enumerate a shared component-view registry
+containing ordinary fields and registered archetypal column operations. Internal
+`EntArchLoc<A>` fields are lifecycle metadata and are never user-visible.
 
 ## Threading Contract
 
@@ -111,6 +97,86 @@ chain visible after its catalog data has been written.
 `GetArchetypal`, `HasArchetypal`, and overwriting an existing field go directly
 through alloc-local closed-generic column storage. They contain no graph lock,
 signature or edge search, managed allocation, or `Volatile` operation.
+
+## Final-Shape Allocation
+
+Sequential setters are still the correct API when an existing Ent changes
+shape. They are unnecessarily expensive when constructing a new Ent whose full
+shape is already known: each setter otherwise enters an intermediate arch,
+moves the preceding values, and empties the preceding row set.
+
+`AllocArchetypal<A>()` collects the intended fields and values in a typed value
+chain, resolves the complete canonical signature, and appends the Ent directly
+to that final arch:
+
+```csharp
+EntPtr ent = arena
+    .AllocArchetypal<MotionComponents>()
+    .With<Position, MotionComponents.Position>(position)
+    .With<Velocity, MotionComponents.Velocity>(velocity)
+    .Create();
+```
+
+The chain is composed only of nested value types. It creates no descriptor
+array, boxes no value, and does not materialize an intermediate Ent or arch.
+Each closed builder shape caches its resolved arch ID in static generic state.
+Its first use registers the selected columns, sorts their field IDs into the
+canonical signature, and resolves that signature under the graph lock. Later
+`Create()` calls load the cached arch ID, allocate the Ent, append one row, set
+one loc, and write each supplied value directly to its typed column.
+
+Different `With` orders produce different closed builder types but resolve to
+the same canonical arch. A field may appear only once in a builder chain; as
+with the rest of the low-level archetypal API, satisfying that internal
+contract is the caller's responsibility.
+
+## Span Queries
+
+Span queries are rooted in one `EntArena`, which is the alloc ownership
+boundary. Repeated `With<T, N>()` calls build an unbounded compile-time
+selection chain without descriptor arrays, `params`, boxing, or setup
+allocation:
+
+```csharp
+var query = arena
+    .QueryArchetypal<MotionComponents>()
+    .With<Position, MotionComponents.Position>()
+    .With<Velocity, MotionComponents.Velocity>();
+
+foreach (var chunk in query)
+{
+    ReadOnlySpan<EntMut> ents = chunk.Ents;
+    Span<Position> positions = chunk.Get<Position, MotionComponents.Position>();
+    Span<Velocity> velocities = chunk.Get<Velocity, MotionComponents.Velocity>();
+
+    for (int i = 0; i < ents.Length; i++)
+        positions[i] += velocities[i];
+}
+```
+
+Enumeration scans the selected alloc's arch directory. It rejects empty states
+before testing the component selection and yields only nonempty arches that
+contain every required field. Each chunk holds the already-resolved Ent array,
+alloc ID, arch ID, and row count. `Get<T, N>()` resolves a typed column once for
+the chunk and returns only its active rows. Asking for an optional component
+that is not present in that arch returns an empty span.
+
+The inner indexed loop is direct span indexing. It performs no Ent loc lookup,
+graph lookup, hash lookup, virtual dispatch, or managed allocation per row.
+Returned component spans are mutable and aligned with `Ents` by row.
+
+Columns remain separate and contiguous; they are not interlaced. Callers may
+therefore cast the active portion of an unmanaged component span to hardware
+vectors and process the scalar tail. For example, an `int` column can use
+`MemoryMarshal.Cast<int, Vector256<int>>(values)` without any ECS-specific SIMD
+API or storage copy. The ECS does not automatically vectorize query bodies: the
+ordinary indexed loop remains the scalar option, while explicit SIMD is an
+opt-in implementation of the system operating on the same chunk spans.
+
+Structural add or remove in the same `(alloc, A)` is forbidden while a query
+enumerator, chunk, or returned span is active. Existing component values may be
+modified through the spans. Different alloc owners may query the same `A` and
+arch concurrently.
 
 ## Previous Signature Lookup Cost
 
@@ -225,64 +291,45 @@ measured signature sizes justify a different strategy.
 `ResolveRemove` already preserves ordering by copying the ranges on either side
 of the removed field.
 
-## Initial Row Capacity Four
+## Pooled Row Capacity
 
 [`EntArchRows<A>`](../src/AlvorKit.ECS/Archetypal/EntArchRows.cs) gives a newly
-occupied `(allocId, archId)` row set an initial capacity of four.
-
-That capacity is applied to:
-
-- The row set's `EntMut[]`.
-- Every component column in the arch.
+occupied `(allocId, archId)` row set an initial logical capacity of four. That
+capacity applies to its `EntMut[]` and every component column in the arch.
 
 The normal doubling sequence is:
 
 `4 -> 8 -> 16 -> 32 -> ...`
 
-Four is the measured compromise between sparse-arch memory and growth cost:
+The direct row and component arrays use `EntArchArrayPool<T>`, one exact typed
+pool shared by every archetypal field name, group, arch, and alloc using that
+same `T`. Physical array length equals logical capacity; different `T` values do
+not share arrays.
 
-- A one-row arch wastes at most three initial slots per array rather than
-  fifteen.
-- A commonly populated arch does not pay the repeated growth sequence starting
-  at one.
-- Row indexing and steady-state component access remain unchanged.
+After removal, capacity changes use hysteresis:
 
-AFR-12 measured this independently from hash indexing. Across the 47-case quick
-profile, retained row/component capacity fell in every case without changing
-catalog data, used payload, or managed object counts. Point access remained
-unchanged. States that grow beyond four rows pay the additional `4 -> 8` and
-`8 -> 16` intermediate resize allocations.
+- Exactly 25% occupancy retains the current logical capacity.
+- Occupancy below 25% halves logical capacity once for that removal.
+- Zero rows returns the `EntMut[]` and every component array, clears the state
+  slot, and resets logical capacity to zero.
+- Reactivation rents a new capacity-four buffer set and begins again at row zero.
 
-## Packed Immutable Field Layouts
+Each `(T, capacity)` bucket is a dense stack that starts empty and grows with
+observed return demand. It does not reserve slots from the machine's processor
+count. Its short lock protects only structural rent, return, growth, and trim
+operations; push and pop are O(1), growth is amortized O(1), and existing
+component reads and writes never enter it. Cached reference-containing arrays
+are cleared before publication; reference-free arrays remain dirty. On a Gen2
+change, the next pool operation scans the fixed bucket set. A bucket survives
+that first observation; a later Gen2 observation drops its cached buffers and
+stack metadata if no intervening rent or return used it. This avoids discarding
+a warm capacity set during a structural burst while still releasing inactive
+payload.
 
-AFR-20 adds `packedFieldLayouts` beside the exact packed field IDs. Both arrays
-use the same cumulative signature range, so a local field ordinal addresses the
-field ID and its storage layout without an object or dense `(arch, field)` cell.
-
-Each `EntArchFieldLayout` is one four-byte encoded integer:
-
-- A nonnegative value is a reference-free byte-column prefix beginning after
-  `EntMut`.
-- A negative value is the bitwise complement of a reference-containing
-  type-local column.
-- The sign also says whether released storage requires reference clearing.
-
-Reference-containing fields with the same exact `T` share a storage class even
-when `N` differs. A different reference-containing `T` starts its own typed
-column sequence. The graph records byte width and storage class once per
-registered field, not once per materialized membership.
-
-The layout array starts empty and grows independently from the older 4,096-slot
-field-ID array. Layouts and field IDs are written before the signature index,
-singleton directory, or sparse edge arena makes a new arch reachable. Ordinary
-point access does not consume this metadata. Structural removal scans the exact
-packed src signature for a local ordinal only when its sparse edge is unknown;
-the shared stores will consume the corresponding layout in AFR-32 through
-AFR-35.
-
-The ops directory remains a separate dense reference array. Current structural
-copy, clear, and resize therefore preserve their prior lookup stride until the
-shared-block cutover removes reference-free handler dispatch.
+Four remains the compromise between sparse-arch memory and growth cost. A
+one-row arch has exactly three spare slots per direct array. Row indexing and
+steady-state component access remain unchanged. Pooled growth and shrink copy
+only active rows and run on structural paths.
 
 ## Direct Closed-Generic Column Membership
 
@@ -348,9 +395,8 @@ Raw reports are in
 `out/ecs-archetypal/afr24-hot-path-steady-b.json`; representative Release
 disassembly is under `out/ecs-archetypal/afr24-codegen/`.
 
-The packed signature remains the structural authority and the parallel layouts
-remain available for the shared-block cutover. They are no longer on the
-ordinary point path.
+The packed signature remains the structural authority. Direct typed columns
+remain the storage representation.
 
 ### Rejected `SetArchetypal` Structural Split
 
@@ -562,9 +608,7 @@ The detailed cost model and remaining tasks are defined in the
 [footprint theory](ECS.Archetypal.FootprintTheory.md) and
 [epic](ECS.Archetypal.FootprintReduction.md).
 
-## Optional Reference-Field Precomputation
-
-### Current Behavior
+## Reference-Tail Clearing
 
 [`EntArchRows<A>.ClearTailFields`](../src/AlvorKit.ECS/Archetypal/EntArchRows.cs)
 currently visits every field in the src arch. Each visit dispatches to the
@@ -572,47 +616,11 @@ field's `EntArchColumnOps.Clear` implementation, where
 `RuntimeHelpers.IsReferenceOrContainsReferences<T>()` decides whether the tail
 value must be cleared.
 
-The runtime helper is a generic intrinsic and is expected to be constant-folded
-for each closed column type. Precomputation is therefore not intended to remove
-an expensive runtime type inspection. Its purpose is to avoid iteration and
-virtual dispatch for value-only columns that intentionally do no clearing.
+The runtime helper is a generic intrinsic for each closed column type. Fields
+without references intentionally remain dirty beyond `Count`; fields containing
+references clear the old tail so removed values do not remain GC roots.
 
-### Proposed Metadata
-
-At field registration, column operations should expose whether their value type
-is or contains references.
-
-AFR-20 now records reference classification in every packed layout. Tail
-clearing can scan those entries without recomputing the classification. A
-second packed sequence containing only reference-containing fields remains an
-optional optimization if that scan is still measurable.
-
-Tail clearing would then iterate the reference-only signature:
-
-- Copying rows still iterates all common fields.
-- Tail clearing visits only fields that require clearing for GC correctness.
-- Fields without references remain intentionally dirty beyond `Count`.
-
-For an arch with six `int` fields and one `string` field, tail clearing would
-perform one column dispatch instead of seven.
-
-### Tradeoff
-
-The optimization adds:
-
-- One packed `int[]` for reference field IDs.
-- One cumulative reference-field end per arch, unless immutable layout metadata
-  makes the second packed sequence unnecessary.
-- Extra cold work when an arch is created.
-
-It provides little benefit when most fields contain references. It should
-therefore follow hash indexing, sorted insertion, the sparse transition cutover,
-and the row-capacity change. The composite storage's immutable field layouts
-may provide the same classification without a second packed signature. Retain
-separate reference-only metadata only if structural benchmarks show a useful
-improvement.
-
-## Deferred Prototype: Direct Location Storage
+## Historical Note: Direct Location Storage
 
 [`EntArchLoc`](../src/AlvorKit.ECS/Archetypal/EntArchLoc.cs) is currently stored
 through the ordinary sparse component path with `Get<EntArchLoc, A>()`,
@@ -626,12 +634,8 @@ A specialized/direct `EntArchLocStorage<A>` could potentially:
 - Derive `allocId` from the Ent's page rather than storing it in every location.
 - Use a location-specific page layout.
 
-This prototype is intentionally deferred. When resumed, it should first isolate
-whether bypassing the ordinary generic sparse-component lookup improves the
-complete existing-component address sequence. It must compare the production
-and candidate callers in the same optimized Release build, using the rotating
-call-shape matrix and generated-code inspection established by AFR-24. A result
-that only reduces code size or structural-update cost is insufficient.
+This prototype is not part of the active feature plan. The current sparse loc is
+integrated with `Clear`, disposal, and deferred finalizer cleanup.
 
 Production integration would require direct involvement in page allocation,
 generation validation, sparse reset behavior, and Ent lifecycle. Those wider
@@ -657,6 +661,9 @@ Focused archetypal coverage includes:
 - Sparse edge-arena growth preserving every cached relationship.
 - No edge storage being created for unobserved `(arch, field)` pairs.
 - A newly occupied row set starting at capacity four and growing correctly.
+- Exact 25% occupancy retaining capacity, lower occupancy halving it, and an
+  empty alloc/arch state returning all direct buffers.
+- Pooled reference-containing arrays being cleared before reuse.
 - Swap-back compaction preserving values and repairing the moved Ent's `loc`.
 - Reference tails being cleared while value-only tails remain intentionally
   dirty.
@@ -666,7 +673,7 @@ The collision test should exercise the index with two distinct signatures and
 the same supplied hash rather than depending on an accidental collision from
 the production hash function.
 
-### Measurements
+### Historical Measurements
 
 Measure changes separately for:
 
@@ -695,34 +702,20 @@ to settle. Reserve the 5-million-operation, seven-sample full matrix for final
 confirmation of a promising candidate. Use reverse-order or A/A checks when a
 short result may instead reflect tiering or process drift.
 
-## Implementation Order
+## Feature Completion
 
-1. Complete: add direct archetypal tests and baseline measurements.
-2. Complete: replace signature ranges with cumulative ends and replace
-   add-then-sort with sorted insertion.
-3. Complete: add the collision-correct signature hash index.
-4. Complete: change the initial row capacity from 16 to 4.
-5. Complete: add immutable four-byte packed field layouts.
-6. Complete: use direct closed-generic columns for ordinary membership and
-   reject the measured ordinal-hash alternative.
-7. Complete: replace the dense transition matrix and transition-only root with
-   the singleton directory and shared sparse edge arena.
-8. Complete: establish AFR-24's formal concrete and generic point-path baseline
-   and generated-code attribution.
-9. Complete: measure and reject AFR-25A's `SetArchetypal` structural slow-path
-   split; smaller generated code did not improve existing-field latency.
-10. Complete: accept AFR-25B's simplified `ValuesAt` directory access after its
-    complete Release point-path comparison.
-11. Complete: accept AFR-25C's `Unsafe.Add` final row access after staged Release
-    behavior, latency, allocation, and generated-code checks.
-12. Complete: accept AFR-25D's cold registration split after Release point and
-    initialization-boundary checks.
-13. Complete: reject AFR-25E's internal value-type key after paired timing and
-    generated-code checks.
-14. Complete: retain the current direct point representation as AFR-26.
-15. Next: prototype a large-allocation store only after defining its final
-    direct point locator and contiguous iteration view.
-16. Deferred: measure specialized/direct `EntArchLoc` storage and addressing;
-    retain the same AFR-26 performance gate when the work deliberately resumes.
+Implemented package integration includes:
 
-Each step preserves the public API and can be reviewed and measured separately.
+1. Exact signatures, hash indexing, and sparse transition edges.
+2. Direct typed columns, compaction, pooling, shrink, and empty-state release.
+3. Type-erased alloc-local group lifecycle.
+4. `Clear`, `EntPtr`, `EntObj`, and `EntArena` cleanup.
+5. Generated property-level `[Archetypal]` access.
+6. Debugger and `ComponentToString` component discovery.
+7. Alloc-scoped, arbitrary multi-component span queries.
+8. Typed final-shape allocation without intermediate structural transitions.
+
+The basic span representation and explicit-SIMD validation are now implemented.
+Generated query names, per-Ent accessors, active-arch indexing, and the remaining
+alternatives in [ECS.Archetypal.Features.md](ECS.Archetypal.Features.md) still
+require focused Release comparison.

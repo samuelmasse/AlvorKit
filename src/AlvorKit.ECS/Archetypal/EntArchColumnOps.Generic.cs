@@ -11,12 +11,45 @@ internal sealed class EntArchColumnOps<T, N, A> : EntArchColumnOps
     {
         // Keep registration precise and cold while EntArchColumn remains eligible for beforefieldinit hot access.
         FieldId = EntArchGraph<A>.RegisterField(
-            new EntArchColumnOps<T, N, A>(),
-            Unsafe.SizeOf<T>(),
-            EntArchStorageClass<T, A>.Id);
+            new EntArchColumnOps<T, N, A>());
     }
 
-    internal override void Resize(int allocId, int archId, int capacity)
+    internal override Type NameType() => typeof(N);
+
+    internal override Type ValueType() => typeof(T);
+
+    internal override Type ArchGroupType() => typeof(A);
+
+    internal override bool Has(Ent ent) =>
+        new EntMut(ent.Index, ent.Generation).HasArchetypal<T, N, A>();
+
+    internal override object? Get(Ent ent) =>
+        new EntMut(ent.Index, ent.Generation).GetArchetypal<T, N, A>();
+
+    internal override void EnsureCapacity(int allocId, int archId, int capacity, int count)
+    {
+        EnsureDirectoryCapacity(allocId, archId);
+
+        ref var values = ref EntArchColumn<T, N, A>.Values[allocId][archId];
+        values = values == null
+            ? EntArchArrayPool<T>.Rent(capacity)
+            : EntArchArrayPool<T>.Grow(values, capacity, count);
+    }
+
+    internal override void ReduceCapacity(int allocId, int archId, int capacity, int count)
+    {
+        ref var values = ref EntArchColumn<T, N, A>.Values[allocId][archId];
+        if (capacity == 0)
+        {
+            EntArchArrayPool<T>.Return(values);
+            values = null!;
+            return;
+        }
+
+        values = EntArchArrayPool<T>.Reduce(values, capacity, count);
+    }
+
+    private static void EnsureDirectoryCapacity(int allocId, int archId)
     {
         if (EntArchColumn<T, N, A>.Values.Length <= allocId)
         {
@@ -41,9 +74,6 @@ internal sealed class EntArchColumnOps<T, N, A> : EntArchColumnOps
                     EntArchGraph<A>.ArchCapacity);
             }
         }
-
-        ref var values = ref EntArchColumn<T, N, A>.Values[allocId][archId];
-        Array.Resize(ref values, capacity);
     }
 
     internal override void Copy(int allocId, int srcArchId, int srcRow, int dstArchId, int dstRow)
@@ -56,6 +86,25 @@ internal sealed class EntArchColumnOps<T, N, A> : EntArchColumnOps
     {
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
             EntArchColumn<T, N, A>.Values[allocId][archId][row] = default!;
+    }
+
+    internal override void ClearAlloc(int allocId)
+    {
+        var valuesByAlloc = EntArchColumn<T, N, A>.Values;
+        if ((uint)allocId >= (uint)valuesByAlloc.Length)
+            return;
+
+        var valuesByArch = valuesByAlloc[allocId];
+        if (valuesByArch == null)
+            return;
+
+        foreach (var values in valuesByArch)
+        {
+            if (values != null)
+                EntArchArrayPool<T>.Return(values);
+        }
+
+        valuesByAlloc[allocId] = null!;
     }
 
     internal override void AccumulateMetrics(ref EntArchMetrics metrics)

@@ -13,6 +13,8 @@ internal static class EntStorage<T, N>
         lock (EntReg.Lock)
         {
             EntReg.Fields.Add(Field);
+            if (typeof(T) != typeof(EntArchLoc))
+                EntReg.ComponentViews.Add(Field);
             EntReg.Storage.Add(View);
             Field.ExpandCapacity();
         }

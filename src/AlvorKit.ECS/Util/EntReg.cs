@@ -11,6 +11,7 @@ internal static class EntReg
 
     internal static List<EntStorageView> Storage = [];
     internal static readonly List<EntField> Fields = [];
+    internal static readonly List<EntComponentView> ComponentViews = [];
 
     internal static int NextPage = 1;
     internal static readonly ConcurrentBag<int> FreePages = [];
@@ -32,6 +33,7 @@ internal class EntRegView
 
     internal List<EntStorageView> Storage => EntReg.Storage;
     internal List<EntField> Fields => EntReg.Fields;
+    internal List<EntComponentView> ComponentViews => EntReg.ComponentViews;
 
     internal int NextPage => EntReg.NextPage;
     internal ConcurrentBag<int> FreePages => EntReg.FreePages;

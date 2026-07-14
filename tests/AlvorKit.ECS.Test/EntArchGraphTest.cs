@@ -45,8 +45,6 @@ public sealed class EntArchGraphTest
         Assert.AreEqual(16, metrics.SignatureIndexCount);
         Assert.AreEqual(32, metrics.SignatureIndexCapacity);
         Assert.AreEqual(33, metrics.SignatureMembershipCount);
-        Assert.AreEqual(metrics.SignatureMembershipCount, metrics.FieldLayoutCount);
-        Assert.IsTrue(metrics.FieldLayoutCapacity >= metrics.FieldLayoutCount);
         Assert.IsTrue(metrics.SignatureScratchCapacity >= 4);
         Assert.AreEqual(5, metrics.SingletonArchCount);
         Assert.IsTrue(metrics.SingletonDirectoryCapacity > metrics.RegisteredFieldCount);
@@ -90,7 +88,6 @@ public sealed class EntArchGraphTest
 
         ent.SetArchetypal<int, F00, FieldGrowthArch>(10);
         int singletonArchId = ent.Get<EntArchLoc, FieldGrowthArch>().ArchId;
-        var singletonLayout = EntArchGraph<FieldGrowthArch>.FieldLayouts(singletonArchId).ToArray();
         var beforeFieldGrowth = EntArchDiagnostics<FieldGrowthArch>.Capture();
 
         RegisterRemainingGrowthFields();
@@ -116,7 +113,9 @@ public sealed class EntArchGraphTest
         Assert.AreEqual(
             EntArchGraph<FieldGrowthArch>.NoFieldOrdinal,
             EntArchGraph<FieldGrowthArch>.FindFieldOrdinal(singletonArchId, lastFieldId));
-        CollectionAssert.AreEqual(singletonLayout, EntArchGraph<FieldGrowthArch>.FieldLayouts(singletonArchId).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { firstFieldId },
+            EntArchGraph<FieldGrowthArch>.FieldIds(singletonArchId).ToArray());
 
         ent.SetArchetypal<int, F15, FieldGrowthArch>(15);
         int pairArchId = ent.Get<EntArchLoc, FieldGrowthArch>().ArchId;
@@ -127,9 +126,9 @@ public sealed class EntArchGraphTest
         Assert.AreEqual(singletonArchId, EntArchGraph<FieldGrowthArch>.GetTransitionArchId(pairArchId, lastFieldId));
         Assert.AreEqual(0, EntArchGraph<FieldGrowthArch>.FindFieldOrdinal(pairArchId, firstFieldId));
         Assert.AreEqual(1, EntArchGraph<FieldGrowthArch>.FindFieldOrdinal(pairArchId, lastFieldId));
-        var pairLayouts = EntArchGraph<FieldGrowthArch>.FieldLayouts(pairArchId);
-        Assert.AreEqual(Unsafe.SizeOf<EntMut>(), pairLayouts[0].BytePrefix);
-        Assert.AreEqual(Unsafe.SizeOf<EntMut>() + Unsafe.SizeOf<int>(), pairLayouts[1].BytePrefix);
+        CollectionAssert.AreEqual(
+            new[] { firstFieldId, lastFieldId },
+            EntArchGraph<FieldGrowthArch>.FieldIds(pairArchId).ToArray());
 
         Assert.IsTrue(ent.UnsetArchetypal<int, F15, FieldGrowthArch>());
         Assert.AreEqual(singletonArchId, ent.Get<EntArchLoc, FieldGrowthArch>().ArchId);
@@ -251,9 +250,7 @@ public sealed class EntArchGraphTest
             EntArchColumn<int, S3, SubsetArch>.FieldId,
         ];
         var fieldIds = EntArchGraph<SubsetArch>.FieldIds(archId);
-        var layouts = EntArchGraph<SubsetArch>.FieldLayouts(archId);
         Assert.AreEqual(expectedFieldIds.Length, fieldIds.Length);
-        Assert.AreEqual(fieldIds.Length, layouts.Length);
 
         foreach (int fieldId in registeredFieldIds)
         {
@@ -268,8 +265,6 @@ public sealed class EntArchGraphTest
                 continue;
 
             Assert.AreEqual(fieldId, fieldIds[ordinal]);
-            Assert.IsFalse(layouts[ordinal].ContainsReferences);
-            Assert.AreEqual(Unsafe.SizeOf<EntMut>() + ordinal * Unsafe.SizeOf<int>(), layouts[ordinal].BytePrefix);
         }
     }
 

@@ -1,0 +1,15 @@
+{{Comment}}        {{Access}} {{Type}} {{AccessorName}}
+        {
+            {{GetPrefix}}get
+            {
+                var value = ent.GetArchetypal<{{Type}}, {{ClassName}}.{{Name}}, {{ClassName}}>();
+                if (value == null)
+                {
+                    value = new();
+                    ent.SetArchetypal<{{Type}}, {{ClassName}}.{{Name}}, {{ClassName}}>(value);
+                }
+
+                return value!;
+            }
+            {{SetPrefix}}set => ent.SetArchetypal<{{Type}}, {{ClassName}}.{{Name}}, {{ClassName}}>(value);
+        }
