@@ -64,7 +64,7 @@ public sealed class RepositoryLayoutTest
         StringAssert.Contains(exception.Message, "alpha");
     }
 
-    /// <summary>The all selection returns only bindgen-enabled native libraries in sorted order.</summary>
+    /// <summary>The all selection returns only revision-activated bindgen libraries in sorted order.</summary>
     [TestMethod]
     public void SelectedLibraries_ReturnsSortedBindgenLibraries()
     {
@@ -73,9 +73,15 @@ public sealed class RepositoryLayoutTest
         var native = Path.Combine(workspace.Root, "native");
         Directory.CreateDirectory(Path.Combine(native, "zeta", "conf"));
         Directory.CreateDirectory(Path.Combine(native, "alpha", "conf"));
+        Directory.CreateDirectory(Path.Combine(native, "pending", "conf"));
         Directory.CreateDirectory(Path.Combine(native, "ignored"));
         File.WriteAllText(Path.Combine(native, "zeta", "conf", "bindgen.yml"), "{}");
         File.WriteAllText(Path.Combine(native, "alpha", "conf", "bindgen.yml"), "{}");
+        File.WriteAllText(Path.Combine(native, "pending", "conf", "bindgen.yml"), "{}");
+        Directory.CreateDirectory(Path.Combine(native, "zeta", "version"));
+        Directory.CreateDirectory(Path.Combine(native, "alpha", "version"));
+        File.WriteAllText(Path.Combine(native, "zeta", "version", "BINDING_REVISION"), "1");
+        File.WriteAllText(Path.Combine(native, "alpha", "version", "BINDING_REVISION"), "1");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
 
         CollectionAssert.AreEqual(new[] { "alpha", "zeta" }, layout.SelectedLibraries("all").ToArray());
