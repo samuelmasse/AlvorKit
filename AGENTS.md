@@ -191,10 +191,12 @@ centralize them.
 - Do not silently clamp, coerce, or normalize caller-provided values in property
   setters or state updates. Reject invalid values clearly, model the invariant
   in the type system, or clamp explicitly at a platform boundary.
-- Do not create private nested classes for helper composition; prefer internal
-  top-level helper types. Avoid partial classes for hand-authored code except
-  for generated-code integration or unavoidable framework/tooling requirements,
-  and mention the reason in the work summary.
+- In AlvorKit's curated library projects, do not create private nested classes
+  for helper composition; prefer internal top-level helper types when they are
+  intentionally outside the public API. Game repositories override this and
+  prefer public game-code types and collaborating members. Avoid partial classes
+  for hand-authored code except for generated-code integration or unavoidable
+  framework/tooling requirements, and mention the reason in the work summary.
 - Avoid generic `Factory`, `Manager`, `Service`, and similarly broad suffixes
   when a constructor, static `Create`, delegate, or domain-specific type name is
   clearer. Generally avoid static helper types and methods in hand-authored
