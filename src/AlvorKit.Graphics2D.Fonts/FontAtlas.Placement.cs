@@ -42,10 +42,8 @@ internal sealed partial class FontAtlas
         gl.TexSubImage2D(
             GlTextureTarget.Texture2D,
             0,
-            x,
-            tablet.Size - y - height,
-            width,
-            height,
+            (x, tablet.Size - y - height),
+            glyph.Box,
             GlPixelFormat.Rgba,
             GlPixelType.UnsignedByte,
             pixels);

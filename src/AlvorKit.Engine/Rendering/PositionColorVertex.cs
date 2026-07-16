@@ -8,9 +8,9 @@ public readonly record struct PositionColorVertex(Vec3 Position, Vec3 Color) : I
     /// <summary>Enables position and color attributes for the currently bound vertex array.</summary>
     public static void SetAttributes(GlLayer gl)
     {
-        gl.VertexAttribPointer(0, 3, GlVertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+        gl.VertexAttribPointer<Vec3>(0, false, 6 * sizeof(float), 0);
         gl.EnableVertexAttribArray(0);
-        gl.VertexAttribPointer(1, 3, GlVertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+        gl.VertexAttribPointer<Vec3>(1, false, 6 * sizeof(float), 3 * sizeof(float));
         gl.EnableVertexAttribArray(1);
     }
 }

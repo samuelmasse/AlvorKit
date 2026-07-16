@@ -37,7 +37,7 @@ internal sealed class TriangleState(
     public override void Render()
     {
         backbuffer.Clear();
-        gl.Viewport(0, 0, (int)canvas.Size.X, (int)canvas.Size.Y);
+        gl.Viewport(canvas.Size);
         gl.UseProgram(positionColorProgram.Id);
         gl.BindVertexArray(vao);
         gl.DrawArrays(GlPrimitiveType.Triangles, 0, 3);

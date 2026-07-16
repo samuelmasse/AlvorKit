@@ -93,11 +93,10 @@ public sealed class TestCube : IDisposable
     /// <summary>Draws the cube for the current frame and restores every strict layer binding it touches.</summary>
     public void Render(float elapsedSeconds, int framebufferWidth, int framebufferHeight)
     {
-        Span<float> matrix = stackalloc float[Mat4.ComponentCount];
-        CreateModelViewProjection(elapsedSeconds, framebufferWidth, framebufferHeight).CopyTo(matrix);
+        var matrix = CreateModelViewProjection(elapsedSeconds, framebufferWidth, framebufferHeight);
 
         gl.UseProgram(program);
-        gl.UniformMatrix4fv(modelViewProjectionLocation, false, matrix);
+        gl.UniformMatrix4fv(modelViewProjectionLocation, in matrix);
         gl.ActiveTexture(GlTextureUnit.Texture0);
         gl.BindTexture(GlTextureTarget.Texture2D, texture);
         gl.BindVertexArray(vertexArray);
@@ -170,11 +169,11 @@ public sealed class TestCube : IDisposable
         gl.BindVertexArray(vertexArray);
         gl.BindBuffer(GlBufferTarget.ArrayBuffer, vertexBuffer);
         gl.BufferData(GlBufferTarget.ArrayBuffer, vertices, GlBufferUsage.StaticDraw);
-        gl.VertexAttribPointer(0, 3, GlVertexAttribPointerType.Float, false, VertexStrideBytes, PositionOffsetBytes);
+        gl.VertexAttribPointer<Vec3>(0, false, VertexStrideBytes, PositionOffsetBytes);
         gl.EnableVertexAttribArray(0);
-        gl.VertexAttribPointer(1, 2, GlVertexAttribPointerType.Float, false, VertexStrideBytes, TexCoordOffsetBytes);
+        gl.VertexAttribPointer<Vec2>(1, false, VertexStrideBytes, TexCoordOffsetBytes);
         gl.EnableVertexAttribArray(1);
-        gl.VertexAttribPointer(2, 3, GlVertexAttribPointerType.Float, false, VertexStrideBytes, FaceColorOffsetBytes);
+        gl.VertexAttribPointer<Vec3>(2, false, VertexStrideBytes, FaceColorOffsetBytes);
         gl.EnableVertexAttribArray(2);
         gl.UnbindBuffer(GlBufferTarget.ArrayBuffer);
 

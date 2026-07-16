@@ -16,7 +16,7 @@ public class AppSceneRenderer(
             return;
 
         backbuffer.Clear(s.SceneClearColor);
-        gl.Viewport(0, 0, (int)size.X, (int)size.Y);
+        gl.Viewport(size);
         gl.Enable(GlEnableCap.DepthTest);
         gl.DepthFunc(GlDepthFunction.Less);
         gl.Enable(GlEnableCap.CullFace);

@@ -80,7 +80,8 @@ public sealed class GlyphRenderer
         gl.Viewport(0, 0, width, height);
         gl.ClearColor(0.09f, 0.09f, 0.11f, 1f);
         gl.UseProgram(program);
-        gl.Uniform2f(scaleLocation, (float)glyph.Width * scale / width, (float)glyph.Height * scale / height);
+        Vec2 glyphScale = ((float)glyph.Width * scale / width, (float)glyph.Height * scale / height);
+        gl.Uniform2f(scaleLocation, glyphScale);
         gl.ActiveTexture(GlTextureUnit.Texture0);
         gl.BindTexture(GlTextureTarget.Texture2D, texture);
         gl.BindVertexArray(vertexArray);
@@ -143,9 +144,9 @@ public sealed class GlyphRenderer
         gl.BindVertexArray(vertexArray);
         gl.BindBuffer(GlBufferTarget.ArrayBuffer, vertexBuffer);
         gl.BufferData<float>(GlBufferTarget.ArrayBuffer, UnitQuad, GlBufferUsage.StaticDraw);
-        gl.VertexAttribPointer(0, 2, GlVertexAttribPointerType.Float, false, VertexStrideBytes, PositionOffsetBytes);
+        gl.VertexAttribPointer<Vec2>(0, false, VertexStrideBytes, PositionOffsetBytes);
         gl.EnableVertexAttribArray(0);
-        gl.VertexAttribPointer(1, 2, GlVertexAttribPointerType.Float, false, VertexStrideBytes, UvOffsetBytes);
+        gl.VertexAttribPointer<Vec2>(1, false, VertexStrideBytes, UvOffsetBytes);
         gl.EnableVertexAttribArray(1);
         gl.UnbindBuffer(GlBufferTarget.ArrayBuffer);
         gl.UnbindVertexArray();

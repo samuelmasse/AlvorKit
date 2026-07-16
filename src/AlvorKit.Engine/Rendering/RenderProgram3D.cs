@@ -20,10 +20,6 @@ public abstract class RenderProgram3D<T> : RenderProgram<T>, IRenderProgram3D wh
     /// <inheritdoc />
     public Mat4 Projection { set => SetMatrix(matProjection, value); }
 
-    private void SetMatrix(int location, Mat4 value)
-    {
-        Span<float> values = stackalloc float[16];
-        value.CopyToColumnMajor(values);
-        gl.ProgramUniformMatrix4fv(Id, location, false, values);
-    }
+    private void SetMatrix(int location, Mat4 value) =>
+        gl.ProgramUniformMatrix4fv(Id, location, in value);
 }

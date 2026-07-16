@@ -195,18 +195,17 @@ public sealed class GlbModel : IDisposable
     /// <summary>Draws the animated model through the supplied camera view and restores transient strict-layer bindings.</summary>
     public void Render(int framebufferWidth, int framebufferHeight, Mat4 view)
     {
-        Span<float> modelViewProjection = stackalloc float[Mat4.ComponentCount];
         var model = CreateModelMatrix(boundsCenter, modelScale);
         var projection = Mat4.CreatePerspectiveFieldOfView(
             MathF.PI / 4f,
             framebufferWidth / (float)framebufferHeight,
             0.1f,
             100f);
-        (projection * view * model).CopyTo(modelViewProjection);
+        var modelViewProjection = projection * view * model;
 
         gl.UseProgram(program);
-        gl.UniformMatrix4fv(modelViewProjectionLocation, false, modelViewProjection);
-        gl.UniformMatrix4fv(jointMatricesLocation, false, mesh.JointMatrices);
+        gl.UniformMatrix4fv(modelViewProjectionLocation, in modelViewProjection);
+        gl.UniformMatrix4fv(jointMatricesLocation, mesh.JointMatrices);
         gl.ActiveTexture(GlTextureUnit.Texture0);
         gl.BindTexture(GlTextureTarget.Texture2D, texture);
         gl.BindVertexArray(vertexArray);
@@ -240,13 +239,13 @@ public sealed class GlbModel : IDisposable
         gl.BindVertexArray(vertexArray);
         gl.BindBuffer(GlBufferTarget.ArrayBuffer, vertexBuffer);
         gl.BufferData(GlBufferTarget.ArrayBuffer, vertices, GlBufferUsage.StaticDraw);
-        gl.VertexAttribPointer(0, 3, GlVertexAttribPointerType.Float, false, VertexStrideBytes, PositionOffsetBytes);
+        gl.VertexAttribPointer<Vec3>(0, false, VertexStrideBytes, PositionOffsetBytes);
         gl.EnableVertexAttribArray(0);
-        gl.VertexAttribPointer(1, 2, GlVertexAttribPointerType.Float, false, VertexStrideBytes, TexCoordOffsetBytes);
+        gl.VertexAttribPointer<Vec2>(1, false, VertexStrideBytes, TexCoordOffsetBytes);
         gl.EnableVertexAttribArray(1);
-        gl.VertexAttribPointer(2, 4, GlVertexAttribPointerType.Float, false, VertexStrideBytes, JointsOffsetBytes);
+        gl.VertexAttribPointer<Vec4>(2, false, VertexStrideBytes, JointsOffsetBytes);
         gl.EnableVertexAttribArray(2);
-        gl.VertexAttribPointer(3, 4, GlVertexAttribPointerType.Float, false, VertexStrideBytes, WeightsOffsetBytes);
+        gl.VertexAttribPointer<Vec4>(3, false, VertexStrideBytes, WeightsOffsetBytes);
         gl.EnableVertexAttribArray(3);
         gl.UnbindBuffer(GlBufferTarget.ArrayBuffer);
 

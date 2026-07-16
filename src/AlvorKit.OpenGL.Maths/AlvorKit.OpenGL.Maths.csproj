@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Authors>AlvorKit</Authors>
+        <PackageDescription>Allocation-free AlvorKit maths overloads for the generated OpenGL API.</PackageDescription>
+        <PackageTags>alvorkit;opengl;math;vectors;matrices</PackageTags>
+        <PackageProjectUrl>https://github.com/alvorkit/alvorkit</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/alvorkit/alvorkit</RepositoryUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj')">
+        <PackageReference Include="AlvorKit.OpenGL" Version="$(GlBindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Maths" />
+        <InternalsVisibleTo Include="AlvorKit.OpenGL.Maths.Test" />
+    </ItemGroup>
+
+</Project>

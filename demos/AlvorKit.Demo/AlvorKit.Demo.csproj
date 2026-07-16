@@ -10,6 +10,7 @@
         <Using Include="AlvorKit.FreeType" />
         <Using Include="AlvorKit.GLFW" />
         <Using Include="AlvorKit.MiniAudio" />
+        <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.OpenGL.Layer" />
         <Using Include="BigGustave" />

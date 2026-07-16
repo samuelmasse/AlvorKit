@@ -79,6 +79,7 @@
     <Project Path="src/AlvorKit.Engine.Loop/AlvorKit.Engine.Loop.csproj" />
     <Project Path="src/AlvorKit.Graphics2D/AlvorKit.Graphics2D.csproj" />
     <Project Path="src/AlvorKit.Graphics2D.Fonts/AlvorKit.Graphics2D.Fonts.csproj" />
+    <Project Path="src/AlvorKit.OpenGL.Maths/AlvorKit.OpenGL.Maths.csproj" />
     <Project Path="src/AlvorKit.OpenGL.Layer/AlvorKit.OpenGL.Layer.csproj" />
     <Project Path="src/AlvorKit.Windowing/AlvorKit.Windowing.csproj" />
     <Project Path="src/AlvorKit.Windowing.Agent/AlvorKit.Windowing.Agent.csproj" />
@@ -99,6 +100,7 @@
             Path="tests/AlvorKit.Graphics2D.Test/AlvorKit.Graphics2D.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Graphics2D.Fonts.Test/AlvorKit.Graphics2D.Fonts.Test.csproj" />
+        <Project Path="tests/AlvorKit.OpenGL.Maths.Test/AlvorKit.OpenGL.Maths.Test.csproj" />
         <Project Path="tests/AlvorKit.OpenGL.Layer.Test/AlvorKit.OpenGL.Layer.Test.csproj" />
         <Project Path="tests/AlvorKit.Script.Workspace.Test/AlvorKit.Script.Workspace.Test.csproj" />
         <Project

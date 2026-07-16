@@ -106,7 +106,7 @@ void RunDemoLoop(WindowLoop loop, WindowCanvas canvas, GlLayer gl)
     {
         var step = Math.Abs(index % MaxColorStep) / (float)MaxColorStep;
         var pulse = Math.Clamp((float)frameTime * 60f, 0f, 1f);
-        gl.Viewport(0, 0, checked((int)canvas.Size.X), checked((int)canvas.Size.Y));
+        gl.Viewport(canvas.Size);
         gl.ClearColor(0.05f + pulse * 0.05f, step, 0.12f, 1f);
         gl.Clear(GlClearBufferMask.ColorBufferBit);
         gl.ResetClearColor();

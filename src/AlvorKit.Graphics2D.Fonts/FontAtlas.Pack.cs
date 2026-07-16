@@ -60,7 +60,7 @@ internal sealed partial class FontAtlas
         gl.BindFramebuffer(GlFramebufferTarget.Framebuffer, buffer.Framebuffer);
         gl.FramebufferTexture(GlFramebufferTarget.Framebuffer, GlFramebufferAttachment.ColorAttachment0, buffer.Tablet.Texture.Id, 0);
         gl.DrawBuffer(GlDrawBufferMode.ColorAttachment0);
-        gl.Viewport(0, 0, buffer.Tablet.Size, buffer.Tablet.Size);
+        gl.Viewport(buffer.Tablet.Texture.Size);
         gl.ClearColor(0f, 0f, 0f, 0f);
         gl.Clear(GlClearBufferMask.ColorBufferBit);
         gl.ResetClearColor();

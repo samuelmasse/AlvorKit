@@ -8,11 +8,11 @@ public readonly record struct PositionColorTextureVertex(Vec3 Position, Vec3 Col
     /// <summary>Enables position, color, and texture-coordinate attributes for the currently bound vertex array.</summary>
     public static void SetAttributes(GlLayer gl)
     {
-        gl.VertexAttribPointer(0, 3, GlVertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
+        gl.VertexAttribPointer<Vec3>(0, false, 8 * sizeof(float), 0);
         gl.EnableVertexAttribArray(0);
-        gl.VertexAttribPointer(1, 3, GlVertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
+        gl.VertexAttribPointer<Vec3>(1, false, 8 * sizeof(float), 3 * sizeof(float));
         gl.EnableVertexAttribArray(1);
-        gl.VertexAttribPointer(2, 2, GlVertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
+        gl.VertexAttribPointer<Vec2>(2, false, 8 * sizeof(float), 6 * sizeof(float));
         gl.EnableVertexAttribArray(2);
     }
 }

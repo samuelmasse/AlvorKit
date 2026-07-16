@@ -12,14 +12,14 @@ internal sealed class AgentWindowScreenshot(GlLayer gl, Action<GlLayer, Vec2u, s
     internal void Save(Vec2u size, string path) => save(gl, size, path);
 
     /// <summary>Reads the current framebuffer and saves it as an RGB PNG.</summary>
-    private static unsafe void SaveFramebuffer(GlLayer gl, Vec2u size, string path)
+    private static void SaveFramebuffer(GlLayer gl, Vec2u size, string path)
     {
         var width = checked((int)Math.Max(1u, size.X));
         var height = checked((int)Math.Max(1u, size.Y));
         var pixels = new byte[width * height * 4];
+        Vec2u readSize = ((uint)width, (uint)height);
 
-        fixed (byte* pointer = pixels)
-            gl.ReadPixels(0, 0, width, height, GlPixelFormat.Rgba, GlPixelType.UnsignedByte, (nint)pointer);
+        gl.ReadPixels(readSize, GlPixelFormat.Rgba, GlPixelType.UnsignedByte, pixels);
 
         SavePng(pixels, width, height, path);
     }

@@ -31,7 +31,7 @@ public class RootGraphics2D(
 
     private void End()
     {
-        gl.Viewport(0, 0, (int)canvas.Size.X, (int)canvas.Size.Y);
+        gl.Viewport(canvas.Size);
 
         gl.Enable(GlEnableCap.Blend);
         gl.Enable(GlEnableCap.CullFace);

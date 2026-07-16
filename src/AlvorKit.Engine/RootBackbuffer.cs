@@ -9,8 +9,8 @@ public class RootBackbuffer(RootGl gl, RootCanvas canvas)
     public void Clear(Vec4 color = default)
     {
         var size = canvas.Size;
-        gl.Viewport(0, 0, (int)size.X, (int)size.Y);
-        gl.ClearColor(color.X, color.Y, color.Z, color.W);
+        gl.Viewport(size);
+        gl.ClearColor(color);
         gl.ClearDepth(1);
         gl.Clear(GlClearBufferMask.ColorBufferBit | GlClearBufferMask.DepthBufferBit);
         gl.ResetClearDepth();

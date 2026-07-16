@@ -51,9 +51,9 @@ public sealed class AlvorEyeDemoRenderer : IDisposable
         gl.BindVertexArray(vertexArray);
         gl.BindBuffer(GlBufferTarget.ArrayBuffer, vertexBuffer);
         gl.BufferData(GlBufferTarget.ArrayBuffer, MaxRectangles * VerticesPerRectangle * VertexStrideBytes, 0, GlBufferUsage.DynamicDraw);
-        gl.VertexAttribPointer(0, 2, GlVertexAttribPointerType.Float, false, VertexStrideBytes, 0);
+        gl.VertexAttribPointer<Vec2>(0, false, VertexStrideBytes, 0);
         gl.EnableVertexAttribArray(0);
-        gl.VertexAttribPointer(1, 3, GlVertexAttribPointerType.Float, false, VertexStrideBytes, 2 * sizeof(float));
+        gl.VertexAttribPointer<Vec3>(1, false, VertexStrideBytes, 2 * sizeof(float));
         gl.EnableVertexAttribArray(1);
         gl.UnbindBuffer(GlBufferTarget.ArrayBuffer);
         gl.UnbindVertexArray();

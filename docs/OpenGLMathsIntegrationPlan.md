@@ -223,9 +223,8 @@ ScissorArrayv(this Gl gl, uint first, ReadOnlySpan<Vec4i> scissors);
 
 Each `Vec4i` scissor is `(x, y, width, height)`. Because the packed GL array
 shape cannot express signed origins and unsigned sizes with one existing maths
-type, the implementation scans the span and rejects negative `Z` or `W` with
-`ArgumentOutOfRangeException` before dispatch. It does not allocate or rewrite
-the span.
+type, the implementation forwards every component unchanged. OpenGL remains
+responsible for deciding whether a signed width or height is valid.
 
 Add these four depth-range overloads:
 
@@ -370,8 +369,9 @@ span overload.
 
 ### Texture and image spatial overloads: 41
 
-Every `Vec2u` or `Vec3u` passed to a raw `GLsizei` parameter is validated as
-`<= int.MaxValue` before conversion. Signed offsets are forwarded unchanged.
+Every `Vec2u` or `Vec3u` passed to a raw `GLsizei` parameter uses checked
+component conversion. A component above `int.MaxValue` throws
+`OverflowException` before dispatch. Signed offsets are forwarded unchanged.
 
 #### Image definitions: 8
 
@@ -724,8 +724,7 @@ CopyImageSubData(
     Vec3u size);
 ```
 
-Validate each scalar `uint width` against `int.MaxValue` before calling the raw
-method.
+Convert each scalar `uint width` to the raw `GLsizei` with a checked cast.
 
 #### Texture subregions and reads: 4
 
@@ -1122,14 +1121,15 @@ the included 1D copy methods.
 
 ### Dimension conversion
 
-`GlMathsConversions` will provide central, non-allocating conversion helpers
-for `uint`, `Vec2u`, and `Vec3u` values that feed `GLsizei`:
+`GlMathsConversions` provides central, non-allocating checked conversions for
+`uint`, `Vec2u`, and `Vec3u` values that feed `GLsizei`. A component above
+`int.MaxValue` throws `OverflowException`. Zero is preserved; individual
+OpenGL calls decide whether it is legal.
 
-1. Compare every component with `int.MaxValue`.
-2. Throw `ArgumentOutOfRangeException` naming the public parameter if any
-   component is too large.
-3. Convert components with ordinary casts after validation.
-4. Preserve zero; individual OpenGL calls decide whether zero is legal.
+Origin-plus-size blits are different because the raw API receives signed
+endpoints rather than `GLsizei` extents. Calculate each endpoint in `long` and
+use a checked conversion only on the result. This allows an unsigned size above
+`int.MaxValue` when a negative origin still produces a representable endpoint.
 
 Do not clamp, sort, normalize, or silently coerce caller values. Signed offsets,
 floating viewport values, colors, depth ranges, and exact blit endpoints are
@@ -1292,10 +1292,11 @@ Every runnable test method receives the required XML summary.
 - Empty spans forward safely.
 - Viewport, scissor, texture, framebuffer, copy, and read origins/extents map
   to the correct raw argument positions.
-- `uint` dimensions at `int.MaxValue` forward; `int.MaxValue + 1u` throws before
-  backend invocation.
-- `ScissorArrayv` rejects a negative packed width/height before backend
-  invocation.
+- `uint` dimensions at `int.MaxValue` forward; `int.MaxValue + 1u` throws
+  `OverflowException` before backend invocation when converted to `GLsizei`.
+- `ScissorArrayv` forwards negative packed widths and heights unchanged.
+- Origin-plus-size blits accept sizes above `int.MaxValue` when their calculated
+  endpoints remain representable, and throw before dispatch otherwise.
 - Reversed depth intervals and exact blit endpoint vectors are not normalized.
 - Every supported vertex storage family selects the exact raw component count
   and enum for normal, integer, and long formats.
@@ -1560,9 +1561,8 @@ If packages are published independently, release in this order:
 
 Existing scalar calls are source-compatible. Instance methods take precedence
 over extensions, so an existing call cannot silently change overload binding.
-The only new exception behavior is on new unsigned-extent overloads when a
-component exceeds `int.MaxValue`, and on explicitly validated packed scissor or
-unsupported vertex-format calls.
+The only new exception behavior is checked numeric overflow in unsigned extents
+or calculated blit endpoints, plus unsupported vertex-format calls.
 
 ## Completion criteria
 

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Maths\AlvorKit.OpenGL.Maths.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Maths" />
+        <Using Include="AlvorKit.OpenGL" />
+        <Using Include="AlvorKit.OpenGL.Layer" />
+        <Using Include="System.Reflection" />
+        <Using Include="System.Runtime.CompilerServices" />
+    </ItemGroup>
+
+</Project>

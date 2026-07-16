@@ -31,7 +31,7 @@ public class AppGlTriangle(
     /// <summary>Draws the uploaded triangle into the current backbuffer.</summary>
     public void Render()
     {
-        gl.Viewport(0, 0, (int)canvas.Size.X, (int)canvas.Size.Y);
+        gl.Viewport(canvas.Size);
         gl.UseProgram(positionColorProgram.Id);
         gl.BindVertexArray(vertexArray);
         gl.DrawArrays(GlPrimitiveType.Triangles, 0, 3);

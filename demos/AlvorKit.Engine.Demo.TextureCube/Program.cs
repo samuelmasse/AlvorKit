@@ -121,7 +121,7 @@ internal sealed class TextureCubeState(
         perspective.ComputeMatrix(canvas.Size, camera);
 
         backbuffer.Clear();
-        gl.Viewport(0, 0, (int)canvas.Size.X, (int)canvas.Size.Y);
+        gl.Viewport(canvas.Size);
         gl.Enable(GlEnableCap.DepthTest);
         gl.DepthFunc(GlDepthFunction.Less);
         gl.Enable(GlEnableCap.CullFace);

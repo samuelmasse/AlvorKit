@@ -56,6 +56,14 @@ triggered by changing `src/AlvorKit.Maths/version/VERSION` on `main`. Manual run
 of the maths package workflow build and upload `.nupkg` artifacts without
 publishing.
 
+## OpenGL maths overloads
+
+`AlvorKit.OpenGL.Maths` provides allocation-free vector, matrix, interval,
+extent, and typed vertex overloads for the generated OpenGL API. It works with
+raw `Gl` and is included transitively by `AlvorKit.OpenGL.Layer`. See the
+[OpenGL maths guide](docs/OpenGLMaths.md) for package use, examples, validation
+rules, and raw-API escape hatches.
+
 ## Linting
 
 Run the repository linter from the repository root with scoped includes while iterating:

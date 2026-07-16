@@ -90,7 +90,7 @@ internal sealed class Triangle3DState(
         perspective.ComputeMatrix(canvas.Size, camera);
 
         backbuffer.Clear();
-        gl.Viewport(0, 0, (int)canvas.Size.X, (int)canvas.Size.Y);
+        gl.Viewport(canvas.Size);
         gl.UseProgram(positionColorProgram3D.Id);
         positionColorProgram3D.View = perspective.View;
         positionColorProgram3D.Projection = perspective.Projection;

@@ -158,7 +158,7 @@ internal sealed partial class AnimatedGlbMesh
     private bool BasePoseSelected => selectedAnimationSlotIndex == BasePoseAnimationSlot;
 
     /// <summary>Gets the current skinning palette as packed column-major matrices.</summary>
-    public ReadOnlySpan<float> JointMatrices => MemoryMarshal.Cast<Mat4, float>(jointMatrices);
+    public ReadOnlySpan<Mat4> JointMatrices => jointMatrices;
 
     /// <summary>Loads the first skinned triangle primitive from a GLB 2.0 file and selects the walking clip when present.</summary>
     public static AnimatedGlbMesh Load(string path)
