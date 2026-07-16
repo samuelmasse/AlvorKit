@@ -1,20 +1,28 @@
 # AlvorKit ECS
 
-AlvorKit games use the AlvorKit entity-component system for game entities. A
-game entity is a mutable simulated object whose identity and capabilities are
+AlvorKit games use the AlvorKit Ent-component system for game Ents. An Ent is a
+mutable simulated object whose identity and capabilities are
 assembled from data: a player, enemy, projectile, item, world object, chunk, or
 similar runtime object. Model those objects with generated ECS components,
-entity handles, and an arena instead of introducing a parallel entity class
+Ent handles, and an arena instead of introducing a parallel Ent class
 hierarchy, a bespoke component store, or another ECS.
 
-Keep behavior in injected game systems and services. Components hold entity
-state; systems select entities and apply behavior. Services, commands,
+Keep behavior in injected game systems and services. Components hold Ent
+state; systems select Ents and apply behavior. Services, commands,
 configuration, assets, protocol records, and ordinary value objects are not
-game entities and should remain normal C# types.
+game Ents and should remain normal C# types.
+
+## Ent Terminology
+
+Use `Ent` in every context. The word `Entity` is banned; use `Ents` for the
+plural. This applies to prose, code identifiers, type and member names,
+parameters and locals, filenames, directories, labels, and compound names.
+Use names such as `WorldEntLoader`, `WorldEnts`, and `IWorldEntComponents` even
+where the longer word might otherwise read naturally.
 
 This guide covers the stable game-facing packages:
 
-- `AlvorKit.ECS` provides generated components, entity handles, mutation, and
+- `AlvorKit.ECS` provides generated components, Ent handles, mutation, and
   arena ownership.
 - `AlvorKit.ECS.Indexed` adds observed mutation, maintained bags, and hooks for
   game-owned indexes such as id, dirty, spatial, persistence, or replication
@@ -44,7 +52,7 @@ the component generator:
 </ItemGroup>
 ```
 
-Add the Indexed package when a game-entity scope maintains bags, observes
+Add the Indexed package when a game Ent scope maintains bags, observes
 component writes, or keeps derived indexes:
 
 ```xml
@@ -57,15 +65,15 @@ component writes, or keeps derived indexes:
 </ItemGroup>
 ```
 
-Keep the references in the package that owns the entity component declarations
+Keep the references in the package that owns the Ent component declarations
 and scope. Do not add ECS references to unrelated packages merely to pass an
-entity through them; preserve the dependency direction described in
+Ent through them; preserve the dependency direction described in
 [`ProjectSplitModel.md`](ProjectSplitModel.md).
 
 ## Declare Components
 
 Declare related component properties in a `[Components]` interface. The source
-generator creates component marker types, entity accessors, presence checks,
+generator creates component marker types, Ent accessors, presence checks,
 unset methods, and fluent mutation methods:
 
 ```csharp
@@ -102,10 +110,10 @@ Keep components focused on state. Put simulation, loading, persistence,
 rendering, networking, and presentation behavior in the services that consume
 the components.
 
-## Base Entity Ownership
+## Base Ent Ownership
 
-An `EntArena` owns a set of allocated entity slots. `EntPtr` owns one allocated
-entity and may dispose it individually:
+An `EntArena` owns a set of allocated Ent slots. `EntPtr` owns one allocated
+Ent and may dispose it individually:
 
 ```csharp
 using var arena = new EntArena();
@@ -126,7 +134,7 @@ Use the narrowest handle that expresses ownership:
 
 | Handle | Meaning |
 |---|---|
-| `EntPtr` | Owning base handle; can mutate and individually dispose the entity. |
+| `EntPtr` | Owning base handle; can mutate and individually dispose the Ent. |
 | `EntMut` | Non-owning mutable base handle. |
 | `Ent` | Non-owning read handle. |
 | `EntObj` | Garbage-collected owner, mainly for object-lifetime state such as an Indexed context. |
@@ -134,36 +142,36 @@ Use the narrowest handle that expresses ownership:
 | `EntMutIdx` | Non-owning mutable Indexed handle stored in bags and passed to hooks. |
 
 Handles are generational. After individual or arena disposal, old handles are
-dead and cannot refer to a later entity that reuses the same slot. Keep the
+dead and cannot refer to a later Ent that reuses the same slot. Keep the
 owning pointer wherever individual disposal belongs; pass non-owning handles to
-systems and indexes that only observe or mutate the entity.
+systems and indexes that only observe or mutate the Ent.
 
 `EntArena.Dispose()` is bulk scope teardown. It invalidates every allocation in
-the arena. Use individual `EntPtr.Dispose()` when per-entity ownership ends
+the arena. Use individual `EntPtr.Dispose()` when per-Ent ownership ends
 before the arena does.
 
 ## When To Use Indexed ECS
 
-Use base ECS when a local entity collection needs only component storage and
+Use base ECS when a local Ent collection needs only component storage and
 direct handles. Use `AlvorKit.ECS.Indexed` when component changes must
 immediately maintain any derived game state, including:
 
 - dense active sets such as loaded players, projectiles, chunks, or dirty
-  entities;
+  Ents;
 - stable-id lookups;
 - spatial membership;
 - dirty-component tracking;
 - persistence or replication state; or
-- whole-entity teardown callbacks.
+- whole-Ent teardown callbacks.
 
-Once a scope uses Indexed ECS, allocate its game entities from its
+Once a scope uses Indexed ECS, allocate its game Ents from its
 `EntIdxArena` and mutate them through `EntPtrIdx` or `EntMutIdx`. Do not allocate
-some entities from a raw `EntArena` or convert the same scope to raw mutation to
+some Ents from a raw `EntArena` or convert the same scope to raw mutation to
 bypass hooks. That leaves bags and indexes inconsistent.
 
 ## Scoped Indexed ECS
 
-An Indexed game-entity scope owns one context builder, one Indexed arena, and
+An Indexed game Ent scope owns one context builder, one Indexed arena, and
 the bags and indexes registered on that context. Give these types domain names
 and bind them to the same game scope:
 
@@ -193,7 +201,7 @@ public sealed class WorldScratchedBag(WorldScratchedBagMut bag) :
 ```
 
 `[World]` is the example game's scope attribute, not an ECS requirement. Use the
-scope name that owns the entities. Read
+scope name that owns the Ents. Read
 [`GameScopeOrganization.md`](GameScopeOrganization.md) before creating or
 reorganizing game scopes and loader scopes.
 
@@ -201,14 +209,14 @@ The mutable bag type is registration state owned by loaders. Runtime systems
 should depend on the read wrapper unless they specifically participate in
 registration.
 
-Builders may inherit when a child entity scope intentionally carries the
+Builders may inherit when a child Ent scope intentionally carries the
 parent scope's registrations. Each builder instance still owns a separate
-context entity, so hooks do not leak between scope instances.
+context Ent, so hooks do not leak between scope instances.
 
 ## Register Before Allocating
 
 Register every bag and hook in loader code before any system allocates or
-mutates entities for the scope:
+mutates Ents for the scope:
 
 ```csharp
 [WorldLoader]
@@ -231,7 +239,7 @@ public sealed class WorldLoader(
 }
 ```
 
-Registration is not retroactive. A bag or hook added after entities have
+Registration is not retroactive. A bag or hook added after Ents have
 already changed does not scan or reconstruct earlier state.
 
 Use the registrations according to their observable timing:
@@ -242,7 +250,7 @@ Use the registrations according to their observable timing:
 - `AddPost<T, N>` runs after the write. Current component state is final. Use it
   for spatial or other derived membership.
 - `AddPreDispose` runs before any component is cleared. Use it when cleanup
-  needs the whole intact entity.
+  needs the whole intact Ent.
 - `AddBag` maintains membership when one boolean marker is true.
 - `AddGatedBag` maintains membership only while both its boolean marker and
   boolean gate are true.
@@ -254,7 +262,7 @@ mutation for one context are single-threaded.
 
 ## Initialize Data Before Publishing Membership
 
-Bag maintenance is immediate. Initialize all entity data before setting the
+Bag maintenance is immediate. Initialize all Ent data before setting the
 marker and gate that publish it to systems:
 
 ```csharp
@@ -276,8 +284,8 @@ public sealed class WorldProjectileSpawner(WorldEntArena arena)
 ```
 
 Here `IsLoaded` is the gate and is deliberately written last. As soon as both
-`IsProjectile` and `IsLoaded` are true, the entity appears in the projectile
-bag. This keeps systems from observing a half-initialized entity.
+`IsProjectile` and `IsLoaded` are true, the Ent appears in the projectile bag.
+This keeps systems from observing a half-initialized Ent.
 
 Keep the returned `EntPtrIdx` with the owner responsible for individual
 disposal. Convert it to `EntMutIdx` when a non-owning mutable handle is needed.
@@ -299,7 +307,7 @@ public sealed class WorldProjectileTick(WorldProjectileBag projectiles)
 
 Mutating components that do not control the bag's membership is safe and is the
 normal system shape. Do not change the bag's own marker or gate, or dispose an
-entity, while walking the captured span. Removal swap-fills the dense bag and
+Ent, while walking the captured span. Removal swap-fills the dense bag and
 can skip or repeat work. Stage membership-changing work in a reusable buffer:
 
 ```csharp
@@ -329,9 +337,9 @@ new key:
 [World]
 public sealed class WorldEntIndex
 {
-    private readonly Dictionary<Guid, EntMutIdx> entities = [];
+    private readonly Dictionary<Guid, EntMutIdx> ents = [];
 
-    public EntMutIdx this[Guid id] => entities[id];
+    public EntMutIdx this[Guid id] => ents[id];
 
     public void Intercept(EntMutIdx ent, in Guid value)
     {
@@ -339,10 +347,10 @@ public sealed class WorldEntIndex
             return;
 
         if (ent.Id != default)
-            entities.Remove(ent.Id);
+            ents.Remove(ent.Id);
 
         if (value != default)
-            entities.Add(value, ent);
+            ents.Add(value, ent);
     }
 }
 ```
@@ -356,13 +364,13 @@ depends on multiple components or must happen before component clearing begins.
 
 Individual Indexed disposal maintains derived state:
 
-1. Pre-dispose hooks run while the entity is intact.
+1. Pre-dispose hooks run while the Ent is intact.
 2. Present components are cleared through their Indexed unset pipelines.
 3. Bags and component-local indexes observe those unsets.
 4. The underlying allocation is released.
 
 `EntIdxArena.Dispose()` is intentionally different. It bulk-invalidates the
-arena without running per-entity hooks. Bags and game-owned indexes may still
+arena without running per-Ent hooks. Bags and game-owned indexes may still
 contain dead handles and must be treated as invalid after arena disposal. Keep
 the context, arena, bags, and indexes in one scope lifetime so they all become
 unreachable together.
@@ -371,24 +379,24 @@ If teardown needs persistence erasure, network messages, or maintained indexes,
 dispose the relevant `EntPtrIdx` allocations individually before disposing the
 arena. Use arena disposal for final bulk scope teardown.
 
-## Required Game-Entity Rules
+## Required Game Ent Rules
 
-For game entities:
+For game Ents:
 
 1. Use generated `[Components]` declarations and AlvorKit ECS handles and
    arenas.
-2. Keep behavior in injected services and systems; keep entity state in
+2. Keep behavior in injected services and systems; keep Ent state in
    components.
 3. Use Indexed ECS whenever component writes maintain bags, indexes, dirty
    state, persistence, replication, or teardown behavior.
-4. Register Indexed bags and hooks before allocating entities.
+4. Register Indexed bags and hooks before allocating Ents.
 5. Mutate an Indexed scope only through `EntPtrIdx` and `EntMutIdx`.
 6. Initialize data before setting bag markers and gates; publish the gate last.
 7. Do not mutate a bag's membership while iterating its span; stage the work.
 8. Keep owning pointers until individual disposal is complete.
 9. Keep the Indexed context, arena, bags, and indexes in the same scope
    lifetime.
-10. Treat arena disposal as bulk invalidation, not per-entity cleanup.
+10. Treat arena disposal as bulk invalidation, not per-Ent cleanup.
 
 For detailed hook ordering, reentrancy, bag storage, registration validation,
 and mutation semantics, continue with [`ECS.Indexed.md`](ECS.Indexed.md).

@@ -278,7 +278,7 @@ Loader services can depend on their parent scope services. A `LevelLoader` can
 consume `LevelChunks`, `LevelPlayerBagMut`, or other `[Level]` services while
 itself being cached in `LevelLoaderScope`.
 
-Game entities, entity contexts, arenas, and bags must follow the ownership and
+Game Ents, Ent contexts, arenas, and bags must follow the ownership and
 registration contracts in [`ECS.md`](ECS.md). The long-lived scope owns those
 objects; its loader scope only performs their ordered registration and setup.
 
@@ -398,10 +398,10 @@ constructors are allowed to request.
 [Level]
 public class LevelEnterAction(RootState state, LevelScope scope)
 {
-    public void Run(Entity playerEntity)
+    public void Run(Ent playerEnt)
     {
         scope.Scope<PlayerScope>()
-            .With(new PlayerEntity(playerEntity))
+            .With(new PlayerEnt(playerEnt))
             .Run(x => x.Get<PlayerMetrics>().Start())
             .Run(x => state.Current = x.New<PlayerExplorationState>());
     }
