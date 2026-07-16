@@ -16,11 +16,11 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
 
         SizeInnerSizing(n);
 
-        var innerSpace = n.SizeR - n.PaddingR.XY - n.PaddingR.ZW;
+        var innerSpace = n.SizeR - n.PaddingR.Xy - n.PaddingR.Zw;
         foreach (var c in n.NodesR.Span)
         {
             var childSpace = c.IsFloatingFV.Resolve() ? n.SizeR : innerSpace;
-            Size(childSpace - c.MarginR.XY - c.MarginR.ZW, c);
+            Size(childSpace - c.MarginR.Xy - c.MarginR.Zw, c);
         }
 
         SizeInnerMaxRelative(n);
@@ -29,14 +29,14 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
         SizeAlignmentSnap(n);
         SizeEdgeAlignmentFill(s, n);
 
-        var postInnerSpace = n.SizeR - n.PaddingR.XY - n.PaddingR.ZW;
+        var postInnerSpace = n.SizeR - n.PaddingR.Xy - n.PaddingR.Zw;
         foreach (var c in n.NodesR.Span)
         {
             if (!c.IsPostSizedFV.Resolve())
                 continue;
 
             var childSpace = c.IsFloatingFV.Resolve() ? n.SizeR : postInnerSpace;
-            Size(childSpace - c.MarginR.XY - c.MarginR.ZW, c);
+            Size(childSpace - c.MarginR.Xy - c.MarginR.Zw, c);
         }
     }
 
@@ -76,8 +76,8 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
         var fontPadding = n.FontPaddingFV.Resolve();
         var textPadding = n.TextPaddingFV.Resolve();
 
-        size += fontPadding.XY + fontPadding.ZW;
-        size += textPadding.XY + textPadding.ZW;
+        size += fontPadding.Xy + fontPadding.Zw;
+        size += textPadding.Xy + textPadding.Zw;
 
         n.SizeR += sizeTextRelative * size;
     }
@@ -120,7 +120,7 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
                 continue;
 
             layoutChildCount++;
-            sizeInnerSum += c.SizeR + c.MarginR.XY + c.MarginR.ZW;
+            sizeInnerSum += c.SizeR + c.MarginR.Xy + c.MarginR.Zw;
         }
 
         sizeInnerSum.X += n.PaddingR.X + n.PaddingR.Z;
@@ -187,7 +187,7 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
 
         var innerSpacing = n.InnerSpacingFV.Resolve();
         var totalSpacing = innerSpacing * Math.Max(0, layoutChildCount - 1);
-        Vec2 useableSize = n.SizeR - n.PaddingR.XY - n.PaddingR.ZW - (totalSpacing, totalSpacing);
+        Vec2 useableSize = n.SizeR - n.PaddingR.Xy - n.PaddingR.Zw - (totalSpacing, totalSpacing);
 
         if (innerSizing == InnerSizing.HorizontalWeight)
         {

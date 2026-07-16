@@ -55,8 +55,8 @@ public class RootUiDraw(RootSprites sprites, RootUiScale scale, RootUiPosition p
 
         var color = n.TextureColorFV.Resolve() ?? Vec4.One;
         var margin = n.TextureMarginFV.Resolve();
-        var position = n.PositionR + margin.XY;
-        var size = n.SizeR - margin.XY - margin.ZW;
+        var position = n.PositionR + margin.Xy;
+        var size = n.SizeR - margin.Xy - margin.Zw;
         var subSizeRelative = n.TextureSubSizeRelativeFV.Resolve();
         var subSizeFixed = n.TextureSubSizeFV.Resolve();
         var subSize = subSizeRelative.HasValue || subSizeFixed.HasValue
@@ -98,8 +98,8 @@ public class RootUiDraw(RootSprites sprites, RootUiScale scale, RootUiPosition p
             font.Size(fontSize).Metrics.Height / scale.Scale);
         var fontPadding = n.FontPaddingFV.Resolve();
         var textPadding = n.TextPaddingFV.Resolve();
-        var contentOffset = fontPadding.XY + textPadding.XY;
-        var contentSize = n.SizeR - contentOffset - fontPadding.ZW - textPadding.ZW;
+        var contentOffset = fontPadding.Xy + textPadding.Xy;
+        var contentSize = n.SizeR - contentOffset - fontPadding.Zw - textPadding.Zw;
 
         var offset = position.Align(contentOffset, size, contentSize, alignment, 0);
         offset.Y += size.Y / 2;

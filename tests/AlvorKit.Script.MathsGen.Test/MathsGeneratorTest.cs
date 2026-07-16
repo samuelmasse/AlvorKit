@@ -446,9 +446,14 @@ public sealed class MathsGeneratorTest
     {
         var vec3 = VectorFileEmitter.Emit(new(3, VectorCatalog.Float));
         var vec3Swizzles = SwizzleFileEmitter.Emit(new(3, VectorCatalog.Float));
+        var vec4Swizzles = SwizzleFileEmitter.Emit(new(4, VectorCatalog.Float));
 
-        StringAssert.Contains(vec3Swizzles, "public Vec3 YXZ");
-        Assert.IsFalse(vec3.Contains("public Vec3 YXZ", StringComparison.Ordinal));
+        StringAssert.Contains(vec3Swizzles, "public Vec2 Xy");
+        StringAssert.Contains(vec3Swizzles, "public Vec3 Yxz");
+        StringAssert.Contains(vec3Swizzles, "public Vec3 Bgr");
+        StringAssert.Contains(vec4Swizzles, "public Vec4 Stpq");
+        Assert.IsFalse(vec3Swizzles.Contains("public Vec3 YXZ", StringComparison.Ordinal));
+        Assert.IsFalse(vec3.Contains("public Vec3 Yxz", StringComparison.Ordinal));
     }
 
     /// <summary>Vector interface source includes shape-specific floating interfaces.</summary>

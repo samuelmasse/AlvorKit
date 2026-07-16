@@ -178,14 +178,15 @@ public sealed class GeneratedVectorTest
     public void GeneratedSwizzles_Work()
     {
         Vec3 value = (1f, 2f, 3f);
-        value.YX = (8f, 9f);
-        var afterYx = value.XY;
-        value.BGR = (4f, 5f, 6f);
+        value.Yx = (8f, 9f);
+        var afterYx = value.Xy;
+        value.Bgr = (4f, 5f, 6f);
 
         Assert.AreEqual(new Vec2(9f, 8f), afterYx);
-        Assert.AreEqual(new Vec3(6f, 5f, 4f), value.RGB);
-        Assert.AreEqual(new Vec4(6f, 6f, 5f, 4f), value.RRGB);
-        Assert.AreEqual(new Vec3(4f, 4f, 4f), value.BBB);
+        Assert.AreEqual(new Vec3(6f, 5f, 4f), value.Rgb);
+        Assert.AreEqual(new Vec4(6f, 6f, 5f, 4f), value.Rrgb);
+        Assert.AreEqual(new Vec3(4f, 4f, 4f), value.Bbb);
+        Assert.AreEqual(new Vec4(6f, 5f, 4f, 6f), value.Stps);
     }
 
     /// <summary>Generated scalar families keep suffix naming and cross-type conversions coherent.</summary>

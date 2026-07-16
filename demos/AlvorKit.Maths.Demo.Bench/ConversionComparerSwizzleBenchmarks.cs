@@ -119,40 +119,40 @@ public class SwizzleBenchmarks
             int4[i] = (i, i + 1, i + 2, i + 3);
         }
 
-        if (float3[7].XZY != IntrinsicXzy(float3[7]) || int3[7].XZY != IntrinsicXzy(int3[7]) ||
-            float4[7].WZYX != IntrinsicReverse(float4[7]) || int4[7].WZYX != IntrinsicReverse(int4[7]))
+        if (float3[7].Xzy != IntrinsicXzy(float3[7]) || int3[7].Xzy != IntrinsicXzy(int3[7]) ||
+            float4[7].Wzyx != IntrinsicReverse(float4[7]) || int4[7].Wzyx != IntrinsicReverse(int4[7]))
             throw new InvalidOperationException("Intrinsic swizzle candidate changed the result.");
     }
 
-    [Benchmark(Baseline = true, OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec3.XZY")]
-    public void CurrentVec3Xzy() { for (var i = 0; i < BatchSize; i++) float3Output[i] = float3[i].XZY; }
+    [Benchmark(Baseline = true, OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec3.Xzy")]
+    public void CurrentVec3Xzy() { for (var i = 0; i < BatchSize; i++) float3Output[i] = float3[i].Xzy; }
 
-    [Benchmark(OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec3.XZY")]
+    [Benchmark(OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec3.Xzy")]
     public void IntrinsicVec3Xzy() { for (var i = 0; i < BatchSize; i++) float3Output[i] = IntrinsicXzy(float3[i]); }
 
-    [Benchmark(Baseline = true, OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec3i.XZY")]
-    public void CurrentVec3iXzy() { for (var i = 0; i < BatchSize; i++) int3Output[i] = int3[i].XZY; }
+    [Benchmark(Baseline = true, OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec3i.Xzy")]
+    public void CurrentVec3iXzy() { for (var i = 0; i < BatchSize; i++) int3Output[i] = int3[i].Xzy; }
 
-    [Benchmark(OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec3i.XZY")]
+    [Benchmark(OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec3i.Xzy")]
     public void IntrinsicVec3iXzy() { for (var i = 0; i < BatchSize; i++) int3Output[i] = IntrinsicXzy(int3[i]); }
 
-    [Benchmark(Baseline = true, OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec4.WZYX")]
-    public void CurrentVec4Reverse() { for (var i = 0; i < BatchSize; i++) float4Output[i] = float4[i].WZYX; }
+    [Benchmark(Baseline = true, OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec4.Wzyx")]
+    public void CurrentVec4Reverse() { for (var i = 0; i < BatchSize; i++) float4Output[i] = float4[i].Wzyx; }
 
-    [Benchmark(OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec4.WZYX")]
+    [Benchmark(OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec4.Wzyx")]
     public void IntrinsicVec4Reverse() { for (var i = 0; i < BatchSize; i++) float4Output[i] = IntrinsicReverse(float4[i]); }
 
-    [Benchmark(Baseline = true, OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec4i.WZYX")]
-    public void CurrentVec4iReverse() { for (var i = 0; i < BatchSize; i++) int4Output[i] = int4[i].WZYX; }
+    [Benchmark(Baseline = true, OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec4i.Wzyx")]
+    public void CurrentVec4iReverse() { for (var i = 0; i < BatchSize; i++) int4Output[i] = int4[i].Wzyx; }
 
-    [Benchmark(OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec4i.WZYX")]
+    [Benchmark(OperationsPerInvoke = BatchSize), BenchmarkCategory("Vec4i.Wzyx")]
     public void IntrinsicVec4iReverse() { for (var i = 0; i < BatchSize; i++) int4Output[i] = IntrinsicReverse(int4[i]); }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vec3 IntrinsicXzy(Vec3 value)
     {
         if (!Sse.IsSupported)
-            return value.XZY;
+            return value.Xzy;
         var packed = Vector128.Create(value.X, value.Y, value.Z, 0f);
         var shuffled = Sse.Shuffle(packed, packed, 0xd8);
         return new(shuffled[0], shuffled[1], shuffled[2]);
@@ -162,7 +162,7 @@ public class SwizzleBenchmarks
     private static Vec3i IntrinsicXzy(Vec3i value)
     {
         if (!Sse2.IsSupported)
-            return value.XZY;
+            return value.Xzy;
         var shuffled = Sse2.Shuffle(Vector128.Create(value.X, value.Y, value.Z, 0), 0xd8);
         return new(shuffled[0], shuffled[1], shuffled[2]);
     }
@@ -171,7 +171,7 @@ public class SwizzleBenchmarks
     private static Vec4 IntrinsicReverse(Vec4 value)
     {
         if (!Sse.IsSupported)
-            return value.WZYX;
+            return value.Wzyx;
         var packed = Unsafe.BitCast<Vec4, Vector128<float>>(value);
         return Unsafe.BitCast<Vector128<float>, Vec4>(Sse.Shuffle(packed, packed, 0x1b));
     }
@@ -180,7 +180,7 @@ public class SwizzleBenchmarks
     private static Vec4i IntrinsicReverse(Vec4i value)
     {
         if (!Sse2.IsSupported)
-            return value.WZYX;
+            return value.Wzyx;
         var packed = Unsafe.BitCast<Vec4i, Vector128<int>>(value);
         return Unsafe.BitCast<Vector128<int>, Vec4i>(Sse2.Shuffle(packed, 0x1b));
     }

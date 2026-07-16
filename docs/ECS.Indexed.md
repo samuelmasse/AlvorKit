@@ -637,7 +637,7 @@ public sealed class DimensionChunkRigids
 
     public void Intercept(EntMutIdx ent)
     {
-        Vec2i? cloc = ent.IsRigid ? ent.Position.ToLoc().XY.ToCloc() : null;
+        Vec2i? cloc = ent.IsRigid ? ent.Position.ToLoc().Xy.ToCloc() : null;
         var prevCloc = ent.RigidCloc;
 
         if (prevCloc == cloc)

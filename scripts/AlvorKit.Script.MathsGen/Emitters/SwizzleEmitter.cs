@@ -27,7 +27,8 @@ internal static class SwizzleEmitter
     /// <summary>Emits one swizzle property.</summary>
     private static void EmitSwizzle(VectorSpec vector, MemberBlock members, string[] aliases, int[] indices)
     {
-        var name = string.Concat(indices.Select(index => aliases[index]));
+        var name = string.Concat(indices.Select((index, slot) =>
+            slot == 0 ? aliases[index] : aliases[index].ToLowerInvariant()));
         var returnType = vector.Scalar.VectorName(indices.Length);
         var getArgs = string.Join(", ", indices.Select(index => aliases[index]));
         if (indices.Distinct().Count() != indices.Length)
