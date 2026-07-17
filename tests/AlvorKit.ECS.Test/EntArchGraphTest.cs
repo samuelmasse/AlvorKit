@@ -3,6 +3,39 @@ namespace AlvorKit.ECS.Test;
 [TestClass]
 public sealed class EntArchGraphTest
 {
+    /// <summary>Verifies the published arch end advances only after a new complete signature is materialized.</summary>
+    [TestMethod]
+    public void ArchetypalGraph_PublishedArchEnd_TracksCompleteSignatures()
+    {
+        Assert.AreEqual(
+            EntArchGraph<PublishedArch>.FirstArchId,
+            EntArchGraph<PublishedArch>.PublishedArchEnd);
+
+        using var arena = new EntArena();
+        EntMut ent = arena.Alloc();
+        _ = EntArchColumn<int, PublishedC0, PublishedArch>.FieldId;
+        Assert.AreEqual(
+            EntArchGraph<PublishedArch>.FirstArchId,
+            EntArchGraph<PublishedArch>.PublishedArchEnd);
+
+        ent.SetArchetypal<int, PublishedC0, PublishedArch>(1);
+        int singletonEnd = EntArchGraph<PublishedArch>.PublishedArchEnd;
+        Assert.AreEqual(
+            ent.Get<EntArchLoc, PublishedArch>().ArchId + 1,
+            singletonEnd);
+
+        ent.SetArchetypal<int, PublishedC0, PublishedArch>(2);
+        Assert.AreEqual(singletonEnd, EntArchGraph<PublishedArch>.PublishedArchEnd);
+
+        ent.SetArchetypal<int, PublishedC1, PublishedArch>(3);
+        int pairEnd = EntArchGraph<PublishedArch>.PublishedArchEnd;
+        Assert.AreEqual(singletonEnd + 1, pairEnd);
+
+        Assert.IsTrue(ent.UnsetArchetypal<int, PublishedC1, PublishedArch>());
+        ent.SetArchetypal<int, PublishedC1, PublishedArch>(4);
+        Assert.AreEqual(pairEnd, EntArchGraph<PublishedArch>.PublishedArchEnd);
+    }
+
     /// <summary>Verifies all non-empty four-field subsets survive catalog growth and reuse canonical IDs.</summary>
     [TestMethod]
     public void ArchetypalGraph_AllFourFieldSubsets_SurviveCatalogGrowth()
@@ -310,4 +343,7 @@ public sealed class EntArchGraphTest
     private readonly record struct F14;
     private readonly record struct F15;
     private readonly record struct FieldGrowthArch;
+    private readonly record struct PublishedC0;
+    private readonly record struct PublishedC1;
+    private readonly record struct PublishedArch;
 }

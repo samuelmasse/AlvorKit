@@ -3,6 +3,27 @@ namespace AlvorKit.ECS.Test;
 [TestClass]
 public sealed class EntArchetypalConcurrencyTest
 {
+    /// <summary>Verifies different alloc owners can concurrently warm and consume one group-global query cache.</summary>
+    [TestMethod]
+    public void ArchetypalQuery_ConcurrentColdCache_DifferentAllocsRemainIsolated()
+    {
+        const int ownerCount = 2;
+        using var barrier = new Barrier(ownerCount);
+        var sums = new int[ownerCount];
+
+        Parallel.Invoke(
+            () => QueryColdCache(0, barrier, sums),
+            () => QueryColdCache(1, barrier, sums));
+
+        CollectionAssert.AreEqual(new[] { 10, 20 }, sums);
+        Assert.AreEqual(
+            1,
+            EntArchQueryCache<
+                ConcurrentQueryArch,
+                EntArchSelect<int, C1, ConcurrentQueryArch, EntArchSelect<int, C0, ConcurrentQueryArch>>>
+            .MatchingArchCount);
+    }
+
     /// <summary>Verifies cold alloc owners intern one arch and observe the same immutable signature and transitions.</summary>
     [TestMethod]
     public void Archetypal_ConcurrentColdResolution_DifferentAllocsInternSameArch()
@@ -199,6 +220,27 @@ public sealed class EntArchetypalConcurrencyTest
         ent.UnsetArchetypal<int, C1, ColdResolutionArch>();
     }
 
+    private static void QueryColdCache(int owner, Barrier barrier, int[] sums)
+    {
+        using var arena = new EntArena();
+        EntMut ent = arena.Alloc();
+        ent.SetArchetypal<int, C0, ConcurrentQueryArch>(owner + 1);
+        ent.SetArchetypal<int, C1, ConcurrentQueryArch>((owner + 1) * 10);
+        barrier.SignalAndWait();
+
+        int sum = 0;
+        var query = arena.QueryArchetypal<ConcurrentQueryArch>()
+            .With<int, C0>()
+            .With<int, C1>();
+        foreach (var chunk in query)
+        {
+            foreach (int value in chunk.Get<int, C1>())
+                sum += value;
+        }
+
+        sums[owner] = sum;
+    }
+
     private static void ExerciseWarmArch(
         int owner,
         int entsPerOwner,
@@ -282,4 +324,5 @@ public sealed class EntArchetypalConcurrencyTest
     private readonly record struct WarmAccessArch;
     private readonly record struct ConcurrentFirstSetField;
     private readonly record struct ConcurrentFirstSetArch;
+    private readonly record struct ConcurrentQueryArch;
 }

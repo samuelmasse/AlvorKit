@@ -23,6 +23,16 @@ Console.WriteLine("Generated accessors:");
 Console.WriteLine($"{scout.Name}: health={scout.Health}, position={scout.Position}, velocity={scout.Velocity}");
 Console.WriteLine($"{guard.Name}: health={guard.Health}, position={guard.Position}, has velocity={guard.HasVelocity}");
 
+var moving = arena.QueryArchetypal<CombatComponents>()
+    .WithPosition()
+    .WithVelocity();
+foreach (var row in moving.Rows())
+    row.Position = new(
+        row.Position.X + row.Velocity.X,
+        row.Position.Y + row.Velocity.Y);
+
+Console.WriteLine($"Scout after row movement: position={scout.Position}");
+
 scout.Mutate()
     .Health(75)
     .Position(new(5, 7));

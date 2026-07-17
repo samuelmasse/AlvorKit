@@ -7,11 +7,10 @@ It starts from the direct typed-column implementation and does not resume shared
 slabs, native component storage, specialized loc storage, disassembly work, or
 `MethodImplOptions` tuning.
 
-The first implementation batch stopped before queries and is complete. The
-next batch added the basic alloc-scoped span representation, explicit-SIMD
-benchmarks, and direct final-shape allocation. Per-Ent iteration and generated
-query accessors remain separate prototypes because they have different
-code-generation tradeoffs.
+The first implementation batch stopped before queries and is complete. Later
+batches added the basic alloc-scoped span representation, explicit-SIMD
+benchmarks, direct final-shape allocation, generated named selectors, and exact
+one-Ent-at-a-time rows.
 
 ## Required Public Shape
 
@@ -36,7 +35,7 @@ component group as `A`. In this example, `Position` and `Velocity` use
 `MotionComponents` as their archetype group. Unmarked properties retain the
 existing sparse representation and generated API.
 
-Generated entity access remains property-shaped. `Has`, get, set, unset, lazy
+Generated Ent access remains property-shaped. `Has`, get, set, unset, lazy
 initialization, builder methods, access modifiers, nullability, and
 `ComponentToString` must route to the selected storage representation without
 requiring handwritten generic calls.
@@ -150,7 +149,7 @@ component names from different groups.
 
 Replace the manual `C00` through `C06` archetype stress program with a concise
 generated-component walkthrough. It declares mixed sparse and archetypal
-properties, creates several shapes in an `EntArena`, uses generated entity
+properties, creates several shapes in an `EntArena`, uses generated Ent
 accessors, shows debugger/string-visible values, clears one Ent, disposes one
 Ent, and disposes the arena.
 
@@ -167,7 +166,7 @@ nodes, chunk wrappers, row cursors, or generated query accessors.
 
 Queries are alloc-scoped because alloc ownership is the threading boundary. A
 query must select any number of required archetypal components and yield only
-active arches containing every selection. Fixed one-, two-, or three-component
+active archs containing every selection. Fixed one-, two-, or three-component
 overload families and generated component power sets are not acceptable.
 
 The implemented underlying shape is a recursively typed selection chain:
@@ -180,14 +179,43 @@ var query = arena
 ```
 
 Repeated `With<T, N>()` adds selection types without runtime descriptor arrays,
-`params`, boxing, or setup allocation. Generated `WithPosition()` names remain
-future generator work.
+`params`, boxing, or setup allocation. Generated `WithPosition()` names now
+provide the normal public path while retaining the raw generic surface.
 
-Two iteration models must be prototyped over the same multi-component selection:
+Two iteration models are implemented over the same multi-component selection:
 
 1. Chunk iteration now exposes aligned Ent and mutable component spans.
-2. Per-Ent iteration remains a future prototype with Ent and ref-returning
-   generated component accessors.
+2. Generated rows flatten matching archs and expose the aligned Ent plus
+   ref-returning named component properties.
+
+## Cached Arch Discovery (Completed)
+
+Each closed `<A, TSelect>` query shape now lazily caches the group-global arch
+IDs whose immutable signatures contain every selected component. The cache is
+shared across allocs. An alloc query walks that compact ID prefix and performs a
+direct row-directory check to skip matching archs that are empty in that alloc.
+
+Arch creation publishes an exclusive completed-ID bound only after the packed
+signature and signature index entry are initialized. A query cache remembers
+the bound it has scanned and, on the next enumeration after arch creation,
+examines only the newly appended signatures. Ent moves, row-count transitions,
+alloc cleanup, and component value writes require no invalidation because they
+do not change an arch signature.
+
+The warm query enumerator captures only the cached match count. It reads IDs by
+direct indexing from the static generic cache, keeping the enumerator at the
+same 24-byte size as the former directory-scanning version. A rejected
+`ReadOnlySpan<int>` field increased the enumerator size and moved the
+two-component generated-row benchmark from about 0.289 to 0.36 ns/Ent even
+though the span was only used at arch boundaries.
+
+The opt-in short Release discovery benchmark materializes 2,047 signatures,
+selects four of eleven fields, and retains one active matching row. Repeated
+query cost changed from 1,109.72 ns to 103.43 ns, about 10.7 times faster, with
+0 B loop allocation. The existing one-, two-, and eight-component span and row
+benchmarks remained at their pre-change performance. Release disassembly keeps
+cache refresh synchronization outside `MoveNext`; arch transition contains a
+cached ID load and `TryGetActive`, with no signature traversal or lock.
 
 The per-Ent prototype is considered direct only if it binds each selected column
 once when entering an arch and addresses a row from cached managed base refs. It
@@ -203,7 +231,7 @@ remaining matrix compares:
 
 - chunk spans with an indexed loop;
 - a generic per-Ent row accessor;
-- generated per-Ent ref accessors;
+- generated per-Ent ref properties;
 - one, two, four, and eight selected components;
 - first-selected and last-selected access through a typed selection chain;
 - read accumulation and component writes;
@@ -236,7 +264,7 @@ means on the local Ryzen 9 9950X:
 | One component | 19.31 us | 3.37 us |
 | Two components | 19.33 us | 5.45 us |
 | Three components | 26.00 us | 8.99 us |
-| Two components across multiple matching arches | 19.26 us | 4.46 us |
+| Two components across multiple matching archs | 19.26 us | 4.46 us |
 
 The vectorized rows are in the leading comparison tier: the corresponding best
 measured competitor results were 3.69 us, 6.58 us, 8.50 us, and 5.51 us. These
@@ -250,7 +278,7 @@ types or system bodies will vectorize automatically.
 values and creates the Ent directly in its complete arch. The first use of a
 closed chain resolves its sorted signature; subsequent uses read a cached arch
 ID. Creation performs one row append and writes the values directly to their
-typed columns, avoiding all intermediate arches and transition moves produced
+typed columns, avoiding all intermediate archs and transition moves produced
 by sequential component setters.
 
 The external creation comparison now contains three explicit AlvorKit rows:
@@ -269,20 +297,63 @@ creation method has visible run-to-run noise, so these ranges establish the
 cost tier and the structural improvement rather than a precise ordering between
 field counts.
 
-## Remaining Query Work
+## Exact Per-Ent Rows (Completed)
 
-The next query decision remains the one-Ent-at-a-time API. It should be
-prototyped against the existing chunk spans and retained only if generated or
-generic accessors can bind each column once per arch and reduce each row access
-to cached-base addressing. Generated query names and broader component-count,
-reference-component, and small-row experiments also remain open.
+The accepted public shape is:
+
+```csharp
+var moving = arena.QueryArchetypal<MotionComponents>()
+    .WithPosition()
+    .WithVelocity();
+
+foreach (var row in moving.Rows())
+    row.Position += row.Velocity;
+```
+
+The component generator emits named `WithProperty()` methods linearly from the
+declaration. A second demand-driven pass emits an exact row shape only when a
+closed query is used with `Rows()`. It supports named generated query chains and
+the raw `With<T, N>()` surface. It never emits all component subsets.
+
+The exact enumerator caches the Ent base, one typed managed base ref per selected
+component, one row index, and one active count. It uses the existing chunk query
+as the cold arch discovery and binding boundary. Within an arch, `MoveNext`
+advances one shared index and every component property uses
+`Unsafe.Add(ref base, row)`. Each property returns a writable ref, so callers can
+read or update the column slot directly. Reference-containing components remain
+managed refs; the implementation does not convert them to pointers or bytes.
+
+Focused Release coverage includes empty and repeated enumeration, multiple
+matching archs, compaction between completed enumerations, alloc isolation,
+reference-containing fields, an eight-field query, persisted writes, and zero
+loop allocation. The short Release benchmark over 16,384 Ents and 256 passes
+produced representative medians:
+
+| Selected fields | Direct spans | Generated rows | Row result |
+| ---: | ---: | ---: | ---: |
+| 1 | 0.208 ns/Ent | 0.211 ns/Ent | 1.01x |
+| 2 | 0.280 ns/Ent | 0.288 ns/Ent | 1.03x |
+| 8 | 1.127 ns/Ent | 1.098 ns/Ent | 0.97x |
+
+All paths allocated 0 B in the measured loop. Tier-1 OSR disassembly for the
+two-field row contained one row/count branch and two direct indexed loads in the
+within-arch loop, with no row-property, `Get<T, N>()`, or column lookup call.
+
+Structural mutation of the same `(alloc, A)` remains forbidden while chunks,
+spans, rows, or returned refs are live. Existing values may be written. One
+owner thread operates on each `(alloc, A)`; different allocs may be queried by
+different threads without synchronization in the row path.
+
+The full design evidence, alternative experiments, AOT/PGO caveats, and code
+generation rationale are recorded in
+[`ECS.Archetypal.PerEntRowIteration.md`](ECS.Archetypal.PerEntRowIteration.md).
 
 ## Pre-Query Completion Gate (Satisfied)
 
 Before query work begins, the package must have:
 
 - no production dependency on abandoned shared-storage layout metadata;
-- generated `[Archetypal]` entity access;
+- generated `[Archetypal]` Ent access;
 - correct `Clear`, `EntPtr`, `EntObj`, and `EntArena` lifecycle behavior;
 - debugger and `ComponentToString` integration;
 - a generated-component demo;

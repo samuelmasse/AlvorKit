@@ -120,6 +120,85 @@ public sealed class EntArchQueryTest
         Assert.ThrowsExactly<EntArenaDisposedException>(() => arena.QueryArchetypal<EmptyQueryArch>());
     }
 
+    /// <summary>Verifies the cache extends for new signatures and retained matches survive empty row storage.</summary>
+    [TestMethod]
+    public void SpanQuery_CacheExtendsForNewSignaturesAndSurvivesEmptyRows()
+    {
+        using var arena = new EntArena();
+        var query = arena.QueryArchetypal<CacheQueryArch>()
+            .With<int, C0>()
+            .With<int, C1>();
+
+        Assert.AreEqual(0, Count(query));
+        Assert.AreEqual(0, CacheMatchingArchCount);
+        Assert.AreEqual(EntArchGraph<CacheQueryArch>.PublishedArchEnd, CacheScannedArchEnd);
+
+        EntMut pair = arena.Alloc();
+        pair.SetArchetypal<int, C0, CacheQueryArch>(10);
+        Assert.AreEqual(0, Count(query));
+        Assert.AreEqual(0, CacheMatchingArchCount);
+
+        pair.SetArchetypal<int, C1, CacheQueryArch>(20);
+        Assert.AreEqual(1, Count(query));
+        Assert.AreEqual(1, CacheMatchingArchCount);
+        Assert.AreEqual(EntArchGraph<CacheQueryArch>.PublishedArchEnd, CacheScannedArchEnd);
+        int pairArchEnd = CacheScannedArchEnd;
+
+        Assert.IsTrue(pair.UnsetArchetypal<int, C1, CacheQueryArch>());
+        Assert.AreEqual(0, Count(query));
+        Assert.AreEqual(1, CacheMatchingArchCount);
+        Assert.AreEqual(pairArchEnd, CacheScannedArchEnd);
+
+        pair.SetArchetypal<int, C1, CacheQueryArch>(21);
+        Assert.AreEqual(1, Count(query));
+        Assert.AreEqual(pairArchEnd, CacheScannedArchEnd);
+
+        EntMut triple = arena.Alloc();
+        triple.SetArchetypal<int, C0, CacheQueryArch>(30);
+        triple.SetArchetypal<int, C1, CacheQueryArch>(40);
+        triple.SetArchetypal<int, C2, CacheQueryArch>(50);
+
+        Assert.AreEqual(2, Count(query));
+        Assert.AreEqual(2, CacheMatchingArchCount);
+        Assert.AreEqual(EntArchGraph<CacheQueryArch>.PublishedArchEnd, CacheScannedArchEnd);
+    }
+
+    /// <summary>Verifies captured arch IDs remain valid across cache growth and warm enumeration allocates nothing.</summary>
+    [TestMethod]
+    public void SpanQuery_CapturedCacheSurvivesGrowthAndWarmEnumerationAllocatesNothing()
+    {
+        using var firstArena = new EntArena();
+        SetGrowthArch(firstArena.Alloc());
+        SetGrowthArch<C1>(firstArena.Alloc());
+        SetGrowthArch<C2>(firstArena.Alloc());
+        SetGrowthArch<C3>(firstArena.Alloc());
+
+        var firstQuery = firstArena.QueryArchetypal<CacheGrowthArch>().With<int, C0>();
+        Assert.AreEqual(4, Count(firstQuery));
+        Assert.AreEqual(4, GrowthCacheMatchingArchCount);
+        var captured = firstQuery.GetEnumerator();
+
+        using var secondArena = new EntArena();
+        SetGrowthArch<C4>(secondArena.Alloc());
+        var secondQuery = secondArena.QueryArchetypal<CacheGrowthArch>().With<int, C0>();
+        Assert.AreEqual(1, Count(secondQuery));
+        Assert.AreEqual(5, GrowthCacheMatchingArchCount);
+
+        int capturedCount = 0;
+        while (captured.MoveNext())
+            capturedCount += captured.Current.Ents.Length;
+        Assert.AreEqual(4, capturedCount);
+
+        long allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
+        int warmCount = 0;
+        for (int iteration = 0; iteration < 1_000; iteration++)
+            warmCount += Count(firstQuery);
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
+
+        Assert.AreEqual(4_000, warmCount);
+        Assert.AreEqual(0, allocated);
+    }
+
     private static int Sum<TSelect>(EntArchQuery<AllocQueryArch, TSelect> query)
         where TSelect : struct, IEntArchSelect<AllocQueryArch>
     {
@@ -133,6 +212,40 @@ public sealed class EntArchQueryTest
         return sum;
     }
 
+    private static int Count<A, TSelect>(EntArchQuery<A, TSelect> query)
+        where TSelect : struct, IEntArchSelect<A>
+    {
+        int count = 0;
+        foreach (var chunk in query)
+            count += chunk.Ents.Length;
+        return count;
+    }
+
+    private static void SetGrowthArch(EntMut ent) =>
+        ent.SetArchetypal<int, C0, CacheGrowthArch>(0);
+
+    private static void SetGrowthArch<N>(EntMut ent)
+    {
+        ent.SetArchetypal<int, C0, CacheGrowthArch>(0);
+        ent.SetArchetypal<int, N, CacheGrowthArch>(1);
+    }
+
+    private static int CacheMatchingArchCount =>
+        EntArchQueryCache<
+            CacheQueryArch,
+            EntArchSelect<int, C1, CacheQueryArch, EntArchSelect<int, C0, CacheQueryArch>>>
+        .MatchingArchCount;
+
+    private static int CacheScannedArchEnd =>
+        EntArchQueryCache<
+            CacheQueryArch,
+            EntArchSelect<int, C1, CacheQueryArch, EntArchSelect<int, C0, CacheQueryArch>>>
+        .ScannedArchEnd;
+
+    private static int GrowthCacheMatchingArchCount =>
+        EntArchQueryCache<CacheGrowthArch, EntArchSelect<int, C0, CacheGrowthArch>>
+            .MatchingArchCount;
+
     private readonly record struct C0;
     private readonly record struct C1;
     private readonly record struct C2;
@@ -140,4 +253,8 @@ public sealed class EntArchQueryTest
     private readonly record struct ExtendedQueryArch;
     private readonly record struct AllocQueryArch;
     private readonly record struct EmptyQueryArch;
+    private readonly record struct CacheQueryArch;
+    private readonly record struct CacheGrowthArch;
+    private readonly record struct C3;
+    private readonly record struct C4;
 }

@@ -5,8 +5,9 @@ public readonly struct EntArchSelect<T, N, A> : IEntArchSelect<A>
 {
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Matches(int allocId, int archId) =>
-        EntArchColumn<T, N, A>.ValuesAt(allocId, archId) != null;
+    public static bool Matches(int _, int archId) =>
+        EntArchGraph<A>.FindFieldOrdinal(archId, EntArchColumn<T, N, A>.FieldId) !=
+        EntArchGraph<A>.NoFieldOrdinal;
 }
 
 /// <summary>Adds one component to an existing archetypal query selection.</summary>
@@ -17,5 +18,6 @@ public readonly struct EntArchSelect<T, N, A, TPrev> : IEntArchSelect<A>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Matches(int allocId, int archId) =>
         TPrev.Matches(allocId, archId) &&
-        EntArchColumn<T, N, A>.ValuesAt(allocId, archId) != null;
+        EntArchGraph<A>.FindFieldOrdinal(archId, EntArchColumn<T, N, A>.FieldId) !=
+        EntArchGraph<A>.NoFieldOrdinal;
 }

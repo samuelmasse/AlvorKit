@@ -7,7 +7,7 @@ internal static class EntArchGraph<A>
     internal const int NoFieldOrdinal = -1;
 
     private const int NoEdgeIndex = 0;
-    private const int FirstArchId = 1;
+    internal const int FirstArchId = 1;
     private const int FirstEdgeIndex = 1;
     private const int FirstFieldId = 1;
     private const int InitialFieldCapacity = 16;
@@ -20,6 +20,7 @@ internal static class EntArchGraph<A>
 
     private static int nextFieldId = FirstFieldId;
     private static int nextArchId = FirstArchId;
+    private static int publishedArchEnd = FirstArchId;
     private static int nextEdgeIndex = FirstEdgeIndex;
     private static int fieldCapacity;
     private static int archCapacity;
@@ -45,6 +46,13 @@ internal static class EntArchGraph<A>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => archCapacity;
+    }
+
+    /// <summary>Gets the exclusive end of the fully initialized arch ID range.</summary>
+    internal static int PublishedArchEnd
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Volatile.Read(ref publishedArchEnd);
     }
 
     internal static void AccumulateMetrics(ref EntArchMetrics metrics)
@@ -241,6 +249,7 @@ internal static class EntArchGraph<A>
             singletonArchCount++;
         }
 
+        Volatile.Write(ref publishedArchEnd, nextArchId);
         return archId;
     }
 

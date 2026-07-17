@@ -12,7 +12,7 @@ public readonly struct EntArchQuery<A>
     public EntArchQuery<A, EntArchSelect<T, N, A>> With<T, N>() => new(allocId);
 }
 
-/// <summary>Enumerates active alloc-local arches matching a compile-time component selection.</summary>
+/// <summary>Enumerates active alloc-local archs matching a compile-time component selection.</summary>
 public readonly struct EntArchQuery<A, TSelect>
     where TSelect : struct, IEntArchSelect<A>
 {
@@ -28,12 +28,12 @@ public readonly struct EntArchQuery<A, TSelect>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Enumerator GetEnumerator() => new(allocId);
 
-    /// <summary>Walks active arches and yields the ones containing every selected component.</summary>
+    /// <summary>Walks cached matching arch IDs and yields the alloc-local active ones.</summary>
     public ref struct Enumerator
     {
         private readonly int allocId;
-        private readonly int archLimit;
-        private int archId;
+        private readonly int matchingArchCount;
+        private int matchIndex;
         private EntMut[] ents;
         private int count;
 
@@ -41,14 +41,18 @@ public readonly struct EntArchQuery<A, TSelect>
         public readonly EntArchChunk<A> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => new(allocId, archId, ents, count);
+            get => new(
+                allocId,
+                EntArchQueryCache<A, TSelect>.ArchIdAt(matchIndex - 1),
+                ents,
+                count);
         }
 
         internal Enumerator(int allocId)
         {
             this.allocId = allocId;
-            archLimit = EntArchRows<A>.ArchCapacityAt(allocId);
-            archId = EntArchGraph<A>.NoArchId;
+            matchingArchCount = EntArchQueryCache<A, TSelect>.CaptureCount(allocId);
+            matchIndex = 0;
             ents = null!;
             count = 0;
         }
@@ -57,13 +61,11 @@ public readonly struct EntArchQuery<A, TSelect>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            while (++archId < archLimit)
+            while ((uint)matchIndex < (uint)matchingArchCount)
             {
-                if (EntArchRows<A>.TryGetActive(allocId, archId, out ents, out count) &&
-                    TSelect.Matches(allocId, archId))
-                {
+                int archId = EntArchQueryCache<A, TSelect>.ArchIdAt(matchIndex++);
+                if (EntArchRows<A>.TryGetActive(allocId, archId, out ents, out count))
                     return true;
-                }
             }
 
             return false;

@@ -14,8 +14,8 @@ game Ents and should remain normal C# types.
 
 ## Ent Terminology
 
-Use `Ent` in every context. The word `Entity` is banned; use `Ents` for the
-plural. This applies to prose, code identifiers, type and member names,
+Use `Ent` in every context and `Ents` for the plural. The long-form synonym is
+banned. This applies to prose, code identifiers, type and member names,
 parameters and locals, filenames, directories, labels, and compound names.
 Use names such as `WorldEntLoader`, `WorldEnts`, and `IWorldEntComponents` even
 where the longer word might otherwise read naturally.
@@ -109,6 +109,84 @@ gate components used by Indexed bags must have the `bool` value type.
 Keep components focused on state. Put simulation, loading, persistence,
 rendering, networking, and presentation behavior in the services that consume
 the components.
+
+## Archetypal Queries And Rows
+
+Mark components that should share dense structure-of-arrays storage with
+`[Archetypal]`. Every marked property in one declaration belongs to that
+declaration's generated archetype group:
+
+```csharp
+[Components]
+public interface IMotionComponents
+{
+    string Name { get; set; }
+
+    [Archetypal]
+    Position Position { get; set; }
+
+    [Archetypal]
+    Velocity Velocity { get; set; }
+}
+```
+
+The generator adds named query selectors for marked properties. Selection may
+contain any number of components:
+
+```csharp
+var moving = arena.QueryArchetypal<MotionComponents>()
+    .WithPosition()
+    .WithVelocity();
+```
+
+Chunk iteration remains the bulk and explicit-SIMD interface:
+
+```csharp
+foreach (var chunk in moving)
+{
+    Span<Position> positions =
+        chunk.Get<Position, MotionComponents.Position>();
+    Span<Velocity> velocities =
+        chunk.Get<Velocity, MotionComponents.Velocity>();
+
+    for (int row = 0; row < positions.Length; row++)
+        positions[row] += velocities[row];
+}
+```
+
+Use generated rows when an algorithm reads more naturally one Ent at a time:
+
+```csharp
+foreach (var row in moving.Rows())
+    row.Position += row.Velocity;
+```
+
+Each used `Rows()` query shape receives an exact generated row and enumerator in
+the consuming compilation. Entering an arch binds the aligned Ent and selected
+component columns once. The within-arch loop carries one row index, and each
+named property uses cached-base-plus-index addressing. It performs no point loc,
+graph, hash, virtual, or component-directory lookup per Ent and allocates no
+iterator object. Unused component combinations generate no row types.
+
+The project containing the `Rows()` call must reference
+`AlvorKit.ECS.Generator` as an analyzer, even when the component declaration is
+provided by another project. This lets the generator specialize the exact
+closed query shape used by that consumer.
+
+A query descriptor may be stored and enumerated repeatedly. Structural changes
+are allowed after one enumeration has completely ended and before another
+begins. While a chunk, span, row enumerator, row value, or returned component
+ref is live, do not add, remove, clear, compact, grow, or dispose rows in the
+same `(alloc, A)`. Writes to existing component values are allowed.
+
+One thread owns reads, writes, queries, and structural changes for a particular
+`(alloc, A)`. Different threads may concurrently operate on the same `A` when
+they own different allocs. Query and row hot paths add no locking, volatile
+access, or ownership checks.
+
+For the representation, Release measurements, generated code shape, rejected
+alternatives, and remaining runtime-mode checks, read
+[`ECS.Archetypal.PerEntRowIteration.md`](ECS.Archetypal.PerEntRowIteration.md).
 
 ## Base Ent Ownership
 

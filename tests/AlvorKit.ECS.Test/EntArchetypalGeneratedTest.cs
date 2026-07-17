@@ -68,4 +68,54 @@ public sealed class EntArchetypalGeneratedTest
         Assert.IsFalse(ent.HasItems);
         Assert.IsFalse(((EntMut)ptr).Has<EntArchLoc, GeneratedArchComponents>());
     }
+
+    /// <summary>Generated rows flatten matching archs and expose aligned direct refs without allocating in the loop.</summary>
+    [TestMethod]
+    public void GeneratedArchetypalRows_MultipleComponents_ReadWriteAndAllocateNothing()
+    {
+        using var arena = new EntArena();
+        EntMut first = arena.Alloc();
+        EntMut second = arena.Alloc();
+        EntMut third = arena.Alloc();
+        EntMut excluded = arena.Alloc();
+
+        first.Health = 10;
+        first.Label = "a";
+        second.Health = 20;
+        second.Label = "bb";
+        second.Items.Add(1);
+        third.Health = 30;
+        third.Label = "ccc";
+        excluded.Health = 40;
+
+        var query = arena.QueryArchetypal<GeneratedArchComponents>()
+            .WithHealth()
+            .WithLabel();
+
+        long warmup = 0;
+        foreach (var row in query.Rows())
+            warmup += row.Health;
+        Assert.AreEqual(60, warmup);
+
+        long allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
+        int count = 0;
+        foreach (var row in query.Rows())
+        {
+            Assert.AreEqual(row.Health, row.Ent.Health);
+            row.Health += row.Label!.Length;
+            row.Label = "updated by row";
+            count++;
+        }
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
+
+        Assert.AreEqual(3, count);
+        Assert.AreEqual(0, allocated);
+        Assert.AreEqual(11, first.Health);
+        Assert.AreEqual(22, second.Health);
+        Assert.AreEqual(33, third.Health);
+        Assert.AreEqual(40, excluded.Health);
+        Assert.AreEqual("updated by row", first.Label);
+        Assert.AreEqual("updated by row", second.Label);
+        Assert.AreEqual("updated by row", third.Label);
+    }
 }

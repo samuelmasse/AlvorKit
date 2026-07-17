@@ -140,6 +140,11 @@ public sealed class ComponentGeneratorTest
             source,
             "ent.UnsetArchetypal<Fixture.Position, MotionComponents.Position, MotionComponents>()");
         StringAssert.Contains(source, "public EntMutator<T> Position(in Fixture.Position value)");
+        StringAssert.Contains(source, "WithPosition(");
+        StringAssert.Contains(source, "this EntArchQuery<MotionComponents> query");
+        StringAssert.Contains(source, "WithPosition<S>(");
+        StringAssert.Contains(source, "internal const string EntArchGetAccess = \"public\";");
+        StringAssert.Contains(source, "internal const string EntArchSetAccess = \"public\";");
     }
 
     /// <summary>SkipBuilder suppresses builder-style mutator extensions while keeping normal accessors.</summary>

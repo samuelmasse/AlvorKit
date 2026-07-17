@@ -43,15 +43,6 @@ internal static class EntArchRows<A>
 
     internal static int CapacityAt(int allocId, int archId) => rowsByAlloc[allocId][archId].Capacity;
 
-    internal static int ArchCapacityAt(int allocId)
-    {
-        var rowsByAllocSnapshot = rowsByAlloc;
-        if ((uint)allocId >= (uint)rowsByAllocSnapshot.Length)
-            return 0;
-
-        return rowsByAllocSnapshot[allocId]?.Length ?? 0;
-    }
-
     internal static bool TryGetActive(int allocId, int archId, out EntMut[] ents, out int count)
     {
         var rowsByAllocSnapshot = rowsByAlloc;

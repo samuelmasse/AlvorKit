@@ -1,0 +1,8 @@
+{{Comment}}    {{Access}} static EntArchQuery<{{ClassName}}, EntArchSelect<{{Type}}, {{ClassName}}.{{Name}}, {{ClassName}}>> With{{Name}}(
+        this EntArchQuery<{{ClassName}}> query) =>
+        query.With<{{Type}}, {{ClassName}}.{{Name}}>();
+
+{{Comment}}    {{Access}} static EntArchQuery<{{ClassName}}, EntArchSelect<{{Type}}, {{ClassName}}.{{Name}}, {{ClassName}}, S>> With{{Name}}<S>(
+        this EntArchQuery<{{ClassName}}, S> query)
+        where S : struct, IEntArchSelect<{{ClassName}}> =>
+        query.With<{{Type}}, {{ClassName}}.{{Name}}>();

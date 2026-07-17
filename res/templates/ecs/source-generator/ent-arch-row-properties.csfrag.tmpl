@@ -1,0 +1,6 @@
+    {{Access}} ref {{Type}} {{Name}}
+    {
+        [global::System.Runtime.CompilerServices.MethodImpl(
+            global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        get => ref global::System.Runtime.CompilerServices.Unsafe.Add(ref field{{Index}}, row);
+    }

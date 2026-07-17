@@ -8,7 +8,8 @@ internal static class ComponentSourceEmitter
         ("NamespaceBlock", NamespaceBlock(model)),
         ("ComponentGroup", ComponentGroup(model)),
         ("ReadExtensions", ReadExtensions(model)),
-        ("MutativeExtensions", MutativeExtensions(model)));
+        ("MutativeExtensions", MutativeExtensions(model)),
+        ("ArchetypalQueryExtensions", ArchetypalQueryExtensions(model)));
 
     private static string NamespaceBlock(InterfaceModel model) =>
     string.IsNullOrEmpty(model.Namespace)
@@ -30,7 +31,16 @@ internal static class ComponentSourceEmitter
         ("ToStringAttribute", property.AddToString ? "    [ComponentToString]\n" : ""),
         ("Access", ComponentAccess.WiderAccess(property.GetAccess, property.SetAccess)),
         ("Name", property.Name),
-        ("ValueType", property.ValueType));
+        ("ValueType", property.ValueType),
+        ("ArchetypalAccess", ArchetypalAccess(property)));
+
+    private static string ArchetypalAccess(PropertyModel property) =>
+        property.Archetypal
+            ? ComponentTemplate.RenderFragment(
+                "archetypal-access.csfrag.tmpl",
+                ("GetAccess", property.GetAccess),
+                ("SetAccess", property.SetAccess))
+            : "";
 
     private static string ReadExtensions(InterfaceModel model) =>
     ComponentTemplate.RenderFragment(
@@ -113,6 +123,28 @@ internal static class ComponentSourceEmitter
         ("Name", property.Name),
         ("AccessorName", ComponentNames.AccessorName(property)),
         ("Type", property.NullableType));
+
+    private static string ArchetypalQueryExtensions(InterfaceModel model)
+    {
+        var properties = model.Properties.Where(property => property.Archetypal).ToArray();
+        if (properties.Length == 0)
+            return "";
+
+        return ComponentTemplate.RenderFragment(
+            "archetypal-query-extensions.csfrag.tmpl",
+            ("Access", model.Access),
+            ("ClassName", model.ClassName),
+            ("Methods", Join(properties.Select(property => ArchetypalQueryWith(model, property)))));
+    }
+
+    private static string ArchetypalQueryWith(InterfaceModel model, PropertyModel property) =>
+        ComponentTemplate.RenderFragment(
+            "archetypal-query-with.csfrag.tmpl",
+            ("Comment", Comment(property, "    ")),
+            ("Access", ComponentAccess.WiderAccess(property.GetAccess, property.SetAccess)),
+            ("ClassName", model.ClassName),
+            ("Name", property.Name),
+            ("Type", property.NullableType));
 
     private static string Comment(PropertyModel property, string indent) =>
     property.Comment is null ? "" : string.Join("", property.Comment.Split('\n').Select(line => indent + line + "\n"));
