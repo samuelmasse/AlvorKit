@@ -17,6 +17,7 @@ public class NewGameGeneratorTest
         Assert.AreEqual(output, result.OutputPath);
         Assert.AreEqual(21, result.FileCount);
         AssertFile(output, "AGENTS.md");
+        StringAssert.Contains(Read(output, "AGENTS.md"), "../AlvorKit/docs/GameRepositoryInstructions.md");
         AssertFile(output, "HelloAlvor.slnx");
         AssertFile(output, "src/Directory.Build.props");
         AssertFile(output, "src/HelloAlvor/Program.cs");

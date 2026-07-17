@@ -8,6 +8,14 @@ rules for their scope and may narrow or relax repo-wide defaults when they say
 so explicitly. Read the closest scoped instructions before working in those
 areas.
 
+## Game Repository Instructions
+
+Sibling AlvorKit game repositories keep a small root `AGENTS.md` that routes to
+[docs/GameRepositoryInstructions.md](docs/GameRepositoryInstructions.md). That
+document is the authoritative shared policy for game-repository work; keep
+game-specific exceptions in the game's local router instead of copying the
+shared policy.
+
 ## Working Mode And Commit Mode
 
 Agents operate in **Working Mode** by default. Make the requested change or
