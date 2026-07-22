@@ -19,13 +19,12 @@ internal sealed class EntArchGroupOps<A> : EntArchGroupOps
             return;
 
         var loc = stored.Value;
-        EntArchRows<A>.Remove(loc.AllocId, loc.ArchId, loc.Row);
+        EntArchRows<A>.Remove(EntReg.PageAllocators[ent.PageIndex], loc.RowSetId, loc.Row);
         stored = default;
     }
 
     internal override void ClearAlloc(int allocId)
     {
-        EntArchGraph<A>.ClearAllocColumns(allocId);
         EntArchRows<A>.ClearAlloc(allocId);
     }
 }

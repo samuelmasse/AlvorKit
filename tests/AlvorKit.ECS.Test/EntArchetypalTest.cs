@@ -19,7 +19,7 @@ public sealed class EntArchetypalTest
         var loc = ent.Get<EntArchLoc, SingletonArch>();
         Assert.IsTrue(ent.HasArchetypal<int, C0, SingletonArch>());
         Assert.AreEqual(42, ent.GetArchetypal<int, C0, SingletonArch>());
-        Assert.AreEqual(arena.Index, loc.AllocId);
+        Assert.IsTrue(loc.RowSetId >= EntArchRows<SingletonArch>.FirstRowSetId);
         Assert.IsTrue(loc.ArchId > EntArchGraph<SingletonArch>.NoArchId);
         Assert.AreEqual(0, loc.Row);
 
@@ -41,26 +41,22 @@ public sealed class EntArchetypalTest
     {
         using var firstArena = new EntArena();
         using var secondArena = new EntArena();
+        EntMut firstOnly = firstArena.Alloc();
         EntMut ent = secondArena.Alloc();
 
+        firstOnly.SetArchetypal<int, C1, ValuesAtBoundsArch>(9);
         ent.SetArchetypal<int, C0, ValuesAtBoundsArch>(17);
 
+        var firstOnlyLoc = firstOnly.Get<EntArchLoc, ValuesAtBoundsArch>();
         var loc = ent.Get<EntArchLoc, ValuesAtBoundsArch>();
-        var valuesByAlloc = EntArchColumn<int, C0, ValuesAtBoundsArch>.Values;
-        var valuesByArch = valuesByAlloc[loc.AllocId];
-        Assert.AreSame(valuesByArch[loc.ArchId], EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(
-            loc.AllocId,
-            loc.ArchId));
-        Assert.IsNull(EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(
-            loc.AllocId,
-            EntArchGraph<ValuesAtBoundsArch>.NoArchId));
-        Assert.IsNull(EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(firstArena.Index, loc.ArchId));
-        Assert.IsNull(EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(valuesByAlloc.Length, loc.ArchId));
-        Assert.IsNull(EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(
-            loc.AllocId,
-            valuesByArch.Length));
+        var valuesByRowSet = EntArchColumn<int, C0, ValuesAtBoundsArch>.Values;
+        Assert.AreSame(valuesByRowSet[loc.RowSetId], EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(loc.RowSetId));
+        Assert.IsNull(EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(EntArchRows<ValuesAtBoundsArch>.NoRowSetId));
+        Assert.IsNull(EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(firstOnlyLoc.RowSetId));
+        Assert.IsNull(EntArchColumn<int, C0, ValuesAtBoundsArch>.ValuesAt(valuesByRowSet.Length));
 
         Assert.IsTrue(ent.UnsetArchetypal<int, C0, ValuesAtBoundsArch>());
+        Assert.IsTrue(firstOnly.UnsetArchetypal<int, C1, ValuesAtBoundsArch>());
     }
 
     /// <summary>Verifies cold point operations do not register a field until a live structural Set needs it.</summary>

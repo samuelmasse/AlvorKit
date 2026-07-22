@@ -84,6 +84,9 @@ public sealed class EntArchRowGeneratorTest
         Assert.IsTrue(generated.Any(text => text.Contains("ref Fixture.Position Position", StringComparison.Ordinal)));
         Assert.IsTrue(generated.Any(text => text.Contains("ref Fixture.Velocity Velocity", StringComparison.Ordinal)));
         Assert.IsTrue(generated.Any(text => text.Contains("internal ref int RawValue", StringComparison.Ordinal)));
+        Assert.IsTrue(generated.Any(text => text.Contains("private readonly nint row;", StringComparison.Ordinal)));
+        Assert.IsTrue(generated.Any(text => text.Contains("private nint count;", StringComparison.Ordinal)));
+        Assert.IsFalse(generated.Any(text => text.Contains("MoveNextArch()", StringComparison.Ordinal)));
         Assert.IsFalse(generated.Any(text => text.Contains("ReadPosition()", StringComparison.Ordinal)));
         Assert.IsFalse(generated.Any(text => text.Contains("WritePosition()", StringComparison.Ordinal)));
         Assert.IsFalse(generated.Any(text => text.Contains("ref int Sparse", StringComparison.Ordinal)));

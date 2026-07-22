@@ -195,7 +195,7 @@ internal sealed partial class EcsArchBenchWorker
         for (int i = 0; i < operations; i++)
         {
             var loc = ents[i & Afr24RotatingMask].Get<EntArchLoc, Afr24ClassArch>();
-            sum += loc.AllocId + loc.ArchId + loc.Row;
+            sum += loc.RowSetId + loc.ArchId + loc.Row;
         }
         longSink = sum;
     }
@@ -209,7 +209,7 @@ internal sealed partial class EcsArchBenchWorker
         for (int i = 0; i < operations; i++)
         {
             var loc = locs[i & Afr24RotatingMask];
-            sum += EntArchColumn<int, F00, Afr24ClassArch>.ValuesAt(loc.AllocId, loc.ArchId)!.Length;
+            sum += EntArchColumn<int, F00, Afr24ClassArch>.ValuesAt(loc.RowSetId)!.Length;
         }
         longSink = sum;
     }

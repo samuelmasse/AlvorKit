@@ -3,11 +3,12 @@
 > Status: AFR-24 is complete, AFR-25A's `SetArchetypal` structural slow-path
 > split was measured and rejected, and AFR-25B's `ValuesAt` address-path and
 > AFR-25C's unchecked terminal row access and AFR-25D's cold registration split
-> were measured and accepted. AFR-25E's value-type key was rejected. AFR-26
-> retains `(AllocId, ArchId, Row)` and the direct closed-generic typed column as
-> the production speed reference. Shared allocation is deferred; AFR-27 instead
-> bounds retained direct-array capacity through exact typed pooling, shrink
-> hysteresis, and complete return when an alloc/arch state reaches zero rows.
+> were measured and accepted. AFR-25E's value-type key was rejected. Production
+> now uses `(RowSetId, ArchId, Row)` and a flat closed-generic row-set directory.
+> This removes one dependent point lookup while replacing per-field
+> `alloc x arch` directories with storage proportional to observed row sets.
+> Exact typed pooling, shrink hysteresis, and complete payload return at zero
+> rows remain in place. Shared byte/native slabs remain deferred.
 > The current plan remains in the
 > [Archetype Footprint Reduction epic](ECS.Archetypal.FootprintReduction.md).
 > AFR-21 through AFR-24 have established the direct point-access, sparse
@@ -72,6 +73,7 @@ object count, but it does not make those bytes disappear from total footprint.
 | `E` | Number of stored directed structural edges, excluding implicit empty/singleton transitions |
 | `D` | Average cached directed transitions per arch, `E / M` |
 | `R` | Number of active alloc-local arch states |
+| `U` | Number of observed alloc/arch row sets, active or empty until alloc cleanup |
 | `Q` | Number of active alloc-local storage-class handles |
 | `C` | Row capacity of one active alloc-local arch state |
 | `S_j` | Stored size of component field `j` |
@@ -82,6 +84,7 @@ object count, but it does not make those bytes disappear from total footprint.
 | `C_i` | Capacity of the open-address signature index |
 | `C_e` | Capacity of the sparse directed-edge arena |
 | `C_s` | Capacity of the group-global structural signature scratch array |
+| `C_r` | Capacity of the flat row-set-ID directories |
 | `B_ml` | Managed logical retained payload bytes, excluding object headers and alignment |
 | `B_me` | Estimated managed retained bytes, including owned object headers and aligned payload |
 | `B_n` | Native retained bytes requested from native allocation APIs |
@@ -418,15 +421,59 @@ depends on registered fields, materialized signatures, the widest constructed
 signature, and observed edges. It is independent of the unexplored portion of
 the power set and contains no `C_a * C_f` term.
 
+### Hybrid Transition Lookup
+
+The compact edge arena remains the source of truth. Archs with at most eight
+observed directed edges use the original linked-list lookup and pay no hash
+storage. When a ninth edge is published, that arch's observed edges are also
+inserted into one group-shared open-address index. A negative `edgeHeads` value
+marks the indexed case, so low-degree lookup does not load a second mode
+directory.
+
+For `H` indexed directed edges and hash capacity `C_h` at no more than 50%
+load, the added hash payload is:
+
+\[
+12C_h
+\]
+
+The ninth-edge crossing is detected by a bounded scan during cold edge
+publication, so no per-arch edge-count directory is retained. The edge arena
+stays compact and structural history has one representation. In the focused
+Release benchmark, degree 1/4/8 stayed at 10.80/19.96/28.54 ns, while degree 16
+improved from 49.83 to 21.60 ns and degree 32 from 86.14 to 21.33 ns. Every
+lookup remained allocation-free.
+
+### Adaptive Query Discovery
+
+Each closed query shape keeps its append-only list of matching global arch IDs.
+Each alloc keeps only its active row-set IDs. At enumeration start, the query
+compares matching count `Q_m` with active count `A`:
+
+- If `Q_m <= A`, scan matching arch IDs and use the alloc's direct
+  `archId -> rowSetId` map.
+- If `A < Q_m`, scan active row-set IDs and test arch membership in a lazy query
+  bitset.
+
+Candidate discovery is therefore `O(min(Q_m, A))`, plus yielded chunks. The
+bitset is created only for query shapes that actually choose the active side
+and is extended only after new arch publication. The 24-byte enumerator and
+zero-allocation contract are unchanged. With 2,047 materialized archs, 128
+signature matches, and one active match, the initial adaptive implementation
+improved repeated query discovery from 103.43 to 8.13 ns. Publishing initialized
+membership bits through the existing atomic scan snapshot then removed the warm
+helper call; an adjacent two-million-pass Release A/B measured 5.04 ns before
+and 2.33 ns after, with 0 B loop allocation in both cases.
+
 ## Direct Point Membership and Exact Structural Signatures
 
 AFR-21 does not search a packed signature to answer a point-access membership
 question. The closed generic `EntArchColumn<T, N, A>` already identifies one
-field and owns its alloc/arch column directory. Its `ValuesAt(allocId, archId)`
-lookup returns the existing `T[]` column or `null`:
+field and owns one flat row-set directory. Its `ValuesAt(rowSetId)` lookup
+returns the existing `T[]` column or `null`:
 
 ```text
-closed generic field -> alloc slot -> arch slot -> T[] or null
+closed generic field -> row-set slot -> T[] or null
 ```
 
 That one result answers both questions needed by the public point operations:
@@ -440,13 +487,16 @@ The lookup is `O(1)` with respect to signature width, registered field count,
 and structural degree. It performs no hashing, packed scan, managed allocation,
 lock acquisition, or `Volatile` operation.
 
-AFR-25B simplified this lookup without changing its directory shape. `ValuesAt`
-now snapshots its outer closed-generic directory once, uses unsigned bounds
-checks for both nonnegative IDs, and relies on the permanent null arch-zero slot
-instead of testing `archId == 0` separately. Exact and specialized callers lose
-three compare/branch pairs. The generic-shared helper also performs fewer static
-loads and branches. This is an address-sequence optimization only: it neither
-changes the public API nor adds synchronization.
+`EntArchLoc` is now `(RowSetId, ArchId, Row)`. Existing-component access uses
+only `RowSetId` and `Row`; `ArchId` remains available to structural add/remove
+without a metadata lookup. Row-set ID zero is the permanent absent slot. The
+terminal row access still uses the controlled subsystem row invariant and typed
+managed byrefs, preserving write barriers.
+
+The flat directory introduces a cold publication concern: another alloc owner
+may grow a field's `T[][]` while a column buffer is replaced. Capacity changes
+therefore synchronize on that field's already-existing column-ops object.
+Point reads/writes, row copies, and iteration do not take this lock.
 
 ### Exact Signatures Remain Canonical
 
@@ -637,47 +687,52 @@ are contiguous, and future composite storage remains column-major. Iteration
 resolves a column once, exposes it as a `Span<T>` or `ReadOnlySpan<T>`, and then
 walks contiguous elements without repeating point lookup inside the row loop.
 
-## Alloc-Local Sparse States
+## Alloc-Local Row Sets
 
-The alloc-local implementation should not allocate a directory entry for every
-global arch.
+The implemented representation assigns one `rowSetId` to each observed
+`(alloc, arch)` pair. Each alloc retains one `int[]` mapping arch IDs to its
+row-set IDs, plus a compact list containing only active row-set IDs. Row-set
+metadata lives in fixed pages of 64 records so another alloc owner can grow the
+catalog without invalidating a `ref` into an existing record.
 
-Each alloc maintains:
+For alloc count `L`, arch-directory capacity `C_a`, registered fields `N`, and
+row-set directory capacity `C_r`, the principal directory payload changed from
+approximately:
 
-- A sparse `archId -> stateId` index used on structural destinations.
-- A dense array of active or retained alloc-local states.
-- Packed handles for the storage classes owned by those states.
+\[
+16LC_a + 8NLC_a
+\]
 
-An alloc-local state contains the information required to address its blocks,
-including:
+to:
 
-- Global `ArchId`.
-- Active row `Count`.
-- Capacity or capacity order.
-- Reference-free composite block handle.
-- Range of reference-containing storage-class handles.
+\[
+4LC_a + 24C_r + 8NC_r
+\]
 
-When a state becomes empty, it can remain in a bounded alloc-local cache or
-release its blocks and recycle its `stateId`.
+The old first term was the per-alloc `EntArchRowSet[C_a]` directory; the old
+second term was one reference directory per field and alloc. The new terms are
+one arch-to-row-set map per participating alloc, paged row-set metadata, and
+one flat row-set directory per field. Since `C_r` follows actual observed
+alloc/arch pairs rather than the full `L x C_a` rectangle, the saving grows
+with both field count and sparsity.
+
+At zero rows, Ent and component buffers return to their exact typed pools. The
+row-set ID remains mapped for fast reactivation until alloc cleanup, when all
+owned IDs are recycled through index links stored in the metadata records.
+There is no object or free-list node per row set. The active list is updated
+only on zero/nonzero transitions and also shrinks below 25% occupancy.
 
 ### Location Semantics
 
-AFR-31 can compare retaining the current three-int meaning with a candidate
-three-int shape storing:
+The selected three-int location is:
 
-- `AllocId`
-- `StateId`
+- `RowSetId`
+- `ArchId`
 - `Row`
 
-In that candidate, the dense state supplies the global `ArchId`. Normal value
-access therefore does not consult the sparse `archId -> stateId` map.
-Structural movement uses that map only to find or create the dst state.
-
-`StateId` is not predetermined. The current `(AllocId, ArchId, Row)` shape or
-another same-size direct locator remains preferable unless the complete
-candidate point path wins the AFR-24 through AFR-26 gate. Specialized/direct
-`EntArchLoc` storage is explicitly deferred; its independent result would not
-select `StateId` or authorize a broader Ent lifecycle redesign.
+`AllocId` is derived from the Ent page only on structural paths. Keeping
+`ArchId` makes add/remove resolution direct, while `RowSetId` makes ordinary
+column lookup direct. The location remains 12 bytes.
 
 ## Composite Storage
 
@@ -1018,10 +1073,10 @@ approximately 424 bytes currently.
 Sparse catalog storage must not place a general-purpose dictionary, signature
 scan, or ordinal hash on ordinary component access.
 
-The implemented AFR-21 point-access chain is:
+The implemented point-access chain is:
 
 ```text
-loc -> closed-generic column directory[alloc][arch] -> T[][row]
+loc.RowSetId -> closed-generic column directory[rowSetId] -> T[][row]
 ```
 
 After shared slabs replace the current directory, the permitted shape is:
@@ -1033,12 +1088,12 @@ loc -> closed-generic direct slot/handle -> column base -> row
 The storage address may change; the direct, constant-time lookup contract may
 not.
 
-AFR-25A showed that shrinking `SetArchetypal` by isolating its structural body
-does not by itself shorten this address chain. AFR-25B improved the second step
-by simplifying `ValuesAt`'s directory access, and AFR-25C removed the final
-array bounds check after a column has been resolved and its subsystem-owned row
-has been established as valid. Specialized/direct `EntArchLoc` storage remains
-an independent point-address candidate, but is explicitly deferred.
+The row-set cutover removes the previous alloc-to-arch dependent directory
+lookup. In the short Release iteration benchmark, ordered archetypal point Get
+improved from approximately 1.88 to 1.57 ns and shuffled Get from 2.29 to 1.98
+ns, with zero loop allocation. Final rotating point sentinels measured 1.47 ns
+for concrete-struct Get, 1.58 ns for concrete-struct Set, 4.33 ns for
+generic-class Get, and 6.21 ns for generic-class Set, all at 0 B/op.
 
 ### Operation Costs
 

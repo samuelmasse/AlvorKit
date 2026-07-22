@@ -21,10 +21,16 @@ internal struct EntArchMetrics
     internal int StoredTransitionEdgeCount;
     internal int TransitionEdgeCapacity;
     internal int EdgeHeadCapacity;
+    internal int HighDegreeArchCount;
+    internal int TransitionIndexCount;
+    internal int TransitionIndexCapacity;
 
     internal int AllocDirectoryCount;
     internal int AllocDirectoryCapacity;
     internal long ArchDirectorySlotCapacity;
+    internal long OwnedRowSetCount;
+    internal long RowSetSlotCapacity;
+    internal long ActiveRowSetSlotCapacity;
     internal long RetainedStateCount;
     internal long ActiveStateCount;
     internal long ActiveRowCount;
@@ -91,6 +97,13 @@ internal struct EntArchMetrics
     internal void AddCatalogObjects(long count)
     {
         CatalogManagedObjectCount += count;
+        OwnedManagedObjectCount += count;
+        EstimatedManagedBytes += count * EstimatedObjectBytes;
+    }
+
+    internal void AddStorageObjects(long count)
+    {
+        StorageManagedObjectCount += count;
         OwnedManagedObjectCount += count;
         EstimatedManagedBytes += count * EstimatedObjectBytes;
     }

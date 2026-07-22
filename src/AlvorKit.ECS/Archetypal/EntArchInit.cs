@@ -12,7 +12,7 @@ public readonly struct EntArchInit<T, N, A>(T value) : IEntArchInit<A>
 
     /// <inheritdoc />
     public void WriteValues(int allocId, int archId, int row) =>
-        EntArchColumn<T, N, A>.Values[allocId][archId][row] = value;
+        EntArchColumn<T, N, A>.Values[EntArchRows<A>.RowSetIdAt(allocId, archId)][row] = value;
 }
 
 /// <summary>Adds one field value to an existing final archetypal shape.</summary>
@@ -33,6 +33,6 @@ public readonly struct EntArchInit<T, N, A, TPrev>(TPrev prev, T value) : IEntAr
     public void WriteValues(int allocId, int archId, int row)
     {
         prev.WriteValues(allocId, archId, row);
-        EntArchColumn<T, N, A>.Values[allocId][archId][row] = value;
+        EntArchColumn<T, N, A>.Values[EntArchRows<A>.RowSetIdAt(allocId, archId)][row] = value;
     }
 }

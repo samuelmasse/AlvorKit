@@ -515,18 +515,36 @@ exact generic specialization. It did not: class-group callers remained
 canonical shared code and struct-group callers were already specialized. The
 candidate was removed.
 
-AFR-26 therefore retains this production address sequence:
+The row-set cutover now uses this production address sequence:
 
 ```text
-EntArchLoc = (AllocId, ArchId, Row)
-closed generic field -> alloc directory -> arch slot -> typed T[] -> row
+EntArchLoc = (RowSetId, ArchId, Row)
+closed generic field -> row-set slot -> typed T[] -> row
 ```
 
 Existing-component access does not consult signatures, transition edges, state
-maps, field ordinals, allocators, or free lists. Any future shared backing store
-must publish an equally direct locator during structural work and must preserve
-contiguous span iteration. `Memory<T>` is a valid managed slice control, but it
-is not assumed to be faster than a custom array-plus-offset locator.
+maps, field ordinals, allocators, or free lists. `AllocId` is derived from the
+Ent page only on structural paths. `ArchId` remains in the 12-byte loc so
+add/remove does not require a row-set metadata lookup. The flat field directory
+removes the previous dependent alloc-to-arch lookup and preserves contiguous
+typed columns for span iteration.
+
+## Row-Set Storage and Adaptive Discovery
+
+One row-set ID is assigned for each observed `(alloc, arch)` pair. Each alloc
+keeps one direct `archId -> rowSetId` array for structural destinations and one
+compact list of active row-set IDs. Row-set metadata is stored in fixed pages
+of 64 records, so another alloc owner can grow the group catalog without
+invalidating refs into existing records. Empty row sets return all Ent and
+component payload arrays but retain their ID for fast reactivation; alloc
+cleanup recycles the IDs.
+
+A closed query shape caches matching global arch IDs. Enumeration compares that
+match count with the alloc's active-row-set count and scans the smaller side.
+When the active side wins, a lazily created query bitset performs constant-time
+arch membership tests. New arch publication extends the matching list and any
+existing bits. Structural changes in the queried alloc/group remain forbidden
+while an enumerator, chunk, row, or span is active.
 
 ## Sparse Transition Edge Arena
 
@@ -537,17 +555,19 @@ singleton directory; it does not allocate transition cells for every arch.
 The implemented structural cache uses:
 
 - `edgeHeads`, with one four-byte head slot per arch-capacity slot. Zero means
-  that the arch has no cached transition.
+  no cached transition, a positive value selects the compact list, and a
+  negative value selects the high-degree shared index.
 - One append-only `EntArchEdge[]`. Index zero is reserved, and every real edge
   is a 12-byte `(FieldId, DstArchId, NextEdgeIndex)` value.
 - Two directed edge entries for each resolved add/remove relationship.
 - No retained entry for an unobserved `(archId, fieldId)` relationship.
 
-`GetTransitionArchId` starts at the src arch's head and follows its compact
-linked list, so cached lookup depends on observed degree `D`, not registered
-field count `N`. An unknown relationship is resolved under the catalog lock by
-constructing the exact canonical dst signature, interning or finding that arch,
-and appending the inverse pair.
+`GetTransitionArchId` follows the compact list through degree eight. Publishing
+a ninth observed edge also migrates that arch into one group-shared
+open-address index, making higher-degree lookup expected constant time without
+allocating one table per arch. An unknown relationship is resolved under the
+catalog lock by constructing the exact canonical dst signature, interning or
+finding that arch, and appending the inverse pair.
 
 Both edge records are fully initialized before `Volatile.Write` publishes their
 new heads. A structural reader uses `Volatile.Read` on the head before walking
@@ -639,13 +659,11 @@ integrated with `Clear`, disposal, and deferred finalizer cleanup.
 
 Production integration would require direct involvement in page allocation,
 generation validation, sparse reset behavior, and Ent lifecycle. Those wider
-changes remain outside this focused prototype until the direct location path
-wins the point-latency gate.
+changes remain outside this focused archetypal package work.
 
-The epic may change the meaning of the existing middle `EntArchLoc` integer from
-`ArchId` to alloc-local `StateId`. That preserves the current sparse storage and
-three-int footprint; it is not the specialized page-storage design deferred
-here.
+The implemented location already uses `RowSetId` as its direct column handle
+while retaining `ArchId` and `Row`. Specialized location page storage remains
+outside the archetypal package scope.
 
 ## Verification
 
@@ -659,10 +677,12 @@ Focused archetypal coverage includes:
 - A forced signature-hash collision resolving by exact signature comparison.
 - Catalog growth preserving all existing hash-chain entries.
 - Sparse edge-arena growth preserving every cached relationship.
+- High-degree transition migration preserving every cached inverse relationship.
 - No edge storage being created for unobserved `(arch, field)` pairs.
 - A newly occupied row set starting at capacity four and growing correctly.
 - Exact 25% occupancy retaining capacity, lower occupancy halving it, and an
-  empty alloc/arch state returning all direct buffers.
+  empty alloc/arch state returning all direct payload buffers.
+- Adaptive query discovery scanning the smaller of matching archs and active row sets.
 - Pooled reference-containing arrays being cleared before reuse.
 - Swap-back compaction preserving values and repairing the moved Ent's `loc`.
 - Reference tails being cleared while value-only tails remain intentionally
@@ -706,13 +726,13 @@ short result may instead reflect tiering or process drift.
 
 Implemented package integration includes:
 
-1. Exact signatures, hash indexing, and sparse transition edges.
-2. Direct typed columns, compaction, pooling, shrink, and empty-state release.
+1. Exact signatures, hash indexing, sparse transition edges, and the high-degree transition index.
+2. Flat row-set-indexed typed columns, paged row metadata, compaction, pooling, shrink, and empty-state release.
 3. Type-erased alloc-local group lifecycle.
 4. `Clear`, `EntPtr`, `EntObj`, and `EntArena` cleanup.
 5. Generated property-level `[Archetypal]` access.
 6. Debugger and `ComponentToString` component discovery.
-7. Alloc-scoped, arbitrary multi-component span queries.
+7. Alloc-scoped arbitrary multi-component span queries with adaptive cached discovery.
 8. Typed final-shape allocation without intermediate structural transitions.
 
 The basic span representation and explicit-SIMD validation are now implemented.

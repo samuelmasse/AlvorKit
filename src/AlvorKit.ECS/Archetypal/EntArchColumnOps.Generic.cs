@@ -3,6 +3,8 @@ namespace AlvorKit.ECS;
 /// <summary>Performs cold structural operations and precise registration for one exact field.</summary>
 internal sealed class EntArchColumnOps<T, N, A> : EntArchColumnOps
 {
+    private static readonly EntArchColumnOps<T, N, A> Instance = new();
+
     /// <summary>The graph field ID assigned when structural code first initializes this exact field.</summary>
     internal static readonly int FieldId;
 
@@ -10,8 +12,7 @@ internal sealed class EntArchColumnOps<T, N, A> : EntArchColumnOps
     static EntArchColumnOps()
     {
         // Keep registration precise and cold while EntArchColumn remains eligible for beforefieldinit hot access.
-        FieldId = EntArchGraph<A>.RegisterField(
-            new EntArchColumnOps<T, N, A>());
+        FieldId = EntArchGraph<A>.RegisterField(Instance);
     }
 
     internal override Type NameType() => typeof(N);
@@ -26,110 +27,86 @@ internal sealed class EntArchColumnOps<T, N, A> : EntArchColumnOps
     internal override object? Get(Ent ent) =>
         new EntMut(ent.Index, ent.Generation).GetArchetypal<T, N, A>();
 
-    internal override void EnsureCapacity(int allocId, int archId, int capacity, int count)
+    internal override void EnsureCapacity(int rowSetId, int capacity, int count)
     {
-        EnsureDirectoryCapacity(allocId, archId);
+        lock (this)
+        {
+            EnsureDirectoryCapacity(rowSetId);
 
-        ref var values = ref EntArchColumn<T, N, A>.Values[allocId][archId];
-        values = values == null
-            ? EntArchArrayPool<T>.Rent(capacity)
-            : EntArchArrayPool<T>.Grow(values, capacity, count);
+            ref var values = ref EntArchColumn<T, N, A>.Values[rowSetId];
+            values = values == null
+                ? EntArchArrayPool<T>.Rent(capacity)
+                : EntArchArrayPool<T>.Grow(values, capacity, count);
+        }
     }
 
-    internal override void ReduceCapacity(int allocId, int archId, int capacity, int count)
+    internal override void ReduceCapacity(int rowSetId, int capacity, int count)
     {
-        ref var values = ref EntArchColumn<T, N, A>.Values[allocId][archId];
-        if (capacity == 0)
+        lock (this)
         {
-            EntArchArrayPool<T>.Return(values);
-            values = null!;
+            ref var values = ref EntArchColumn<T, N, A>.Values[rowSetId];
+            if (capacity == 0)
+            {
+                EntArchArrayPool<T>.Return(values);
+                values = null!;
+                return;
+            }
+
+            values = EntArchArrayPool<T>.Reduce(values, capacity, count);
+        }
+    }
+
+    private static void EnsureDirectoryCapacity(int rowSetId)
+    {
+        if (EntArchColumn<T, N, A>.Values.Length > rowSetId)
             return;
-        }
 
-        values = EntArchArrayPool<T>.Reduce(values, capacity, count);
+        Array.Resize(
+            ref EntArchColumn<T, N, A>.Values,
+            (int)BitOperations.RoundUpToPowerOf2((uint)(rowSetId + 1)));
     }
 
-    private static void EnsureDirectoryCapacity(int allocId, int archId)
+    internal override void Copy(int srcRowSetId, int srcRow, int dstRowSetId, int dstRow)
     {
-        if (EntArchColumn<T, N, A>.Values.Length <= allocId)
-        {
-            lock (EntArchGraph<A>.Sync)
-            {
-                if (EntArchColumn<T, N, A>.Values.Length <= allocId)
-                {
-                    Array.Resize(
-                        ref EntArchColumn<T, N, A>.Values,
-                        (int)BitOperations.RoundUpToPowerOf2((uint)(allocId + 1)));
-                }
-            }
-        }
-
-        if (EntArchColumn<T, N, A>.Values[allocId] == null ||
-            EntArchColumn<T, N, A>.Values[allocId].Length <= archId)
-        {
-            lock (EntArchGraph<A>.Sync)
-            {
-                Array.Resize(
-                    ref EntArchColumn<T, N, A>.Values[allocId],
-                    EntArchGraph<A>.ArchCapacity);
-            }
-        }
+        var valuesByRowSet = EntArchColumn<T, N, A>.Values;
+        valuesByRowSet[dstRowSetId][dstRow] = valuesByRowSet[srcRowSetId][srcRow];
     }
 
-    internal override void Copy(int allocId, int srcArchId, int srcRow, int dstArchId, int dstRow)
-    {
-        var valuesByArch = EntArchColumn<T, N, A>.Values[allocId];
-        valuesByArch[dstArchId][dstRow] = valuesByArch[srcArchId][srcRow];
-    }
-
-    internal override void Clear(int allocId, int archId, int row)
+    internal override void Clear(int rowSetId, int row)
     {
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-            EntArchColumn<T, N, A>.Values[allocId][archId][row] = default!;
+            EntArchColumn<T, N, A>.Values[rowSetId][row] = default!;
     }
 
-    internal override void ClearAlloc(int allocId)
+    internal override void ClearRowSet(int rowSetId)
     {
-        var valuesByAlloc = EntArchColumn<T, N, A>.Values;
-        if ((uint)allocId >= (uint)valuesByAlloc.Length)
-            return;
-
-        var valuesByArch = valuesByAlloc[allocId];
-        if (valuesByArch == null)
-            return;
-
-        foreach (var values in valuesByArch)
+        lock (this)
         {
+            var valuesByRowSet = EntArchColumn<T, N, A>.Values;
+            if ((uint)rowSetId >= (uint)valuesByRowSet.Length)
+                return;
+
+            var values = valuesByRowSet[rowSetId];
             if (values != null)
                 EntArchArrayPool<T>.Return(values);
+            valuesByRowSet[rowSetId] = null!;
         }
-
-        valuesByAlloc[allocId] = null!;
     }
 
     internal override void AccumulateMetrics(ref EntArchMetrics metrics)
     {
-        var valuesByAlloc = EntArchColumn<T, N, A>.Values;
-        metrics.AddColumnArray(valuesByAlloc);
+        var valuesByRowSet = EntArchColumn<T, N, A>.Values;
+        metrics.AddColumnArray(valuesByRowSet);
 
-        for (int allocId = 0; allocId < valuesByAlloc.Length; allocId++)
+        for (int rowSetId = EntArchRows<A>.FirstRowSetId; rowSetId < valuesByRowSet.Length; rowSetId++)
         {
-            var valuesByArch = valuesByAlloc[allocId];
-            if (valuesByArch == null)
+            var values = valuesByRowSet[rowSetId];
+            if (values == null || values.Length == 0)
                 continue;
 
-            metrics.AddColumnArray(valuesByArch);
-
-            for (int archId = 0; archId < valuesByArch.Length; archId++)
-            {
-                var values = valuesByArch[archId];
-                if (values == null || values.Length == 0)
-                    continue;
-
-                metrics.ComponentBufferCount++;
-                metrics.ComponentCapacity += values.LongLength;
-                metrics.AddComponentArray(values, EntArchRows<A>.CountAt(allocId, archId));
-            }
+            metrics.ComponentBufferCount++;
+            metrics.ComponentCapacity += values.LongLength;
+            metrics.AddComponentArray(values, EntArchRows<A>.CountAt(rowSetId));
         }
     }
 }

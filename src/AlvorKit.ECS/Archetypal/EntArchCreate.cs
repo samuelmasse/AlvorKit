@@ -22,9 +22,9 @@ public readonly struct EntArchCreate<A, TInit>(EntArena arena, TInit init)
         int archId = EntArchCreateState<A, TInit>.ArchId;
         EntPtr ent = arena.Alloc();
         int allocId = arena.Index;
-        int row = EntArchRows<A>.Append(allocId, archId, ent);
-        ent.Set<EntArchLoc, A>(new(allocId, archId, row));
-        init.WriteValues(allocId, archId, row);
+        EntArchLoc loc = EntArchRows<A>.Append(allocId, archId, ent);
+        ent.Set<EntArchLoc, A>(loc);
+        init.WriteValues(allocId, archId, loc.Row);
         return ent;
     }
 }

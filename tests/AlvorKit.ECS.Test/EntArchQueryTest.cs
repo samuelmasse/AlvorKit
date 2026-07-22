@@ -199,6 +199,39 @@ public sealed class EntArchQueryTest
         Assert.AreEqual(0, allocated);
     }
 
+    /// <summary>Verifies lazy query bits grow across newly published nonmatching archs before active-side membership reads.</summary>
+    [TestMethod]
+    public void SpanQuery_ActiveSideBits_GrowAcrossNonmatchingArchs()
+    {
+        using var arena = new EntArena();
+        EntMut ent = arena.Alloc();
+        var query = arena.QueryArchetypal<BitGrowthArch>().With<int, C0>();
+
+        ent.SetArchetypal<int, C0, BitGrowthArch>(0);
+        ent.SetArchetypal<int, B1, BitGrowthArch>(1);
+        Assert.AreEqual(1, Count(query));
+        Assert.IsTrue(ent.UnsetArchetypal<int, C0, BitGrowthArch>());
+
+        int previousMask = 1;
+        for (int index = 2; index < 128; index++)
+        {
+            int mask = index ^ (index >> 1);
+            int changed = previousMask ^ mask;
+            bool set = (mask & changed) != 0;
+            int field = 0;
+            while ((changed & 1) == 0)
+            {
+                changed >>= 1;
+                field++;
+            }
+            ToggleBitGrowth(ent, field, set);
+            previousMask = mask;
+        }
+
+        Assert.AreEqual(0, Count(query));
+        Assert.IsTrue(EntArchDiagnostics<BitGrowthArch>.Capture().MaterializedArchCount > 64);
+    }
+
     private static int Sum<TSelect>(EntArchQuery<AllocQueryArch, TSelect> query)
         where TSelect : struct, IEntArchSelect<AllocQueryArch>
     {
@@ -230,6 +263,27 @@ public sealed class EntArchQueryTest
         ent.SetArchetypal<int, N, CacheGrowthArch>(1);
     }
 
+    private static void ToggleBitGrowth(EntMut ent, int field, bool set)
+    {
+        switch (field)
+        {
+            case 0: ToggleBitGrowth<B1>(ent, set); break;
+            case 1: ToggleBitGrowth<B2>(ent, set); break;
+            case 2: ToggleBitGrowth<B3>(ent, set); break;
+            case 3: ToggleBitGrowth<B4>(ent, set); break;
+            case 4: ToggleBitGrowth<B5>(ent, set); break;
+            case 5: ToggleBitGrowth<B6>(ent, set); break;
+            case 6: ToggleBitGrowth<B7>(ent, set); break;
+        }
+    }
+
+    private static void ToggleBitGrowth<N>(EntMut ent, bool set)
+    {
+        if (set)
+            ent.SetArchetypal<int, N, BitGrowthArch>(0);
+        else ent.UnsetArchetypal<int, N, BitGrowthArch>();
+    }
+
     private static int CacheMatchingArchCount =>
         EntArchQueryCache<
             CacheQueryArch,
@@ -257,4 +311,12 @@ public sealed class EntArchQueryTest
     private readonly record struct CacheGrowthArch;
     private readonly record struct C3;
     private readonly record struct C4;
+    private readonly record struct B1;
+    private readonly record struct B2;
+    private readonly record struct B3;
+    private readonly record struct B4;
+    private readonly record struct B5;
+    private readonly record struct B6;
+    private readonly record struct B7;
+    private readonly record struct BitGrowthArch;
 }

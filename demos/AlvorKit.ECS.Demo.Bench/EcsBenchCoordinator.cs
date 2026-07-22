@@ -151,14 +151,15 @@ internal sealed class EcsBenchCoordinator(EcsBenchOptions options)
 
         Console.WriteLine();
         Console.WriteLine(
-            $"{"Benchmark",-40} {"arches",9} {"edges",9} {"states",8} {"rows",9} " +
+            $"{"Benchmark",-40} {"arches",9} {"edges",9} {"row sets",9} {"active",8} {"rows",9} " +
             $"{"slack",9} {"logical B",12} {"managed B",12} {"objects",8}");
         foreach (var result in results)
         {
             var footprint = result.Footprint;
             Console.WriteLine(
                 $"{result.ScenarioId,-40} {footprint.MaterializedArchCount,9:n0} " +
-                $"{footprint.DirectedStructuralEdgeCount,9:n0} {footprint.ActiveStateCount,8:n0} " +
+                $"{footprint.DirectedStructuralEdgeCount,9:n0} {footprint.OwnedRowSetCount,9:n0} " +
+                $"{footprint.ActiveStateCount,8:n0} " +
                 $"{footprint.ActiveRowCount,9:n0} {footprint.RowSlack,9:n0} " +
                 $"{footprint.TotalLogicalRetainedBytes,12:n0} {footprint.EstimatedManagedBytes,12:n0} " +
                 $"{footprint.OwnedManagedObjectCount,8:n0}");

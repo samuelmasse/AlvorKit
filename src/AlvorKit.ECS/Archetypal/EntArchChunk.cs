@@ -3,8 +3,7 @@ namespace AlvorKit.ECS;
 /// <summary>Exposes aligned Ent and component spans for one active alloc-local arch.</summary>
 public readonly ref struct EntArchChunk<A>
 {
-    private readonly int allocId;
-    private readonly int archId;
+    private readonly int rowSetId;
     private readonly EntMut[] ents;
     private readonly int count;
 
@@ -15,10 +14,9 @@ public readonly ref struct EntArchChunk<A>
         get => ents.AsSpan(0, count);
     }
 
-    internal EntArchChunk(int allocId, int archId, EntMut[] ents, int count)
+    internal EntArchChunk(int rowSetId, EntMut[] ents, int count)
     {
-        this.allocId = allocId;
-        this.archId = archId;
+        this.rowSetId = rowSetId;
         this.ents = ents;
         this.count = count;
     }
@@ -27,7 +25,7 @@ public readonly ref struct EntArchChunk<A>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> Get<T, N>()
     {
-        var values = EntArchColumn<T, N, A>.ValuesAt(allocId, archId);
+        var values = EntArchColumn<T, N, A>.ValuesAt(rowSetId);
         return values == null ? default : values.AsSpan(0, count);
     }
 }

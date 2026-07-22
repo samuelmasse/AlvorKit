@@ -94,7 +94,7 @@ internal sealed partial class EcsArchBenchWorker
             locs[i] = loc;
             if (cacheScalarColumns)
             {
-                scalarColumns[i] = EntArchColumn<int, F00, A>.ValuesAt(loc.AllocId, loc.ArchId)!;
+                scalarColumns[i] = EntArchColumn<int, F00, A>.ValuesAt(loc.RowSetId)!;
                 rows[i] = loc.Row;
             }
         }
@@ -146,10 +146,11 @@ internal sealed partial class EcsArchBenchWorker
         for (int i = 0; i < ents.Length; i++)
         {
             var loc = locs[i];
-            allocIds.Add(loc.AllocId);
+            int allocId = EntReg.PageAllocators[ents[i].PageIndex];
+            allocIds.Add(allocId);
             pageIds.Add(ents[i].PageIndex);
             archIds.Add(loc.ArchId);
-            states.Add(((long)loc.AllocId << 32) | (uint)loc.ArchId);
+            states.Add(((long)allocId << 32) | (uint)loc.ArchId);
             if (!HasNonzeroAfr24Target<A>(ents[i], shape))
                 throw new InvalidOperationException("AFR-24 rotating fixtures require nonzero target values.");
         }

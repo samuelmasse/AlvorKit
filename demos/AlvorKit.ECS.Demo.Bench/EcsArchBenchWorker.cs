@@ -20,6 +20,8 @@ internal sealed partial class EcsArchBenchWorker(EcsBenchOptions options)
             _ when scenarioId.StartsWith("arch-set-existing-", StringComparison.Ordinal) => RunPoint(scenarioId, PointOperation.Set),
             _ when scenarioId.StartsWith("arch-membership-", StringComparison.Ordinal) => RunMembership(scenarioId),
             _ when scenarioId.StartsWith("arch-hot-", StringComparison.Ordinal) => RunHotPath(scenarioId),
+            _ when scenarioId.StartsWith("arch-transition-lookup-", StringComparison.Ordinal) =>
+                RunTransitionLookup(scenarioId),
             "arch-get-wide-k08" => RunWide(scenarioId, false),
             "arch-set-wide-k08" => RunWide(scenarioId, true),
             "arch-get-reference-k08" => RunReference(scenarioId, false),

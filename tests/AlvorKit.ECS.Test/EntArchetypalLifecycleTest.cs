@@ -72,15 +72,16 @@ public sealed class EntArchetypalLifecycleTest
         EntMut ent = arena.Alloc();
         ent.SetArchetypal<int, FirstField, ArenaDisposeArch>(10);
         ent.SetArchetypal<PooledReference, SecondField, ArenaDisposeArch>(new("old"));
-        int archId = ent.Get<EntArchLoc, ArenaDisposeArch>().ArchId;
+        var loc = ent.Get<EntArchLoc, ArenaDisposeArch>();
+        int archId = loc.ArchId;
 
         arena.Dispose();
 
         var afterDispose = EntArchDiagnostics<ArenaDisposeArch>.Capture();
         Assert.AreEqual(0, afterDispose.ActiveRowCount);
         Assert.AreEqual(0, afterDispose.RetainedStateCount);
-        Assert.IsNull(EntArchColumn<int, FirstField, ArenaDisposeArch>.Values[allocId]);
-        Assert.IsNull(EntArchColumn<PooledReference, SecondField, ArenaDisposeArch>.Values[allocId]);
+        Assert.IsNull(EntArchColumn<int, FirstField, ArenaDisposeArch>.Values[loc.RowSetId]);
+        Assert.IsNull(EntArchColumn<PooledReference, SecondField, ArenaDisposeArch>.Values[loc.RowSetId]);
 
         using var replacementArena = new EntArena();
         Assert.AreEqual(allocId, replacementArena.Index);

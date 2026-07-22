@@ -134,12 +134,13 @@ public sealed class EntArchetypalConcurrencyTest
         using var barrier = new Barrier(ownerCount);
         var allocIds = new int[ownerCount];
         var archIds = new int[ownerCount];
+        var rowSetIds = new int[ownerCount];
         var values = new int[ownerCount];
         var columns = new int[ownerCount][];
 
         Parallel.Invoke(
-            () => FirstSet(0, barrier, allocIds, archIds, values, columns),
-            () => FirstSet(1, barrier, allocIds, archIds, values, columns));
+            () => FirstSet(0, barrier, allocIds, archIds, rowSetIds, values, columns),
+            () => FirstSet(1, barrier, allocIds, archIds, rowSetIds, values, columns));
 
         var metrics = EntArchDiagnostics<ConcurrentFirstSetArch>.Capture();
         Assert.AreEqual(1, metrics.RegisteredFieldCount);
@@ -154,7 +155,7 @@ public sealed class EntArchetypalConcurrencyTest
             Assert.IsNotNull(columns[owner]);
             Assert.IsNull(
                 EntArchColumn<int, ConcurrentFirstSetField, ConcurrentFirstSetArch>
-                    .Values[allocIds[owner]]);
+                    .Values[rowSetIds[owner]]);
         }
     }
 
@@ -184,7 +185,7 @@ public sealed class EntArchetypalConcurrencyTest
         barrier.SignalAndWait();
 
         var loc = ent.Get<EntArchLoc, ColdResolutionArch>();
-        allocIds[owner] = loc.AllocId;
+        allocIds[owner] = arena.Index;
         archIds[owner] = loc.ArchId;
         firstValues[owner] = ent.GetArchetypal<int, C0, ColdResolutionArch>();
         secondValues[owner] = ent.GetArchetypal<int, C1, ColdResolutionArch>();
@@ -262,7 +263,7 @@ public sealed class EntArchetypalConcurrencyTest
         }
 
         var firstLoc = ents[0].Get<EntArchLoc, WarmAccessArch>();
-        allocIds[owner] = firstLoc.AllocId;
+        allocIds[owner] = arena.Index;
         archIds[owner] = firstLoc.ArchId;
 
         for (int iteration = 0; iteration < 64; iteration++)
@@ -292,6 +293,7 @@ public sealed class EntArchetypalConcurrencyTest
         Barrier barrier,
         int[] allocIds,
         int[] archIds,
+        int[] rowSetIds,
         int[] values,
         int[][] columns)
     {
@@ -302,11 +304,12 @@ public sealed class EntArchetypalConcurrencyTest
         int value = (owner + 1) * 10;
         ent.SetArchetypal<int, ConcurrentFirstSetField, ConcurrentFirstSetArch>(value);
         var loc = ent.Get<EntArchLoc, ConcurrentFirstSetArch>();
-        allocIds[owner] = loc.AllocId;
+        allocIds[owner] = arena.Index;
         archIds[owner] = loc.ArchId;
+        rowSetIds[owner] = loc.RowSetId;
         values[owner] = ent.GetArchetypal<int, ConcurrentFirstSetField, ConcurrentFirstSetArch>();
         columns[owner] = EntArchColumn<int, ConcurrentFirstSetField, ConcurrentFirstSetArch>
-            .ValuesAt(loc.AllocId, loc.ArchId)!;
+            .ValuesAt(loc.RowSetId)!;
 
         Assert.IsTrue(ent.UnsetArchetypal<int, ConcurrentFirstSetField, ConcurrentFirstSetArch>());
     }

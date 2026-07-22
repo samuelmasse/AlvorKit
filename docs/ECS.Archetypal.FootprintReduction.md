@@ -3,10 +3,12 @@
 > Status: in progress. AFR-01, AFR-02, AFR-10, AFR-11, AFR-12, AFR-20, AFR-21,
 > AFR-22, AFR-23, and AFR-24 are implemented and verified. AFR-25 is complete:
 > AFR-25A and AFR-25E were rejected, while AFR-25B, AFR-25C, and AFR-25D were
-> accepted. AFR-26 retains `(AllocId, ArchId, Row)` and direct closed-generic
-> typed columns as the production speed reference. Shared allocation is no
-> longer planned; AFR-27 applies bounded pooled capacity to the retained direct
-> arrays instead.
+> accepted. AFR-26 remains the historical pre-cutover speed reference. AFR-27
+> added bounded typed pooling. AFR-28 through AFR-31 are now implemented: flat
+> row-set addressing, adaptive query discovery, sparse alloc-local row-set
+> ownership, and `(RowSetId, ArchId, Row)` location semantics. AFR-37 adds a
+> measured hybrid transition index for high-degree archs. Shared byte/native
+> slab allocation remains deferred.
 
 ## Related Documents
 
@@ -37,6 +39,11 @@
 | AFR-25 | Complete | Local point-path candidates resolved; specialized direct `EntArchLoc` remains deferred |
 | AFR-26 | Complete | Current direct loc and typed column directory retained as the speed reference |
 | AFR-27 | Complete | Exact typed power-of-two pools, 25% shrink hysteresis, and complete state return at zero entities |
+| AFR-28 | Complete | Flat closed-generic `rowSetId -> T[]` directories replacing per-field alloc/arch directories |
+| AFR-29 | Complete | Adaptive `O(min(matches, active))` query discovery with lazy membership bits |
+| AFR-30 | Complete | Paged recyclable row-set metadata and one alloc-local arch-to-row-set map |
+| AFR-31 | Complete — accepted | Twelve-byte `(RowSetId, ArchId, Row)` loc; point access improved while structural arch lookup stayed direct |
+| AFR-37 | Complete | Linked transitions through degree eight and a shared sparse index above that threshold |
 | Shared allocation | Deferred | Retain direct typed columns and reduce their retained capacity through pooling |
 
 ## Outcome
@@ -52,12 +59,12 @@ signatures, observed transitions, active alloc-local states, and actual
 component payload:
 
 \[
-O(M + S + E + R + Q + L + \text{payload})
+O(M + S + E + U + R + Q + L + \text{payload})
 \]
 
-`L` is measured direct-locator capacity. It may be a compact flat or paged
-table when that is the fastest point representation; minimizing `L` is
-secondary to the existing-component latency gate.
+`U` is the number of observed alloc/arch row sets. `L` is measured
+direct-locator capacity. The selected flat per-field locator follows row-set ID
+capacity rather than the rectangular alloc-by-arch product.
 
 The completed global graph already avoids `M × N` transition storage. Future
 alloc-local storage should remain proportional to explored state where a direct
@@ -226,18 +233,18 @@ out of scope.
 
 ### Current Hot-Path Contract
 
-- `EntArchLoc` carries the direct identifiers needed by the accepted point path.
-  Whether that remains `ArchId` or becomes `StateId` is deliberately undecided.
+- `EntArchLoc` is `(RowSetId, ArchId, Row)`. Point access uses `RowSetId` and
+  `Row`; structural work also uses `ArchId`.
 - Ordinary `Get`, `Has`, and existing-field `Set` use the closed-generic
-  `EntArchColumn<T, N, A>.ValuesAt(allocId, archId)` directory lookup. Presence
-  is the resulting column reference being non-null, and value access is one
-  direct row index into that same array.
+  `EntArchColumn<T, N, A>.ValuesAt(rowSetId)` directory lookup. Presence is the
+  resulting column reference being non-null, and value access is one direct row
+  index into that same array.
 - Ordinary point access is `O(1)` and does not consult the packed signature,
-  signature hash index, sparse edge arena, alloc `archId -> stateId` map, or a
+  signature hash index, sparse edge arena, alloc `archId -> rowSetId` map, or a
   membership hash table.
 - Ordinary point access contains no catalog lock or `Volatile` operation.
 - A future storage cutover must preserve direct field-specialized indexing and
-  equal or improve the selected AFR-26 point path. Footprint reduction alone
+  equal or improve the selected AFR-31 point path. Footprint reduction alone
   does not justify replacing it with a signature scan or hash lookup.
 - Current reference-free and reference-containing access performs direct typed
   array reads and writes. A future byte or typed shared block is accepted only
@@ -285,8 +292,12 @@ flowchart LR
     B --> Y
     Y --> Z["AFR-25 Direct-address prototypes"]
     Z --> AA["AFR-26 Speed-first decision gate"]
-    AA --> J["AFR-30 Inactive alloc-state prototype"]
-    J --> K["AFR-31 loc-shape decision gate"]
+    AA --> AB["AFR-27 Exact typed pooling"]
+    AB --> AC["AFR-28 Flat row-set addressing"]
+    AC --> AD["AFR-29 Adaptive query discovery"]
+    AC --> J["AFR-30 Row-set catalog"]
+    J --> K["AFR-31 loc-shape gate"]
+    H --> AE["AFR-37 Hybrid transition index"]
     AA --> L["AFR-32 Reference-free byte slab"]
     AA --> M["AFR-33 Typed reference slabs"]
     K --> N["AFR-34 Composite block integration"]
@@ -323,8 +334,11 @@ flowchart LR
 | AFR-24 | Hot-path attribution and codegen baseline | AFR-02, AFR-23 | Same-build staged cost and generated-code evidence |
 | AFR-25 | Direct-address prototypes | AFR-24 | Measured local and shared-storage address candidates |
 | AFR-26 | Speed-first representation decision | AFR-25 | Proceed, revise, or retain current point storage |
-| AFR-30 | Inactive sparse alloc-state prototype | AFR-26 | Shared state metadata without per-state objects |
-| AFR-31 | `loc` shape and direct-address gate | AFR-25, AFR-30 | Choose `ArchId`, `StateId`, or another same-size internal shape by measurement |
+| AFR-27 | Exact typed capacity pooling | AFR-26 | Bounded row/component retention without point-path changes |
+| AFR-28 | Flat row-set column addressing | AFR-26, AFR-27 | Remove one dependent point lookup and per-field alloc/arch rectangles |
+| AFR-29 | Adaptive active-row-set queries | AFR-28 | Candidate discovery proportional to the smaller relevant set |
+| AFR-30 | Sparse alloc-local row-set catalog | AFR-28 | Paged metadata and recyclable IDs without one object per row set |
+| AFR-31 | `loc` shape and direct-address gate | AFR-28, AFR-30 | Accept `(RowSetId, ArchId, Row)` by same-build measurement |
 | AFR-32 | Shared reference-free byte slab | AFR-20, AFR-26 | Large managed/native pages without per-block objects |
 | AFR-33 | Typed reference-containing slabs | AFR-20, AFR-26 | Large GC-visible typed pages shared per `T` |
 | AFR-34 | Composite block layout and point integration | AFR-31, AFR-32, AFR-33 | Direct offsets into shared pages for the inactive cutover |
@@ -333,6 +347,7 @@ flowchart LR
 | AFR-41 | Immediate direct point-path gate | AFR-24, AFR-34, AFR-35, AFR-42 | Accept or reject the integrated cutover by existing `Get`/`Set` latency |
 | AFR-43 | Remove legacy row and column buffers | AFR-41 | Remove per-arch/state/membership buffer objects |
 | AFR-36 | Optional type-erased structural movement | AFR-43 | Secondary add/remove tuning only when measured useful |
+| AFR-37 | Hybrid transition-degree index | AFR-22, AFR-23 | Preserve low-degree lists and bound high-degree lookup constants |
 | AFR-40 | Block reuse and bounded empty-state cache | AFR-43 | Index-based reuse without block or free-list-node objects |
 | AFR-50 | Concurrency, growth, and correctness gate | AFR-36, AFR-40, AFR-43 | Full focused verification |
 | AFR-51 | Final `MethodImplOptions` tuning | AFR-02, AFR-50 | Evidence-based annotations on settled hot paths |
@@ -390,7 +405,8 @@ Report:
 - Retained managed bytes.
 - Managed object count.
 - Catalog capacity and slack.
-- Row capacity slack.
+- Owned row-set count, row-set slot capacity, and active-row-set slot capacity.
+- Row and component capacity slack.
 
 AFR-24 and AFR-26 extend the later comparison schema with managed allocation
 events, native retained bytes, total retained bytes, shared page counts, and
@@ -732,9 +748,9 @@ Purpose: remove field-presence dependence on a dense transition cell.
 Implementation result:
 
 - Ordinary point access does not search the signature at all.
-  `EntArchColumn<T, N, A>.ValuesAt(allocId, archId)` uses the closed generic
-  field to index its alloc and arch directories directly and returns the
-  active `T[]`, or null when the field is absent.
+  `EntArchColumn<T, N, A>.ValuesAt(rowSetId)` uses the closed generic field to
+  index its flat row-set directory directly and returns the active `T[]`, or
+  null when the field is absent.
 - `Get` loads that column once and indexes `values[loc.Row]`. `Has` is the null
   check. Existing-field `Set` writes the same row and returns before any
   structural logic. These paths are `O(1)` and independent of signature width.
@@ -1470,10 +1486,11 @@ Acceptance:
 Purpose: make an explicit go/no-go decision before AFR-30, AFR-31, AFR-32,
 AFR-33, or AFR-34 fixes the new representation.
 
-Decision: retain the current `(AllocId, ArchId, Row)` loc and closed-generic
-typed column directory. Existing-component access remains the direct AFR-26
-reference. Future shared allocation begins with its final point locator and
-contiguous iteration view, not with an inactive allocator or state table.
+Decision at the AFR-26 checkpoint: retain `(AllocId, ArchId, Row)` and the
+closed-generic typed directory as the reference until a complete replacement
+passed the point gate. AFR-28 and AFR-31 later passed that gate and superseded
+this representation with `(RowSetId, ArchId, Row)` and flat row-set-indexed
+typed directories. Composite shared slabs remain deferred.
 
 Decision order:
 
@@ -1553,72 +1570,107 @@ metadata. Point access retains the same closed-generic directory lookup and
 typed terminal byref; bucket synchronization and shrink checks exist only on
 structural paths.
 
-## Phase 4: Inactive Alloc-State and Shared-Store Prototypes
+### AFR-28 — Flat Row-Set Column Addressing
 
-The remaining shared-store phases are deferred. They remain as theoretical
-design notes rather than the active implementation plan.
+Purpose: eliminate the per-field `alloc × arch` reference rectangle and remove
+one dependent lookup from existing-component access.
 
-### AFR-30 — Inactive Sparse Alloc-Local State Prototype
+- One `rowSetId` represents one observed `(alloc, arch)` pair.
+- Every closed field stores a flat `T[][] Values`, indexed by `rowSetId`.
+- Point access is `ValuesAt(loc.RowSetId)` followed by the existing unchecked
+  typed terminal row access.
+- Column capacity replacement synchronizes only on that field's existing ops
+  object. Point reads/writes and iteration remain lock-free.
+- Row and component payload arrays retain exact pooling and 25% shrink
+  hysteresis.
 
-Purpose: implement the AFR-26 state representation without changing production
-point access.
+The principal directory payload changes from approximately
+`16LCa + 8FLCa` to `4LCa + 24Cr + 8FCr`, where `L` is participating allocs,
+`Ca` arch-directory capacity, `F` registered fields, and `Cr` row-set-ID
+capacity. `Cr` follows observed alloc/arch pairs, not the full rectangular
+product.
 
-Representation:
+Measured Release result: ordered archetypal point Get improved from about 1.88
+to 1.57 ns and shuffled Get from 2.29 to 1.98 ns. All measured loops remained
+at zero allocation. Final rotating sentinels measured concrete-struct Get/Set
+at 1.47/1.58 ns and generic-class Get/Set at 4.33/6.21 ns, all at 0 B/op.
 
-- A structural-only sparse alloc-local state index using the key selected by
-  AFR-26.
-- Dense state records stored in one shared array or page set, not one object per
-  state.
-- Recyclable state IDs.
-- State metadata containing `ArchId`, `Count`, capacity/order, and block-handle
-  ranges.
-- Index-based free-state links stored in shared metadata rather than one managed
-  free-list node per state.
-- Reference-free state/index metadata may use shared `NativeMemory.Alloc`
-  pages when that reduces managed objects, preserves direct addressing, and has
-  deterministic `NativeMemory.Free` ownership.
+### AFR-29 — Adaptive Active-Row-Set Queries
 
-Acceptance:
+Purpose: prevent broad cached queries from scanning every historical matching
+arch when only a few row sets are active in one alloc.
 
-- An alloc with no active state for an arch retains no full row/column
-  directory entry for it.
-- Destination lookup is expected constant time in the sparse state index.
-- State mutation remains single-owner and lock-free.
-- The prototype is exercised directly by tests and benchmarks; public
-  `GetArchetypal` and `SetArchetypal` still use the accepted production path.
-- No state-map lookup is proposed for ordinary point access.
-- Activation with spare shared capacity creates no state object, metadata
-  array, or free-list-node object.
-- Diagnostics report metadata allocation events, retained managed objects,
-  managed/native/total bytes, page count, slack, and recycled-state capacity.
+- Query shapes retain their append-only matching-arch list.
+- Each alloc retains a compact active-row-set list maintained only on count
+  transitions between zero and one.
+- Enumeration scans the smaller of matching archs and active row sets.
+- Active-side scanning uses lazy query membership bits allocated only after
+  that query shape first selects the active side.
+- The enumerator remains 24 bytes and allocation-free.
+
+Candidate discovery is `O(min(matches, active))`. With 2,047 materialized
+archs, 128 matches, and one active match, the initial adaptive implementation
+improved repeated query discovery from 103.43 to 8.13 ns. The final atomic
+membership-publication design also removed the warm `EnsureMatchBits` call;
+an adjacent two-million-pass Release A/B measured 5.04 ns before and 2.33 ns
+after, with 0 B loop allocation in both cases.
+
+## Phase 4: Production Row-Set Catalog and Deferred Shared Stores
+
+AFR-30 and AFR-31 are implemented in production. Composite managed/native
+slabs remain deferred because the flat typed row-set directory already improved
+the point path and removed the dominant reference-directory rectangle without
+interlacing columns.
+
+### AFR-30 — Sparse Alloc-Local Row-Set Catalog
+
+Purpose: store row metadata in proportion to observed alloc/arch pairs without
+one managed object per pair.
+
+- One alloc-local `int[]` maps arch IDs directly to row-set IDs.
+- One compact alloc-local `int[]` stores active row-set IDs.
+- `EntArchRowSet` metadata is stored in fixed pages of 64 records. Stable pages
+  keep refs valid while another alloc owner grows the catalog.
+- Owned and free row sets use integer links stored in the records; there is no
+  free-list node or object per row set.
+- Empty row sets retain only their ID and metadata for fast reactivation. Their
+  Ent/component payload arrays return to the shared exact pools.
+- Alloc cleanup returns its directory arrays and recycles all owned IDs.
+
+Counts, active lists, row arrays, and component arrays remain single-owner per
+alloc. Different alloc owners can mutate different row sets concurrently.
 
 ### AFR-31 — `loc` Shape and Direct-Address Gate
 
-Purpose: choose the fastest same-size internal `loc` shape using the real
-AFR-30 prototype. `StateId` is one candidate, not the task's required result.
+Decision: accepted `(RowSetId, ArchId, Row)`.
 
-Compare at least:
+- `RowSetId` directly addresses every point column.
+- `ArchId` keeps add/remove signature and transition work direct.
+- `Row` retains dense column indexing and swap-back repair.
+- `AllocId` is derived from the Ent page only after entering structural work.
+- `EntArchLoc` remains three integers, or 12 bytes.
 
-- `(AllocId, ArchId, Row)`, retaining the current shape.
-- `(AllocId, StateId, Row)`, where the state supplies the global `ArchId`.
-- Any AFR-26 direct-locator handle that fits the existing three-integer size and
-  preserves swap-back repair.
+This shape passed the point gate by improving existing-component access. A
+two-int `(RowSetId, Row)` loc remains a possible later experiment, but it would
+add a metadata lookup to structural operations and is not part of this cutover.
 
-The structural `archId -> state` map may resolve dst activation, but it does not
-enter the ordinary caller in any accepted shape.
+### AFR-37 — Hybrid Transition-Degree Index
 
-Acceptance:
+Purpose: bound cached structural lookup time for unusually high-degree archs
+without charging every low-degree arch for a hash table.
 
-- `EntArchLoc` retains its existing size.
-- Existing-component `Get` and `Set` meet the AFR-24 same-build gate using the
-  complete proposed address sequence.
-- Structural movement uses the state index only for dst lookup.
-- Swap-back repair updates `Row` while retaining whichever stable state or arch
-  handle AFR-26 selected.
-- The winning shape remains inactive until AFR-34, AFR-35, and AFR-42 are ready
-  for one integrated cutover.
-- Flat or paged locator storage is shared; it does not create a locator array or
-  object for each state or membership.
+- Degrees one through eight retain the compact linked edge list.
+- Publishing the ninth observed edge migrates that arch's edges into one
+  group-shared open-address index.
+- A negative edge head marks indexed lookup, avoiding another mode-directory
+  read on the low-degree path.
+- The original edge arena remains the canonical compact store.
+- The shared index stays at or below 50% load and is allocated only when a
+  high-degree arch is observed.
+
+Degree 1/4/8 lookup stayed level at approximately 10.80/19.96/28.54 ns.
+Degree 16 improved from 49.83 to 21.60 ns, and degree 32 from 86.14 to 21.33
+ns, with zero loop allocation.
 
 ### AFR-32 — Shared Reference-Free Byte Slab
 

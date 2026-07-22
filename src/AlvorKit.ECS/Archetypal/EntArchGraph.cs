@@ -1,6 +1,7 @@
 namespace AlvorKit.ECS;
 
-internal static class EntArchGraph<A>
+/// <summary>Interns immutable arch signatures and their observed structural transitions for one group.</summary>
+internal static partial class EntArchGraph<A>
 {
     internal const int NoArchId = 0;
     internal const int UnresolvedTransitionArchId = NoArchId;
@@ -14,6 +15,8 @@ internal static class EntArchGraph<A>
     private const int InitialArchCapacity = 16;
     private const int InitialPackedFieldCapacity = 4096;
     private const int InitialSignatureIndexCapacity = 16;
+    private const int LinearEdgeThreshold = 8;
+    private const int InitialTransitionIndexCapacity = 32;
 
     // Guards group-global graph/catalog mutations and shared-array growth.
     internal static readonly object Sync = new();
@@ -26,6 +29,8 @@ internal static class EntArchGraph<A>
     private static int archCapacity;
     private static int packedFieldCount;
     private static int singletonArchCount;
+    /// <summary>Counts archs whose observed transitions crossed the indexed-lookup threshold.</summary>
+    private static int highDegreeArchCount;
     private static int[] packedFieldIds = new int[InitialPackedFieldCapacity];
     // Structural resolution holds Sync, so one reusable buffer supports unbounded signature widths without stack growth.
     private static int[] signatureScratch = [];
@@ -34,6 +39,8 @@ internal static class EntArchGraph<A>
     private static int[] signatureArchIds = [];
     private static int[] edgeHeads = [];
     private static EntArchEdge[] edges = [];
+    /// <summary>Stores transitions for every high-degree arch in one sparse group-wide table.</summary>
+    private static EntArchTransitionIndex? transitionIndex;
     private static int[] singletonArchIds = [];
     private static EntArchColumnOps[] columnOps = [];
 
@@ -42,6 +49,7 @@ internal static class EntArchGraph<A>
         EnsureCapacity(InitialFieldCapacity, InitialArchCapacity);
     }
 
+    /// <summary>Gets the current arch-directory capacity.</summary>
     internal static int ArchCapacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -55,6 +63,7 @@ internal static class EntArchGraph<A>
         get => Volatile.Read(ref publishedArchEnd);
     }
 
+    /// <summary>Adds graph, signature, transition, and column storage to one diagnostic snapshot.</summary>
     internal static void AccumulateMetrics(ref EntArchMetrics metrics)
     {
         metrics.RegisteredFieldCount = nextFieldId - FirstFieldId;
@@ -71,6 +80,9 @@ internal static class EntArchGraph<A>
         metrics.StoredTransitionEdgeCount = nextEdgeIndex - FirstEdgeIndex;
         metrics.TransitionEdgeCapacity = edges.Length;
         metrics.EdgeHeadCapacity = edgeHeads.Length;
+        metrics.HighDegreeArchCount = highDegreeArchCount;
+        metrics.TransitionIndexCount = transitionIndex?.Count ?? 0;
+        metrics.TransitionIndexCapacity = transitionIndex?.Keys.Length ?? 0;
         metrics.DirectedStructuralEdgeCount = metrics.StoredTransitionEdgeCount + 2L * singletonArchCount;
 
         metrics.AddCatalogArray(packedFieldIds, packedFieldCount);
@@ -82,12 +94,20 @@ internal static class EntArchGraph<A>
         metrics.AddCatalogArray(singletonArchIds, nextFieldId);
         metrics.AddCatalogArray(columnOps, nextFieldId);
 
+        if (transitionIndex != null)
+        {
+            metrics.AddCatalogArray(transitionIndex.Keys, transitionIndex.Count);
+            metrics.AddCatalogArray(transitionIndex.DstArchIds, transitionIndex.Count);
+            metrics.AddCatalogObjects(1);
+        }
+
         metrics.AddCatalogObjects(1L + metrics.RegisteredFieldCount);
 
         for (int fieldId = FirstFieldId; fieldId < nextFieldId; fieldId++)
             columnOps[fieldId].AccumulateMetrics(ref metrics);
     }
 
+    /// <summary>Registers one exact closed-generic component field and returns its stable field ID.</summary>
     internal static int RegisterField(EntArchColumnOps ops)
     {
         lock (Sync)
@@ -103,19 +123,12 @@ internal static class EntArchGraph<A>
         }
     }
 
-    internal static void ClearAllocColumns(int allocId)
-    {
-        lock (Sync)
-        {
-            for (int fieldId = FirstFieldId; fieldId < nextFieldId; fieldId++)
-                columnOps[fieldId].ClearAlloc(allocId);
-        }
-    }
-
+    /// <summary>Returns the published singleton arch for a field, or zero until it is materialized.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int GetSingletonArchId(int fieldId) =>
         Volatile.Read(ref singletonArchIds[fieldId]);
 
+    /// <summary>Returns or materializes the singleton arch for one field.</summary>
     internal static int ResolveSingleton(int fieldId)
     {
         lock (Sync)
@@ -128,6 +141,7 @@ internal static class EntArchGraph<A>
         }
     }
 
+    /// <summary>Returns or materializes the canonical arch described by a typed creation initializer.</summary>
     internal static int ResolveSignature<TInit>()
         where TInit : struct, IEntArchInit<A>
     {
@@ -146,6 +160,7 @@ internal static class EntArchGraph<A>
         }
     }
 
+    /// <summary>Returns a field's ordinal in an arch signature, or <see cref="NoFieldOrdinal"/> when absent.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int FindFieldOrdinal(int archId, int fieldId)
     {
@@ -155,10 +170,12 @@ internal static class EntArchGraph<A>
         return FieldIds(archId).IndexOf(fieldId);
     }
 
+    /// <summary>Returns an observed structural transition destination, or zero when unresolved.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int GetTransitionArchId(int archId, int fieldId) =>
         FindEdgeArchId(archId, fieldId);
 
+    /// <summary>Gets the immutable sorted field IDs belonging to an arch.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static ReadOnlySpan<int> FieldIds(int archId)
     {
@@ -167,13 +184,16 @@ internal static class EntArchGraph<A>
         return new(packedFieldIds, start, end - start);
     }
 
+    /// <summary>Returns whether an arch contains exactly one field.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsSingleton(int archId) =>
         signatureEnds[archId] - signatureEnds[archId - 1] == 1;
 
+    /// <summary>Gets the cold structural operations registered for a field.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static EntArchColumnOps ColumnOps(int fieldId) => columnOps[fieldId];
 
+    /// <summary>Returns or materializes the arch reached by adding one field.</summary>
     internal static int ResolveAdd(int srcArchId, int fieldId)
     {
         lock (Sync)
@@ -196,6 +216,7 @@ internal static class EntArchGraph<A>
         }
     }
 
+    /// <summary>Returns or materializes the arch reached by removing one field.</summary>
     internal static int ResolveRemove(int srcArchId, int fieldId)
     {
         lock (Sync)
@@ -220,139 +241,4 @@ internal static class EntArchGraph<A>
             return dstArchId;
         }
     }
-
-    private static int FindBySignature(ReadOnlySpan<int> fieldIds, ulong signatureHash) =>
-        EntArchSignatureIndex.Find(signatureArchIds, signatureHash, fieldIds, packedFieldIds, signatureEnds);
-
-    private static int CreateFromSignature(ReadOnlySpan<int> fieldIds) =>
-        CreateFromSignature(fieldIds, EntArchSignatureIndex.Hash(fieldIds));
-
-    private static int CreateFromSignature(ReadOnlySpan<int> fieldIds, ulong signatureHash)
-    {
-        int archId = AllocateArchId();
-        int start = packedFieldCount;
-        int nextPackedFieldCount = start + fieldIds.Length;
-
-        if (packedFieldIds.Length < nextPackedFieldCount)
-            Array.Resize(ref packedFieldIds, (int)BitOperations.RoundUpToPowerOf2((uint)nextPackedFieldCount));
-        fieldIds.CopyTo(packedFieldIds.AsSpan(start, fieldIds.Length));
-        signatureEnds[archId] = nextPackedFieldCount;
-        packedFieldCount = nextPackedFieldCount;
-
-        EnsureSignatureIndexCapacity(nextArchId - FirstArchId);
-        EntArchSignatureIndex.Insert(signatureArchIds, signatureHash, archId);
-
-        if (fieldIds.Length == 1)
-        {
-            int fieldId = fieldIds[0];
-            Volatile.Write(ref singletonArchIds[fieldId], archId);
-            singletonArchCount++;
-        }
-
-        Volatile.Write(ref publishedArchEnd, nextArchId);
-        return archId;
-    }
-
-    private static int AllocateArchId()
-    {
-        if (nextArchId == archCapacity)
-            EnsureCapacity(fieldCapacity, archCapacity * 2);
-
-        return nextArchId++;
-    }
-
-    private static void EnsureSignatureIndexCapacity(int requiredCount)
-    {
-        // Grow before the next insertion would exceed a 75% load.
-        int maxCount = signatureArchIds.Length - (signatureArchIds.Length >> 2);
-        if (requiredCount <= maxCount)
-            return;
-
-        var previousArchIds = signatureArchIds;
-        int nextCapacity = previousArchIds.Length == 0
-            ? InitialSignatureIndexCapacity
-            : previousArchIds.Length * 2;
-        signatureArchIds = new int[nextCapacity];
-
-        foreach (int archId in previousArchIds)
-        {
-            if (archId != NoArchId)
-                EntArchSignatureIndex.Insert(signatureArchIds, EntArchSignatureIndex.Hash(FieldIds(archId)), archId);
-        }
-    }
-
-    private static Span<int> SignatureScratch(int requiredLength)
-    {
-        if (signatureScratch.Length < requiredLength)
-            Array.Resize(ref signatureScratch, (int)BitOperations.RoundUpToPowerOf2((uint)requiredLength));
-
-        return signatureScratch.AsSpan(0, requiredLength);
-    }
-
-    private static void EnsureCapacity(int requiredFieldCapacity, int requiredArchCapacity)
-    {
-        if (requiredFieldCapacity != fieldCapacity)
-        {
-            Array.Resize(ref columnOps, requiredFieldCapacity);
-            Array.Resize(ref singletonArchIds, requiredFieldCapacity);
-            fieldCapacity = requiredFieldCapacity;
-        }
-
-        if (requiredArchCapacity != archCapacity)
-        {
-            Array.Resize(ref signatureEnds, requiredArchCapacity);
-            Array.Resize(ref edgeHeads, requiredArchCapacity);
-            archCapacity = requiredArchCapacity;
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int FindEdgeArchId(int archId, int fieldId)
-    {
-        int edgeIndex = Volatile.Read(ref edgeHeads[archId]);
-        var publishedEdges = edges;
-        while (edgeIndex != NoEdgeIndex)
-        {
-            ref readonly var edge = ref publishedEdges[edgeIndex];
-            if (edge.FieldId == fieldId)
-                return edge.DstArchId;
-
-            edgeIndex = edge.NextEdgeIndex;
-        }
-
-        return UnresolvedTransitionArchId;
-    }
-
-    private static void CacheEdgePair(int srcArchId, int fieldId, int dstArchId)
-    {
-        EnsureEdgeCapacity(nextEdgeIndex + 2);
-        int srcEdgeIndex = nextEdgeIndex++;
-        int dstEdgeIndex = nextEdgeIndex++;
-
-        edges[srcEdgeIndex] = new(fieldId, dstArchId, edgeHeads[srcArchId]);
-        edges[dstEdgeIndex] = new(fieldId, srcArchId, edgeHeads[dstArchId]);
-
-        Volatile.Write(ref edgeHeads[srcArchId], srcEdgeIndex);
-        Volatile.Write(ref edgeHeads[dstArchId], dstEdgeIndex);
-    }
-
-    private static void EnsureEdgeCapacity(int requiredLength)
-    {
-        if (edges.Length >= requiredLength)
-            return;
-
-        Array.Resize(ref edges, (int)BitOperations.RoundUpToPowerOf2((uint)requiredLength));
-    }
-
-    private static void InsertFieldId(ReadOnlySpan<int> srcFieldIds, int fieldId, Span<int> dstFieldIds)
-    {
-        int insertionIndex = 0;
-        while (insertionIndex < srcFieldIds.Length && srcFieldIds[insertionIndex] < fieldId)
-            insertionIndex++;
-
-        srcFieldIds[..insertionIndex].CopyTo(dstFieldIds);
-        dstFieldIds[insertionIndex] = fieldId;
-        srcFieldIds[insertionIndex..].CopyTo(dstFieldIds[(insertionIndex + 1)..]);
-    }
-
 }

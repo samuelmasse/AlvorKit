@@ -1,10 +1,10 @@
 namespace AlvorKit.ECS;
 
-/// <summary>Stores the direct alloc/arch column directory used by point access for one exact field.</summary>
+/// <summary>Stores the direct row-set column directory used by point access for one exact field.</summary>
 internal static class EntArchColumn<T, N, A>
 {
-    /// <summary>Maps alloc and arch IDs to their typed component arrays without registering the field.</summary>
-    internal static T[][][] Values = [];
+    /// <summary>Maps row-set IDs to their typed component arrays without registering the field.</summary>
+    internal static T[][] Values = [];
 
     /// <summary>Gets the registered field ID, initializing the cold column operations on first structural use.</summary>
     internal static int FieldId
@@ -13,18 +13,14 @@ internal static class EntArchColumn<T, N, A>
         get => EntArchColumnOps<T, N, A>.FieldId;
     }
 
-    /// <summary>Returns the typed column for an alloc and arch, or null when the field is absent.</summary>
+    /// <summary>Returns the typed column for a row set, or null when the field is absent.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static T[]? ValuesAt(int allocId, int archId)
+    internal static T[]? ValuesAt(int rowSetId)
     {
-        var valuesByAlloc = Values;
-        if ((uint)allocId >= (uint)valuesByAlloc.Length)
+        var valuesByRowSet = Values;
+        if ((uint)rowSetId >= (uint)valuesByRowSet.Length)
             return null;
 
-        var valuesByArch = valuesByAlloc[allocId];
-        if (valuesByArch == null || (uint)archId >= (uint)valuesByArch.Length)
-            return null;
-
-        return valuesByArch[archId];
+        return valuesByRowSet[rowSetId];
     }
 }

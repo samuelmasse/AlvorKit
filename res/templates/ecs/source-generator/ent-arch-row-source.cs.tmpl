@@ -12,11 +12,12 @@ internal static class {{ExtensionType}}
 internal readonly ref struct {{RowType}}
 {
     private readonly ref global::AlvorKit.ECS.EntMut ents;
-{{RowFields}}    private readonly int row;
+    // Native-width indexing avoids widening the row for every 64-bit address calculation.
+{{RowFields}}    private readonly nint row;
 
     internal {{RowType}}(
         ref global::AlvorKit.ECS.EntMut ents,
-{{ConstructorParameters}}        int row)
+{{ConstructorParameters}}        nint row)
     {
         this.ents = ref ents;
 {{ConstructorAssignments}}        this.row = row;
@@ -35,8 +36,8 @@ internal ref struct {{RowsType}}
 {
     private {{QueryType}}.Enumerator archs;
     private ref global::AlvorKit.ECS.EntMut ents;
-{{RowsFields}}    private int row;
-    private int count;
+{{RowsFields}}    private nint row;
+    private nint count;
 
     internal {{RowsType}}({{QueryType}} query)
     {
@@ -57,18 +58,13 @@ internal ref struct {{RowsType}}
         global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
-        int next = row + 1;
-        if ((uint)next < (uint)count)
+        nint next = row + 1;
+        if ((nuint)next < (nuint)count)
         {
             row = next;
             return true;
         }
 
-        return MoveNextArch();
-    }
-
-    private bool MoveNextArch()
-    {
         while (archs.MoveNext())
         {
             var chunk = archs.Current;

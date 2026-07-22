@@ -63,13 +63,13 @@ public sealed class EntArchCompactionTest
 
         var initialLocs = ents.Select(static ent => ent.Get<EntArchLoc, A>()).ToArray();
         int srcArchId = initialLocs[0].ArchId;
-        int allocId = initialLocs[0].AllocId;
+        int srcRowSetId = initialLocs[0].RowSetId;
         int lastRow = ents.Length - 1;
 
         for (int i = 0; i < initialLocs.Length; i++)
         {
             Assert.AreEqual(srcArchId, initialLocs[i].ArchId);
-            Assert.AreEqual(allocId, initialLocs[i].AllocId);
+            Assert.AreEqual(srcRowSetId, initialLocs[i].RowSetId);
             Assert.AreEqual(i, initialLocs[i].Row);
         }
 
@@ -94,10 +94,10 @@ public sealed class EntArchCompactionTest
 
         Assert.AreEqual(
             100 + lastRow,
-            EntArchColumn<int, ValueField, A>.Values[allocId][srcArchId][lastRow],
+            EntArchColumn<int, ValueField, A>.Values[srcRowSetId][lastRow],
             "Reference-free tail storage should intentionally remain dirty.");
         Assert.IsNull(
-            EntArchColumn<RefBox, RefField, A>.Values[allocId][srcArchId][lastRow],
+            EntArchColumn<RefBox, RefField, A>.Values[srcRowSetId][lastRow],
             "Reference-containing tail storage must be cleared.");
 
         foreach (var ent in ents)

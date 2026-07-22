@@ -28,12 +28,15 @@ public readonly struct EntArchQuery<A, TSelect>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Enumerator GetEnumerator() => new(allocId);
 
-    /// <summary>Walks cached matching arch IDs and yields the alloc-local active ones.</summary>
+    /// <summary>Walks the smaller of cached matching archs and alloc-local active row sets.</summary>
     public ref struct Enumerator
     {
         private readonly int allocId;
-        private readonly int matchingArchCount;
-        private int matchIndex;
+        // Nonnegative scans matching arch IDs; bitwise-complemented active counts scan active row sets.
+        private readonly int candidateCount;
+        private int candidateIndex;
+        // MoveNext retains this so Current does not repeat the alloc/arch directory lookup.
+        private int rowSetId;
         private EntMut[] ents;
         private int count;
 
@@ -42,8 +45,7 @@ public readonly struct EntArchQuery<A, TSelect>
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => new(
-                allocId,
-                EntArchQueryCache<A, TSelect>.ArchIdAt(matchIndex - 1),
+                rowSetId,
                 ents,
                 count);
         }
@@ -51,8 +53,17 @@ public readonly struct EntArchQuery<A, TSelect>
         internal Enumerator(int allocId)
         {
             this.allocId = allocId;
-            matchingArchCount = EntArchQueryCache<A, TSelect>.CaptureCount(allocId);
-            matchIndex = 0;
+            int matchingArchCount = EntArchQueryCache<A, TSelect>.CaptureCount(allocId, out bool matchBitsReady);
+            int activeRowSetCount = EntArchRows<A>.ActiveCountAt(allocId);
+            if (activeRowSetCount < matchingArchCount)
+            {
+                if (activeRowSetCount != 0 && !matchBitsReady)
+                    EntArchQueryCache<A, TSelect>.EnsureMatchBits();
+                candidateCount = ~activeRowSetCount;
+            }
+            else candidateCount = matchingArchCount;
+            candidateIndex = 0;
+            rowSetId = EntArchRows<A>.NoRowSetId;
             ents = null!;
             count = 0;
         }
@@ -61,11 +72,28 @@ public readonly struct EntArchQuery<A, TSelect>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            while ((uint)matchIndex < (uint)matchingArchCount)
+            if (candidateCount >= 0)
             {
-                int archId = EntArchQueryCache<A, TSelect>.ArchIdAt(matchIndex++);
-                if (EntArchRows<A>.TryGetActive(allocId, archId, out ents, out count))
+                while ((uint)candidateIndex < (uint)candidateCount)
+                {
+                    int archId = EntArchQueryCache<A, TSelect>.ArchIdAt(candidateIndex++);
+                    rowSetId = EntArchRows<A>.RowSetIdAt(allocId, archId);
+                    if (EntArchRows<A>.TryGetActive(rowSetId, out ents, out count))
+                        return true;
+                }
+
+                return false;
+            }
+
+            int activeRowSetCount = ~candidateCount;
+            while ((uint)candidateIndex < (uint)activeRowSetCount)
+            {
+                rowSetId = EntArchRows<A>.ActiveRowSetIdAt(allocId, candidateIndex++);
+                if (EntArchQueryCache<A, TSelect>.MatchesArch(EntArchRows<A>.ArchIdAt(rowSetId)))
+                {
+                    EntArchRows<A>.GetActive(rowSetId, out ents, out count);
                     return true;
+                }
             }
 
             return false;

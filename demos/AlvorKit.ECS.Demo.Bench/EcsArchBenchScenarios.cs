@@ -18,6 +18,11 @@ internal static class EcsArchBenchScenarios
 
         scenarios.AddRange(
         [
+            new("arch-transition-lookup-k01", "transition", "lookup", 1),
+            new("arch-transition-lookup-k04", "transition", "lookup", 4),
+            new("arch-transition-lookup-k08", "transition", "lookup", 8),
+            new("arch-transition-lookup-k16", "transition", "lookup", 16),
+            new("arch-transition-lookup-k32", "transition", "lookup", 32),
             new("arch-get-wide-k08", "value-shape", "op", 8),
             new("arch-set-wide-k08", "value-shape", "op", 8),
             new("arch-get-reference-k08", "value-shape", "op", 8),
