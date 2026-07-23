@@ -28,7 +28,7 @@ internal static class EntArchRowModelFactory
                 rowsByKey.Add(key, row);
         }
 
-        return rowsByKey.Values.OrderBy(row => row.ExtensionType, StringComparer.Ordinal).ToArray();
+        return [.. rowsByKey.Values.OrderBy(row => row.ExtensionType, StringComparer.Ordinal)];
     }
 
     private static bool TryCreate(
@@ -320,12 +320,12 @@ internal static class EntArchRowModelFactory
     private static PropertyModel[] DistinctProperties(List<PropertyModel> fields)
     {
         var names = new HashSet<string>(StringComparer.Ordinal);
-        return fields.Where(field => names.Add(field.Name)).ToArray();
+        return [.. fields.Where(field => names.Add(field.Name))];
     }
 
     private static EntArchRowFieldModel[] DistinctFields(List<EntArchRowFieldModel> fields)
     {
         var markers = new HashSet<string>(StringComparer.Ordinal);
-        return fields.Where(field => markers.Add(field.MarkerType)).ToArray();
+        return [.. fields.Where(field => markers.Add(field.MarkerType))];
     }
 }
