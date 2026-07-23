@@ -114,6 +114,30 @@ Apply them in new projects and packages even when no local precedent exists.
 - Prefer a valid neutral initial state during normal binding over nullable
   placeholders and defensive access paths.
 
+### Method And Component Shape
+
+- Give a method one concern. Split multi-concern logic into named stages behind
+  a short orchestrator; around fifty lines is the practical ceiling, while flat
+  single-concern checklists and component initializers may run longer.
+- Decompose a large subsystem into single-concern components of roughly one to
+  two hundred lines driven by one orchestrator. Route cross-component effects
+  through the orchestrator as return values, not as callbacks between
+  components.
+- Avoid long parameter lists and stacked `out` parameters. Pass a small input
+  struct, or return a named tuple or value-or-null result.
+- Group a project's files into domain folders; keep the project root for
+  boot-level and configuration types.
+
+### State In Fields
+
+- Hold state in fields, not auto-properties: `public readonly` for immutable
+  values and plain public fields for single-owner mutable state.
+- Expression-bodied computed properties are fine; they expose derivation, not
+  state.
+- Records, generated `[Components]` interfaces, and configuration types bound
+  by the configuration binder keep properties; properties are their mechanism.
+- Delete write-only state and members that only tests read.
+
 ### Static Members And Constants
 
 - Do not create static service classes, static mutable state, or broad
@@ -143,6 +167,13 @@ Apply them in new projects and packages even when no local precedent exists.
   the exception.
 - Use `try` and `finally` only when cleanup must still happen after an
   exception. Prefer ownership whose normal lifetime makes cleanup explicit.
+- Expected rejections on local guard paths return a reason value, such as a
+  conflict string or a small enum, that the caller logs verbatim. Do not throw
+  an exception only to catch it a few frames up in the same flow.
+- Log messages state the precise cause in plain language; do not funnel
+  distinct causes into one vague label.
+- Keep failure taxonomies only as granular as the distinct responses they
+  enable.
 
 ### Ownership And Lifecycle
 
@@ -187,6 +218,11 @@ Apply them in new projects and packages even when no local precedent exists.
   loading presentation, scheduling policy, or other user-visible behavior.
 - Prefer direct, readable code over infrastructure justified only by
   theoretical robustness.
+- Prefer fixed-cadence recomputation over dirty flags, change counters, and
+  deadline prediction when the recomputation is cheap; bounded staleness beats
+  invalidation machinery.
+- An abstraction must remove duplication that already exists. Prefer a small
+  toolkit that keeps call sites explicit over a framework that hides them.
 
 ## Documentation Router
 
