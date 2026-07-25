@@ -75,10 +75,37 @@ public class WindowLoopTest
         host.RaiseRender(46);
 
         Assert.AreEqual(15, updateDelta);
-        Assert.AreEqual(1, updateInvoked);
+        Assert.AreEqual(2, updateInvoked);
         Assert.AreEqual(2, frameInvoked);
         Assert.AreEqual(46, frameDelta);
         Assert.AreEqual(1, renderInvoked);
+    }
+
+    /// <summary>Unfocused windows keep updating and rendering while VSync is forced only for the duration of lost focus.</summary>
+    [TestMethod]
+    public void WindowLoop_Unfocused_KeepsRunningWithTemporaryVSync()
+    {
+        var (host, loop) = WindowingTestFactory.Create();
+        var screen = new WindowScreen(loop);
+        var updateInvoked = 0;
+        var renderInvoked = 0;
+        loop.Update += (_) => updateInvoked++;
+        loop.Render += () => renderInvoked++;
+
+        host.RaiseUpdate();
+        host.RaiseRender();
+
+        Assert.AreEqual(1, updateInvoked);
+        Assert.AreEqual(1, renderInvoked);
+        Assert.IsFalse(screen.IsVSyncEnabled);
+        Assert.IsTrue(host.IsVSyncEnabled);
+
+        host.IsFocused = true;
+        host.RaiseUpdate();
+
+        Assert.AreEqual(2, updateInvoked);
+        Assert.IsFalse(screen.IsVSyncEnabled);
+        Assert.IsFalse(host.IsVSyncEnabled);
     }
 
     [TestMethod]

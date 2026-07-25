@@ -113,8 +113,9 @@ public sealed class WindowLoop
 
         gamepads.Tick();
         mousePosition.Update();
+        toggle.ApplyFocusVSync(host.IsFocused);
 
-        if (physical.Skips == 0 && host.IsFocused)
+        if (physical.Skips == 0)
         {
             updating = true;
             Update?.Invoke(e.Time);
@@ -140,6 +141,7 @@ public sealed class WindowLoop
         if (host.IsExiting)
             return;
 
+        toggle.ApplyFocusVSync(host.IsFocused);
         rendering = true;
         Frame?.Invoke(e.Time);
 
