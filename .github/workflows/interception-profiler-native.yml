@@ -4,6 +4,12 @@ name: interception profiler native package
 
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the native package to NuGet.org
+        required: true
+        default: false
+        type: boolean
 
   pull_request:
     paths:
@@ -105,7 +111,7 @@ jobs:
           if-no-files-found: error
 
       - name: Require an unpublished package version
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || inputs.publish
         shell: pwsh
         run: |
           $versionRoot = "native/interception-profiler/version"
@@ -133,10 +139,17 @@ jobs:
           }
 
       - name: Publish native profiler
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || inputs.publish
         shell: pwsh
-        run: >
-          dotnet nuget push
-          bin/AlvorKit.Interception.Profiler.Native/Release/*.nupkg
-          --api-key "${{ secrets.NUGET_API_KEY }}"
-          --source https://api.nuget.org/v3/index.json
+        run: |
+          $packageRoot = "bin/AlvorKit.Interception.Profiler.Native/Release"
+          $packages = @(Get-ChildItem -LiteralPath $packageRoot -Filter "*.nupkg" -File)
+          if ($packages.Count -ne 1) {
+              throw "Expected exactly one native package under $packageRoot; found $($packages.Count)."
+          }
+          dotnet nuget push $packages[0].FullName `
+              --api-key "${{ secrets.NUGET_API_KEY }}" `
+              --source https://api.nuget.org/v3/index.json
+          if ($LASTEXITCODE -ne 0) {
+              throw "dotnet nuget push failed with exit code $LASTEXITCODE."
+          }

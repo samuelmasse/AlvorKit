@@ -116,8 +116,10 @@ established.
 The `interception profiler native package` workflow checks out the pinned
 CoreCLR headers, builds the DLL, verifies its PE architecture, exact export
 set, dependency allowlist, and ABI version, then packs and uploads the native
-NuGet package. Pull requests and manual runs stop at artifacts. A main-branch
-native version-marker push publishes the package.
+NuGet package. Pull requests stop at artifacts, and manual runs do so by
+default. A main-branch native version-marker push publishes the package.
+Manual runs publish only when the workflow's publish input is explicitly
+enabled.
 
 The public header
 `include/alvorkit_interception_profiler.h` is the sole ABI source. Bindings are
