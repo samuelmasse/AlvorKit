@@ -6,6 +6,12 @@ internal sealed class NativeBuildConfig
     /// <summary>Build strategy name, currently single-c or cmake.</summary>
     public required string Kind { get; init; }
 
+    /// <summary>
+    /// Uses the checked-in native library directory as CMake source instead of
+    /// downloading or mutating an upstream archive.
+    /// </summary>
+    public bool RepositorySource { get; init; }
+
     /// <summary>Windows-specific build settings.</summary>
     public PlatformBuildConfig Windows { get; init; } = new();
 

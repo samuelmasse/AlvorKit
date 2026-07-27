@@ -1,0 +1,99 @@
+kind: c-header
+namespace: AlvorKit.Interception.Profiler
+apiClass: InterceptionProfilerApi
+apiSummary: The versioned C ABI exposed by the in-process AlvorKit CoreCLR interception profiler.
+backendClass: InterceptionProfilerBackend
+nativeClass: InterceptionProfilerNative
+nativeLibrary: AlvorKit.Interception.Profiler.Native
+prefix: alvorkit_interception_
+workDir: interception-profiler-bindgen
+sourceDir: ../../../native/interception-profiler
+header: include/alvorkit_interception_profiler.h
+includeSubdir: include
+tuLines:
+  - "#include <alvorkit_interception_profiler.h>"
+apiProject: out/bindgen/AlvorKit.Interception.Profiler
+backendProject: out/bindgen/AlvorKit.Interception.Profiler.Backend
+typeRenames:
+  alvorkit_interception_capability_v2: InterceptionProfilerCapability
+  alvorkit_interception_operation_v2: InterceptionProfilerOperation
+  alvorkit_interception_state_v2: InterceptionProfilerState
+  alvorkit_interception_patch_flag_v2: InterceptionProfilerPatchFlag
+  alvorkit_interception_relocation_kind_v3: InterceptionProfilerRelocationKind
+  alvorkit_interception_failure_stage_v3: InterceptionProfilerFailureStage
+  alvorkit_guid_v2: InterceptionProfilerGuid
+  alvorkit_interception_target_v2: InterceptionProfilerTarget
+  alvorkit_interception_body_identity_v3: InterceptionProfilerBodyIdentity
+  alvorkit_interception_capabilities_v2: InterceptionProfilerCapabilities
+  alvorkit_interception_install_v2: InterceptionProfilerInstall
+  alvorkit_interception_install_dispatch_v2: InterceptionProfilerInstallDispatch
+  alvorkit_interception_generation_v3: InterceptionProfilerGeneration
+  alvorkit_interception_relocation_v3: InterceptionProfilerRelocation
+  alvorkit_interception_il_map_v3: InterceptionProfilerIlMap
+  alvorkit_interception_relocation_result_v3: InterceptionProfilerRelocationResult
+  alvorkit_interception_generation_completion_v3: InterceptionProfilerGenerationCompletion
+  alvorkit_interception_remove_v2: InterceptionProfilerRemove
+  alvorkit_interception_completion_v2: InterceptionProfilerCompletion
+  alvorkit_interception_profiler_state_v2: InterceptionProfilerStateSnapshot
+transparentStructs:
+  - alvorkit_guid_v2
+  - alvorkit_interception_target_v2
+  - alvorkit_interception_body_identity_v3
+  - alvorkit_interception_capabilities_v2
+  - alvorkit_interception_install_v2
+  - alvorkit_interception_install_dispatch_v2
+  - alvorkit_interception_generation_v3
+  - alvorkit_interception_relocation_v3
+  - alvorkit_interception_il_map_v3
+  - alvorkit_interception_relocation_result_v3
+  - alvorkit_interception_generation_completion_v3
+  - alvorkit_interception_remove_v2
+  - alvorkit_interception_completion_v2
+  - alvorkit_interception_profiler_state_v2
+functionRenames:
+  alvorkit_interception_get_abi_version: GetAbiVersion
+  alvorkit_interception_get_capabilities: GetCapabilities
+  alvorkit_interception_get_profiler_state: GetProfilerState
+  alvorkit_interception_get_loaded_method_body: GetLoadedMethodBody
+  alvorkit_interception_enqueue_install: EnqueueInstall
+  alvorkit_interception_enqueue_install_dispatch: EnqueueInstallDispatch
+  alvorkit_interception_enqueue_generation: EnqueueGeneration
+  alvorkit_interception_enqueue_remove: EnqueueRemove
+  alvorkit_interception_get_completion: GetCompletion
+  alvorkit_interception_get_generation_completion: GetGenerationCompletion
+  alvorkit_interception_get_relocation_result: GetRelocationResult
+inParams:
+  alvorkit_interception_get_loaded_method_body:
+    - target
+  alvorkit_interception_enqueue_install:
+    - request
+  alvorkit_interception_enqueue_install_dispatch:
+    - request
+  alvorkit_interception_enqueue_generation:
+    - request
+  alvorkit_interception_enqueue_remove:
+    - request
+outParams:
+  alvorkit_interception_get_loaded_method_body:
+    - body_size
+    - identity
+  alvorkit_interception_get_capabilities:
+    - capabilities
+  alvorkit_interception_get_profiler_state:
+    - state
+  alvorkit_interception_get_completion:
+    - completion
+  alvorkit_interception_get_generation_completion:
+    - completion
+  alvorkit_interception_get_relocation_result:
+    - result
+spanOverloads: true
+spanParams:
+  alvorkit_interception_enqueue_install:
+    - il_body
+  alvorkit_interception_enqueue_generation:
+    - il_body
+    - relocations
+    - metadata
+    - il_map
+skip: {}

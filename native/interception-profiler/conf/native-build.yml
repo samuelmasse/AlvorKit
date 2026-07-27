@@ -1,0 +1,10 @@
+kind: cmake
+repositorySource: true
+windows:
+  cmakeOutput: AlvorKit.Interception.Profiler.Native.dll
+  ridCMakeOptions:
+    win-x64:
+      - -DALVORKIT_PROFILER_RID=win-x64
+  allowedDependencies:
+    - KERNEL32.dll
+    - OLE32.dll

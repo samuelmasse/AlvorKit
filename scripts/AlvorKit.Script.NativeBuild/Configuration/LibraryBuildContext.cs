@@ -24,7 +24,12 @@ internal sealed record LibraryBuildContext(
     public string WorkRoot => ResolvePath(Path.Combine(RepositoryRoot, "out", "native-work"), Metadata.WorkDir);
 
     /// <summary>Directory where the upstream source archive is extracted.</summary>
-    public string SourceDirectory => Path.Combine(WorkRoot, ReplaceVersionTokens(Metadata.SourceDir));
+    public string SourceDirectory =>
+        Build.RepositorySource
+            ? LibraryDirectory
+            : Path.Combine(
+                WorkRoot,
+                ReplaceVersionTokens(Metadata.SourceDir));
 
     /// <summary>Loads one library context from repository files.</summary>
     public static LibraryBuildContext Load(RepositoryLayout repository, string name)

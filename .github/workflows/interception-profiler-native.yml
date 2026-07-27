@@ -1,0 +1,142 @@
+# Builds, verifies, packs, and optionally publishes the Windows x64
+# interception-profiler native package.
+name: interception profiler native package
+
+on:
+  workflow_dispatch:
+
+  pull_request:
+    paths:
+      [
+        ".github/workflows/interception-profiler-native.yml",
+        "native/interception-profiler/**",
+        "res/templates/native-build/**",
+        "scripts/AlvorKit.Script.NativeBuild/**",
+        "scripts/AlvorKit.Script.Workspace/**",
+        "tests/AlvorKit.Script.NativeBuild.Test/**",
+      ]
+
+  # Native package versions are immutable. A main-branch push publishes only
+  # when the profiler's native version marker changes.
+  push:
+    branches: [main]
+    paths: ["native/interception-profiler/version/TAG", "native/interception-profiler/version/REVISION"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: interception-profiler-native-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  build:
+    name: build win-x64
+    runs-on: windows-2025
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Read pinned CoreCLR tag
+        id: coreclr
+        shell: pwsh
+        run: |
+          $tag = (Get-Content native/interception-profiler/version/CORECLR_TAG -Raw).Trim()
+          if ([string]::IsNullOrWhiteSpace($tag)) {
+              throw "native/interception-profiler/version/CORECLR_TAG is empty."
+          }
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Check out pinned CoreCLR headers
+        uses: actions/checkout@v6
+        with:
+          repository: dotnet/runtime
+          ref: ${{ steps.coreclr.outputs.tag }}
+          path: out/upstream/dotnet-runtime
+          sparse-checkout: |
+            src/coreclr/inc
+            src/coreclr/pal/prebuilt/inc
+
+      - name: Test repository-source native builds
+        run: >
+          dotnet test
+          tests/AlvorKit.Script.NativeBuild.Test/AlvorKit.Script.NativeBuild.Test.csproj
+          --filter FullyQualifiedName~LibraryBuildContextTest
+          --verbosity minimal
+
+      - name: Build Windows x64 profiler
+        env:
+          ALVORKIT_CORECLR_SOURCE: ${{ github.workspace }}\out\upstream\dotnet-runtime
+        run: >
+          dotnet run
+          --project scripts/AlvorKit.Script.NativeBuild
+          --
+          build interception-profiler
+          --rid win-x64
+
+      - name: Verify profiler artifact
+        shell: pwsh
+        run: |
+          & native/interception-profiler/verify/Verify-ProfilerArtifact.ps1 `
+              -LibraryPath native/interception-profiler/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll
+
+      - name: Pack native profiler
+        run: >
+          dotnet pack
+          native/interception-profiler/AlvorKit.Interception.Profiler.Native.csproj
+          --configuration Release
+
+      - name: Upload native profiler artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: interception-profiler-native-win-x64
+          path: |
+            native/interception-profiler/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll
+            bin/AlvorKit.Interception.Profiler.Native/Release/*.nupkg
+          if-no-files-found: error
+
+      - name: Require an unpublished package version
+        if: github.event_name == 'push'
+        shell: pwsh
+        run: |
+          $versionRoot = "native/interception-profiler/version"
+          $version = (Get-Content "$versionRoot/TAG" -Raw).Trim()
+          $revisionPath = "$versionRoot/REVISION"
+          if (Test-Path -LiteralPath $revisionPath) {
+              $revision = (Get-Content $revisionPath -Raw).Trim()
+              if (-not [string]::IsNullOrWhiteSpace($revision)) {
+                  $version = "$version.$revision"
+              }
+          }
+          $packageId = "alvorkit.interception.profiler.native"
+          $index = "https://api.nuget.org/v3-flatcontainer/$packageId/index.json"
+          try {
+              $published = (Invoke-RestMethod -Uri $index).versions
+          }
+          catch {
+              if ($_.Exception.Response.StatusCode -ne [System.Net.HttpStatusCode]::NotFound) {
+                  throw
+              }
+              $published = @()
+          }
+          if ($published -contains $version) {
+              throw "AlvorKit.Interception.Profiler.Native $version is already published."
+          }
+
+      - name: Publish native profiler
+        if: github.event_name == 'push'
+        shell: pwsh
+        run: >
+          dotnet nuget push
+          bin/AlvorKit.Interception.Profiler.Native/Release/*.nupkg
+          --api-key "${{ secrets.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json

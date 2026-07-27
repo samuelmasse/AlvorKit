@@ -42,6 +42,33 @@ public sealed class LibraryBuildContextTest
         }
     }
 
+    /// <summary>First-party native packages can build directly from their reviewed repository source.</summary>
+    [TestMethod]
+    public void SourceDirectory_RepositorySource_UsesLibraryDirectory()
+    {
+        var workDir = "alvorkit-native-test-" + Guid.NewGuid().ToString("N");
+        var root = TestRepositoryFactory.CreateSingleCLibrary("sample", workDir);
+        var manifest = Path.Combine(
+            root,
+            "native",
+            "sample",
+            "conf",
+            "native-build.yml");
+        try
+        {
+            File.AppendAllText(
+                manifest,
+                Environment.NewLine + "repositorySource: true" + Environment.NewLine);
+            var context = LibraryBuildContext.Load(new(root), "sample");
+
+            Assert.AreEqual(context.LibraryDirectory, context.SourceDirectory);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     /// <summary>Native build work directories must stay under the repository native work root.</summary>
     [TestMethod]
     public void WorkRoot_EscapedWorkDir_Throws()
