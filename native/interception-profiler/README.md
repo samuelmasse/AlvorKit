@@ -12,10 +12,9 @@ Its job is deliberately small:
 - publish callback counts, HRESULTs, elapsed time, and terminal state; and
 - restore the original IL when the final owner removes a patch.
 
-The current supported runtime target is **Windows x64 only**. Build
-configuration, checked-in runtime assets, launch guards, and executable proofs
-must not imply support for another RID until that RID has its own build and
-runtime gates. The staged expansion decision is recorded in
+The supported runtime targets are **Windows x64** and **Linux x64**. Each RID
+has its own build configuration, packaged runtime asset, artifact checks, and
+isolated profiled-process proof. The staged expansion decision is recorded in
 [`docs/InterceptionProfilerPlatformPlan.md`](https://github.com/AlvorKit/AlvorKit/blob/main/docs/InterceptionProfilerPlatformPlan.md).
 
 ABI v3 retains raw IL and exact managed dispatch and adds immutable method
@@ -52,7 +51,9 @@ one place.
 
 The current ABI-v3 milestone has deliberately bounded proof coverage:
 
-- Windows x64 has executable post-JIT coverage for all four relocation kinds.
+- Windows x64 and Linux x64 run an isolated install, replacement, revert, and
+  original-body ReJIT proof in native package CI. Windows x64 also has
+  executable post-JIT coverage for all four relocation kinds.
   One proof creates a previously absent Cdecl `int(int)` StandAloneSig. A
   second generation creates a closed generic TypeSpec, a custom-modifier-bearing
   private MemberRef, an internal MemberRef, and a closed generic MethodSpec in
@@ -74,6 +75,7 @@ CoreCLR must load the profiler before managed startup:
 ```text
 CORECLR_ENABLE_PROFILING=1
 CORECLR_PROFILER={3840ACF7-5AF1-49EA-BF94-5F7086C57F57}
+CORECLR_PROFILER_PATH=<absolute native profiler path>
 CORECLR_PROFILER_PATH_64=<absolute native profiler path>
 ALVORKIT_INTERCEPTION_PROFILER_PATH=<the same absolute path>
 ALVORKIT_INTERCEPTION_MODULES=MyGame.Dev;MyGame.Game
@@ -103,23 +105,27 @@ $env:ALVORKIT_CORECLR_SOURCE = "<dotnet-runtime v10.0.9 checkout>"
 dotnet run --project scripts\AlvorKit.Script.NativeBuild -- `
   build interception-profiler --rid win-x64
 
+dotnet run --project scripts\AlvorKit.Script.NativeBuild -- `
+  build interception-profiler --rid linux-x64
+
 dotnet build `
   native\interception-profiler\AlvorKit.Interception.Profiler.Native.csproj `
   -c Release
 ```
 
-The CMake project deliberately rejects every target except `win-x64`. Other
-platform work resumes only after the Windows x64 CI build, binding-generation,
-artifact-verification, and runtime-proof gates in the platform plan are
-established.
+The CMake project deliberately rejects every target except `win-x64` and
+`linux-x64`. Other platform work resumes one RID at a time through the gates in
+the platform plan.
 
 The `interception profiler native package` workflow checks out the pinned
-CoreCLR headers, builds the DLL, verifies its PE architecture, exact export
-set, dependency allowlist, and ABI version, then packs and uploads the native
-NuGet package. Pull requests stop at artifacts, and manual runs do so by
-default. A main-branch native version-marker push publishes the package.
-Manual runs publish only when the workflow's publish input is explicitly
-enabled.
+CoreCLR headers and builds both runtime assets. It verifies PE or ELF
+architecture, exact exports, dependency allowlists, and ABI version, then runs
+an isolated profiler-load proof on each OS. A final package is then consumed by
+Windows and Linux ReJIT proofs that install a patch, execute its replacement,
+revert it, and execute the original body. Pull requests stop at artifacts, and
+manual runs do so by default. A main-branch native version-marker push
+publishes only after both proofs; manual runs publish only when the workflow's
+publish input is explicitly enabled.
 
 The public header
 `include/alvorkit_interception_profiler.h` is the sole ABI source. Bindings are
@@ -130,9 +136,10 @@ dotnet run --project scripts\AlvorKit.Script.Bindgen -- `
   interception-profiler --setup-local --strict
 ```
 
-The strict check currently validates 11 exported functions, 6 enums, and 14
-natural-layout structs. Cross-target layout checks protect the fixed-width C
-contract; they do not indicate that a native runtime asset is supported.
+The strict check currently validates 11 exported functions, 6 enums, 14
+natural-layout structs, and the native package asset for the current host.
+Cross-target layout checks protect the fixed-width C contract; runtime support
+is limited to the two explicitly packaged RIDs.
 
 The managed API and backend packages release separately through the
 `C header bindings packages` workflow. Changing `version/BINDING_REVISION`

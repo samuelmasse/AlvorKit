@@ -1,4 +1,4 @@
-# Builds, verifies, packs, and optionally publishes the Windows x64
+# Builds, verifies, packs, and optionally publishes the Windows and Linux x64
 # interception-profiler native package.
 name: interception profiler native package
 
@@ -15,11 +15,14 @@ on:
     paths:
       [
         ".github/workflows/interception-profiler-native.yml",
+        "AlvorKit.Packages.props",
         "native/interception-profiler/**",
         "res/templates/native-build/**",
         "scripts/AlvorKit.Script.NativeBuild/**",
+        "scripts/AlvorKit.Script.TestInterception/**",
         "scripts/AlvorKit.Script.Workspace/**",
         "tests/AlvorKit.Script.NativeBuild.Test/**",
+        "tests/AlvorKit.Script.TestInterception.Test/**",
       ]
 
   # Native package versions are immutable. A main-branch push publishes only
@@ -41,9 +44,19 @@ env:
 
 jobs:
   build:
-    name: build win-x64
-    runs-on: windows-2025
+    name: build ${{ matrix.rid }}
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: win-x64
+            runner: windows-2025
+            library: native/interception-profiler/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll
+          - rid: linux-x64
+            runner: ubuntu-24.04
+            library: native/interception-profiler/runtimes/linux-x64/native/libAlvorKit.Interception.Profiler.Native.so
 
     steps:
       - uses: actions/checkout@v6
@@ -71,6 +84,8 @@ jobs:
           sparse-checkout: |
             src/coreclr/inc
             src/coreclr/pal/prebuilt/inc
+            src/coreclr/pal/inc
+            src/native/minipal
 
       - name: Test repository-source native builds
         run: >
@@ -79,21 +94,61 @@ jobs:
           --filter FullyQualifiedName~LibraryBuildContextTest
           --verbosity minimal
 
-      - name: Build Windows x64 profiler
+      - name: Build profiler
         env:
-          ALVORKIT_CORECLR_SOURCE: ${{ github.workspace }}\out\upstream\dotnet-runtime
+          ALVORKIT_CORECLR_SOURCE: ${{ github.workspace }}/out/upstream/dotnet-runtime
         run: >
           dotnet run
           --project scripts/AlvorKit.Script.NativeBuild
           --
           build interception-profiler
-          --rid win-x64
+          --rid ${{ matrix.rid }}
 
       - name: Verify profiler artifact
         shell: pwsh
         run: |
           & native/interception-profiler/verify/Verify-ProfilerArtifact.ps1 `
-              -LibraryPath native/interception-profiler/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll
+              -LibraryPath "${{ matrix.library }}" `
+              -RuntimeIdentifier "${{ matrix.rid }}"
+
+      - name: Prove isolated profiled child launch
+        env:
+          ALVORKIT_INTERCEPTION_PROOF_REQUIRED: 1
+        run: >
+          dotnet test
+          tests/AlvorKit.Script.TestInterception.Test/AlvorKit.Script.TestInterception.Test.csproj
+          --filter FullyQualifiedName~ProfiledRunsFollowedByPlainRun_IsolateProfilerActivation
+          --verbosity minimal
+
+      - name: Upload native profiler runtime
+        uses: actions/upload-artifact@v7
+        with:
+          name: interception-profiler-native-${{ matrix.rid }}
+          path: ${{ matrix.library }}
+          if-no-files-found: error
+
+  pack:
+    name: pack native profiler
+    needs: [build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: interception-profiler-native-win-x64
+          path: native/interception-profiler/runtimes/win-x64/native
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: interception-profiler-native-linux-x64
+          path: native/interception-profiler/runtimes/linux-x64/native
 
       - name: Pack native profiler
         run: >
@@ -101,14 +156,55 @@ jobs:
           native/interception-profiler/AlvorKit.Interception.Profiler.Native.csproj
           --configuration Release
 
-      - name: Upload native profiler artifacts
+      - name: Verify package runtime assets
+        shell: pwsh
+        run: |
+          $packageRoot = "bin/AlvorKit.Interception.Profiler.Native/Release"
+          $packages = @(Get-ChildItem -LiteralPath $packageRoot -Filter "*.nupkg" -File)
+          if ($packages.Count -ne 1) {
+              throw "Expected exactly one native package under $packageRoot; found $($packages.Count)."
+          }
+          $archive = [IO.Compression.ZipFile]::OpenRead($packages[0].FullName)
+          try {
+              $entries = @($archive.Entries.FullName)
+              $expected = @(
+                  "runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
+                  "runtimes/linux-x64/native/libAlvorKit.Interception.Profiler.Native.so"
+              )
+              $missing = @($expected | Where-Object { $_ -notin $entries })
+              if ($missing.Count -gt 0) {
+                  throw "Native package is missing runtime assets: $($missing -join ', ')"
+              }
+          }
+          finally {
+              $archive.Dispose()
+          }
+
+      - name: Upload native profiler package
         uses: actions/upload-artifact@v7
         with:
-          name: interception-profiler-native-win-x64
-          path: |
-            native/interception-profiler/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll
-            bin/AlvorKit.Interception.Profiler.Native/Release/*.nupkg
+          name: interception-profiler-native-nupkg
+          path: bin/AlvorKit.Interception.Profiler.Native/Release/*.nupkg
           if-no-files-found: error
+
+  publish:
+    name: publish native profiler
+    needs: [pack]
+    if: github.event_name == 'push' || inputs.publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: interception-profiler-native-nupkg
+          path: bin/AlvorKit.Interception.Profiler.Native/Release
 
       - name: Require an unpublished package version
         if: github.event_name == 'push' || inputs.publish

@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <Description>Windows x64 native CoreCLR ReJIT profiler for AlvorKit interception.</Description>
+        <Description>Windows and Linux x64 native CoreCLR ReJIT profiler for AlvorKit interception.</Description>
         <RepositoryUrl>https://github.com/AlvorKit/AlvorKit</RepositoryUrl>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>

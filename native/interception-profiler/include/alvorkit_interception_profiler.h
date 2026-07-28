@@ -2,7 +2,17 @@
 
 #include <stdint.h>
 
+#if defined(_WIN32)
 #define ALVORKIT_INTERCEPTION_CALL __cdecl
+#else
+#define ALVORKIT_INTERCEPTION_CALL
+#endif
+
+#if defined(ALVORKIT_INTERCEPTION_PROFILER_BUILD) && !defined(_WIN32)
+#define ALVORKIT_INTERCEPTION_API __attribute__((visibility("default")))
+#else
+#define ALVORKIT_INTERCEPTION_API
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -230,38 +240,39 @@ typedef struct alvorkit_interception_profiler_state_v2 {
   uint64_t last_request_id;
 } alvorkit_interception_profiler_state_v2;
 
-uint32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_get_abi_version(void);
+ALVORKIT_INTERCEPTION_API uint32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_get_abi_version(void);
 
-int32_t ALVORKIT_INTERCEPTION_CALL
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL
 alvorkit_interception_get_capabilities(alvorkit_interception_capabilities_v2* capabilities);
 
-int32_t ALVORKIT_INTERCEPTION_CALL
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL
 alvorkit_interception_get_profiler_state(alvorkit_interception_profiler_state_v2* state);
 
-int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_get_loaded_method_body(
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_get_loaded_method_body(
     const alvorkit_interception_target_v2* target, uint8_t* body, uint32_t body_capacity, uint32_t* body_size,
     alvorkit_interception_body_identity_v3* identity);
 
-int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_enqueue_install(
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_enqueue_install(
     const alvorkit_interception_install_v2* request, const uint8_t* il_body, uint32_t il_body_size);
 
-int32_t ALVORKIT_INTERCEPTION_CALL
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL
 alvorkit_interception_enqueue_install_dispatch(const alvorkit_interception_install_dispatch_v2* request);
 
-int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_enqueue_generation(
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_enqueue_generation(
     const alvorkit_interception_generation_v3* request, const uint8_t* il_body, uint32_t il_body_size,
     const alvorkit_interception_relocation_v3* relocations, uint32_t relocation_count, const uint8_t* metadata,
     uint32_t metadata_size, const alvorkit_interception_il_map_v3* il_map, uint32_t il_map_count);
 
-int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_enqueue_remove(const alvorkit_interception_remove_v2* request);
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL
+alvorkit_interception_enqueue_remove(const alvorkit_interception_remove_v2* request);
 
-int32_t ALVORKIT_INTERCEPTION_CALL
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL
 alvorkit_interception_get_completion(uint64_t request_id, alvorkit_interception_completion_v2* completion);
 
-int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_get_generation_completion(
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_get_generation_completion(
     uint64_t request_id, alvorkit_interception_generation_completion_v3* completion);
 
-int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_get_relocation_result(
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_get_relocation_result(
     uint64_t request_id, uint32_t relocation_index, alvorkit_interception_relocation_result_v3* result);
 
 #ifdef __cplusplus

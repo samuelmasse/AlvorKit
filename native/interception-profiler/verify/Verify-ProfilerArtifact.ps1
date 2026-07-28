@@ -1,7 +1,11 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)]
-    [string] $LibraryPath
+    [string] $LibraryPath,
+
+    [Parameter(Mandatory)]
+    [ValidateSet("win-x64", "linux-x64")]
+    [string] $RuntimeIdentifier
 )
 
 Set-StrictMode -Version Latest
@@ -22,11 +26,6 @@ $expectedExports = @(
     "alvorkit_interception_get_profiler_state",
     "alvorkit_interception_get_relocation_result"
 )
-$allowedDependencies = @(
-    "KERNEL32.dll",
-    "OLE32.dll"
-)
-
 function Enter-VisualStudioDevShell
 {
     $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
@@ -75,62 +74,161 @@ function Read-DumpbinDependencies([string[]] $lines)
     return [string[]] $dependencies
 }
 
+function Read-NmExports([string[]] $lines)
+{
+    $exports = [Collections.Generic.List[string]]::new()
+    foreach ($line in $lines)
+    {
+        if ($line -match "^(\S+)\s+[A-Za-z]\s+")
+        {
+            $exports.Add($Matches[1])
+        }
+    }
+    return [string[]] $exports
+}
+
+function Read-ElfDependencies([string[]] $lines)
+{
+    $dependencies = [Collections.Generic.List[string]]::new()
+    foreach ($line in $lines)
+    {
+        if ($line -match "\(NEEDED\).*\[([^\]]+)\]")
+        {
+            $dependencies.Add($Matches[1])
+        }
+    }
+    return [string[]] $dependencies
+}
+
+function Assert-ExactValues(
+    [string] $kind,
+    [string[]] $expected,
+    [string[]] $actual)
+{
+    $missing = @($expected | Where-Object { $_ -notin $actual })
+    $unexpected = @($actual | Where-Object { $_ -notin $expected })
+    if ($missing.Count -gt 0)
+    {
+        throw "Profiler is missing ${kind}: $($missing -join ', ')"
+    }
+    if ($unexpected.Count -gt 0)
+    {
+        throw "Profiler has unexpected ${kind}: $($unexpected -join ', ')"
+    }
+}
+
+function Assert-AllowedValues(
+    [string] $kind,
+    [string[]] $allowed,
+    [string[]] $actual)
+{
+    $unexpected = @($actual | Where-Object { $_ -notin $allowed })
+    if ($unexpected.Count -gt 0)
+    {
+        throw "Profiler has unexpected ${kind}: $($unexpected -join ', ')"
+    }
+}
+
+function Read-WindowsArtifact([string] $path)
+{
+    Enter-VisualStudioDevShell
+
+    $headers = [string[]] (& dumpbin /nologo /headers $path)
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "dumpbin /headers failed."
+    }
+    if (-not ($headers -match "8664 machine \(x64\)"))
+    {
+        throw "Profiler DLL is not a Windows x64 PE image."
+    }
+
+    $exportOutput = [string[]] (& dumpbin /nologo /exports $path)
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "dumpbin /exports failed."
+    }
+    $exports = @(Read-DumpbinExports $exportOutput | Sort-Object -Unique)
+
+    $dependencyOutput = [string[]] (& dumpbin /nologo /dependents $path)
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "dumpbin /dependents failed."
+    }
+    $dependencies = @(Read-DumpbinDependencies $dependencyOutput | Sort-Object -Unique)
+    $allowed = @("KERNEL32.dll", "OLE32.dll")
+    Assert-ExactValues "exports" $expectedExports $exports
+    Assert-AllowedValues "dependencies" $allowed $dependencies
+
+    return [pscustomobject] @{
+        Machine = "Windows x64"
+        Exports = $exports
+        Dependencies = $dependencies
+    }
+}
+
+function Read-LinuxArtifact([string] $path)
+{
+    $headers = [string[]] (& readelf -h $path)
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "readelf -h failed."
+    }
+    if (-not ($headers -match "Class:\s+ELF64") -or
+        -not ($headers -match "Machine:\s+Advanced Micro Devices X86-64"))
+    {
+        throw "Profiler shared library is not a Linux x64 ELF image."
+    }
+
+    $exportOutput = [string[]] (& nm --dynamic --defined-only --format=posix $path)
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "nm export inspection failed."
+    }
+    $exports = @(Read-NmExports $exportOutput | Sort-Object -Unique)
+
+    $dependencyOutput = [string[]] (& readelf -d $path)
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "readelf -d failed."
+    }
+    $dependencies = @(Read-ElfDependencies $dependencyOutput | Sort-Object -Unique)
+    $allowed = @(
+        "libc.so.6",
+        "libdl.so.2",
+        "libgcc_s.so.1",
+        "libm.so.6",
+        "libpthread.so.0",
+        "libstdc++.so.6"
+    )
+    Assert-ExactValues "exports" $expectedExports $exports
+    Assert-AllowedValues "dependencies" $allowed $dependencies
+
+    return [pscustomobject] @{
+        Machine = "Linux x64"
+        Exports = $exports
+        Dependencies = $dependencies
+    }
+}
+
 $resolvedLibrary = [IO.Path]::GetFullPath($LibraryPath)
 if (-not (Test-Path -LiteralPath $resolvedLibrary -PathType Leaf))
 {
-    throw "Profiler DLL was not found: $resolvedLibrary"
+    throw "Profiler library was not found: $resolvedLibrary"
 }
 
-Enter-VisualStudioDevShell
-
-$headers = [string[]] (& dumpbin /nologo /headers $resolvedLibrary)
-if ($LASTEXITCODE -ne 0)
+$artifact = if ($RuntimeIdentifier -eq "win-x64")
 {
-    throw "dumpbin /headers failed."
+    Read-WindowsArtifact $resolvedLibrary
 }
-if (-not ($headers -match "8664 machine \(x64\)"))
+else
 {
-    throw "Profiler DLL is not a Windows x64 PE image."
+    Read-LinuxArtifact $resolvedLibrary
 }
 
-$exportOutput = [string[]] (& dumpbin /nologo /exports $resolvedLibrary)
-if ($LASTEXITCODE -ne 0)
+$loaderSource = if ($RuntimeIdentifier -eq "win-x64")
 {
-    throw "dumpbin /exports failed."
-}
-$actualExports = @(Read-DumpbinExports $exportOutput | Sort-Object -Unique)
-$missingExports = @($expectedExports | Where-Object { $_ -notin $actualExports })
-$unexpectedExports = @($actualExports | Where-Object { $_ -notin $expectedExports })
-if ($missingExports.Count -gt 0)
-{
-    throw "Profiler DLL is missing exports: $($missingExports -join ', ')"
-}
-if ($unexpectedExports.Count -gt 0)
-{
-    throw "Profiler DLL has unexpected exports: $($unexpectedExports -join ', ')"
-}
-
-$dependencyOutput = [string[]] (& dumpbin /nologo /dependents $resolvedLibrary)
-if ($LASTEXITCODE -ne 0)
-{
-    throw "dumpbin /dependents failed."
-}
-$actualDependencies = @(Read-DumpbinDependencies $dependencyOutput | Sort-Object -Unique)
-$unexpectedDependencies = @($actualDependencies | Where-Object { $_ -notin $allowedDependencies })
-if ($unexpectedDependencies.Count -gt 0)
-{
-    throw "Profiler DLL has unexpected dependencies: $($unexpectedDependencies -join ', ')"
-}
-
-$verifierSource = @"
-using System;
-using System.Runtime.InteropServices;
-
-public static class AlvorKitProfilerArtifact
-{
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate uint GetAbiVersion();
-
+@"
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern IntPtr LoadLibraryW(string path);
 
@@ -145,10 +243,8 @@ public static class AlvorKitProfilerArtifact
     {
         IntPtr library = LoadLibraryW(path);
         if (library == IntPtr.Zero)
-        {
             throw new InvalidOperationException(
                 "LoadLibraryW failed with error " + Marshal.GetLastWin32Error());
-        }
 
         try
         {
@@ -156,10 +252,8 @@ public static class AlvorKitProfilerArtifact
                 library,
                 "alvorkit_interception_get_abi_version");
             if (address == IntPtr.Zero)
-            {
                 throw new InvalidOperationException(
                     "GetProcAddress failed with error " + Marshal.GetLastWin32Error());
-            }
             return Marshal.GetDelegateForFunctionPointer<GetAbiVersion>(address)();
         }
         finally
@@ -167,6 +261,60 @@ public static class AlvorKitProfilerArtifact
             FreeLibrary(library);
         }
     }
+"@
+}
+else
+{
+@"
+    private const int RtldNow = 2;
+
+    [DllImport("libdl.so.2", CharSet = CharSet.Ansi)]
+    private static extern IntPtr dlopen(string path, int mode);
+
+    [DllImport("libdl.so.2", CharSet = CharSet.Ansi)]
+    private static extern IntPtr dlsym(IntPtr library, string name);
+
+    [DllImport("libdl.so.2")]
+    private static extern int dlclose(IntPtr library);
+
+    [DllImport("libdl.so.2")]
+    private static extern IntPtr dlerror();
+
+    public static uint ReadAbiVersion(string path)
+    {
+        IntPtr library = dlopen(path, RtldNow);
+        if (library == IntPtr.Zero)
+            throw new InvalidOperationException(
+                "dlopen failed: " + Marshal.PtrToStringAnsi(dlerror()));
+
+        try
+        {
+            IntPtr address = dlsym(
+                library,
+                "alvorkit_interception_get_abi_version");
+            if (address == IntPtr.Zero)
+                throw new InvalidOperationException(
+                    "dlsym failed: " + Marshal.PtrToStringAnsi(dlerror()));
+            return Marshal.GetDelegateForFunctionPointer<GetAbiVersion>(address)();
+        }
+        finally
+        {
+            dlclose(library);
+        }
+    }
+"@
+}
+
+$verifierSource = @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class AlvorKitProfilerArtifact
+{
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate uint GetAbiVersion();
+
+$loaderSource
 }
 "@
 Add-Type -TypeDefinition $verifierSource
@@ -178,7 +326,7 @@ if ($abiVersion -ne 3)
 
 Write-Output "Profiler artifact verified:"
 Write-Output "  path: $resolvedLibrary"
-Write-Output "  machine: x64"
+Write-Output "  machine: $($artifact.Machine)"
 Write-Output "  ABI: $abiVersion"
-Write-Output "  exports: $($actualExports.Count)"
-Write-Output "  dependencies: $($actualDependencies -join ', ')"
+Write-Output "  exports: $($artifact.Exports.Count)"
+Write-Output "  dependencies: $($artifact.Dependencies -join ', ')"

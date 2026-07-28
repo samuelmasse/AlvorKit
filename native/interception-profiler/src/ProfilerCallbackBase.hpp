@@ -6,7 +6,6 @@
 #include <atomic>
 #include <cor.h>
 #include <corprof.h>
-#include <windows.h>
 
 class ProfilerCallbackBase : public ICorProfilerCallback4 {
 public:
