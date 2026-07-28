@@ -23,6 +23,8 @@
         <GlBindVer>4.6.14</GlBindVer>
 
         <FastNoise2BindVer>1.1.1.2</FastNoise2BindVer>
+
+        <InterceptionProfilerBindVer>0.4.0.1</InterceptionProfilerBindVer>
     </PropertyGroup>
 
     <Target Name="EnsureGeneratedMathsPrimitives"

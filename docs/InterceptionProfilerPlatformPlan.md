@@ -43,9 +43,9 @@ bindings without relying on a developer-machine header cache or checked-in
 binary.
 
 The native half of this milestone is implemented by
-`.github/workflows/interception-profiler-native.yml`. Binding activation
-remains separate so the native package can be published before the generated
-backend attempts to restore it.
+`.github/workflows/interception-profiler-native.yml`. Once that package is
+published, `native/interception-profiler/version/BINDING_REVISION` activates
+the API and backend release through `.github/workflows/c-header-bindings.yml`.
 
 ## Adding another RID
 

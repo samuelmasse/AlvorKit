@@ -23,6 +23,7 @@ on:
           - fastnoise2
           - freetype
           - glfw
+          - interception-profiler
           - miniaudio
           - nfde
           - xxhash
@@ -37,6 +38,7 @@ on:
         "native/fastnoise2/version/BINDING_REVISION",
         "native/freetype/version/BINDING_REVISION",
         "native/glfw/version/BINDING_REVISION",
+        "native/interception-profiler/version/BINDING_REVISION",
         "native/miniaudio/version/BINDING_REVISION",
         "native/nfde/version/BINDING_REVISION",
         "native/xxhash/version/BINDING_REVISION",
@@ -85,7 +87,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             selection="${{ inputs.library }}"
             if [[ "$selection" == "all" ]]; then
-              selected=(fastnoise2 freetype glfw miniaudio nfde xxhash)
+              selected=(fastnoise2 freetype glfw interception-profiler miniaudio nfde xxhash)
             else
               selected=("$selection")
             fi
@@ -108,7 +110,7 @@ jobs:
             }
 
             # version/BINDING_REVISION means "publish a new managed binding version".
-            for library in fastnoise2 freetype glfw miniaudio nfde xxhash; do
+            for library in fastnoise2 freetype glfw interception-profiler miniaudio nfde xxhash; do
               if changed_any "native/${library}/version/BINDING_REVISION"; then
                 selected+=("$library")
               fi
@@ -137,6 +139,12 @@ jobs:
                 native_id="alvorkit.glfw.native"
                 api_project="AlvorKit.GLFW"
                 backend_project="AlvorKit.GLFW.Backend"
+                ;;
+              interception-profiler)
+                id="alvorkit.interception.profiler"
+                native_id="alvorkit.interception.profiler.native"
+                api_project="AlvorKit.Interception.Profiler"
+                backend_project="AlvorKit.Interception.Profiler.Backend"
                 ;;
               miniaudio)
                 id="alvorkit.miniaudio"

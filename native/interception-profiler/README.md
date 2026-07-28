@@ -133,3 +133,8 @@ dotnet run --project scripts\AlvorKit.Script.Bindgen -- `
 The strict check currently validates 11 exported functions, 6 enums, and 14
 natural-layout structs. Cross-target layout checks protect the fixed-width C
 contract; they do not indicate that a native runtime asset is supported.
+
+The managed API and backend packages release separately through the
+`C header bindings packages` workflow. Changing `version/BINDING_REVISION`
+activates only this binding, verifies that its pinned native package exists on
+NuGet.org, then generates, packs, and publishes both managed packages.
