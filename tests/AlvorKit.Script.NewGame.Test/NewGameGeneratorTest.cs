@@ -121,7 +121,7 @@ public class NewGameGeneratorTest
         StringAssert.Contains(Read(root, "src/AlvorStarter.Menus/AppStarterState.cs"), "namespace AlvorStarter.Menus;");
     }
 
-    /// <summary>Ignores local build output from the starter source project.</summary>
+    /// <summary>Ignores local build output and live-debug workspaces in generated repositories.</summary>
     [TestMethod]
     public void StarterSourceIgnoresBuildOutput()
     {
@@ -133,6 +133,7 @@ public class NewGameGeneratorTest
 
         Assert.IsFalse(Directory.Exists(Path(output, "bin")));
         Assert.IsFalse(Directory.Exists(Path(output, "obj")));
+        StringAssert.Contains(Read(output, ".gitignore"), "tmp/");
         Assert.AreEqual(21, Directory.GetFiles(output, "*", SearchOption.AllDirectories).Length);
     }
 

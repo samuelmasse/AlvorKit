@@ -1,0 +1,44 @@
+# Live Debug Session: {{WorkspaceId}}
+
+Purpose: {{Purpose}}
+
+Status: {{Status}}
+
+Created UTC: {{CreatedUtc}}
+
+## Runtime Identity
+
+- LiveCode name: `{{LiveCodeName}}`
+- LiveCode session ID: `{{LiveCodeSessionId}}`
+- Process ID: `{{ProcessId}}`
+- AlvorSense session ID: `{{AlvorSenseSessionId}}`
+- Baseline graph revision: `{{BaselineGraphRevision}}`
+
+Do not copy the LiveCode capability token into this workspace.
+
+## Current Observation
+
+Describe what the user can currently observe through AlvorSense or the visible
+application.
+
+## Next Action
+
+Describe the exact scope, source file, expected effect, and rollback before the
+next mutation.
+
+## Active Interventions
+
+Keep `session.json` authoritative. Summarize persistent LiveCode, LivePatch, and
+bridge effects here for a human handoff.
+
+## Cleanup Checklist
+
+- [ ] Every installed LivePatch is removed and terminal status was observed.
+- [ ] Every retained script, event subscription, or background operation is removed.
+- [ ] State mutations are reverted or the target process was intentionally restarted.
+- [ ] Final user-visible behavior is verified through AlvorSense or the visible app.
+- [ ] Agent-started sessions are stopped; user-owned sessions remain open.
+
+## Handoff
+
+Record the last verified state, remaining risks, and the next useful action.

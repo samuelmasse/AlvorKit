@@ -57,6 +57,8 @@
         <Project Path="scripts/AlvorKit.Script.AlvorEye/AlvorKit.Script.AlvorEye.csproj" />
         <Project
             Path="scripts/AlvorKit.Script.AlvorSense/AlvorKit.Script.AlvorSense.csproj" />
+        <Project
+            Path="scripts/AlvorKit.Script.LiveWorkspace/AlvorKit.Script.LiveWorkspace.csproj" />
         <Project Path="scripts/AlvorKit.Script.Lint/AlvorKit.Script.Lint.csproj" />
         <Project Path="scripts/AlvorKit.Script.MathsGen/AlvorKit.Script.MathsGen.csproj" />
         <Project Path="scripts/AlvorKit.Script.NativeBuild/AlvorKit.Script.NativeBuild.csproj" />
@@ -109,6 +111,8 @@
             Path="tests/AlvorKit.Script.AlvorEye.Test/AlvorKit.Script.AlvorEye.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.AlvorSense.Test/AlvorKit.Script.AlvorSense.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Script.LiveWorkspace.Test/AlvorKit.Script.LiveWorkspace.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.Bindgen.Core.Test/AlvorKit.Script.Bindgen.Core.Test.csproj" />
         <Project
