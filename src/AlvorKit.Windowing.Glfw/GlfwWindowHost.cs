@@ -18,19 +18,19 @@ public class GlfwWindowHost : IWindowHost, IDisposable
         callbacks = new(
             runtime.Glfw,
             runtime.Window,
-            OnClosing,
-            OnMove,
-            OnResize,
-            OnMouseMove,
-            OnMouseWheel,
-            OnMouseDown,
-            OnMouseUp,
-            OnKeyDown,
-            OnKeyUp,
+            AcceptClosing,
+            AcceptMove,
+            AcceptResize,
+            AcceptMouseMove,
+            AcceptMouseWheel,
+            AcceptMouseDown,
+            AcceptMouseUp,
+            AcceptKeyDown,
+            AcceptKeyUp,
             runtime.AcceptFocus,
             runtime.AcceptIconify,
             runtime.AcceptMaximize,
-            OnTextInput);
+            AcceptTextInput);
         callbacks.Register();
     }
 
@@ -123,7 +123,7 @@ public class GlfwWindowHost : IWindowHost, IDisposable
     public virtual void SetIcon(Vec2u size, ReadOnlySpan<Vec4u8> pixels) => runtime.SetIcon(size, pixels);
 
     /// <inheritdoc />
-    public virtual void Run() => runtime.Run(OnUpdateFrame, OnRenderFrame);
+    public virtual void Run() => runtime.Run(BeforePollEvents, AfterPollEvents, OnUpdateFrame, OnRenderFrame);
 
     /// <summary>Releases GLFW cursor resources owned by this host.</summary>
     public virtual void Dispose()
@@ -167,4 +167,81 @@ public class GlfwWindowHost : IWindowHost, IDisposable
 
     /// <summary>Raises a text-input event.</summary>
     protected void OnTextInput(WindowTextInputEvent e) => TextInput?.Invoke(e);
+
+    /// <summary>Gets whether the current native poll should be allowed to publish user-controlled callbacks.</summary>
+    protected virtual bool AcceptsNativeEvents => true;
+
+    /// <summary>Runs immediately before GLFW polls native events.</summary>
+    protected virtual void BeforePollEvents()
+    {
+    }
+
+    /// <summary>Runs immediately after GLFW finishes polling native events.</summary>
+    protected virtual void AfterPollEvents()
+    {
+    }
+
+    /// <summary>Publishes or cancels a native close request according to the current callback gate.</summary>
+    private void AcceptClosing()
+    {
+        if (AcceptsNativeEvents)
+            OnClosing();
+        else
+            runtime.CancelClose();
+    }
+
+    /// <summary>Publishes native window movement independently of the input callback gate.</summary>
+    private void AcceptMove(WindowPositionEvent e) => OnMove(e);
+
+    /// <summary>Publishes native window resizing independently of the input callback gate.</summary>
+    private void AcceptResize(WindowResizeEvent e) => OnResize(e);
+
+    /// <summary>Publishes native mouse movement when input callbacks are accepted.</summary>
+    private void AcceptMouseMove(WindowMouseMoveEvent e)
+    {
+        if (AcceptsNativeEvents)
+            OnMouseMove(e);
+    }
+
+    /// <summary>Publishes native wheel input when input callbacks are accepted.</summary>
+    private void AcceptMouseWheel(WindowMouseWheelEvent e)
+    {
+        if (AcceptsNativeEvents)
+            OnMouseWheel(e);
+    }
+
+    /// <summary>Publishes native mouse presses when input callbacks are accepted.</summary>
+    private void AcceptMouseDown(WindowMouseButtonEvent e)
+    {
+        if (AcceptsNativeEvents)
+            OnMouseDown(e);
+    }
+
+    /// <summary>Publishes native mouse releases when input callbacks are accepted.</summary>
+    private void AcceptMouseUp(WindowMouseButtonEvent e)
+    {
+        if (AcceptsNativeEvents)
+            OnMouseUp(e);
+    }
+
+    /// <summary>Publishes native key presses when input callbacks are accepted.</summary>
+    private void AcceptKeyDown(WindowKeyEvent e)
+    {
+        if (AcceptsNativeEvents)
+            OnKeyDown(e);
+    }
+
+    /// <summary>Publishes native key releases when input callbacks are accepted.</summary>
+    private void AcceptKeyUp(WindowKeyEvent e)
+    {
+        if (AcceptsNativeEvents)
+            OnKeyUp(e);
+    }
+
+    /// <summary>Publishes native text input when input callbacks are accepted.</summary>
+    private void AcceptTextInput(WindowTextInputEvent e)
+    {
+        if (AcceptsNativeEvents)
+            OnTextInput(e);
+    }
 }

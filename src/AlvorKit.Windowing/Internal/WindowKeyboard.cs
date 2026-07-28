@@ -26,6 +26,14 @@ internal sealed class WindowKeyboard
         Array.Clear(repeated);
     }
 
+    /// <summary>Clears all held, previous, and repeat state at an exclusive-input boundary.</summary>
+    internal void Reset()
+    {
+        Array.Clear(down);
+        Array.Clear(previous);
+        Array.Clear(repeated);
+    }
+
     /// <summary>Returns whether the key is currently down.</summary>
     internal bool IsKeyDown(Keys key) => Down(key);
 

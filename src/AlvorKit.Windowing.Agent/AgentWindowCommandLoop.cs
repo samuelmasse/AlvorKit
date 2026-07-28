@@ -26,9 +26,6 @@ internal sealed class AgentWindowCommandLoop(
     }
 
     /// <summary>Renders the current agent frame and writes the selected framebuffer to a PNG file.</summary>
-    private void CapturePng(string path)
-    {
-        host.Agent.Render();
-        screenshot.Save(host.ClientSize, path);
-    }
+    private void CapturePng(string path) =>
+        host.RenderAndCapture(() => screenshot.Save(host.ClientSize, path));
 }

@@ -142,4 +142,10 @@ internal sealed class AgentWindowEventDriver(
 
     /// <summary>Gets tracked input state for diagnostics.</summary>
     internal AgentWindowInputState Input => state.Input;
+
+    /// <summary>Gets the last synthetic pointer position even when the wrapped host is in ordinary native mode.</summary>
+    internal Vec2 MousePosition => state.MousePosition;
+
+    /// <summary>Gets the synthetic focus value used by input-state diagnostics.</summary>
+    internal bool IsFocused => state.IsFocused;
 }

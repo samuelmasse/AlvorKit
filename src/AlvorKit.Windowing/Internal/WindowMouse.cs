@@ -45,6 +45,14 @@ internal sealed class WindowMouse
         wheel = default;
     }
 
+    /// <summary>Clears all held, previous, and wheel state at an exclusive-input boundary.</summary>
+    internal void Reset()
+    {
+        Array.Clear(down);
+        Array.Clear(previous);
+        wheel = default;
+    }
+
     /// <summary>Returns whether a button is currently down.</summary>
     internal bool IsButtonDown(MouseButton button) => Down(button);
 

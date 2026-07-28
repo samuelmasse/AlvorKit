@@ -4,9 +4,9 @@ namespace AlvorKit.Windowing;
 [ExcludeFromCodeCoverage]
 internal sealed class GlfwWindowRuntime
 {
-    private readonly Stopwatch clock = new();
     private readonly Glfw glfw;
     private readonly GlfwWindow window;
+    private readonly GlfwWindowPump pump;
     private readonly GlfwWindowMode mode;
     private readonly GlfwWindowSizes sizes;
     private readonly GlfwCursorModes cursorModes = new();
@@ -25,6 +25,7 @@ internal sealed class GlfwWindowRuntime
     {
         this.glfw = glfw;
         this.window = window;
+        pump = new(glfw, window);
         mode = new(glfw, window);
         sizes = new(glfw, window);
         cursorShapes = new(glfw);
@@ -153,21 +154,15 @@ internal sealed class GlfwWindowRuntime
     }
 
     /// <summary>Runs the GLFW polling loop and forwards update and render frames.</summary>
-    internal void Run(Action<WindowFrameEvent> updateFrame, Action<WindowFrameEvent> renderFrame)
-    {
-        clock.Restart();
-        var previous = clock.Elapsed.TotalSeconds;
-        while (!glfw.WindowShouldClose(window))
-        {
-            glfw.PollEvents();
-            var now = clock.Elapsed.TotalSeconds;
-            var elapsed = now - previous;
-            previous = now;
-            var frame = new WindowFrameEvent(elapsed, now);
-            updateFrame(frame);
-            renderFrame(frame);
-        }
-    }
+    internal void Run(
+        Action beforePollEvents,
+        Action afterPollEvents,
+        Action<WindowFrameEvent> updateFrame,
+        Action<WindowFrameEvent> renderFrame) =>
+        pump.Run(beforePollEvents, afterPollEvents, updateFrame, renderFrame);
+
+    /// <summary>Clears a native close request that was discarded during an exclusive reservation.</summary>
+    internal void CancelClose() => glfw.SetWindowShouldClose(window, false);
 
     /// <summary>Accepts a GLFW focus callback and updates the cached observed focus state.</summary>
     internal void AcceptFocus(bool value) => isFocused = value;

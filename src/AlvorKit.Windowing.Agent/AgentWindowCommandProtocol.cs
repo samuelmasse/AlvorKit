@@ -85,9 +85,10 @@ internal class AgentWindowCommandProtocol(AgentGlfwWindowHost host, TextWriter o
 
     internal void StopReading() => ContinueReading = false;
 
+    /// <summary>Writes deterministic time, frame counts, and synthetic pointer position.</summary>
     internal void WriteState()
     {
-        var mouse = host.MousePosition;
+        var mouse = host.Agent.MousePosition;
         output.WriteLine(string.Format(
             CultureInfo.InvariantCulture,
             "time={0:0.########} updates={1} renders={2} mouse=<{3:0.###} {4:0.###}>",
@@ -98,7 +99,12 @@ internal class AgentWindowCommandProtocol(AgentGlfwWindowHost host, TextWriter o
             mouse.Y));
     }
 
-    internal void WriteInputState() => AgentWindowInputStateWriter.Write(output, host.IsFocused, host.MousePosition, host.Agent.Input);
+    /// <summary>Writes synthetic focus, pointer, held input, and pending text state.</summary>
+    internal void WriteInputState() => AgentWindowInputStateWriter.Write(
+        output,
+        host.Agent.IsFocused,
+        host.Agent.MousePosition,
+        host.Agent.Input);
 
     internal bool TryOptionalVector(float? x, float? y, out Vec2 value)
     {

@@ -15,12 +15,23 @@ public class AgentGlfwWindowHost : GlfwWindowHost
     private readonly AgentWindowState state;
     private readonly bool useAgent;
 
+    /// <summary>One-shot framebuffer callback consumed immediately before the next agent buffer swap.</summary>
+    private Action? captureBeforeSwap;
+
+    /// <summary>Coordinates exclusive synthetic input and the native poll quarantined after its release.</summary>
+    private readonly AgentWindowInputGate inputGate = new();
+
     /// <summary>Wraps an existing GLFW window and switches to agent mode when requested.</summary>
     public AgentGlfwWindowHost(Glfw glfw, GlfwWindow window, GlLayer gl) : base(glfw, window)
     {
         useAgent = IsAgentEnvironmentPresent();
         state = new(useAgent ? ReadAgentMonitorScale() : 1f);
         state.Initialize(base.ClientSize, base.Title, base.IsVisible, base.IsVSyncEnabled);
+        if (!useAgent)
+        {
+            state.MousePosition = base.MousePosition;
+            state.IsFocused = base.IsFocused;
+        }
         agent = CreateEventDriver();
         if (useAgent)
             base.IsVisible = false;
@@ -68,6 +79,9 @@ public class AgentGlfwWindowHost : GlfwWindowHost
 
     /// <summary>Gets the deterministic event driver used by agent commands.</summary>
     internal AgentWindowEventDriver Agent => agent;
+
+    /// <summary>Gets whether an exclusive puppet transaction currently owns native input delivery.</summary>
+    internal bool IsInputReserved => inputGate.IsReserved;
 
     /// <inheritdoc />
     public override bool IsExiting => useAgent ? state.IsExiting : base.IsExiting;
@@ -121,10 +135,52 @@ public class AgentGlfwWindowHost : GlfwWindowHost
     public override void Close() { if (useAgent) agent.Close(); else base.Close(); }
 
     /// <inheritdoc />
-    public override void SwapBuffers() { if (useAgent) state.SwapBuffersCount++; base.SwapBuffers(); }
+    public override void SwapBuffers()
+    {
+        if (useAgent)
+        {
+            var capture = captureBeforeSwap;
+            captureBeforeSwap = null;
+            capture?.Invoke();
+            state.SwapBuffersCount++;
+        }
+
+        base.SwapBuffers();
+    }
 
     /// <inheritdoc />
     public override void Run() { if (!useAgent) base.Run(); else { state.RunCount++; commandLoop.Run(); } }
+
+    /// <summary>Renders one agent frame and captures its drawable framebuffer before the host swaps it away.</summary>
+    internal void RenderAndCapture(Action capture)
+    {
+        if (captureBeforeSwap is not null)
+            throw new InvalidOperationException("The window already has a pending framebuffer capture.");
+
+        captureBeforeSwap = capture;
+        try
+        {
+            agent.Render();
+            if (captureBeforeSwap is not null)
+                throw new InvalidOperationException("The game did not expose a drawable framebuffer for the screenshot command.");
+        }
+        finally
+        {
+            captureBeforeSwap = null;
+        }
+    }
+
+    /// <summary>Begins an exclusive synthetic-input transaction on the window thread.</summary>
+    internal IDisposable ReserveInput() => inputGate.Reserve();
+
+    /// <inheritdoc />
+    protected override bool AcceptsNativeEvents => inputGate.AcceptsNativeEvents;
+
+    /// <inheritdoc />
+    protected override void BeforePollEvents() => inputGate.BeforePoll();
+
+    /// <inheritdoc />
+    protected override void AfterPollEvents() => inputGate.AfterPoll();
 
     /// <summary>Creates the composed driver that raises protected host events.</summary>
     /// <returns>The configured event driver.</returns>

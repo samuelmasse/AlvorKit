@@ -16,7 +16,14 @@ public sealed class WindowLoop
     private readonly WindowGamepads gamepads;
     private bool updating;
     private bool rendering;
+    private bool dispatching;
     private bool unloaded;
+
+    /// <summary>Raised at a safe outer-frame boundary before game update work begins.</summary>
+    internal event Action? Dispatch;
+
+    /// <summary>Raised after the frame has been drawn and before the host swaps buffers.</summary>
+    internal event Action? FramebufferReady;
 
     /// <summary>Raised when the loop performs logical work for the frame.</summary>
     public event Action<double>? Update;
@@ -102,6 +109,7 @@ public sealed class WindowLoop
 
         Update?.Invoke(0);
         Render?.Invoke();
+        FramebufferReady?.Invoke();
         host.SwapBuffers();
         return true;
     }
@@ -115,11 +123,30 @@ public sealed class WindowLoop
         mousePosition.Update();
         toggle.ApplyFocusVSync(host.IsFocused);
 
+        if (!dispatching)
+        {
+            dispatching = true;
+            try
+            {
+                Dispatch?.Invoke();
+            }
+            finally
+            {
+                dispatching = false;
+            }
+        }
+
         if (physical.Skips == 0)
         {
             updating = true;
-            Update?.Invoke(e.Time);
-            updating = false;
+            try
+            {
+                Update?.Invoke(e.Time);
+            }
+            finally
+            {
+                updating = false;
+            }
         }
 
         if (physical.Skips > 0)
@@ -148,9 +175,19 @@ public sealed class WindowLoop
         if (host.WindowState != WindowState.Minimized)
         {
             Render?.Invoke();
+            FramebufferReady?.Invoke();
             host.SwapBuffers();
         }
 
         rendering = false;
+    }
+
+    /// <summary>Clears held and transitional keyboard, mouse, text, and control state.</summary>
+    internal void ResetInput()
+    {
+        keyboard.Reset();
+        mouse.Reset();
+        text.Tick();
+        controls.Tick();
     }
 }

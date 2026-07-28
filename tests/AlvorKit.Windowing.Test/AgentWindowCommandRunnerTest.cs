@@ -338,6 +338,42 @@ public class AgentWindowCommandRunnerTest
         Assert.ThrowsException<InvalidOperationException>(() => runner.Execute("text"));
     }
 
+    /// <summary>A finite puppet batch reserves input, drives exact frames, captures before swap, and leaves no held synthetic input.</summary>
+    [TestMethod]
+    public void AgentWindowPuppet_Run_IsAtomicAndReturnsPng()
+    {
+        var size = new Vec2u(80, 60);
+        var glfw = new WindowingTestGlfw(size);
+        var gl = new GlLayer(new GlNoop());
+        var host = new AgentGlfwWindowHost(glfw, glfw.Window, gl, size);
+        var loop = new WindowLoop(host);
+        var keyboard = new Keyboard(loop);
+        var observedReservedInput = false;
+        loop.Update += (_) =>
+            observedReservedInput |= host.IsInputReserved && keyboard.IsKeyPressed(Keys.Space);
+        var puppet = new AgentWindowPuppet(host, loop, gl);
+
+        var result = puppet.Run(
+        [
+            "key Space down",
+            "update 0.016",
+            "screenshot caller-frame.png"
+        ]);
+
+        Assert.IsTrue(observedReservedInput);
+        Assert.AreEqual(3, result.CommandsExecuted);
+        Assert.AreEqual(1, result.Updates);
+        Assert.AreEqual(1, result.Renders);
+        Assert.AreEqual(1, result.Artifacts.Length);
+        Assert.AreEqual("caller-frame.png", result.Artifacts[0].Name);
+        CollectionAssert.AreEqual(
+            new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 },
+            result.Artifacts[0].Png[..8]);
+        Assert.IsFalse(host.IsInputReserved);
+        Assert.IsFalse(keyboard.IsKeyDown(Keys.Space));
+        Assert.IsFalse(host.Agent.Input.HeldKeys.Any());
+    }
+
     private AgentGlfwWindowHost CreateAgent()
     {
         var size = new Vec2u(800, 600);

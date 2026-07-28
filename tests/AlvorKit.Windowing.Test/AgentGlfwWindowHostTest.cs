@@ -83,10 +83,12 @@ public class AgentGlfwWindowHostTest
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         var gl = CreateGl();
         var saved = 0;
+        var swapCountAtSave = -1;
         GlLayer? savedGl = null;
         var savedSize = Vec2u.Zero;
         var savedPath = string.Empty;
-        var host = CreateAgent(
+        AgentGlfwWindowHost? host = null;
+        host = CreateAgent(
             new(64, 48),
             gl: gl,
             agentInput: input,
@@ -97,12 +99,17 @@ public class AgentGlfwWindowHostTest
                 savedGl = layer;
                 savedSize = size;
                 savedPath = path;
+                swapCountAtSave = host!.SwapBuffersCount;
             });
+        var loop = new WindowLoop(host);
+        loop.Render += () => Assert.AreEqual(0, saved);
 
         host.Run();
 
         Assert.AreEqual(1, host.RenderCount);
+        Assert.AreEqual(1, host.SwapBuffersCount);
         Assert.AreEqual(1, saved);
+        Assert.AreEqual(0, swapCountAtSave);
         Assert.AreSame(gl, savedGl);
         Assert.AreEqual(new Vec2u(64u, 48u), savedSize);
         Assert.AreEqual("out\\frame.png", savedPath);

@@ -69,6 +69,14 @@ internal sealed class AgentWindowInputState
     /// <summary>Clears text after it has had a frame to be observed by consumers.</summary>
     internal void ClearPendingText() => text.Clear();
 
+    /// <summary>Clears every synthetic held input and pending text value.</summary>
+    internal void Reset()
+    {
+        Array.Clear(keys);
+        Array.Clear(mouseButtons);
+        text.Clear();
+    }
+
     private static int Index<T>(T value, int length, string paramName) where T : struct, Enum
     {
         var index = Convert.ToInt32(value, CultureInfo.InvariantCulture);

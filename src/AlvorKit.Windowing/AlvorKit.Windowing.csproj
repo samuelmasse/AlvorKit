@@ -7,6 +7,7 @@
     <ItemGroup>
         <Using Include="AlvorKit.Maths" />
         <InternalsVisibleTo Include="AlvorKit.Windowing.Test" />
+        <InternalsVisibleTo Include="AlvorKit.Windowing.Agent" />
     </ItemGroup>
 
 </Project>
