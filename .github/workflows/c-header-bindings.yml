@@ -6,7 +6,7 @@
 #   publish managed bindings.
 # - publish bindings after the referenced native package version exists on NuGet.
 #
-# Manual runs are artifact-oriented and do not publish to NuGet.org.
+# Manual runs are artifact-oriented unless publishing is explicitly enabled.
 name: C header bindings packages
 
 on:
@@ -27,6 +27,11 @@ on:
           - miniaudio
           - nfde
           - xxhash
+      publish:
+        description: Publish generated binding packages to NuGet.org
+        required: true
+        default: false
+        type: boolean
 
   # Push releases are intentionally limited to binding revision files.
   # Changes to bindgen code/config alone should not publish unless a binding
@@ -198,7 +203,7 @@ jobs:
     needs: [detect]
     if: needs.detect.outputs.has_packages == 'true'
     timeout-minutes: 30
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.package.selection == 'interception-profiler' && 'windows-2025' || 'ubuntu-24.04' }}
     strategy:
       fail-fast: false
       matrix:
@@ -280,9 +285,10 @@ jobs:
             bin/${{ matrix.package.backend_project }}/Release/*.nupkg
           if-no-files-found: error
 
-      # Push-triggered runs publish; manual runs stop after artifact upload.
+      # Push-triggered runs publish. Manual runs publish only when explicitly enabled.
       - name: Publish to NuGet.org
-        if: steps.versions.outputs.skip != 'true' && github.event_name == 'push'
+        if: steps.versions.outputs.skip != 'true' && (github.event_name == 'push' || inputs.publish)
+        shell: bash
         run: |
           dotnet nuget push bin/${{ matrix.package.api_project }}/Release/*.nupkg \
             --api-key "${{ secrets.NUGET_API_KEY }}" \
