@@ -8,7 +8,7 @@ internal sealed class Mocked(
     MockInvocationLedger? invocationLedger = null,
     MockReceiverFreeIdentity? receiverFree = null,
     MockReceiverFreeSetupStore? receiverFreeSetups = null)
-    : MockInvocationParticipant
+    : IMockInvocationParticipant
 {
     private readonly MockSetupStore setups = setupStore ?? new();
     private readonly MockInvocationLedger invocations =
@@ -25,7 +25,7 @@ internal sealed class Mocked(
     /// <summary>Gets this mock's invocation ledger.</summary>
     internal MockInvocationLedger Invocations => invocations;
 
-    MockInvocationLedger MockInvocationParticipant.Invocations =>
+    MockInvocationLedger IMockInvocationParticipant.Invocations =>
         invocations;
 
     /// <summary>Gets receiver-free identity when this state belongs to a interception site.</summary>

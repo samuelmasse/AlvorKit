@@ -65,7 +65,7 @@ internal static class MockSequenceVerification
         MockSession session,
         ReadOnlySpan<MockInvocation> invocations)
     {
-        foreach (MockInvocationParticipant participant in session.Participants)
+        foreach (IMockInvocationParticipant participant in session.Participants)
         {
             var snapshot = participant.Invocations.Snapshot();
             var ledgerInvocations = snapshot.Invocations;

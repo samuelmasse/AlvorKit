@@ -156,18 +156,22 @@ public sealed class MockGenericInstrumentationTest
         {
             mocks[index] = Mock.Create<ConcurrentFirstGenericTarget>();
             int capture = index;
-            tasks[index] = Task.Run(() =>
-            {
-                ready.Signal();
-                if (!start.Wait(CoordinationTimeout))
+            tasks[index] = Task.Factory.StartNew(
+                () =>
                 {
-                    throw new TimeoutException(
-                        "Concurrent generic callers were not released.");
-                }
+                    ready.Signal();
+                    if (!start.Wait(CoordinationTimeout))
+                    {
+                        throw new TimeoutException(
+                            "Concurrent generic callers were not released.");
+                    }
 
-                Mock.When(() => mocks[capture].Describe(capture))
-                    .Return($"configured:{capture}");
-            });
+                    Mock.When(() => mocks[capture].Describe(capture))
+                        .Return($"configured:{capture}");
+                },
+                CancellationToken.None,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
         }
 
         var readyInTime = ready.Wait(CoordinationTimeout);

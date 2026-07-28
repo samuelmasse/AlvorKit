@@ -153,8 +153,11 @@ public sealed class ProfilerFreeProjectBoundaryAuditTest
                     continue;
                 }
 
+                var normalizedReference = reference.Include
+                    .Replace('\\', Path.DirectorySeparatorChar)
+                    .Replace('/', Path.DirectorySeparatorChar);
                 var referencedProject = Path.GetFullPath(
-                    reference.Include,
+                    normalizedReference,
                     Path.GetDirectoryName(project)!);
                 pending.Push(referencedProject);
             }

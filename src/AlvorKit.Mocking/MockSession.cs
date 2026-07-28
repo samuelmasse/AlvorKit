@@ -6,7 +6,7 @@ public sealed class MockSession : IDisposable
     private static long nextSessionId;
     private static readonly AsyncLocal<MockSession?> ambient = new();
     private readonly Lock lifecycleGate = new();
-    private readonly ConcurrentDictionary<long, MockInvocationParticipant>
+    private readonly ConcurrentDictionary<long, IMockInvocationParticipant>
         participants = [];
     private MockReceiverFreeSessionState? receiverFree;
     private readonly MockSession? parent;
@@ -32,7 +32,7 @@ public sealed class MockSession : IDisposable
     internal MockInvocationTimeline Timeline { get; }
 
     /// <summary>Gets the mocks that have published calls into this session.</summary>
-    internal ICollection<MockInvocationParticipant> Participants =>
+    internal ICollection<IMockInvocationParticipant> Participants =>
         participants.Values;
 
     /// <summary>Captures the last contiguously published invocation entry.</summary>
@@ -135,7 +135,7 @@ public sealed class MockSession : IDisposable
     }
 
     /// <summary>Registers a mock whose calls participate in this session.</summary>
-    internal void Register(MockInvocationParticipant participant)
+    internal void Register(IMockInvocationParticipant participant)
     {
         lock (lifecycleGate)
         {

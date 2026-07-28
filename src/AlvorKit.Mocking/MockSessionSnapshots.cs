@@ -20,7 +20,7 @@ internal static class MockSessionSnapshots
         session.ValidateWindow(after, through);
 
         var invocations = new List<MockInvocation>();
-        foreach (MockInvocationParticipant participant in session.Participants)
+        foreach (IMockInvocationParticipant participant in session.Participants)
         {
             ReadOnlySpan<MockInvocation> snapshot =
                 participant.Invocations.Snapshot().Invocations;

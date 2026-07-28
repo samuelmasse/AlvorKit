@@ -30,7 +30,7 @@ internal static class MockStructVerificationRuntime
             int[] Indices,
             int Count)>();
         int matchingCount = 0;
-        foreach (MockInvocationParticipant participant in
+        foreach (IMockInvocationParticipant participant in
             owner.Participants)
         {
             MockInvocationLedger ledger =
