@@ -73,6 +73,10 @@
     <Project Path="src/AlvorKit.UI/AlvorKit.UI.csproj" />
     <Project Path="src/AlvorKit.UI.Blend/AlvorKit.UI.Blend.csproj" />
     <Project Path="src/AlvorKit.Injection/AlvorKit.Injection.csproj" />
+    <Project Path="src/AlvorKit.Injection.Graph/AlvorKit.Injection.Graph.csproj" />
+    <Project Path="src/AlvorKit.LiveCode/AlvorKit.LiveCode.csproj" />
+    <Project Path="src/AlvorKit.Interception/AlvorKit.Interception.csproj" />
+    <Project Path="src/AlvorKit.Interception.CoreClr/AlvorKit.Interception.CoreClr.csproj" />
     <Project Path="src/AlvorKit.Mocking/AlvorKit.Mocking.csproj" />
     <Project Path="src/AlvorKit.Maths.Core/AlvorKit.Maths.Core.csproj" />
     <Project Path="src/AlvorKit.Maths/AlvorKit.Maths.csproj" />
@@ -93,6 +97,15 @@
         <Project Path="tests/AlvorKit.ECS.Indexed.Test/AlvorKit.ECS.Indexed.Test.csproj" />
         <Project Path="tests/AlvorKit.ECS.Generator.Test/AlvorKit.ECS.Generator.Test.csproj" />
         <Project Path="tests/AlvorKit.Injection.Test/AlvorKit.Injection.Test.csproj" />
+        <Project Path="tests/AlvorKit.Injection.Graph.Test/AlvorKit.Injection.Graph.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Interception.CallerProof.Test/AlvorKit.Interception.CallerProof.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Interception.CoreClr.Test/AlvorKit.Interception.CoreClr.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Interception.Performance.Fixture/AlvorKit.Interception.Performance.Fixture.csproj" />
+        <Project Path="tests/AlvorKit.Interception.Test/AlvorKit.Interception.Test.csproj" />
+        <Project Path="tests/AlvorKit.LiveCode.Test/AlvorKit.LiveCode.Test.csproj" />
         <Project Path="tests/AlvorKit.Mocking.Test/AlvorKit.Mocking.Test.csproj" />
         <Project Path="tests/AlvorKit.Maths.Test/AlvorKit.Maths.Test.csproj" />
         <Project Path="tests/AlvorKit.Ranges.Test/AlvorKit.Ranges.Test.csproj" />

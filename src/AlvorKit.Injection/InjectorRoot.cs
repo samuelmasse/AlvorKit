@@ -5,6 +5,8 @@ namespace AlvorKit.Injection;
 /// </summary>
 public class InjectorRoot
 {
+    internal readonly List<IInjectorInstanceObserver> InstanceObservers = [];
+
     /// <summary>
     /// Transient resolution path and reflection caches owned by this root.
     /// </summary>
@@ -19,4 +21,10 @@ public class InjectorRoot
     /// Cache from scope type to the injector attribute type that gates services in that scope.
     /// </summary>
     public readonly Dictionary<Type, Type> ScopeAttributeTypeCache = [];
+
+    internal void NotifyInstanceOwned(InjectorScope owner, object instance)
+    {
+        foreach (var observer in InstanceObservers)
+            observer.OnInstanceOwned(owner, instance);
+    }
 }

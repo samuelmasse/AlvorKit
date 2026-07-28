@@ -73,6 +73,8 @@ public partial record InjectorScopeState
 
             foreach (var serviceType in serviceTypes)
                 BindServiceInstance(serviceType, instance, path);
+
+            Root.NotifyInstanceOwned(Owner, instance);
         }
         finally
         {
@@ -93,6 +95,7 @@ public partial record InjectorScopeState
             ValidateCircularDependency(serviceType, path);
             ValidateInstanceBinding(serviceType, instance, path);
             BindServiceInstance(serviceType, instance, path);
+            Root.NotifyInstanceOwned(Owner, instance);
         }
         finally
         {

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Focused loaded-method-body decoder tests for the CoreCLR interception planner.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Interception.CoreClr\AlvorKit.Interception.CoreClr.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Interception" />
+        <Using Include="AlvorKit.Interception.CoreClr.Advanced" />
+    </ItemGroup>
+
+</Project>

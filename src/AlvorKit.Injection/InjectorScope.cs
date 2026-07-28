@@ -24,7 +24,7 @@ public abstract partial class InjectorScope
             ValidateAttributeType(type, attributeType);
 
             var scope = (T)constructor.Invoke([]);
-            scope.State = new(State.Root, State, attributeType);
+            scope.State = new(State.Root, State, attributeType, scope);
             scope.Add(scope);
 
             return scope;
@@ -113,6 +113,27 @@ public abstract partial class InjectorScope
         {
             State.Add(instance);
         }
+    }
+
+    /// <summary>Adds an observer that receives weak-ownership inputs for subsequently created instances.</summary>
+    public void Observe(IInjectorInstanceObserver observer)
+    {
+        ArgumentNullException.ThrowIfNull(observer);
+        ValidateInitialized(State);
+        lock (State.Root)
+        {
+            if (!State.Root.InstanceObservers.Contains(observer))
+                State.Root.InstanceObservers.Add(observer);
+        }
+    }
+
+    /// <summary>Stops sending instance-ownership notifications to an observer.</summary>
+    public void StopObserving(IInjectorInstanceObserver observer)
+    {
+        ArgumentNullException.ThrowIfNull(observer);
+        ValidateInitialized(State);
+        lock (State.Root)
+            State.Root.InstanceObservers.Remove(observer);
     }
 
 }

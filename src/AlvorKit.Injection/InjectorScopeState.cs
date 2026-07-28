@@ -6,7 +6,12 @@ namespace AlvorKit.Injection;
 /// <param name="Root">Shared root state for the injector tree.</param>
 /// <param name="Parent">Parent scope state, or <see langword="null"/> for the root scope.</param>
 /// <param name="AttributeType">Required injector attribute type for services in this scope.</param>
-public partial record InjectorScopeState(InjectorRoot Root, InjectorScopeState? Parent, Type? AttributeType)
+/// <param name="Owner">Public scope object that owns instances cached by this state.</param>
+public partial record InjectorScopeState(
+    InjectorRoot Root,
+    InjectorScopeState? Parent,
+    Type? AttributeType,
+    InjectorScope Owner)
 {
     /// <summary>
     /// Cached service instances owned by this scope.
@@ -79,6 +84,7 @@ public partial record InjectorScopeState(InjectorRoot Root, InjectorScopeState? 
             }
 
             ValidateCreatedInstanceType(type, instance, handler, path);
+            Root.NotifyInstanceOwned(Owner, instance);
 
             return instance;
         }
@@ -104,6 +110,7 @@ public partial record InjectorScopeState(InjectorRoot Root, InjectorScopeState? 
             ValidateIncluded(type, path);
             ValidateInjectorAttributeType(type, path);
             instances[type] = instance;
+            Root.NotifyInstanceOwned(Owner, instance);
         }
         finally
         {

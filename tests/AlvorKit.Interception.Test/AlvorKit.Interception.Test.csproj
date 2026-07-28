@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Interception\AlvorKit.Interception.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Interception.CoreClr\AlvorKit.Interception.CoreClr.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Interception" />
+        <Using Include="System.Reflection" />
+        <Using Include="System.Runtime.CompilerServices" />
+    </ItemGroup>
+
+</Project>

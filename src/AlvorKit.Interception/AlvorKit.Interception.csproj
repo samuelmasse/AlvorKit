@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Runtime-neutral method interception identities, plans, and completion contracts.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="System.Buffers.Binary" />
+        <InternalsVisibleTo Include="AlvorKit.Interception.CoreClr" />
+        <InternalsVisibleTo Include="AlvorKit.Interception.Test" />
+        <InternalsVisibleTo Include="AlvorKit.LivePatch" />
+    </ItemGroup>
+
+</Project>

@@ -10,7 +10,7 @@ public class Injector : InjectorScope
     /// </summary>
     public Injector()
     {
-        State = new(new(), null, null);
+        State = new(new(), null, null, this);
         State.Add(this);
     }
 }

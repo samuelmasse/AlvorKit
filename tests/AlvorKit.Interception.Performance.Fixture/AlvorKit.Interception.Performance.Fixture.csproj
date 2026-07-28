@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <ServerGarbageCollection>false</ServerGarbageCollection>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Interception\AlvorKit.Interception.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Interception.CoreClr\AlvorKit.Interception.CoreClr.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Interception" />
+        <Using Include="System.Buffers.Binary" />
+        <Using Include="System.Diagnostics" />
+        <Using Include="System.Reflection" />
+        <Using Include="System.Runtime.CompilerServices" />
+    </ItemGroup>
+
+</Project>
