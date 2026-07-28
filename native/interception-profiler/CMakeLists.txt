@@ -100,7 +100,19 @@ elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
         /W4
         /permissive-)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_compile_definitions(${ALVORKIT_PROFILER_TARGET} PRIVATE HOST_64BIT=1)
+    target_compile_definitions(
+        ${ALVORKIT_PROFILER_TARGET}
+        PRIVATE
+        DISABLE_CONTRACTS
+        HOST_AMD64
+        HOST_64BIT
+        HOST_UNIX
+        TARGET_AMD64
+        TARGET_64BIT
+        TARGET_LINUX
+        TARGET_UNIX
+        _FILE_OFFSET_BITS=64
+        _TIME_BITS=64)
     target_compile_options(
         ${ALVORKIT_PROFILER_TARGET}
         PRIVATE
