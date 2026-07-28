@@ -10,8 +10,9 @@ not need a LivePatch attribute, proxy, source edit, or pre-build rewrite.
    process startup.
 2. `native/interception-profiler/include/alvorkit_interception_profiler.h` is
    the versioned C ABI.
-3. `AlvorKit.Script.Bindgen` generates the raw managed API and P/Invoke backend
-   under `out/bindgen`.
+3. `AlvorKit.Script.Bindgen` produces the raw managed API and P/Invoke backend.
+   Consumers use exact local projects from `out/bindgen` when present and the
+   pinned published packages otherwise.
 4. `src/AlvorKit.Interception` provides runtime-neutral identities,
    capabilities, plans, physical claims, leases, collisions, and backend
    contracts. It does not reference CoreCLR or native profiler assets.
@@ -98,9 +99,16 @@ ALVORKIT_INTERCEPTION_PROFILER_PATH=<the same path>
 ALVORKIT_INTERCEPTION_MODULES=<semicolon-separated managed module allowlist>
 ```
 
-The current supported profiler target is Windows x64. The native project does
-not retain dormant build paths or runtime assets for other RIDs. The CI-first
-support and expansion gates are recorded in
+`AlvorKit.Interception.CoreClr` consumes a local generated profiler backend when
+one exists under `out/bindgen`; otherwise it restores the published backend,
+which brings in the matching native runtime package. The isolated launcher
+references the native package directly and resolves the current RID asset from
+its build output. `--profiler-path` and
+`ALVORKIT_INTERCEPTION_PROFILER_PATH` remain explicit overrides for CI proofs
+and development against an unpublished profiler build.
+
+The current supported profiler targets are Windows x64 and Linux x64. The
+CI-first support and expansion gates are recorded in
 [`InterceptionProfilerPlatformPlan.md`](InterceptionProfilerPlatformPlan.md).
 
 `InterceptionProfiler.Connect` negotiates ABI/capabilities with the library

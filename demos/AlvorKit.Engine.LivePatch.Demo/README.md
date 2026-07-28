@@ -10,36 +10,33 @@ Pressing **R** calls `RequestRevert`, restoring the original method.
 The window and UI use the engine's normal sizing and scaling. No dimensions are
 hardcoded.
 
-## Build and run on Windows x64
+## Build and run
 
-Follow `docs/Interception.md` to build the native package and generate its
-binding. Build the demo with the local native package as a restore source:
+Build normally. The CoreCLR adapter uses a local generated profiler binding when
+present and otherwise restores the published binding. The matching native
+runtime package supplies the startup library:
 
 ```powershell
-$nativePackages = "<repo>\bin\AlvorKit.Interception.Profiler.Native\Release"
 dotnet build demos\AlvorKit.Engine.LivePatch.Demo\AlvorKit.Engine.LivePatch.Demo.csproj `
-  -c Release "-p:RestoreAdditionalProjectSources=$nativePackages"
+  -c Release
 ```
 
-Then launch the built demo DLL directly so the profiler is loaded only into the
-game process:
+Launch through the isolated child host so it selects the restored runtime asset
+and enables the profiler only in the game process:
 
 ```powershell
-$profiler = "<repo>\out\interception-profiler\win-x64\Release\AlvorKit.Interception.Profiler.Native.dll"
-$demo = "<repo>\bin\AlvorKit.Engine.LivePatch.Demo\Release\AlvorKit.Engine.LivePatch.Demo.dll"
-
-$env:CORECLR_ENABLE_PROFILING = "1"
-$env:CORECLR_PROFILER = "{3840ACF7-5AF1-49EA-BF94-5F7086C57F57}"
-$env:CORECLR_PROFILER_PATH_64 = $profiler
-$env:ALVORKIT_INTERCEPTION_PROFILER_PATH = $profiler
-
-dotnet $demo
+dotnet run --project scripts\AlvorKit.Script.TestInterception -- `
+  --exec-project demos\AlvorKit.Engine.LivePatch.Demo\AlvorKit.Engine.LivePatch.Demo.csproj `
+  --configuration Release `
+  --module AlvorKit.Engine.LivePatch.Demo -- `
+  --no-build --no-restore
 ```
 
-Use `dotnet $demo --proof` to execute an automated original → replace → revert
-check without opening a window. Both modes print every request and native
+Add `--proof` after the final `--` to execute an automated original → replace →
+revert check without opening a window. Both modes print every request and native
 snapshot, including callback counts and HRESULTs.
 
 The repository also includes matching **AlvorKit: Live Patch Demo** and
 **AlvorKit: Live Patch Proof** VS Code launch configurations. Breakpoints work
-normally because VS Code launches and debugs the same profiled process.
+normally because VS Code launches and debugs the same profiled process using the
+restored runtime asset from the demo's Release output.

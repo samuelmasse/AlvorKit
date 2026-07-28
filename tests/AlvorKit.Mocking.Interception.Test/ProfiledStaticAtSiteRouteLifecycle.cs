@@ -13,7 +13,7 @@ internal sealed class ProfiledStaticAtSiteRouteLifecycle :
         string,
         IProfiledReceiverFreeCallerRoute> routes;
 
-    /// <summary>Creates both exact static routes over the checked-in profiler.</summary>
+    /// <summary>Creates both exact static routes over the startup profiler.</summary>
     internal ProfiledStaticAtSiteRouteLifecycle(
         IInterceptionBackend profiler)
     {

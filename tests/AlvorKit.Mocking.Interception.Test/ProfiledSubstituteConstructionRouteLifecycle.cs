@@ -10,7 +10,7 @@ internal sealed class ProfiledSubstituteConstructionRouteLifecycle :
     private readonly ProfiledReceiverFreeCallerRoute<
         ProfiledReceiverFreeConstruction> route;
 
-    /// <summary>Creates the exact newobj route over the checked-in profiler.</summary>
+    /// <summary>Creates the exact newobj route over the startup profiler.</summary>
     internal ProfiledSubstituteConstructionRouteLifecycle(
         IInterceptionBackend profiler)
     {

@@ -22,7 +22,7 @@ internal sealed class ProfiledPartialRouteLifecycle :
 
     private readonly Dictionary<string, IProfiledOwnedCallerRoute> routes;
 
-    /// <summary>Creates all four exact route owners over the checked-in profiler.</summary>
+    /// <summary>Creates all four exact route owners over the startup profiler.</summary>
     internal ProfiledPartialRouteLifecycle(IInterceptionBackend profiler)
     {
         routes = new(StringComparer.Ordinal)

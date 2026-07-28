@@ -24,7 +24,7 @@ internal static class InterceptionProfilerAsset
                 : throw new PlatformNotSupportedException(
                     "The interception profiler supports Windows and Linux only.");
 
-    /// <summary>Resolves the explicit, inherited, or repository-local profiler.</summary>
+    /// <summary>Resolves the explicit, inherited, or packaged profiler.</summary>
     internal static string Resolve(string repositoryRoot, string? configuredPath)
     {
         CoreClrProfilerGuard.RequireCurrent(isOptedIn: true);
@@ -33,18 +33,10 @@ internal static class InterceptionProfilerAsset
             configuredPath,
             Environment.GetEnvironmentVariable(PathVariable),
             Path.Combine(
-                repositoryRoot,
-                "native",
-                "interception-profiler",
+                AppContext.BaseDirectory,
                 "runtimes",
                 RuntimeIdentifier,
                 "native",
-                FileName),
-            Path.Combine(
-                repositoryRoot,
-                "bin",
-                "AlvorKit.Interception.Profiler.Native",
-                "Release",
                 FileName)
         };
 
@@ -59,6 +51,7 @@ internal static class InterceptionProfilerAsset
         }
 
         throw new FileNotFoundException(
-            $"The {FileName} {RuntimeIdentifier} asset was not found. Pass --profiler-path.");
+            $"The packaged {FileName} {RuntimeIdentifier} asset was not found. " +
+            "Restore AlvorKit.Interception.Profiler.Native or pass --profiler-path.");
     }
 }

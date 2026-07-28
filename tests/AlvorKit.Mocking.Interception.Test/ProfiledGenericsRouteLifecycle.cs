@@ -13,7 +13,7 @@ internal sealed class ProfiledGenericsRouteLifecycle :
 
     private readonly Dictionary<string, IProfiledOwnedCallerRoute> routes;
 
-    /// <summary>Creates the three generic caller owners over the checked-in profiler.</summary>
+    /// <summary>Creates the three generic caller owners over the startup profiler.</summary>
     internal ProfiledGenericsRouteLifecycle(IInterceptionBackend profiler)
     {
         routes = new(StringComparer.Ordinal)

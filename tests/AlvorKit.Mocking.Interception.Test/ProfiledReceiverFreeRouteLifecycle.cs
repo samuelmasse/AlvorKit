@@ -31,7 +31,7 @@ internal sealed class ProfiledReceiverFreeRouteLifecycle :
         string,
         IProfiledReceiverFreeCallerRoute> routes;
 
-    /// <summary>Creates all exact receiver-free routes over the checked-in profiler.</summary>
+    /// <summary>Creates all exact receiver-free routes over the startup profiler.</summary>
     internal ProfiledReceiverFreeRouteLifecycle(
         IInterceptionBackend profiler)
     {

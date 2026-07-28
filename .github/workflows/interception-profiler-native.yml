@@ -113,7 +113,7 @@ jobs:
 
       - name: Prove isolated profiled child launch
         env:
-          ALVORKIT_INTERCEPTION_PROOF_REQUIRED: 1
+          ALVORKIT_INTERCEPTION_PROFILER_PATH: ${{ github.workspace }}/${{ matrix.library }}
         run: >
           dotnet test
           tests/AlvorKit.Script.TestInterception.Test/AlvorKit.Script.TestInterception.Test.csproj

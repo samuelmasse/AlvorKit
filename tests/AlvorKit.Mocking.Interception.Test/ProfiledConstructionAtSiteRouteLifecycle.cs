@@ -13,7 +13,7 @@ internal sealed class ProfiledConstructionAtSiteRouteLifecycle :
         string,
         IProfiledReceiverFreeCallerRoute> routes;
 
-    /// <summary>Creates both exact newobj routes over the checked-in profiler.</summary>
+    /// <summary>Creates both exact newobj routes over the startup profiler.</summary>
     internal ProfiledConstructionAtSiteRouteLifecycle(
         IInterceptionBackend profiler)
     {

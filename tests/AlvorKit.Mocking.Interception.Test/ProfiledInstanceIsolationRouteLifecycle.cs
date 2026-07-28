@@ -9,7 +9,7 @@ internal sealed class ProfiledInstanceIsolationRouteLifecycle :
 
     private readonly IProfiledOwnedCallerRoute owned;
 
-    /// <summary>Creates the exact route owner over the checked-in profiler.</summary>
+    /// <summary>Creates the exact route owner over the startup profiler.</summary>
     internal ProfiledInstanceIsolationRouteLifecycle(
         IInterceptionBackend profiler)
     {

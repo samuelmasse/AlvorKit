@@ -19,7 +19,7 @@ internal sealed class ProfiledBasicRouteLifecycle :
 
     private readonly Dictionary<string, IProfiledOwnedCallerRoute> routes;
 
-    /// <summary>Creates all six exact route owners over the checked-in profiler.</summary>
+    /// <summary>Creates all six exact route owners over the startup profiler.</summary>
     internal ProfiledBasicRouteLifecycle(IInterceptionBackend profiler)
     {
         routes = new(StringComparer.Ordinal)

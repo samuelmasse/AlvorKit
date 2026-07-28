@@ -13,7 +13,7 @@ internal sealed class ProfiledInstanceFieldRouteLifecycle :
         string,
         IProfiledReceiverFreeCallerRoute> routes;
 
-    /// <summary>Creates both exact field routes over the checked-in profiler.</summary>
+    /// <summary>Creates both exact field routes over the startup profiler.</summary>
     internal ProfiledInstanceFieldRouteLifecycle(
         IInterceptionBackend profiler)
     {

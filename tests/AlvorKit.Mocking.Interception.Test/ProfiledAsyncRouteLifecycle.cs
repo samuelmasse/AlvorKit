@@ -8,7 +8,7 @@ internal sealed class ProfiledAsyncRouteLifecycle :
         "ProfiledAsyncCaller.Selected::ProfiledAsyncTarget.AddAsync";
     private readonly IProfiledOwnedCallerRoute route;
 
-    /// <summary>Creates the exact asynchronous route over the checked-in profiler.</summary>
+    /// <summary>Creates the exact asynchronous route over the startup profiler.</summary>
     internal ProfiledAsyncRouteLifecycle(IInterceptionBackend profiler)
     {
         var selected = Caller(nameof(ProfiledAsyncCaller.Selected));

@@ -16,10 +16,6 @@ public sealed class ProfiledVSTestLauncherTest
     private const string ExpectedProfilerParameter =
         "AlvorKitExpectedProfiler";
 
-    /// <summary>The CI marker that turns a missing native proof asset into a failure.</summary>
-    private const string RequiredProofVariable =
-        "ALVORKIT_INTERCEPTION_PROOF_REQUIRED";
-
     /// <summary>Gets or sets the current MSTest context and supplied run parameters.</summary>
     public TestContext TestContext { get; set; } = null!;
 
@@ -31,7 +27,9 @@ public sealed class ProfiledVSTestLauncherTest
     public async Task ProfiledRunsFollowedByPlainRun_IsolateProfilerActivation()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var profilerPath = ResolveCheckedInProfilerOrSkip(repositoryRoot);
+        var profilerPath = InterceptionProfilerAsset.Resolve(
+            repositoryRoot,
+            configuredPath: null);
         var projectPath = Path.Combine(
             repositoryRoot,
             "tests",
@@ -68,6 +66,42 @@ public sealed class ProfiledVSTestLauncherTest
         Assert.AreEqual(0, firstExitCode, "The first profiled VSTest child failed.");
         Assert.AreEqual(0, secondExitCode, "The second profiled VSTest child failed.");
         Assert.AreEqual(0, plainExitCode, "The plain VSTest child inherited profiler activation.");
+    }
+
+    /// <summary>The native NuGet package copies the current RID asset into the launcher output.</summary>
+    [TestMethod]
+    public void PackagedProfiler_IsAvailableWithoutRepositoryBuildOutput()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var expected = Path.Combine(
+            AppContext.BaseDirectory,
+            "runtimes",
+            InterceptionProfilerAsset.RuntimeIdentifier,
+            "native",
+            InterceptionProfilerAsset.FileName);
+        var inherited = Environment.GetEnvironmentVariable(
+            InterceptionProfilerAsset.PathVariable);
+
+        try
+        {
+            Environment.SetEnvironmentVariable(
+                InterceptionProfilerAsset.PathVariable,
+                null);
+            var resolved = InterceptionProfilerAsset.Resolve(
+                repositoryRoot,
+                configuredPath: null);
+
+            Assert.AreEqual(
+                Path.GetFullPath(expected),
+                Path.GetFullPath(resolved));
+            Assert.IsTrue(File.Exists(resolved));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(
+                InterceptionProfilerAsset.PathVariable,
+                inherited);
+        }
     }
 
     /// <summary>
@@ -157,35 +191,6 @@ public sealed class ProfiledVSTestLauncherTest
 
         throw new DirectoryNotFoundException(
             "Could not locate the AlvorKit repository from the test output directory.");
-    }
-
-    /// <summary>Resolves the checked-in native asset or marks this acceptance inconclusive.</summary>
-    private static string ResolveCheckedInProfilerOrSkip(string repositoryRoot)
-    {
-        var checkedInPath = Path.Combine(
-            repositoryRoot,
-            "native",
-            "interception-profiler",
-            "runtimes",
-            InterceptionProfilerAsset.RuntimeIdentifier,
-            "native",
-            InterceptionProfilerAsset.FileName);
-        try
-        {
-            return InterceptionProfilerAsset.Resolve(repositoryRoot, checkedInPath);
-        }
-        catch (Exception exception) when (
-            !string.Equals(
-                Environment.GetEnvironmentVariable(RequiredProofVariable),
-                "1",
-                StringComparison.Ordinal) &&
-            exception is PlatformNotSupportedException or FileNotFoundException)
-        {
-            Assert.Inconclusive(
-                $"MIR-70b requires the checked-in {InterceptionProfilerAsset.RuntimeIdentifier} .NET 10 profiler asset: " +
-                exception.Message);
-            throw;
-        }
     }
 
     /// <summary>Runs the evidence filter through ordinary VSTest without profiler settings.</summary>

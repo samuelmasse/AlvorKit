@@ -467,9 +467,8 @@ into the parent test runner:
 
 ```powershell
 dotnet run --project scripts/AlvorKit.Script.TestInterception -- `
-  --project tests/Example.Mocking.Interception.Test/Example.Mocking.Interception.Test.csproj `
-  --configuration Release `
-  --profiler-path <absolute-profiler-dll>
+  --test-project tests/Example.Mocking.Interception.Test/Example.Mocking.Interception.Test.csproj `
+  --configuration Release
 ```
 
 See [AlvorKit Interception](Interception.md) for startup, platform, allowlist,

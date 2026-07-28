@@ -13,7 +13,7 @@ internal sealed class ProfiledStaticFieldTransformRouteLifecycle :
         string,
         IProfiledReceiverFreeCallerRoute> routes;
 
-    /// <summary>Creates the exact field routes over the checked-in profiler.</summary>
+    /// <summary>Creates the exact field routes over the startup profiler.</summary>
     internal ProfiledStaticFieldTransformRouteLifecycle(
         IInterceptionBackend profiler)
     {

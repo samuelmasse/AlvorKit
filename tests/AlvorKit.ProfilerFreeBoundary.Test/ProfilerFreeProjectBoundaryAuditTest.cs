@@ -7,6 +7,9 @@ public sealed class ProfilerFreeProjectBoundaryAuditTest
     private const string CoreClrProject =
         "src/AlvorKit.Interception.CoreClr/AlvorKit.Interception.CoreClr.csproj";
 
+    private const string LauncherProject =
+        "scripts/AlvorKit.Script.TestInterception/AlvorKit.Script.TestInterception.csproj";
+
     private static readonly string[] ForbiddenReferences =
     [
         "AlvorKit.Interception.CoreClr",
@@ -44,9 +47,9 @@ public sealed class ProfilerFreeProjectBoundaryAuditTest
             AssertProfilerFreeClosure(repositoryRoot, consumer);
     }
 
-    /// <summary>Only the optional CoreCLR project directly carries profiler backend or native asset references.</summary>
+    /// <summary>Only the CoreCLR backend and isolated launcher carry direct profiler package references.</summary>
     [TestMethod]
-    public void CoreClrProject_IsOnlyDirectProfilerAssetCarrier()
+    public void ProfilerHostProjects_AreOnlyDirectProfilerPackageCarriers()
     {
         var repositoryRoot = FindRepositoryRoot();
         var carriers = ProjectFiles(repositoryRoot)
@@ -60,7 +63,9 @@ public sealed class ProfilerFreeProjectBoundaryAuditTest
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-        CollectionAssert.AreEqual(new[] { CoreClrProject }, carriers);
+        CollectionAssert.AreEqual(
+            new[] { LauncherProject, CoreClrProject },
+            carriers);
 
         var coreClr = Path.Combine(
             repositoryRoot,
@@ -79,7 +84,20 @@ public sealed class ProfilerFreeProjectBoundaryAuditTest
         Assert.IsTrue(
             references.Any(
                 reference =>
-                    IsProfilerBackendOrAsset(reference.Include)));
+                    reference.Kind == "PackageReference" &&
+                    reference.Include ==
+                    "AlvorKit.Interception.Profiler.Backend"));
+
+        var launcher = Path.Combine(
+            repositoryRoot,
+            LauncherProject.Replace('/', Path.DirectorySeparatorChar));
+        CollectionAssert.Contains(
+            References(launcher)
+                .Where(static reference =>
+                    reference.Kind == "PackageReference")
+                .Select(static reference => reference.Include)
+                .ToArray(),
+            "AlvorKit.Interception.Profiler.Native");
     }
 
     private static void AssertProfilerFreeClosure(

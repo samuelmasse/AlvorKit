@@ -8,7 +8,7 @@ internal sealed class ProfiledWideRouteLifecycle :
         "ProfiledWideCaller.Selected::ProfiledWideTarget.Wide";
     private readonly IProfiledOwnedCallerRoute route;
 
-    /// <summary>Creates the exact wide route over the checked-in profiler.</summary>
+    /// <summary>Creates the exact wide route over the startup profiler.</summary>
     internal ProfiledWideRouteLifecycle(IInterceptionBackend profiler)
     {
         var selected = Caller(nameof(ProfiledWideCaller.Selected));

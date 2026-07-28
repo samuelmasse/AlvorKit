@@ -17,7 +17,7 @@ internal sealed class ProfiledStaticRouteLifecycle :
         string,
         IProfiledReceiverFreeCallerRoute> routes;
 
-    /// <summary>Creates all four exact static routes over the checked-in profiler.</summary>
+    /// <summary>Creates all four exact static routes over the startup profiler.</summary>
     internal ProfiledStaticRouteLifecycle(IInterceptionBackend profiler)
     {
         routes = new(StringComparer.Ordinal)

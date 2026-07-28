@@ -10,7 +10,7 @@ internal sealed class ProfiledParallelStaticRouteLifecycle :
     private readonly ProfiledReceiverFreeCallerRoute<
         ProfiledReceiverFreeInt32Unary> route;
 
-    /// <summary>Creates the shared static route over the checked-in profiler.</summary>
+    /// <summary>Creates the shared static route over the startup profiler.</summary>
     internal ProfiledParallelStaticRouteLifecycle(
         IInterceptionBackend profiler)
     {
