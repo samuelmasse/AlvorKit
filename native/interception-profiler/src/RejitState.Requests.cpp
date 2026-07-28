@@ -13,7 +13,7 @@ HRESULT RejitState::ValidateGenerationInstall(const RuntimeMethodKey& method, co
 
   const auto existing_patch = patches_.find(method);
   if (existing_patch == patches_.end()) {
-    return command.prior_generation_id == 0 ? S_OK : HRESULT_FROM_WIN32(ERROR_REVISION_MISMATCH);
+    return command.prior_generation_id == 0 ? S_OK : kRevisionMismatchStatus;
   }
 
   const ProfilerPatch& patch = existing_patch->second;
@@ -22,7 +22,7 @@ HRESULT RejitState::ValidateGenerationInstall(const RuntimeMethodKey& method, co
   }
   if (patch.pending_request_id != 0)
     return HRESULT_FROM_WIN32(ERROR_BUSY);
-  return patch.active_generation_id == command.prior_generation_id ? S_OK : HRESULT_FROM_WIN32(ERROR_REVISION_MISMATCH);
+  return patch.active_generation_id == command.prior_generation_id ? S_OK : kRevisionMismatchStatus;
 }
 
 HRESULT RejitState::BeginInstall(const RuntimeMethodKey& method, const ProfilerCommand& command,
@@ -60,7 +60,7 @@ HRESULT RejitState::BeginInstall(const RuntimeMethodKey& method, const ProfilerC
 
   ProfilerPatch& value = patch->second;
   if (command.body_kind == ProfilerBodyKind::Generation && value.active_generation_id != command.prior_generation_id) {
-    const HRESULT status = HRESULT_FROM_WIN32(ERROR_REVISION_MISMATCH);
+    const HRESULT status = kRevisionMismatchStatus;
     auto* generation = completions_.FindGeneration(command.request_id);
     if (generation != nullptr)
       generation->failure_stage = ALVORKIT_INTERCEPTION_FAILURE_VALIDATION;

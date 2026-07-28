@@ -18,7 +18,7 @@ HRESULT ProfilerRuntime::ValidateBaseline(const RuntimeMethodKey& method,
     return COR_E_BADIMAGEFORMAT;
 
   const auto actual = ComputeBodyIdentity(body, body_size);
-  return std::equal(actual.begin(), actual.end(), expected.sha256) ? S_OK : HRESULT_FROM_WIN32(ERROR_REVISION_MISMATCH);
+  return std::equal(actual.begin(), actual.end(), expected.sha256) ? S_OK : kRevisionMismatchStatus;
 }
 
 HRESULT ProfilerRuntime::PrepareGeneration(const RuntimeMethodKey& method, ProfilerCommand* command) {

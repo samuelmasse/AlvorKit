@@ -9,6 +9,8 @@
 #include "CoreClrHeaders.hpp"
 #include "alvorkit_interception_profiler.h"
 
+inline constexpr HRESULT kRevisionMismatchStatus = HRESULT_FROM_WIN32(1306L);
+
 struct RuntimeMethodKey {
   ModuleID module_id = 0;
   mdMethodDef method_id = mdMethodDefNil;
