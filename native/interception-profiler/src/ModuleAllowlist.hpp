@@ -3,8 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "cor.h"
-#include "corprof.h"
+#include "CoreClrHeaders.hpp"
 
 class ModuleAllowlist {
 public:

@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "CoreClrHeaders.hpp"
 #include "alvorkit_interception_profiler.h"
-#include "cor.h"
 
 HRESULT ValidateGenerationRelocations(const std::vector<alvorkit_interception_relocation_v3>& relocations,
                                       const std::vector<uint8_t>& metadata, const std::vector<uint8_t>& body,

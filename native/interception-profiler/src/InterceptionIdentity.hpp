@@ -1,7 +1,7 @@
 #pragma once
 
+#include "CoreClrHeaders.hpp"
 #include "alvorkit_interception_profiler.h"
-#include "cor.h"
 
 GUID ToGuid(const alvorkit_guid_v2& value);
 

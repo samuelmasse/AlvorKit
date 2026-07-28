@@ -1,7 +1,8 @@
 #pragma once
 
 #include <atomic>
-#include <unknwn.h>
+
+#include "CoreClrHeaders.hpp"
 
 class InterceptionClassFactory final : public IClassFactory {
 public:

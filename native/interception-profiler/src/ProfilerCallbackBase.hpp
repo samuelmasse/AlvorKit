@@ -1,11 +1,8 @@
 #pragma once
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
 #include <atomic>
-#include <cor.h>
-#include <corprof.h>
+
+#include "CoreClrHeaders.hpp"
 
 class ProfilerCallbackBase : public ICorProfilerCallback4 {
 public:

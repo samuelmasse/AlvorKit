@@ -6,9 +6,8 @@
 #include <memory>
 #include <vector>
 
+#include "CoreClrHeaders.hpp"
 #include "alvorkit_interception_profiler.h"
-#include "cor.h"
-#include "corprof.h"
 
 struct RuntimeMethodKey {
   ModuleID module_id = 0;

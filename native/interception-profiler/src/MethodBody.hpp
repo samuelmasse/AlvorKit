@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "cor.h"
+#include "CoreClrHeaders.hpp"
 
 struct MethodExceptionClause {
   uint32_t flags = 0;
