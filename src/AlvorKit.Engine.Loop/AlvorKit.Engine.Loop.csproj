@@ -6,7 +6,6 @@
 
     <ItemGroup>
         <PackageReference Include="Tomlyn" Version="0.19.0" />
-        <PackageReference Include="ZString" Version="2.6.0" />
     </ItemGroup>
 
     <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
@@ -62,7 +61,9 @@
         <ProjectReference Include="..\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
         <ProjectReference Include="..\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
         <ProjectReference Include="..\AlvorKit.Injection\AlvorKit.Injection.csproj" />
+        <ProjectReference Include="..\AlvorKit.Logging\AlvorKit.Logging.csproj" />
         <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
+        <ProjectReference Include="..\AlvorKit.Text\AlvorKit.Text.csproj" />
         <ProjectReference Include="..\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing.Agent\AlvorKit.Windowing.Agent.csproj" />
@@ -84,11 +85,12 @@
         <Using Include="AlvorKit.MiniAudio" />
         <Using Include="AlvorKit.XxHash" />
         <Using Include="AlvorKit.Injection" />
+        <Using Include="AlvorKit.Logging" />
         <Using Include="AlvorKit.Maths" />
+        <Using Include="AlvorKit.Text" />
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.OpenGL.Layer" />
         <Using Include="AlvorKit.Windowing" />
-        <Using Include="Cysharp.Text" />
         <Using Include="System.Globalization" />
         <Using Include="System.Runtime" />
         <Using Include="Tomlyn" />

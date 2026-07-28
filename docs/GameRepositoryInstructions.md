@@ -249,6 +249,7 @@ rules:
   controls, seeding, and constructor ordering.
 - `GlOwnership.md`: hierarchical `GlLayer` ownership and GPU object lifetime.
 - `MenuAuthoring.md`: `AlvorKit.UI` menus and the one-public-`Create` shape.
+- `Logging.md`: application logging in standard engine-loop and custom headless hosts.
 - `AgentVerification.md`: lint, timing, coverage, artifacts, and report reading.
 - `AgentCoordination.md`: leases, conflicts, complaints, staging discipline.
 - `GeneratedOutputChecks.md`: generator and generated-output review workflow.

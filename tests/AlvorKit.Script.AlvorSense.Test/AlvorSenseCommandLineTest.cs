@@ -28,11 +28,53 @@ public sealed class AlvorSenseCommandLineTest
 
         Assert.AreEqual("game-1", command.Id);
         Assert.AreEqual("demos/Game/Game.csproj", command.Project);
+        Assert.IsNull(command.Assembly);
         Assert.AreEqual("C:/repo", command.WorkingDirectory);
         Assert.AreEqual(TimeSpan.FromSeconds(4.5), command.Timeout);
         Assert.AreEqual("B", command.Environment["A"]);
         Assert.AreEqual("out/result.json", command.Environment["ALVOREYE_DEMO_RESULT_PATH"]);
         Assert.AreEqual("1", command.Environment["ALVORKIT_AUDIO_SILENT"]);
+    }
+
+    /// <summary>Start commands can launch one prebuilt managed assembly without a project build.</summary>
+    [TestMethod]
+    public void Parse_StartAssemblyCommand_ReturnsValues()
+    {
+        var command = (AlvorSenseStartCommand)AlvorSenseCommandLine.Parse(
+            [
+                "start",
+                "--assembly",
+                "bin/Game/Release/Game.dll",
+                "--id",
+                "game-release",
+            ],
+            new StringReader(""));
+
+        Assert.AreEqual("game-release", command.Id);
+        Assert.IsNull(command.Project);
+        Assert.AreEqual(
+            "bin/Game/Release/Game.dll",
+            command.Assembly);
+    }
+
+    /// <summary>Start commands reject missing and ambiguous target selection.</summary>
+    [TestMethod]
+    public void Parse_StartTargetSelection_RequiresExactlyOneTarget()
+    {
+        Assert.ThrowsExactly<ArgumentException>(
+            () => AlvorSenseCommandLine.Parse(
+                ["start"],
+                new StringReader("")));
+        Assert.ThrowsExactly<ArgumentException>(
+            () => AlvorSenseCommandLine.Parse(
+                [
+                    "start",
+                    "--project",
+                    "game.csproj",
+                    "--assembly",
+                    "game.dll",
+                ],
+                new StringReader("")));
     }
 
     /// <summary>Start commands choose defaults and silence target audio when optional values are omitted.</summary>
@@ -317,6 +359,7 @@ public sealed class AlvorSenseCommandLineTest
 
         Assert.AreEqual("game-1", manifest.Id);
         Assert.AreEqual("game.csproj", manifest.Project);
+        Assert.IsNull(manifest.Assembly);
         Assert.AreEqual("C:/repo", manifest.WorkingDirectory);
         Assert.AreEqual("B", manifest.Environment["A"]);
         Assert.AreNotSame(command.Environment, manifest.Environment);

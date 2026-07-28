@@ -70,12 +70,14 @@ public class NewGameGeneratorTest
         new NewGameGenerator().Generate(options);
 
         var app = Read(output, "src/SplitGame.App/SplitGame.App.csproj");
+        StringAssert.Contains(app, "AlvorKit.Logging.csproj");
         AssertDoesNotContain(app, "AlvorKit.Engine.Loop");
         AssertDoesNotContain(app, "AlvorKit.UI");
         AssertDoesNotContain(app, "AlvorKit.OpenGL");
         AssertDoesNotContain(app, "AlvorKit.Windowing");
         AssertDoesNotContain(app, "SplitGame.App.Frontend");
         AssertDoesNotContain(app, "SplitGame.Menus");
+        StringAssert.Contains(Read(output, "src/SplitGame.App/AppCounter.cs"), "AppCounter(Log log)");
 
         var frontend = Read(output, "src/SplitGame.App.Frontend/SplitGame.App.Frontend.csproj");
         StringAssert.Contains(frontend, "AlvorKit.Engine.csproj");

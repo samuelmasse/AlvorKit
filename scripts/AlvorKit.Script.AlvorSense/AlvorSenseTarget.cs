@@ -42,7 +42,7 @@ internal sealed class AlvorSenseTarget : IDisposable
     /// <summary>Gets the number of stdout lines captured so far.</summary>
     internal int LineCount { get { lock (gate) return lines.Count; } }
 
-    /// <summary>Starts the target project with the AlvorSense environment enabled.</summary>
+    /// <summary>Starts the target project or assembly with the AlvorSense environment enabled.</summary>
     /// <param name="sessionDir">Session directory where target logs are written.</param>
     /// <param name="manifest">Session manifest describing the target process.</param>
     /// <returns>A started target process wrapper.</returns>
@@ -63,9 +63,19 @@ internal sealed class AlvorSenseTarget : IDisposable
         start.Environment[AlvorSenseEnvironment.AudioSilentVariable] = AlvorSenseEnvironment.EnabledValue;
         foreach (var pair in manifest.Environment)
             start.Environment[pair.Key] = pair.Value;
-        start.ArgumentList.Add("run");
-        start.ArgumentList.Add("--project");
-        start.ArgumentList.Add(manifest.Project);
+        if (manifest.Assembly is not null)
+        {
+            start.ArgumentList.Add(manifest.Assembly);
+        }
+        else
+        {
+            start.ArgumentList.Add("run");
+            start.ArgumentList.Add("--project");
+            start.ArgumentList.Add(
+                manifest.Project
+                ?? throw new InvalidOperationException(
+                    "AlvorSense session manifest has no project or assembly."));
+        }
         return new(sessionDir, Process.Start(start) ?? throw new InvalidOperationException("Failed to start target process."));
     }
 

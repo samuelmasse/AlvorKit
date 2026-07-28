@@ -7,6 +7,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.Engine\AlvorKit.Engine.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Logging\AlvorKit.Logging.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -16,6 +17,7 @@
         <Using Include="AlvorKit.FreeType" />
         <Using Include="AlvorKit.GLFW" />
         <Using Include="AlvorKit.Injection" />
+        <Using Include="AlvorKit.Logging" />
         <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.MiniAudio" />
         <Using Include="AlvorKit.OpenGL" />

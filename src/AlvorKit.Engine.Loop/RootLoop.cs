@@ -17,20 +17,30 @@ public static class RootLoop
     /// <param name="inject">Optional callback that seeds caller services after built-in registrations.</param>
     public static void RunGlfw(Type bootState, Action<Injector>? inject = null)
     {
+        using var logging = new LogRuntime();
+        logging.Start();
+
         ConfigureProcess();
         var glfw = CreateGlfw();
         ConfigureGlfw(glfw);
 
         var nativeWindow = CreateNativeWindow(glfw);
-        RunGlfwWindow(glfw, nativeWindow, bootState, inject);
+        RunGlfwWindow(glfw, nativeWindow, logging.Log, bootState, inject);
         glfw.DestroyWindow(nativeWindow);
         glfw.Terminate();
     }
 
-    private static void Run(IWindowHost host, IFileDialogHost fileDialogs, RootGl gl, Type bootState, Action<Injector>? inject)
+    /// <summary>Builds the root scope and runs the application state machine.</summary>
+    private static void Run(
+        IWindowHost host,
+        IFileDialogHost fileDialogs,
+        RootGl gl,
+        Log log,
+        Type bootState,
+        Action<Injector>? inject)
     {
         var window = new WindowLoop(host);
-        var injector = CreateInjector();
+        var injector = CreateInjector(log);
         injector.Add(window);
         injector.Add<IWindowHost>(host);
         var root = CreateRootScope(injector, window, fileDialogs, gl);
@@ -91,9 +101,11 @@ public static class RootLoop
         return window;
     }
 
+    /// <summary>Creates GLFW-backed hosts and runs the application in <paramref name="nativeWindow"/>.</summary>
     private static void RunGlfwWindow(
         GlfwBackend glfw,
         GlfwWindow nativeWindow,
+        Log log,
         Type bootState,
         Action<Injector>? inject)
     {
@@ -104,7 +116,7 @@ public static class RootLoop
         using var fileDialogs = new GlfwFileDialogHost(glfw, nativeWindow);
         using var window = new AgentGlfwWindowHost(glfw, nativeWindow, rootGl);
 
-        Run(window, fileDialogs, rootGl, bootState, injector =>
+        Run(window, fileDialogs, rootGl, log, bootState, injector =>
         {
             injector.Add<Gl>(gl);
             injector.Add<Glfw>(glfw);
@@ -126,9 +138,11 @@ public static class RootLoop
         glfw.SwapInterval(0);
     }
 
-    private static Injector CreateInjector()
+    /// <summary>Creates the built-in root injector, including the application log.</summary>
+    private static Injector CreateInjector(Log log)
     {
         var injector = new Injector();
+        injector.Add(log);
         injector.Add<Fn>(new FnBackend());
         injector.Add<Ft>(new FtBackend());
         injector.Add<Ma>(CreateAudioBackend());

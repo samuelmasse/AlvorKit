@@ -58,4 +58,28 @@ public sealed class RootTextTest
         Assert.AreEqual("(1, 2, 3, 4)", text.Format("{0}", new Vec4i(1, 2, 3, 4)).ToString());
         Assert.AreEqual("(1, 2, 3, 4)", text.Format("{0}", new Vec4d(1, 2, 3, 4)).ToString());
     }
+
+    /// <summary>Math formatting allocates no managed memory after the formatter and retained buffer are warm.</summary>
+    [TestMethod]
+    public void Format_WithMathValue_DoesNotAllocateAfterWarmup()
+    {
+        var text = new RootText();
+        Vec3 position = (1.25f, 2.5f, 3.75f);
+
+        for (int i = 0; i < 1_000; i++)
+        {
+            _ = text.Format("position={0:F2}", position);
+            text.Clear();
+        }
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        for (int i = 0; i < 10_000; i++)
+        {
+            _ = text.Format("position={0:F2}", position);
+            text.Clear();
+        }
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.AreEqual(0, allocated);
+    }
 }

@@ -14,6 +14,10 @@ The project split follows `../AlvorKit/docs/ProjectSplitModel.md`:
 - `AlvorStarter.Menus`: menu UI, menu styling, and state glue,
 - `AlvorStarter`: executable startup and engine loop ownership.
 
+The engine loop registers an `AlvorKit.Logging.Log` before the root state loads,
+so any app scope can inject the same application log. See
+`../AlvorKit/docs/Logging.md` for custom and headless hosting.
+
 Keep the split real in `.csproj` files. Pure packages should not reference UI,
 OpenGL, windowing, audio, menu, or frontend packages. Frontend packages should
 use `AlvorKit.Engine`, not `AlvorKit.Engine.Loop`; loop ownership belongs in the

@@ -87,6 +87,7 @@ or hosted by a server.
 Good dependencies for pure packages:
 
 - maths,
+- logging,
 - dependency injection attributes/scopes,
 - pure data libraries,
 - protocol or command contracts.

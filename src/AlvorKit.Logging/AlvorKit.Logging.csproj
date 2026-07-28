@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Text\AlvorKit.Text.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Text" />
+        <InternalsVisibleTo Include="AlvorKit.Logging.Test" />
+    </ItemGroup>
+
+</Project>

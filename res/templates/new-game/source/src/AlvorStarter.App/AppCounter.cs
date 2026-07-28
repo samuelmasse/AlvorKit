@@ -2,7 +2,7 @@ namespace AlvorStarter.App;
 
 /// <summary>Stores the starter UI click count.</summary>
 [App]
-public class AppCounter
+public class AppCounter(Log log)
 {
     private int value;
 
@@ -10,7 +10,11 @@ public class AppCounter
     public int Value => value;
 
     /// <summary>Increments the click count.</summary>
-    public void Increment() => value++;
+    public void Increment()
+    {
+        value++;
+        log.Debug("Starter click count is {0}", value);
+    }
 
     /// <summary>Resets the click count.</summary>
     public void Reset() => value = 0;

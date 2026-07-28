@@ -25,6 +25,7 @@ Run commands:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.AlvorSense -- start --id <id> --project <project.csproj>
+dotnet run --project scripts\AlvorKit.Script.AlvorSense -- start --id <id> --assembly <prebuilt-game.dll>
 dotnet run --project scripts\AlvorKit.Script.AlvorSense -- send --id <id>
 dotnet run --project scripts\AlvorKit.Script.AlvorSense -- list
 dotnet run --project scripts\AlvorKit.Script.AlvorSense -- status --id <id>
@@ -123,6 +124,9 @@ Useful options:
 
 - `--id <id>` chooses a stable session id.
 - `--project <project.csproj>` selects the target game project.
+- `--assembly <game.dll>` launches an already-built managed game assembly
+  instead of running a project. Use this for exact Release artifacts and
+  startup-loaded profilers such as LivePatch.
 - `--workdir <dir>` sets the target working directory. The default is the
   current directory.
 - `--env NAME=VALUE` passes an extra environment variable to the target. Repeat

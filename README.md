@@ -2,6 +2,12 @@
 
 AlvorKit is a C# game development kit
 
+## Logging
+
+Standard engine-loop games receive an injectable application log automatically.
+Dedicated servers and custom hosts can own the same runtime explicitly. See the
+[logging guide](docs/Logging.md).
+
 ## Ent-component system
 
 AlvorKit games use the AlvorKit ECS for game Ents. Start with the

@@ -29,6 +29,23 @@ public sealed class RootLoopBindingTest
         Assert.AreEqual(window, consumer.Window);
     }
 
+    /// <summary>The application log registered above the engine root resolves unchanged in nested game scopes.</summary>
+    [TestMethod]
+    public void Injector_LogAboveRootScope_ResolvesFromRootState()
+    {
+        using var logging = new LogRuntime(TextWriter.Null);
+        var injector = new Injector();
+        injector.Add(logging.Log);
+        var root = injector.Scope<RootScope>();
+
+        var consumer = root.Get<RootLogConsumer>();
+
+        Assert.AreSame(logging.Log, consumer.Log);
+    }
+
     [Root]
     private sealed record RootBindingConsumer(Fn Fn, Ft Ft, Ma Ma, Xxh Xxh, GlfwWindow Window);
+
+    [Root]
+    private sealed record RootLogConsumer(Log Log);
 }
