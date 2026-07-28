@@ -19,19 +19,27 @@ public class RootGraphics2D(
 
         sprites.Begin(canvas.Size);
         state.Current.Draw();
-        End();
+        End(null);
 
         foreach (var script in scripts.Span)
         {
-            sprites.Begin(script.DrawArea ?? canvas.Size);
+            var viewport = script.DrawViewport;
+            sprites.Begin(script.DrawArea ?? viewport?.Size ?? canvas.Size);
             script.Draw();
-            End();
+            End(viewport);
         }
     }
 
-    private void End()
+    private void End(Box2? viewport)
     {
-        gl.Viewport(canvas.Size);
+        if (viewport.HasValue)
+        {
+            var (origin, size) = ResolveViewport(
+                canvas.Size,
+                viewport.GetValueOrDefault());
+            gl.Viewport(origin, size);
+        }
+        else gl.Viewport(canvas.Size);
 
         gl.Enable(GlEnableCap.Blend);
         gl.Enable(GlEnableCap.CullFace);
@@ -49,4 +57,15 @@ public class RootGraphics2D(
 
         gl.ResetViewport();
     }
+
+    internal static (Vec2i Origin, Vec2u Size) ResolveViewport(
+        Vec2 canvasSize,
+        Box2 viewport) =>
+        (
+            (
+                (int)MathF.Round(viewport.Min.X),
+                (int)MathF.Round(canvasSize.Y - viewport.Max.Y)),
+            (
+                (uint)Math.Max(0, (int)MathF.Round(viewport.Size.X)),
+                (uint)Math.Max(0, (int)MathF.Round(viewport.Size.Y))));
 }

@@ -157,6 +157,41 @@ Use style objects for visual language, not for every number.
 - If a number only describes one menu's geometry, animation, breakpoint, or
   label fit rule, keep it local.
 
+## UI Surfaces And Scaling
+
+Most apps should keep using the original full-window API. Inject `RootUi`,
+mount ordinary nodes on it, and add `RootUiScript` to `RootScripts`. That tree
+is the default surface; no surface setup is required.
+
+Use `RootUiSurfaces` only when one window genuinely needs UI regions with
+different physical scales or viewport origins. A surface owns an independent
+`RootUi`, converts mouse input into its local coordinates, clips drawing to its
+physical viewport, and activates the matching `RootUiScale` and
+`RootUiContext` while its callbacks run.
+
+```csharp
+game = surfaces.Create(
+    () => new Box2(gameViewport.Min, gameViewport.Max),
+    scale: 1f,
+    order: 10f);
+
+tools = surfaces.Create(
+    () => userScale.Value,
+    order: 20f);
+
+Node(game.Root, out var gameMount);
+gameMenu.Create(gameMount);
+
+Node(tools.Root, out var toolsMount);
+toolsMenu.Create(toolsMount);
+```
+
+The viewport and scale functions are resolved each frame. Changing their
+values relayouts the existing trees; do not rebuild a menu merely because its
+surface scale changed. Higher-order surfaces draw later and receive the first
+chance to handle input, while transparent space falls through to lower
+surfaces. Dispose app-owned surfaces when their owning state unloads.
+
 ## Splitting Menus
 
 Split a menu when the `Create` method stops reading like one coherent UI

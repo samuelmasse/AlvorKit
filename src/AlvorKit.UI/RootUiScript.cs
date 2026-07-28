@@ -2,18 +2,13 @@ namespace AlvorKit.UI;
 
 [Root]
 public class RootUiScript(
-    RootCanvas canvas,
-    RootUiScale scale,
-    RootUiTraverse traverse,
-    RootUiSize size,
-    RootUiPosition position,
-    RootUiDraw draw,
-    RootUi ui,
+    RootUiSurfaces surfaces,
     RootUiMouse mouse,
     RootUiFocus focus,
     RootUiUpdate update) : Script
 {
-    public override Vec2? DrawArea => canvas.Size / scale.Scale;
+    /// <summary>Gets the logical draw area of the backward-compatible default full-window surface.</summary>
+    public override Vec2? DrawArea => surfaces.Default.Size;
 
     /// <summary>
     /// Runs UI layout, input dispatch, and cleanup in the logical update phase. Input work must happen here:
@@ -22,22 +17,19 @@ public class RootUiScript(
     /// </summary>
     public override void Update(double delta)
     {
-        ResetRoot();
-        Traverse();
-        mouse.Hover(ui);
-        mouse.Update(ui);
-        focus.Update(ui);
-        update.Update(ui);
-        ui.Cleanup();
+        surfaces.PrepareAll();
+        mouse.Hover(surfaces);
+        mouse.Update(surfaces);
+        focus.Update(surfaces);
+        surfaces.UpdateAll(update);
     }
 
     public override void Draw()
     {
-        ResetRoot();
-        Traverse();
-        mouse.Hover(ui);
+        surfaces.PrepareAll();
+        mouse.Hover(surfaces);
         mouse.Draw();
-        draw.Draw(ui);
+        surfaces.DrawDefault();
     }
 
     /// <summary>
@@ -45,23 +37,4 @@ public class RootUiScript(
     /// takes over input does not keep the last hovered control's cursor.
     /// </summary>
     public override void Unload() => mouse.Unload();
-
-    private void ResetRoot()
-    {
-        ui.IsOrderedFV = true;
-        ui.SizeFV = DrawArea.GetValueOrDefault();
-        ui.SizeRelativeFV = (Vec2?)(0, 0);
-    }
-
-    private void Traverse()
-    {
-        do
-        {
-            traverse.Traverse(ui, null, 0);
-            size.Size(ui.SizeR, ui);
-            position.Position(ui.SizeR, default, ui);
-            position.Finalize(ui.OffsetR, ui);
-        }
-        while (traverse.Delay(ui));
-    }
 }

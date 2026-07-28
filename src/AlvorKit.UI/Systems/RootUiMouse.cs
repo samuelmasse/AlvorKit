@@ -1,14 +1,16 @@
 namespace AlvorKit.UI;
 
 [Root]
-public class RootUiMouse(RootMouse mouse, RootUiScale scale, RootUiFocus focus, RootUiClipping clipping)
+public class RootUiMouse(RootMouse mouse, RootUiFocus focus, RootUiClipping clipping)
 {
     private const long DoubleClickMs = 500;
 
+    private readonly UiMouseHitSearch hitSearch = new(clipping);
     private Vec2 position;
     private EntMut prevHovered;
     private EntMut pressedMain;
     private EntMut pressedSecondary;
+    private UiSurface? hoveredSurface;
     private bool prevMainDown;
     private bool prevSecondaryDown;
     private EntMut lastClickTarget;
@@ -17,17 +19,41 @@ public class RootUiMouse(RootMouse mouse, RootUiScale scale, RootUiFocus focus, 
     public Vec2 Position => position;
     public EntMut Hovered => prevHovered;
 
-    internal void Hover(EntMut n)
+    internal void Hover(RootUiSurfaces surfaces)
     {
-        position = mouse.Position / scale.Scale;
-
         if (CursorGrabbed())
         {
             ClearHovered();
             return;
         }
 
-        var hovered = FindHovered(null, n, false);
+        var hovered = default(EntMut);
+        UiSurface? surface = null;
+        var span = surfaces.Span;
+        for (var index = span.Length - 1; index >= 0; index--)
+        {
+            var candidate = span[index];
+            var active = surfaces.Activate(candidate);
+            try
+            {
+                position = LocalPosition(candidate);
+                hovered = hitSearch.Hovered(position, candidate.Root);
+                if (hovered != default)
+                {
+                    surface = candidate;
+                    break;
+                }
+            }
+            finally
+            {
+                surfaces.Restore(active);
+            }
+        }
+
+        hoveredSurface = surface;
+        if (surface is null)
+            position = LocalPosition(surfaces.Default);
+
         if (hovered != prevHovered)
         {
             prevHovered.IsHoveredR = false;
@@ -51,7 +77,7 @@ public class RootUiMouse(RootMouse mouse, RootUiScale scale, RootUiFocus focus, 
         mouse.CursorShape = CursorShape.Default;
     }
 
-    internal void Update(EntMut n)
+    internal void Update(RootUiSurfaces surfaces)
     {
         if (CursorGrabbed())
         {
@@ -61,52 +87,94 @@ public class RootUiMouse(RootMouse mouse, RootUiScale scale, RootUiFocus focus, 
             return;
         }
 
-        var scrolled = FindScrolled(null, n, false);
-        if (mouse.Wheel != default)
-            scrolled.OnScrollFV.Resolve()?.Invoke(mouse.Wheel);
+        DispatchScroll(surfaces);
 
-        if (mouse.IsMainDown())
+        var active = hoveredSurface is null
+            ? default(UiSurfaceActiveState?)
+            : surfaces.Activate(hoveredSurface);
+        try
         {
-            if (!prevMainDown)
+            if (mouse.IsMainDown())
             {
-                pressedMain = prevHovered;
-                if (pressedMain != default)
-                    OnLeftPress(pressedMain);
+                if (!prevMainDown)
+                {
+                    pressedMain = prevHovered;
+                    if (pressedMain != default)
+                        OnLeftPress(pressedMain);
+                }
+
+                prevMainDown = true;
+            }
+            else
+            {
+                if (prevMainDown && pressedMain != default && pressedMain == prevHovered)
+                    OnLeftClick(pressedMain);
+
+                pressedMain.IsPressedR = false;
+                pressedMain = default;
+                prevMainDown = false;
             }
 
-            prevMainDown = true;
-        }
-        else
-        {
-            if (prevMainDown && pressedMain != default && pressedMain == prevHovered)
-                OnLeftClick(pressedMain);
-
-            pressedMain.IsPressedR = false;
-            pressedMain = default;
-            prevMainDown = false;
-        }
-
-        if (mouse.IsSecondaryDown())
-        {
-            if (!prevSecondaryDown)
+            if (mouse.IsSecondaryDown())
             {
-                pressedSecondary = prevHovered;
-                if (pressedSecondary != default)
-                    OnRightPress(pressedSecondary);
+                if (!prevSecondaryDown)
+                {
+                    pressedSecondary = prevHovered;
+                    if (pressedSecondary != default)
+                        OnRightPress(pressedSecondary);
+                }
+
+                prevSecondaryDown = true;
             }
+            else
+            {
+                if (prevSecondaryDown && pressedSecondary != default && pressedSecondary == prevHovered)
+                    OnRightClick(pressedSecondary);
 
-            prevSecondaryDown = true;
+                pressedSecondary.IsSecondaryPressedR = false;
+                pressedSecondary = default;
+                prevSecondaryDown = false;
+            }
         }
-        else
+        finally
         {
-            if (prevSecondaryDown && pressedSecondary != default && pressedSecondary == prevHovered)
-                OnRightClick(pressedSecondary);
-
-            pressedSecondary.IsSecondaryPressedR = false;
-            pressedSecondary = default;
-            prevSecondaryDown = false;
+            if (active.HasValue)
+                surfaces.Restore(active.GetValueOrDefault());
         }
     }
+
+    private void DispatchScroll(RootUiSurfaces surfaces)
+    {
+        if (mouse.Wheel == default)
+            return;
+
+        var hoverPosition = position;
+        var span = surfaces.Span;
+        for (var index = span.Length - 1; index >= 0; index--)
+        {
+            var surface = span[index];
+            var active = surfaces.Activate(surface);
+            try
+            {
+                position = LocalPosition(surface);
+                var scrolled = hitSearch.Scrolled(position, surface.Root);
+                if (scrolled == default)
+                    continue;
+
+                scrolled.OnScrollFV.Resolve()?.Invoke(mouse.Wheel);
+                return;
+            }
+            finally
+            {
+                surfaces.Restore(active);
+                position = hoverPosition;
+            }
+        }
+    }
+
+    private Vec2 LocalPosition(UiSurface surface) =>
+        (mouse.Position - surface.CurrentViewport.Min)
+        / surface.CurrentScale;
 
     private void OnLeftPress(EntMut e)
     {
@@ -158,46 +226,6 @@ public class RootUiMouse(RootMouse mouse, RootUiScale scale, RootUiFocus focus, 
         e.OnSecondaryClickFV.Resolve()?.Invoke();
     }
 
-    private EntMut FindHovered(Box2? clip, EntMut n, bool inputDisabled)
-    {
-        var box = clipping.IntersectClips(clip, new Box2(n.PositionR, n.PositionR + n.SizeR));
-        inputDisabled |= n.IsInputDisabledFV.Resolve();
-
-        EntMut hovered = default;
-
-        if (!inputDisabled && box.ContainsInclusive(position) && n.IsSelectableFV.Resolve())
-            hovered = n;
-
-        foreach (var c in n.NodesR.Span)
-        {
-            var child = FindHovered(box, c, inputDisabled);
-            if (child != default)
-                hovered = child;
-        }
-
-        return hovered;
-    }
-
-    private EntMut FindScrolled(Box2? clip, EntMut n, bool inputDisabled)
-    {
-        var box = clipping.IntersectClips(clip, new Box2(n.PositionR, n.PositionR + n.SizeR));
-        inputDisabled |= n.IsInputDisabledFV.Resolve();
-
-        EntMut scrolled = default;
-
-        if (!inputDisabled && box.ContainsInclusive(position) && n.IsScrollableFV.Resolve())
-            scrolled = n;
-
-        foreach (var c in n.NodesR.Span)
-        {
-            var child = FindScrolled(box, c, inputDisabled);
-            if (child != default)
-                scrolled = child;
-        }
-
-        return scrolled;
-    }
-
     private bool InputEnabled(EntMut n) => !n.IsInputDisabledFV.Resolve();
 
     private bool CursorGrabbed() => mouse.CursorMode is CursorMode.Disabled or CursorMode.Captured;
@@ -206,6 +234,7 @@ public class RootUiMouse(RootMouse mouse, RootUiScale scale, RootUiFocus focus, 
     {
         prevHovered.IsHoveredR = false;
         prevHovered = default;
+        hoveredSurface = null;
     }
 
     private void ClearPressed()

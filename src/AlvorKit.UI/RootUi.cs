@@ -16,6 +16,10 @@ public class RootUi : EntObj
     private List<EntPtr> buffer = [];
 
     internal NodeArrayAllocator Allocator => allocator;
+    internal EntMut[] TraverseBuffer = new EntMut[16];
+    internal int TraverseBufferIndex;
+    internal EntMut[] OrderBufferKeys = new EntMut[16];
+    internal float[] OrderBufferValues = new float[16];
 
     public RootUi()
     {

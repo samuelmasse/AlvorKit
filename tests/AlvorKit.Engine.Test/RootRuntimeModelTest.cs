@@ -32,6 +32,7 @@ public sealed class RootRuntimeModelTest
 
         Assert.AreEqual(0, script.Order);
         Assert.IsNull(script.DrawArea);
+        Assert.IsNull(script.DrawViewport);
     }
 
     /// <summary>Scripts can override the draw area used for two-dimensional rendering.</summary>
@@ -41,6 +42,29 @@ public sealed class RootRuntimeModelTest
         var script = new DrawAreaScript();
 
         Assert.AreEqual(new Vec2(80, 45), script.DrawArea);
+    }
+
+    /// <summary>Scripts can restrict two-dimensional rendering to a physical canvas viewport.</summary>
+    [TestMethod]
+    public void Script_DrawViewport_CanBeOverridden()
+    {
+        var script = new DrawViewportScript();
+
+        Assert.AreEqual(
+            new Box2((10, 20), (90, 65)),
+            script.DrawViewport);
+    }
+
+    /// <summary>A top-left canvas rectangle maps to OpenGL's bottom-left viewport coordinates.</summary>
+    [TestMethod]
+    public void RootGraphics2D_ResolveViewport_FlipsCanvasY()
+    {
+        var (origin, size) = RootGraphics2D.ResolveViewport(
+            (800, 600),
+            new((100, 50), (500, 250)));
+
+        Assert.AreEqual(new Vec2i(100, 350), origin);
+        Assert.AreEqual(new Vec2u(400u, 200u), size);
     }
 
     /// <summary>Root state unloads the previous state and loads the replacement.</summary>
@@ -98,5 +122,10 @@ public sealed class RootRuntimeModelTest
     private sealed class DrawAreaScript : Script
     {
         public override Vec2? DrawArea => new(80, 45);
+    }
+
+    private sealed class DrawViewportScript : Script
+    {
+        public override Box2? DrawViewport => new((10, 20), (90, 65));
     }
 }

@@ -121,6 +121,24 @@ public sealed class LintRunnerTest
         Assert.AreEqual(0, processRunner.Commands.Count);
     }
 
+    /// <summary>Rejects hand-authored AssemblyInfo files before starting external lint tools.</summary>
+    [TestMethod]
+    public async Task RunAsyncRejectsAssemblyInfoFiles()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.Write("AlvorKit.slnx", "<Solution />");
+        workspace.Write("src/Game/AssemblyInfo.cs", "public sealed class GameAssemblyInfo;");
+        var processRunner = new FakeProcessRunner(new Queue<int>());
+        var actionlintTool = new FakeActionlintTool("actionlint");
+        var runner = new LintRunner(new(workspace.Root, Fix: false, []), processRunner, actionlintTool);
+
+        var exitCode = await runner.RunAsync();
+
+        Assert.AreEqual(1, exitCode);
+        Assert.IsFalse(actionlintTool.Called);
+        Assert.AreEqual(0, processRunner.Commands.Count);
+    }
+
     /// <summary>Rejects negative command parallelism overrides.</summary>
     [TestMethod]
     public void ConstructorRejectsNegativeParallelism()

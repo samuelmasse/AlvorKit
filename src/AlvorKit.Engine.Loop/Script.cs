@@ -8,4 +8,10 @@ public class Script : State
 
     /// <summary>Gets the draw surface for two-dimensional rendering, or <c>null</c> for the whole canvas.</summary>
     public virtual Vec2? DrawArea => null;
+
+    /// <summary>
+    /// Gets the physical, top-left-origin canvas rectangle receiving two-dimensional rendering,
+    /// or <c>null</c> for the whole canvas.
+    /// </summary>
+    public virtual Box2? DrawViewport => null;
 }

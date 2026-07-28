@@ -13,19 +13,31 @@ internal sealed class UiTestHarness
 
         var canvas = new RootCanvas(Window);
         var screen = new RootScreen(Window);
-        var scale = new RootUiScale(new RootScale(screen));
+        Scale = new RootUiScale(new RootScale(screen));
         var gl = new RootGl(new UiTestGl());
         var sprites = new RootSprites(new SpriteBatch(gl));
         var traverse = new RootUiTraverse();
         var clipping = new RootUiClipping();
-        var size = new RootUiSize(sprites, scale);
-        var position = new RootUiPosition(sprites, scale);
-        var draw = new RootUiDraw(sprites, scale, position, clipping);
+        var size = new RootUiSize(sprites, Scale);
+        var position = new RootUiPosition(sprites, Scale);
+        var draw = new RootUiDraw(sprites, Scale, position, clipping);
 
         Focus = new RootUiFocus(Keyboard);
-        UiMouse = new RootUiMouse(Mouse, scale, Focus, clipping);
+        UiMouse = new RootUiMouse(Mouse, Focus, clipping);
         Ui = new RootUi();
-        Script = new RootUiScript(canvas, scale, traverse, size, position, draw, Ui, UiMouse, Focus, new RootUiUpdate());
+        Scripts = new RootScripts();
+        Context = new RootUiContext(canvas, Scale);
+        Surfaces = new RootUiSurfaces(
+            canvas,
+            Scripts,
+            Ui,
+            Scale,
+            Context,
+            traverse,
+            size,
+            position,
+            draw);
+        Script = new RootUiScript(Surfaces, UiMouse, Focus, new RootUiUpdate());
 
         Window.Update += Script.Update;
     }
@@ -44,6 +56,18 @@ internal sealed class UiTestHarness
 
     /// <summary>Gets the UI entity root that test trees mount under.</summary>
     internal RootUi Ui { get; }
+
+    /// <summary>Gets the default surface scale shared by the test UI systems.</summary>
+    internal RootUiScale Scale { get; }
+
+    /// <summary>Gets the active surface context.</summary>
+    internal RootUiContext Context { get; }
+
+    /// <summary>Gets the surface registry used by the UI script.</summary>
+    internal RootUiSurfaces Surfaces { get; }
+
+    /// <summary>Gets the script registry receiving independent surface draw scripts.</summary>
+    internal RootScripts Scripts { get; }
 
     /// <summary>Gets the UI mouse system under test.</summary>
     internal RootUiMouse UiMouse { get; }

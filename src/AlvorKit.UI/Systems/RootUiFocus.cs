@@ -4,6 +4,7 @@ namespace AlvorKit.UI;
 public class RootUiFocus(RootKeyboard keyboard)
 {
     private readonly List<EntMut> focusables = [];
+    private readonly List<UiSurface> focusableSurfaces = [];
     private HashSet<EntMut> inits = [];
     private HashSet<EntMut> newInits = [];
     private EntMut focused;
@@ -59,13 +60,25 @@ public class RootUiFocus(RootKeyboard keyboard)
             RemoveSelect(c);
     }
 
-    internal void Update(EntMut n)
+    internal void Update(RootUiSurfaces surfaces)
     {
         (inits, newInits) = (newInits, inits);
         focusables.Clear();
+        focusableSurfaces.Clear();
         newInits.Clear();
-        CollectFocusables(n, false);
-        UnselectUnselectables(n);
+        foreach (var surface in surfaces.Span)
+        {
+            var active = surfaces.Activate(surface);
+            try
+            {
+                CollectFocusables(surface.Root, false, surface);
+                UnselectUnselectables(surface.Root);
+            }
+            finally
+            {
+                surfaces.Restore(active);
+            }
+        }
 
         int index = focusables.IndexOf(focused);
         if (index < 0)
@@ -84,7 +97,7 @@ public class RootUiFocus(RootKeyboard keyboard)
             if (target == default && tabMode && focusables.Count > 0)
                 target = focusables[0];
 
-            Focus(target, tabMode);
+            Focus(target, tabMode, surfaces);
         }
 
         var focusGroup = focused.FocusGroupFV.Resolve();
@@ -116,12 +129,44 @@ public class RootUiFocus(RootKeyboard keyboard)
                         focusable = selected;
                 }
 
-                Focus(focusable, true);
+                Focus(focusable, true, surfaces);
             }
         }
     }
 
-    private void CollectFocusables(EntMut n, bool inputDisabled)
+    private void Focus(
+        EntMut ent,
+        bool tab,
+        RootUiSurfaces surfaces)
+    {
+        UiSurface? surface = null;
+        if (ent != default)
+        {
+            var index = focusables.IndexOf(ent);
+            if (index >= 0)
+                surface = focusableSurfaces[index];
+        }
+        if (surface is null)
+        {
+            Focus(ent, tab);
+            return;
+        }
+
+        var active = surfaces.Activate(surface);
+        try
+        {
+            Focus(ent, tab);
+        }
+        finally
+        {
+            surfaces.Restore(active);
+        }
+    }
+
+    private void CollectFocusables(
+        EntMut n,
+        bool inputDisabled,
+        UiSurface surface)
     {
         var isFocusable = n.IsFocusableFV.Resolve();
         inputDisabled |= n.IsInputDisabledFV.Resolve();
@@ -129,13 +174,14 @@ public class RootUiFocus(RootKeyboard keyboard)
         if (isFocusable && !inputDisabled)
         {
             focusables.Add(n);
+            focusableSurfaces.Add(surface);
 
             if (n.IsInitialFocusFV.Resolve())
                 newInits.Add(n);
         }
 
         foreach (var c in n.NodesR.Span)
-            CollectFocusables(c, inputDisabled);
+            CollectFocusables(c, inputDisabled, surface);
     }
 
     private void UnselectUnselectables(EntMut n)

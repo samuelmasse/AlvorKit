@@ -1,18 +1,14 @@
 namespace AlvorKit.UI;
 
+using AlvorKit.UI.Root;
+
 [Root]
 public class RootUiTraverse
 {
-    private EntMut[] traverseBuffer = new EntMut[16];
-    private int traverseBufferIndex;
-
-    private EntMut[] orderBufferKeys = new EntMut[16];
-    private float[] orderBufferVals = new float[16];
-
     internal void Traverse(EntMut n, float? snap, int depth)
     {
         if (depth == 0)
-            traverseBufferIndex = 0;
+            n.UiRoot.TraverseBufferIndex = 0;
 
         n.SnapR = n.AlignmentSnapFV.Resolve() ?? snap ?? 0;
 
@@ -62,16 +58,17 @@ public class RootUiTraverse
         if (!ordered)
             return;
 
+        var root = n.UiRoot;
         var nodes = Nodes(n);
-        if (orderBufferKeys.Length <= nodes.Length)
+        if (root.OrderBufferKeys.Length <= nodes.Length)
         {
             var newSize = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)nodes.Length);
-            Array.Resize(ref orderBufferKeys, newSize);
-            Array.Resize(ref orderBufferVals, newSize);
+            Array.Resize(ref root.OrderBufferKeys, newSize);
+            Array.Resize(ref root.OrderBufferValues, newSize);
         }
 
-        var keys = orderBufferKeys.AsSpan()[..nodes.Length];
-        var vals = orderBufferVals.AsSpan()[..nodes.Length];
+        var keys = root.OrderBufferKeys.AsSpan()[..nodes.Length];
+        var vals = root.OrderBufferValues.AsSpan()[..nodes.Length];
 
         for (int i = 0; i < nodes.Length; i++)
         {
@@ -99,7 +96,8 @@ public class RootUiTraverse
 
     private void CompileNodes(EntMut n)
     {
-        int start = traverseBufferIndex;
+        var root = n.UiRoot;
+        int start = root.TraverseBufferIndex;
         int count = 0;
 
         foreach (var c in Nodes(n))
@@ -108,7 +106,7 @@ public class RootUiTraverse
             if (disabled)
                 continue;
 
-            AddToBuffer(c);
+            AddToBuffer(root, c);
             count++;
         }
 
@@ -117,24 +115,26 @@ public class RootUiTraverse
             var companion = entry.CompanionFV.Resolve();
             if (companion != default && !companion.IsDisabledFV.Resolve())
             {
-                AddToBuffer(companion);
+                AddToBuffer(root, companion);
                 count++;
             }
         }
 
         if (NodeStackTryPeek(n, out var top))
         {
-            AddToBuffer(top);
+            AddToBuffer(root, top);
             count++;
         }
 
-        n.NodesR = traverseBuffer.AsMemory().Slice(start, count);
+        n.NodesR = root.TraverseBuffer.AsMemory().Slice(start, count);
     }
 
-    private void AddToBuffer(EntMut n)
+    private static void AddToBuffer(
+        RootUi root,
+        EntMut n)
     {
-        if (traverseBufferIndex == traverseBuffer.Length)
-            Array.Resize(ref traverseBuffer, traverseBuffer.Length * 2);
-        traverseBuffer[traverseBufferIndex++] = n;
+        if (root.TraverseBufferIndex == root.TraverseBuffer.Length)
+            Array.Resize(ref root.TraverseBuffer, root.TraverseBuffer.Length * 2);
+        root.TraverseBuffer[root.TraverseBufferIndex++] = n;
     }
 }

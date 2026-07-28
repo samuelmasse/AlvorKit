@@ -31,6 +31,16 @@ internal sealed class LintRunner(
             return 0;
         }
 
+        var assemblyInfoFiles = RepositoryPolicy.FindAssemblyInfoFiles(repoRoot, scope);
+        if (assemblyInfoFiles.Count > 0)
+        {
+            WriteProgress("[lint:fail] hand-authored AssemblyInfo.cs files are not allowed");
+            foreach (var file in assemblyInfoFiles)
+                WriteProgress(file);
+            WriteProgress("Declare assembly metadata with SDK-style MSBuild properties and items in the project file.");
+            return 1;
+        }
+
         var actionlintTask = LintPlan.RequiresActionlint(scope) ? ResolveActionlintAsync(repoRoot) : null;
         var preActionlintCommands = scope is null
             ? LintPlan.CommandsBeforeActionlint(repoRoot, options.Fix)

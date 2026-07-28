@@ -89,6 +89,14 @@ iteration, and teardown contracts.
 These are prescriptive defaults, not merely instructions to copy nearby code.
 Apply them in new projects and packages even when no local precedent exists.
 
+### Assembly Metadata
+
+- Hand-authored `AssemblyInfo.cs` files are banned. Declare assembly metadata
+  with SDK-style MSBuild properties and items in the owning project file,
+  including `InternalsVisibleTo` items for friend assemblies.
+- SDK-generated `<ProjectName>.AssemblyInfo.cs` files under intermediate output
+  directories are expected and remain enabled.
+
 ### Accessibility
 
 - Prefer `public` over `internal` for game-code types and collaborating members.
