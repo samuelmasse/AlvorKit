@@ -1,0 +1,46 @@
+Ref-struct-return compiler-negative source proof
+================================================
+
+Toolchain
+---------
+
+.NET SDK 10.0.400-preview.0.26322.102
+C# LangVersion: preview (C# 14)
+
+Borrowed constants and callbacks
+--------------------------------
+
+The approved ref-safe clause exposes `ReturnFactory`, but the ordinary
+extension methods do not opt their generic type parameter into ref structs:
+
+```csharp
+Mock.When(target.Mutable)
+    .Return(default(Span<int>));
+
+Mock.When(target.Mutable)
+    .ReturnSequence(default(Span<int>));
+
+Mock.When(target.Mutable)
+    .Answer(_ => default(Span<int>));
+```
+
+Expected and observed for each ordinary form:
+
+```text
+CS9244: The type 'Span<int>' may not be a ref struct or a type parameter
+allowing ref structs in order to use it as parameter 'T' in the generic type
+or method.
+```
+
+Approved alternative
+--------------------
+
+The exact factory may return a live borrowed value on every matching call:
+
+```csharp
+Mock.When(target.Mutable)
+    .ReturnFactory(owner.Mutable);
+```
+
+The setup retains the delegate and its heap-safe target, not any produced
+`Span<int>`.

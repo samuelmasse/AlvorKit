@@ -9,16 +9,24 @@ internal static class Events
         if (mocked.Type.Events.TryGetValue(method, out var val))
             return val;
 
+        string? key = method.Name.StartsWith(
+            "add_",
+            StringComparison.Ordinal)
+            ? method.Name[4..]
+            : method.Name.StartsWith(
+                "remove_",
+                StringComparison.Ordinal)
+                ? method.Name[7..]
+                : null;
+        if (key is null)
+        {
+            mocked.Type.Events.TryAdd(method, null);
+            return null;
+        }
+
         lock (mocked)
         {
-            string key = method.Name;
-
-            if (method.Name.StartsWith("add_"))
-                key = method.Name[4..];
-            else if (method.Name.StartsWith("remove_"))
-                key = method.Name[7..];
-
-            var ev = mocked.Type.Type.GetEvent(key);
+            var ev = mocked.Type.EventType.GetEvent(key);
             if (ev != null)
             {
                 mocked.Type.Events.TryAdd(method, ev);

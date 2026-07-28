@@ -11,8 +11,8 @@ public sealed class CoverageInterceptionSettingsTest
         var modules = CoverageInterceptionSettings.DefaultModules(
             ["Game", "Core", "Game"],
             [
-                @"C:\repo\tests\Game.Test\Game.Test.csproj",
-                @"C:\repo\tests\Core.Test\Core.Test.csproj"
+                Path.Combine("repo", "tests", "Game.Test", "Game.Test.csproj"),
+                Path.Combine("repo", "tests", "Core.Test", "Core.Test.csproj")
             ]);
 
         CollectionAssert.AreEqual(

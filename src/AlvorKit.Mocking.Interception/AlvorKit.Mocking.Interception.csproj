@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+        <Description>Mocking operation interception adapter and exact runtime wrappers.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Interception\AlvorKit.Interception.csproj" />
+        <ProjectReference Include="..\AlvorKit.Mocking\AlvorKit.Mocking.csproj" />
+        <ProjectReference Include="..\AlvorKit.Mocking.Emit\AlvorKit.Mocking.Emit.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System.Collections" />
+        <Using Include="System.Globalization" />
+        <Using Include="System.Reflection.Emit" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Mocking.Interception.Test" />
+        <InternalsVisibleTo Include="AlvorKit.Mocking.Test" />
+    </ItemGroup>
+
+</Project>

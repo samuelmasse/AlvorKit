@@ -1,0 +1,124 @@
+Struct interception compiler-negative and deterministic-rejection contract
+==========================================================================
+
+No receiver-value identity
+--------------------------
+
+The public surface deliberately has no overload accepting a struct value:
+
+```csharp
+StructCounter counter = default;
+Mock.Struct(counter);
+```
+
+Expected:
+
+```text
+CS1501: No overload for method 'Struct' takes 1 arguments
+```
+
+There is no `ForInstance`, `ForValueAddress`, or equivalent identity selector:
+
+```csharp
+Mock.Struct<StructCounter>().ForInstance(counter);
+Mock.Struct<StructCounter>().ForValueAddress(ref counter);
+```
+
+Expected:
+
+```text
+CS1061: 'MockStructScope<StructCounter>' does not contain a definition for
+'ForInstance'
+CS1061: 'MockStructScope<StructCounter>' does not contain a definition for
+'ForValueAddress'
+```
+
+Assignment, argument passing, return, and boxing create copies. A box is not an
+identity handle and cannot be supplied to the struct setup surface.
+
+Live value predicate
+--------------------
+
+Matching requires the exact borrowed predicate shape:
+
+```csharp
+Mock.Struct<StructCounter>().Matching(
+    (StructCounter value) => value.Value == 1);
+```
+
+Expected:
+
+```text
+CS1661/CS1676: The lambda parameter must be declared with the 'in' keyword to
+match RefPredicate<StructCounter>.
+```
+
+The approved form is:
+
+```csharp
+Mock.Struct<StructCounter>().Matching(
+    (scoped in StructCounter value) => value.Value == 1);
+```
+
+No ref-struct receiver
+----------------------
+
+The struct interception scope intentionally targets ordinary value types, not
+ref-struct receivers:
+
+```csharp
+ref struct BorrowedCounter;
+Mock.Struct<BorrowedCounter>();
+```
+
+Expected:
+
+```text
+CS9244: The type 'BorrowedCounter' may not be a ref struct in order to use it
+as parameter 'T' in 'Mock.Struct<T>()'.
+```
+
+No captured receiver closure
+----------------------------
+
+The capture lambda must be static:
+
+```csharp
+StructCounter expected = default;
+Mock.Struct<StructCounter>().When(
+    (scoped ref StructCounter value) =>
+    {
+        _ = expected;
+        value.Advance(1);
+    });
+```
+
+This source compiles, then setup capture rejects it deterministically because
+the delegate target closes over a struct copy. The approved static lambda
+receives all live storage only through its `scoped ref` parameter.
+
+Exclusive selection modes
+-------------------------
+
+These chains compile, then reject deterministically:
+
+```csharp
+Mock.Struct<StructCounter>()
+    .Matching((scoped in StructCounter value) => value.Value > 0)
+    .AtSite(site);
+
+Mock.Struct<StructCounter>()
+    .AtSite(site)
+    .Matching((scoped in StructCounter value) => value.Value > 0);
+```
+
+Type-wide, value-matched, and call-site scopes are distinct modes rather than
+compound identity selectors.
+
+Readonly receiver mutation
+--------------------------
+
+Mutation registration is source-valid because readonlyness belongs to the
+captured method/site metadata. The interception runtime must reject entry or
+exit mutation before dispatch when the intercepted receiver is readonly; it
+must never create a writable box as a workaround.

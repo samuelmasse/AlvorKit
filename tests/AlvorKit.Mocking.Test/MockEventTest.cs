@@ -140,22 +140,7 @@ public abstract class MockEventTest<T> where T : class, IMockTarget
 public class IMockTargetEventTest : MockEventTest<IMockTarget>;
 
 [TestClass]
-public class BasicMockEventTest : MockEventTest<BasicMock>;
-
-[TestClass]
-public class GenericMockEventTest : MockEventTest<GenericMock<List<int>>>;
-
-[TestClass]
 public class AbstractMockEventTest : MockEventTest<AbstractMock>;
 
 [TestClass]
 public class PartialMockEventTest : MockEventTest<PartialMock>;
-
-[TestClass]
-public class VirtualMockEventTest : MockEventTest<VirtualMock>;
-
-[TestClass]
-public class DerivedMockEventTest : MockEventTest<DerivedMock>;
-
-[TestClass]
-public class SealedMockEventTest : MockEventTest<SealedMock>;

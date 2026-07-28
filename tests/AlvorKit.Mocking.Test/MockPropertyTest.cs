@@ -65,12 +65,6 @@ public abstract class MockPropertyTest<T> where T : class, IMockTarget
 public class IMockTargetPropertyTest : MockPropertyTest<IMockTarget>;
 
 [TestClass]
-public class BasicMockPropertyTest : MockPropertyTest<BasicMock>;
-
-[TestClass]
-public class GenericMockPropertyTest : MockPropertyTest<GenericMock<List<int>>>;
-
-[TestClass]
 public class AbstractMockPropertyTest : MockPropertyTest<AbstractMock>;
 
 [TestClass]
@@ -81,6 +75,3 @@ public class VirtualMockPropertyTest : MockPropertyTest<VirtualMock>;
 
 [TestClass]
 public class DerivedMockPropertyTest : MockPropertyTest<DerivedMock>;
-
-[TestClass]
-public class SealedMockPropertyTest : MockPropertyTest<SealedMock>;

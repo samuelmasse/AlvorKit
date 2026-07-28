@@ -51,7 +51,8 @@ public abstract class MockMethodTest<T> where T : class, IMockTarget
     public void Method_Read_OutParameter_ReturnsMocked()
     {
         var mock = Mock.Create<T>();
-        Mock.When(() => mock.Read(out _)).Return([100]);
+        Mock.When(() => mock.Read(out _))
+            .Do(call => call.SetReference(0, 100));
 
         mock.Read(out var value);
 
@@ -63,7 +64,8 @@ public abstract class MockMethodTest<T> where T : class, IMockTarget
     public unsafe void Method_ReadPtr_OutParameter_ReturnsMocked()
     {
         var mock = Mock.Create<T>();
-        Mock.When(() => mock.ReadPtr(out _)).Return([(nint)100]);
+        Mock.When(() => mock.ReadPtr(out _))
+            .Do(call => call.SetReference(0, (nint)100));
 
         mock.ReadPtr(out var value);
 
@@ -75,8 +77,9 @@ public abstract class MockMethodTest<T> where T : class, IMockTarget
     public void Method_Read_OutParameterWrongCount_Throws()
     {
         var mock = Mock.Create<T>();
-        Mock.When(() => mock.Read(out _)).Return([]); // empty does not throw;
-        Assert.Throws<MockException>(() => Mock.When(() => mock.Read(out _)).Return([1, 2]));
+        Mock.When(() => mock.Read(out _))
+            .Do(call => call.SetReference(1, 1));
+        Assert.Throws<MockException>(() => mock.Read(out _));
     }
 
     /// <summary>Verifies Method Read OutParameterMatchesAnyValue.</summary>
@@ -85,7 +88,8 @@ public abstract class MockMethodTest<T> where T : class, IMockTarget
     {
         var mock = Mock.Create<T>();
         int match = 10;
-        Mock.When(() => mock.Read(out match)).Return([22]);
+        Mock.When(() => mock.Read(out match))
+            .Do(call => call.SetReference(0, 22));
 
         mock.Read(out var result);
 
@@ -98,7 +102,8 @@ public abstract class MockMethodTest<T> where T : class, IMockTarget
     {
         var mock = Mock.Create<T>();
         int input = 88;
-        Mock.When(() => mock.Write(ref input)).Return([44]);
+        Mock.When(() => mock.Write(ref input))
+            .Do(call => call.SetReference(0, 44));
 
         mock.Write(ref input);
 
@@ -111,7 +116,8 @@ public abstract class MockMethodTest<T> where T : class, IMockTarget
     {
         var mock = Mock.Create<T>();
         int* ptr = (int*)88;
-        Mock.When(() => mock.WritePtr(ref ptr)).Return([(nint)44]);
+        Mock.When(() => mock.WritePtr(ref ptr))
+            .Do(call => call.SetReference(0, (nint)44));
 
         mock.WritePtr(ref ptr);
 
@@ -125,17 +131,19 @@ public abstract class MockMethodTest<T> where T : class, IMockTarget
         var mock = Mock.Create<T>();
         int val = 0;
 
-        Mock.When(() => mock.Write(ref val)).Return([]); // empty does not throw
-        Assert.Throws<MockException>(() => Mock.When(() => mock.Write(ref val)).Return([1, 2]));
+        Mock.When(() => mock.Write(ref val))
+            .Do(call => call.SetReference(1, 1));
+        Assert.Throws<MockException>(() => mock.Write(ref val));
     }
 
     /// <summary>Verifies Method Write RefParameterNoMatch DoesNotUpdate.</summary>
     [TestMethod]
     public void Method_Write_RefParameterNoMatch_DoesNotUpdate()
     {
-        var mock = Mock.Create<T>();
+        var mock = Mock.CreateLoose<T>();
         int val = 42;
-        Mock.When(() => mock.Write(ref val)).Return([35]);
+        Mock.When(() => mock.Write(ref val))
+            .Do(call => call.SetReference(0, 35));
 
         int other = 43;
         mock.Write(ref other);
@@ -168,15 +176,23 @@ public abstract class MockMethodTest<T> where T : class, IMockTarget
     [TestMethod]
     public void Method_WithArgsMultipleTimesWithSpan_UsesLatest()
     {
-        int[] ints1 = [1];
-        int[] ints2 = [2];
         int[] ints3 = [3];
 
         var mock = Mock.Create<T>();
-        Mock.When(() => mock.ComputeSumWithSpan(1, 2, ints1)).Return(3);
-        Mock.When(() => mock.ComputeSumWithSpan(1, 2, ints2)).Return(99);
+        Mock.When(
+                () => mock.ComputeSumWithSpan(
+                    1,
+                    2,
+                    Arg.Any<Span<int>>(2)))
+            .Return(3);
+        Mock.When(
+                () => mock.ComputeSumWithSpan(
+                    1,
+                    2,
+                    Arg.Any<Span<int>>(2)))
+            .Return(99);
 
-        Assert.AreEqual(99, mock.ComputeSumWithSpan(1, 2, ints3)); // spans get ignored
+        Assert.AreEqual(99, mock.ComputeSumWithSpan(1, 2, ints3));
     }
 
     /// <summary>Verifies Method WithArgsMultipleTimesWithSpanOut UsesLatest.</summary>
@@ -194,93 +210,54 @@ public abstract class MockMethodTest<T> where T : class, IMockTarget
     [TestMethod]
     public void Method_WithSpanRef_CannotBeMocked()
     {
-        var mock = Mock.Create<T>();
+        var mock = Mock.CreateLoose<T>();
         Span<int> ints = [234];
         mock.ComputeSumWithSpanRef(1, 2, ref ints);
     }
 
-    /// <summary>Verifies Method SpanReturn CannotBeMocked.</summary>
+    /// <summary>Confirms supported ref-struct returns use strict fallback when no factory is configured.</summary>
     [TestMethod]
-    public void Method_SpanReturn_CannotBeMocked()
+    public void Method_SpanReturn_StrictFallbackThrows()
     {
         var mock = Mock.Create<T>();
-        mock.ComputeSumWithSpanReturn(1, 2);
+        Assert.Throws<MockException>(
+            () => mock.ComputeSumWithSpanReturn(1, 2));
     }
 
-    /// <summary>Verifies Method WithSpanRefReturn CannotBeMocked.</summary>
+    /// <summary>Direct overrides reject ref-struct aliases while concrete interception preserves the original throw.</summary>
     [TestMethod]
     public void Method_WithSpanRefReturn_CannotBeMocked()
     {
         var mock = Mock.Create<T>();
-        Assert.Throws<NotImplementedException>(() => mock.ComputeSumWithSpanRefReturn(1, 2));
+        MethodInfo method = typeof(T).GetMethod(
+            nameof(IMockTarget.ComputeSumWithSpanRefReturn))!;
+        if (!typeof(T).IsSealed &&
+            (method.IsAbstract || method.IsVirtual && !method.IsFinal))
+        {
+            Assert.Throws<MockException>(
+                () => mock.ComputeSumWithSpanRefReturn(1, 2));
+        }
+        else
+        {
+            Assert.Throws<NotImplementedException>(
+                () => mock.ComputeSumWithSpanRefReturn(1, 2));
+        }
     }
 
     /// <summary>Verifies Method WithArgs NoMatch ReturnsDefault.</summary>
     [TestMethod]
     public void Method_WithArgs_NoMatch_ReturnsDefault()
     {
-        var mock = Mock.Create<T>();
+        var mock = Mock.CreateLoose<T>();
         Mock.When(() => mock.ComputeSum(2, 2)).Return(123);
 
         Assert.AreEqual(0, mock.ComputeSum(1, 1));
     }
 
-    /// <summary>Verifies Method WithOpenGenericType CanBeMocked.</summary>
-    [TestMethod]
-    public void Method_WithOpenGenericType_CanBeMocked()
-    {
-        var mock = Mock.Create<T>();
-
-        Mock.Generic(mock.ComputeSumOpen<int, int>);
-        Mock.When(() => mock.ComputeSumOpen(2, 2)).Return(123);
-
-        Assert.AreEqual(123, mock.ComputeSumOpen(2, 2));
-    }
-
-    /// <summary>Verifies Method WithOpenGenericTypeNulls HandleNullComparisons.</summary>
-    [TestMethod]
-    public void Method_WithOpenGenericTypeNulls_HandleNullComparisons()
-    {
-        var mock = Mock.Create<T>();
-
-        static void Noop() { }
-
-        Action action = Noop;
-        Mock.Generic(mock.ComputeSumOpen<Action?, Action?>);
-        Mock.When(() => mock.ComputeSumOpen<Action?, Action?>(null, action)).Return(123);
-
-        Assert.AreEqual(123, mock.ComputeSumOpen<Action?, Action?>(null, action));
-        Assert.AreNotEqual(123, mock.ComputeSumOpen<Action?, Action?>(() => { }, action));
-        Assert.AreNotEqual(123, mock.ComputeSumOpen<Action?, Action?>(null, null));
-    }
-
-    /// <summary>Verifies Method WithOpenGenericTypeWithoutMock Throws.</summary>
-    [TestMethod]
-    public void Method_WithOpenGenericTypeWithoutMock_Throws()
-    {
-        var mock = Mock.Create<T>();
-
-        Assert.Throws<MockException>(() => Mock.When(() => mock.ComputeSumOpen<decimal, decimal>(0, 0)).Return(123));
-    }
-
-    /// <summary>Verifies Method WithNoOpenGenericMock Throws.</summary>
-    [TestMethod]
-    public void Method_WithNoOpenGenericMock_Throws()
-    {
-        var mock = Mock.Create<T>();
-
-        Assert.Throws<MockException>(() => Mock.Generic(mock.ComputeSum));
-    }
 }
 
 [TestClass]
 public class IMockTargetMethodTest : MockMethodTest<IMockTarget>;
-
-[TestClass]
-public class BasicMockMethodTest : MockMethodTest<BasicMock>;
-
-[TestClass]
-public class GenericMockMethodTest : MockMethodTest<GenericMock<List<int>>>;
 
 [TestClass]
 public class AbstractMockMethodTest : MockMethodTest<AbstractMock>;
@@ -290,9 +267,3 @@ public class PartialMockMethodTest : MockMethodTest<PartialMock>;
 
 [TestClass]
 public class VirtualMockMethodTest : MockMethodTest<VirtualMock>;
-
-[TestClass]
-public class DerivedMockMethodTest : MockMethodTest<DerivedMock>;
-
-[TestClass]
-public class SealedMockMethodTest : MockMethodTest<SealedMock>;

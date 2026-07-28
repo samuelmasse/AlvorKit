@@ -1,61 +1,97 @@
 namespace AlvorKit.Mocking.Demo;
 
-/// <summary>Rendering surface used to demonstrate interface mocking and event raising.</summary>
+/// <summary>Rendering collaborator used for strict, loose, matcher, and callback examples.</summary>
 public interface IRenderer
 {
-    /// <summary>Raised when the surface size changes.</summary>
-    event Action<SurfaceSize> Resized;
-
     /// <summary>Draws a sprite on a logical layer.</summary>
     bool Draw(string sprite, int layer);
 }
 
-/// <summary>Logical surface size passed through a mocked event.</summary>
-public readonly record struct SurfaceSize(int Width, int Height);
-
-/// <summary>Concrete input device used to demonstrate class mocking.</summary>
-public class MouseInput
+/// <summary>Input stage used in the cross-mock frame sequence.</summary>
+public interface IFrameInput
 {
-    /// <summary>Returns whether the requested button is currently pressed.</summary>
-    public bool IsPressed(MouseButton button)
-    {
-        _ = button;
-        return false;
-    }
-
-    /// <summary>Returns the normalized value for one input axis.</summary>
-    public float Axis(int axis)
-    {
-        _ = axis;
-        return 0f;
-    }
+    /// <summary>Polls input for the current frame.</summary>
+    void Poll();
 }
 
-/// <summary>Mouse buttons used by the demo input device.</summary>
-public enum MouseButton
+/// <summary>Audio stage used in the cross-mock frame sequence.</summary>
+public interface IAudioMixer
 {
-    /// <summary>The primary pointer button.</summary>
-    Primary,
-
-    /// <summary>The secondary pointer button.</summary>
-    Secondary,
+    /// <summary>Mixes audio for the current frame.</summary>
+    void Mix();
 }
 
-/// <summary>Concrete object used to demonstrate partial instance mocking.</summary>
+/// <summary>Span-consuming collaborator used for typed callbacks and stable snapshots.</summary>
+public interface ISampleAnalyzer
+{
+    /// <summary>Returns the sum of the supplied borrowed samples.</summary>
+    int Sum(ReadOnlySpan<int> values);
+}
+
+/// <summary>Mutable object used to demonstrate configured and original partial calls.</summary>
 public class Counter
 {
-    private int current;
+    /// <summary>Current value retained by original counter behavior.</summary>
+    public int Current;
 
-    /// <summary>Gets the current counter value.</summary>
-    public int Current => current;
+    /// <summary>Advances the counter by one.</summary>
+    public int Next() => ++Current;
 
-    /// <summary>Advances and returns the counter value.</summary>
-    public int Next() => ++current;
+    /// <summary>Advances the counter by the supplied amount.</summary>
+    public int Add(int amount) => Current += amount;
 }
 
-/// <summary>Concrete object used to demonstrate explicit constructed generic method setup.</summary>
+/// <summary>Resource collaborator used for failures and return sequences.</summary>
+public interface IResourceCatalog
+{
+    /// <summary>Loads one named resource.</summary>
+    object Load(string name);
+
+    /// <summary>Returns the next retry delay.</summary>
+    int NextRetryDelay();
+}
+
+/// <summary>Frame signals used for event raising and ordinary reference writeback.</summary>
+public interface IFrameSignals
+{
+    /// <summary>Raised when a frame is ready.</summary>
+    event Action<int> FrameReady;
+
+    /// <summary>Reads one value while advancing the caller's offset.</summary>
+    bool TryRead(
+        string name,
+        ref int offset,
+        out string value);
+}
+
+/// <summary>Borrowed buffer operations used for typed span behavior.</summary>
+public interface IBufferOperations
+{
+    /// <summary>Fills caller-owned storage and returns the written count.</summary>
+    int Fill(Span<int> destination);
+
+    /// <summary>Returns a borrowed read-only view.</summary>
+    ReadOnlySpan<int> Borrow();
+}
+
+/// <summary>Stable storage owner for a borrowed return factory.</summary>
+public sealed class BufferOwner(int[] values)
+{
+    /// <summary>Returns a view over the owner's stable array.</summary>
+    public ReadOnlySpan<int> Borrow() => values;
+}
+
+/// <summary>Async collaborator whose borrowed input must be copied before suspension.</summary>
+public interface IAsyncSampleAnalyzer
+{
+    /// <summary>Returns an asynchronous sum of borrowed input.</summary>
+    Task<int> SumAsync(ReadOnlySpan<int> values);
+}
+
+/// <summary>Class proxy used to demonstrate automatic generic construction setup.</summary>
 public class GenericFormatter
 {
-    /// <summary>Formats a value using the concrete generic method selected by the caller.</summary>
-    public string Format<T>(T value) => value?.ToString() ?? string.Empty;
+    /// <summary>Formats one constructed generic input.</summary>
+    public virtual string Format<T>(T value) =>
+        value?.ToString() ?? string.Empty;
 }

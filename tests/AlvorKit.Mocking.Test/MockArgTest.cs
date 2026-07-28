@@ -19,7 +19,7 @@ public abstract class MockArgTest<T> where T : class, IMockTarget
     [TestMethod]
     public void Arg_MethodAnySomeArgs_MatchesCorrectArg()
     {
-        var mock = Mock.Create<T>();
+        var mock = Mock.CreateLoose<T>();
 
         Mock.When(() => mock.ComputeSum(0, Arg.Any<int>())).Return(64);
 
@@ -32,7 +32,7 @@ public abstract class MockArgTest<T> where T : class, IMockTarget
     [TestMethod]
     public void Arg_MethodMatch_MatchesCorrectly()
     {
-        var mock = Mock.Create<T>();
+        var mock = Mock.CreateLoose<T>();
 
         Mock.When(() => mock.ComputeSum(Arg.Match<int>((x) => x < 14), Arg.Any<int>())).Return(64);
 
@@ -45,7 +45,7 @@ public abstract class MockArgTest<T> where T : class, IMockTarget
     [TestMethod]
     public void Arg_MethodMatchNothing_MatchesNothing()
     {
-        var mock = Mock.Create<T>();
+        var mock = Mock.CreateLoose<T>();
 
         Mock.When(() => mock.ComputeSum(Arg.Match<int>((x) => false), Arg.Any<int>())).Return(64);
 
@@ -60,7 +60,8 @@ public abstract class MockArgTest<T> where T : class, IMockTarget
     {
         var mock = Mock.Create<T>();
 
-        Mock.When(() => mock.Write(ref Arg<int>.Any())).Return([64]);
+        Mock.When(() => mock.Write(ref Arg.AnyRef<int>(0)))
+            .Do(call => call.SetReference(0, 64));
 
         int res = 34;
         mock.Write(ref res);
@@ -79,9 +80,13 @@ public abstract class MockArgTest<T> where T : class, IMockTarget
     [TestMethod]
     public void Arg_MethodMatchRef_MatchesCorrectly()
     {
-        var mock = Mock.Create<T>();
+        var mock = Mock.CreateLoose<T>();
 
-        Mock.When(() => mock.Write(ref Arg<int>.Match((x) => x < 0))).Return([64]);
+        Mock.When(() => mock.Write(
+                ref Arg.Match<int>(
+                    0,
+                    (scoped in value) => value < 0)))
+            .Do(call => call.SetReference(0, 64));
 
         int res = 34;
         mock.Write(ref res);
@@ -242,12 +247,6 @@ public abstract class MockArgTest<T> where T : class, IMockTarget
 public class IMockTargetArgTest : MockArgTest<IMockTarget>;
 
 [TestClass]
-public class BasicMockArgTest : MockArgTest<BasicMock>;
-
-[TestClass]
-public class GenericMockArgTest : MockArgTest<GenericMock<List<int>>>;
-
-[TestClass]
 public class AbstractMockArgTest : MockArgTest<AbstractMock>;
 
 [TestClass]
@@ -255,9 +254,3 @@ public class PartialMockArgTest : MockArgTest<PartialMock>;
 
 [TestClass]
 public class VirtualMockArgTest : MockArgTest<VirtualMock>;
-
-[TestClass]
-public class DerivedMockArgTest : MockArgTest<DerivedMock>;
-
-[TestClass]
-public class SealedMockArgTest : MockArgTest<SealedMock>;

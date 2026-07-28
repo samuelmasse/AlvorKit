@@ -84,6 +84,9 @@
     <Project Path="src/AlvorKit.Interception/AlvorKit.Interception.csproj" />
     <Project Path="src/AlvorKit.Interception.CoreClr/AlvorKit.Interception.CoreClr.csproj" />
     <Project Path="src/AlvorKit.Mocking/AlvorKit.Mocking.csproj" />
+    <Project Path="src/AlvorKit.Mocking.Dynamic/AlvorKit.Mocking.Dynamic.csproj" />
+    <Project Path="src/AlvorKit.Mocking.Emit/AlvorKit.Mocking.Emit.csproj" />
+    <Project Path="src/AlvorKit.Mocking.Interception/AlvorKit.Mocking.Interception.csproj" />
     <Project Path="src/AlvorKit.Maths.Core/AlvorKit.Maths.Core.csproj" />
     <Project Path="src/AlvorKit.Maths/AlvorKit.Maths.csproj" />
     <Project Path="src/AlvorKit.Ranges/AlvorKit.Ranges.csproj" />
@@ -116,7 +119,13 @@
         <Project Path="tests/AlvorKit.LiveCode.Test/AlvorKit.LiveCode.Test.csproj" />
         <Project Path="tests/AlvorKit.LivePatch.Test/AlvorKit.LivePatch.Test.csproj" />
         <Project Path="tests/AlvorKit.Mocking.Test/AlvorKit.Mocking.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Mocking.Interception.Test/AlvorKit.Mocking.Interception.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Mocking.Performance.Fixture/AlvorKit.Mocking.Performance.Fixture.csproj" />
         <Project Path="tests/AlvorKit.Maths.Test/AlvorKit.Maths.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.ProfilerFreeBoundary.Test/AlvorKit.ProfilerFreeBoundary.Test.csproj" />
         <Project Path="tests/AlvorKit.Ranges.Test/AlvorKit.Ranges.Test.csproj" />
         <Project Path="tests/AlvorKit.Engine.Test/AlvorKit.Engine.Test.csproj" />
         <Project Path="tests/AlvorKit.XxHash.Test/AlvorKit.XxHash.Test.csproj" />

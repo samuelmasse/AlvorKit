@@ -44,26 +44,29 @@ public abstract class MockTest<T> where T : class, IMockTarget
     {
         var mock = Mock.Create<T>();
         Assert.Throws<MockException>(() =>
-            Mock.When(() => { }).Return([]));
+            Mock.When(() => { }).Do(_ => { }));
     }
 
-    /// <summary>Verifies When MultipleCalls MocksLast.</summary>
+    /// <summary>Verifies setup capture rejects expressions containing multiple mocked calls.</summary>
     [TestMethod]
-    public void When_MultipleCalls_MocksLast()
+    public void When_MultipleCalls_Throws()
     {
-        var mock = Mock.Create<T>();
+        var mock = Mock.CreateLoose<T>();
 
-        Mock.When(() => { mock.GetValue(); return mock.ComputeSum(1, 2); }).Return(42);
-
-        Assert.AreEqual(0, mock.GetValue());
-        Assert.AreEqual(42, mock.ComputeSum(1, 2));
+        Assert.Throws<MockException>(
+            () => Mock.When(
+                () =>
+                {
+                    mock.GetValue();
+                    return mock.ComputeSum(1, 2);
+                }));
     }
 
     /// <summary>Verifies Mock DefaultValues AreConsistent.</summary>
     [TestMethod]
     public unsafe void Mock_DefaultValues_AreConsistent()
     {
-        var mock = Mock.Create<T>();
+        var mock = Mock.CreateLoose<T>();
 
         Assert.IsNull(mock.Action);
         Assert.IsEmpty(mock.Values);
@@ -84,7 +87,7 @@ public abstract class MockTest<T> where T : class, IMockTarget
     [TestMethod]
     public void Mock_ReferenceValues_ArePersistent()
     {
-        var mock = Mock.Create<T>();
+        var mock = Mock.CreateLoose<T>();
 
         Assert.AreSame(mock.Model, mock.Model);
         Assert.AreSame(mock.ChildTarget, mock.ChildTarget);
@@ -99,12 +102,6 @@ public class IMockTargetTest : MockTest<IMockTarget>;
 public class IPartialMockTargetTest : MockTest<IPartialMockTarget>;
 
 [TestClass]
-public class BasicMockTest : MockTest<BasicMock>;
-
-[TestClass]
-public class GenericMockTest : MockTest<GenericMock<List<int>>>;
-
-[TestClass]
 public class AbstractMockTest : MockTest<AbstractMock>;
 
 [TestClass]
@@ -112,9 +109,3 @@ public class PartialMockTest : MockTest<PartialMock>;
 
 [TestClass]
 public class VirtualMockTest : MockTest<VirtualMock>;
-
-[TestClass]
-public class DerivedMockTest : MockTest<DerivedMock>;
-
-[TestClass]
-public class SealedMockTest : MockTest<SealedMock>;

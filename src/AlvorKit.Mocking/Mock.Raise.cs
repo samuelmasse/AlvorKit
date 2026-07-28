@@ -3,7 +3,7 @@ namespace AlvorKit.Mocking;
 public static partial class Mock
 {
     /// <summary>Raises a mocked event captured through an add or remove expression.</summary>
-    public static void Raise(Action action, params object[] args)
+    public static void Raise(Action action, params object?[] args)
     {
         Delegate? handler = null;
 

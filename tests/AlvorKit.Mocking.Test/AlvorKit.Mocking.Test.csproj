@@ -6,11 +6,17 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.Mocking\AlvorKit.Mocking.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Mocking.Dynamic\AlvorKit.Mocking.Dynamic.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Mocking.Interception\AlvorKit.Mocking.Interception.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.Mocking.Proxies" />
         <Using Include="AlvorKit.Mocking" />
+        <Using Include="AlvorKit.Mocking.Dynamic" />
+        <Using Include="AlvorKit.Mocking.Interception" />
+        <Using Include="System.Reflection" />
+        <Using Include="System.Reflection.Emit" />
     </ItemGroup>
 
 </Project>

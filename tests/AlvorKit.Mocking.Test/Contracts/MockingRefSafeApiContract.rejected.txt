@@ -1,0 +1,86 @@
+Ref-safe compiler-negative source proof
+=======================================
+
+Toolchain
+---------
+
+.NET SDK 10.0.400-preview.0.26322.102
+C# LangVersion: preview (C# 14)
+
+Async ref-struct parameter
+--------------------------
+
+```csharp
+static async Task<int> InvalidAsyncParameter(
+    ReadOnlySpan<byte> bytes)
+{
+    await Task.Yield();
+    return bytes.Length;
+}
+```
+
+Expected and observed:
+
+```text
+CS4012: Parameters of type 'ReadOnlySpan<byte>' cannot be declared in async
+methods or async lambda expressions.
+```
+
+Borrowed local across suspension
+--------------------------------
+
+```csharp
+static async Task InvalidBorrowedLocal(
+    byte[] owner)
+{
+    ReadOnlySpan<byte> borrowed = owner;
+    await Task.Yield();
+    Console.WriteLine(borrowed.Length);
+}
+```
+
+Expected and observed:
+
+```text
+CS4007: Instance of type 'System.ReadOnlySpan<byte>' cannot be preserved across
+'await' or 'yield' boundary.
+```
+
+Approved alternative
+--------------------
+
+The callback itself remains synchronous, copies the borrowed input, and returns
+the task from an ordinary async helper:
+
+```csharp
+clause.Answer(
+    (ReadOnlySpan<byte> bytes) =>
+        ConsumeCopiedAsync(bytes.ToArray()));
+```
+
+Closed canonical Invoke mismatches
+----------------------------------
+
+The executing proof emits metadata variants and rejects each before callback
+storage with a deterministic facet:
+
+```text
+return type
+parameter count
+parameter 0 type
+parameter 0 IsIn metadata
+parameter 2 IsOut metadata
+parameter 0 required custom modifiers
+parameter 0 optional custom modifiers
+parameter 0 scoped metadata
+```
+
+An open generic captured method is rejected with:
+
+```text
+The captured callback signature must be closed.
+```
+
+The source natural delegate may omit only the toolchain's compiler-shaped
+`InAttribute` required modifier. The emitted stable delegate is validated
+strictly and no modifier mismatch is accepted in stored callback state.

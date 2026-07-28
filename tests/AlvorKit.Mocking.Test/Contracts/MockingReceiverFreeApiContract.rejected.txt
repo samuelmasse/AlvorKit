@@ -1,0 +1,80 @@
+Receiver-free compiler-negative source proof
+============================================
+
+Toolchain
+---------
+
+.NET SDK 10.0.400-preview.0.26322.102
+C# LangVersion: preview (C# 14)
+
+Eager field-write matcher
+-------------------------
+
+Field-write values are captured through a lambda so `Arg` executes after
+matcher capture starts. The eager candidate is intentionally absent:
+
+```csharp
+Mock.WhenFieldWrite(
+    worker,
+    currentJob,
+    Arg.Any<Job>());
+```
+
+The third argument cannot convert from `Job` to `Func<Job>`. The approved form
+is:
+
+```csharp
+Mock.WhenFieldWrite(
+    worker,
+    currentJob,
+    () => Arg.Any<Job>());
+```
+
+Construction return versus substitution
+----------------------------------------
+
+Construction substitution is not named like a method return:
+
+```csharp
+Mock.WhenNew(() => new Buffer(16))
+    .Return(buffer);
+```
+
+`MockConstructionSetupClause<Buffer>` has no `Return` contract. The approved
+terminal is `.Substitute(buffer)`, while `.Passthrough()` explicitly executes
+the original allocation.
+
+Constructor-body call-site scope
+--------------------------------
+
+Constructor-body interception identifies the selected constructor definition,
+not a caller `newobj` site:
+
+```csharp
+Mock.WhenConstructorBody(() => new Buffer(16))
+    .AtSite(site);
+```
+
+`MockConstructorBodySetupClause<Buffer>` deliberately exposes no `AtSite`.
+Call-site-specific allocation substitution belongs to `WhenNew`.
+
+Borrowed field constant
+-----------------------
+
+An ordinary constant extension cannot retain a byref-like field result:
+
+```csharp
+MockFieldReadSetupClause<ReadOnlySpan<int>> clause = GetClause();
+clause.Return(default(ReadOnlySpan<int>));
+```
+
+Expected compiler boundary:
+
+```text
+CS9244: The type 'ReadOnlySpan<int>' may not be a ref struct or a type parameter
+allowing ref structs in order to use it as parameter 'T' in the generic type
+or method.
+```
+
+The approved alternatives are `ReturnFactory`, `Observe`, and `Transform`,
+which keep the live value in the generated typed frame.

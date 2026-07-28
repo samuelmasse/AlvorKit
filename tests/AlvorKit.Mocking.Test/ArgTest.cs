@@ -21,43 +21,80 @@ public class ArgTest
         Assert.IsNull(Arg.Match<List<string>>((x) => true));
     }
 
-    /// <summary>Verifies Arg RefAny ReturnsEmpty.</summary>
+    /// <summary>Indexed by-reference matchers reject use outside active capture.</summary>
     [TestMethod]
-    public void Arg_RefAny_ReturnsEmpty()
+    public void Arg_IndexedRefMatchers_RequireActiveCapture()
     {
-        ref var i = ref Arg<int>.Any();
-        ref var s = ref Arg<string>.Any();
-        ref var l = ref Arg<List<string>>.Any();
-
-        Assert.AreEqual(0, i);
-        Assert.IsNull(s);
-        Assert.IsNull(l);
+        Assert.Throws<MockException>(
+            () => Arg.Any<int>(0));
+        Assert.Throws<MockException>(
+            () => Arg.Match<int>(
+                0,
+                static value => value != 0));
+        Assert.Throws<MockException>(
+            () => Arg.ReadOnlySpanEqual<int>(
+                0,
+                [1]));
+        Assert.Throws<MockException>(
+            () => Arg.AnyRef<int>(0));
+        Assert.Throws<MockException>(
+            () => Arg.Match<int>(
+                0,
+                (scoped in _) => true));
     }
 
-    /// <summary>Verifies Arg RefAnyModified StillReturnsEmpty.</summary>
+    /// <summary>Active indexed by-value matchers return defaults without evaluating predicates.</summary>
     [TestMethod]
-    public void Arg_RefAnyModified_StillReturnsEmpty()
+    public void Arg_IndexedValueMatchers_ReturnDefaults()
     {
-        ref var i = ref Arg<int>.Any();
-        Assert.AreEqual(0, i);
+        var predicateCalls = 0;
+        Capture.Start(CaptureOperation.Setup);
+        try
+        {
+            int any = Arg.Any<int>(0);
+            ReadOnlySpan<int> matched =
+                Arg.Match<ReadOnlySpan<int>>(
+                    1,
+                    _ =>
+                    {
+                        predicateCalls++;
+                        return true;
+                    });
 
-        i = 35;
-
-        ref var i2 = ref Arg<int>.Any();
-        Assert.AreEqual(0, i);
-        Assert.AreEqual(0, i2);
+            Assert.AreEqual(0, any);
+            Assert.IsTrue(matched.IsEmpty);
+            Assert.AreEqual(0, predicateCalls);
+            Assert.AreEqual(2, Capture.FirstIndexedMatchers.Count);
+        }
+        finally
+        {
+            Capture.End();
+        }
     }
 
-    /// <summary>Verifies Arg RefMatch ReturnsEmpty.</summary>
+    /// <summary>Active indexed by-reference matchers return only null-reference placeholders.</summary>
     [TestMethod]
-    public void Arg_RefMatch_ReturnsEmpty()
+    public void Arg_IndexedRefMatchers_ReturnNullReferences()
     {
-        ref var i = ref Arg<int>.Match((x) => true);
-        ref var s = ref Arg<string>.Match((x) => true);
-        ref var l = ref Arg<List<string>>.Match((x) => true);
+        Capture.Start(CaptureOperation.Setup);
+        try
+        {
+            ref int any = ref Arg.AnyRef<int>(0);
+            ref string matched = ref Arg.Match<string>(
+                1,
+                (scoped in value) => value.Length != 0);
 
-        Assert.AreEqual(0, i);
-        Assert.IsNull(s);
-        Assert.IsNull(l);
+            Assert.IsTrue(
+                System.Runtime.CompilerServices.Unsafe
+                    .IsNullRef(ref any));
+            Assert.IsTrue(
+                System.Runtime.CompilerServices.Unsafe
+                    .IsNullRef(ref matched));
+            Assert.AreEqual(2, Capture.FirstIndexedMatchers.Count);
+        }
+        finally
+        {
+            Capture.End();
+        }
     }
 }

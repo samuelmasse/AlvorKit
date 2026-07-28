@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+        <Description>Profiler-free shared runtime IL emission for Mocking execution backends.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Mocking\AlvorKit.Mocking.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System.Collections" />
+        <Using Include="System.Globalization" />
+        <Using Include="System.Reflection.Emit" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Mocking.Dynamic" />
+        <InternalsVisibleTo Include="AlvorKit.Mocking.Interception" />
+        <InternalsVisibleTo Include="AlvorKit.Mocking.Test" />
+    </ItemGroup>
+
+</Project>

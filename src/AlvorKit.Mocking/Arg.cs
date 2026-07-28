@@ -4,7 +4,7 @@ namespace AlvorKit.Mocking;
 public static class Arg
 {
     /// <summary>Matches any argument value of the requested type while configuring a mocked call.</summary>
-    public static T Any<T>() where T : allows ref struct
+    public static T Any<T>()
     {
         if (Capture.Context.IsActive)
             Capture.WriteMatcher(new(MatcherType.Any, null));
@@ -15,6 +15,8 @@ public static class Arg
     /// <summary>Matches arguments accepted by a predicate while configuring a mocked call.</summary>
     public static T Match<T>(Func<T, bool> func)
     {
+        ArgumentNullException.ThrowIfNull(func);
+
         if (Capture.Context.IsActive)
         {
             Func<object, bool> f = o => func.Invoke((T)o);
@@ -24,58 +26,116 @@ public static class Arg
         return Value<T>();
     }
 
-    /// <summary>Returns the sentinel value used for matcher capture or the default value outside capture.</summary>
-    internal static T Value<T>() where T : allows ref struct
+    /// <summary>Returns the valid alternate used for ordinary matcher placement or the default outside capture.</summary>
+    internal static T Value<T>()
     {
         if (Capture.Context.IsDisambiguating)
-            return Ones<T>();
+            return MockOrdinaryMatcherAlternate<T>.Value;
         else return default!;
     }
 
-    /// <summary>Returns a bitwise all-ones sentinel that can be fingerprinted during matcher disambiguation.</summary>
-    internal static T Ones<T>() where T : allows ref struct
+    /// <summary>Matches any value at one declared parameter index during active capture.</summary>
+    public static T Any<T>(int parameterIndex)
+        where T : allows ref struct
     {
-        Span<byte> buffer = stackalloc byte[Unsafe.SizeOf<T>()];
-        buffer.Fill(0xFF);
-        return Unsafe.As<byte, T>(ref buffer[0]);
-    }
-}
-
-/// <summary>Provides by-reference argument matchers for mocked ref and out parameters.</summary>
-public static class Arg<T>
-{
-    /// <summary>Default value storage returned when a by-reference matcher is evaluated outside capture disambiguation.</summary>
-    private static T zero = default!;
-
-    /// <summary>Unmanaged all-ones storage returned while by-reference matcher positions are disambiguated.</summary>
-    private static unsafe readonly byte* one = (byte*)NativeMemory.Alloc((nuint)Unsafe.SizeOf<T>());
-
-    /// <summary>Matches any by-reference argument value while configuring a mocked call.</summary>
-    public static ref T Any()
-    {
-        Arg.Any<T>();
-        return ref Value();
+        ArgumentOutOfRangeException.ThrowIfNegative(parameterIndex);
+        Capture.WriteIndexedMatcher<T>(
+            parameterIndex,
+            MockIndexedMatcherPassingKind.Value,
+            new(MatcherType.Any, null));
+        return default!;
     }
 
-    /// <summary>Matches by-reference arguments accepted by a predicate while configuring a mocked call.</summary>
-    public static ref T Match(Func<T, bool> func)
+    /// <summary>Matches a live value at one declared parameter index during active capture.</summary>
+    public static T Match<T>(
+        int parameterIndex,
+        Func<T, bool> predicate)
+        where T : allows ref struct
     {
-        Arg.Match(func);
-        return ref Value();
+        ArgumentOutOfRangeException.ThrowIfNegative(parameterIndex);
+        ArgumentNullException.ThrowIfNull(predicate);
+        bool typed(scoped in T value) => predicate(value);
+        Capture.WriteIndexedMatcher<T>(
+            parameterIndex,
+            MockIndexedMatcherPassingKind.Value,
+            new(
+                MatcherType.TypedPredicate,
+                new MockTypedMatcher<T>(typed, "predicate")));
+        return default!;
     }
 
-    /// <summary>Returns by-reference storage appropriate for the current capture phase.</summary>
-    internal unsafe static ref T Value()
+    /// <summary>Matches any mutable reference at one declared parameter index during active capture.</summary>
+    public static ref T AnyRef<T>(int parameterIndex)
+        where T : allows ref struct
     {
-        if (Capture.Context.IsDisambiguating)
-        {
-            new Span<byte>(one, Unsafe.SizeOf<T>()).Fill(0xFF);
-            return ref Unsafe.AsRef<T>(one);
-        }
-        else
-        {
-            zero = default!;
-            return ref zero;
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(parameterIndex);
+        Capture.WriteIndexedMatcher<T>(
+            parameterIndex,
+            MockIndexedMatcherPassingKind.Reference,
+            new(MatcherType.Any, null));
+        return ref Unsafe.NullRef<T>();
+    }
+
+    /// <summary>Matches a live mutable reference at one declared parameter index during active capture.</summary>
+    public static ref T Match<T>(
+        int parameterIndex,
+        RefPredicate<T> predicate)
+        where T : allows ref struct
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(parameterIndex);
+        ArgumentNullException.ThrowIfNull(predicate);
+        Capture.WriteIndexedMatcher<T>(
+            parameterIndex,
+            MockIndexedMatcherPassingKind.Reference,
+            new(
+                MatcherType.TypedPredicate,
+                new MockTypedMatcher<T>(predicate, "predicate")));
+        return ref Unsafe.NullRef<T>();
+    }
+
+    /// <summary>Matches a read-only span against one setup-time content copy.</summary>
+    public static ReadOnlySpan<T> ReadOnlySpanEqual<T>(
+        int parameterIndex,
+        ReadOnlySpan<T> expected)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(parameterIndex);
+        var copy = expected.ToArray();
+        bool predicate(scoped in ReadOnlySpan<T> actual) =>
+                actual.SequenceEqual(copy);
+        Capture.WriteIndexedMatcher<ReadOnlySpan<T>>(
+            parameterIndex,
+            MockIndexedMatcherPassingKind.Value,
+            new(
+                MatcherType.TypedPredicate,
+                new MockTypedMatcher<ReadOnlySpan<T>>(
+predicate,
+                    "exact read-only span",
+                    projected =>
+                        projected is T[] values &&
+                        values.AsSpan().SequenceEqual(copy))));
+        return default;
+    }
+
+    /// <summary>Matches a mutable span against one setup-time content copy.</summary>
+    public static Span<T> SpanEqual<T>(
+        int parameterIndex,
+        ReadOnlySpan<T> expected)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(parameterIndex);
+        var copy = expected.ToArray();
+        bool predicate(scoped in Span<T> actual) =>
+                actual.SequenceEqual(copy);
+        Capture.WriteIndexedMatcher<Span<T>>(
+            parameterIndex,
+            MockIndexedMatcherPassingKind.Value,
+            new(
+                MatcherType.TypedPredicate,
+                new MockTypedMatcher<Span<T>>(
+predicate,
+                    "exact span",
+                    projected =>
+                        projected is T[] values &&
+                        values.AsSpan().SequenceEqual(copy))));
+        return default;
     }
 }

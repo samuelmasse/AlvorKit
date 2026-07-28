@@ -5,16 +5,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Lib.Harmony" Version="2.4.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="HarmonyLib" />
         <Using Include="System.Collections" />
-        <Using Include="System.Reflection.Emit" />
+        <Using Include="System.Globalization" />
     </ItemGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Mocking.Dynamic" />
+        <InternalsVisibleTo Include="AlvorKit.Mocking.Emit" />
+        <InternalsVisibleTo Include="AlvorKit.Mocking.Interception" />
+        <InternalsVisibleTo Include="AlvorKit.Mocking.Performance.Fixture" />
         <InternalsVisibleTo Include="AlvorKit.Mocking.Proxies" />
         <InternalsVisibleTo Include="AlvorKit.Mocking.Test" />
     </ItemGroup>

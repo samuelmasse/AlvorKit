@@ -1,0 +1,78 @@
+Managed-reference compiler-negative source proof
+================================================
+
+Toolchain
+---------
+
+.NET SDK 10.0.400-preview.0.26322.102
+C# LangVersion: preview (C# 14)
+
+Ambiguous same-name readonly overload
+-------------------------------------
+
+Giving both mutable and readonly delegates the name `WhenRef` makes the
+required mutable ref lambda ambiguous:
+
+```csharp
+static void WhenRef<T>(MockRefCall<T> call);
+static void WhenRef<T>(MockRefReadonlyCall<T> call);
+
+WhenRef(() => ref storage);
+```
+
+Observed:
+
+```text
+CS0121: The call is ambiguous between ... RefCall<T> and ReadonlyCall<T>.
+```
+
+The approved surface therefore uses `WhenRef` for mutable returns and
+`WhenRefReadonly` for readonly returns.
+
+Dead local and readonly mutation
+--------------------------------
+
+```csharp
+static MockRefCall<int> DeadLocal()
+{
+    int value = 0;
+    return () => ref value;
+}
+```
+
+Observed:
+
+```text
+CS8168: Cannot return local 'value' by reference because it is not a ref local.
+```
+
+Likewise, assigning through the result of `MockRefReadonlyCall<int>` is
+rejected:
+
+```text
+CS0131: The left-hand side of an assignment must be a variable, property or
+indexer.
+```
+
+Unsupported element types
+-------------------------
+
+The delegates intentionally do not opt into ref-struct type arguments, and
+pointer types cannot be generic arguments:
+
+```csharp
+MockRefCall<Span<int>> refStruct;
+MockRefCall<int*> pointer;
+```
+
+Observed:
+
+```text
+CS9244: Span<int> may not be used as parameter T in MockRefCall<T>.
+CS0306: The type 'int*' may not be used as a type argument.
+```
+
+Stable array elements, object fields, and setup-owned value cells are the
+approved backing locations. Unsafe factory provenance remains the caller's
+responsibility; the mocking runtime does not pin or retain a produced managed
+reference.
