@@ -18,6 +18,13 @@ internal static class AlvorSenseCliOptions
     internal static Option<string> SessionIdOption() =>
         RequiredStringOption("--id", "Stable session id selected by start.");
 
+    /// <summary>Creates the optional combined live-debug workspace option.</summary>
+    internal static Option<string?> WorkspaceOption() =>
+        new("--workspace")
+        {
+            Description = "Live workspace id beneath tmp/live or explicit path; records exact request and result."
+        };
+
     /// <summary>Creates the common timeout option in seconds.</summary>
     /// <returns>The configured timeout option.</returns>
     internal static Option<string> TimeoutOption() =>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Interception.CoreClr\AlvorKit.Interception.CoreClr.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.LivePatch\AlvorKit.LivePatch.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Injection" />
+        <Using Include="AlvorKit.Interception" />
+        <Using Include="AlvorKit.LivePatch" />
+        <Using Include="System.Reflection" />
+    </ItemGroup>
+
+</Project>

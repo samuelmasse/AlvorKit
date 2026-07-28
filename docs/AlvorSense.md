@@ -54,6 +54,13 @@ exactly fifty update calls with exactly `0.001` seconds each. Nothing advances
 while the agent is reading output, inspecting screenshots, or deciding what to
 do next.
 
+When visible behavior needs internal diagnosis, keep the AlvorSense target
+alive and follow [`AgentLiveDevelopment.md`](AgentLiveDevelopment.md). Associate
+the AlvorSense ID with a LiveCode workspace, pass `--workspace` to `send`,
+`status`, and `stop`, and use LiveCode against that workspace's exact process
+identity. AlvorSense remains the user-visible source of truth before and after
+any internal inspection or intervention.
+
 Rendering is also explicit. Use `render` when a frame should be drawn, and
 `screenshot <path.png>` when the agent needs visual evidence. The hidden render
 surface is backed by the GLFW window handed to `AgentGlfwWindowHost`, so the

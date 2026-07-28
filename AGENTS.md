@@ -87,6 +87,24 @@ AlvorSense, such as an arbitrary desktop window, external application, or demo
 that needs real OS-level window discovery and input. Read `docs/AlvorEye.md`
 before using or extending AlvorEye.
 
+## Live Runtime Debugging
+
+Read `docs/AgentLiveDevelopment.md` before using LiveCode, LivePatch, or a
+combined AlvorSense and LiveCode workflow. Treat AlvorSense as the visible
+source of truth and LiveCode as the scoped debugger: observe through normal
+input first, inspect the exact live scope when behavior is surprising, then
+return to AlvorSense to verify any intervention.
+
+Create agent-authored live submissions only beneath
+`tmp/live/<workspace-id>/lc/` or `tmp/live/<workspace-id>/lp/`. Use the
+workspace-aware CLI options so the target identity, exact inputs, outputs,
+source hashes, and persistent interventions are recorded. Do not place
+disposable submissions in production or demo source directories.
+
+Clean up persistent LiveCode effects and LivePatch registrations before closing
+the workspace. Never record capability tokens in workspace files, chat, logs,
+or documentation.
+
 ## Line Length
 
 In Working Mode, treat the 170-character line limit as cleanup guidance that

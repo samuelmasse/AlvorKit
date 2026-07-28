@@ -26,6 +26,7 @@ public sealed class CoverageOptionsTest
         Assert.AreEqual(TimeSpan.FromSeconds(1), options.MaxTestDuration);
         Assert.IsFalse(options.TestTimingWarnOnly);
         Assert.IsNull(options.RepoRoot);
+        Assert.IsFalse(options.Interception);
     }
 
     /// <summary>Short options override configuration and all metric thresholds.</summary>
@@ -122,6 +123,15 @@ public sealed class CoverageOptionsTest
         var options = CoverageOptions.Parse(["--repo-root", "consumer"]);
 
         Assert.AreEqual(Path.GetFullPath("consumer"), options.RepoRoot);
+    }
+
+    /// <summary>Interception mode is an explicit opt-in for profiled testhost children.</summary>
+    [TestMethod]
+    public void Parse_Interception_EnablesProfiledTesthost()
+    {
+        var options = CoverageOptions.Parse(["--interception"]);
+
+        Assert.IsTrue(options.Interception);
     }
 
     /// <summary>Agent mode keeps only the artifacts needed for automated coverage decisions.</summary>

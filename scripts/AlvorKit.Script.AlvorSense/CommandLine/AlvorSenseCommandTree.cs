@@ -30,12 +30,15 @@ internal static class AlvorSenseCommandTree
     {
         var id = AlvorSenseCliOptions.SessionIdOption();
         var timeout = AlvorSenseCliOptions.TimeoutOption();
+        var workspace = AlvorSenseCliOptions.WorkspaceOption();
         var command = new Command("stop", "Stop a running session.");
         command.Options.Add(id);
         command.Options.Add(timeout);
+        command.Options.Add(workspace);
         command.SetAction(parse => context.Command = new AlvorSenseStopCommand(
             AlvorSenseCliOptions.ValidateSessionId(parse.GetRequiredValue(id)),
-            AlvorSenseCliOptions.Timeout(parse.GetValue(timeout))));
+            AlvorSenseCliOptions.Timeout(parse.GetValue(timeout)),
+            parse.GetValue(workspace)));
         return command;
     }
 
@@ -55,10 +58,13 @@ internal static class AlvorSenseCommandTree
     private static Command CreateStatusCommand(AlvorSenseParseContext context)
     {
         var id = AlvorSenseCliOptions.SessionIdOption();
+        var workspace = AlvorSenseCliOptions.WorkspaceOption();
         var command = new Command("status", "Read persisted state for one session.");
         command.Options.Add(id);
+        command.Options.Add(workspace);
         command.SetAction(parse => context.Command = new AlvorSenseStatusCommand(
-            AlvorSenseCliOptions.ValidateSessionId(parse.GetRequiredValue(id))));
+            AlvorSenseCliOptions.ValidateSessionId(parse.GetRequiredValue(id)),
+            parse.GetValue(workspace)));
         return command;
     }
 

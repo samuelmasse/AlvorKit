@@ -15,6 +15,8 @@
         <Project Path="demos/AlvorKit.XxHash.Demo.Bench/AlvorKit.XxHash.Demo.Bench.csproj" />
         <Project Path="demos/AlvorKit.FreeType.Demo/AlvorKit.FreeType.Demo.csproj" />
         <Project Path="demos/AlvorKit.Injection.Demo/AlvorKit.Injection.Demo.csproj" />
+        <Project Path="demos/AlvorKit.Engine.LiveCode.Demo/AlvorKit.Engine.LiveCode.Demo.csproj" />
+        <Project Path="demos/AlvorKit.Engine.LivePatch.Demo/AlvorKit.Engine.LivePatch.Demo.csproj" />
         <Project Path="demos/AlvorKit.Maths.Demo/AlvorKit.Maths.Demo.csproj" />
         <Project Path="demos/AlvorKit.Maths.Demo.Bench/AlvorKit.Maths.Demo.Bench.csproj" />
         <Project Path="demos/AlvorKit.MiniAudio.Demo/AlvorKit.MiniAudio.Demo.csproj" />
@@ -59,10 +61,13 @@
             Path="scripts/AlvorKit.Script.AlvorSense/AlvorKit.Script.AlvorSense.csproj" />
         <Project
             Path="scripts/AlvorKit.Script.LiveWorkspace/AlvorKit.Script.LiveWorkspace.csproj" />
+        <Project Path="scripts/AlvorKit.Script.LiveCode/AlvorKit.Script.LiveCode.csproj" />
         <Project Path="scripts/AlvorKit.Script.Lint/AlvorKit.Script.Lint.csproj" />
         <Project Path="scripts/AlvorKit.Script.MathsGen/AlvorKit.Script.MathsGen.csproj" />
         <Project Path="scripts/AlvorKit.Script.NativeBuild/AlvorKit.Script.NativeBuild.csproj" />
         <Project Path="scripts/AlvorKit.Script.TestCoverage/AlvorKit.Script.TestCoverage.csproj" />
+        <Project
+            Path="scripts/AlvorKit.Script.TestInterception/AlvorKit.Script.TestInterception.csproj" />
         <Project Path="scripts/AlvorKit.Script.TestTiming/AlvorKit.Script.TestTiming.csproj" />
     </Folder>
 
@@ -75,6 +80,7 @@
     <Project Path="src/AlvorKit.Injection/AlvorKit.Injection.csproj" />
     <Project Path="src/AlvorKit.Injection.Graph/AlvorKit.Injection.Graph.csproj" />
     <Project Path="src/AlvorKit.LiveCode/AlvorKit.LiveCode.csproj" />
+    <Project Path="src/AlvorKit.LivePatch/AlvorKit.LivePatch.csproj" />
     <Project Path="src/AlvorKit.Interception/AlvorKit.Interception.csproj" />
     <Project Path="src/AlvorKit.Interception.CoreClr/AlvorKit.Interception.CoreClr.csproj" />
     <Project Path="src/AlvorKit.Mocking/AlvorKit.Mocking.csproj" />
@@ -83,6 +89,8 @@
     <Project Path="src/AlvorKit.Ranges/AlvorKit.Ranges.csproj" />
     <Project Path="src/AlvorKit.Engine/AlvorKit.Engine.csproj" />
     <Project Path="src/AlvorKit.Engine.Loop/AlvorKit.Engine.Loop.csproj" />
+    <Project Path="src/AlvorKit.Engine.LiveCode/AlvorKit.Engine.LiveCode.csproj" />
+    <Project Path="src/AlvorKit.Engine.LivePatch/AlvorKit.Engine.LivePatch.csproj" />
     <Project Path="src/AlvorKit.Graphics2D/AlvorKit.Graphics2D.csproj" />
     <Project Path="src/AlvorKit.Graphics2D.Fonts/AlvorKit.Graphics2D.Fonts.csproj" />
     <Project Path="src/AlvorKit.OpenGL.Maths/AlvorKit.OpenGL.Maths.csproj" />
@@ -106,6 +114,7 @@
             Path="tests/AlvorKit.Interception.Performance.Fixture/AlvorKit.Interception.Performance.Fixture.csproj" />
         <Project Path="tests/AlvorKit.Interception.Test/AlvorKit.Interception.Test.csproj" />
         <Project Path="tests/AlvorKit.LiveCode.Test/AlvorKit.LiveCode.Test.csproj" />
+        <Project Path="tests/AlvorKit.LivePatch.Test/AlvorKit.LivePatch.Test.csproj" />
         <Project Path="tests/AlvorKit.Mocking.Test/AlvorKit.Mocking.Test.csproj" />
         <Project Path="tests/AlvorKit.Maths.Test/AlvorKit.Maths.Test.csproj" />
         <Project Path="tests/AlvorKit.Ranges.Test/AlvorKit.Ranges.Test.csproj" />
@@ -148,6 +157,8 @@
             Path="tests/AlvorKit.Script.NativeBuild.Test/AlvorKit.Script.NativeBuild.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.TestCoverage.Test/AlvorKit.Script.TestCoverage.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Script.TestInterception.Test/AlvorKit.Script.TestInterception.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.TestTiming.Test/AlvorKit.Script.TestTiming.Test.csproj" />
         <Project Path="tests/AlvorKit.Windowing.Test/AlvorKit.Windowing.Test.csproj" />

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
+        <ProjectReference Include="..\AlvorKit.LiveCode\AlvorKit.LiveCode.csproj" />
+        <ProjectReference Include="..\AlvorKit.Windowing.Agent\AlvorKit.Windowing.Agent.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Engine.Loop" />
+        <Using Include="AlvorKit.Injection" />
+        <Using Include="AlvorKit.LiveCode" />
+        <Using Include="AlvorKit.Windowing" />
+        <Using Include="System.Text.Json" />
+    </ItemGroup>
+
+</Project>

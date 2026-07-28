@@ -17,6 +17,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.Windowing.Test" />
+        <InternalsVisibleTo Include="AlvorKit.Engine.LiveCode" />
         <Using Include="AlvorKit.Maths" />
         <Using Include="AlvorKit.Windowing" />
         <Using Include="AlvorKit.GLFW" />

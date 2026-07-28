@@ -86,10 +86,23 @@ public sealed class AlvorSenseCommandLineTest
     public void Parse_SendCommandFromCommandOptions_ReturnsCommands()
     {
         var command = (AlvorSenseSendCommand)AlvorSenseCommandLine.Parse(
-            ["send", "--id", "game-1", "--stderr-tail", "12", "--command", "render", "--command", "update 0.016"],
+            [
+                "send",
+                "--id",
+                "game-1",
+                "--workspace",
+                "orbit-debug",
+                "--stderr-tail",
+                "12",
+                "--command",
+                "render",
+                "--command",
+                "update 0.016"
+            ],
             new StringReader(""));
 
         Assert.AreEqual(12, command.StderrTailLines);
+        Assert.AreEqual("orbit-debug", command.Workspace);
         CollectionAssert.AreEqual(new[] { "render", "update 0.016" }, command.Commands);
     }
 
@@ -149,10 +162,11 @@ public sealed class AlvorSenseCommandLineTest
     public void Parse_StopCommand_ReturnsValues()
     {
         var command = (AlvorSenseStopCommand)AlvorSenseCommandLine.Parse(
-            ["stop", "--id", "game-1", "--timeout", "1.25"],
+            ["stop", "--id", "game-1", "--workspace", "orbit-debug", "--timeout", "1.25"],
             new StringReader(""));
 
         Assert.AreEqual("game-1", command.Id);
+        Assert.AreEqual("orbit-debug", command.Workspace);
         Assert.AreEqual(TimeSpan.FromSeconds(1.25), command.Timeout);
     }
 
@@ -172,11 +186,14 @@ public sealed class AlvorSenseCommandLineTest
     public void Parse_LocalUtilityCommands_ReturnsCommands()
     {
         var list = AlvorSenseCommandLine.Parse(["list"], new StringReader(""));
-        var status = (AlvorSenseStatusCommand)AlvorSenseCommandLine.Parse(["status", "--id", "game-1"], new StringReader(""));
+        var status = (AlvorSenseStatusCommand)AlvorSenseCommandLine.Parse(
+            ["status", "--id", "game-1", "--workspace", "orbit-debug"],
+            new StringReader(""));
         var help = AlvorSenseCommandLine.Parse(["send", "--help"], new StringReader(""));
 
         Assert.IsInstanceOfType<AlvorSenseListCommand>(list);
         Assert.AreEqual("game-1", status.Id);
+        Assert.AreEqual("orbit-debug", status.Workspace);
         Assert.IsInstanceOfType<AlvorSenseHelpCommand>(help);
     }
 

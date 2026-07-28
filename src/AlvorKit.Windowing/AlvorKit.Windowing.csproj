@@ -8,6 +8,8 @@
         <Using Include="AlvorKit.Maths" />
         <InternalsVisibleTo Include="AlvorKit.Windowing.Test" />
         <InternalsVisibleTo Include="AlvorKit.Windowing.Agent" />
+        <InternalsVisibleTo Include="AlvorKit.Engine.LiveCode" />
+        <InternalsVisibleTo Include="AlvorKit.Engine.LivePatch" />
     </ItemGroup>
 
 </Project>

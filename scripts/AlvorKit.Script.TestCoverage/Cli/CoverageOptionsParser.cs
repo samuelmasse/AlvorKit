@@ -44,7 +44,8 @@ internal sealed class CoverageOptionsParser
         Option<string> RunId,
         Option<string> MaxTestDuration,
         Option<bool> TestTimingWarnOnly,
-        Option<string> RepoRoot) CreateCliOptions() =>
+        Option<string> RepoRoot,
+        Option<bool> Interception) CreateCliOptions() =>
         (
             new("--configuration", "-c") { Description = "Build configuration." },
             new("--threshold", "-t") { Description = "Coverage threshold for every metric." },
@@ -62,7 +63,8 @@ internal sealed class CoverageOptionsParser
             new("--run-id") { Description = "Stable coverage run directory name." },
             new("--max-test-duration-ms") { Description = "Per-test duration budget in milliseconds." },
             new("--test-timing-warn-only") { Description = "Warn instead of failing on slow tests." },
-            new("--repo-root") { Description = "Repository root to measure." });
+            new("--repo-root") { Description = "Repository root to measure." },
+            new("--interception") { Description = "Profile dotnet test children with first-party Interception." });
 
     /// <summary>Adds the coverage option set to the command.</summary>
     private static void AddOptions(
@@ -84,7 +86,8 @@ internal sealed class CoverageOptionsParser
             Option<string> RunId,
             Option<string> MaxTestDuration,
             Option<bool> TestTimingWarnOnly,
-            Option<string> RepoRoot) options)
+            Option<string> RepoRoot,
+            Option<bool> Interception) options)
     {
         command.Options.Add(options.Configuration);
         command.Options.Add(options.Threshold);
@@ -103,6 +106,7 @@ internal sealed class CoverageOptionsParser
         command.Options.Add(options.MaxTestDuration);
         command.Options.Add(options.TestTimingWarnOnly);
         command.Options.Add(options.RepoRoot);
+        command.Options.Add(options.Interception);
     }
 
     /// <summary>Creates immutable coverage options from parsed command-line values.</summary>
@@ -125,7 +129,8 @@ internal sealed class CoverageOptionsParser
             Option<string> RunId,
             Option<string> MaxTestDuration,
             Option<bool> TestTimingWarnOnly,
-            Option<string> RepoRoot) options)
+            Option<string> RepoRoot,
+            Option<bool> Interception) options)
     {
         var thresholds = Thresholds(parse, options);
         var parallel = IntOption(parse, options.MaxParallel, CoverageOptions.DefaultMaxParallel);
@@ -150,7 +155,8 @@ internal sealed class CoverageOptionsParser
             id,
             maxDuration,
             parse.GetValue(options.TestTimingWarnOnly),
-            repoRoot is null ? null : Path.GetFullPath(repoRoot));
+            repoRoot is null ? null : Path.GetFullPath(repoRoot),
+            parse.GetValue(options.Interception));
     }
 
     /// <summary>Builds threshold settings from the all-metric and metric-specific options.</summary>
@@ -173,7 +179,8 @@ internal sealed class CoverageOptionsParser
             Option<string> RunId,
             Option<string> MaxTestDuration,
             Option<bool> TestTimingWarnOnly,
-            Option<string> RepoRoot) options)
+            Option<string> RepoRoot,
+            Option<bool> Interception) options)
     {
         var value = DoubleOption(parse, options.Threshold, double.NaN);
         var thresholds = double.IsNaN(value) ? CoverageThresholds.Default : CoverageThresholds.All(value);
@@ -205,7 +212,8 @@ internal sealed class CoverageOptionsParser
             Option<string> RunId,
             Option<string> MaxTestDuration,
             Option<bool> TestTimingWarnOnly,
-            Option<string> RepoRoot) options)
+            Option<string> RepoRoot,
+            Option<bool> Interception) options)
     {
         if (parse.GetValue(options.Agent))
             return CoverageReportModes.Agent;

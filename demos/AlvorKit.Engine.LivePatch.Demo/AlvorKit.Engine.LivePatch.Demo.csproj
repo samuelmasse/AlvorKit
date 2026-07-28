@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Interception\AlvorKit.Interception.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Interception.CoreClr\AlvorKit.Interception.CoreClr.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.LivePatch\AlvorKit.LivePatch.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Engine" />
+        <Using Include="AlvorKit.Engine.Loop" />
+        <Using Include="AlvorKit.Injection" />
+        <Using Include="AlvorKit.Interception" />
+        <Using Include="AlvorKit.LivePatch" />
+        <Using Include="AlvorKit.OpenGL" />
+        <Using Include="AlvorKit.Windowing" />
+        <Using Include="System.Text.Json" />
+    </ItemGroup>
+
+</Project>

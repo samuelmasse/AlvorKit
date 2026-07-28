@@ -4,6 +4,8 @@ namespace AlvorKit.Script.AlvorSense;
 [ExcludeFromCodeCoverage(Justification = "Coordinates external host processes and filesystem mailbox waits.")]
 internal static class AlvorSenseCli
 {
+    private static readonly LiveWorkspaceStore Workspaces = new(Directory.GetCurrentDirectory());
+
     /// <summary>Runs the AlvorSense session command line.</summary>
     /// <param name="args">Command-line arguments supplied by the caller.</param>
     /// <param name="input">Input stream used for send commands.</param>
@@ -71,7 +73,20 @@ internal static class AlvorSenseCli
         var sessionDir = AlvorSensePaths.SessionDir(command.Id);
         var request = new AlvorSenseRequest(Guid.NewGuid().ToString("N"), command.Commands, Stop: false, AppendState: true);
         var response = AlvorSenseRequestStore.Send(sessionDir, request, command.Timeout);
-        AlvorSenseForegroundResponses.WriteSend(response, command, sessionDir, output);
+        var result = AlvorSenseForegroundResponses.Result(response, command, sessionDir);
+        Record(
+            command.Workspace,
+            command.Id,
+            "alvorsense-send",
+            new
+            {
+                sessionId = command.Id,
+                commands = command.Commands,
+                timeoutSeconds = command.Timeout.TotalSeconds,
+                command.StderrTailLines
+            },
+            result);
+        WriteResult(result, output);
         return response.Ok ? 0 : 1;
     }
 
@@ -84,7 +99,17 @@ internal static class AlvorSenseCli
         var sessionDir = AlvorSensePaths.SessionDir(command.Id);
         var request = new AlvorSenseRequest(Guid.NewGuid().ToString("N"), [], Stop: true, AppendState: false);
         var response = AlvorSenseRequestStore.Send(sessionDir, request, command.Timeout);
-        WriteResponse(response, output);
+        Record(
+            command.Workspace,
+            command.Id,
+            "alvorsense-stop",
+            new
+            {
+                sessionId = command.Id,
+                timeoutSeconds = command.Timeout.TotalSeconds
+            },
+            response);
+        WriteResult(response, output);
         return response.Ok ? 0 : 1;
     }
 
@@ -104,8 +129,14 @@ internal static class AlvorSenseCli
     /// <returns>The command exit code.</returns>
     private static int Status(AlvorSenseStatusCommand command, TextWriter output)
     {
-        output.WriteLine(AlvorSenseJson.ToJson(AlvorSenseSessionRegistry.Get(command.Id)));
-        output.Flush();
+        var result = AlvorSenseSessionRegistry.Get(command.Id);
+        Record(
+            command.Workspace,
+            command.Id,
+            "alvorsense-status",
+            new { sessionId = command.Id },
+            result);
+        WriteResult(result, output);
         return 0;
     }
 
@@ -123,9 +154,29 @@ internal static class AlvorSenseCli
     /// <summary>Writes one protocol response as JSON.</summary>
     /// <param name="response">Response to serialize.</param>
     /// <param name="output">Output stream receiving the JSON response.</param>
-    private static void WriteResponse(AlvorSenseResponse response, TextWriter output)
+    private static void WriteResult<T>(T response, TextWriter output)
     {
         output.WriteLine(AlvorSenseJson.ToJson(response));
         output.Flush();
+    }
+
+    /// <summary>Records one exact AlvorSense request after verifying its workspace association.</summary>
+    private static void Record<TRequest, TResult>(
+        string? workspace,
+        string sessionId,
+        string operation,
+        TRequest request,
+        TResult result)
+    {
+        if (workspace is null)
+            return;
+        var manifest = Workspaces.Read(workspace);
+        if (manifest.AlvorSenseSessionId != sessionId)
+        {
+            throw new InvalidOperationException(
+                $"Live workspace '{manifest.Id}' is associated with AlvorSense session " +
+                $"'{manifest.AlvorSenseSessionId ?? "none"}', not '{sessionId}'.");
+        }
+        Workspaces.Record(workspace, operation, request, result);
     }
 }

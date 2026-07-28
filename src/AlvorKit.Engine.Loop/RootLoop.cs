@@ -31,6 +31,8 @@ public static class RootLoop
     {
         var window = new WindowLoop(host);
         var injector = CreateInjector();
+        injector.Add(window);
+        injector.Add<IWindowHost>(host);
         var root = CreateRootScope(injector, window, fileDialogs, gl);
         inject?.Invoke(injector);
 
@@ -140,7 +142,11 @@ public static class RootLoop
         return IsAudioSilentEnvironmentEnabled() ? new AgentSilentMa(backend) : backend;
     }
 
-    private static RootScope CreateRootScope(Injector injector, WindowLoop window, IFileDialogHost fileDialogs, RootGl gl)
+    private static RootScope CreateRootScope(
+        Injector injector,
+        WindowLoop window,
+        IFileDialogHost fileDialogs,
+        RootGl gl)
     {
         var root = injector.Scope<RootScope>()
             .With(gl)

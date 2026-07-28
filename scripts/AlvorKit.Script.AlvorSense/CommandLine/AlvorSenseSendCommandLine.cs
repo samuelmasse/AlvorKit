@@ -11,6 +11,7 @@ internal static class AlvorSenseSendCommandLine
         var id = AlvorSenseCliOptions.SessionIdOption();
         var timeout = AlvorSenseCliOptions.TimeoutOption();
         var stderrTail = AlvorSenseCliOptions.StderrTailOption();
+        var workspace = AlvorSenseCliOptions.WorkspaceOption();
         var commandOption = AlvorSenseCliOptions.RepeatableTextOption("--command", "Command line to send.");
         var file = AlvorSenseCliOptions.RepeatableTextOption("--file", "UTF-8 command file to send.", "--commands");
         var trailing = new Argument<string[]>("command") { Arity = ArgumentArity.ZeroOrMore, Description = "Single trailing command line." };
@@ -18,6 +19,7 @@ internal static class AlvorSenseSendCommandLine
         command.Options.Add(id);
         command.Options.Add(timeout);
         command.Options.Add(stderrTail);
+        command.Options.Add(workspace);
         command.Options.Add(commandOption);
         command.Options.Add(file);
         command.Arguments.Add(trailing);
@@ -25,7 +27,8 @@ internal static class AlvorSenseSendCommandLine
             AlvorSenseCliOptions.ValidateSessionId(parse.GetRequiredValue(id)),
             AlvorSenseSendCommands.FromArgs(context.Args, context.Input),
             AlvorSenseCliOptions.Timeout(parse.GetValue(timeout)),
-            AlvorSenseCliOptions.StderrTailLines(parse.GetValue(stderrTail))));
+            AlvorSenseCliOptions.StderrTailLines(parse.GetValue(stderrTail)),
+            parse.GetValue(workspace)));
         return command;
     }
 }

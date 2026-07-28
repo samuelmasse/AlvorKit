@@ -13,7 +13,17 @@ internal sealed class CoverageRunner(CoverageOptions options)
         var output = CoverageOutputPaths.Create(repoRoot, options, started);
         var selection = CoverageSelection.FromOptions(repoRoot, options);
 
-        var testRunner = new TestProjectRunner(repoRoot, options, selection.SourceModules);
+        var interception = options.Interception
+            ? CoverageInterceptionSettings.Resolve(
+                repoRoot,
+                selection.SourceModules,
+                selection.TestProjects)
+            : null;
+        var testRunner = new TestProjectRunner(
+            repoRoot,
+            options,
+            selection.SourceModules,
+            interception);
         var noBuildTests = ShouldPrebuild(selection.TestProjects);
         IReadOnlyList<TestProjectExecution> buildResults = noBuildTests
             ? await BuildTestProjectsAsync(testRunner, selection.TestProjects, output.ProjectsRoot)

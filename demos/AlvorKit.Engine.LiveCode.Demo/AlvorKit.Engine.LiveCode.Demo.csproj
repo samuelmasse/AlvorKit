@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Engine.LiveCode\AlvorKit.Engine.LiveCode.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.Engine.LivePatch\AlvorKit.Engine.LivePatch.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="Submissions\**\*.cs" />
+        <None Include="Submissions\**\*.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Engine" />
+        <Using Include="AlvorKit.Engine.LiveCode.Demo" />
+        <Using Include="AlvorKit.Engine.Loop" />
+        <Using Include="AlvorKit.Graphics2D" />
+        <Using Include="AlvorKit.Graphics2D.Fonts" />
+        <Using Include="AlvorKit.Injection" />
+        <Using Include="AlvorKit.LiveCode" />
+        <Using Include="AlvorKit.LivePatch" />
+        <Using Include="AlvorKit.Maths" />
+        <Using Include="AlvorKit.Windowing" />
+        <Using Include="System.Text.Json" />
+    </ItemGroup>
+
+</Project>

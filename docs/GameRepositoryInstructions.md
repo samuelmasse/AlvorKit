@@ -239,6 +239,8 @@ rules:
 
 - `AlvorSense.md`: hidden, engine-native visual harness for AlvorKit games.
 - `AlvorEye.md`: OS-level visual automation for real desktop windows.
+- `AgentLiveDevelopment.md`: combined AlvorSense, LiveCode, and LivePatch
+  workflow, recording, approval, and cleanup contract.
 - `ECS.md`: required game Ent components, handles, arenas, Indexed hooks and
   bags, iteration, ownership, and teardown.
 - `ProjectSplitModel.md`: pure, frontend, menu, backend, server, protocol, and
@@ -276,6 +278,14 @@ dotnet run --project ..\AlvorKit\scripts\AlvorKit.Script.AlvorSense -- start --i
 dotnet run --project ..\AlvorKit\scripts\AlvorKit.Script.AlvorSense -- send --id <game-id> --command "render" --command "screenshot out\shots\<name>.png"
 dotnet run --project ..\AlvorKit\scripts\AlvorKit.Script.AlvorSense -- stop --id <game-id>
 ```
+
+When a visual check reveals surprising behavior, keep that same target alive
+and follow `../AlvorKit/docs/AgentLiveDevelopment.md`. Use AlvorSense for normal
+user-visible input and evidence, LiveCode for exact scoped inspection, and
+LivePatch only for a temporary method-body experiment. Put agent-authored
+submissions beneath the game repository's ignored `tmp/live/<workspace-id>/`
+workspace and use workspace-aware commands so another agent can audit and clean
+up the session.
 
 Use AlvorEye only for real desktop-window or OS-level input and focus behavior.
 

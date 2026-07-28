@@ -4,8 +4,13 @@ namespace AlvorKit.Script.TestCoverage;
 /// <param name="repoRoot">Repository root used as the process working directory.</param>
 /// <param name="options">Validated command-line options for dotnet test.</param>
 /// <param name="sourceModules">Source assembly names included in coverage measurement.</param>
+/// <param name="interception">Optional profiler settings applied only to dotnet test.</param>
 [ExcludeFromCodeCoverage(Justification = "Builds and runs external dotnet processes; coverage workflow collaborators are tested directly.")]
-internal sealed class TestProjectRunner(string repoRoot, CoverageOptions options, IReadOnlyList<string> sourceModules)
+internal sealed class TestProjectRunner(
+    string repoRoot,
+    CoverageOptions options,
+    IReadOnlyList<string> sourceModules,
+    CoverageInterceptionSettings? interception = null)
 {
     /// <summary>Builds one test project before a later no-build coverage run.</summary>
     public async Task<TestProjectExecution> BuildAsync(string testProject, string projectsRoot)
@@ -34,7 +39,23 @@ internal sealed class TestProjectRunner(string repoRoot, CoverageOptions options
         var outputPrefix = Path.Combine(projectCoverageRoot, "coverage");
         var logPath = Path.Combine(projectCoverageRoot, "dotnet-test.log");
         var started = DateTimeOffset.UtcNow;
-        var result = await DotNetProcess.RunAsync(repoRoot, BuildTestArguments(testProject, outputPrefix, projectCoverageRoot, noBuild));
+        var result = interception is null
+            ? await DotNetProcess.RunAsync(
+                repoRoot,
+                BuildTestArguments(
+                    testProject,
+                    outputPrefix,
+                    projectCoverageRoot,
+                    noBuild))
+            : await interception.RunTestAsync(
+                settingsPath => DotNetProcess.RunAsync(
+                    repoRoot,
+                    BuildTestArguments(
+                        testProject,
+                        outputPrefix,
+                        projectCoverageRoot,
+                        noBuild,
+                        settingsPath)));
 
         await File.WriteAllTextAsync(logPath, result.Output);
 
@@ -44,7 +65,7 @@ internal sealed class TestProjectRunner(string repoRoot, CoverageOptions options
     }
 
     /// <summary>Builds the dotnet build command-line for one test project.</summary>
-    private IReadOnlyList<string> BuildBuildArguments(string testProject)
+    internal IReadOnlyList<string> BuildBuildArguments(string testProject)
     {
         var arguments = new List<string>
         {
@@ -60,7 +81,12 @@ internal sealed class TestProjectRunner(string repoRoot, CoverageOptions options
     }
 
     /// <summary>Builds the dotnet test command-line for one project.</summary>
-    private IReadOnlyList<string> BuildTestArguments(string testProject, string outputPrefix, string projectCoverageRoot, bool noBuild)
+    internal IReadOnlyList<string> BuildTestArguments(
+        string testProject,
+        string outputPrefix,
+        string projectCoverageRoot,
+        bool noBuild,
+        string? settingsPath = null)
     {
         var arguments = new List<string>
         {
@@ -76,6 +102,12 @@ internal sealed class TestProjectRunner(string repoRoot, CoverageOptions options
         {
             arguments.Add("--no-build");
             arguments.Add("--no-restore");
+        }
+
+        if (settingsPath is not null)
+        {
+            arguments.Add("--settings");
+            arguments.Add(settingsPath);
         }
 
         arguments.AddRange(

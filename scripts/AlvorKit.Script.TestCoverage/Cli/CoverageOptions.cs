@@ -15,6 +15,7 @@ namespace AlvorKit.Script.TestCoverage;
 /// <param name="MaxTestDurationMilliseconds">Maximum allowed duration for one test case.</param>
 /// <param name="TestTimingWarnOnly">Whether slow tests should warn without failing coverage.</param>
 /// <param name="RepoRoot">Optional repository root to measure instead of the script repository.</param>
+/// <param name="Interception">Whether dotnet test children use the first-party Interception profiler.</param>
 internal sealed record CoverageOptions(
     string Configuration,
     CoverageThresholds Thresholds,
@@ -29,7 +30,8 @@ internal sealed record CoverageOptions(
     string? RunId = null,
     double MaxTestDurationMilliseconds = 1000,
     bool TestTimingWarnOnly = false,
-    string? RepoRoot = null)
+    string? RepoRoot = null,
+    bool Interception = false)
 {
     /// <summary>Default bounded parallelism that avoids overwhelming local build and test infrastructure.</summary>
     public static int DefaultMaxParallel => Math.Min(4, Math.Max(1, Environment.ProcessorCount));

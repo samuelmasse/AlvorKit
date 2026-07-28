@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
+        <PackageReference Include="System.CommandLine" Version="2.0.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Script.LiveWorkspace\AlvorKit.Script.LiveWorkspace.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.LiveCode\AlvorKit.LiveCode.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.LivePatch\AlvorKit.LivePatch.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Injection" />
+        <Using Include="AlvorKit.LiveCode" />
+        <Using Include="AlvorKit.LivePatch" />
+        <Using Include="AlvorKit.Script.LiveWorkspace" />
+        <Using Include="Microsoft.CodeAnalysis" />
+        <Using Include="Microsoft.CodeAnalysis.CSharp" />
+        <Using Include="Microsoft.CodeAnalysis.CSharp.Syntax" />
+        <Using Include="Microsoft.CodeAnalysis.Emit" />
+        <Using Include="Microsoft.CodeAnalysis.Text" />
+        <Using Include="System.CommandLine" />
+        <Using Include="System.CommandLine.Parsing" />
+        <Using Include="System.Text.Json.Serialization" />
+    </ItemGroup>
+
+</Project>

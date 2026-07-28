@@ -1,0 +1,4 @@
+interface:
+  display_name: "AlvorKit Live Debug"
+  short_description: "Debug live AlvorKit games without restarting"
+  default_prompt: "Use $alvorkit-live-debug to observe, inspect, intervene, and verify this running AlvorKit game."

@@ -14,9 +14,16 @@ internal static class AlvorSenseForegroundResponses
         string sessionDir,
         TextWriter output)
     {
-        output.WriteLine(AlvorSenseJson.ToJson(AlvorSenseSendResult.From(response, StderrTail(command, sessionDir, response))));
+        output.WriteLine(AlvorSenseJson.ToJson(Result(response, command, sessionDir)));
         output.Flush();
     }
+
+    /// <summary>Creates the foreground send result with any requested local diagnostics.</summary>
+    internal static AlvorSenseSendResult Result(
+        AlvorSenseResponse response,
+        AlvorSenseSendCommand command,
+        string sessionDir) =>
+        AlvorSenseSendResult.From(response, StderrTail(command, sessionDir, response));
 
     /// <summary>Reads the requested stderr tail when the target exited during a failed send.</summary>
     private static string[]? StderrTail(AlvorSenseSendCommand command, string sessionDir, AlvorSenseResponse response)

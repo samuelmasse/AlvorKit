@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "AlvorKit: Live Patch Demo (Windows x64)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/AlvorKit.Engine.LivePatch.Demo/Release/AlvorKit.Engine.LivePatch.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "CORECLR_ENABLE_PROFILING": "1",
+        "CORECLR_PROFILER": "{3840ACF7-5AF1-49EA-BF94-5F7086C57F57}",
+        "CORECLR_PROFILER_PATH_64": "${workspaceFolder}/native/interception-profiler/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
+        "ALVORKIT_INTERCEPTION_PROFILER_PATH": "${workspaceFolder}/native/interception-profiler/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
+        "ALVORKIT_INTERCEPTION_MODULES": "AlvorKit.Engine.LivePatch.Demo"
+      }
+    },
+    {
+      "name": "AlvorKit: Live Patch Proof (Windows x64)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/AlvorKit.Engine.LivePatch.Demo/Release/AlvorKit.Engine.LivePatch.Demo.dll",
+      "args": ["--proof"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "CORECLR_ENABLE_PROFILING": "1",
+        "CORECLR_PROFILER": "{3840ACF7-5AF1-49EA-BF94-5F7086C57F57}",
+        "CORECLR_PROFILER_PATH_64": "${workspaceFolder}/native/interception-profiler/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
+        "ALVORKIT_INTERCEPTION_PROFILER_PATH": "${workspaceFolder}/native/interception-profiler/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
+        "ALVORKIT_INTERCEPTION_MODULES": "AlvorKit.Engine.LivePatch.Demo"
+      }
+    },
+    {
+      "name": "AlvorKit: Observatory (Windows x64 + LivePatch)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/AlvorKit.Engine.LiveCode.Demo/Release/AlvorKit.Engine.LiveCode.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "CORECLR_ENABLE_PROFILING": "1",
+        "CORECLR_PROFILER": "{3840ACF7-5AF1-49EA-BF94-5F7086C57F57}",
+        "CORECLR_PROFILER_PATH_64": "${workspaceFolder}/native/interception-profiler/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
+        "ALVORKIT_INTERCEPTION_PROFILER_PATH": "${workspaceFolder}/native/interception-profiler/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
+        "ALVORKIT_INTERCEPTION_MODULES": "AlvorKit.Engine.LiveCode.Demo"
+      }
+    }
+  ]
+}

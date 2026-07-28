@@ -5,7 +5,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Script.LiveWorkspace\AlvorKit.Script.LiveWorkspace.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.Script.AlvorSense.Test" />
+        <Using Include="AlvorKit.Script.LiveWorkspace" />
         <Using Include="System.CommandLine" />
         <Using Include="System.CommandLine.Parsing" />
     </ItemGroup>
