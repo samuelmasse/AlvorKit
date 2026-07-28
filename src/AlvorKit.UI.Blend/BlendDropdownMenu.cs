@@ -125,15 +125,6 @@ public class BlendDropdownMenu(Keyboard keyboard, BlendStyle style)
                             highlightIndex = index;
                     });
                 {
-                    if (index == selectedIndex)
-                    {
-                        Node(row)
-                            .IsFloatingV(true)
-                            .SizeRelativeV((0, 1))
-                            .SizeV((3, 0))
-                            .ColorV(style.Palette.Accent);
-                    }
-
                     var textLeft = style.Metrics.TabTextPaddingLeft;
                     if (item.Swatch.W > 0)
                     {
@@ -154,6 +145,12 @@ public class BlendDropdownMenu(Keyboard keyboard, BlendStyle style)
 
                     if (index == selectedIndex)
                     {
+                        Node(row)
+                            .IsFloatingV(true)
+                            .SizeRelativeV((0, 1))
+                            .SizeV((3, 0))
+                            .ColorV(style.Palette.Accent);
+
                         Node(row)
                             .Mutate(style.MutedCellLabel)
                             .IsFloatingV(true)

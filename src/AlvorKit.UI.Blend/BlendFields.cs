@@ -102,6 +102,8 @@ public class BlendFields
     {
         var edit = new BlendTextEdit(keyboard);
         var wasFocused = false;
+        var original = string.Empty;
+        var observedRevision = edit.Revision;
 
         Node(parent, out var field)
             .Mutate(chrome.Surface)
@@ -109,7 +111,7 @@ public class BlendFields
             .OnClickF(() =>
             {
                 if (!edit.IsActive)
-                    edit.Begin(o.Get(), false);
+                    Begin(false);
             })
             .OnUpdateF(() =>
             {
@@ -118,7 +120,7 @@ public class BlendFields
                 if (!edit.IsActive)
                 {
                     if (focused && !wasFocused)
-                        edit.Begin(o.Get(), true);
+                        Begin(true);
                 }
                 else if (!focused)
                 {
@@ -126,12 +128,16 @@ public class BlendFields
                 }
                 else
                 {
-                    switch (edit.Update())
+                    var result = edit.Update();
+                    PublishChange();
+                    switch (result)
                     {
                         case BlendTextEditResult.Commit:
                             Commit();
                             break;
                         case BlendTextEditResult.Cancel:
+                            if (o.RevertOnEscape)
+                                o.OnChanged?.Invoke(original);
                             edit.End();
                             break;
                     }
@@ -157,6 +163,22 @@ public class BlendFields
         return field;
 
         bool Placeholding() => !edit.IsActive && o.Get().Length == 0;
+
+        void Begin(bool selectAll)
+        {
+            original = o.Get();
+            edit.Begin(original, selectAll);
+            observedRevision = edit.Revision;
+        }
+
+        void PublishChange()
+        {
+            if (observedRevision == edit.Revision)
+                return;
+
+            observedRevision = edit.Revision;
+            o.OnChanged?.Invoke(edit.Span.ToString());
+        }
 
         void Commit()
         {

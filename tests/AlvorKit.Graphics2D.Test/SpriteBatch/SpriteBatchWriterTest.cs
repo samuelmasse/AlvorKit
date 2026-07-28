@@ -119,6 +119,25 @@ public sealed class SpriteBatchWriterTest
         AssertHasCanvasPosition(fixture.Vertices.Vertices, (75f, 60f));
     }
 
+    /// <summary>Clipped line triangles retain the front-face winding expected by the shared quad indices.</summary>
+    [TestMethod]
+    public void DrawLine_WithClip_PreservesIndexedTriangleWinding()
+    {
+        var fixture = CreateWriter();
+        fixture.Writer.Clip = new SpriteBatchClip(25f, 40f, 75f, 60f);
+
+        fixture.Writer.DrawLine((0f, 50f), (100f, 50f), 10f, Vec4.One);
+
+        var vertices = fixture.Vertices.Vertices;
+        for (var index = 0; index < vertices.Length; index += 4)
+        {
+            var a = vertices[index + 2].Position;
+            var b = vertices[index + 3].Position;
+            var c = vertices[index + 1].Position;
+            Assert.IsTrue(Cross(b - a, c - a) > 0f);
+        }
+    }
+
     /// <summary>Clipping a diagonal line trims the generated polygon to the clip rectangle.</summary>
     [TestMethod]
     public void DrawLine_WithClip_ClipsDiagonalLine()
@@ -292,6 +311,9 @@ public sealed class SpriteBatchWriterTest
 
     /// <summary>Converts a normalized test vertex position back into the 100 by 100 test canvas.</summary>
     private static Vec2 CanvasPosition(Vec2 position) => new((position.X + 1f) * 50f, (1f - position.Y) * 50f);
+
+    /// <summary>Returns the signed two-dimensional cross product used to test triangle winding.</summary>
+    private static float Cross(Vec2 a, Vec2 b) => (a.X * b.Y) - (a.Y * b.X);
 
     /// <summary>Shared writer test fixture.</summary>
     private sealed record WriterFixture(Texture Texture, SpriteBatchVertices Vertices, SpriteBatchWriter Writer);

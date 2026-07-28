@@ -62,8 +62,8 @@ public partial class SpriteBatchWriter
     {
         AddLineVertex(texture, color, a);
         AddLineVertex(texture, color, a);
-        AddLineVertex(texture, color, b);
         AddLineVertex(texture, color, c);
+        AddLineVertex(texture, color, b);
     }
 
     /// <summary>Adds one line vertex after converting canvas pixels and texture pixels to shader coordinates.</summary>

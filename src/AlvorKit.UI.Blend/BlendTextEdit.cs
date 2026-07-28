@@ -13,12 +13,16 @@ public class BlendTextEdit(Keyboard keyboard)
     private int anchor;
     private bool active;
     private long blinkEpoch;
+    private long revision;
 
     /// <summary>Gets whether an edit session is active.</summary>
     public bool IsActive => active;
 
     /// <summary>Gets the current text.</summary>
     public ReadOnlySpan<char> Span => buffer.AsSpan(0, length);
+
+    /// <summary>Gets a value that changes whenever the editable text changes.</summary>
+    public long Revision => revision;
 
     /// <summary>Gets the caret position in characters from the start of the text.</summary>
     public int Caret => caret;
@@ -116,6 +120,7 @@ public class BlendTextEdit(Keyboard keyboard)
         length += count;
         caret += count;
         anchor = caret;
+        revision++;
         Wake();
     }
 
@@ -129,6 +134,7 @@ public class BlendTextEdit(Keyboard keyboard)
         length -= end - start;
         caret = start;
         anchor = start;
+        revision++;
         Wake();
     }
 

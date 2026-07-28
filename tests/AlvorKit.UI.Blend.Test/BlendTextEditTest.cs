@@ -31,11 +31,15 @@ public class BlendTextEditTest
     public void Update_TypedRunes_InsertAtCaret()
     {
         edit.Begin("ab", false);
+        var originalRevision = edit.Revision;
 
         Type("cd");
 
         Assert.AreEqual("abcd", edit.Span.ToString());
         Assert.AreEqual(4, edit.Caret);
+        Assert.IsTrue(
+            edit.Revision
+            > originalRevision);
     }
 
     /// <summary>Typing over a selection replaces the selected text.</summary>
