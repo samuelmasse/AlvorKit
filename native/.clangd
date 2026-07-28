@@ -1,0 +1,11 @@
+CompileFlags:
+  CompilationDatabase: ../out/clangd
+  Add:
+    - -Wno-pragma-pack
+
+Index:
+  Background: Build
+
+Diagnostics:
+  MissingIncludes: None
+  UnusedIncludes: None

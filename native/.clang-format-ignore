@@ -1,0 +1,4 @@
+# Native generated and packaged outputs.
+**/bin/**
+**/obj/**
+**/runtimes/**
