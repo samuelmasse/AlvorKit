@@ -33,8 +33,10 @@ policy unless this file is more specific.
   invariant it protects in the test summary.
 - When adding repository config fixtures, prefer shared helpers from
   `AlvorKit.Testing` over copied YAML/JSON writer methods.
-- When changing a supported config format, keep tests for both the primary
-  format and any explicitly supported transitional fallback format.
+- When changing a repository-owned config format, replace old fixtures and
+  tests with the current format. Keep multiple formats only when an explicit
+  external interoperability contract or a shipped-project policy requires
+  them.
 - Tests for generated artifact names, output directories, or run IDs should use
   meaningful identifiers such as native library names, not generic filenames
   like `bindgen`.

@@ -13,10 +13,15 @@ public class LiveCodeHostTest
         var graph = new InjectorScopeGraph(injector, "Test Root");
         using var host = new LiveCodeHost(
             graph,
-            new("test") { DiscoveryDirectory = workspace.Root });
+            new("test")
+            {
+                DiscoveryDirectory = workspace.Root,
+                CompilationAssembly = typeof(LiveCodeHostTest).Assembly,
+            });
         var session = host.Start();
         var client = new LiveCodeClient(session);
 
+        Assert.IsTrue(session.FrozenInspectionEnabled);
         var transportedGraph = client.Graph().GetAwaiter().GetResult();
         var references = client.References().GetAwaiter().GetResult();
         var execution = client.Execute(
@@ -29,7 +34,49 @@ public class LiveCodeHostTest
         Assert.AreEqual(LiveCodeExecutionStatus.Completed, result.Status);
         CollectionAssert.Contains(result.Lines, "Executed on the host pump.");
         Assert.IsTrue(references.AssemblyPaths.Contains(typeof(ILiveCodeCommand).Assembly.Location));
+        CollectionAssert.Contains(references.GlobalUsings, "System.Xml.Linq");
         Assert.AreEqual("Test Root", transportedGraph.Nodes[0].Label);
+    }
+
+    /// <summary>Without compilation metadata, only explicitly configured imports enter the manifest.</summary>
+    [TestMethod]
+    public void ReferencesWithoutCompilationMetadataUseOnlyExplicitImports()
+    {
+        using var workspace = TempWorkspace.Create();
+        var injector = new Injector();
+        var graph = new InjectorScopeGraph(injector);
+        using var host = new LiveCodeHost(
+            graph,
+            new("test")
+            {
+                DiscoveryDirectory = workspace.Root,
+                CompilationAssembly = null,
+                FrozenInspection = null,
+                GlobalUsings = ["Fixture.LiveCode"],
+            });
+        var session = host.Start();
+        var client = new LiveCodeClient(session);
+
+        var references = client.References().GetAwaiter().GetResult();
+
+        Assert.IsFalse(session.FrozenInspectionEnabled);
+        CollectionAssert.AreEqual(
+            new[] { "Fixture.LiveCode" },
+            references.GlobalUsings);
+    }
+
+    /// <summary>The dependency catalog ignores dynamic assemblies that have no runtime image.</summary>
+    [TestMethod]
+    public void DependencyCatalogIgnoresDynamicAssembly()
+    {
+        var assembly = System.Reflection.Emit.AssemblyBuilder.DefineDynamicAssembly(
+            new("LiveCodeDynamicFixture"),
+            System.Reflection.Emit.AssemblyBuilderAccess.Run);
+        var paths = new HashSet<string>();
+
+        LiveCodeDependencyCatalog.AddTo(paths, assembly);
+
+        Assert.AreEqual(0, paths.Count);
     }
 
     /// <summary>A queued command receives a scope-ended result when its exact target is no longer active.</summary>

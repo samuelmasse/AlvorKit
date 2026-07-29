@@ -79,6 +79,7 @@
     <Project Path="src/AlvorKit.UI.Blend/AlvorKit.UI.Blend.csproj" />
     <Project Path="src/AlvorKit.Injection/AlvorKit.Injection.csproj" />
     <Project Path="src/AlvorKit.Injection.Graph/AlvorKit.Injection.Graph.csproj" />
+    <Project Path="src/AlvorKit.LiveCode.Generator/AlvorKit.LiveCode.Generator.csproj" />
     <Project Path="src/AlvorKit.LiveCode/AlvorKit.LiveCode.csproj" />
     <Project Path="src/AlvorKit.LivePatch/AlvorKit.LivePatch.csproj" />
     <Project Path="src/AlvorKit.Interception/AlvorKit.Interception.csproj" />
@@ -111,6 +112,8 @@
         <Project Path="tests/AlvorKit.ECS.Generator.Test/AlvorKit.ECS.Generator.Test.csproj" />
         <Project Path="tests/AlvorKit.Injection.Test/AlvorKit.Injection.Test.csproj" />
         <Project Path="tests/AlvorKit.Injection.Graph.Test/AlvorKit.Injection.Graph.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.LiveCode.Generator.Test/AlvorKit.LiveCode.Generator.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Interception.CallerProof.Test/AlvorKit.Interception.CallerProof.Test.csproj" />
         <Project

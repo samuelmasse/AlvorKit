@@ -11,6 +11,13 @@ Read the game repository's `README`, solution, project files, scripts, and
 nearby source before assuming its local layout. Do not assume other sibling
 game repositories exist.
 
+## Development Status
+
+This game is unshipped unless its own root `AGENTS.md` explicitly declares it
+shipped and names its compatibility contract. Until then, the development-status
+and breaking-change rules in `../AlvorKit/AGENTS.md` apply without relaxation.
+The no-fallback rule remains unconditional even after a game ships.
+
 ## AlvorKit Relationship
 
 The game consumes AlvorKit from `../AlvorKit` through relative project
@@ -164,12 +171,16 @@ Apply them in new projects and packages even when no local precedent exists.
 ### Failure Semantics
 
 - Internal code assumes its contracts are satisfied. Do not add redundant
-  range checks, custom guard exceptions, debug assertions, or fallback behavior
-  for states that should never occur.
+  range checks, custom guard exceptions, or debug assertions for states that
+  should never occur.
+- The repository-wide fallback-design ban applies to edge cases and performance
+  design as well as invalid states. Do not add an alternate slower, older,
+  approximate, partial, or best-effort implementation when the intended design
+  does not cover its supported contract.
 - Let invalid internal or authoritative data fail naturally at the operation
   that cannot handle it.
 - Validate external input only when validation is part of a real security,
-  compatibility, or recoverable protocol boundary.
+  externally imposed interoperability, or recoverable protocol boundary.
 - Do not catch exceptions unless the code can perform a meaningful recovery.
   Do not catch merely to log, return a default, continue partially, or replace
   the exception.

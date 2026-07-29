@@ -34,23 +34,7 @@ internal sealed class ObservatoryState(
             injector,
             root,
             scripts,
-            new("mycelial-observatory")
-            {
-                GlobalUsings =
-                [
-                    "System",
-                    "AlvorKit.Engine",
-                    "AlvorKit.Engine.LiveCode.Demo",
-                    "AlvorKit.Injection",
-                    "AlvorKit.LiveCode",
-                    "AlvorKit.LivePatch",
-                    "AlvorKit.Maths"
-                ],
-                FrozenInspection = new()
-                {
-                    FreezeThreshold = TimeSpan.FromSeconds(1)
-                }
-            });
+            new("mycelial-observatory"));
         graph = liveCode.Enable();
         if (RootLivePatch.IsProfilerConfigured)
         {

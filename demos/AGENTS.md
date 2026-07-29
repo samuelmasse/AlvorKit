@@ -13,7 +13,8 @@ narrative walkthroughs, while still respecting game-runtime hot paths.
   useful for the specific change.
 - Keep refactors focused on the touched demo project unless the task asks for a
   broader change.
-- Preserve existing behavior unless a behavior change is requested.
+- Preserve unrelated existing behavior unless a broader behavior change is
+  requested.
 - Resolve checked-in demo assets under `res/` through
   `AlvorKit.Script.Workspace`; `demos/Directory.Build.props` provides the shared
   reference and global using. Prefer `ProjectRoot.ResDirectory(...)` or
@@ -122,8 +123,8 @@ narrative walkthroughs, while still respecting game-runtime hot paths.
 - Prefer one useful `<summary>` over mechanical `<param>` comments. Add other
   XML tags only for important contracts.
 - Documentation and walkthrough comments should explain purpose, ownership,
-  sequencing, performance expectations, native/API compatibility, edge cases, or
-  side effects; avoid restating implementation.
+  sequencing, performance expectations, native/API interoperability, edge cases,
+  or side effects; avoid restating implementation.
 
 ## Tests And Commit Mode
 

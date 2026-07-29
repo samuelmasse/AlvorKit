@@ -8,6 +8,44 @@ rules for their scope and may narrow or relax repo-wide defaults when they say
 so explicitly. Read the closest scoped instructions before working in those
 areas.
 
+## Development Status And Compatibility
+
+AlvorKit and every game repository inheriting these instructions are unshipped
+development projects. No repository-owned API, ABI, command line,
+configuration, save format, serialized data, protocol, generated output, or
+existing behavior is a compatibility surface merely because it already exists,
+is public, has a version, or has consumers.
+
+Breaking changes are welcome when they produce the cleanest current design. Do
+not add backward- or forward-compatibility code, migrations, deprecation shims,
+legacy aliases or overloads, adapters, dual-read or dual-write paths, version
+bridges, or retained old implementations. Change repository-owned producers and
+consumers together, update affected tests, documentation, examples, and
+generated output, and delete the superseded design.
+
+A game becomes shipped only when its own root `AGENTS.md` explicitly declares
+that status. The declaration must identify the exact compatibility surfaces and
+policy. Do not infer shipping or compatibility requirements from package
+versions, public accessibility, existing data, or historical behavior.
+
+## Fallback Designs Are Banned
+
+Fallback design is banned. Do not handle edge cases, incomplete correctness, or
+uncertainty by pairing a preferred, fast, or new path with a slower, legacy,
+approximate, reduced-fidelity, best-effort, default-result, or catch-and-retry
+fallback. Do not retain the previous implementation as a safety net, silently
+disable part of a feature, or return stale, default, partial, or knowingly
+inferior results.
+
+Implement one correct design for the supported contract. Make that design cover
+all supported inputs, strengthen the representation or invariants, or reject
+unsupported input clearly. When the supported contract requires a product
+decision, ask for that decision instead of inventing a fallback.
+
+A separately specified platform, backend, or interoperability mode is a
+first-class requirement, not a fallback. Agents must not introduce an alternate
+path merely to recover from an incomplete primary implementation.
+
 ## Game Repository Instructions
 
 Sibling AlvorKit game repositories keep a small root `AGENTS.md` that routes to
@@ -39,9 +77,11 @@ In Working Mode:
   in Commit Mode.
 
 For code changes, review the requested files and nearby collaborators before
-editing. Preserve existing behavior unless the task asks for a behavior change,
-and keep refactors cohesive and scoped to the touched project or directly
-related tests unless a broader refactor is explicitly requested.
+editing. Preserve unrelated existing behavior unless the task asks for a
+broader behavior change, and keep refactors cohesive and scoped to the touched
+project or directly related tests unless a broader refactor is explicitly
+requested. This scope constraint is not a compatibility requirement for an API,
+format, or design that the task intentionally changes.
 
 Use **Commit Mode** only when the user explicitly asks for cleanup, final
 verification, staging, committing, pushing, opening a PR, or making work ready to
@@ -286,11 +326,11 @@ output when doing generated-output checks or Commit Mode checks; in a Working
 Mode handoff, list that audit if it was skipped.
 
 For generated native bindings, use original upstream documentation whenever it
-exists. Fallback documentation is acceptable only when upstream has no usable
-documentation, and it must describe the public API shape rather than the
-generator or selection process. Every public binding documentation comment must
-reference the original C symbol using exact native names in `<c>...</c>`. For
-managed convenience overloads or helpers, inherit or point back to the
+exists. When upstream has no usable documentation, author documentation from
+the public API shape rather than describing the generator or selection process.
+Every public binding documentation comment must reference the original C symbol
+using exact native names in `<c>...</c>`. For managed convenience overloads or
+helpers, inherit or point back to the
 native-shaped member and keep the underlying C symbol visible. For enum groups
 synthesized from macros, document the public grouping rule or native API use.
 

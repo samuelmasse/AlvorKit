@@ -5,11 +5,17 @@
     </ItemGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.LiveCode.Test" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Using Include="AlvorKit.Injection" />
         <Using Include="System.Buffers.Binary" />
         <Using Include="System.Globalization" />
         <Using Include="System.Net" />
         <Using Include="System.Net.Sockets" />
+        <Using Include="System.Reflection.Metadata" />
+        <Using Include="System.Reflection.PortableExecutable" />
         <Using Include="System.Runtime.Loader" />
         <Using Include="System.Security.Cryptography" />
         <Using Include="System.Text.Json" />

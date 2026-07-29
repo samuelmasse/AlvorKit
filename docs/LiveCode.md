@@ -5,8 +5,7 @@ tracked injector scope graph and three complementary interaction surfaces:
 
 - submitted C# constructed and run inside one exact active injector scope;
 - discoverable, versioned structured bridges run directly on the game thread.
-- optional frozen-only C# run from a dedicated thread when the frame heartbeat
-  stalls.
+- frozen-only C# run from a dedicated thread when the frame heartbeat stalls.
 
 `AlvorKit.Engine.LiveCode` automatically contributes an `alvorsense` bridge to
 ordinary `RootLoop` games. It accepts the same input, gesture, frame, state, and
@@ -33,8 +32,8 @@ LiveCode has four separate responsibilities:
   ended scope objects.
 - `AlvorKit.LiveCode` owns discovery, the authenticated loopback protocol,
   reference reporting, collectible command loading, the bridge registry, and a
-  game-thread queue. When explicitly configured, it also owns a dormant
-  dedicated inspection thread and an allocation-free frame heartbeat.
+  game-thread queue. By default, it also owns a dormant dedicated inspection
+  thread and an allocation-free frame heartbeat.
 - `AlvorKit.Script.LiveCode` discovers targets and compiles submitted source
   with Roslyn outside the game process.
 
@@ -54,7 +53,14 @@ manifest during normal shutdown.
 
 Reference `AlvorKit.Engine.LiveCode` only from the development executable.
 Reference `AlvorKit.Injection.Graph` from the game packages that create or end
-tracked scopes.
+tracked scopes. Reference `AlvorKit.LiveCode.Generator` from each development
+executable as an analyzer so LiveCode submissions inherit that executable's
+resolved project-wide imports:
+
+```xml
+<ProjectReference Include="..\AlvorKit.LiveCode.Generator\AlvorKit.LiveCode.Generator.csproj"
+    OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+```
 
 A development boot state can enable the graph and host before it creates the
 application scope:
@@ -72,20 +78,7 @@ public class RootLoadDevelopmentState(
             injector,
             root,
             scripts,
-            new("MyGame")
-            {
-                GlobalUsings =
-                [
-                    "System",
-                    "AlvorKit.LiveCode",
-                    "MyGame.App",
-                    "MyGame.World"
-                ],
-                FrozenInspection = new()
-                {
-                    FreezeThreshold = TimeSpan.FromSeconds(2)
-                }
-            }).Enable();
+            new("MyGame")).Enable();
 
         var app = scopes.Scope<AppScope>(root, "Development app");
         app.Get<AppStart>().Run();
@@ -324,16 +317,20 @@ dotnet run --project scripts\AlvorKit.Script.LiveCode -- exec `
 
 When `--file` is omitted, the CLI reads source from standard input.
 
-The CLI asks the running target for its loaded managed assembly paths and
-configured global imports, compiles against that exact manifest, and sends the
-portable assembly and symbols over the authenticated local connection. Compile
-errors never enter the game process.
+The CLI asks the running target for its managed dependency closure, loaded
+extension assemblies, and build-generated global imports. It compiles against
+that exact manifest and sends the portable assembly and symbols over the
+authenticated local connection. `LiveCodeHostOptions.GlobalUsings` remains
+available for exceptional submission-only imports. Compile errors never enter
+the game process.
 
 ### Inspect A Frozen Game Loop
 
-`FrozenInspection` is opt-in. Its dedicated managed thread sleeps while the
-game is healthy, and `LiveCodeHost.Pump` records one allocation-free heartbeat
-at every normal frame boundary.
+`FrozenInspection` is enabled by default with a two-second freeze threshold.
+Its dedicated managed thread sleeps while the game is healthy, and
+`LiveCodeHost.Pump` records one allocation-free heartbeat at every normal
+frame boundary. Set `LiveCodeHostOptions.FrozenInspection` to null to disable
+the lane.
 
 Read its status without waiting for the game thread:
 

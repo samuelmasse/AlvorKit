@@ -1,6 +1,6 @@
 namespace AlvorKit.LiveCode;
 
-/// <summary>Builds a compilation manifest from framework and currently loaded target assemblies.</summary>
+/// <summary>Builds a compilation manifest from the target application, framework, and loaded extension assemblies.</summary>
 internal sealed class LiveCodeReferenceCatalog(LiveCodeHostOptions options)
 {
     internal LiveCodeReferenceManifest Create()
@@ -20,8 +20,20 @@ internal sealed class LiveCodeReferenceCatalog(LiveCodeHostOptions options)
                 paths.Add(assembly.Location);
         }
 
+        if (options.CompilationAssembly is { } compilationAssembly)
+            LiveCodeDependencyCatalog.AddTo(paths, compilationAssembly);
+
+        var globalUsings = new HashSet<string>(StringComparer.Ordinal);
+        if (options.CompilationAssembly is { } importAssembly)
+        {
+            foreach (var attribute in importAssembly.GetCustomAttributes<LiveCodeGlobalUsingAttribute>())
+                globalUsings.Add(attribute.Clause);
+        }
+        foreach (var clause in options.GlobalUsings)
+            globalUsings.Add(clause);
+
         return new(
             [.. paths.Order(StringComparer.Ordinal)],
-            [.. options.GlobalUsings]);
+            [.. globalUsings.Order(StringComparer.Ordinal)]);
     }
 }
