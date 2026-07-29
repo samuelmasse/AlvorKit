@@ -28,19 +28,19 @@ internal static class SourceUpdateEditValidator
         if (changed.Count != 1)
             throw Unsupported($"Expected exactly one changed method body, but found {changed.Count}.");
 
-        var pair = changed[0];
-        var oldBodyNode = Body(pair.Old);
-        var newBodyNode = Body(pair.New);
+        var (Old, New) = changed[0];
+        var oldBodyNode = Body(Old);
+        var newBodyNode = Body(New);
         if (oldSource[..oldBodyNode.SpanStart] != newSource[..newBodyNode.SpanStart] ||
             oldSource[oldBodyNode.Span.End..] != newSource[newBodyNode.Span.End..])
         {
             throw Unsupported("Text outside the selected method body changed.");
         }
 
-        RejectSyntax(pair.New);
-        var oldSymbol = oldModel.GetDeclaredSymbol(pair.Old, cancellationToken)
+        RejectSyntax(New);
+        var oldSymbol = oldModel.GetDeclaredSymbol(Old, cancellationToken)
             ?? throw Unsupported("The old method symbol could not be resolved.");
-        var newSymbol = newModel.GetDeclaredSymbol(pair.New, cancellationToken)
+        var newSymbol = newModel.GetDeclaredSymbol(New, cancellationToken)
             ?? throw Unsupported("The new method symbol could not be resolved.");
         RejectSymbol(oldSymbol);
         RejectDynamic(newBodyNode, newModel, cancellationToken);
@@ -50,7 +50,7 @@ internal static class SourceUpdateEditValidator
             oldModel,
             newModel,
             cancellationToken);
-        return new(pair.Old, pair.New, oldSymbol, newSymbol);
+        return new(Old, New, oldSymbol, newSymbol);
     }
 
     private static SyntaxNode Body(MethodDeclarationSyntax method) =>

@@ -83,8 +83,10 @@ internal static class SourceUpdateCommandTree
         var launch = Required("--launch", "Absolute editable launch manifest.");
         var session = Required("--session", "Exact LiveCode session id.");
         var discovery = Discovery();
-        var command = new Command("coordinator");
-        command.Hidden = true;
+        var command = new Command("coordinator")
+        {
+            Hidden = true
+        };
         command.Options.Add(workspace);
         command.Options.Add(launch);
         command.Options.Add(session);
