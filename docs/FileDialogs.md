@@ -61,4 +61,5 @@ The demo opens a normal GLFW window. Press:
 
 Pass `-- --open` to open the single-file chooser immediately, which is useful for an OS-level smoke test.
 
-Use AlvorEye for automated interaction with the chooser because it is an external OS window. Unit and AlvorSense tests should inject an `IFileDialogHost` fake instead of opening a real dialog.
+Verify the external OS chooser manually. Unit and AlvorSense tests should inject
+an `IFileDialogHost` fake instead of opening a real dialog.

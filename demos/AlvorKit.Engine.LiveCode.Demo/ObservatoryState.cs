@@ -19,8 +19,6 @@ internal sealed class ObservatoryState(
     private InjectorScopeGraph graph = null!;
     private UniverseColonies universe = null!;
     private InjectorScopeGraphSnapshot graphSnapshot = null!;
-    private LivePatchSession? livePatchSession;
-    private LivePatchSnapshot[] patches = [];
     private long graphRevision = -1;
 
     /// <inheritdoc />
@@ -36,15 +34,6 @@ internal sealed class ObservatoryState(
             scripts,
             new("mycelial-observatory"));
         graph = liveCode.Enable();
-        if (RootLivePatch.IsProfilerConfigured)
-        {
-            livePatchSession = new RootLivePatch(
-                injector,
-                root,
-                scripts,
-                graph,
-                liveCode.Bridges).Enable();
-        }
         universe = root.Get<UniverseColonies>();
         liveCode.Bridges.Register(new ObservatoryLiveBridge(universe));
         SeedUniverse();
@@ -72,8 +61,6 @@ internal sealed class ObservatoryState(
     {
         interaction.Update(universe, canvas.Size, delta);
         universe.Update(delta);
-        if (livePatchSession is not null && universe.Clock.Tick % 12 == 0)
-            patches = livePatchSession.List();
         if (graph.Revision != graphRevision)
             RefreshGraph();
         freeze.BlockIfRequested();
@@ -88,7 +75,6 @@ internal sealed class ObservatoryState(
             universe,
             graphSnapshot,
             liveCode.Session,
-            patches,
             canvas.Size);
 
     private void SeedUniverse()

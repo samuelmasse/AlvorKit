@@ -6,7 +6,7 @@ namespace AlvorKit.LiveCode;
 public sealed class LiveCodeHost : IDisposable
 {
     /// <summary>Gets the private loopback protocol version.</summary>
-    public const int ProtocolVersion = 3;
+    public const int ProtocolVersion = 4;
 
     private readonly LiveCodeHostServer server;
     private readonly LiveCodeAssemblyRunner runner;
@@ -78,7 +78,11 @@ public sealed class LiveCodeHost : IDisposable
                     execution.Completion.TrySetResult(runner.Run(execution));
                     break;
                 case LiveCodePendingBridge bridge:
-                    bridge.Completion.TrySetResult(bridges.Run(bridge));
+                    if (bridge.Operation is { } operation && !operation.TryStart())
+                        break;
+                    var result = bridges.Run(bridge);
+                    bridge.Operation?.Complete(result);
+                    bridge.Completion.TrySetResult(result);
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown LiveCode work type '{pending.GetType()}'.");

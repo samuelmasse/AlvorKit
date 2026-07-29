@@ -5,14 +5,8 @@ internal sealed class LiveCodeCompiler
 {
     private readonly CSharpParseOptions parseOptions = new(LanguageVersion.Preview);
 
-    internal LiveCodeCompilation Compile(string source, LiveCodeReferenceManifest manifest)
-        => Compile(source, manifest, FindCommandEntryType);
-
-    /// <summary>Compiles one class containing exactly one exact LivePatch handler.</summary>
-    internal LiveCodeCompilation CompilePatch(
-        string source,
-        LiveCodeReferenceManifest manifest) =>
-        Compile(source, manifest, FindPatchEntryType);
+    internal LiveCodeCompilation Compile(string source, LiveCodeReferenceManifest manifest) =>
+        Compile(source, manifest, FindCommandEntryType);
 
     private LiveCodeCompilation Compile(
         string source,
@@ -95,42 +89,4 @@ internal sealed class LiveCodeCompiler
             : command.ContainingNamespace.ToDisplayString() + "." + command.MetadataName;
     }
 
-    private static string FindPatchEntryType(
-        CSharpCompilation compilation,
-        SyntaxTree sourceTree)
-    {
-        var contract = compilation.GetTypeByMetadataName(
-            typeof(LivePatchHandlerAttribute).FullName!)
-            ?? throw new LiveCodeCompilationException(
-                $"Compilation could not resolve {nameof(LivePatchHandlerAttribute)}.");
-        var model = compilation.GetSemanticModel(sourceTree);
-        var methods = sourceTree.GetRoot()
-            .DescendantNodes()
-            .OfType<MethodDeclarationSyntax>()
-            .Select(x => model.GetDeclaredSymbol(x))
-            .OfType<IMethodSymbol>()
-            .Where(x => x.GetAttributes().Any(attribute =>
-                SymbolEqualityComparer.Default.Equals(
-                    attribute.AttributeClass,
-                    contract)))
-            .ToArray();
-        if (methods.Length != 1)
-        {
-            throw new LiveCodeCompilationException(
-                $"Source must declare exactly one [{nameof(LivePatchHandlerAttribute)}] method; found {methods.Length}.");
-        }
-
-        var type = methods[0].ContainingType;
-        if (type.TypeKind != TypeKind.Class ||
-            type.IsAbstract ||
-            type.ContainingType is not null)
-        {
-            throw new LiveCodeCompilationException(
-                $"The [{nameof(LivePatchHandlerAttribute)}] method must belong to one concrete top-level class.");
-        }
-
-        return type.ContainingNamespace.IsGlobalNamespace
-            ? type.MetadataName
-            : type.ContainingNamespace.ToDisplayString() + "." + type.MetadataName;
-    }
 }

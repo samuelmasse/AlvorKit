@@ -15,6 +15,8 @@ internal static class LiveCodeHostRequestGuard
             throw new ArgumentOutOfRangeException(nameof(options), "Maximum assembly bytes must be positive.");
         if (options.MaximumBridgePayloadBytes <= 0)
             throw new ArgumentOutOfRangeException(nameof(options), "Maximum bridge payload bytes must be positive.");
+        if (options.MaximumBridgeOperations <= 0)
+            throw new ArgumentOutOfRangeException(nameof(options), "Maximum bridge operations must be positive.");
     }
 
     /// <summary>Compares a supplied token to the session token without leaking a matching prefix.</summary>

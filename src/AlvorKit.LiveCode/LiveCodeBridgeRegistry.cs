@@ -86,6 +86,21 @@ public sealed class LiveCodeBridgeRegistry
         }
     }
 
+    internal string? ValidateInvocation(string name, int version)
+    {
+        ILiveCodeBridge? bridge;
+        lock (gate)
+            bridges.TryGetValue(name, out bridge);
+
+        if (bridge is null)
+            return $"LiveCode bridge '{name}' is not registered.";
+        if (version != 0 && version != bridge.Descriptor.Version)
+        {
+            return $"LiveCode bridge '{name}' is version {bridge.Descriptor.Version}, not {version}.";
+        }
+        return null;
+    }
+
     private static LiveCodeBridgeExecutionResult Failure(
         LiveCodePendingBridge pending,
         LiveCodeBridgeExecutionStatus status,

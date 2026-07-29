@@ -23,6 +23,9 @@ public sealed record LiveCodeHostOptions(string Name)
     /// <summary>Gets the maximum accepted UTF-8 JSON payload size for one bridge invocation.</summary>
     public int MaximumBridgePayloadBytes { get; init; } = 1024 * 1024;
 
+    /// <summary>Gets the maximum number of pending or retained two-phase bridge operations.</summary>
+    public int MaximumBridgeOperations { get; init; } = 128;
+
     /// <summary>Gets whether clients may submit arbitrary compiled C# commands.</summary>
     public bool EnableCodeExecution { get; init; } = true;
 

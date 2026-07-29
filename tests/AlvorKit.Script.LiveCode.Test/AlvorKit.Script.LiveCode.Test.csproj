@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <SourceUpdateRoslynPath>$(MSBuildBinPath)\DotnetTools\dotnet-format</SourceUpdateRoslynPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\scripts\AlvorKit.Script.LiveCode\AlvorKit.Script.LiveCode.csproj" />
+        <ProjectReference Include="..\AlvorKit.Script.LiveCode.Fixture\AlvorKit.Script.LiveCode.Fixture.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
+            <HintPath>$(SourceUpdateRoslynPath)\Microsoft.CodeAnalysis.CSharp.Workspaces.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
+        <Reference Include="System.Composition.AttributedModel">
+            <HintPath>$(SourceUpdateRoslynPath)\System.Composition.AttributedModel.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
+        <Reference Include="System.Composition.Convention">
+            <HintPath>$(SourceUpdateRoslynPath)\System.Composition.Convention.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
+        <Reference Include="System.Composition.Hosting">
+            <HintPath>$(SourceUpdateRoslynPath)\System.Composition.Hosting.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
+        <Reference Include="System.Composition.Runtime">
+            <HintPath>$(SourceUpdateRoslynPath)\System.Composition.Runtime.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
+        <Reference Include="System.Composition.TypedParts">
+            <HintPath>$(SourceUpdateRoslynPath)\System.Composition.TypedParts.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Script.LiveCode.Fixture" />
+        <Using Include="System.Reflection.Metadata" />
+        <Using Include="System.Reflection.Metadata.Ecma335" />
+        <Using Include="System.Reflection.PortableExecutable" />
+        <Using Include="System.Security.Cryptography" />
+    </ItemGroup>
+
+</Project>

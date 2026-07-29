@@ -17,7 +17,6 @@ public sealed class ObservatoryPanelRenderer(
         UniverseColonies universe,
         InjectorScopeGraphSnapshot graph,
         LiveCodeSessionManifest session,
-        LivePatchSnapshot[] patches,
         Vec2 canvas)
     {
         var sidebarWidth = ObservatoryLayout.SidebarWidth(scale.Scale);
@@ -46,30 +45,7 @@ public sealed class ObservatoryPanelRenderer(
             y += S(51f);
         }
 
-        DrawPatches(patches, x, y);
-        DrawFooter(universe, canvas, x, y + S(70f));
-    }
-
-    private void DrawPatches(
-        LivePatchSnapshot[] patches,
-        float x,
-        float y)
-    {
-        sprites.Batch.Write(
-            roboto[scale[12]],
-            text.Format("LIVE PATCHES  {0}", patches.Length),
-            (x, y),
-            patches.Length == 0 ? QuietText : (1f, 0.55f, 0.2f, 1f));
-        var count = Math.Min(patches.Length, 2);
-        for (var index = 0; index < count; index++)
-        {
-            var patch = patches[index];
-            sprites.Batch.Write(
-                roboto[scale[10]],
-                text.Format("#{0} {1} / {2}", patch.PatchId, patch.Name, patch.State),
-                (x, y + S(18f + index * 16f)),
-                BrightText);
-        }
+        DrawFooter(universe, canvas, x, y + S(18f));
     }
 
     private void DrawScopeCard(

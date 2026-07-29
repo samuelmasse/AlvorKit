@@ -4,7 +4,7 @@ namespace AlvorKit.Script.LiveWorkspace;
 public sealed class LiveWorkspaceStore
 {
     /// <summary>Current workspace schema written to <c>session.json</c>.</summary>
-    public const int SchemaVersion = 1;
+    public const int SchemaVersion = 2;
 
     /// <summary>Repository-backed template family for human-readable workspace files.</summary>
     private static readonly RepositoryTemplateSet Templates =
@@ -51,7 +51,18 @@ public sealed class LiveWorkspaceStore
             throw new InvalidOperationException($"Live workspace already exists: {path}");
 
         Directory.CreateDirectory(path);
-        foreach (var child in new[] { "lc", "lp", "bridge", "puppet", "events", "evidence", "baseline" })
+        foreach (var child in new[]
+        {
+            "lc",
+            "source",
+            Path.Combine("source", "diffs"),
+            Path.Combine("source", "evidence"),
+            "bridge",
+            "puppet",
+            "events",
+            "evidence",
+            "baseline"
+        })
             Directory.CreateDirectory(Path.Combine(path, child));
 
         var now = DateTimeOffset.UtcNow;

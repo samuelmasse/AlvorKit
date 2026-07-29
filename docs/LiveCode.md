@@ -13,10 +13,10 @@ screenshot commands as AlvorSense without requiring an agent to generate C#.
 Games can register narrower domain bridges for frequent operations while
 retaining arbitrary C# as the escape hatch.
 
-When `AlvorKit.Engine.LivePatch` is also enabled, LiveCode advertises a
-`livepatch` bridge for compiling, installing, replacing, inspecting, and
-removing exact-signature handlers. LivePatch reuses this control plane; it
-does not add a second socket or protocol.
+`AlvorKit.Engine.SourceUpdate` can register a `source-update` bridge in the same
+control plane. Its external coordinator compiles a normal edit to an original
+project file and submits verified metadata deltas at the game safe-frame
+boundary.
 
 LiveCode is arbitrary in-process code execution. It is intended only for trusted
 local development. Do not reference or enable the host from a packed game,
@@ -41,9 +41,9 @@ LiveCode has four separate responsibilities:
 games using `RootLoop`. It pumps queued work at the window loop's safe
 pre-update dispatch boundary, before an engine update is active.
 
-`AlvorKit.Engine.LivePatch` is a separate opt-in composition. It registers its
-versioned bridge in the same registry and pumps native completion state at the
-same safe-frame boundary.
+`AlvorKit.Engine.SourceUpdate` is a separate development-only composition. It
+registers its versioned bridge in the same registry and applies a queued delta
+at the same safe-frame boundary.
 
 The target binds only to `127.0.0.1` on an ephemeral port by default. It writes a
 random capability token into a per-user discovery manifest and removes that
@@ -362,23 +362,22 @@ CLR, suspends every managed thread, or prevents JIT/GC activity, the submitted
 command can also block. Frozen inspection intentionally does not pretend to
 solve those hard-freeze cases.
 
-If the target also advertises the `livepatch` bridge, the same CLI exposes:
+## Source-file updates
+
+An editable target launched through AlvorSense can expose Source Update through
+the same LiveCode host:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- patch capabilities `
-    --session MyGame
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- patch install --help
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- patch list `
-    --session MyGame
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- patch status `
-    --session MyGame --patch 1
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- patch replace --help
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- patch remove `
-    --session MyGame --patch 1
+dotnet run --project scripts\AlvorKit.Script.LiveCode -- source start `
+    --workspace MyWorkspace
+dotnet run --project scripts\AlvorKit.Script.LiveCode -- source apply `
+    --workspace MyWorkspace --source Game\Service.cs --diff service.diff
+dotnet run --project scripts\AlvorKit.Script.LiveCode -- source status `
+    --workspace MyWorkspace
 ```
 
-The exact handler ABI, selectors, profiler launch, and lifecycle behavior are
-documented in [`LivePatch.md`](LivePatch.md).
+See [`AgentLiveDevelopment.md`](AgentLiveDevelopment.md) for immutable launch,
+diff, compiler-generation, evidence, and cleanup rules.
 
 ## Execution Semantics
 
@@ -406,16 +405,14 @@ tools rather than sandboxes.
 `demos/AlvorKit.Engine.LiveCode.Demo` is a real `RootLoop` game with an
 interactive, rendered mycelial observatory. Three animated bioluminescent
 colonies are three simultaneous child scopes orbiting a central sun, and the
-side panel draws their live injection graph and LivePatch state. Mouse and
-keyboard input directly manipulate the scoped state.
+side panel draws their live injection graph. Mouse and keyboard input directly
+manipulate the scoped state.
 
 Checked-in submissions can visibly rewrite one exact colony's morphology,
 palette, population, and motion; create and end a nested diagnostic scope;
 recompose all colonies; create a fourth sibling executor; and retire another
-scope while preserving its graph tombstone. Exact LivePatch submissions can
-replace the ordinary unannotated orbit update for one scope, atomically replace
-that handler, revert it, and deliberately fail without stopping the game. The
-demo can also deliberately freeze its game thread, inspect an exact colony from
-the dedicated lane, and release the original thread without restarting.
+scope while preserving its graph tombstone. The demo can also deliberately
+freeze its game thread, inspect an exact colony from the dedicated lane, and
+release the original thread without restarting.
 
 See the demo README for the short walkthrough.

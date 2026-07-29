@@ -2,48 +2,523 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "AlvorKit: Live Patch Demo (Windows x64)",
+      "name": "AlvorKit.Demo",
       "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/AlvorKit.Engine.LivePatch.Demo/Release/AlvorKit.Engine.LivePatch.Demo.dll",
-      "cwd": "${workspaceFolder}",
-      "env": {
-        "CORECLR_ENABLE_PROFILING": "1",
-        "CORECLR_PROFILER": "{3840ACF7-5AF1-49EA-BF94-5F7086C57F57}",
-        "CORECLR_PROFILER_PATH_64": "bin/AlvorKit.Engine.LivePatch.Demo/Release/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
-        "ALVORKIT_INTERCEPTION_PROFILER_PATH": "bin/AlvorKit.Engine.LivePatch.Demo/Release/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
-        "ALVORKIT_INTERCEPTION_MODULES": "AlvorKit.Engine.LivePatch.Demo"
-      }
-    },
-    {
-      "name": "AlvorKit: Live Patch Proof (Windows x64)",
-      "type": "coreclr",
-      "request": "launch",
-      "program": "${workspaceFolder}/bin/AlvorKit.Engine.LivePatch.Demo/Release/AlvorKit.Engine.LivePatch.Demo.dll",
-      "args": ["--proof"],
+      "preLaunchTask": "build AlvorKit.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.Demo/Release/AlvorKit.Demo.dll",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.ECS.Demo.Bench",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.ECS.Demo.Bench",
+      "program": "${workspaceFolder}/bin/AlvorKit.ECS.Demo.Bench/Release/AlvorKit.ECS.Demo.Bench.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.ECS.Demo.QueryBench",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.ECS.Demo.QueryBench",
+      "program": "${workspaceFolder}/bin/AlvorKit.ECS.Demo.QueryBench/Release/AlvorKit.ECS.Demo.QueryBench.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.ECS.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.ECS.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.ECS.Demo/Release/AlvorKit.ECS.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.ECS.Indexed.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.ECS.Indexed.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.ECS.Indexed.Demo/Release/AlvorKit.ECS.Indexed.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Engine.Demo.RawApis",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Engine.Demo.RawApis",
+      "program": "${workspaceFolder}/bin/AlvorKit.Engine.Demo.RawApis/Release/AlvorKit.Engine.Demo.RawApis.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Engine.Demo.TextureCube",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Engine.Demo.TextureCube",
+      "program": "${workspaceFolder}/bin/AlvorKit.Engine.Demo.TextureCube/Release/AlvorKit.Engine.Demo.TextureCube.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Engine.Demo.Triangle",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Engine.Demo.Triangle",
+      "program": "${workspaceFolder}/bin/AlvorKit.Engine.Demo.Triangle/Release/AlvorKit.Engine.Demo.Triangle.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Engine.Demo.Triangle3D",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Engine.Demo.Triangle3D",
+      "program": "${workspaceFolder}/bin/AlvorKit.Engine.Demo.Triangle3D/Release/AlvorKit.Engine.Demo.Triangle3D.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Engine.LiveCode.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Engine.LiveCode.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.Engine.LiveCode.Demo/Release/AlvorKit.Engine.LiveCode.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Engine.SourceUpdate.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Engine.SourceUpdate.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.Engine.SourceUpdate.Demo/Release/AlvorKit.Engine.SourceUpdate.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.FastNoise2.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.FastNoise2.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.FastNoise2.Demo/Release/AlvorKit.FastNoise2.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.FreeType.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.FreeType.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.FreeType.Demo/Release/AlvorKit.FreeType.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Graphics2D.Demo.Lines",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Graphics2D.Demo.Lines",
+      "program": "${workspaceFolder}/bin/AlvorKit.Graphics2D.Demo.Lines/Release/AlvorKit.Graphics2D.Demo.Lines.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Graphics2D.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Graphics2D.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.Graphics2D.Demo/Release/AlvorKit.Graphics2D.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Graphics2D.Fonts.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Graphics2D.Fonts.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.Graphics2D.Fonts.Demo/Release/AlvorKit.Graphics2D.Fonts.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Injection.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Injection.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.Injection.Demo/Release/AlvorKit.Injection.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Maths.Demo.Bench",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Maths.Demo.Bench",
+      "program": "${workspaceFolder}/bin/AlvorKit.Maths.Demo.Bench/Release/AlvorKit.Maths.Demo.Bench.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Maths.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Maths.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.Maths.Demo/Release/AlvorKit.Maths.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.MiniAudio.Demo.Music",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.MiniAudio.Demo.Music",
+      "program": "${workspaceFolder}/bin/AlvorKit.MiniAudio.Demo.Music/Release/AlvorKit.MiniAudio.Demo.Music.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.MiniAudio.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.MiniAudio.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.MiniAudio.Demo/Release/AlvorKit.MiniAudio.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Mocking.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Mocking.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.Mocking.Demo/Release/AlvorKit.Mocking.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.OpenGL.Demo.AzureTentacle",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.OpenGL.Demo.AzureTentacle",
+      "program": "${workspaceFolder}/bin/AlvorKit.OpenGL.Demo.AzureTentacle/Release/AlvorKit.OpenGL.Demo.AzureTentacle.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.OpenGL.Demo.HelloTriangle",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.OpenGL.Demo.HelloTriangle",
+      "program": "${workspaceFolder}/bin/AlvorKit.OpenGL.Demo.HelloTriangle/Release/AlvorKit.OpenGL.Demo.HelloTriangle.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.OpenGL.Demo.TestCube",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.OpenGL.Demo.TestCube",
+      "program": "${workspaceFolder}/bin/AlvorKit.OpenGL.Demo.TestCube/Release/AlvorKit.OpenGL.Demo.TestCube.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Ranges.Demo.Bench",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Ranges.Demo.Bench",
+      "program": "${workspaceFolder}/bin/AlvorKit.Ranges.Demo.Bench/Release/AlvorKit.Ranges.Demo.Bench.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Ranges.Demo.Visualizer",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Ranges.Demo.Visualizer",
+      "program": "${workspaceFolder}/bin/AlvorKit.Ranges.Demo.Visualizer/Release/AlvorKit.Ranges.Demo.Visualizer.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.AlvorSense.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.AlvorSense.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.AlvorSense.Demo/Release/AlvorKit.Script.AlvorSense.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.UI.Blend.Demo.NoiseLab",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.UI.Blend.Demo.NoiseLab",
+      "program": "${workspaceFolder}/bin/AlvorKit.UI.Blend.Demo.NoiseLab/Release/AlvorKit.UI.Blend.Demo.NoiseLab.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.UI.Blend.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.UI.Blend.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.UI.Blend.Demo/Release/AlvorKit.UI.Blend.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Windowing.Demo.FileDialogs",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Windowing.Demo.FileDialogs",
+      "program": "${workspaceFolder}/bin/AlvorKit.Windowing.Demo.FileDialogs/Release/AlvorKit.Windowing.Demo.FileDialogs.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Windowing.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Windowing.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.Windowing.Demo/Release/AlvorKit.Windowing.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.XxHash.Demo.Bench",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.XxHash.Demo.Bench",
+      "program": "${workspaceFolder}/bin/AlvorKit.XxHash.Demo.Bench/Release/AlvorKit.XxHash.Demo.Bench.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.XxHash.Demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.XxHash.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.XxHash.Demo/Release/AlvorKit.XxHash.Demo.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorStarter",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorStarter",
+      "program": "${workspaceFolder}/res/templates/new-game/source/bin/AlvorStarter/Release/AlvorStarter.dll",
+      "cwd": "${workspaceFolder}/res/templates/new-game/source",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.AgentLease",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.AgentLease",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.AgentLease/Release/AlvorKit.Script.AgentLease.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.AlvorSense",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.AlvorSense",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.AlvorSense/Release/AlvorKit.Script.AlvorSense.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.Bindgen",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.Bindgen",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.Bindgen/Release/AlvorKit.Script.Bindgen.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.BindgenReview",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.BindgenReview",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.BindgenReview/Release/AlvorKit.Script.BindgenReview.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.DevSolution",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.DevSolution",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.DevSolution/Release/AlvorKit.Script.DevSolution.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.Lint",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.Lint",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.Lint/Release/AlvorKit.Script.Lint.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.LiveCode",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.LiveCode",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.LiveCode/Release/AlvorKit.Script.LiveCode.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.MathsGen",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.MathsGen",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.MathsGen/Release/AlvorKit.Script.MathsGen.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.NativeBuild",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.NativeBuild",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.NativeBuild/Release/AlvorKit.Script.NativeBuild.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.NewGame",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.NewGame",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.NewGame/Release/AlvorKit.Script.NewGame.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.TestCoverage",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.TestCoverage",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.TestCoverage/Release/AlvorKit.Script.TestCoverage.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.TestInterception",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.TestInterception",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.TestInterception/Release/AlvorKit.Script.TestInterception.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.TestTiming",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.TestTiming",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.TestTiming/Release/AlvorKit.Script.TestTiming.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.ZoneSolution",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.ZoneSolution",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.ZoneSolution/Release/AlvorKit.Script.ZoneSolution.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Interception.Performance.Fixture",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Interception.Performance.Fixture",
+      "program": "${workspaceFolder}/bin/AlvorKit.Interception.Performance.Fixture/Release/AlvorKit.Interception.Performance.Fixture.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
       "env": {
         "CORECLR_ENABLE_PROFILING": "1",
         "CORECLR_PROFILER": "{3840ACF7-5AF1-49EA-BF94-5F7086C57F57}",
-        "CORECLR_PROFILER_PATH_64": "bin/AlvorKit.Engine.LivePatch.Demo/Release/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
-        "ALVORKIT_INTERCEPTION_PROFILER_PATH": "bin/AlvorKit.Engine.LivePatch.Demo/Release/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
-        "ALVORKIT_INTERCEPTION_MODULES": "AlvorKit.Engine.LivePatch.Demo"
+        "CORECLR_PROFILER_PATH": "${workspaceFolder}/bin/AlvorKit.Interception.Performance.Fixture/Release/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
+        "CORECLR_PROFILER_PATH_64": "${workspaceFolder}/bin/AlvorKit.Interception.Performance.Fixture/Release/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
+        "ALVORKIT_INTERCEPTION_PROFILER_PATH": "${workspaceFolder}/bin/AlvorKit.Interception.Performance.Fixture/Release/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
+        "DOTNET_ReadyToRun": "0",
+        "ALVORKIT_INTERCEPTION_MODULES": "AlvorKit.Interception.Performance.Fixture"
       }
     },
     {
-      "name": "AlvorKit: Observatory (Windows x64 + LivePatch)",
+      "name": "AlvorKit.Mocking.Performance.Fixture",
       "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/AlvorKit.Engine.LiveCode.Demo/Release/AlvorKit.Engine.LiveCode.Demo.dll",
+      "preLaunchTask": "build AlvorKit.Mocking.Performance.Fixture",
+      "program": "${workspaceFolder}/bin/AlvorKit.Mocking.Performance.Fixture/Release/AlvorKit.Mocking.Performance.Fixture.dll",
       "cwd": "${workspaceFolder}",
-      "env": {
-        "CORECLR_ENABLE_PROFILING": "1",
-        "CORECLR_PROFILER": "{3840ACF7-5AF1-49EA-BF94-5F7086C57F57}",
-        "CORECLR_PROFILER_PATH_64": "bin/AlvorKit.Engine.LiveCode.Demo/Release/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
-        "ALVORKIT_INTERCEPTION_PROFILER_PATH": "bin/AlvorKit.Engine.LiveCode.Demo/Release/runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
-        "ALVORKIT_INTERCEPTION_MODULES": "AlvorKit.Engine.LiveCode.Demo"
-      }
+      "console": "integratedTerminal",
+      "stopAtEntry": false
     }
   ]
 }

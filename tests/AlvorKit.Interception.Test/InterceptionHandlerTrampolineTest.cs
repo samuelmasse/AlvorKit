@@ -139,7 +139,7 @@ public class InterceptionHandlerTrampolineTest
                     ref observed));
     }
 
-    /// <summary>LivePatch's explicit policy contains a handler failure and deactivates.</summary>
+    /// <summary>The explicit containment policy returns a default result and deactivates.</summary>
     [TestMethod]
     public unsafe void ContainmentPolicyReturnsDefaultAndDeactivates()
     {

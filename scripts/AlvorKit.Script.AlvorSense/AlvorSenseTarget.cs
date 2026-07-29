@@ -61,6 +61,12 @@ internal sealed class AlvorSenseTarget : IDisposable
         };
         start.Environment["ALVORKIT_WINDOWING_AGENT"] = "1";
         start.Environment[AlvorSenseEnvironment.AudioSilentVariable] = AlvorSenseEnvironment.EnabledValue;
+        if (manifest.EditableLaunchManifestPath is not null)
+        {
+            start.Environment["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
+            start.Environment["ALVORKIT_SOURCE_UPDATE_MANIFEST"] =
+                manifest.EditableLaunchManifestPath;
+        }
         foreach (var pair in manifest.Environment)
             start.Environment[pair.Key] = pair.Value;
         if (manifest.Assembly is not null)

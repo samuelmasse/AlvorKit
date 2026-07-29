@@ -9,5 +9,7 @@ internal enum LiveCodeWireRequestKind
     FrozenInspectionStatus,
     FrozenInspectionExecute,
     Bridges,
-    Bridge
+    Bridge,
+    BridgeEnqueue,
+    BridgeOperationStatus
 }

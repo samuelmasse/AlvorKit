@@ -1,288 +1,155 @@
 # Agent Live Development
 
-This guide is the operational contract for agents using AlvorSense, LiveCode,
-predefined bridges, and LivePatch against a running AlvorKit development
-process.
+Use one ignored workspace to coordinate visual observation, scoped diagnostics,
+structured bridges, and source-file updates against one exact running AlvorKit
+development process.
 
-These capabilities complement each other:
+The mechanisms have distinct roles:
 
-- AlvorSense is the user-visible source of truth. It drives normal input and
-  captures rendered evidence.
-- LiveCode is the scoped debugger. It inspects or deliberately mutates injected
-  runtime state without restarting.
-- LivePatch is live surgery. It temporarily replaces one existing method for an
-  explicit receiver set.
+- AlvorSense owns deterministic input, time, rendering, and screenshots.
+- LiveCode inspects exact injection scopes and runs short-lived diagnostic
+  commands or predefined bridges.
+- Source Update compiles a unified diff to an original project `.cs` file and
+  updates one existing method definition in the loaded module.
 
-Use the loop:
+Source Update is the normal choice when the desired result is “this method in
+the original file now has this body.” The replacement is ordinary compiler
+output for the declaring type. Private fields, properties, methods, and captured
+primary-constructor parameters therefore use their normal metadata tokens and
+direct IL access. There is no handler ABI, reflection lookup, private-field
+mapping, per-instance dispatch, or call-site redirection.
 
-```text
-AlvorSense observe
-    -> LiveCode inspect the exact scope
-    -> optionally invoke a bridge, run LiveCode, or install LivePatch
-    -> AlvorSense reproduce and verify
-    -> clean up and prove restoration
+## Start an editable process
+
+An editable target must be launched from an immutable Debug PE/PDB pair. Do not
+run a normal project build behind a process and assume it is the same baseline.
+
+```powershell
+dotnet run --project scripts\AlvorKit.Script.AlvorSense -- start `
+  --id source-demo `
+  --editable-project demos\AlvorKit.Engine.SourceUpdate.Demo\AlvorKit.Engine.SourceUpdate.Demo.csproj
 ```
 
-## Choose The Surface
+`--editable-project` builds with portable PDBs and optimizations disabled,
+copies the complete output into the AlvorSense session, records PE/PDB hashes,
+MVID, SDK identity, and CodeView path, and launches that immutable copy with
+`DOTNET_MODIFIABLE_ASSEMBLIES=debug`.
 
-Use AlvorSense alone for acceptance checks, controls, layout, rendering, and
-behavior that should be judged strictly from a normal user's perspective.
+The target must explicitly enable `RootLiveCode` and `RootSourceUpdate`.
+`SourceUpdateHostOptions.FromEnvironment` rejects a normal launch without the
+immutable manifest.
 
-When AlvorSense reveals surprising behavior and the cause is not already
-obvious, keep that same session alive and use LiveCode next. Inspect the exact
-scope and runtime dependencies before adding logging, editing normal source, or
-restarting the game.
+## Create and bind a workspace
 
-Use a predefined LiveCode bridge when its typed operation already matches the
-task. Use arbitrary LiveCode for novel inspection or a deliberate scoped state
-change. Use LivePatch only when the experiment specifically requires replacing
-an existing method body without rebuilding.
-
-Use frozen LiveCode when the normal frame heartbeat stalled. AlvorSense cannot
-advance a blocked game thread; return to AlvorSense after releasing or
-restarting the target to verify user-visible recovery.
-
-## Create A Workspace
-
-Agent-authored live work belongs beneath the current game repository:
-
-```text
-tmp/live/<workspace-id>/
-```
-
-Initialize it only after the target has advertised a LiveCode session:
+Find the target's LiveCode session, then bind both process identities:
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.LiveCode -- workspace init `
-    --id orbit-debug `
-    --purpose "Explain and correct the selected colony orbit" `
-    --session mycelial-observatory `
-    --alvorsense observatory-debug
+  --id source-demo `
+  --purpose "Adjust the pulse service" `
+  --session source-update-demo `
+  --alvorsense source-demo
+
+dotnet run --project scripts\AlvorKit.Script.LiveCode -- source start `
+  --workspace source-demo
 ```
 
-When running from a game repository, use the sibling AlvorKit project path:
-
-```powershell
-dotnet run --project ..\AlvorKit\scripts\AlvorKit.Script.LiveCode -- workspace init `
-    --id orbit-debug `
-    --purpose "Explain and correct the selected colony orbit" `
-    --session MyGame.Dev `
-    --alvorsense my-game-debug
-```
-
-The initializer resolves the immutable LiveCode session ID and process
-identity, captures the scope graph, bridge descriptors, and optional LivePatch
-capabilities, and creates:
+The detached coordinator owns the loaded Roslyn project, exact PE baseline, and
+every acknowledged generation for the workspace. Its token-free manifest lives
+at:
 
 ```text
-SESSION.md
-session.json
-baseline/
-bridge/
-events/
-evidence/
-lc/
-lp/
-puppet/
+tmp/live/<workspace-id>/source/coordinator.json
 ```
 
-`session.json` is the machine-readable identity and cleanup ledger.
-`SESSION.md` is the human-readable observation, next action, and handoff.
-Never copy the LiveCode capability token into either file.
+The LiveCode capability token remains only in process memory and per-user
+discovery storage. Never copy it into a workspace, log, diff, or document.
 
-Check the association before resuming another agent's work:
+## Edit the original file
+
+Make a normal code edit to the real project file. Save a unified diff from the
+last acknowledged source to that exact current file. Then submit both:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- workspace status `
-    --workspace orbit-debug
+dotnet run --project scripts\AlvorKit.Script.LiveCode -- source apply `
+  --workspace source-demo `
+  --source demos\AlvorKit.Engine.SourceUpdate.Demo\PulseService.cs `
+  --diff path\to\pulse-update.diff `
+  --update-id pulse-generation-1
 ```
 
-If the recorded process is gone or its identity changed, create a new
-workspace. Do not silently retarget an old workspace to the newest process with
-the same display name.
+The CLI copies the diff immutably beneath
+`tmp/live/<workspace-id>/source/diffs/`. The compiler applies the diff to its
+acknowledged source snapshot and requires the result to byte-match the current
+file before emitting a delta.
 
-## Keep Exact Inputs
+Version 1 accepts exactly one existing ordinary method-body change. It rejects
+declaration, signature, field, constructor, primary-constructor-capture,
+attribute, base type, interface, generic-shape, async/iterator, unsafe, dynamic,
+lambda, anonymous-function, and local-function changes.
 
-Write every agent-authored C# submission to an immutable numbered file:
+An accepted command returns `queued` immediately. Advance the game through
+AlvorSense so the target reaches its next safe-frame pump, then read status:
+
+```powershell
+'update 0.016' | dotnet run --project scripts\AlvorKit.Script.AlvorSense -- send `
+  --id source-demo --workspace source-demo
+
+dotnet run --project scripts\AlvorKit.Script.LiveCode -- source status `
+  --workspace source-demo
+```
+
+The coordinator advances its compiler generation only after the target returns
+`applied`. Exact source and delta hashes plus method/type tokens are retained in:
 
 ```text
-tmp/live/orbit-debug/lc/001-inspect-orbit.cs
-tmp/live/orbit-debug/lc/002-adjust-orbit.cs
-tmp/live/orbit-debug/lp/001-replace-update.cs
-tmp/live/orbit-debug/lp/002-reverse-update.cs
+tmp/live/<workspace-id>/source/evidence/
 ```
 
-Do not overwrite an executed submission. A replacement gets a new number so
-the event record continues to identify the exact source that ran.
+If transport or runtime state becomes ambiguous, the status is
+`restart-required`; do not emit another generation from that coordinator.
 
-Pass `--workspace` to record logical request and result JSON beneath `events/`.
-Workspace-recorded C# must use `--file`; stdin submissions are rejected. The
-tool also rejects `lc` or `lp` source paths outside the corresponding workspace
-directory and records the source SHA-256.
+## Observe, diagnose, update, verify
 
-```powershell
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- exec `
-    --session mycelial-observatory `
-    --scope 4 `
-    --file tmp\live\orbit-debug\lc\001-inspect-orbit.cs `
-    --workspace orbit-debug
-```
+Use this order:
 
-Prefer numeric scope IDs after capturing the graph. Labels and short type names
-are discovery conveniences and can become ambiguous.
+1. Capture current visible behavior through AlvorSense.
+2. Use LiveCode graph or a predefined bridge only when internal state is needed.
+3. Edit the original `.cs` file and create its exact diff.
+4. Submit with `source apply`.
+5. Advance a safe frame and require terminal evidence.
+6. Capture the visible result in the same AlvorSense session.
 
-Record AlvorSense input and evidence in the same event stream:
+Use ordinary `lc/` submissions for diagnostic commands. Use `bridge/` and
+`puppet/` for their respective recorded payloads. Source Update diffs belong
+only under `source/diffs/`.
 
-```powershell
-@'
-render
-screenshot tmp/live/orbit-debug/evidence/001-before.png
-state
-'@ | dotnet run --project scripts\AlvorKit.Script.AlvorSense -- send `
-    --id observatory-debug `
-    --workspace orbit-debug
-```
+## Generation and cleanup rules
 
-The `--workspace` association rejects a different AlvorSense session ID.
-LiveCode `puppet`, graph, bridge, frozen, and LivePatch commands support the
-same option.
+Every successful update is a forward runtime generation. A later edit may
+restore the original source text, but it is still another forward generation,
+not a runtime rollback.
 
-## Coordinate A Paused Deterministic Loop
+An applied generation is tracked as `restart-required` in `session.json`.
+Before closing:
 
-AlvorSense deliberately stops the game clock between command batches. A
-LiveCode operation that must enter a game-thread scope can therefore compile
-and reach the target, then wait for the next update. This is a healthy paused
-target, not a reason to restart it.
-
-Dispatch that LiveCode command with the agent shell's background or yielded
-process facility, send one recorded zero-delta update, then collect the
-LiveCode result:
+1. Wait for every pending update to become terminal.
+2. Stop the idle source coordinator.
+3. Stop or intentionally restart the target process.
+4. Resolve the Source Update intervention after process exit is proved.
+5. Capture any required final screenshot and close the workspace.
 
 ```powershell
-# Start this without blocking the agent's next shell action.
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- exec `
-    --session mycelial-observatory `
-    --scope 4 `
-    --file tmp\live\orbit-debug\lc\001-inspect-orbit.cs `
-    --workspace orbit-debug
+dotnet run --project scripts\AlvorKit.Script.LiveCode -- source stop `
+  --workspace source-demo
 
-dotnet run --project scripts\AlvorKit.Script.AlvorSense -- send `
-    --id observatory-debug `
-    --workspace orbit-debug `
-    --command "update 0 0 0"
-```
+dotnet run --project scripts\AlvorKit.Script.AlvorSense -- stop `
+  --id source-demo --workspace source-demo
 
-Wait for and report the original LiveCode command after the update completes.
-Do not launch duplicate submissions just because the first command is waiting;
-the first may still execute on the next frame. Use a positive deterministic
-delta only when reproducing behavior intentionally requires time to advance.
-
-## Explain Before Mutating
-
-Before a mutation, update `SESSION.md` and tell the user:
-
-- the exact running process and scope;
-- the submission or bridge payload;
-- the expected visible or diagnostic effect;
-- whether the effect is one-shot or persistent;
-- the exact cleanup or restart requirement.
-
-For a showcase, pause for approval between meaningful mutations. A normal task
-that already authorizes an in-scope runtime change does not require redundant
-approval, but the agent must still state the action and cleanup.
-
-Compile failures occur outside the game process. Report them, keep the failed
-source file, create a new numbered revision, and continue in the same running
-session.
-
-## Track Persistent Effects
-
-LivePatch commands automatically track their patch ID and observed lifecycle
-when `--workspace` is supplied.
-
-Track a persistent LiveCode or bridge effect explicitly:
-
-```powershell
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- workspace add-intervention `
-    --workspace orbit-debug `
-    --id spatial-overlay `
-    --kind livecode `
-    --description "RootScripts contains the live spatial observatory overlay" `
-    --source tmp\live\orbit-debug\lc\002-enable-overlay.cs `
-    --cleanup "exec lc/099-remove-overlay.cs in root scope"
-```
-
-Use `--state restart-required` only when no narrower cleanup exists. A
-state-changing one-shot command still needs an intervention when the changed
-state persists after the command assembly unloads.
-
-LivePatch install and replacement source belongs under `lp/`:
-
-```powershell
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- patch install `
-    --session mycelial-observatory `
-    --scope 4 `
-    --selector exact-scope `
-    --target "AlvorKit.Engine.LiveCode.Demo.ColonyGarden::Update" `
-    --target-assembly AlvorKit.Engine.LiveCode.Demo `
-    --name "Moon orbit experiment" `
-    --file tmp\live\orbit-debug\lp\001-replace-update.cs `
-    --workspace orbit-debug
-```
-
-After removal, query status with the same workspace until the patch reports a
-terminal restored state:
-
-```powershell
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- patch remove `
-    --session mycelial-observatory `
-    --patch 1 `
-    --workspace orbit-debug
-
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- patch status `
-    --session mycelial-observatory `
-    --patch 1 `
-    --workspace orbit-debug
-```
-
-For an explicitly tracked non-patch effect, mark it resolved only after
-observing its cleanup:
-
-```powershell
-dotnet run --project scripts\AlvorKit.Script.LiveCode -- workspace resolve-intervention `
-    --workspace orbit-debug `
-    --id spatial-overlay
-```
-
-## Verify And Close
-
-Always return to the user-visible surface after an intervention. Repeat the
-relevant input through AlvorSense, capture a screenshot, and describe what
-changed. Internal values alone do not prove that a visual or interaction bug
-is fixed.
-
-Close only after every persistent intervention is resolved:
-
-```powershell
 dotnet run --project scripts\AlvorKit.Script.LiveCode -- workspace close `
-    --workspace orbit-debug
+  --workspace source-demo
 ```
 
-Closing rejects unresolved or restart-required interventions. Stop AlvorSense
-sessions the agent started. Leave user-owned visible applications and sessions
-running unless the user asks to stop them.
-
-Live changes are experiments, not repository implementation. If the result
-should become permanent, implement it separately in normal source, then build
-and verify it through the repository's ordinary workflow.
-
-## Technical References
-
-- [`LiveCode.md`](LiveCode.md): host composition, commands, bridges, scopes, and
-  frozen inspection.
-- [`LivePatch.md`](LivePatch.md): exact handler ABI, selectors, ReJIT, failure,
-  replacement, and unloading behavior.
-- [`AlvorSense.md`](AlvorSense.md): deterministic user input, time, screenshots,
-  and session ownership.
-- [`AlvorEye.md`](AlvorEye.md): visible desktop fallback when the target is not
-  wired for AlvorSense.
+See [`AlvorSense.md`](AlvorSense.md) for visual control and
+[`LiveCode.md`](LiveCode.md) for scope, bridge, and frozen-inspection commands.
+See [`SourceUpdate.md`](SourceUpdate.md) for the public method-update contract.

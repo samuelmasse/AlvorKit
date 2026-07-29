@@ -13,4 +13,10 @@ internal sealed record AlvorSenseSessionManifest(
 {
     /// <summary>Gets the prebuilt managed assembly to run instead of a project.</summary>
     public string? Assembly { get; init; }
+
+    /// <summary>Gets the original project used to create an immutable editable launch.</summary>
+    public string? EditableProject { get; init; }
+
+    /// <summary>Gets the Source Update launch-manifest path passed to the target process.</summary>
+    public string? EditableLaunchManifestPath { get; init; }
 }

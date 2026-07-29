@@ -2,7 +2,17 @@
 
 ## Status
 
-This plan supersedes `LivePatchTargetShapePlan.md`.
+Implemented on 2026-07-28 as **Source Update**. The superseded target-shaped
+handler plan and the former LivePatch product were removed after the acceptance
+run passed.
+
+The acceptance run used
+`demos/AlvorKit.Engine.SourceUpdate.Demo/PulseService.cs` in one immutable
+AlvorSense process. Two instances created before the update observed generation
+1, including direct private-field and captured-constructor access. A second
+forward edit restored the original source text at generation 2. Both generations
+returned exact metadata/IL/PDB hashes and produced before, updated, and restored
+screenshots.
 
 The requested experience is a normal edit to the real C# source file:
 

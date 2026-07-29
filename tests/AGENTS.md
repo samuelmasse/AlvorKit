@@ -46,9 +46,8 @@ policy unless this file is more specific.
 - Prefer direct unit tests for deterministic behavior.
 - When a visual game smoke check is needed and the target is wired with
   `AgentGlfwWindowHost` from `AlvorKit.Windowing.Agent`, use the root
-  AlvorSense guidance. Use AlvorEye only for targets that cannot run under
-  AlvorSense or tests that intentionally cover real desktop window/input
-  behavior.
+  AlvorSense guidance. Verify real desktop window and input behavior manually
+  or with purpose-built external tooling.
 
 ## Commit Mode Verification
 

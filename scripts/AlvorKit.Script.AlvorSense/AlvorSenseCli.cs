@@ -55,11 +55,19 @@ internal static class AlvorSenseCli
         Directory.CreateDirectory(sessionDir);
         Directory.CreateDirectory(Path.Combine(sessionDir, "requests"));
         Directory.CreateDirectory(Path.Combine(sessionDir, "responses"));
-        AlvorSenseJson.Save(AlvorSensePaths.Manifest(sessionDir), command.ToManifest());
+        var manifest = command.ToManifest();
+        if (command.EditableProject is not null)
+            manifest = AlvorSenseEditableProject.Prepare(sessionDir, manifest);
+        AlvorSenseJson.Save(AlvorSensePaths.Manifest(sessionDir), manifest);
         using var hostProcess = AlvorSenseHostProcess.Start(sessionDir);
         AlvorSenseHostProcess.WaitReady(sessionDir, command.Timeout);
         var status = AlvorSenseSessionRegistry.Get(command.Id);
-        output.WriteLine(AlvorSenseJson.ToJson(new AlvorSenseStartResult(command.Id, sessionDir, status.Ready, status.ProcessId)));
+        output.WriteLine(AlvorSenseJson.ToJson(new AlvorSenseStartResult(
+            command.Id,
+            sessionDir,
+            status.Ready,
+            status.ProcessId,
+            manifest.EditableLaunchManifestPath)));
         output.Flush();
         return 0;
     }

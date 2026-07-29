@@ -1,63 +1,86 @@
 ---
 name: alvorkit-live-debug
-description: Observe, diagnose, intervene in, and verify a running AlvorKit game with AlvorSense, LiveCode, predefined bridges, frozen inspection, and LivePatch. Use when Codex is visually testing an AlvorKit game and needs internal scoped state, when behavior should be changed experimentally without restarting, when a LiveCode or LivePatch session must be recorded and cleaned up, or when a stalled game loop needs frozen inspection.
+description: Observe, diagnose, update, and verify a running AlvorKit game with AlvorSense, LiveCode, predefined bridges, frozen inspection, and Source Update.
 ---
 
 # AlvorKit Live Debug
 
-Use AlvorSense as the user-visible source of truth and LiveCode as the scoped
-debugger. Keep one target alive while observing, inspecting, intervening, and
-verifying.
+Use this skill when work depends on the behavior or internal state of a running
+AlvorKit game, or when an original C# method should be edited without restarting
+the process.
 
-## Required Reading
+## Required reading
 
-Read `../../../docs/AgentLiveDevelopment.md` completely before acting.
+Before acting, read:
 
-Read only the additional guide needed for the chosen surface:
+- `docs/AgentLiveDevelopment.md`
+- `docs/AlvorSense.md` before visual control
+- `docs/LiveCode.md` before scoped execution or bridge work
 
-- `../../../docs/AlvorSense.md` before driving or extending AlvorSense.
-- `../../../docs/LiveCode.md` before arbitrary LiveCode, bridges, puppet
-  commands, or frozen inspection.
-- `../../../docs/LivePatch.md` before installing or replacing a method patch.
-- `../../../docs/AlvorEye.md` only when the target is not wired for AlvorSense.
+## Choose the narrowest mechanism
 
-## Workflow
+- Use AlvorSense for deterministic input, updates, rendering, screenshots, and
+  user-visible proof.
+- Use a predefined LiveCode bridge for a stable, allowlisted operation.
+- Use ordinary LiveCode for exact-scope inspection or a short-lived diagnostic
+  command.
+- Use frozen inspection only after the game-frame heartbeat is stale.
+- Use Source Update when the intended effect is a normal edit to an existing
+  method in its original `.cs` file.
 
-1. Start or identify the exact AlvorSense-driven game and observe it through
-   normal input.
-2. List LiveCode sessions and bind a new workspace to the exact advertised
-   session and process identity.
-3. Capture the scope graph and prefer numeric scope IDs for later commands.
-4. Inspect before mutating. Prefer a predefined typed bridge when it already
-   expresses the operation.
-5. Write arbitrary LiveCode to a new numbered file beneath the workspace's
-   `lc/` directory. Write LivePatch handlers beneath `lp/`. Never overwrite an
-   executed submission.
-6. Pass `--workspace` to every supported AlvorSense, LiveCode, bridge, puppet,
-   frozen, and LivePatch command so exact inputs, results, and source hashes are
-   recorded.
-7. Return to AlvorSense after any intervention, reproduce the user-visible
-   behavior, and capture evidence.
-8. Remove patches and other persistent effects, prove their cleanup, stop only
-   sessions started by the agent, and close the workspace.
+Source Update changes the original method definition. Private access and
+captured constructor parameters remain ordinary compiled IL. Do not create
+handler classes, redeclare fields, use reflection to bypass visibility, or
+simulate an original-file edit through dispatch.
 
-AlvorSense pauses its deterministic game loop between batches. If a LiveCode
-operation waits to enter the game thread, keep the original operation running,
-send one workspace-recorded `update 0 0 0` through AlvorSense, and then collect
-the original result. Do not submit a duplicate while the first operation is
-pending.
+## Source Update workflow
 
-Use frozen inspection only when the frame heartbeat is stalled. Resume or
-restart the target before attempting visible verification.
+1. Start the target through AlvorSense `--editable-project`.
+2. Capture the initial visible state.
+3. Create a live workspace bound to the exact AlvorSense and LiveCode sessions.
+4. Start the workspace Source Update coordinator.
+5. Edit the real project `.cs` file with a normal diff.
+6. Submit the file and unified diff with `source apply`.
+7. Advance at least one safe frame through AlvorSense.
+8. Require `source status` to report `applied`.
+9. Capture the visible result in the same live session.
 
-## Communication
+Version 1 supports one existing ordinary method-body change per generation. If
+the edit changes declarations, signatures, fields, constructor captures,
+attributes, async/iterator shape, unsafe code, generics, lambdas, local
+functions, or other metadata shape, stop and use a restart/rebuild workflow.
 
-For an interactive showcase, state the exact next command or submission, its
-expected effect, persistence, and cleanup, then wait for approval before each
-meaningful mutation. After execution, show the exact input and output, explain
-what changed, and propose the next step.
+## Workspace discipline
 
-For a normal task that already authorizes an in-scope runtime change, do not ask
-for redundant approval. Still disclose persistent effects and cleanup.
+Agent-authored files belong only beneath:
 
-Never expose or persist a LiveCode capability token.
+```text
+tmp/live/<workspace-id>/lc/
+tmp/live/<workspace-id>/bridge/
+tmp/live/<workspace-id>/puppet/
+tmp/live/<workspace-id>/source/diffs/
+```
+
+Do not put disposable submissions in production or demo source directories.
+The exception is the intentional original `.cs` edit itself.
+
+Never record a LiveCode capability token in workspace files, chat, logs, or
+documentation.
+
+## Verification and cleanup
+
+AlvorSense is the visible source of truth. Share important before/after
+screenshots and summarize meaningful update/input batches.
+
+Before finishing:
+
+- wait for every queued source operation to become terminal;
+- treat ambiguous transport or runtime results as restart-required;
+- stop the idle coordinator;
+- restart or stop the target after any applied generation;
+- resolve persistent workspace interventions only after cleanup is proved;
+- stop agent-started AlvorSense sessions; and
+- leave user-owned sessions running unless the user asks otherwise.
+
+Report the original source path, immutable diff path, runtime generation,
+terminal evidence path, and visual proof.

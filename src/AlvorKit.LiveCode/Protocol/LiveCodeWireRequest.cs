@@ -10,4 +10,5 @@ internal sealed record LiveCodeWireRequest(
     byte[]? Symbols = null,
     string? Bridge = null,
     int BridgeVersion = 0,
-    JsonElement? Payload = null);
+    JsonElement? Payload = null,
+    string? OperationId = null);

@@ -14,6 +14,10 @@ internal static class AlvorSenseStartCommandLine
         {
             Description = "Prebuilt managed game assembly to run instead of a project."
         };
+        var editableProject = new Option<string?>("--editable-project")
+        {
+            Description = "Debug project to build, copy immutably, and launch with Source Update enabled."
+        };
         var workdir = new Option<string>("--workdir") { Description = "Target working directory. Defaults to the current directory." };
         var environment = AlvorSenseCliOptions.RepeatableTextOption("--env", "Extra NAME=VALUE environment variable.");
         var timeout = AlvorSenseCliOptions.TimeoutOption();
@@ -21,6 +25,7 @@ internal static class AlvorSenseStartCommandLine
         command.Options.Add(id);
         command.Options.Add(project);
         command.Options.Add(assembly);
+        command.Options.Add(editableProject);
         command.Options.Add(workdir);
         command.Options.Add(environment);
         command.Options.Add(timeout);
@@ -28,7 +33,8 @@ internal static class AlvorSenseStartCommandLine
         {
             var target = Target(
                 parse.GetValue(project),
-                parse.GetValue(assembly));
+                parse.GetValue(assembly),
+                parse.GetValue(editableProject));
             context.Command = new AlvorSenseStartCommand(
                 AlvorSenseCliOptions.ValidateSessionId(
                     parse.GetValue(id)
@@ -41,7 +47,8 @@ internal static class AlvorSenseStartCommandLine
                 Environment(context.Args),
                 AlvorSenseCliOptions.Timeout(
                     parse.GetValue(timeout)),
-                target.Assembly);
+                target.Assembly,
+                target.EditableProject);
         });
         return command;
     }
@@ -50,14 +57,18 @@ internal static class AlvorSenseStartCommandLine
     private static (
         string? Project,
         string? Assembly,
+        string? EditableProject,
         string Path) Target(
         string? project,
-        string? assembly)
+        string? assembly,
+        string? editableProject)
     {
-        if ((project is null) == (assembly is null))
+        if ((project is not null ? 1 : 0) +
+            (assembly is not null ? 1 : 0) +
+            (editableProject is not null ? 1 : 0) != 1)
         {
             throw new ArgumentException(
-                "start requires exactly one of --project or --assembly.");
+                "start requires exactly one of --project, --assembly, or --editable-project.");
         }
 
         if (project is not null)
@@ -65,13 +76,21 @@ internal static class AlvorSenseStartCommandLine
             project = AlvorSenseCliOptions.RequiredText(
                 project,
                 "--project");
-            return (project, null, project);
+            return (project, null, null, project);
         }
 
-        assembly = AlvorSenseCliOptions.RequiredText(
-            assembly!,
-            "--assembly");
-        return (null, assembly, assembly);
+        if (assembly is not null)
+        {
+            assembly = AlvorSenseCliOptions.RequiredText(
+                assembly,
+                "--assembly");
+            return (null, assembly, null, assembly);
+        }
+
+        editableProject = AlvorSenseCliOptions.RequiredText(
+            editableProject!,
+            "--editable-project");
+        return (null, null, editableProject, editableProject);
     }
 
     /// <summary>Builds a stable default session id from the project file name and current UTC time.</summary>

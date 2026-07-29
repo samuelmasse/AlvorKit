@@ -18,6 +18,12 @@ internal static class AlvorSensePaths
     /// <summary>Gets the isolated runtime directory used by the detached host process.</summary>
     internal static string HostRuntime(string sessionDir) => Path.Combine(sessionDir, "host-runtime");
 
+    /// <summary>Gets the immutable output copy used by an editable target launch.</summary>
+    internal static string EditableArtifacts(string sessionDir) => Path.Combine(sessionDir, "editable-artifacts");
+
+    /// <summary>Gets the immutable Source Update launch manifest.</summary>
+    internal static string EditableLaunchManifest(string sessionDir) => Path.Combine(sessionDir, "editable-launch.json");
+
     /// <summary>Gets a request path before it is atomically committed.</summary>
     internal static string RequestTemp(string sessionDir, string id) => Path.Combine(sessionDir, "requests", id + ".tmp");
 

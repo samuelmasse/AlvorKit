@@ -20,7 +20,7 @@ public sealed class AlvorSenseCommandLineTest
                 "--env",
                 "A=B",
                 "--env",
-                "ALVOREYE_DEMO_RESULT_PATH=out/result.json",
+                "ALVORSENSE_DEMO_RESULT_PATH=out/result.json",
                 "--timeout",
                 "4.5"
             ],
@@ -32,7 +32,7 @@ public sealed class AlvorSenseCommandLineTest
         Assert.AreEqual("C:/repo", command.WorkingDirectory);
         Assert.AreEqual(TimeSpan.FromSeconds(4.5), command.Timeout);
         Assert.AreEqual("B", command.Environment["A"]);
-        Assert.AreEqual("out/result.json", command.Environment["ALVOREYE_DEMO_RESULT_PATH"]);
+        Assert.AreEqual("out/result.json", command.Environment["ALVORSENSE_DEMO_RESULT_PATH"]);
         Assert.AreEqual("1", command.Environment["ALVORKIT_AUDIO_SILENT"]);
     }
 
@@ -57,6 +57,26 @@ public sealed class AlvorSenseCommandLineTest
             command.Assembly);
     }
 
+    /// <summary>Start commands can select an immutable Debug Source Update launch.</summary>
+    [TestMethod]
+    public void Parse_StartEditableProjectCommand_ReturnsValues()
+    {
+        var command = (AlvorSenseStartCommand)AlvorSenseCommandLine.Parse(
+            [
+                "start",
+                "--editable-project",
+                "demos/Game/Game.csproj",
+                "--id",
+                "game-editable"
+            ],
+            new StringReader(""));
+
+        Assert.AreEqual("game-editable", command.Id);
+        Assert.IsNull(command.Project);
+        Assert.IsNull(command.Assembly);
+        Assert.AreEqual("demos/Game/Game.csproj", command.EditableProject);
+    }
+
     /// <summary>Start commands reject missing and ambiguous target selection.</summary>
     [TestMethod]
     public void Parse_StartTargetSelection_RequiresExactlyOneTarget()
@@ -73,6 +93,16 @@ public sealed class AlvorSenseCommandLineTest
                     "game.csproj",
                     "--assembly",
                     "game.dll",
+                ],
+                new StringReader("")));
+        Assert.ThrowsExactly<ArgumentException>(
+            () => AlvorSenseCommandLine.Parse(
+                [
+                    "start",
+                    "--project",
+                    "game.csproj",
+                    "--editable-project",
+                    "game.csproj",
                 ],
                 new StringReader("")));
     }
@@ -360,6 +390,7 @@ public sealed class AlvorSenseCommandLineTest
         Assert.AreEqual("game-1", manifest.Id);
         Assert.AreEqual("game.csproj", manifest.Project);
         Assert.IsNull(manifest.Assembly);
+        Assert.IsNull(manifest.EditableProject);
         Assert.AreEqual("C:/repo", manifest.WorkingDirectory);
         Assert.AreEqual("B", manifest.Environment["A"]);
         Assert.AreNotSame(command.Environment, manifest.Environment);

@@ -13,8 +13,6 @@
         <Using Include="AlvorKit.Interception.CoreClr.Advanced" />
         <Using Include="System.Reflection.Emit" />
         <InternalsVisibleTo Include="AlvorKit.Interception.Test" />
-        <InternalsVisibleTo Include="AlvorKit.LivePatch" />
-        <InternalsVisibleTo Include="AlvorKit.LivePatch.Test" />
     </ItemGroup>
 
     <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.Interception.Profiler.Backend\AlvorKit.Interception.Profiler.Backend.csproj')">

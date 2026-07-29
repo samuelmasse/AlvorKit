@@ -14,6 +14,8 @@ public sealed class AlvorSenseProtocolTest
         Assert.AreEqual(Path.Combine(sessionDir, "session.json"), AlvorSensePaths.Manifest(sessionDir));
         Assert.AreEqual(Path.Combine(sessionDir, "ready.json"), AlvorSensePaths.Ready(sessionDir));
         Assert.AreEqual(Path.Combine(sessionDir, "host-runtime"), AlvorSensePaths.HostRuntime(sessionDir));
+        Assert.AreEqual(Path.Combine(sessionDir, "editable-artifacts"), AlvorSensePaths.EditableArtifacts(sessionDir));
+        Assert.AreEqual(Path.Combine(sessionDir, "editable-launch.json"), AlvorSensePaths.EditableLaunchManifest(sessionDir));
         Assert.AreEqual(Path.Combine(sessionDir, "requests", "abc.tmp"), AlvorSensePaths.RequestTemp(sessionDir, "abc"));
         Assert.AreEqual(Path.Combine(sessionDir, "requests", "abc.json"), AlvorSensePaths.Request(sessionDir, "abc"));
         Assert.AreEqual(Path.Combine(sessionDir, "responses", "abc.json"), AlvorSensePaths.Response(sessionDir, "abc"));

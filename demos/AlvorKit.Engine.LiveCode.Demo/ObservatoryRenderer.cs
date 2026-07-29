@@ -19,7 +19,6 @@ public sealed class ObservatoryRenderer(
         UniverseColonies universe,
         InjectorScopeGraphSnapshot graph,
         LiveCodeSessionManifest session,
-        LivePatchSnapshot[] patches,
         Vec2 canvas)
     {
         DrawBackdrop(canvas, universe.Clock.Time);
@@ -30,7 +29,7 @@ public sealed class ObservatoryRenderer(
             DrawColony(colony, ReferenceEquals(colony, universe.Selected), canvas, universe.Clock.Time);
 
         DrawTitle(universe, canvas);
-        panel.Draw(universe, graph, session, patches, canvas);
+        panel.Draw(universe, graph, session, canvas);
     }
 
     private void DrawSun(Vec2 canvas, double time)

@@ -6,8 +6,8 @@ public enum LiveWorkspaceInterventionKind
     /// <summary>A submitted LiveCode command left a persistent effect.</summary>
     LiveCode,
 
-    /// <summary>A LivePatch handler replaced an existing method.</summary>
-    LivePatch,
+    /// <summary>A source delta permanently changed the currently running module generation.</summary>
+    SourceUpdate,
 
     /// <summary>A predefined bridge left a persistent effect.</summary>
     Bridge

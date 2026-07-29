@@ -5,8 +5,8 @@ public sealed class InterceptionCollisionRegistryTest
 {
     private static readonly Guid ModuleId =
         new("8DA409B2-A7BD-48C8-9749-206368A48050");
-    private static readonly InterceptionClaimConsumer LivePatch =
-        new("LivePatch");
+    private static readonly InterceptionClaimConsumer RuntimeRewrite =
+        new("RuntimeRewrite");
     private static readonly InterceptionClaimConsumer Mocking =
         new("Mocking");
 
@@ -46,7 +46,7 @@ public sealed class InterceptionCollisionRegistryTest
             Claim(
                 Target(1, "First.Run"),
                 InterceptionPhysicalRegion.IlRange(10, 2),
-                "LivePatch",
+                "RuntimeRewrite",
                 "all"));
         using var second = registry.Acquire(
             Claim(
@@ -92,10 +92,10 @@ public sealed class InterceptionCollisionRegistryTest
     {
         var method = Target(1, "Caller.Run");
         var operand = InterceptionLogicalOperand.ForMethod(method);
-        var livePatch = Claim(
+        var runtimeRewrite = Claim(
             method,
             InterceptionPhysicalRegion.MethodWide,
-            "LivePatch",
+            "RuntimeRewrite",
             "scope:root",
             operand);
         var mocking = Claim(
@@ -105,12 +105,12 @@ public sealed class InterceptionCollisionRegistryTest
             "site:calculate",
             operand);
 
-        var forward = CollisionMessage(livePatch, mocking);
-        var reverse = CollisionMessage(mocking, livePatch);
+        var forward = CollisionMessage(runtimeRewrite, mocking);
+        var reverse = CollisionMessage(mocking, runtimeRewrite);
 
         Assert.AreEqual(forward, reverse);
         StringAssert.Contains(forward, "physical region");
-        StringAssert.Contains(forward, "LivePatch");
+        StringAssert.Contains(forward, "RuntimeRewrite");
         StringAssert.Contains(forward, "Mocking");
         StringAssert.Contains(forward, "scope:root");
         StringAssert.Contains(forward, "site:calculate");
@@ -125,10 +125,10 @@ public sealed class InterceptionCollisionRegistryTest
         var caller = Target(1, "Caller.Run");
         var callee = Target(2, "Service.Calculate");
         var operand = InterceptionLogicalOperand.ForMethod(callee);
-        var livePatch = Claim(
+        var runtimeRewrite = Claim(
             callee,
             InterceptionPhysicalRegion.MethodWide,
-            "LivePatch",
+            "RuntimeRewrite",
             "all",
             operand);
         var mocking = Claim(
@@ -138,8 +138,8 @@ public sealed class InterceptionCollisionRegistryTest
             "site:calculate",
             operand);
 
-        var forward = CollisionMessage(livePatch, mocking);
-        var reverse = CollisionMessage(mocking, livePatch);
+        var forward = CollisionMessage(runtimeRewrite, mocking);
+        var reverse = CollisionMessage(mocking, runtimeRewrite);
 
         Assert.AreEqual(forward, reverse);
         StringAssert.Contains(forward, "logical operand");
@@ -184,7 +184,7 @@ public sealed class InterceptionCollisionRegistryTest
         var claim = Claim(
             Target(1, "Caller.Run"),
             InterceptionPhysicalRegion.MethodWide,
-            "LivePatch",
+            "RuntimeRewrite",
             "all");
         var first = registry.Acquire(claim);
         var slotId = first.Slot.SlotId;
@@ -223,8 +223,8 @@ public sealed class InterceptionCollisionRegistryTest
             method,
             region,
             new(
-                consumer == LivePatch.Name
-                    ? LivePatch
+                consumer == RuntimeRewrite.Name
+                    ? RuntimeRewrite
                     : Mocking,
                 selector),
             operand);

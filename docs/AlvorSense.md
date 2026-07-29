@@ -7,11 +7,11 @@ keyboard input, mouse input, text input, rendering, screenshots, and state
 inspection without moving the user's real mouse or opening a visible game
 window.
 
-Use AlvorSense before AlvorEye when the target game is wired for it. A target is
-wired for AlvorSense when its normal startup path creates an `AgentGlfwWindowHost`
-and the process can be run with `ALVORKIT_WINDOWING_AGENT=1`. Use AlvorEye for
-visual desktop targets that are not AlvorSense-aware, such as arbitrary native
-windows, external applications, or demos that still require real desktop input.
+Use AlvorSense when a target game's normal startup path creates an
+`AgentGlfwWindowHost` and the process can be run with
+`ALVORKIT_WINDOWING_AGENT=1`. AlvorSense does not drive arbitrary native
+windows, external applications, or real desktop input; verify those behaviors
+manually or with purpose-built external tooling.
 
 ## Tool Location
 
@@ -112,8 +112,8 @@ session directory, ready flag, and host process id.
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.AlvorSense -- start --id demo `
-    --project demos\AlvorKit.Script.AlvorEye.Demo\AlvorKit.Script.AlvorEye.Demo.csproj `
-    --env ALVOREYE_DEMO_RESULT_PATH=out\alvorsense-sessions\demo\result.json
+    --project demos\AlvorKit.Script.AlvorSense.Demo\AlvorKit.Script.AlvorSense.Demo.csproj `
+    --env ALVORSENSE_DEMO_RESULT_PATH=out\alvorsense-sessions\demo\result.json
 ```
 
 Prefer passing `--id` even for quick exploration. A stable id makes follow-up
@@ -124,9 +124,10 @@ Useful options:
 
 - `--id <id>` chooses a stable session id.
 - `--project <project.csproj>` selects the target game project.
+- `--editable-project <project.csproj>` creates and launches an immutable Debug
+  PE/PDB baseline for Source Update.
 - `--assembly <game.dll>` launches an already-built managed game assembly
-  instead of running a project. Use this for exact Release artifacts and
-  startup-loaded profilers such as LivePatch.
+  instead of running a project. Use this for exact prebuilt artifacts.
 - `--workdir <dir>` sets the target working directory. The default is the
   current directory.
 - `--env NAME=VALUE` passes an extra environment variable to the target. Repeat
@@ -327,22 +328,15 @@ screenshot out\alvorsense-sessions\demo\03-dragged.png
 '@ | dotnet run --project scripts\AlvorKit.Script.AlvorSense -- send --id demo
 ```
 
-## AlvorSense Versus AlvorEye
+## Scope
 
-Prefer AlvorSense when:
+Use AlvorSense when:
 
 - The target is an AlvorKit game using `AgentGlfwWindowHost`.
 - You need exact update counts and exact delta times.
 - You want screenshots without moving the real cursor.
 - You want the game paused naturally while the agent thinks.
 - You want deterministic input and time owned by the windowing layer.
-
-Use AlvorEye when:
-
-- The target is not wired with `AgentGlfwWindowHost`.
-- The task is about a real desktop window, external app, or OS-level workflow.
-- You need to verify real window placement, focus, or desktop input behavior.
-- The game cannot render through the hidden GLFW context owned by the agent host.
 
 Do not use AlvorSense as a replacement for unit tests, lint, coverage, or
 non-visual command-line verification. It is for visual and interactive behavior
@@ -374,11 +368,11 @@ where seeing the frame matters.
 
 ## Demo Practice Target
 
-The AlvorEye demo has been wired through `AgentGlfwWindowHost`, so it can be
-solved with AlvorSense:
+The AlvorSense demo is an interactive practice target wired through
+`AgentGlfwWindowHost`:
 
 ```text
-demos/AlvorKit.Script.AlvorEye.Demo/
+demos/AlvorKit.Script.AlvorSense.Demo/
 ```
 
 Read `AGENT_GOAL.md` as the puzzle instructions and use `SOLUTION.md` only as a

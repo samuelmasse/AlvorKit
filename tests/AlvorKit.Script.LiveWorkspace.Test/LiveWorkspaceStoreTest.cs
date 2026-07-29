@@ -18,7 +18,18 @@ public sealed class LiveWorkspaceStoreTest
         Assert.AreEqual(target, store.Read("orbit-debug").LiveCode);
         Assert.AreEqual("sense-1", manifest.AlvorSenseSessionId);
         Assert.AreEqual(42, manifest.BaselineGraphRevision);
-        foreach (var directory in new[] { "lc", "lp", "bridge", "puppet", "events", "evidence", "baseline" })
+        foreach (var directory in new[]
+        {
+            "lc",
+            "source",
+            Path.Combine("source", "diffs"),
+            Path.Combine("source", "evidence"),
+            "bridge",
+            "puppet",
+            "events",
+            "evidence",
+            "baseline"
+        })
             Assert.IsTrue(Directory.Exists(Path.Combine(manifest.WorkspacePath, directory)), directory);
 
         var sessionText = File.ReadAllText(Path.Combine(manifest.WorkspacePath, "SESSION.md"));
@@ -149,9 +160,9 @@ public sealed class LiveWorkspaceStoreTest
 
         File.WriteAllText(
             manifestPath,
-            validJson.Replace("\"schemaVersion\": 1", "\"schemaVersion\": 2", StringComparison.Ordinal));
+            validJson.Replace("\"schemaVersion\": 2", "\"schemaVersion\": 3", StringComparison.Ordinal));
         var unsupported = Assert.ThrowsExactly<InvalidOperationException>(() => store.Read("orbit-debug"));
-        StringAssert.Contains(unsupported.Message, "schema 2 is unsupported");
+        StringAssert.Contains(unsupported.Message, "schema 3 is unsupported");
     }
 
     /// <summary>Baseline writes preserve JSON while rejecting unsafe filenames and closed workspaces.</summary>

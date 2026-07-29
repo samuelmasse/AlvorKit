@@ -6,7 +6,7 @@ internal static class LiveCodeCommandTree
     /// <summary>Creates the complete LiveCode command tree.</summary>
     internal static RootCommand Create(
         LiveCodeCli cli,
-        LivePatchCli patches,
+        SourceUpdateCli sourceUpdates,
         LiveCodeWorkspaceCli workspaces)
     {
         var root = new RootCommand(
@@ -19,7 +19,7 @@ internal static class LiveCodeCommandTree
         root.Subcommands.Add(Puppet(cli));
         root.Subcommands.Add(Execute(cli));
         root.Subcommands.Add(Frozen(cli));
-        root.Subcommands.Add(LivePatchCommandTree.Create(patches));
+        root.Subcommands.Add(SourceUpdateCommandTree.Create(sourceUpdates));
         return root;
     }
 

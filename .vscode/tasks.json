@@ -5,7 +5,14 @@
       "label": "clangd: refresh compile database",
       "type": "process",
       "command": "powershell.exe",
-      "args": ["-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/Refresh-ClangdCompilationDatabase.ps1"],
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/Refresh-ClangdCompilationDatabase.ps1"
+      ],
       "problemMatcher": [],
       "presentation": {
         "clear": true,
@@ -14,6 +21,720 @@
       "runOptions": {
         "runOn": "folderOpen"
       }
+    },
+    {
+      "label": "build AlvorKit.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Demo/AlvorKit.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.ECS.Demo.Bench",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.ECS.Demo.Bench/AlvorKit.ECS.Demo.Bench.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.ECS.Demo.QueryBench",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.ECS.Demo.QueryBench/AlvorKit.ECS.Demo.QueryBench.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.ECS.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.ECS.Demo/AlvorKit.ECS.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.ECS.Indexed.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.ECS.Indexed.Demo/AlvorKit.ECS.Indexed.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Engine.Demo.RawApis",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Engine.Demo.RawApis/AlvorKit.Engine.Demo.RawApis.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Engine.Demo.TextureCube",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Engine.Demo.TextureCube/AlvorKit.Engine.Demo.TextureCube.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Engine.Demo.Triangle",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Engine.Demo.Triangle/AlvorKit.Engine.Demo.Triangle.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Engine.Demo.Triangle3D",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Engine.Demo.Triangle3D/AlvorKit.Engine.Demo.Triangle3D.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Engine.LiveCode.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Engine.LiveCode.Demo/AlvorKit.Engine.LiveCode.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Engine.SourceUpdate.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Engine.SourceUpdate.Demo/AlvorKit.Engine.SourceUpdate.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.FastNoise2.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.FastNoise2.Demo/AlvorKit.FastNoise2.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.FreeType.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.FreeType.Demo/AlvorKit.FreeType.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Graphics2D.Demo.Lines",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Graphics2D.Demo.Lines/AlvorKit.Graphics2D.Demo.Lines.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Graphics2D.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Graphics2D.Demo/AlvorKit.Graphics2D.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Graphics2D.Fonts.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Graphics2D.Fonts.Demo/AlvorKit.Graphics2D.Fonts.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Injection.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Injection.Demo/AlvorKit.Injection.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Maths.Demo.Bench",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Maths.Demo.Bench/AlvorKit.Maths.Demo.Bench.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Maths.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Maths.Demo/AlvorKit.Maths.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.MiniAudio.Demo.Music",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.MiniAudio.Demo.Music/AlvorKit.MiniAudio.Demo.Music.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.MiniAudio.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.MiniAudio.Demo/AlvorKit.MiniAudio.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Mocking.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Mocking.Demo/AlvorKit.Mocking.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.OpenGL.Demo.AzureTentacle",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.OpenGL.Demo.AzureTentacle/AlvorKit.OpenGL.Demo.AzureTentacle.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.OpenGL.Demo.HelloTriangle",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.OpenGL.Demo.HelloTriangle/AlvorKit.OpenGL.Demo.HelloTriangle.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.OpenGL.Demo.TestCube",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.OpenGL.Demo.TestCube/AlvorKit.OpenGL.Demo.TestCube.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Ranges.Demo.Bench",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Ranges.Demo.Bench/AlvorKit.Ranges.Demo.Bench.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Ranges.Demo.Visualizer",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Ranges.Demo.Visualizer/AlvorKit.Ranges.Demo.Visualizer.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.AlvorSense.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Script.AlvorSense.Demo/AlvorKit.Script.AlvorSense.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.UI.Blend.Demo.NoiseLab",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.UI.Blend.Demo.NoiseLab/AlvorKit.UI.Blend.Demo.NoiseLab.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.UI.Blend.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.UI.Blend.Demo/AlvorKit.UI.Blend.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Windowing.Demo.FileDialogs",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Windowing.Demo.FileDialogs/AlvorKit.Windowing.Demo.FileDialogs.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Windowing.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Windowing.Demo/AlvorKit.Windowing.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.XxHash.Demo.Bench",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.XxHash.Demo.Bench/AlvorKit.XxHash.Demo.Bench.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.XxHash.Demo",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.XxHash.Demo/AlvorKit.XxHash.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorStarter",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/res/templates/new-game/source/src/AlvorStarter/AlvorStarter.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.AgentLease",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.AgentLease/AlvorKit.Script.AgentLease.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.AlvorSense",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.AlvorSense/AlvorKit.Script.AlvorSense.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.Bindgen",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.Bindgen/AlvorKit.Script.Bindgen.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.BindgenReview",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.BindgenReview/AlvorKit.Script.BindgenReview.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.DevSolution",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.DevSolution/AlvorKit.Script.DevSolution.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.Lint",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.Lint/AlvorKit.Script.Lint.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.LiveCode",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.LiveCode/AlvorKit.Script.LiveCode.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.MathsGen",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.MathsGen/AlvorKit.Script.MathsGen.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.NativeBuild",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.NativeBuild/AlvorKit.Script.NativeBuild.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.NewGame",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.NewGame/AlvorKit.Script.NewGame.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.TestCoverage",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.TestCoverage/AlvorKit.Script.TestCoverage.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.TestInterception",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.TestInterception/AlvorKit.Script.TestInterception.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.TestTiming",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.TestTiming/AlvorKit.Script.TestTiming.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.ZoneSolution",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/scripts/AlvorKit.Script.ZoneSolution/AlvorKit.Script.ZoneSolution.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Interception.Performance.Fixture",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/tests/AlvorKit.Interception.Performance.Fixture/AlvorKit.Interception.Performance.Fixture.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Mocking.Performance.Fixture",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/tests/AlvorKit.Mocking.Performance.Fixture/AlvorKit.Mocking.Performance.Fixture.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
     }
   ]
 }

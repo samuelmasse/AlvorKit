@@ -40,8 +40,8 @@ narrative walkthroughs, while still respecting game-runtime hot paths.
   `AlvorKit.Windowing.Agent`. Read `docs/AlvorSense.md` first.
 - When using AlvorSense, share important screenshots in chat, summarize the
   input/update batches, and continue one live session when practical.
-- Use AlvorEye only when the demo is not wired for AlvorSense or the task needs
-  real desktop window behavior. Read `docs/AlvorEye.md` first.
+- AlvorSense does not drive real desktop window behavior. Verify OS-level
+  placement, focus, and input manually or with purpose-built external tooling.
 
 ## Demo Shape
 

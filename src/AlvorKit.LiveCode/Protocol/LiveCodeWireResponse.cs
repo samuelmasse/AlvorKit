@@ -10,4 +10,6 @@ internal sealed record LiveCodeWireResponse(
     LiveCodeFrozenInspectionSnapshot? FrozenInspection = null,
     LiveCodeFrozenInspectionExecutionResult? FrozenExecution = null,
     LiveCodeBridgeDescriptor[]? Bridges = null,
-    LiveCodeBridgeExecutionResult? BridgeExecution = null);
+    LiveCodeBridgeExecutionResult? BridgeExecution = null,
+    LiveCodeBridgeEnqueueResponse? BridgeEnqueue = null,
+    LiveCodeBridgeOperationStatusResponse? BridgeOperation = null);

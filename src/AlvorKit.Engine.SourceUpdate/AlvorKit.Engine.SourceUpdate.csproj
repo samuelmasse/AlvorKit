@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Engine.LiveCode\AlvorKit.Engine.LiveCode.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Engine.SourceUpdate.Test" />
+        <Using Include="AlvorKit.LiveCode" />
+        <Using Include="System.Reflection.Metadata" />
+        <Using Include="System.Security.Cryptography" />
+        <Using Include="System.Text.Json" />
+        <Using Include="System.Text.Json.Serialization" />
+    </ItemGroup>
+
+</Project>

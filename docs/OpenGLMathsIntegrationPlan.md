@@ -1374,7 +1374,7 @@ Then migrate maths-backed call sites in:
   declarations;
 - TestCube matrix upload and vertex declarations;
 - GlyphRenderer vector uniform and vertex declarations;
-- AlvorEye demo vertex declarations.
+- AlvorSense demo vertex declarations.
 
 In AzureTentacle, change `AnimatedGlbMesh.JointMatrices` from
 `ReadOnlySpan<float>` to `ReadOnlySpan<Mat4>` and remove the consumer-owned

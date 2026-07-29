@@ -33,17 +33,6 @@ internal sealed class LiveCodeWorkspaceCli(
         store.WriteBaseline(manifest, "graph.json", graph);
         store.WriteBaseline(manifest, "bridges.json", bridges);
 
-        string? capabilitiesPath = null;
-        if (bridges.Any(bridge => bridge.Name == "livepatch"))
-        {
-            var payload = JsonSerializer.SerializeToElement(new { operation = "capabilities" }, json);
-            var capabilities = await client.Bridge("livepatch", payload, version: 1);
-            capabilitiesPath = store.WriteBaseline(
-                manifest,
-                "livepatch-capabilities.json",
-                capabilities);
-        }
-
         Write(new
         {
             manifest.Id,
@@ -52,8 +41,7 @@ internal sealed class LiveCodeWorkspaceCli(
             manifest.AlvorSenseSessionId,
             manifest.BaselineGraphRevision,
             graphPath = Path.Combine(manifest.WorkspacePath, "baseline", "graph.json"),
-            bridgesPath = Path.Combine(manifest.WorkspacePath, "baseline", "bridges.json"),
-            capabilitiesPath
+            bridgesPath = Path.Combine(manifest.WorkspacePath, "baseline", "bridges.json")
         });
         return 0;
     }
@@ -145,6 +133,18 @@ internal sealed class LiveCodeWorkspaceCli(
 
     internal Task<int> Close(string workspace)
     {
+        var current = store.Read(workspace);
+        var coordinatorPath = SourceUpdateCoordinatorPaths.Manifest(current.WorkspacePath);
+        if (File.Exists(coordinatorPath))
+        {
+            var coordinator =
+                SourceUpdateCoordinatorJson.ReadFile<SourceUpdateCoordinatorManifest>(coordinatorPath);
+            if (IsAlive(coordinator.ProcessId))
+            {
+                throw new InvalidOperationException(
+                    "Stop the Source Update coordinator before closing this workspace.");
+            }
+        }
         var manifest = store.Close(workspace);
         Write(new
         {
@@ -156,14 +156,29 @@ internal sealed class LiveCodeWorkspaceCli(
         return Task.FromResult(0);
     }
 
+    private static bool IsAlive(int processId)
+    {
+        if (processId <= 0)
+            return false;
+        try
+        {
+            using var process = Process.GetProcessById(processId);
+            return !process.HasExited;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
     private static LiveWorkspaceInterventionKind ParseKind(string value) =>
         value.ToLowerInvariant() switch
         {
             "livecode" => LiveWorkspaceInterventionKind.LiveCode,
-            "livepatch" => LiveWorkspaceInterventionKind.LivePatch,
+            "source-update" => LiveWorkspaceInterventionKind.SourceUpdate,
             "bridge" => LiveWorkspaceInterventionKind.Bridge,
             _ => throw new ArgumentException(
-                $"Unknown intervention kind '{value}'. Use livecode, livepatch, or bridge.")
+                $"Unknown intervention kind '{value}'. Use livecode, source-update, or bridge.")
         };
 
     private static LiveWorkspaceInterventionState ParseState(string value) =>

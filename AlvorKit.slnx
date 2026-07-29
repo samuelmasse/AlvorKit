@@ -16,7 +16,8 @@
         <Project Path="demos/AlvorKit.FreeType.Demo/AlvorKit.FreeType.Demo.csproj" />
         <Project Path="demos/AlvorKit.Injection.Demo/AlvorKit.Injection.Demo.csproj" />
         <Project Path="demos/AlvorKit.Engine.LiveCode.Demo/AlvorKit.Engine.LiveCode.Demo.csproj" />
-        <Project Path="demos/AlvorKit.Engine.LivePatch.Demo/AlvorKit.Engine.LivePatch.Demo.csproj" />
+        <Project
+            Path="demos/AlvorKit.Engine.SourceUpdate.Demo/AlvorKit.Engine.SourceUpdate.Demo.csproj" />
         <Project Path="demos/AlvorKit.Maths.Demo/AlvorKit.Maths.Demo.csproj" />
         <Project Path="demos/AlvorKit.Maths.Demo.Bench/AlvorKit.Maths.Demo.Bench.csproj" />
         <Project Path="demos/AlvorKit.MiniAudio.Demo/AlvorKit.MiniAudio.Demo.csproj" />
@@ -37,7 +38,8 @@
             Path="demos/AlvorKit.Graphics2D.Demo.Lines/AlvorKit.Graphics2D.Demo.Lines.csproj" />
         <Project
             Path="demos/AlvorKit.Graphics2D.Fonts.Demo/AlvorKit.Graphics2D.Fonts.Demo.csproj" />
-        <Project Path="demos/AlvorKit.Script.AlvorEye.Demo/AlvorKit.Script.AlvorEye.Demo.csproj" />
+        <Project
+            Path="demos/AlvorKit.Script.AlvorSense.Demo/AlvorKit.Script.AlvorSense.Demo.csproj" />
         <Project Path="demos/AlvorKit.Windowing.Demo/AlvorKit.Windowing.Demo.csproj" />
         <Project
             Path="demos/AlvorKit.Windowing.Demo.FileDialogs/AlvorKit.Windowing.Demo.FileDialogs.csproj" />
@@ -56,7 +58,6 @@
             Path="scripts/AlvorKit.Script.Bindgen.OpenGLRegistry/AlvorKit.Script.Bindgen.OpenGLRegistry.csproj" />
         <Project Path="scripts/AlvorKit.Script.Bindgen/AlvorKit.Script.Bindgen.csproj" />
         <Project Path="scripts/AlvorKit.Script.BindgenReview/AlvorKit.Script.BindgenReview.csproj" />
-        <Project Path="scripts/AlvorKit.Script.AlvorEye/AlvorKit.Script.AlvorEye.csproj" />
         <Project
             Path="scripts/AlvorKit.Script.AlvorSense/AlvorKit.Script.AlvorSense.csproj" />
         <Project
@@ -81,7 +82,6 @@
     <Project Path="src/AlvorKit.Injection.Graph/AlvorKit.Injection.Graph.csproj" />
     <Project Path="src/AlvorKit.LiveCode.Generator/AlvorKit.LiveCode.Generator.csproj" />
     <Project Path="src/AlvorKit.LiveCode/AlvorKit.LiveCode.csproj" />
-    <Project Path="src/AlvorKit.LivePatch/AlvorKit.LivePatch.csproj" />
     <Project Path="src/AlvorKit.Interception/AlvorKit.Interception.csproj" />
     <Project Path="src/AlvorKit.Interception.CoreClr/AlvorKit.Interception.CoreClr.csproj" />
     <Project Path="src/AlvorKit.Mocking/AlvorKit.Mocking.csproj" />
@@ -96,7 +96,7 @@
     <Project Path="src/AlvorKit.Engine/AlvorKit.Engine.csproj" />
     <Project Path="src/AlvorKit.Engine.Loop/AlvorKit.Engine.Loop.csproj" />
     <Project Path="src/AlvorKit.Engine.LiveCode/AlvorKit.Engine.LiveCode.csproj" />
-    <Project Path="src/AlvorKit.Engine.LivePatch/AlvorKit.Engine.LivePatch.csproj" />
+    <Project Path="src/AlvorKit.Engine.SourceUpdate/AlvorKit.Engine.SourceUpdate.csproj" />
     <Project Path="src/AlvorKit.Graphics2D/AlvorKit.Graphics2D.csproj" />
     <Project Path="src/AlvorKit.Graphics2D.Fonts/AlvorKit.Graphics2D.Fonts.csproj" />
     <Project Path="src/AlvorKit.OpenGL.Maths/AlvorKit.OpenGL.Maths.csproj" />
@@ -122,7 +122,8 @@
             Path="tests/AlvorKit.Interception.Performance.Fixture/AlvorKit.Interception.Performance.Fixture.csproj" />
         <Project Path="tests/AlvorKit.Interception.Test/AlvorKit.Interception.Test.csproj" />
         <Project Path="tests/AlvorKit.LiveCode.Test/AlvorKit.LiveCode.Test.csproj" />
-        <Project Path="tests/AlvorKit.LivePatch.Test/AlvorKit.LivePatch.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Engine.SourceUpdate.Test/AlvorKit.Engine.SourceUpdate.Test.csproj" />
         <Project Path="tests/AlvorKit.Mocking.Test/AlvorKit.Mocking.Test.csproj" />
         <Project Path="tests/AlvorKit.Logging.Test/AlvorKit.Logging.Test.csproj" />
         <Project Path="tests/AlvorKit.Text.Test/AlvorKit.Text.Test.csproj" />
@@ -146,11 +147,13 @@
         <Project
             Path="tests/AlvorKit.Script.AgentLease.Test/AlvorKit.Script.AgentLease.Test.csproj" />
         <Project
-            Path="tests/AlvorKit.Script.AlvorEye.Test/AlvorKit.Script.AlvorEye.Test.csproj" />
-        <Project
             Path="tests/AlvorKit.Script.AlvorSense.Test/AlvorKit.Script.AlvorSense.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.LiveWorkspace.Test/AlvorKit.Script.LiveWorkspace.Test.csproj" />
+        <Project
+            Path="tests/AlvorKit.Script.LiveCode.Fixture/AlvorKit.Script.LiveCode.Fixture.csproj" />
+        <Project
+            Path="tests/AlvorKit.Script.LiveCode.Test/AlvorKit.Script.LiveCode.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Script.Bindgen.Core.Test/AlvorKit.Script.Bindgen.Core.Test.csproj" />
         <Project

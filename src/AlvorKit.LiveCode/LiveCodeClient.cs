@@ -106,6 +106,42 @@ public sealed class LiveCodeClient(LiveCodeSessionManifest session)
             ?? throw new LiveCodeClientException("LiveCode host returned no bridge execution result.");
     }
 
+    /// <summary>Reserves and queues one bridge invocation without waiting for the game-thread pump.</summary>
+    public async Task<LiveCodeBridgeEnqueueResponse> EnqueueBridge(
+        string operationId,
+        string name,
+        JsonElement payload,
+        int version = 0,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await Send(
+            new(
+                Session.Token,
+                LiveCodeWireRequestKind.BridgeEnqueue,
+                Bridge: name,
+                BridgeVersion: version,
+                Payload: payload,
+                OperationId: operationId),
+            cancellationToken);
+        return response.BridgeEnqueue
+            ?? throw new LiveCodeClientException("LiveCode host returned no bridge enqueue acknowledgment.");
+    }
+
+    /// <summary>Reads accepted bridge-operation state without entering the game-thread queue.</summary>
+    public async Task<LiveCodeBridgeOperationStatusResponse> BridgeOperationStatus(
+        string operationId,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await Send(
+            new(
+                Session.Token,
+                LiveCodeWireRequestKind.BridgeOperationStatus,
+                OperationId: operationId),
+            cancellationToken);
+        return response.BridgeOperation
+            ?? throw new LiveCodeClientException("LiveCode host returned no bridge operation status.");
+    }
+
     private async Task<LiveCodeWireResponse> Send(
         LiveCodeWireRequest request,
         CancellationToken cancellationToken)

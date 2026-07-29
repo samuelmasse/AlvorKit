@@ -13,6 +13,9 @@
         <Using Include="AlvorKit.Script.LiveWorkspace" />
         <Using Include="System.CommandLine" />
         <Using Include="System.CommandLine.Parsing" />
+        <Using Include="System.Reflection.Metadata" />
+        <Using Include="System.Reflection.PortableExecutable" />
+        <Using Include="System.Security.Cryptography" />
     </ItemGroup>
 
 </Project>

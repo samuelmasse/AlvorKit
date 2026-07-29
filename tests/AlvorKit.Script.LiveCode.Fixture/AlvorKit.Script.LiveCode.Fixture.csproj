@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <DebugType>portable</DebugType>
+        <Optimize>false</Optimize>
+        <NoWarn>$(NoWarn);CS9113;CS9124</NoWarn>
+    </PropertyGroup>
+
+</Project>

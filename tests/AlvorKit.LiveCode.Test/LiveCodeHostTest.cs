@@ -135,6 +135,54 @@ public class LiveCodeHostTest
         CollectionAssert.Contains(result.Lines, "Bridge reached the host pump.");
     }
 
+    /// <summary>A two-phase bridge reports queue acceptance and terminal state without status entering the game thread.</summary>
+    [TestMethod]
+    public void TwoPhaseBridgeAcknowledgesBeforeSafeFrameAndExecutesOnce()
+    {
+        using var workspace = TempWorkspace.Create();
+        var injector = new Injector();
+        var graph = new InjectorScopeGraph(injector);
+        var bridges = new LiveCodeBridgeRegistry();
+        bridges.Register(new EchoBridge());
+        using var host = new LiveCodeHost(
+            graph,
+            new("test") { DiscoveryDirectory = workspace.Root },
+            bridges);
+        var client = new LiveCodeClient(host.Start());
+        var operationId = Guid.NewGuid().ToString("N");
+        var payload = JsonSerializer.SerializeToElement(new { message = "queued bridge" });
+
+        var accepted = client.EnqueueBridge(
+            operationId,
+            "test.echo",
+            payload,
+            version: 1).GetAwaiter().GetResult();
+        var pending = client.BridgeOperationStatus(operationId).GetAwaiter().GetResult();
+
+        Assert.AreEqual("queued-for-safe-frame", accepted.Status);
+        Assert.AreEqual(LiveCodeBridgeOperationState.Pending, accepted.State);
+        Assert.AreEqual(LiveCodeBridgeOperationState.Pending, pending.State);
+        Assert.IsNull(pending.Result);
+
+        Assert.AreEqual(1, host.Pump());
+        Assert.AreEqual(0, host.Pump());
+        var completed = client.BridgeOperationStatus(operationId).GetAwaiter().GetResult();
+
+        Assert.AreEqual(LiveCodeBridgeOperationState.Completed, completed.State);
+        Assert.AreEqual(
+            LiveCodeBridgeExecutionStatus.Completed,
+            completed.Result?.Status);
+        Assert.AreEqual(
+            "queued bridge",
+            completed.Result?.Values["echo"].GetString());
+        Assert.ThrowsExactly<LiveCodeClientException>(() =>
+            client.EnqueueBridge(
+                operationId,
+                "test.echo",
+                payload,
+                version: 1).GetAwaiter().GetResult());
+    }
+
     /// <summary>The out-of-band lane rejects ordinary scoped code while the frame heartbeat is fresh.</summary>
     [TestMethod]
     public void FrozenExecutionRejectsWhileGameFramesAdvance()

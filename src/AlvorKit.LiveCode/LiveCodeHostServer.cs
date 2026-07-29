@@ -10,6 +10,8 @@ internal sealed class LiveCodeHostServer(
     private readonly CancellationTokenSource stopping = new();
     private readonly ConcurrentQueue<LiveCodePendingWork> pending = new();
     private readonly LiveCodeReferenceCatalog references = new(options);
+    private readonly LiveCodeBridgeOperationStore bridgeOperations =
+        new(options.MaximumBridgeOperations);
     private readonly LiveCodeWire wire = new();
     private TcpListener? listener;
     private Task? acceptLoop;
@@ -67,6 +69,7 @@ internal sealed class LiveCodeHostServer(
 
         while (pending.TryDequeue(out var execution))
             execution.Cancel("The LiveCode host stopped before execution.");
+        bridgeOperations.CancelPending("The LiveCode host stopped before execution.");
 
         if (Session is not null && File.Exists(Session.ManifestPath))
             File.Delete(Session.ManifestPath);
@@ -121,6 +124,8 @@ internal sealed class LiveCodeHostServer(
                 LiveCodeWireRequestKind.FrozenInspectionExecute => await ExecuteFrozen(request),
                 LiveCodeWireRequestKind.Bridges => BridgeDescriptors(),
                 LiveCodeWireRequestKind.Bridge => await Bridge(request),
+                LiveCodeWireRequestKind.BridgeEnqueue => BridgeEnqueue(request),
+                LiveCodeWireRequestKind.BridgeOperationStatus => BridgeOperationStatus(request),
                 _ => new(false, "Unknown LiveCode request.")
             };
             await wire.Write(stream, response, stopping.Token);
@@ -229,6 +234,87 @@ internal sealed class LiveCodeHostServer(
         pending.Enqueue(execution);
         var result = await execution.Completion.Task.WaitAsync(stopping.Token);
         return new(true, BridgeExecution: result);
+    }
+
+    private LiveCodeWireResponse BridgeEnqueue(LiveCodeWireRequest request)
+    {
+        if (ValidateBridge(request) is { } error)
+            return new(false, error);
+        if (string.IsNullOrWhiteSpace(request.OperationId))
+            return new(false, "Two-phase bridge invocation requires an operation id.");
+        if (bridges.ValidateInvocation(request.Bridge!, request.BridgeVersion) is { } bridgeError)
+            return new(false, bridgeError);
+
+        LiveCodeBridgeOperation operation;
+        try
+        {
+            operation = bridgeOperations.Reserve(request.OperationId);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return new(false, exception.Message);
+        }
+
+        var payload = request.Payload
+            ?? JsonSerializer.SerializeToElement(new { }, LiveCodeJson.Options);
+        var execution = new LiveCodePendingBridge(
+            request.Bridge!,
+            request.BridgeVersion,
+            payload,
+            operation);
+        try
+        {
+            pending.Enqueue(execution);
+        }
+        catch (Exception exception)
+        {
+            execution.Cancel($"Bridge enqueue failed: {exception.Message}");
+            return new(
+                true,
+                BridgeEnqueue: new(
+                    operation.Id,
+                    LiveCodeBridgeOperationState.Completed,
+                    "enqueue-failed"));
+        }
+
+        return new(
+            true,
+            BridgeEnqueue: new(
+                operation.Id,
+                LiveCodeBridgeOperationState.Pending,
+                "queued-for-safe-frame"));
+    }
+
+    private LiveCodeWireResponse BridgeOperationStatus(LiveCodeWireRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.OperationId))
+            return new(false, "Bridge operation status requires an operation id.");
+        try
+        {
+            return new(
+                true,
+                BridgeOperation: bridgeOperations.Read(request.OperationId));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return new(false, exception.Message);
+        }
+    }
+
+    private string? ValidateBridge(LiveCodeWireRequest request)
+    {
+        if (!options.EnableBridges)
+            return "Predefined bridges are disabled for this LiveCode session.";
+        if (string.IsNullOrWhiteSpace(request.Bridge))
+            return "LiveCode bridge invocation requires a bridge name.";
+        if (request.BridgeVersion < 0)
+            return "LiveCode bridge version cannot be negative.";
+
+        var payload = request.Payload
+            ?? JsonSerializer.SerializeToElement(new { }, LiveCodeJson.Options);
+        return Encoding.UTF8.GetByteCount(payload.GetRawText()) > options.MaximumBridgePayloadBytes
+            ? $"LiveCode bridge payload exceeds {options.MaximumBridgePayloadBytes} bytes."
+            : null;
     }
 
     private static void WriteManifest(LiveCodeSessionManifest session)

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Engine.SourceUpdate\AlvorKit.Engine.SourceUpdate.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Engine.SourceUpdate" />
+        <Using Include="System.Reflection" />
+        <Using Include="System.Security.Cryptography" />
+    </ItemGroup>
+
+</Project>

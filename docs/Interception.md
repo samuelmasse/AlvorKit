@@ -2,7 +2,7 @@
 
 `AlvorKit.Interception` is the runtime-neutral managed API for changing an
 ordinary managed method in a live optimized CoreCLR process. Target methods do
-not need a LivePatch attribute, proxy, source edit, or pre-build rewrite.
+not need an attribute, proxy, source edit, or pre-build rewrite.
 
 ## Layers
 
@@ -24,11 +24,6 @@ not need a LivePatch attribute, proxy, source edit, or pre-build rewrite.
    by Dynamic proxies and operation wrappers.
 7. `src/AlvorKit.Mocking.Interception` owns Mocking's exact operation wrappers
    and depends only on neutral Interception, Mocking, and Mocking.Emit.
-8. `src/AlvorKit.LivePatch` adds receiver selection and injector lifecycle
-   over the neutral backend contract.
-9. `src/AlvorKit.Engine.LivePatch` composes the CoreCLR backend and exposes the
-   service through LiveCode at the
-   engine safe-frame boundary.
 
 ## Exact dispatch
 
@@ -57,15 +52,13 @@ This design does not box arguments, allocate `object[]`, use `DynamicInvoke`,
 or require one dispatch method for every return type. The warm exact
 handler/lease path has an executable zero-managed-allocation test.
 
-Static targets omit the receiver and require the explicit global selector at
-the LivePatch layer.
+Static targets omit the receiver.
 
 ## Runtime flow
 
 ```text
-LiveCode request
-    -> game safe-frame queue
-    -> LivePatch selector/lease
+Interception consumer
+    -> collision claim/lease
     -> exact Interception dispatch plan
     -> generated binding and versioned C ABI
     -> profiler-owned CLR-initialized worker
@@ -156,7 +149,7 @@ Implemented:
 - atomic managed handler replacement without another ReJIT;
 - immediate managed deactivation plus asynchronous original-IL restoration;
 - existing-inliner ReJIT and revert;
-- neutral exception propagation, explicit LivePatch containment, and
+- neutral exception propagation, explicit containment policies, and
   collectible handler release;
 - structured request/callback/HRESULT/timing evidence;
 - immutable loaded-body snapshots, exact SHA-256 body identity, typed IL
@@ -281,5 +274,4 @@ propagating managed-reference returns, and ref-struct value returns have
 managed executable coverage. These accepted shapes do not weaken the remaining
 native correlation and lifetime gates.
 
-The complete receiver-selection and LiveCode interface is documented in
-[`LivePatch.md`](LivePatch.md).
+Mocking's public consumer model is documented in [`Mocking.md`](Mocking.md).

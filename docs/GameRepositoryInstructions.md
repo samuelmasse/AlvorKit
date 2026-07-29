@@ -22,8 +22,7 @@ The no-fallback rule remains unconditional even after a game ships.
 
 The game consumes AlvorKit from `../AlvorKit` through relative project
 references. AlvorKit owns the engine, UI, injection, windowing, GL lifetime,
-maths, generated bindings, script tools, demos, documentation, AlvorSense, and
-AlvorEye.
+maths, generated bindings, script tools, demos, documentation, and AlvorSense.
 
 Do not treat AlvorKit as a fixed external dependency. We own that code too. If
 the clean solution needs an engine API, UI primitive, script tool, harness
@@ -53,8 +52,8 @@ Game-specific overrides:
   unit-test and coverage requirements apply only to changes made in
   `../AlvorKit`.
 - Verify game behavior with targeted builds and, when appropriate, AlvorSense
-  or AlvorEye smoke checks. Do not propose unit tests as the default
-  verification strategy for game features.
+  smoke checks. Do not propose unit tests as the default verification strategy
+  for game features.
 - Run existing game tests only when explicitly requested or when diagnosing a
   failure in those existing tests.
 - Keep hot paths allocation-sensitive: update, render, input polling,
@@ -249,8 +248,7 @@ Open the matching guide under `../AlvorKit/docs/` instead of re-inventing local
 rules:
 
 - `AlvorSense.md`: hidden, engine-native visual harness for AlvorKit games.
-- `AlvorEye.md`: OS-level visual automation for real desktop windows.
-- `AgentLiveDevelopment.md`: combined AlvorSense, LiveCode, and LivePatch
+- `AgentLiveDevelopment.md`: combined AlvorSense, LiveCode, and Source Update
   workflow, recording, approval, and cleanup contract.
 - `ECS.md`: required game Ent components, handles, arenas, Indexed hooks and
   bags, iteration, ownership, and teardown.
@@ -294,18 +292,17 @@ dotnet run --project ..\AlvorKit\scripts\AlvorKit.Script.AlvorSense -- stop --id
 When a visual check reveals surprising behavior, keep that same target alive
 and follow `../AlvorKit/docs/AgentLiveDevelopment.md`. Use AlvorSense for normal
 user-visible input and evidence, LiveCode for exact scoped inspection, and
-LivePatch only for a temporary method-body experiment. Put agent-authored
-submissions beneath the game repository's ignored `tmp/live/<workspace-id>/`
-workspace and use workspace-aware commands so another agent can audit and clean
-up the session.
+Source Update for a normal edit to one existing method body. Put
+agent-authored submissions and immutable diffs beneath the game repository's
+ignored `tmp/live/<workspace-id>/` workspace and use workspace-aware commands
+so another agent can audit and clean up the session.
 
-When a development executable supports LivePatch, its checked-in VS Code launch
-profile must enable the profiler by default and use the executable's ordinary
-name. Do not add a parallel LiveCode-only profile or append mode details such as
-`(Release + LivePatch)` to the launch name; the LivePatch-capable launch is the
-only supported development mode.
+An executable that supports Source Update must explicitly compose
+`RootSourceUpdate` and be launched through AlvorSense `--editable-project`.
+Normal launch and release profiles remain ordinary non-editable game runs.
 
-Use AlvorEye only for real desktop-window or OS-level input and focus behavior.
+AlvorSense does not drive real desktop windows or OS-level input and focus.
+Verify those behaviors manually or with purpose-built external tooling.
 
 ## Verification
 

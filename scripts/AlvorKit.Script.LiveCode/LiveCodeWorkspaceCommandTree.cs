@@ -78,7 +78,7 @@ internal static class LiveCodeWorkspaceCommandTree
     {
         var workspace = Workspace();
         var id = Required("--id", "Stable intervention id used by cleanup.");
-        var kind = Required("--kind", "livecode, livepatch, or bridge.");
+        var kind = Required("--kind", "livecode, source-update, or bridge.");
         var description = Required("--description", "Observable persistent effect.");
         var state = new Option<string>("--state")
         {

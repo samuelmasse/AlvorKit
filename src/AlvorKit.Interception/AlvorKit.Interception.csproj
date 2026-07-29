@@ -8,7 +8,6 @@
         <Using Include="System.Buffers.Binary" />
         <InternalsVisibleTo Include="AlvorKit.Interception.CoreClr" />
         <InternalsVisibleTo Include="AlvorKit.Interception.Test" />
-        <InternalsVisibleTo Include="AlvorKit.LivePatch" />
     </ItemGroup>
 
 </Project>
