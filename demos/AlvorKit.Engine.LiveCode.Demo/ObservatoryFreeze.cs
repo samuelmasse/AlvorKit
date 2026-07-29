@@ -2,7 +2,7 @@ namespace AlvorKit.Engine.LiveCode.Demo;
 
 /// <summary>Creates an intentional game-loop stall that remains releasable from the frozen LiveCode lane.</summary>
 [Root]
-public sealed class ObservatoryFreeze
+public sealed class ObservatoryFreeze(Log log)
 {
     private readonly ManualResetEventSlim released = new(true);
     private long requestedAtTick;
@@ -27,7 +27,7 @@ public sealed class ObservatoryFreeze
 
         Interlocked.Exchange(ref requestedAtTick, tick);
         released.Reset();
-        Console.WriteLine("FREEZE REQUESTED: the game loop will stop while the LiveCode listener remains responsive.");
+        log.Warn("FREEZE REQUESTED: the game loop will stop while the LiveCode listener remains responsive.");
     }
 
     /// <summary>Blocks the game-loop thread when a freeze was requested.</summary>
@@ -38,10 +38,10 @@ public sealed class ObservatoryFreeze
 
         Volatile.Write(ref gameThreadId, Environment.CurrentManagedThreadId);
         Volatile.Write(ref frozen, 1);
-        Console.WriteLine($"GAME LOOP FROZEN on managed thread {GameThreadId}.");
+        log.Warn("GAME LOOP FROZEN on managed thread {0}.", GameThreadId);
         released.Wait();
         Volatile.Write(ref frozen, 0);
-        Console.WriteLine("GAME LOOP RELEASED by out-of-band LiveCode.");
+        log.Info("GAME LOOP RELEASED by out-of-band LiveCode.");
     }
 
     /// <summary>Releases an intentional demonstration freeze from any thread.</summary>

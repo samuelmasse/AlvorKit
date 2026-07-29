@@ -1,6 +1,7 @@
 /// <summary>Shows install, replacement, and removal changing a normal engine render loop live.</summary>
 [Root]
 internal sealed class LivePatchDemoState(
+    Log log,
     RootGl gl,
     RootScreen screen,
     RootInput input,
@@ -41,9 +42,9 @@ internal sealed class LivePatchDemoState(
         profiler = InterceptionProfiler.Connect();
 
         input.Track = true;
-        Console.WriteLine("ALVORKIT ENGINE LIVE PATCH DEMO");
-        Console.WriteLine($"CAPABILITIES {JsonSerializer.Serialize(profiler.Capabilities)}");
-        Console.WriteLine("Space installs/replaces SceneMode. R removes it and restores original IL.");
+        log.Info("ALVORKIT ENGINE LIVE PATCH DEMO");
+        log.Info("CAPABILITIES {0}", JsonSerializer.Serialize(profiler.Capabilities));
+        log.Info("Space installs/replaces SceneMode. R removes it and restores original IL.");
         UpdateTitle();
         screen.IsVisible = true;
     }
@@ -68,14 +69,14 @@ internal sealed class LivePatchDemoState(
             {
                 patch = profiler.Install(
                     LivePatchProof.ConstantInt32Plan(method, nextMode));
-                Console.WriteLine(
+                log.Info(
                     $"SEND install {{ patch: {patch.PatchId}, request: {patch.LastRequestId}, value: {nextMode} }}");
             }
             else if (completion.State == InterceptionState.Active)
             {
                 var request = patch.Replace(
                     LivePatchProof.ConstantInt32Plan(method, nextMode));
-                Console.WriteLine(
+                log.Info(
                     $"SEND replace {{ patch: {patch.PatchId}, request: {request}, value: {nextMode} }}");
             }
 
@@ -87,7 +88,7 @@ internal sealed class LivePatchDemoState(
             completion.State == InterceptionState.Active)
         {
             var request = patch.Remove();
-            Console.WriteLine($"SEND remove {{ patch: {patch.PatchId}, request: {request} }}");
+            log.Info($"SEND remove {{ patch: {patch.PatchId}, request: {request} }}");
         }
     }
 
@@ -118,7 +119,7 @@ internal sealed class LivePatchDemoState(
 
         completion = current;
         observedRequest = requestId;
-        LivePatchProof.PrintCompletion("RECEIVE", completion);
+        LivePatchProof.PrintCompletion(log, "RECEIVE", completion);
         UpdateTitle();
     }
 

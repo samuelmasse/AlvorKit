@@ -6,6 +6,10 @@ const uint GlyphPixelHeight = 64;
 const char DemoCharacter = 'a';
 const string GlyphPreviewPath = "out/a.png";
 
+using var logging = new LogRuntime();
+logging.Start();
+var log = logging.Log;
+
 var glfw = new GlfwBackend();
 if (!glfw.Init())
     throw new InvalidOperationException("Failed to initialize GLFW.");
@@ -22,7 +26,7 @@ var fontPath = ResolveDemoFontPath();
 
 // FreeType runs first so the OpenGL half receives a plain managed bitmap instead of a live face.
 var glyph = GlyphBitmap.Render(freeType, fontPath, DemoCharacter, GlyphPixelHeight);
-ExportGlyphPreview(glyph, DemoCharacter, GlyphPreviewPath);
+ExportGlyphPreview(log, glyph, DemoCharacter, GlyphPreviewPath);
 
 // The OpenGL layer needs a current GLFW context because it resolves function pointers from that context.
 var window = glfw.CreateWindow(InitialWidth, InitialHeight, "AlvorKit.Demo", default, default);
@@ -35,15 +39,15 @@ if (window == default)
 glfw.MakeContextCurrent(window);
 
 var gl = new GlLayer(new GlBackend(glfw.GetProcAddress));
-ReportWindowCreated(glfw, window);
+ReportWindowCreated(log, glfw, window);
 
 var renderer = new GlyphRenderer(gl, glyph, GlyphScale);
 var melody = new MelodyPlayer(audio);
-Console.WriteLine("Playing Ode to Joy.");
+log.Info("Playing Ode to Joy.");
 
 // The frame loop keeps the demo responsive while the melody thread advances miniaudio's waveform frequency.
 RunFrameLoop(glfw, window, renderer, FrameWaitSeconds);
-ReportTrackedResources(gl);
+ReportTrackedResources(log, gl);
 
 // Cleanup is deliberately direct here so the native lifetime order stays visible in the demo path.
 melody.Dispose();
@@ -63,17 +67,17 @@ static string ResolveDemoFontPath()
 }
 
 // Writes the rasterized glyph as a PNG so the FreeType output can be inspected without the window.
-static void ExportGlyphPreview(GlyphBitmap glyph, char character, string path)
+static void ExportGlyphPreview(Log log, GlyphBitmap glyph, char character, string path)
 {
     glyph.ExportPng(path);
-    Console.WriteLine($"Exported '{character}' ({glyph.Width}x{glyph.Height}, gray) to {Path.GetFullPath(path)}");
+    log.Info($"Exported '{character}' ({glyph.Width}x{glyph.Height}, gray) to {Path.GetFullPath(path)}");
 }
 
 // Reports the framebuffer size GLFW created for the demo window.
-static void ReportWindowCreated(Glfw glfw, GlfwWindow window)
+static void ReportWindowCreated(Log log, Glfw glfw, GlfwWindow window)
 {
     glfw.GetFramebufferSize(window, out var width, out var height);
-    Console.WriteLine($"Window created: {width}x{height} - press Escape or close it to exit.");
+    log.Info("Window created: {0}x{1} - press Escape or close it to exit.", width, height);
 }
 
 // Waits for input, closes on Escape, and renders the glyph at the current framebuffer size.
@@ -92,9 +96,9 @@ static void RunFrameLoop(Glfw glfw, GlfwWindow window, GlyphRenderer renderer, d
 }
 
 // Prints the layer's tracked GPU resources before the layer disposes them.
-static void ReportTrackedResources(GlLayer gl)
+static void ReportTrackedResources(Log log, GlLayer gl)
 {
-    Console.WriteLine($"GPU memory tracked: {gl.BufferUsage} buffer byte(s), {gl.TextureUsage} texture byte(s).");
-    Console.WriteLine($"Closing - disposing {gl.Textures.Count} texture(s), {gl.Buffers.Count} buffer(s), " +
+    log.Info("GPU memory tracked: {0} buffer byte(s), {1} texture byte(s).", gl.BufferUsage, gl.TextureUsage);
+    log.Info($"Closing - disposing {gl.Textures.Count} texture(s), {gl.Buffers.Count} buffer(s), " +
         $"{gl.VertexArrays.Count} VAO(s), {gl.Shaders.Count} shader(s), {gl.Programs.Count} program(s).");
 }

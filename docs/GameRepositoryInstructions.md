@@ -288,6 +288,12 @@ submissions beneath the game repository's ignored `tmp/live/<workspace-id>/`
 workspace and use workspace-aware commands so another agent can audit and clean
 up the session.
 
+When a development executable supports LivePatch, its checked-in VS Code launch
+profile must enable the profiler by default and use the executable's ordinary
+name. Do not add a parallel LiveCode-only profile or append mode details such as
+`(Release + LivePatch)` to the launch name; the LivePatch-capable launch is the
+only supported development mode.
+
 Use AlvorEye only for real desktop-window or OS-level input and focus behavior.
 
 ## Verification

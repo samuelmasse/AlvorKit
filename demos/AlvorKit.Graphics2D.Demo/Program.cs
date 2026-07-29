@@ -2,6 +2,10 @@ const int SmallTextureSize = 256;
 const int BigTextureSize = 1024;
 const int GridCells = 64;
 
+using var logging = new LogRuntime();
+logging.Start();
+var log = logging.Log;
+
 var glfw = new GlfwBackend();
 if (!glfw.Init())
     throw new InvalidOperationException("Failed to initialize GLFW.");
@@ -29,7 +33,7 @@ var rawGl = new GlBackend(glfw.GetProcAddress);
 var gl = new GlLayer(rawGl);
 gl.GetString(GlStringName.Version, out var version);
 gl.GetString(GlStringName.ShadingLanguageVersion, out var glsl);
-Console.WriteLine("OpenGL {0} (GLSL {1}) - Esc exits. G/O/T/Y/C toggle draw modes; arrows rotate; H/V flip; F11 fullscreen.", version, glsl);
+log.Info("OpenGL {0} (GLSL {1}) - Esc exits. G/O/T/Y/C toggle draw modes; arrows rotate; H/V flip; F11 fullscreen.", version, glsl);
 
 var sprites = new SpriteBatch(gl);
 var texture = new Texture2D(gl, (SmallTextureSize, SmallTextureSize))

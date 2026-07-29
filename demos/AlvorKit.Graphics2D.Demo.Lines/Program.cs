@@ -15,6 +15,10 @@ const float RailDotSize = 3f;
 const float EndpointSize = 11f;
 const float DigitScale = 1.6f;
 
+using var logging = new LogRuntime();
+logging.Start();
+var log = logging.Log;
+
 Vec4 okColor = (0.2f, 0.86f, 0.42f, 0.9f);
 Vec4 guideColor = (0.9f, 0.95f, 1f, 0.58f);
 Vec4 railColor = (0.74f, 0.82f, 0.9f, 0.55f);
@@ -62,9 +66,9 @@ var rawGl = new GlBackend(glfw.GetProcAddress);
 var gl = new GlLayer(rawGl);
 gl.GetString(GlStringName.Version, out var version);
 gl.GetString(GlStringName.ShadingLanguageVersion, out var glsl);
-Console.WriteLine("OpenGL {0} (GLSL {1}) - Esc exits.", version, glsl);
-Console.WriteLine("Line case board is numbered left-to-right, top-to-bottom.");
-Console.WriteLine("Dotted white center and pale rails show the expected line lane; colored fill is SpriteBatchWriter.DrawLine output.");
+log.Info("OpenGL {0} (GLSL {1}) - Esc exits.", version, glsl);
+log.Info("Line case board is numbered left-to-right, top-to-bottom.");
+log.Info("Dotted white center and pale rails show the expected line lane; colored fill is SpriteBatchWriter.DrawLine output.");
 PrintCaseLegend();
 
 var sprites = new SpriteBatch(gl);
@@ -327,7 +331,7 @@ static Vec2 HalfSize(float size) => (size * 0.5f, size * 0.5f);
 void PrintCaseLegend()
 {
     for (var i = 0; i < lineCases.Length; i++)
-        Console.WriteLine("{0,2}. {1,-18} {2}", i + 1, lineCases[i].Name + ":", lineCases[i].Description);
+        log.Info("{0,2}. {1,-18} {2}", i + 1, lineCases[i].Name + ":", lineCases[i].Description);
 }
 
 // Computes the perpendicular normal the DrawLine implementation should use for a screen-space direction.

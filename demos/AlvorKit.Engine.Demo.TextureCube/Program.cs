@@ -3,6 +3,7 @@ RootLoop.RunGlfw<TextureCubeState>();
 /// <summary>Draws the old textured cube demo with TOML controls, camera movement, and a tiny HUD.</summary>
 [Root]
 internal sealed class TextureCubeState(
+    Log log,
     RootInput input,
     RootMouse mouse,
     RootGl gl,
@@ -71,7 +72,7 @@ internal sealed class TextureCubeState(
     /// <summary>Prints the same simple exit message as the old demo.</summary>
     public override void Unload()
     {
-        Console.WriteLine("Exiting...");
+        log.Info("Exiting...");
     }
 
     /// <summary>Updates pause state, camera movement, UI scale, and the demo exception trigger.</summary>

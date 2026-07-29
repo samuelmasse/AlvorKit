@@ -2,7 +2,7 @@
 internal static class ScopedLivePatchProof
 {
     /// <summary>Runs exact-scope, sibling, automatic scope-end, and final native-removal evidence.</summary>
-    internal static void Run(InterceptionProfiler profiler)
+    internal static void Run(Log log, InterceptionProfiler profiler)
     {
         var injector = new Injector();
         var graph = new InjectorScopeGraph(injector, "proof");
@@ -37,23 +37,23 @@ internal static class ScopedLivePatchProof
             new TideOrbitHandler(),
             typeof(TideOrbitHandler).GetMethod(nameof(TideOrbitHandler.Invoke))!,
             "tide-reverse-orbit");
-        Console.WriteLine(
+        log.Raw(
             $"SEND scoped-install {{ emberPatch: {emberPatch.PatchId}, emberScope: {emberId}, " +
             $"tidePatch: {tidePatch.PatchId}, tideScope: {tideId}, target: {method.DeclaringType!.FullName}.{method.Name} }}");
-        PumpUntilActive(session, ember, tide, emberPatch, tidePatch);
-        AssertCall("scope-patched ember", ember, 4, 104, 312);
-        AssertCall("scope-patched tide", tide, 4, -4, -12);
+        PumpUntilActive(log, session, ember, tide, emberPatch, tidePatch);
+        AssertCall(log, "scope-patched ember", ember, 4, 104, 312);
+        AssertCall(log, "scope-patched tide", tide, 4, -4, -12);
 
         graph.End(emberScope);
-        AssertCall("ended ember falls through original", ember, 4, 6, 12);
-        AssertCall("active tide remains patched", tide, 4, -4, -12);
-        Console.WriteLine(
+        AssertCall(log, "ended ember falls through original", ember, 4, 6, 12);
+        AssertCall(log, "active tide remains patched", tide, 4, -4, -12);
+        log.Raw(
             $"RECEIVE scope-ended {{ patch: {emberPatch.PatchId}, state: {emberPatch.Snapshot().State}, scope: {emberId} }}");
 
         tidePatch.Dispose();
         PumpUntilRemoved(session, tide, tidePatch.PatchId);
-        AssertCall("final scope removal restored original", tide, 4, 9, 18);
-        Console.WriteLine(
+        AssertCall(log, "final scope removal restored original", tide, 4, 9, 18);
+        log.Raw(
             $"RECEIVE scoped-remove {{ patch: {tidePatch.PatchId}, state: {session.Get(tidePatch.PatchId).State} }}");
 
         var exceptionTarget = tideScope.Get<ScopedExceptionLaw>();
@@ -72,7 +72,7 @@ internal static class ScopedLivePatchProof
             () => _ = exceptionTarget.Calculate(1));
         var finallyBeforeHit = exceptionTarget.FinallyCount;
         var patchedExceptionResult = exceptionTarget.Calculate(5);
-        Console.WriteLine(
+        log.Raw(
             $"EXECUTE exception-region patched => {{ result: {patchedExceptionResult}, finallyCount: {exceptionTarget.FinallyCount} }}");
         if (patchedExceptionResult != 905 ||
             exceptionTarget.FinallyCount != finallyBeforeHit)
@@ -89,7 +89,7 @@ internal static class ScopedLivePatchProof
             () => _ = exceptionTarget.Calculate(1));
         var finallyBeforeOriginal = exceptionTarget.FinallyCount;
         var restoredExceptionResult = exceptionTarget.Calculate(5);
-        Console.WriteLine(
+        log.Raw(
             $"EXECUTE exception-region restored => {{ result: {restoredExceptionResult}, finallyCount: {exceptionTarget.FinallyCount} }}");
         if (restoredExceptionResult != 7 ||
             exceptionTarget.FinallyCount != finallyBeforeOriginal + 1)
@@ -102,6 +102,7 @@ internal static class ScopedLivePatchProof
     }
 
     private static void PumpUntilActive(
+        Log log,
         LivePatchSession session,
         ScopedOrbitLaw ember,
         ScopedOrbitLaw tide,
@@ -117,7 +118,7 @@ internal static class ScopedLivePatchProof
             if (patches.All(x => x.Snapshot().State == LivePatchState.Active))
             {
                 foreach (var patch in patches)
-                    Console.WriteLine($"RECEIVE scoped-active {JsonSerializer.Serialize(patch.Snapshot())}");
+                    log.Raw($"RECEIVE scoped-active {JsonSerializer.Serialize(patch.Snapshot())}");
                 return;
             }
 
@@ -167,6 +168,7 @@ internal static class ScopedLivePatchProof
     }
 
     private static void AssertCall(
+        Log log,
         string label,
         ScopedOrbitLaw target,
         int input,
@@ -175,7 +177,7 @@ internal static class ScopedLivePatchProof
     {
         var observed = -1;
         var result = target.Calculate(input, ref observed);
-        Console.WriteLine(
+        log.Raw(
             $"EXECUTE {label} => {{ observed: {observed}, result: {result} }}");
         if (observed != expectedObserved || result != expectedResult)
         {

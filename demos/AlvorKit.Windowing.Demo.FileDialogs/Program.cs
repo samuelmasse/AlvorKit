@@ -1,3 +1,7 @@
+using var logging = new LogRuntime();
+logging.Start();
+var log = logging.Log;
+
 var filters = new FileDialogFilter[]
 {
     new("Images", "png,jpg,jpeg,gif"),
@@ -31,7 +35,7 @@ var screen = new WindowScreen(loop)
     IsVisible = true
 };
 
-Console.WriteLine("O open file; M open files; S save file; F pick folder; P pick folders; Esc exits.");
+log.Info("O open file; M open files; S save file; F pick folder; P pick folders; Esc exits.");
 
 loop.Update += Update;
 loop.Render += Render;
@@ -70,18 +74,18 @@ void Render()
 
 // Prints a single selection or cancellation.
 void Print(string operation, string? path) =>
-    Console.WriteLine(path is null ? $"{operation}: cancelled" : $"{operation}: {path}");
+    log.Info(path is null ? $"{operation}: cancelled" : $"{operation}: {path}");
 
 // Prints multiple selections or cancellation.
 void PrintMany(string operation, string[]? paths)
 {
     if (paths is null)
     {
-        Console.WriteLine($"{operation}: cancelled");
+        log.Info($"{operation}: cancelled");
         return;
     }
 
-    Console.WriteLine($"{operation}: {paths.Length} selected");
+    log.Info($"{operation}: {paths.Length} selected");
     foreach (var path in paths)
-        Console.WriteLine($"  {path}");
+        log.Info($"  {path}");
 }

@@ -1,3 +1,6 @@
+using var logging = new LogRuntime();
+logging.Start();
+
 var glfw = new GlfwBackend();
 if (!glfw.Init())
     throw new InvalidOperationException("Failed to initialize GLFW.");
@@ -28,7 +31,7 @@ var input = new WindowInput(loop);
 
 gl.GetString(GlStringName.Version, out var version);
 gl.GetString(GlStringName.ShadingLanguageVersion, out var glsl);
-Console.WriteLine($"OpenGL {version} (GLSL {glsl}) - read AGENT_GOAL.md and solve the AlvorEye demo game.");
+logging.Log.Info("OpenGL {0} (GLSL {1}) - read AGENT_GOAL.md and solve the AlvorEye demo game.", version, glsl);
 
 var renderer = AlvorEyeDemoRenderer.Load(gl);
 var state = new AlvorEyeDemoState();
@@ -42,6 +45,7 @@ loop.Render += Render;
 loop.Run();
 
 var result = JsonSerializer.Serialize(state.CreateResult(TimeSpan.FromSeconds(totalSeconds)));
+logging.Flush();
 Console.WriteLine($"ALVOREYE_DEMO_RESULT {result}");
 if (Environment.GetEnvironmentVariable("ALVOREYE_DEMO_RESULT_PATH") is { Length: > 0 } resultPath)
 {

@@ -3,6 +3,7 @@ RootLoop.RunGlfw<RawApisState>();
 /// <summary>Shows the native-style APIs that <see cref="RootLoop"/> seeds into the root injector.</summary>
 [Root]
 internal sealed unsafe class RawApisState(
+    Log log,
     Gl gl,
     Glfw glfw,
     GlfwWindow window,
@@ -37,9 +38,9 @@ internal sealed unsafe class RawApisState(
         RefreshSnapshot();
         screen.IsVisible = true;
 
-        Console.WriteLine("AlvorKit.Engine.Demo.RawApis");
-        Console.WriteLine("RootLoop injected Gl, Glfw, GlfwWindow, Fn, Ft, Ma, and Xxh directly into this state.");
-        Console.WriteLine("Esc exits. R re-runs the one-shot raw API probes.");
+        log.Info("AlvorKit.Engine.Demo.RawApis");
+        log.Info("RootLoop injected Gl, Glfw, GlfwWindow, Fn, Ft, Ma, and Xxh directly into this state.");
+        log.Info("Esc exits. R re-runs the one-shot raw API probes.");
     }
 
     /// <summary>Polls input through raw GLFW and updates the native window title.</summary>

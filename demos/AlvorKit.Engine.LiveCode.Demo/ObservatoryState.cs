@@ -3,6 +3,7 @@ namespace AlvorKit.Engine.LiveCode.Demo;
 /// <summary>Runs a living multi-scope colony observatory inside the normal AlvorKit engine loop.</summary>
 [Root]
 internal sealed class ObservatoryState(
+    Log log,
     Injector injector,
     RootScope root,
     RootScripts scripts,
@@ -66,12 +67,12 @@ internal sealed class ObservatoryState(
         RefreshGraph();
 
         var session = liveCode.Session;
-        Console.WriteLine("MYCELIAL SCOPE OBSERVATORY");
-        Console.WriteLine($"LiveCode session: {session.Name} ({session.SessionId})");
-        Console.WriteLine($"Loopback endpoint: 127.0.0.1:{session.Port}");
-        Console.WriteLine("Use Tab/arrows/Space/B/L/F or the mouse while the same process stays live.");
-        Console.WriteLine("F deliberately freezes the game loop; only `frozen exec` can inspect or release it.");
-        Console.WriteLine("Run the checked-in submissions through scripts/AlvorKit.Script.LiveCode.");
+        log.Info("MYCELIAL SCOPE OBSERVATORY");
+        log.Info("LiveCode session: {0} ({1})", session.Name, session.SessionId);
+        log.Info("Loopback endpoint: 127.0.0.1:{0}", session.Port);
+        log.Info("Use Tab/arrows/Space/B/L/F or the mouse while the same process stays live.");
+        log.Info("F deliberately freezes the game loop; only `frozen exec` can inspect or release it.");
+        log.Info("Run the checked-in submissions through scripts/AlvorKit.Script.LiveCode.");
 
         screen.IsVisible = true;
     }

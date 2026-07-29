@@ -1,4 +1,8 @@
 const int MaxColorStep = 10;
+using var logging = new LogRuntime();
+logging.Start();
+var log = logging.Log;
+
 var random = new Random(43);
 
 var glfw = new GlfwBackend();
@@ -26,7 +30,7 @@ var loop = new WindowLoop(host);
 var canvas = new WindowCanvas(loop);
 
 gl.GetString(GlStringName.Version, out var version);
-Console.WriteLine($"OpenGL {version} - Esc exits; F11 fullscreen; F12 vsync; arrows, mouse, wheel, and text are tracked.");
+log.Info($"OpenGL {version} - Esc exits; F11 fullscreen; F12 vsync; arrows, mouse, wheel, and text are tracked.");
 
 RunDemoLoop(loop, canvas, gl);
 glfw.DestroyWindow(window);
@@ -68,25 +72,25 @@ void RunDemoLoop(WindowLoop loop, WindowCanvas canvas, GlLayer gl)
 
         if (canvas.Size != lastCanvasSize)
         {
-            Console.WriteLine($"Canvas {canvas.Size}, monitor {screen.MonitorSize}, scale {screen.MonitorScale:0.##}");
+            log.Info($"Canvas {canvas.Size}, monitor {screen.MonitorSize}, scale {screen.MonitorScale:0.##}");
             lastCanvasSize = canvas.Size;
         }
 
         if (mouse.Position != lastMousePosition)
         {
-            Console.WriteLine($"Mouse {mouse.Position}, delta {mouse.Delta}, wheel {mouse.Wheel}");
+            log.Debug($"Mouse {mouse.Position}, delta {mouse.Delta}, wheel {mouse.Wheel}");
             lastMousePosition = mouse.Position;
         }
 
         if (keyboard.Text.Count > 0)
         {
             foreach (var rune in keyboard.Text)
-                Console.WriteLine($"Text '{rune}', clipboard '{input.Clipboard}'");
+                log.Debug($"Text '{rune}', clipboard '{input.Clipboard}'");
         }
 
         if (screen.IsFullscreen != lastFullscreen || screen.IsVSyncEnabled != lastVSync)
         {
-            Console.WriteLine($"Fullscreen {screen.IsFullscreen}, vsync {screen.IsVSyncEnabled}");
+            log.Info("Fullscreen {0}, vsync {1}", screen.IsFullscreen, screen.IsVSyncEnabled);
             lastFullscreen = screen.IsFullscreen;
             lastVSync = screen.IsVSyncEnabled;
         }

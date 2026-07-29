@@ -1,3 +1,6 @@
+using var logging = new LogRuntime();
+logging.Start();
+
 var glfw = new GlfwBackend();
 if (!glfw.Init())
     throw new InvalidOperationException("Failed to initialize GLFW.");
@@ -22,7 +25,7 @@ var rawGl = new GlBackend(glfw.GetProcAddress);
 var gl = new GlLayer(rawGl);
 gl.GetString(GlStringName.Version, out var version);
 gl.GetString(GlStringName.ShadingLanguageVersion, out var glsl);
-Console.WriteLine($"OpenGL {version} (GLSL {glsl}) - press Escape or close the window to exit.");
+logging.Log.Info("OpenGL {0} (GLSL {1}) - press Escape or close the window to exit.", version, glsl);
 
 var cube = TestCube.Load(gl);
 var clock = Stopwatch.StartNew();

@@ -3,6 +3,7 @@ namespace AlvorKit.OpenGL.Demo.AzureTentacle;
 /// <summary>Runs the animated azure tentacle GLB demo with an AlvorKit UI overlay.</summary>
 [App]
 public class AppState(
+    Log log,
     RootGl gl,
     RootScreen screen,
     RootScripts scripts,
@@ -22,8 +23,8 @@ public class AppState(
         screen.Title = "AlvorKit.OpenGL.Demo.AzureTentacle";
         gl.GetString(GlStringName.Version, out var version);
         gl.GetString(GlStringName.ShadingLanguageVersion, out var glsl);
-        Console.WriteLine($"OpenGL {version} (GLSL {glsl}) - close the window to exit.");
-        Console.WriteLine("Mouse look, WASD to move, Space up, Control down, Shift faster, Escape releases the cursor.");
+        log.Info("OpenGL {0} (GLSL {1}) - close the window to exit.", version, glsl);
+        log.Info("Mouse look, WASD to move, Space up, Control down, Shift faster, Escape releases the cursor.");
 
         session.Load();
         scripts.Add(uiScript);

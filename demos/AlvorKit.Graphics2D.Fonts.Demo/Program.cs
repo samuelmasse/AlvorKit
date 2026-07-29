@@ -2,6 +2,10 @@ const string WindowTitle = "AlvorKit.Graphics2D.Fonts.Demo";
 const int AtlasPreviewSize = 256;
 const int KeyStateCount = 512;
 
+using var logging = new LogRuntime();
+logging.Start();
+var log = logging.Log;
+
 var fontPath = Path.Combine(ProjectRoot.ResDirectory(typeof(FontDemoMarker)), "fonts", "RobotoMono-Regular.ttf");
 if (!File.Exists(fontPath))
     throw new FileNotFoundException("Required demo font is missing.", fontPath);
@@ -110,7 +114,7 @@ void Input()
 
     if (KeyPressed(GlfwKey.F1))
     {
-        Console.WriteLine(fillSize);
+        log.Info(fillSize);
 
         var size = font.Size(fillSize);
         for (var i = 0; i < 512; i++)

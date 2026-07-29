@@ -28,6 +28,19 @@ Projects that mention `Log` directly should reference
 graphics, UI, windowing, or the engine loop, so pure, protocol, backend, and
 server projects may use it without changing their architectural role.
 
+Application events and diagnostics should use the injected `Log`, including
+messages emitted by states, loaders, simulation services, development hosts,
+and engine-loop demos. Do not create a game-local logger or write those
+messages directly through `Console`, `Debug`, or `Trace`.
+
+Direct `Console` or `TextWriter` output remains appropriate when the text is
+the command's data rather than an application event: generated help, compiler-
+style diagnostics, machine-readable protocol output, console-only walkthroughs,
+benchmark/report tables, interactive terminal painting, and deterministic
+trace exports. Dedicated capture files may likewise keep their domain format;
+failures while opening or writing such a capture should be reported through
+`Log`.
+
 ## Dedicated Servers And Custom Hosts
 
 Hosts that do not use `RootLoop` own the runtime explicitly:

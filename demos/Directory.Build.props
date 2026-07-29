@@ -29,10 +29,12 @@
         <Using Include="System.Runtime.InteropServices" />
         <Using Include="System.Text" />
         <Using Include="System.Text.RegularExpressions" />
+        <Using Include="AlvorKit.Logging" />
         <Using Include="AlvorKit.Script.Workspace" />
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="$(MSBuildThisFileDirectory)..\src\AlvorKit.Logging\AlvorKit.Logging.csproj" />
         <ProjectReference Include="$(MSBuildThisFileDirectory)..\scripts\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
     </ItemGroup>
 </Project>

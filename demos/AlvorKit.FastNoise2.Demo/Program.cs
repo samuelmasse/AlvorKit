@@ -3,6 +3,7 @@ RootLoop.RunGlfw<FastNoise2DemoState>();
 /// <summary>Shows a basic Craftdig-style FastNoise2 FBm field through the RootLoop sprite pipeline.</summary>
 [Root]
 internal sealed class FastNoise2DemoState(
+    Log log,
     Fn fn,
     RootInput input,
     RootMouse mouse,
@@ -31,7 +32,7 @@ internal sealed class FastNoise2DemoState(
         field = new FastNoise2Field(fn, gl, InitialSize);
         field.Regenerate();
 
-        Console.WriteLine(
+        log.Info(
             "FastNoise2 Craftdig FBm controls: drag or WASD/arrow keys pan, wheel or +/- zoom, " +
             "R reseeds, F11 fullscreen, Esc exits.");
 

@@ -6,19 +6,19 @@ internal static class ExactPatchProof
     private static IInterceptionHandlerTrampoline? trampoline;
 
     /// <summary>Installs one exact handler while a sibling receiver continues through original IL.</summary>
-    internal static void Run(InterceptionProfiler profiler)
+    internal static void Run(Log log, InterceptionProfiler profiler)
     {
         var method = typeof(ExactPatchTarget).GetMethod(
             nameof(ExactPatchTarget.Calculate))!;
         var methodBody = method.GetMethodBody()!;
-        Console.WriteLine(
+        log.Raw(
             $"TARGET IL {{ bytes: {methodBody.GetILAsByteArray()!.Length}, maxStack: {methodBody.MaxStackSize}, " +
             $"locals: {methodBody.LocalVariables.Count}, initLocals: {methodBody.InitLocals}, " +
             $"signature: {Convert.ToHexString(method.Module.ResolveSignature(method.MetadataToken))} }}");
         var ember = new ExactPatchTarget(2);
         var tide = new ExactPatchTarget(5);
-        AssertCall("exact original ember", ember, 4, 6, 12);
-        AssertCall("exact original tide", tide, 4, 9, 18);
+        AssertCall(log, "exact original ember", ember, 4, 6, 12);
+        AssertCall(log, "exact original tide", tide, 4, 9, 18);
 
         var handler = new FasterExactOrbit();
         trampoline = ((IInterceptionBackend)profiler).CreateHandlerTrampoline(
@@ -37,25 +37,25 @@ internal static class ExactPatchProof
             SlotId,
             resolver.MethodHandle.GetFunctionPointer());
         var patch = profiler.Install(plan);
-        Console.WriteLine(
+        log.Raw(
             $"SEND install-exact {{ patch: {patch.PatchId}, request: {patch.LastRequestId}, slot: {SlotId}, " +
             $"target: {plan.Target.DisplayName}, signature: 0x{plan.Target.SignatureHash:X16} }}");
-        var completion = WaitFor(profiler, patch.LastRequestId, ember);
-        LivePatchProof.PrintCompletion("RECEIVE", completion);
+        var completion = WaitFor(log, profiler, patch.LastRequestId, ember);
+        LivePatchProof.PrintCompletion(log, "RECEIVE", completion);
 
-        AssertCall("exact patched ember", ember, 4, 104, 312);
-        AssertCall("exact original sibling tide", tide, 4, 9, 18);
+        AssertCall(log, "exact patched ember", ember, 4, 104, 312);
+        AssertCall(log, "exact original sibling tide", tide, 4, 9, 18);
 
         selected = null;
         var acquired = trampoline;
         trampoline = null;
         acquired.Dispose();
-        AssertCall("exact immediate managed removal", ember, 4, 6, 12);
+        AssertCall(log, "exact immediate managed removal", ember, 4, 6, 12);
 
         var remove = patch.Remove();
-        Console.WriteLine($"SEND remove-exact {{ patch: {patch.PatchId}, request: {remove} }}");
-        LivePatchProof.PrintCompletion("RECEIVE", WaitFor(profiler, remove, ember));
-        AssertCall("exact reverted ember", ember, 4, 6, 12);
+        log.Raw($"SEND remove-exact {{ patch: {patch.PatchId}, request: {remove} }}");
+        LivePatchProof.PrintCompletion(log, "RECEIVE", WaitFor(log, profiler, remove, ember));
+        AssertCall(log, "exact reverted ember", ember, 4, 6, 12);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -71,6 +71,7 @@ internal static class ExactPatchProof
     }
 
     private static InterceptionCompletion WaitFor(
+        Log log,
         InterceptionProfiler profiler,
         ulong requestId,
         ExactPatchTarget trigger)
@@ -84,7 +85,7 @@ internal static class ExactPatchProof
             if (completion.IsTerminal)
             {
                 if (completion.State == InterceptionState.Failed)
-                    LivePatchProof.PrintCompletion("RECEIVE FAILED", completion);
+                    LivePatchProof.PrintCompletion(log, "RECEIVE FAILED", completion);
                 completion.ThrowIfFailed();
                 return completion;
             }
@@ -96,6 +97,7 @@ internal static class ExactPatchProof
     }
 
     private static void AssertCall(
+        Log log,
         string label,
         ExactPatchTarget target,
         int input,
@@ -104,7 +106,7 @@ internal static class ExactPatchProof
     {
         var observed = -1;
         var result = target.Calculate(input, ref observed);
-        Console.WriteLine(
+        log.Raw(
             $"EXECUTE {label} => {{ observed: {observed}, result: {result} }}");
         if (observed != expectedObserved || result != expectedResult)
         {
