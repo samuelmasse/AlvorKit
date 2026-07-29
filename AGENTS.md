@@ -218,6 +218,23 @@ centralize them.
 
 ## C# Defaults
 
+- Omit braces when an `if`, `else`, `for`, `foreach`, `while`, or similar
+  control-flow body contains exactly one statement. Braces are for bodies with
+  multiple statements, not single-statement bodies.
+
+  ```csharp
+  if (condition)
+      DoThing();
+  else DoOtherThing();
+
+  for (var index = 0; index < count; index++)
+      Process(index);
+  ```
+
+- Strongly prefer guard clauses and early `return`, `continue`, or `break`
+  statements that keep the main path flat. Avoid complicated `if`/`else`
+  chains and nested conditionals when their exceptional or terminal cases can
+  be handled first.
 - A `.cs` file may live directly at the root of its project when that is the
   clearest home. Prefer one top-level type per `.cs` file; do not group multiple
   records, classes, structs, or interfaces in a protocol, model, command, or

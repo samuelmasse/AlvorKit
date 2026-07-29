@@ -61,6 +61,26 @@ public record class ServiceNoConstructor
     private ServiceNoConstructor() { }
 }
 
+public sealed class InternalConstructorFacade
+{
+    internal InternalConstructorDependency Dependency { get; }
+
+    internal InternalConstructorFacade(InternalConstructorDependency dependency)
+    {
+        Dependency = dependency;
+    }
+}
+
+internal sealed class InternalConstructorDependency
+{
+    internal ServiceA Service { get; }
+
+    internal InternalConstructorDependency(ServiceA service)
+    {
+        Service = service;
+    }
+}
+
 public record class ServiceInvalidDependencies(int Dep);
 
 [Valid]

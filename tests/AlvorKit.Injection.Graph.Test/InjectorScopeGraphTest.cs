@@ -93,6 +93,22 @@ public class InjectorScopeGraphTest
         AssertOwner(graph, bound, scopeId);
     }
 
+    /// <summary>A hosted service and its unscoped dependencies belong to the hosting graph scope.</summary>
+    [TestMethod]
+    public void TracksHostedDependencyGraph()
+    {
+        var injector = new Injector();
+        var graph = new InjectorScopeGraph(injector);
+        var scope = graph.Scope<TestScope>(injector, "host");
+        var scopeId = graph.GetId(scope);
+        scope.Host<TestHostedService>();
+
+        var service = scope.Get<TestHostedService>();
+
+        AssertOwner(graph, service, scopeId);
+        AssertOwner(graph, service.Dependency, scopeId);
+    }
+
     /// <summary>The ending callback runs while provenance remains queryable and before teardown.</summary>
     [TestMethod]
     public void ScopeEndingRetainsOwnershipUntilTeardown()
@@ -164,3 +180,12 @@ public interface ITestBoundService;
 /// <summary>Bound service used by ownership tests.</summary>
 [Test]
 public sealed class TestBoundService : ITestBoundService;
+
+/// <summary>Unscoped facade hosted by an attributed test scope.</summary>
+public sealed class TestHostedService(TestHostedDependency dependency)
+{
+    public TestHostedDependency Dependency => dependency;
+}
+
+/// <summary>Unscoped dependency retained with its hosted facade.</summary>
+public sealed class TestHostedDependency;

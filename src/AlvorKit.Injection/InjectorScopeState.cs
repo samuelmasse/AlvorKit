@@ -41,11 +41,16 @@ public partial record InjectorScopeState(
         if (instances.TryGetValue(type, out var exist))
             return exist;
 
-        var binding = FindBinding(type);
+        if (TryGetHostBoundary(type, path, out var boundary))
+            return boundary.GetWithinHostedGraph(type, path!);
+
+        FindRegistration(type, out var binding, out var host);
+        if (host is not null)
+            return host.GetHosted(type, path);
         if (binding != null)
             return GetBound(type, binding, path);
 
-        var instance = New(type, path);
+        var instance = NewUnbound(type, path);
         instances[type] = instance;
         return instance;
     }
@@ -55,10 +60,23 @@ public partial record InjectorScopeState(
     /// </summary>
     public object New(Type type, InjectorPath? path = null)
     {
-        var binding = FindBinding(type);
+        if (TryGetHostBoundary(type, path, out var boundary))
+            return boundary.NewWithinHostedGraph(type, path!);
+
+        FindRegistration(type, out var binding, out var host);
+        if (host is not null)
+            return host.NewHosted(type, path);
         if (binding != null)
             return NewBound(type, binding, path);
 
+        return NewUnbound(type, path);
+    }
+
+    /// <summary>
+    /// Creates one unbound service in this scope.
+    /// </summary>
+    private object NewUnbound(Type type, InjectorPath? path)
+    {
         path ??= Root.Path;
 
         try

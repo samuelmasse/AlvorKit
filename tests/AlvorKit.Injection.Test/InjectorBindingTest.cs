@@ -3,6 +3,77 @@ namespace AlvorKit.Injection.Test;
 [TestClass]
 public class InjectorBindingTest
 {
+    /// <summary>A hosted unscoped graph is constructed and cached in the hosting scope.</summary>
+    [TestMethod]
+    public void Host_UnscopedGraph_IsOwnedByCurrentScope()
+    {
+        var injector = new Injector();
+        var rootDependency = injector.Get<HostedDependency>();
+        var scope = injector.Scope<BindingScope>();
+        scope.Host<HostedService>();
+
+        var consumer = scope.Get<HostedConsumer>();
+        var hosted = scope.Get<HostedService>();
+
+        Assert.AreSame(hosted, consumer.Service);
+        Assert.AreSame(hosted.Dependency, scope.Get<HostedDependency>());
+        Assert.AreNotSame(rootDependency, hosted.Dependency);
+    }
+
+    /// <summary>Descendant scopes reuse a service hosted by an ancestor scope.</summary>
+    [TestMethod]
+    public void Host_AncestorRegistration_IsVisibleToDescendant()
+    {
+        var parent = new Injector().Scope<BindingScope>();
+        parent.Host<HostedService>();
+        var child = parent.Scope<OtherBindingScope>();
+
+        Assert.AreSame(parent.Get<HostedService>(), child.Get<HostedService>());
+    }
+
+    /// <summary>Separate scopes host separate service graphs.</summary>
+    [TestMethod]
+    public void Host_SeparateScopes_OwnSeparateGraphs()
+    {
+        var injector = new Injector();
+        var first = injector.Scope<BindingScope>();
+        var second = injector.Scope<BindingScope>();
+        first.Host<HostedService>();
+        second.Host<HostedService>();
+
+        Assert.AreNotSame(first.Get<HostedService>(), second.Get<HostedService>());
+        Assert.AreNotSame(first.Get<HostedDependency>(), second.Get<HostedDependency>());
+    }
+
+    /// <summary>The non-generic host overload owns the requested graph.</summary>
+    [TestMethod]
+    public void Host_NonGeneric_OwnsGraph()
+    {
+        var scope = new Injector().Scope<BindingScope>();
+        scope.Host(typeof(HostedService));
+
+        Assert.IsInstanceOfType<HostedService>(scope.Get<HostedService>());
+    }
+
+    /// <summary>A service cannot be hosted twice in one scope.</summary>
+    [TestMethod]
+    public void Host_DuplicateRegistration_ThrowsException()
+    {
+        var scope = new Injector().Scope<BindingScope>();
+        scope.Host<HostedService>();
+
+        Assert.ThrowsException<InjectorException>(scope.Host<HostedService>);
+    }
+
+    /// <summary>Attribute-scoped services use their declared scope instead of hosting.</summary>
+    [TestMethod]
+    public void Host_AttributedService_ThrowsException()
+    {
+        var scope = new Injector().Scope<BindingScope>();
+
+        Assert.ThrowsException<InjectorException>(scope.Host<BindingBiomeGenerator>);
+    }
+
     /// <summary>A single implementation bind resolves a marked interface service.</summary>
     [TestMethod]
     public void Bind_Interface_ResolvesImplementation()

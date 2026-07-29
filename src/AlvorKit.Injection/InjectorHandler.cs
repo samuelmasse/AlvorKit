@@ -16,18 +16,24 @@ public abstract class InjectorHandler
     protected ConstructorInfo Constructor(Type type, InjectorPath path)
     {
         if (!path.ConstructorCache.ContainsKey(type))
-            path.ConstructorCache.Add(type, type.GetConstructors());
+        {
+            var candidates = type
+                .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(constructor => constructor.IsPublic || constructor.IsAssembly)
+                .ToArray();
+            path.ConstructorCache.Add(type, candidates);
+        }
 
         var constructors = path.ConstructorCache[type];
 
         if (constructors.Length == 0)
-            throw new InjectorException(path, $"Type '{type.FullName}' has no accessible constructors.");
+            throw new InjectorException(path, $"Type '{type.FullName}' has no public or internal constructors.");
 
         if (constructors.Length > 1)
         {
             throw new InjectorException(path,
                 $"Type '{type.FullName}' has multiple constructors. " +
-                "Only one constructor is supported for dependency injection.");
+                "Only one public or internal constructor is supported for dependency injection.");
         }
 
         return constructors[0];

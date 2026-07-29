@@ -107,12 +107,24 @@ public class InjectorTest
         Assert.ThrowsException<InjectorException>(injector.Get<ServiceBad>);
     }
 
-    /// <summary>Services without accessible public constructors are rejected.</summary>
+    /// <summary>Services without public or internal constructors are rejected.</summary>
     [TestMethod]
     public void Injector_GetNoConstructor_ThrowsException()
     {
         var injector = new Injector();
         Assert.ThrowsException<InjectorException>(injector.Get<ServiceNoConstructor>);
+    }
+
+    /// <summary>An internal constructor can receive an internal injected service.</summary>
+    [TestMethod]
+    public void Injector_GetInternalConstructor_ResolvesInternalService()
+    {
+        var injector = new Injector();
+
+        var facade = injector.Get<InternalConstructorFacade>();
+
+        Assert.AreSame(facade.Dependency, injector.Get<InternalConstructorDependency>());
+        Assert.AreSame(facade.Dependency.Service, injector.Get<ServiceA>());
     }
 
     /// <summary>Include filters reject dependencies outside the allowed namespace pattern.</summary>

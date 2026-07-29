@@ -6,21 +6,34 @@ namespace AlvorKit.Injection;
 public partial record InjectorScopeState
 {
     /// <summary>
-    /// Finds the nearest binding for <paramref name="serviceType"/> in this scope chain.
+    /// Finds the nearest binding or hosted registration for <paramref name="serviceType"/>.
     /// </summary>
-    internal InjectorServiceBinding? FindBinding(Type serviceType)
+    private void FindRegistration(
+        Type serviceType,
+        out InjectorServiceBinding? binding,
+        out InjectorScopeState? host)
     {
         var state = this;
 
         while (state != null)
         {
-            if (state.bindings.TryGetValue(serviceType, out var binding))
-                return binding;
+            if (state.bindings.TryGetValue(serviceType, out binding))
+            {
+                host = null;
+                return;
+            }
+            if (state.hostedTypes.Contains(serviceType))
+            {
+                binding = null;
+                host = state;
+                return;
+            }
 
             state = state.Parent;
         }
 
-        return null;
+        binding = null;
+        host = null;
     }
 
     /// <summary>
@@ -28,11 +41,16 @@ public partial record InjectorScopeState
     /// </summary>
     internal InjectorScopeState FindParameterScope(Type parameterType, InjectorPath path)
     {
-        var binding = FindBinding(parameterType);
+        var parameterAttributeType = GetInjectorAttributeType(parameterType, path);
+        if (parameterAttributeType is null && path.HostScopes.Count > 0)
+            return path.HostScopes.Peek();
+
+        FindRegistration(parameterType, out var binding, out var host);
+        if (host is not null)
+            return host;
         if (binding != null)
             return binding.Owner;
 
-        var parameterAttributeType = GetInjectorAttributeType(parameterType, path);
         var state = this;
 
         while (state.Parent != null)

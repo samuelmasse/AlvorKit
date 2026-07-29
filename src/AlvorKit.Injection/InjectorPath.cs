@@ -16,12 +16,17 @@ public class InjectorPath
     public readonly Stack<Type> Stack = [];
 
     /// <summary>
+    /// Active scope ownership boundaries for hosted unscoped dependency graphs.
+    /// </summary>
+    internal readonly Stack<InjectorScopeState> HostScopes = [];
+
+    /// <summary>
     /// Cache from dependency type to its injector scope attribute type, or <see langword="null"/> for root services.
     /// </summary>
     public readonly Dictionary<Type, Type?> InjectorAttributeTypeCache = [];
 
     /// <summary>
-    /// Cache from dependency type to its public constructors.
+    /// Cache from dependency type to its public or internal constructors.
     /// </summary>
     public readonly Dictionary<Type, ConstructorInfo[]> ConstructorCache = [];
 
