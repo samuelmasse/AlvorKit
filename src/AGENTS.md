@@ -35,10 +35,16 @@ policy unless this file is more specific.
 
 - Separate state tracking, validation, platform/API calls, and resource lifetime
   logic so each responsibility can be tested directly.
-- In game and runtime source, avoid auto-properties for object-owned runtime
-  state. Use explicit private fields so owned state is visible in one place.
-- Immutable handles and dependencies should be private readonly fields; expose
-  read-only properties as simple accessors when the API needs them.
+- In game and runtime source, do not use auto-properties for object-owned
+  runtime state. Auto accessors are banned in hand-authored classes and
+  non-record structs; records are the sole hand-authored exception. Use
+  explicit private fields so owned state is visible in one place.
+- Immutable handles and dependencies should be private readonly fields. Expose
+  state through the narrowest useful property when the API needs it; keep any
+  backing field private even when the property returns it by `ref` or
+  `ref readonly`.
+- Follow the root `C# Defaults` member-category and accessibility order in every
+  class and struct.
 - Keep source project folders shallow: use at most one level of subdirectories
   beneath each source project unless an existing project already has a stronger
   local convention.

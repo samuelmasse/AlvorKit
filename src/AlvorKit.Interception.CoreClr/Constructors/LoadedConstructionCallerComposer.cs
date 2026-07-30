@@ -38,7 +38,7 @@ public static class LoadedConstructionCallerComposer
         ValidateRoute(caller, constructor, route);
 
         byte[] generated = [.. body.Bytes];
-        int operationOffset = checked(
+        int operationOffset = (
             body.HeaderSize + site.BaselineOffset);
         generated[operationOffset] = Call;
         BinaryPrimitives.WriteInt32LittleEndian(
@@ -54,8 +54,8 @@ public static class LoadedConstructionCallerComposer
             [],
             body.Instructions.Select(instruction =>
                 new InterceptionGenerationIlMapEntry(
-                    checked((uint)instruction.BaselineOffset),
-                    checked((uint)instruction.BaselineOffset))));
+                    ((uint)instruction.BaselineOffset),
+                    ((uint)instruction.BaselineOffset))));
     }
 
     private static void ValidateSite(

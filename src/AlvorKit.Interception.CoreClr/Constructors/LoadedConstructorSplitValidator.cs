@@ -105,7 +105,7 @@ internal static class LoadedConstructorSplitValidator
         }
 
         if (instruction.Operand.Kind == LoadedIlOperandKind.VariableIndex)
-            return checked((int)instruction.Operand.IntegerValue);
+            return ((int)instruction.Operand.IntegerValue);
         int separator = name.LastIndexOf('.');
         return separator >= 0 &&
             int.TryParse(name.AsSpan(separator + 1), out var index)

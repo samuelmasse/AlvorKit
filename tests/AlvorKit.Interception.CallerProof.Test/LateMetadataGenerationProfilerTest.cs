@@ -111,7 +111,7 @@ public sealed class LateMetadataGenerationProfilerTest
             0,
             [new(
                 InterceptionGenerationRelocationKind.StandaloneSignature,
-                checked((uint)calliOffset),
+                ((uint)calliOffset),
                 signature)],
             [new(0, 0)]);
         var patch = profiler.Install(plan);
@@ -142,7 +142,7 @@ public sealed class LateMetadataGenerationProfilerTest
             prior,
             [new(
                 InterceptionGenerationRelocationKind.StandaloneSignature,
-                checked((uint)calliOffset),
+                ((uint)calliOffset),
                 signature)],
             [new(0, 0)]);
 

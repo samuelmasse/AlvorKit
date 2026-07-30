@@ -60,7 +60,7 @@ internal sealed class GlbDocument : IDisposable
 
         while (offset + 8 <= bytes.Length)
         {
-            var chunkLength = checked((int)BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(offset, 4)));
+            var chunkLength = ((int)BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(offset, 4)));
             var chunkType = BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(offset + 4, 4));
             var chunkOffset = offset + 8;
 

@@ -50,8 +50,8 @@ static void ReportRuntime(Ma ma)
 // Creates a small WAV file in memory so decoder examples do not need checked-in audio assets.
 static byte[] CreateSineWaveWav(uint sampleRate, uint channels, double frequency, double amplitude, int seconds)
 {
-    var frameCount = checked((int)sampleRate * seconds);
-    var dataSize = checked(frameCount * (int)channels * Pcm16BytesPerSample);
+    var frameCount = ((int)sampleRate * seconds);
+    var dataSize = (frameCount * (int)channels * Pcm16BytesPerSample);
     var wav = new byte[Pcm16WavHeaderByteCount + dataSize];
 
     WritePcm16WavHeader(wav, dataSize, sampleRate, channels);
@@ -87,7 +87,7 @@ static unsafe void DecodeMemoryWav(Ma ma, byte[] wavBytes, int previewFrameCount
                 "ma_decoder_get_length_in_pcm_frames",
                 ma.DecoderGetLengthInPcmFrames(&decoder, (nint)(&lengthFrames)));
 
-            var preview = new float[previewFrameCount * checked((int)channels)];
+            var preview = new float[previewFrameCount * ((int)channels)];
             fixed (float* previewData = preview)
             {
                 ulong framesRead = 0;
@@ -96,7 +96,7 @@ static unsafe void DecodeMemoryWav(Ma ma, byte[] wavBytes, int previewFrameCount
                     "ma_decoder_read_pcm_frames",
                     ma.DecoderReadPcmFrames(&decoder, (nint)previewData, (ulong)previewFrameCount, (nint)(&framesRead)));
 
-                var summary = Analyze(preview.AsSpan(0, checked((int)(framesRead * channels))));
+                var summary = Analyze(preview.AsSpan(0, ((int)(framesRead * channels))));
                 Print("decoded format", $"{FormatName(ma, format)}, {channels} channel(s), {sampleRate} Hz");
                 Print("decoded length", $"{lengthFrames} frame(s)");
                 Print("decoded preview", Describe(summary));
@@ -117,7 +117,7 @@ static unsafe void ReadProceduralSources(Ma ma, uint sampleRate, uint channels, 
 {
     Section("Procedural sources and DSP");
 
-    var waveformFrames = new float[frameCount * checked((int)channels)];
+    var waveformFrames = new float[frameCount * ((int)channels)];
     var filteredFrames = new float[waveformFrames.Length];
     var noiseFrames = new float[waveformFrames.Length];
 
@@ -160,7 +160,7 @@ static unsafe float[] RenderOfflineEngine(Ma ma, uint sampleRate, uint channels,
             ma.SoundGroupSetVolume(&group, 0.65f);
             ma.SoundGroupSetPan(&group, -0.2f);
 
-            var sourceFrames = checked((int)sampleRate * seconds);
+            var sourceFrames = ((int)sampleRate * seconds);
             var registeredPcm = CreateSinePcm(sampleRate, channels, sourceFrames, frequency: 660, amplitude: 0.22);
 
             fixed (float* registeredPcmData = registeredPcm)
@@ -180,7 +180,7 @@ static unsafe float[] RenderOfflineEngine(Ma ma, uint sampleRate, uint channels,
 // Writes interleaved floating-point PCM samples as a 16-bit WAV file.
 static void WritePcm16Wav(string path, ReadOnlySpan<float> samples, uint sampleRate, uint channels)
 {
-    var dataSize = checked(samples.Length * Pcm16BytesPerSample);
+    var dataSize = (samples.Length * Pcm16BytesPerSample);
     var wav = new byte[Pcm16WavHeaderByteCount + dataSize];
 
     WritePcm16WavHeader(wav, dataSize, sampleRate, channels);
@@ -198,7 +198,7 @@ static void WritePcm16Wav(string path, ReadOnlySpan<float> samples, uint sampleR
 // Creates a floating-point sine buffer that can be registered with the resource manager.
 static float[] CreateSinePcm(uint sampleRate, uint channels, int frameCount, double frequency, double amplitude)
 {
-    var channelCount = checked((int)channels);
+    var channelCount = ((int)channels);
     var samples = new float[frameCount * channelCount];
     var phaseStep = 2 * Math.PI * frequency / sampleRate;
 
@@ -390,8 +390,8 @@ static unsafe void ConfigureEngineSounds(Ma ma, MaEngine* engine, MaSound* wavef
 // Reads the current engine mix into a managed floating-point buffer.
 static unsafe float[] ReadEngineMix(Ma ma, MaEngine* engine, uint sampleRate, uint channels, int seconds)
 {
-    var framesToRead = checked((int)sampleRate * seconds);
-    var mix = new float[framesToRead * checked((int)channels)];
+    var framesToRead = ((int)sampleRate * seconds);
+    var mix = new float[framesToRead * ((int)channels)];
 
     fixed (float* mixData = mix)
     {
@@ -401,7 +401,7 @@ static unsafe float[] ReadEngineMix(Ma ma, MaEngine* engine, uint sampleRate, ui
             "ma_engine_read_pcm_frames",
             ma.EngineReadPcmFrames(engine, (nint)mixData, (ulong)framesToRead, (nint)(&framesRead)));
 
-        var rendered = mix.AsSpan(0, checked((int)(framesRead * channels)));
+        var rendered = mix.AsSpan(0, ((int)(framesRead * channels)));
         Print("ma_engine_read_pcm_frames", $"{framesRead} frame(s), {Describe(Analyze(rendered))}");
 
         if (rendered.Length != mix.Length)
@@ -420,10 +420,10 @@ static void WritePcm16WavHeader(Span<byte> wav, int dataSize, uint sampleRate, u
     "fmt "u8.CopyTo(wav.Slice(12, 4));
     BinaryPrimitives.WriteInt32LittleEndian(wav.Slice(16, 4), 16);
     BinaryPrimitives.WriteInt16LittleEndian(wav.Slice(20, 2), 1);
-    BinaryPrimitives.WriteInt16LittleEndian(wav.Slice(22, 2), checked((short)channels));
-    BinaryPrimitives.WriteInt32LittleEndian(wav.Slice(24, 4), checked((int)sampleRate));
-    BinaryPrimitives.WriteInt32LittleEndian(wav.Slice(28, 4), checked((int)(sampleRate * channels * Pcm16BytesPerSample)));
-    BinaryPrimitives.WriteInt16LittleEndian(wav.Slice(32, 2), checked((short)(channels * Pcm16BytesPerSample)));
+    BinaryPrimitives.WriteInt16LittleEndian(wav.Slice(22, 2), ((short)channels));
+    BinaryPrimitives.WriteInt32LittleEndian(wav.Slice(24, 4), ((int)sampleRate));
+    BinaryPrimitives.WriteInt32LittleEndian(wav.Slice(28, 4), ((int)(sampleRate * channels * Pcm16BytesPerSample)));
+    BinaryPrimitives.WriteInt16LittleEndian(wav.Slice(32, 2), ((short)(channels * Pcm16BytesPerSample)));
     BinaryPrimitives.WriteInt16LittleEndian(wav.Slice(34, 2), 16);
     "data"u8.CopyTo(wav.Slice(36, 4));
     BinaryPrimitives.WriteInt32LittleEndian(wav.Slice(40, 4), dataSize);
@@ -432,7 +432,7 @@ static void WritePcm16WavHeader(Span<byte> wav, int dataSize, uint sampleRate, u
 // Writes 16-bit sine samples into an interleaved PCM payload.
 static void WriteSinePcm16(Span<byte> destination, uint sampleRate, uint channels, double frequency, double amplitude)
 {
-    var channelCount = checked((int)channels);
+    var channelCount = ((int)channels);
     var frameCount = destination.Length / (channelCount * Pcm16BytesPerSample);
     var phaseStep = 2 * Math.PI * frequency / sampleRate;
 
@@ -441,7 +441,7 @@ static void WriteSinePcm16(Span<byte> destination, uint sampleRate, uint channel
         var sample = FloatToPcm16((float)(Math.Sin(frame * phaseStep) * amplitude));
         for (var channel = 0; channel < channelCount; channel++)
         {
-            var offset = checked((frame * channelCount + channel) * Pcm16BytesPerSample);
+            var offset = ((frame * channelCount + channel) * Pcm16BytesPerSample);
             BinaryPrimitives.WriteInt16LittleEndian(destination.Slice(offset, Pcm16BytesPerSample), sample);
         }
     }

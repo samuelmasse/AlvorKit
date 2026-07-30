@@ -35,9 +35,9 @@ internal sealed class FastNoise2Field : IDisposable
         SetNodeLookup(fn, node, "Source", sourceNode);
 
         NodeName = $"{RootNodeName}({SourceNodeName})";
-        width = checked((int)size.X);
-        height = checked((int)size.Y);
-        var pixelCount = checked(width * height);
+        width = ((int)size.X);
+        height = ((int)size.Y);
+        var pixelCount = (width * height);
         values = new float[pixelCount];
         pixels = new Vec4u8[pixelCount];
 

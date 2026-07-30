@@ -12,7 +12,7 @@ internal static class LoadedMethodBodyFixture
             throw new ArgumentOutOfRangeException(nameof(code));
 
         var result = new byte[code.Length + 1];
-        result[0] = checked((byte)((code.Length << 2) | 0x02));
+        result[0] = ((byte)((code.Length << 2) | 0x02));
         code.CopyTo(result, 1);
         return result;
     }
@@ -36,7 +36,7 @@ internal static class LoadedMethodBodyFixture
         var result = new byte[length];
         BinaryPrimitives.WriteUInt16LittleEndian(
             result,
-            checked((ushort)flags));
+            ((ushort)flags));
         BinaryPrimitives.WriteUInt16LittleEndian(result.AsSpan(2), maxStack);
         BinaryPrimitives.WriteInt32LittleEndian(
             result.AsSpan(4),
@@ -59,7 +59,7 @@ internal static class LoadedMethodBodyFixture
     {
         var result = new byte[16];
         result[0] = 0x01;
-        result[1] = checked((byte)result.Length);
+        result[1] = ((byte)result.Length);
         BinaryPrimitives.WriteUInt16LittleEndian(
             result.AsSpan(6),
             tryOffset);
@@ -84,7 +84,7 @@ internal static class LoadedMethodBodyFixture
     {
         var result = new byte[28];
         result[0] = 0x41;
-        result[1] = checked((byte)result.Length);
+        result[1] = ((byte)result.Length);
         BinaryPrimitives.WriteUInt32LittleEndian(result.AsSpan(4), 0x01);
         BinaryPrimitives.WriteInt32LittleEndian(result.AsSpan(8), tryOffset);
         BinaryPrimitives.WriteInt32LittleEndian(result.AsSpan(12), tryLength);

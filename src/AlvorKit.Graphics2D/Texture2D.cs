@@ -31,8 +31,8 @@ public class Texture2D : Texture
     {
         const int bytesPerPixel = 4;
 
-        var width = checked((int)size.X);
-        var height = checked((int)size.Y);
+        var width = ((int)size.X);
+        var height = ((int)size.Y);
         var pixelBytes = MemoryMarshal.AsBytes(pixels);
         var expectedBytes = (long)width * height * bytesPerPixel;
         if (pixelBytes.Length != expectedBytes)

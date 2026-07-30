@@ -70,7 +70,7 @@ public sealed class GlfwFileDialogHost : IFileDialogHost, IDisposable
             var args = new NfdSaveDialogUtf8Args
             {
                 FilterList = nativeFilters,
-                FilterCount = checked((uint)memory.Filters.Length),
+                FilterCount = ((uint)memory.Filters.Length),
                 DefaultPath = memory.DefaultPath,
                 DefaultName = memory.DefaultName,
                 ParentWindow = parent
@@ -142,7 +142,7 @@ public sealed class GlfwFileDialogHost : IFileDialogHost, IDisposable
         new()
         {
             FilterList = filters,
-            FilterCount = checked((uint)memory.Filters.Length),
+            FilterCount = ((uint)memory.Filters.Length),
             DefaultPath = memory.DefaultPath,
             ParentWindow = parent
         };

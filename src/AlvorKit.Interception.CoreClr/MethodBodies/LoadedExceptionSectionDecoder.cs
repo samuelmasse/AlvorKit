@@ -67,7 +67,7 @@ internal static class LoadedExceptionSectionDecoder
             var format = isFat
                 ? LoadedExceptionRegionFormat.Fat
                 : LoadedExceptionRegionFormat.Small;
-            var sectionEnd = checked(offset + dataSize);
+            var sectionEnd = (offset + dataSize);
             for (var clauseOffset = offset + SectionHeaderSize;
                  clauseOffset < sectionEnd;
                  clauseOffset += clauseSize)
@@ -98,7 +98,7 @@ internal static class LoadedExceptionSectionDecoder
         int codeSize,
         ImmutableArray<LoadedIlInstruction> instructions)
     {
-        var result = new bool[checked(codeSize + 1)];
+        var result = new bool[(codeSize + 1)];
         foreach (var instruction in instructions)
             result[instruction.BaselineOffset] = true;
         result[codeSize] = true;

@@ -41,6 +41,16 @@ internal sealed class LintRunner(
             return 1;
         }
 
+        var checkedKeywordUsages = RepositoryPolicy.FindCheckedKeywordUsages(repoRoot, scope);
+        if (checkedKeywordUsages.Count > 0)
+        {
+            WriteProgress("[lint:fail] the C# checked keyword is not allowed");
+            foreach (var usage in checkedKeywordUsages)
+                WriteProgress(usage.ToString());
+            WriteProgress("Use ordinary arithmetic and conversions, or express the required range contract without the keyword.");
+            return 1;
+        }
+
         var actionlintTask = LintPlan.RequiresActionlint(scope) ? ResolveActionlintAsync(repoRoot) : null;
         var preActionlintCommands = scope is null
             ? LintPlan.CommandsBeforeActionlint(repoRoot, options.Fix)

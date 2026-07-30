@@ -63,13 +63,13 @@ internal static class LoadedConstructorMethodBodyEncoding
         if (exceptions.IsEmpty)
             return [];
 
-        var bytes = new byte[checked(4 + exceptions.Length * 24)];
+        var bytes = new byte[(4 + exceptions.Length * 24)];
         Span<byte> section = bytes;
         section[0] = 0x41;
         var dataSize = section.Length;
-        section[1] = checked((byte)dataSize);
-        section[2] = checked((byte)(dataSize >> 8));
-        section[3] = checked((byte)(dataSize >> 16));
+        section[1] = ((byte)dataSize);
+        section[2] = ((byte)(dataSize >> 8));
+        section[3] = ((byte)(dataSize >> 16));
         for (var index = 0; index < exceptions.Length; ++index)
         {
             var region = exceptions[index];
@@ -79,18 +79,18 @@ internal static class LoadedConstructorMethodBodyEncoding
                 region.RawFlags);
             BinaryPrimitives.WriteInt32LittleEndian(
                 clause[4..],
-                checked(region.TryOffset - exceptionOffsetAdjustment));
+                (region.TryOffset - exceptionOffsetAdjustment));
             BinaryPrimitives.WriteInt32LittleEndian(
                 clause[8..],
                 region.TryLength);
             BinaryPrimitives.WriteInt32LittleEndian(
                 clause[12..],
-                checked(region.HandlerOffset - exceptionOffsetAdjustment));
+                (region.HandlerOffset - exceptionOffsetAdjustment));
             BinaryPrimitives.WriteInt32LittleEndian(
                 clause[16..],
                 region.HandlerLength);
             int finalValue = region.FilterOffset >= 0
-                ? checked(region.FilterOffset - exceptionOffsetAdjustment)
+                ? (region.FilterOffset - exceptionOffsetAdjustment)
                 : region.CatchTypeToken == 0
                     ? 0
                     : catchToken?.Invoke(region.CatchTypeToken) ??

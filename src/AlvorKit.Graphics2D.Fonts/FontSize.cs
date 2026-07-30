@@ -85,13 +85,13 @@ public sealed unsafe class FontSize
     private FontGlyphSlot CreateGlyphSlot(Rune character, FtGlyphSlotRec glyphSlot)
     {
         var bitmap = glyphSlot.Bitmap;
-        var width = checked((int)bitmap.Width);
-        var height = checked((int)bitmap.Rows);
+        var width = ((int)bitmap.Width);
+        var height = ((int)bitmap.Rows);
         var pixels = ReadPixels(bitmap, width, height);
         var glyph = new FontGlyph(
             character,
             size,
-            (checked((uint)width), checked((uint)height)),
+            (((uint)width), ((uint)height)),
             (glyphSlot.BitmapLeft, glyphSlot.BitmapTop),
             FontFreeType.Pixel26Dot6(glyphSlot.Advance.X));
         return atlases.FindFitting(glyph).Add(glyph, pixels);

@@ -50,7 +50,7 @@ internal static class LoadedConstructorStackEffect
             return false;
         }
 
-        outputDepth = checked(inputDepth - pops + pushes);
+        outputDepth = (inputDepth - pops + pushes);
         detail = null;
         return true;
     }
@@ -172,7 +172,7 @@ internal static class LoadedConstructorStackEffect
         if (instruction.OpCodeValue is not (Call or CallVirtual or NewObject) ||
             instruction.Operand.Kind != LoadedIlOperandKind.MetadataToken ||
             !metadata.TryResolveMethod(
-                checked((int)instruction.Operand.IntegerValue),
+                ((int)instruction.Operand.IntegerValue),
                 out LoadedMethodOperand? method) ||
             method.IsVariableArguments)
         {

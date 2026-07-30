@@ -40,7 +40,7 @@ public sealed partial class InterceptionProfiler
             value.ParameterCallbacks,
             value.RejitFinishedCallbacks,
             value.RejitErrorCallbacks,
-            TimeSpan.FromMicroseconds(checked((long)value.ElapsedMicroseconds)));
+            TimeSpan.FromMicroseconds(((long)value.ElapsedMicroseconds)));
         if (completion.State is InterceptionState.Failed or
                 InterceptionState.Removed)
         {

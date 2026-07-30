@@ -57,7 +57,7 @@ internal static class TextValueFormatter
                 return;
             }
 
-            minimumLength = checked(Math.Max(32, destination.Length * 2));
+            minimumLength = (Math.Max(32, destination.Length * 2));
         }
     }
 

@@ -93,7 +93,7 @@ internal sealed class BindingCountedSpanOverloadEmitter(BindingEmitterContext co
     private static string CountArgument(BindingParameter countParameter, string spanName) =>
         countParameter.ManagedType == "int"
             ? $"{spanName}.Length"
-            : $"checked(({countParameter.ManagedType}){spanName}.Length)";
+            : $"(({countParameter.ManagedType}){spanName}.Length)";
 
     /// <summary>Configured counted span metadata for one pointer parameter.</summary>
     /// <param name="Parameter">Pointer parameter projected as a span.</param>

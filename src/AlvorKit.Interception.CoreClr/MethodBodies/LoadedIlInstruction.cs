@@ -41,7 +41,7 @@ public sealed class LoadedIlInstruction
     public int Size => size;
 
     /// <summary>Gets the offset immediately following this baseline instruction.</summary>
-    public int NextBaselineOffset => checked(baselineOffset + size);
+    public int NextBaselineOffset => (baselineOffset + size);
 
     /// <summary>Gets the ECMA-335 opcode metadata.</summary>
     public OpCode OpCode => opCode;

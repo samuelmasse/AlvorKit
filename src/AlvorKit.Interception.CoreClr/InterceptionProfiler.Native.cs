@@ -27,7 +27,7 @@ public sealed partial class InterceptionProfiler
         var requestId = NextRequestId();
         var request = new InterceptionProfilerRemove
         {
-            Size = checked((uint)Marshal.SizeOf<InterceptionProfilerRemove>()),
+            Size = ((uint)Marshal.SizeOf<InterceptionProfilerRemove>()),
             AbiVersion = AbiVersion,
             RequestId = requestId,
             PatchId = handle.PatchId,
@@ -50,18 +50,18 @@ public sealed partial class InterceptionProfiler
         var requestId = NextRequestId();
         var request = new InterceptionProfilerInstall
         {
-            Size = checked((uint)Marshal.SizeOf<InterceptionProfilerInstall>()),
+            Size = ((uint)Marshal.SizeOf<InterceptionProfilerInstall>()),
             AbiVersion = AbiVersion,
             RequestId = requestId,
             PatchId = patchId,
             Target = ToNative(plan.Target),
             PatchFlags = (uint)plan.Flags,
-            IlBodySize = checked((uint)body.Length)
+            IlBodySize = ((uint)body.Length)
         };
         Marshal.ThrowExceptionForHR(api.EnqueueInstall(
             in request,
             body,
-            checked((uint)body.Length)));
+            ((uint)body.Length)));
         return requestId;
     }
 
@@ -72,24 +72,24 @@ public sealed partial class InterceptionProfiler
         var requestId = NextRequestId();
         var request = new InterceptionProfilerInstallDispatch
         {
-            Size = checked((uint)Marshal.SizeOf<InterceptionProfilerInstallDispatch>()),
+            Size = ((uint)Marshal.SizeOf<InterceptionProfilerInstallDispatch>()),
             AbiVersion = AbiVersion,
             RequestId = requestId,
             PatchId = patchId,
             Target = ToNative(plan.Target),
             PatchFlags = (uint)plan.Flags,
             SlotId = plan.SlotId,
-            ResolverPointer = checked((ulong)plan.ResolverPointer)
+            ResolverPointer = ((ulong)plan.ResolverPointer)
         };
         Marshal.ThrowExceptionForHR(api.EnqueueInstallDispatch(in request));
         return requestId;
     }
 
     private static ulong NextRequestId() =>
-        checked((ulong)Interlocked.Increment(ref nextRequestId));
+        ((ulong)Interlocked.Increment(ref nextRequestId));
 
     private static ulong NextPatchId() =>
-        checked((ulong)Interlocked.Increment(ref nextPatchId));
+        ((ulong)Interlocked.Increment(ref nextPatchId));
 
     private static void ConfigureNativeResolver(string fullPath)
     {

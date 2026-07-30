@@ -1,7 +1,7 @@
     /// <summary>Returns the byte length of a span of unmanaged elements.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static nint ByteLength<T>(ReadOnlySpan<T> span) where T : unmanaged =>
-        checked((nint)((nuint)span.Length * (nuint)sizeof(T)));
+        ((nint)((nuint)span.Length * (nuint)sizeof(T)));
 
     /// <summary>A NUL-terminated UTF-8 copy of a string for interop.</summary>
     private readonly ref struct Utf8

@@ -116,7 +116,7 @@ public sealed class BindingSpanOverloadEmitterTest
         StringAssert.Contains(overloads, "fixed (TestImage* imagesPtr = images)");
         StringAssert.Contains(overloads, "Icons(window, images.Length, imagesPtr);");
         StringAssert.Contains(overloads, "public void WritableIcons(Span<TestImage> images)");
-        StringAssert.Contains(overloads, "WritableIcons(checked((uint)images.Length), imagesPtr);");
+        StringAssert.Contains(overloads, "WritableIcons(((uint)images.Length), imagesPtr);");
         StringAssert.Contains(overloads, "public int ScoreIcons(Span<TestImage> images)");
         StringAssert.Contains(overloads, "return ScoreIcons(images.Length, imagesPtr);");
         Assert.IsFalse(overloads.Contains("public void BadIcons(Span", StringComparison.Ordinal));

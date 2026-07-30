@@ -58,12 +58,12 @@ public static class LoadedConstructorRemainderComposer
         var ilMap = remainder.PreservedPrefix.Instructions
             .Select(instruction =>
                 new InterceptionGenerationIlMapEntry(
-                    checked((uint)instruction.BaselineOffset),
-                    checked((uint)instruction.BaselineOffset)))
+                    ((uint)instruction.BaselineOffset),
+                    ((uint)instruction.BaselineOffset)))
             .Append(
                 new(
-                    checked((uint)remainder.MovedRemainder.StartOffset),
-                    checked((uint)remainder.MovedRemainder.StartOffset),
+                    ((uint)remainder.MovedRemainder.StartOffset),
+                    ((uint)remainder.MovedRemainder.StartOffset),
                     false));
         var plan = new InterceptionGenerationPlan(
             target,

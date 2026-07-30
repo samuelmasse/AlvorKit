@@ -95,7 +95,7 @@ internal static class LoadedConstructorExceptionPartitioner
         int length,
         int splitOffset)
     {
-        var end = checked(offset + length);
+        var end = (offset + length);
         if (end <= splitOffset)
             return RegionSide.Preserved;
         if (offset >= splitOffset)
@@ -108,7 +108,7 @@ internal static class LoadedConstructorExceptionPartitioner
 
     /// <summary>Formats one half-open baseline range.</summary>
     private static string Range(int offset, int length) =>
-        $"[{Offset(offset)}, {Offset(checked(offset + length))})";
+        $"[{Offset(offset)}, {Offset((offset + length))})";
 
     /// <summary>Formats a filter range when the clause owns one.</summary>
     private static string FilterRange(LoadedExceptionRegion region) =>

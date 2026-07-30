@@ -135,5 +135,6 @@ narrative walkthroughs, while still respecting game-runtime hot paths.
 - In Commit Mode, build the touched demo project or explain why that was not
   possible, then report the exact command and any remaining risk.
 - In Commit Mode, re-read changed files and check the 750-line target,
-  repo-wide 170-character code line limit, meaningful docs, constructor clarity,
-  and hot-path allocation discipline before handoff.
+  repo-wide 120-character preferred C# wrap point and 140-character hard
+  maximum, meaningful docs, constructor clarity, and hot-path allocation
+  discipline before handoff.

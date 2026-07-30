@@ -128,7 +128,7 @@ internal static class LoadedIlInstructionDecoder
         if (count < 0 || count > (code.Length - offset) / sizeof(int))
             throw Malformed(instructionOffset, "switch table does not fit");
 
-        var targetBase = checked(offset + (count * sizeof(int)));
+        var targetBase = (offset + (count * sizeof(int)));
         var targets = ImmutableArray.CreateBuilder<int>(count);
         for (var index = 0; index < count; ++index)
         {

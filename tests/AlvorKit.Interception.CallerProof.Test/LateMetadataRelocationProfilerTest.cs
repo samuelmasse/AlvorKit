@@ -153,27 +153,27 @@ public sealed class LateMetadataRelocationProfilerTest
             [
                 new(
                     InterceptionGenerationRelocationKind.TypeSpec,
-                    checked((uint)firstTypeOffset),
+                    ((uint)firstTypeOffset),
                     typeSpec),
                 new(
                     InterceptionGenerationRelocationKind.TypeSpec,
-                    checked((uint)secondTypeOffset),
+                    ((uint)secondTypeOffset),
                     typeSpec),
                 new(
                     InterceptionGenerationRelocationKind.MemberRef,
-                    checked((uint)privateMemberOffset),
+                    ((uint)privateMemberOffset),
                     privateMemberRef,
                     privateValue.DeclaringType!.MetadataToken,
                     privateValue.Name),
                 new(
                     InterceptionGenerationRelocationKind.MemberRef,
-                    checked((uint)internalMemberOffset),
+                    ((uint)internalMemberOffset),
                     internalMemberRef,
                     internalTransform.DeclaringType!.MetadataToken,
                     internalTransform.Name),
                 new(
                     InterceptionGenerationRelocationKind.MethodSpec,
-                    checked((uint)methodOffset),
+                    ((uint)methodOffset),
                     methodSpec,
                     privateIdentity.MetadataToken)
             ],
@@ -219,7 +219,7 @@ public sealed class LateMetadataRelocationProfilerTest
 
     private static byte[] GenericBoxOfInt32Signature()
     {
-        var typeDefOrRef = checked(
+        var typeDefOrRef = (
             (uint)(typeof(LateMetadataBox<>).MetadataToken & 0x00FFFFFF) << 2);
         return
         [
@@ -234,23 +234,23 @@ public sealed class LateMetadataRelocationProfilerTest
     private static byte[] EncodeCompressedInteger(uint value)
     {
         if (value <= 0x7F)
-            return [checked((byte)value)];
+            return [((byte)value)];
         if (value <= 0x3FFF)
         {
             return
             [
-                checked((byte)(0x80 | value >> 8)),
-                checked((byte)value)
+                ((byte)(0x80 | value >> 8)),
+                ((byte)value)
             ];
         }
         if (value <= 0x1FFFFFFF)
         {
             return
             [
-                checked((byte)(0xC0 | value >> 24)),
-                checked((byte)(value >> 16)),
-                checked((byte)(value >> 8)),
-                checked((byte)value)
+                ((byte)(0xC0 | value >> 24)),
+                ((byte)(value >> 16)),
+                ((byte)(value >> 8)),
+                ((byte)value)
             ];
         }
         throw new ArgumentOutOfRangeException(nameof(value));
@@ -345,7 +345,7 @@ public sealed class LateMetadataRelocationProfilerTest
         {
             var result = profiler.GetRelocationResult(
                 requestId,
-                checked((uint)index));
+                ((uint)index));
             Assert.AreEqual(expected[index], result.Kind);
             Assert.AreEqual(0, result.HResult);
             tokens[index] = result.MetadataToken;

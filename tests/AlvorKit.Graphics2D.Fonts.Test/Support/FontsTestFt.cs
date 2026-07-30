@@ -96,7 +96,7 @@ internal sealed unsafe class FontsTestFt : FtNoop, IDisposable
     public override int NewMemoryFace(nint library, nint fileBase, CLong fileSize, CLong faceIndex, out FtFaceRec* aface)
     {
         NewMemoryFaceCount++;
-        LastMemoryBytes = ReadBytes(fileBase, checked((int)fileSize.Value));
+        LastMemoryBytes = ReadBytes(fileBase, ((int)fileSize.Value));
         LastFaceIndex = faceIndex.Value;
         aface = NewMemoryFaceError == 0 ? face : null;
         return NewMemoryFaceError;
@@ -117,7 +117,7 @@ internal sealed unsafe class FontsTestFt : FtNoop, IDisposable
     }
 
     /// <inheritdoc/>
-    public override uint GetCharIndex(FtFaceRec* face, CULong charCode) => checked((uint)charCode.Value.ToUInt64());
+    public override uint GetCharIndex(FtFaceRec* face, CULong charCode) => ((uint)charCode.Value.ToUInt64());
 
     /// <inheritdoc/>
     public override int LoadGlyph(FtFaceRec* face, uint glyphIndex, int loadFlags)

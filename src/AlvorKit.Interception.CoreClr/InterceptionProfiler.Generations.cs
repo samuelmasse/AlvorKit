@@ -32,9 +32,9 @@ public sealed partial class InterceptionProfiler
         for (var index = 0; index < plan.Relocations.Length; ++index)
         {
             var relocation = plan.Relocations[index];
-            var signatureOffset = checked((uint)metadata.Count);
+            var signatureOffset = ((uint)metadata.Count);
             metadata.AddRange(relocation.Signature.ToArray());
-            var nameOffset = checked((uint)metadata.Count);
+            var nameOffset = ((uint)metadata.Count);
             byte[] name = relocation.MemberName is null
                 ? []
                 : Encoding.UTF8.GetBytes(relocation.MemberName);
@@ -45,9 +45,9 @@ public sealed partial class InterceptionProfiler
                 BodyOffset = relocation.BodyOffset,
                 ParentToken = relocation.ParentToken,
                 SignatureOffset = signatureOffset,
-                SignatureSize = checked((uint)relocation.Signature.Length),
+                SignatureSize = ((uint)relocation.Signature.Length),
                 NameOffset = nameOffset,
-                NameSize = checked((uint)name.Length)
+                NameSize = ((uint)name.Length)
             };
         }
         var metadataBytes = metadata.ToArray();
@@ -68,19 +68,19 @@ public sealed partial class InterceptionProfiler
         var requestId = NextRequestId();
         var request = new InterceptionProfilerGeneration
         {
-            Size = checked((uint)Marshal.SizeOf<InterceptionProfilerGeneration>()),
+            Size = ((uint)Marshal.SizeOf<InterceptionProfilerGeneration>()),
             AbiVersion = AbiVersion,
             RequestId = requestId,
             PatchId = patchId,
             Target = ToNative(plan.Target),
             PatchFlags = (uint)plan.Flags,
-            IlBodySize = checked((uint)body.Length),
+            IlBodySize = ((uint)body.Length),
             GenerationId = plan.GenerationId,
             PriorGenerationId = plan.PriorGenerationId,
             BaselineBodyIdentity = nativeIdentity,
-            RelocationCount = checked((uint)relocations.Length),
-            MetadataSize = checked((uint)metadataBytes.Length),
-            IlMapCount = checked((uint)maps.Length)
+            RelocationCount = ((uint)relocations.Length),
+            MetadataSize = ((uint)metadataBytes.Length),
+            IlMapCount = ((uint)maps.Length)
         };
         fixed (byte* bodyPointer = body)
         fixed (InterceptionProfilerRelocation* relocationPointer = relocations)
@@ -90,13 +90,13 @@ public sealed partial class InterceptionProfiler
             Marshal.ThrowExceptionForHR(api.EnqueueGeneration(
                 in request,
                 (nint)bodyPointer,
-                checked((uint)body.Length),
+                ((uint)body.Length),
                 relocationPointer,
-                checked((uint)relocations.Length),
+                ((uint)relocations.Length),
                 (nint)metadataPointer,
-                checked((uint)metadataBytes.Length),
+                ((uint)metadataBytes.Length),
                 mapPointer,
-                checked((uint)maps.Length)));
+                ((uint)maps.Length)));
         }
         return requestId;
     }
@@ -125,7 +125,7 @@ public sealed partial class InterceptionProfiler
             Marshal.ThrowExceptionForHR(api.GetLoadedMethodBody(
                 in nativeTarget,
                 (nint)body,
-                checked((uint)bytes.Length),
+                ((uint)bytes.Length),
                 out var actualSize,
                 out var identity));
             if (actualSize != requiredSize)

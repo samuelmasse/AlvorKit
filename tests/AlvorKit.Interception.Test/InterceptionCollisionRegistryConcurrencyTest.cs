@@ -288,7 +288,7 @@ public sealed class InterceptionCollisionRegistryConcurrencyTest
         InterceptionTarget.FromIdentity(
             ModuleId,
             0x06000000 | row,
-            checked((ulong)row),
+            ((ulong)row),
             display);
 
     private sealed record AcquisitionAttempt(

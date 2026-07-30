@@ -14,8 +14,8 @@ internal sealed class AgentWindowScreenshot(GlLayer gl, Action<GlLayer, Vec2u, s
     /// <summary>Reads the current framebuffer and returns it as RGBA PNG bytes.</summary>
     internal byte[] Capture(Vec2u size)
     {
-        var width = checked((int)Math.Max(1u, size.X));
-        var height = checked((int)Math.Max(1u, size.Y));
+        var width = ((int)Math.Max(1u, size.X));
+        var height = ((int)Math.Max(1u, size.Y));
         var pixels = ReadFramebuffer(gl, width, height);
         return EncodePng(pixels, width, height);
     }
@@ -23,8 +23,8 @@ internal sealed class AgentWindowScreenshot(GlLayer gl, Action<GlLayer, Vec2u, s
     /// <summary>Reads the current framebuffer and saves it as an RGBA PNG.</summary>
     private static void SaveFramebuffer(GlLayer gl, Vec2u size, string path)
     {
-        var width = checked((int)Math.Max(1u, size.X));
-        var height = checked((int)Math.Max(1u, size.Y));
+        var width = ((int)Math.Max(1u, size.X));
+        var height = ((int)Math.Max(1u, size.Y));
         var pixels = ReadFramebuffer(gl, width, height);
         SavePng(pixels, width, height, path);
     }

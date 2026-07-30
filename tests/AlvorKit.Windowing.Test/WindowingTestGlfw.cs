@@ -33,13 +33,13 @@ internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsV
 
     public override void GetWindowSize(GlfwWindow window, out int width, out int height)
     {
-        width = checked((int)clientSize.X);
-        height = checked((int)clientSize.Y);
+        width = ((int)clientSize.X);
+        height = ((int)clientSize.Y);
     }
 
     public override void SetWindowSize(GlfwWindow window, int width, int height)
     {
-        clientSize = (checked((uint)width), checked((uint)height));
+        clientSize = (((uint)width), ((uint)height));
     }
 
     public override void GetFramebufferSize(GlfwWindow window, out int width, out int height) => GetWindowSize(window, out width, out height);

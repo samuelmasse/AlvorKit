@@ -52,7 +52,7 @@ public sealed class LoadedConstructionCallerComposerTest
             [
                 .. body.Instructions
                 .Select(instruction =>
-                    checked((uint)instruction.BaselineOffset))
+                    ((uint)instruction.BaselineOffset))
             ],
             (uint[])[
                 .. generation.IlMap.Select(entry => entry.OldOffset)
@@ -112,7 +112,7 @@ public sealed class LoadedConstructionCallerComposerTest
                 candidate.Kind ==
                     LoadedOperationKind.ObjectConstruction);
         byte[] staleBytes = [.. body.Bytes];
-        staleBytes[2] = checked((byte)(staleBytes[2] + 1));
+        staleBytes[2] = ((byte)(staleBytes[2] + 1));
         LoadedMethodBodySnapshot stale =
             LoadedMethodBodyDecoder.Decode(staleBytes);
 
@@ -365,7 +365,7 @@ public sealed class LoadedConstructionCallerComposerTest
         new(value + 100);
 
     private static ConstructionTarget WrongRoute(long value) =>
-        new(checked((int)value));
+        new(((int)value));
 
     private static ConstructionTarget GenericRoute<T>(int value) =>
         new(value + typeof(T).Name.Length);

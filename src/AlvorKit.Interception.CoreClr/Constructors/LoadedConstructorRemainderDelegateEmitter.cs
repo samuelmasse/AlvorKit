@@ -71,14 +71,14 @@ internal static class LoadedConstructorRemainderDelegateEmitter
                 continue;
             }
 
-            var sourceToken = checked(
+            var sourceToken = (
                 (int)instruction.Operand.IntegerValue);
             var dynamicToken = ResolveToken(
                 constructor,
                 info,
                 instruction.OpCode.OperandType,
                 sourceToken);
-            var operandOffset = checked(
+            var operandOffset = (
                 instruction.BaselineOffset -
                 remainder.MovedRemainder.StartOffset +
                 instruction.OpCode.Size);

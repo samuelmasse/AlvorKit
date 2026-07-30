@@ -138,8 +138,8 @@ internal sealed class GlyphImage
     /// <summary>Reads a one-bit monochrome FreeType bitmap into RGBA coverage pixels.</summary>
     private static GlyphImage ReadMono(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX)
     {
-        var width = checked((int)bitmap.Width);
-        var height = checked((int)bitmap.Rows);
+        var width = ((int)bitmap.Width);
+        var height = ((int)bitmap.Rows);
         var rgba = new byte[width * height * 4];
 
         for (var y = 0; y < height; y++)
@@ -159,8 +159,8 @@ internal sealed class GlyphImage
     /// <summary>Reads an eight-bit grayscale FreeType bitmap into RGBA pixels.</summary>
     private static GlyphImage ReadGray(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX, GlyphPixelView view)
     {
-        var width = checked((int)bitmap.Width);
-        var height = checked((int)bitmap.Rows);
+        var width = ((int)bitmap.Width);
+        var height = ((int)bitmap.Rows);
         var rgba = new byte[width * height * 4];
 
         for (var y = 0; y < height; y++)
@@ -189,8 +189,8 @@ internal sealed class GlyphImage
     /// <summary>Reads a packed two-bit or four-bit grayscale FreeType bitmap.</summary>
     private static GlyphImage ReadPackedGray(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX, int bitsPerPixel)
     {
-        var width = checked((int)bitmap.Width);
-        var height = checked((int)bitmap.Rows);
+        var width = ((int)bitmap.Width);
+        var height = ((int)bitmap.Rows);
         var rgba = new byte[width * height * 4];
         var mask = (1 << bitsPerPixel) - 1;
         var max = mask;
@@ -213,8 +213,8 @@ internal sealed class GlyphImage
     /// <summary>Reads a horizontal LCD subpixel FreeType bitmap.</summary>
     private static GlyphImage ReadLcd(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX)
     {
-        var width = checked((int)bitmap.Width) / 3;
-        var height = checked((int)bitmap.Rows);
+        var width = ((int)bitmap.Width) / 3;
+        var height = ((int)bitmap.Rows);
         var rgba = new byte[width * height * 4];
 
         for (var y = 0; y < height; y++)
@@ -235,8 +235,8 @@ internal sealed class GlyphImage
     /// <summary>Reads a vertical LCD subpixel FreeType bitmap.</summary>
     private static GlyphImage ReadLcdV(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX)
     {
-        var width = checked((int)bitmap.Width);
-        var height = checked((int)bitmap.Rows) / 3;
+        var width = ((int)bitmap.Width);
+        var height = ((int)bitmap.Rows) / 3;
         var rgba = new byte[width * height * 4];
 
         for (var y = 0; y < height; y++)
@@ -259,8 +259,8 @@ internal sealed class GlyphImage
     /// <summary>Reads a BGRA color FreeType bitmap.</summary>
     private static GlyphImage ReadBgra(FtBitmap bitmap, int bitmapLeft, int bitmapTop, int advanceX)
     {
-        var width = checked((int)bitmap.Width);
-        var height = checked((int)bitmap.Rows);
+        var width = ((int)bitmap.Width);
+        var height = ((int)bitmap.Rows);
         var rgba = new byte[width * height * 4];
 
         for (var y = 0; y < height; y++)
@@ -284,7 +284,7 @@ internal sealed class GlyphImage
     private static nint RowPointer(FtBitmap bitmap, int y)
     {
         var pitch = bitmap.Pitch;
-        return pitch >= 0 ? bitmap.Buffer + y * pitch : bitmap.Buffer + (checked((int)bitmap.Rows) - 1 - y) * -pitch;
+        return pitch >= 0 ? bitmap.Buffer + y * pitch : bitmap.Buffer + (((int)bitmap.Rows) - 1 - y) * -pitch;
     }
 
     /// <summary>Writes a white coverage pixel into an RGBA buffer.</summary>

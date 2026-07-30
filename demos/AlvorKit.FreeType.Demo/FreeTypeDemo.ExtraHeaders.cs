@@ -158,7 +158,7 @@ internal sealed unsafe partial class FreeTypeDemo
         if (name.String == 0 || name.StringLen == 0)
             return "(empty)";
 
-        var bytes = new ReadOnlySpan<byte>((void*)name.String, checked((int)name.StringLen));
+        var bytes = new ReadOnlySpan<byte>((void*)name.String, ((int)name.StringLen));
         if ((name.PlatformId is 0 or 3) && bytes.Length % 2 == 0)
             return Encoding.BigEndianUnicode.GetString(bytes);
 

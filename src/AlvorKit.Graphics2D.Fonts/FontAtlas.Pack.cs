@@ -22,7 +22,7 @@ internal sealed partial class FontAtlas
             batch.Writer.Draw(tablet.Texture, (x, y), slot.Glyph.Box, slot.Position, slot.Glyph.Box);
             Advance(slot.Glyph, x, y);
             slot.Texture = buffer.Tablet.Texture;
-            slot.Position = (checked((uint)x), checked((uint)y));
+            slot.Position = (((uint)x), ((uint)y));
         }
 
         RenderRepackedAtlas();
@@ -42,7 +42,7 @@ internal sealed partial class FontAtlas
         {
             var (x, y) = NextSlot(slot.Glyph);
             Advance(slot.Glyph, x, y);
-            if (y + checked((int)slot.Glyph.Box.Y) <= tablet.Size)
+            if (y + ((int)slot.Glyph.Box.Y) <= tablet.Size)
                 continue;
 
             canPack = false;

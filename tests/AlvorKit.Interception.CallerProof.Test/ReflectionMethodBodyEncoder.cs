@@ -27,7 +27,7 @@ internal static class ReflectionMethodBodyEncoder
         BinaryPrimitives.WriteUInt16LittleEndian(bytes, flags);
         BinaryPrimitives.WriteUInt16LittleEndian(
             bytes.AsSpan(2),
-            checked((ushort)body.MaxStackSize));
+            ((ushort)body.MaxStackSize));
         BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(4), il.Length);
         BinaryPrimitives.WriteInt32LittleEndian(
             bytes.AsSpan(8),

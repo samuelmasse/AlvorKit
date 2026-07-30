@@ -22,7 +22,7 @@ internal static class LoadedConstructorRemainderMethodBodyEmitter
         AddInt32(routed, route.MetadataToken);
         routed.Add(0x2A);
 
-        ushort maxStack = checked((ushort)Math.Max(
+        ushort maxStack = ((ushort)Math.Max(
             body.MaxStack,
             argumentCount));
         return InterceptionMethodBody.FromRaw(
@@ -39,20 +39,20 @@ internal static class LoadedConstructorRemainderMethodBodyEmitter
     {
         if (index <= 3)
         {
-            code.Add(checked((byte)(0x02 + index)));
+            code.Add(((byte)(0x02 + index)));
             return;
         }
         if (index <= byte.MaxValue)
         {
             code.Add(0x0E);
-            code.Add(checked((byte)index));
+            code.Add(((byte)index));
             return;
         }
 
         code.Add(0xFE);
         code.Add(0x09);
-        code.Add(checked((byte)index));
-        code.Add(checked((byte)(index >> 8)));
+        code.Add(((byte)index));
+        code.Add(((byte)(index >> 8)));
     }
 
     private static void AddInt32(List<byte> bytes, int value)

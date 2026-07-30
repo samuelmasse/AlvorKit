@@ -37,9 +37,10 @@ and commits separate.
 ## Working Rules
 
 Read `../AlvorKit/AGENTS.md` before non-trivial work. Its Working Mode, Commit
-Mode, C# defaults, allocation discipline, visual automation, generated-output,
-coordination, and verification rules apply to the game repository unless this
-document or a closer game `AGENTS.md` says otherwise.
+Mode, C# defaults, line-length rule, allocation discipline, visual automation,
+generated-output, coordination, and verification rules apply to the game
+repository. This document or a closer game `AGENTS.md` may override them only
+where the originating AlvorKit rule permits an override.
 
 Game-specific overrides:
 
@@ -120,6 +121,12 @@ Apply them in new projects and packages even when no local precedent exists.
   because an analyzer recommends it.
 - Use constructor injection. Do not introduce service locators, ambient
   containers, or hidden global dependencies.
+- An injected service enters another service only through constructor
+  injection. Never thread an injected service through an ordinary method,
+  local function, delegate, command, record, or other operation parameter. A
+  type is either a scope-owned service or an explicitly passed ordinary object,
+  never both. Method parameters carry per-call data rather than hosted
+  collaborators.
 - Keep composition in scopes, loaders, and entry points. Each loader should
   initialize its own layer instead of absorbing or replacing another loader's
   responsibilities.
@@ -144,12 +151,54 @@ Apply them in new projects and packages even when no local precedent exists.
 
 ### State In Fields
 
-- Hold state in fields, not auto-properties: `public readonly` for immutable
-  values and plain public fields for single-owner mutable state.
-- Expression-bodied computed properties are fine; they expose derivation, not
-  state.
-- Records, generated `[Components]` interfaces, and configuration types bound
-  by the configuration binder keep properties; properties are their mechanism.
+- Hold object-owned state in explicit private fields, not auto-properties.
+  Expose only the access collaborators need through get-only, get/set, `ref`,
+  or `ref readonly` properties. Strongly prefer this over `internal` or
+  `public` fields, including for mutable game state.
+- Auto accessors are banned in hand-authored classes and non-record structs.
+  Every stored property on those types uses explicit accessors over a private
+  backing field. Records are the only hand-authored exception: auto-properties
+  and positional records are allowed when they clearly express the record's
+  value shape. Interface and abstract accessor declarations are contracts, not
+  stored auto-properties, and remain valid.
+- If mutation by reference is genuinely required, keep the backing field
+  private and expose a narrowly scoped `ref` property. Prefer that shape when
+  get/set accessors would merely forward unrestricted access to the backing
+  field. Keep get/set accessors when they enforce validation, transformation,
+  restricted writes, or other behavior. Use an exposed field only for a
+  specific framework, binary-layout, generated-code, or measured hot-path
+  requirement.
+- Organize every class and struct in the member order defined by AlvorKit's
+  root `C# Defaults`: readonly fields; non-readonly fields; get-only
+  properties; get/set or get/init properties; ref properties; constructors;
+  then remaining members. Within every field and property category, use
+  `private`, then `internal`, then `public` accessibility. A nontrivial
+  multiline property implementation may be the final property block
+  immediately before the constructor, or before methods when no constructor
+  exists.
+- Keep consecutive fields and simple properties compact. Do not put blank lines
+  between members of the same category without a meaningful grouping reason.
+- Default parameter values are banned. Require callers to provide every
+  argument instead of hiding behavior behind an optional value.
+- A multiline declaration parameter list keeps its closing `)` directly after
+  the final parameter. Never place that parenthesis on its own line. Apply this
+  to methods, constructors, primary constructors, records, delegates, and
+  lambdas.
+- The C# `checked` keyword is banned in all game code, including production
+  source, scripts, tests, generated output, and templates. Express any required
+  range contract without the keyword.
+- A captured primary constructor may precede the normal member layout when it
+  removes mechanical backing fields and assignments from a small value carrier
+  or non-public implementation type. Keep an explicit constructor when its
+  accessibility differs from the type or initialization performs behavior. A
+  ref-like parameter that cannot be captured may initialize one explicit field
+  inline without forcing an assignment-only constructor body.
+- Expression-bodied computed and forwarding properties are fine; they expose
+  behavior or controlled access rather than hiding owned storage.
+- Configuration types bound by the configuration binder still expose
+  properties, but non-record hand-authored implementations use explicit
+  accessors over private fields. Generated `[Components]` source is exempt
+  because the generator owns its source shape.
 - Delete write-only state and members that only tests read.
 
 ### Static Members And Constants
@@ -159,13 +208,47 @@ Apply them in new projects and packages even when no local precedent exists.
 - Reserve static members for operators, extension methods, framework-required
   entry points, compile-time values, and pure value operations that are
   unambiguously owned by the type.
-- Use a named constant for a repeated representation invariant or a value whose
-  meaning matters. Put it on the type that owns the meaning.
+- Magic numbers are banned. Give representation widths, shifts, masks,
+  sentinels, domain bounds, algorithmic costs, fixed capacities, and other
+  meaningful numeric values descriptive constants on the type that owns their
+  meaning.
+- Define one canonical origin for related constants and derive the others from
+  it. For example, derive a size and mask from one shift, a maximum from one
+  bit width, or a first valid identifier from its empty sentinel. Do not repeat
+  literals whose agreement is an unstated invariant.
+- Do not manufacture constants for ordinary arithmetic identities and visibly
+  self-explanatory local values, such as zeroing a counter, incrementing by one,
+  loop origins, or the `-1`, `0`, and `1` components of an explicitly named
+  direction delta.
 - Do not promote one-off literals or runtime policy to global constants. Use
   injected configuration or instance state for values that can vary by runtime
   or composition.
 - Disable analyzer rules that recommend making instance members static when
   they conflict with these conventions.
+
+### Hot-Path Data Layout
+
+- Never cache, precompute, or retain a value that is obtainable through a
+  simple independent mathematical formula from already-held IDs, indices,
+  coordinates, and constants. Compute it where needed. In particular, do not
+  add full-volume companion arrays for row-major addressing, chunk addressing,
+  bit positions, masks, or similar arithmetic derivations. If the formula is
+  awkward at the use site, improve the representation or move the calculation
+  to the appropriate cold boundary instead of materializing a lookup cache.
+- For a dense grid whose hot loop repeatedly visits a fixed neighborhood,
+  strongly prefer a blocked sentinel border around the retained data. Convert
+  public coordinates or unpadded addresses to padded row-major indices in cold
+  API, loading, and synchronization paths. The hot loop should queue indices,
+  apply fixed row and layer offsets, and reconstruct through indexed state
+  without converting back to coordinates.
+- Sentinel padding removes per-neighbor world-boundary branches because every
+  fixed offset lands on valid retained storage and border cells reject entry
+  through the ordinary data check. Preserve the unpadded external contract and
+  account for the padded capacity in every index-addressed companion array.
+- Padding guarantees semantic index safety; it does not by itself prove that
+  the runtime removed managed-array range checks. Inspect generated code or
+  measure before adding lower-level access, and use unsafe access only for a
+  demonstrated remaining bottleneck with layout invariants that make it safe.
 
 ### Failure Semantics
 
@@ -180,11 +263,23 @@ Apply them in new projects and packages even when no local precedent exists.
   that cannot handle it.
 - Validate external input only when validation is part of a real security,
   externally imposed interoperability, or recoverable protocol boundary.
-- Do not catch exceptions unless the code can perform a meaningful recovery.
-  Do not catch merely to log, return a default, continue partially, or replace
-  the exception.
-- Use `try` and `finally` only when cleanup must still happen after an
-  exception. Prefer ownership whose normal lifetime makes cleanup explicit.
+- Every exception in production game code is fatal to the process. Let it
+  propagate unchanged. The program is not expected to remain usable, preserve
+  mutable state, or clean up after an exception.
+- Do not add `try`, `catch`, `finally`, catch filters, or exception-driven
+  retry, rollback, cleanup, logging, translation, or state restoration to
+  production game code. Catching and rethrowing is not useful.
+- Perform required normal-path cleanup explicitly after successful work.
+  Structure operations so an expected rejection is decided before state is
+  committed, or represent it as an ordinary result or reason value. A condition
+  from which the game must continue is not exceptional.
+- Ordinary `using` declarations and statements remain valid when a resource
+  requires disposal during normal successful execution. Do not introduce one
+  solely to perform otherwise-unneeded exception cleanup.
+- Tests, benchmarks, and orchestration tools outside `src/` may catch only when
+  their explicit contract is to supervise independent runs and continue after
+  one fails. This exception does not apply to runnable game hosts and is not
+  precedent for game code.
 - Expected rejections on local guard paths return a reason value, such as a
   conflict string or a small enum, that the caller logs verbatim. Do not throw
   an exception only to catch it a few frames up in the same flow.

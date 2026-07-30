@@ -10,12 +10,12 @@ internal sealed class GlfwWindowSizes(Glfw glfw, GlfwWindow window)
         get
         {
             glfw.GetFramebufferSize(window, out var width, out var height);
-            return new(checked((uint)width), checked((uint)height));
+            return new(((uint)width), ((uint)height));
         }
     }
 
     /// <summary>Sets the requested client size through GLFW.</summary>
-    internal void Set(Vec2u size) => glfw.SetWindowSize(window, checked((int)size.X), checked((int)size.Y));
+    internal void Set(Vec2u size) => glfw.SetWindowSize(window, ((int)size.X), ((int)size.Y));
 
     /// <summary>Gets the primary monitor work area size.</summary>
     internal Vec2u MonitorWorkareaSize
@@ -24,7 +24,7 @@ internal sealed class GlfwWindowSizes(Glfw glfw, GlfwWindow window)
         {
             var monitor = glfw.GetPrimaryMonitor();
             glfw.GetMonitorWorkarea(monitor, out _, out _, out var width, out var height);
-            return new(checked((uint)width), checked((uint)height));
+            return new(((uint)width), ((uint)height));
         }
     }
 

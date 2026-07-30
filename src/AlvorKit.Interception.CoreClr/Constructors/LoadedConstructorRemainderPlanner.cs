@@ -30,7 +30,7 @@ public static class LoadedConstructorRemainderPlanner
                 continue;
             }
 
-            var token = checked((int)instruction.Operand.IntegerValue);
+            var token = ((int)instruction.Operand.IntegerValue);
             if (!metadata.TryResolveInitializerKind(token, out var kind))
                 continue;
 

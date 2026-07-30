@@ -113,7 +113,7 @@ internal sealed class TextBuffer
         if (required <= chars.Length - length)
             return;
 
-        int requiredCapacity = checked(length + required);
+        int requiredCapacity = (length + required);
         int expandedCapacity = Math.Max(requiredCapacity, Math.Max(32, chars.Length * 2));
         Array.Resize(ref chars, expandedCapacity);
     }

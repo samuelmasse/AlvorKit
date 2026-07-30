@@ -76,8 +76,8 @@ internal static class AgentWindowInputCommands
         command.Arguments.Add(width);
         command.Arguments.Add(height);
         command.SetAction(parseResult => protocol.ResizeWindow(new(
-            checked((uint)parseResult.GetValue(width)),
-            checked((uint)parseResult.GetValue(height)))));
+            ((uint)parseResult.GetValue(width)),
+            ((uint)parseResult.GetValue(height)))));
         return command;
     }
 

@@ -17,7 +17,7 @@ internal sealed class InterceptionPatchHandle :
         this.profiler = profiler;
         PatchId = patchId;
         Target = target;
-        lastRequestId = checked((long)installRequestId);
+        lastRequestId = ((long)installRequestId);
     }
 
     /// <summary>Gets the stable patch ID retained across replacements.</summary>
@@ -28,7 +28,7 @@ internal sealed class InterceptionPatchHandle :
 
     /// <summary>Gets the most recently enqueued request ID.</summary>
     public ulong LastRequestId =>
-        checked((ulong)Interlocked.Read(ref lastRequestId));
+        ((ulong)Interlocked.Read(ref lastRequestId));
 
     /// <summary>Atomically requests another method body for the same patch and target.</summary>
     public ulong Replace(InterceptionPlan plan)
@@ -37,7 +37,7 @@ internal sealed class InterceptionPatchHandle :
             Volatile.Read(ref removing) != 0,
             this);
         var requestId = profiler.Replace(this, plan);
-        Interlocked.Exchange(ref lastRequestId, checked((long)requestId));
+        Interlocked.Exchange(ref lastRequestId, ((long)requestId));
         return requestId;
     }
 
@@ -48,7 +48,7 @@ internal sealed class InterceptionPatchHandle :
             Volatile.Read(ref removing) != 0,
             this);
         var requestId = profiler.Replace(this, plan);
-        Interlocked.Exchange(ref lastRequestId, checked((long)requestId));
+        Interlocked.Exchange(ref lastRequestId, ((long)requestId));
         return requestId;
     }
 
@@ -59,7 +59,7 @@ internal sealed class InterceptionPatchHandle :
             Volatile.Read(ref removing) != 0,
             this);
         var requestId = profiler.Replace(this, plan);
-        Interlocked.Exchange(ref lastRequestId, checked((long)requestId));
+        Interlocked.Exchange(ref lastRequestId, ((long)requestId));
         return requestId;
     }
 
@@ -72,7 +72,7 @@ internal sealed class InterceptionPatchHandle :
         try
         {
             var requestId = profiler.Remove(this);
-            Interlocked.Exchange(ref lastRequestId, checked((long)requestId));
+            Interlocked.Exchange(ref lastRequestId, ((long)requestId));
             return requestId;
         }
         catch

@@ -79,7 +79,7 @@ gl.ReadPixels(
 ```
 
 OpenGL represents these extents with signed `GLsizei` values. A component above
-`int.MaxValue` throws `OverflowException` during checked conversion before
+`int.MaxValue` throws `OverflowException` during range-validated conversion before
 calling the backend; the extensions never clamp or wrap it. The zero-origin
 `Viewport`, `Scissor`, and `ReadPixels` overloads are conveniences for the
 common full-target case.

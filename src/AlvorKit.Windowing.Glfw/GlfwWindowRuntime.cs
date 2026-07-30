@@ -126,7 +126,7 @@ internal sealed class GlfwWindowRuntime
     /// <summary>Applies a single RGBA icon image through GLFW.</summary>
     internal unsafe void SetIcon(Vec2u size, ReadOnlySpan<Vec4u8> pixels)
     {
-        if (pixels.Length != checked((int)(size.X * size.Y)))
+        if (pixels.Length != ((int)(size.X * size.Y)))
             throw new ArgumentException("Icon pixels must be width * height RGBA values.", nameof(pixels));
 
         fixed (Vec4u8* data = pixels)

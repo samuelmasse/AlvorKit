@@ -139,6 +139,25 @@ public sealed class LintRunnerTest
         Assert.AreEqual(0, processRunner.Commands.Count);
     }
 
+    /// <summary>Rejects the checked keyword before starting external lint tools.</summary>
+    [TestMethod]
+    public async Task RunAsyncRejectsCheckedKeyword()
+    {
+        using var workspace = TempWorkspace.Create();
+        var keyword = "check" + "ed";
+        workspace.Write("AlvorKit.slnx", "<Solution />");
+        workspace.Write("src/Game/Game.cs", $"var value = {keyword}(1 + 1);");
+        var processRunner = new FakeProcessRunner(new Queue<int>());
+        var actionlintTool = new FakeActionlintTool("actionlint");
+        var runner = new LintRunner(new(workspace.Root, Fix: false, []), processRunner, actionlintTool);
+
+        var exitCode = await runner.RunAsync();
+
+        Assert.AreEqual(1, exitCode);
+        Assert.IsFalse(actionlintTool.Called);
+        Assert.AreEqual(0, processRunner.Commands.Count);
+    }
+
     /// <summary>Rejects negative command parallelism overrides.</summary>
     [TestMethod]
     public void ConstructorRejectsNegativeParallelism()

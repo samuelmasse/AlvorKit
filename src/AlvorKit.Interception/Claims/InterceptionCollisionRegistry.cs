@@ -41,7 +41,7 @@ public sealed class InterceptionCollisionRegistry
             if (selected is not null)
                 throw new InterceptionCollisionException(selected);
 
-            var slotId = checked(
+            var slotId = (
                 (ulong)Interlocked.Increment(ref nextSlotId));
             var added = new InterceptionClaimSlot(slotId, claim);
             slots.Add(slotId, added);

@@ -279,7 +279,7 @@ public sealed class LoadedConstructorRemainderComposerTest
         BinaryPrimitives.WriteUInt16LittleEndian(bytes, flags);
         BinaryPrimitives.WriteUInt16LittleEndian(
             bytes.AsSpan(2),
-            checked((ushort)body.MaxStackSize));
+            ((ushort)body.MaxStackSize));
         BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(4), il.Length);
         BinaryPrimitives.WriteInt32LittleEndian(
             bytes.AsSpan(8),
@@ -290,9 +290,9 @@ public sealed class LoadedConstructorRemainderComposerTest
 
         Span<byte> section = bytes.AsSpan(sectionStart);
         section[0] = 0x41;
-        section[1] = checked((byte)sectionSize);
-        section[2] = checked((byte)(sectionSize >> 8));
-        section[3] = checked((byte)(sectionSize >> 16));
+        section[1] = ((byte)sectionSize);
+        section[2] = ((byte)(sectionSize >> 8));
+        section[3] = ((byte)(sectionSize >> 16));
         for (var index = 0; index < clauses.Count; ++index)
         {
             ExceptionHandlingClause clause = clauses[index];

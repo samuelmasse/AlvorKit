@@ -53,7 +53,7 @@ internal sealed partial class FontAtlas : IDisposable
     internal bool Fits(FontGlyph glyph)
     {
         var (_, y) = NextSlot(glyph);
-        return y + checked((int)glyph.Box.Y) <= tablet.Size;
+        return y + ((int)glyph.Box.Y) <= tablet.Size;
     }
 
     /// <summary>Adds one rendered glyph bitmap to the atlas.</summary>
@@ -64,7 +64,7 @@ internal sealed partial class FontAtlas : IDisposable
         Advance(glyph, x, y);
         packed = false;
 
-        var slot = new FontGlyphSlot(glyph, tablet.Texture, (checked((uint)x), checked((uint)y)));
+        var slot = new FontGlyphSlot(glyph, tablet.Texture, (((uint)x), ((uint)y)));
         slots.Add(slot);
         return slot;
     }

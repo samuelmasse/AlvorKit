@@ -32,7 +32,7 @@ public sealed class LoadedConstructorRemainderRegion
     public int EndOffset => endOffset;
 
     /// <summary>Gets the region length in loaded IL bytes.</summary>
-    public int Length => checked(endOffset - startOffset);
+    public int Length => (endOffset - startOffset);
 
     /// <summary>Gets the exact immutable baseline instructions in this region.</summary>
     public ImmutableArray<LoadedIlInstruction> Instructions => instructions;

@@ -38,9 +38,9 @@ disable part of a feature, or return stale, default, partial, or knowingly
 inferior results.
 
 Implement one correct design for the supported contract. Make that design cover
-all supported inputs, strengthen the representation or invariants, or reject
-unsupported input clearly. When the supported contract requires a product
-decision, ask for that decision instead of inventing a fallback.
+all supported inputs or strengthen the representation and invariants. When the
+supported contract requires a product decision, ask for that decision instead
+of inventing a fallback.
 
 A separately specified platform, backend, or interoperability mode is a
 first-class requirement, not a fallback. Agents must not introduce an alternate
@@ -147,17 +147,15 @@ files, chat, logs, or documentation.
 
 ## Line Length
 
-In Working Mode, treat the 170-character line limit as cleanup guidance that
-should not block making changes work. In Commit Mode, keep hand-authored C#,
-MSBuild XML, JSON, YAML, C, and header lines at or below 170 characters.
-
-Prefer wrapping long argument lists, object and array literals, command strings,
-interpolated messages, regex setup, and generated-code emission strings when
-wrapping keeps the result readable. Generated output, build output, vendored
-upstream source, minified files, lockfiles, and unavoidable long URLs or
-external identifiers may exceed the limit. During Commit Mode, wrap existing
-over-limit touched lines unless they are exceptions, but do not create unrelated
-churn just to clean historical lines.
+Use conventional, readable C# formatting. Do not compress code into cryptic
+one-liners or pack unrelated constructs together merely to reduce vertical
+space. Conversely, when a cohesive declaration, call, condition, initializer,
+or expression reads clearly on one line and fits within 120 characters, keep
+it on one line instead of breaking it prematurely into vertical fragments.
+Treat 120 characters as the preferred C# wrapping point and 140 characters as
+the hard maximum for agent-authored C# in both Working Mode and Commit Mode.
+No closer `AGENTS.md` may relax this rule. This does not change automated
+checks, which retain their existing 170-character failure threshold.
 
 ## Generated Output Checks
 
@@ -218,9 +216,20 @@ centralize them.
 
 ## C# Defaults
 
+These defaults are unconditional. A closer `AGENTS.md` may add stricter
+requirements but must not relax them.
+
 - Omit braces when an `if`, `else`, `for`, `foreach`, `while`, or similar
-  control-flow body contains exactly one statement. Braces are for bodies with
-  multiple statements, not single-statement bodies.
+  control-flow body contains exactly one statement and that complete statement
+  occupies one physical line. A statement split across multiple physical lines
+  requires braces even when it is syntactically one statement. This restriction
+  applies to control-flow bodies, not expression-bodied members, lambdas, or
+  other `=>` expressions. Braces are for multiline or multi-statement bodies,
+  not single-line bodies. An unbraced `else` with exactly one statement must put
+  that statement on the same physical line as `else`, as in
+  `else DoOtherThing();`. Placing that single statement on the following line
+  is banned. If the complete `else` statement cannot stay readable within the
+  line-length limit, use a braced body.
 
   ```csharp
   if (condition)
@@ -229,16 +238,117 @@ centralize them.
 
   for (var index = 0; index < count; index++)
       Process(index);
+
+  foreach (var value in values)
+  {
+      PublishTransformedValue(value, sourceConfiguration, destinationConfiguration, transformationContext,
+          validationContext, diagnosticContext);
+  }
   ```
 
 - Strongly prefer guard clauses and early `return`, `continue`, or `break`
   statements that keep the main path flat. Avoid complicated `if`/`else`
   chains and nested conditionals when their exceptional or terminal cases can
   be handled first.
+- Keep each mathematical computation and boolean expression on one physical
+  line whenever it remains readable within the hard line-length limit. Prefer
+  that single-line form even when it exceeds the preferred wrapping point. If
+  the logic cannot remain clear on one line, split it into named intermediate
+  variables or sequential steps whose individual computations and boolean
+  expressions each stay on one line. Do not wrap one operator chain or
+  parenthesized computation across multiple lines.
+- Standalone discard assignments such as `_ = expression;` are banned. Do not
+  create a fake assignment to silence an unused-value warning. Remove a
+  no-effect expression, invoke a method directly when only its side effect
+  matters, or name and use the result when it matters. Required interface,
+  delegate, or framework parameters may remain unused without assigning them
+  to `_`. This rule does not ban `out _`, deconstruction discards, or `_`
+  patterns.
+- Keep the input expression and `switch` keyword of a switch expression on the
+  same physical line as the declaration, assignment, `return`, or expression
+  arrow when the line fits within the length limit. Put the opening brace on
+  the next line at the declaration's normal indentation and indent switch arms
+  one level, just like a normal method body. Do not put `switch` on a separately
+  indented continuation line.
+
+  ```csharp
+  private static Result Convert(Value value) => value switch
+  {
+      Value.First => Result.First,
+      Value.Second => Result.Second,
+      _ => throw new UnreachableException(),
+  };
+  ```
+- Use binary literals (`0b...`) for bit masks, packed flags, and other bitwise
+  constants whose meaning depends on the position, adjacency, or grouping of
+  individual bits. Group binary digits with `_` when that makes fields easier
+  to read. Hexadecimal literals remain valid when hexadecimal communicates the
+  value more clearly, including powers of two, full-byte or all-ones patterns
+  such as `0xFF` and `0xFFFF`, and values defined by an external hexadecimal
+  contract. Do not use hexadecimal merely to shorten a positional bit layout.
 - A `.cs` file may live directly at the root of its project when that is the
   clearest home. Prefer one top-level type per `.cs` file; do not group multiple
   records, classes, structs, or interfaces in a protocol, model, command, or
   `Types` file just because they are small.
+- Use of the C# `sealed` keyword in repository-owned declarations is banned. Do
+  not use it on classes, records, overrides, or any other declaration,
+  including generated output, examples, demos, scripts, and tests.
+- Use of the C# `checked` keyword is banned in repository-owned code. Do not use
+  checked expressions or blocks, including in generated output, templates,
+  examples, demos, scripts, and tests. Express any required range contract
+  without the keyword.
+- Organize class and struct members in this exact category order:
+  1. readonly fields;
+  2. non-readonly fields;
+  3. properties with only a `get` accessor;
+  4. properties with both read and write access, including `set` or `init`;
+  5. `ref` and `ref readonly` properties;
+  6. constructors;
+  7. all remaining members.
+  Within each field or property category, order accessibility as `private`,
+  then `internal`, then `public`. Constants and static readonly fields belong
+  with readonly fields. Static and instance members do not create separate
+  categories. Keep overloads and closely related members together only within
+  these ordering constraints. A multiline property with nontrivial accessor
+  logic may be placed after all simple properties as the final property block
+  immediately before the constructor, or before the remaining members when
+  there is no constructor.
+- Keep consecutive fields and simple properties compact. Strongly prefer no
+  blank lines between members of the same category; add vertical space only
+  when it marks a meaningful category boundary or isolates a nontrivial
+  multiline property implementation.
+- Default parameter values are banned. Every caller must supply every argument;
+  use a distinctly named method or overload only when it represents a genuinely
+  different operation rather than recreating an implicit default.
+- In every multiline declaration parameter list, put the closing `)` directly
+  after the final parameter. A closing parenthesis on its own line is banned.
+  This applies to methods, constructors, primary constructors, records,
+  delegates, and lambdas.
+- An injected service enters a collaborator only through constructor injection.
+  Never pass an injected service through an ordinary method, local function,
+  delegate, command, record, or other operation parameter. A type is either a
+  scope-owned injected service or an explicitly passed ordinary object, never
+  both. Per-call parameters contain operation data, not hosted collaborators.
+- Strongly prefer private fields for storage. Expose state through the
+  narrowest useful property instead of an `internal` or `public` field. When a
+  caller genuinely needs by-reference access, keep the backing field private
+  and expose a narrowly scoped `ref` or `ref readonly` property. When both
+  accessors would only forward unrestricted reads and writes to one backing
+  field, prefer a `ref` property; keep get/set accessors when they validate,
+  transform, restrict, or otherwise own behavior. Use an exposed field only
+  when a framework, binary layout, generated-code contract, or measured
+  hot-path requirement specifically demands one.
+- Auto accessors are banned in hand-authored classes and non-record structs. A
+  property must compute its value or use explicit accessors over private backing
+  fields. Records are the only hand-authored exception: auto-properties and
+  positional records are allowed when they clearly express the record's value
+  shape. Generated code is also exempt because its source shape belongs to the
+  generator. Accessor-only declarations on interfaces and abstract members are
+  contracts rather than stored auto-properties and are allowed.
+- Avoid the static `Array` API for operations on existing contiguous storage,
+  including `Array.Clear`, `Array.Fill`, `Array.Copy`, `Array.IndexOf`,
+  `Array.Reverse`, and `Array.Sort`. Obtain an appropriate `Span<T>` or
+  `ReadOnlySpan<T>` view and use span-based operations instead.
 - Prefer repository-level and project-level global usings over ordinary
   file-level `using` directives. Before adding a file-level import, check
   implicit usings and existing `<Using Include="..." />` entries. Add broadly
@@ -246,12 +356,16 @@ centralize them.
   namespaces to the `.csproj`. Reserve file-level imports for aliases, rare
   conflicts, or one-off third-party APIs. `using var` and `using (...)`
   disposal statements are allowed and are not import directives.
-- Prefer clean primary constructors when they express a type's dependency or
-  value shape. Do not add mirrored private fields or properties solely to make
-  primary constructor parameters `readonly`; use parameters directly unless a
-  distinct member is needed for validation, transformation, API naming, or real
-  mutable state. In partial types, first verify whether primary constructor
-  parameters are already in scope.
+- Prefer clean primary constructors when captured parameters eliminate
+  mechanical backing fields and assignment-only constructor bodies. This is an
+  allowed exception to the normal constructor position for a small value
+  carrier or a non-public implementation type. Keep an explicit constructor
+  when constructor accessibility must differ from the type, when initialization
+  has behavior, or when ref-returning access requires a declared backing field.
+  A ref-like parameter that the compiler cannot capture may initialize one
+  explicit ref-like field inline while the remaining parameters stay captured.
+  In partial types, first verify whether primary constructor parameters are
+  already in scope.
 - Trust nullable reference type analysis for non-null contracts. Do not add
   manual null guards or asserts just to recheck a non-nullable value.
 - Prefer file-scoped namespaces, nullable-aware code, collection expressions,
@@ -265,15 +379,13 @@ centralize them.
   the point, such as scalar splats, composition constructors, conversion tests,
   or expressions with no target vector type.
 - Prefer repository vector casts such as `(Vec2u)image.Size` over converting
-  components one by one. Do not add `checked()` around routine vector or scalar
-  boundary casts unless the user asks for it or the code already models that
-  exact checked invariant.
+  components one by one.
 - Treat AlvorKit maths types as first-class API shapes. Accept and pass vectors,
   matrices, quaternions, boxes, and related maths types instead of flattening
   true maths values into scalar overloads.
 - Do not silently clamp, coerce, or normalize caller-provided values in property
-  setters or state updates. Reject invalid values clearly, model the invariant
-  in the type system, or clamp explicitly at a platform boundary.
+  setters or state updates. Model the invariant in the type system, or clamp
+  explicitly at a platform boundary.
 - In AlvorKit's curated library projects, do not create private nested classes
   for helper composition; prefer internal top-level helper types when they are
   intentionally outside the public API. Game repositories override this and
