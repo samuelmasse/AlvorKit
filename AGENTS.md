@@ -279,6 +279,7 @@ requirements but must not relax them.
       _ => throw new UnreachableException(),
   };
   ```
+
 - Use binary literals (`0b...`) for bit masks, packed flags, and other bitwise
   constants whose meaning depends on the position, adjacency, or grouping of
   individual bits. Group binary digits with `_` when that makes fields easier
@@ -305,14 +306,14 @@ requirements but must not relax them.
   5. `ref` and `ref readonly` properties;
   6. constructors;
   7. all remaining members.
-  Within each field or property category, order accessibility as `private`,
-  then `internal`, then `public`. Constants and static readonly fields belong
-  with readonly fields. Static and instance members do not create separate
-  categories. Keep overloads and closely related members together only within
-  these ordering constraints. A multiline property with nontrivial accessor
-  logic may be placed after all simple properties as the final property block
-  immediately before the constructor, or before the remaining members when
-  there is no constructor.
+     Within each field or property category, order accessibility as `private`,
+     then `internal`, then `public`. Constants and static readonly fields belong
+     with readonly fields. Static and instance members do not create separate
+     categories. Keep overloads and closely related members together only within
+     these ordering constraints. A multiline property with nontrivial accessor
+     logic may be placed after all simple properties as the final property block
+     immediately before the constructor, or before the remaining members when
+     there is no constructor.
 - Keep consecutive fields and simple properties compact. Strongly prefer no
   blank lines between members of the same category; add vertical space only
   when it marks a meaningful category boundary or isolates a nontrivial
