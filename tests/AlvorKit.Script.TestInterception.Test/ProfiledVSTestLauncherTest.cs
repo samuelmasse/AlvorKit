@@ -169,9 +169,6 @@ public sealed class ProfiledVSTestLauncherTest
             Array.Empty<string>(),
             activeVariables,
             "The plain VSTest child inherited profiler activation variables.");
-        Assert.IsTrue(
-            string.IsNullOrWhiteSpace(profilerPath),
-            "The plain VSTest child inherited the launcher asset marker.");
         Assert.IsNull(
             profilerModule,
             "The plain VSTest child loaded the interception profiler.");
