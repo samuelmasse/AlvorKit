@@ -299,25 +299,58 @@ requirements but must not relax them.
   examples, demos, scripts, and tests. Express any required range contract
   without the keyword.
 - Organize class and struct members in this exact category order:
-  1. readonly fields;
-  2. non-readonly fields;
-  3. properties with only a `get` accessor;
-  4. properties with both read and write access, including `set` or `init`;
-  5. `ref` and `ref readonly` properties;
-  6. constructors;
-  7. all remaining members.
-     Within each field or property category, order accessibility as `private`,
-     then `internal`, then `public`. Constants and static readonly fields belong
-     with readonly fields. Static and instance members do not create separate
-     categories. Keep overloads and closely related members together only within
-     these ordering constraints. A multiline property with nontrivial accessor
-     logic may be placed after all simple properties as the final property block
-     immediately before the constructor, or before the remaining members when
-     there is no constructor.
+  1. constants;
+  2. readonly fields;
+  3. non-readonly fields;
+  4. properties with only a `get` accessor;
+  5. properties with both read and write access, including `set` or `init`;
+  6. `ref` and `ref readonly` properties;
+  7. constructors;
+  8. all remaining members.
+
+  Constants always precede instance members and reverse the ordinary
+  accessibility order: `public`, then `internal`, then `private`.
+  Within each field or property category, order accessibility as `private`,
+  then `internal`, then `public`. Static readonly fields remain readonly fields.
+  Static and instance members do not otherwise create separate categories. Keep
+  overloads and closely related members together only within these ordering
+  constraints. A multiline property with nontrivial accessor logic may be
+  placed after all simple properties as the final property block immediately
+  before the constructor, or before the remaining members when there is no
+  constructor.
+
 - Keep consecutive fields and simple properties compact. Strongly prefer no
   blank lines between members of the same category; add vertical space only
   when it marks a meaningful category boundary or isolates a nontrivial
   multiline property implementation.
+- Constants and fields are distinct member categories. Put exactly one blank
+  line between the final constant and the first field below it; never declare
+  constants and fields as one compact block.
+- Keep every class and struct at no more than eight directly retained instance
+  fields. Constants and static fields do not count; auto-property backing
+  storage and positional-record members do count. When cohesive private state
+  would exceed the limit, group it into one or more private nested carrier
+  structs. An embedded state-carrier struct must never be `internal` or
+  `public`, must not escape its containing type, and must not be returned or
+  passed by value. Its fields use `public` PascalCase names so the containing
+  type can access them; the carrier's private accessibility keeps those fields
+  effectively private. This is the sole exception to the ordinary
+  private-field rule. A passive carrier declares no constructor, including no
+  primary constructor. Initialize its fields explicitly where the owning state
+  is established. Add a carrier constructor only when construction enforces a
+  real invariant rather than merely copying values into fields. A standalone
+  `internal` passive carrier follows the same shape with `internal` PascalCase
+  fields; do not recreate private backing fields and forwarding properties
+  inside it. Do not make the carrier `readonly` merely to force
+  constructor-based population; the owner may retain the fully initialized
+  carrier in a `readonly` field instead.
+- A private embedded carrier must reduce the containing type's access surface,
+  not merely its direct field count. Never re-expose a carrier by mirroring its
+  fields through a block of one-to-one forwarding properties or methods. A
+  value that needs its own forwarding member is not private carrier state. Keep
+  such values directly on a deliberately small contract, or define a
+  standalone collaboration or snapshot type at the narrowest required
+  accessibility and expose the cohesive group as one member.
 - Default parameter values are banned. Every caller must supply every argument;
   use a distinctly named method or overload only when it represents a genuinely
   different operation rather than recreating an implicit default.
@@ -333,12 +366,20 @@ requirements but must not relax them.
 - Strongly prefer private fields for storage. Expose state through the
   narrowest useful property instead of an `internal` or `public` field. When a
   caller genuinely needs by-reference access, keep the backing field private
-  and expose a narrowly scoped `ref` or `ref readonly` property. When both
-  accessors would only forward unrestricted reads and writes to one backing
-  field, prefer a `ref` property; keep get/set accessors when they validate,
+  and expose a narrowly scoped `ref` or `ref readonly` property. Do not
+  disguise unrestricted field access behind trivial
+  `get => field; set => field = value;` forwarding. Use a writable `ref`
+  property for that contract. Keep get/set accessors only when they validate,
   transform, restrict, or otherwise own behavior. Use an exposed field only
   when a framework, binary layout, generated-code contract, or measured
   hot-path requirement specifically demands one.
+- Prefer a `readonly struct` when none of its instance members mutate retained
+  state. In a non-readonly struct, explicitly mark every hand-authored instance
+  member that does not mutate retained state as `readonly`, including
+  expression-bodied properties, get-only properties, ordinary methods, and
+  non-mutating getters on behavioral get/set properties. Use an accessor-level
+  `readonly get` when the setter must remain mutating. A member that returns a
+  writable `ref`, or otherwise mutates the receiver, must remain non-readonly.
 - Auto accessors are banned in hand-authored classes and non-record structs. A
   property must compute its value or use explicit accessors over private backing
   fields. Records are the only hand-authored exception: auto-properties and
@@ -357,16 +398,29 @@ requirements but must not relax them.
   namespaces to the `.csproj`. Reserve file-level imports for aliases, rare
   conflicts, or one-off third-party APIs. `using var` and `using (...)`
   disposal statements are allowed and are not import directives.
-- Prefer clean primary constructors when captured parameters eliminate
-  mechanical backing fields and assignment-only constructor bodies. This is an
-  allowed exception to the normal constructor position for a small value
-  carrier or a non-public implementation type. Keep an explicit constructor
-  when constructor accessibility must differ from the type, when initialization
-  has behavior, or when ref-returning access requires a declared backing field.
-  A ref-like parameter that the compiler cannot capture may initialize one
-  explicit ref-like field inline while the remaining parameters stay captured.
-  In partial types, first verify whether primary constructor parameters are
-  already in scope.
+- Use a primary constructor by default for every class or behavioral struct
+  that receives constructor parameters, including public types, facades,
+  injected services, and stateful implementation types. New declarations must
+  use this shape, and materially edited types should convert assignment-only
+  explicit constructors. Passive field-carrier structs are the exception: they
+  receive no constructor merely to populate fields and are initialized
+  explicitly by their owner.
+- Refer to captured parameters directly when no named field is required. Do not
+  introduce mirrored private fields and an assignment-only constructor body.
+  When a parameter needs named storage, validation, or derived initialization,
+  retain the primary constructor and initialize the field or property inline,
+  using a focused static helper when necessary. Additional constructor
+  overloads must chain to the primary constructor and are not a reason to
+  abandon it.
+- Use an explicit constructor only when the required contract cannot be
+  expressed clearly with a primary constructor, such as when constructor
+  accessibility must differ from type accessibility or initialization
+  inherently requires statement-level control flow or ordered side effects.
+  Ordinary dependency capture, validation, derived values, base-constructor
+  arguments, and named backing fields are not exceptions. A ref-like parameter
+  that the compiler cannot capture may initialize one explicit ref-like field
+  inline while the remaining parameters stay captured. In partial types, first
+  verify whether primary constructor parameters are already in scope.
 - Trust nullable reference type analysis for non-null contracts. Do not add
   manual null guards or asserts just to recheck a non-nullable value.
 - Prefer file-scoped namespaces, nullable-aware code, collection expressions,
@@ -398,6 +452,17 @@ requirements but must not relax them.
   clearer. Generally avoid static helper types and methods in hand-authored
   code; reserve static members for constants, operators, pure domain functions
   with no collaborator dependency, and framework-required entry points.
+
+## VS Code Launch Configurations
+
+Whenever an agent creates a project that can be launched directly, the same
+change must add a checked-in VS Code launch configuration for it under
+`.vscode/launch.json`. This requirement is unconditional and applies to
+executables, demos, games, tools, and runnable fixtures in both Working Mode and
+Commit Mode. Add any corresponding `.vscode/tasks.json` build task referenced
+by `preLaunchTask`, and include the working directory, arguments, and
+environment required for the launch configuration to exercise the project's
+supported launch contract.
 
 ## Project Split Model
 

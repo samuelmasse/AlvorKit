@@ -46,7 +46,8 @@ internal sealed record CoverageInterceptionSettings(
             var settingsPath = InterceptionRunSettings.Write(
                 temporaryRoot,
                 ProfilerPath,
-                Modules);
+                Modules,
+                allocationProfiling: false);
             return await run(settingsPath);
         }
         finally

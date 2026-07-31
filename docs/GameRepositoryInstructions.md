@@ -44,8 +44,9 @@ where the originating AlvorKit rule permits an override.
 
 Game-specific overrides:
 
-- Game C# source files may be up to 750 lines when a cohesive game system,
-  state, menu, renderer, or simulation reads better together.
+- Game C# source files must not exceed 350 physical lines. Split files by
+  responsibility before they reach the ceiling; cohesion is not an exception
+  to the limit.
 - Test files may also be up to 750 lines when related scenarios read better
   together.
 - Do not create, add, or expand unit-test projects or unit tests for
@@ -68,6 +69,17 @@ Game-specific overrides:
   formatting, async state machines, and defensive copies.
 - Use AlvorKit shapes directly: scopes, controls, vectors, maths types,
   `GlLayer`, UI menus, and engine lifecycle APIs.
+
+## VS Code Launch Configurations
+
+Whenever an agent creates a project that can be launched directly, the same
+change must add a checked-in VS Code launch configuration for it under
+`.vscode/launch.json`. This requirement is unconditional and applies to
+executables, games, demos, tools, and runnable fixtures in both Working Mode and
+Commit Mode. Add any corresponding `.vscode/tasks.json` build task referenced
+by `preLaunchTask`, and include the working directory, arguments, and
+environment required for the launch configuration to exercise the project's
+supported launch contract.
 
 ## Game Ents And ECS
 
@@ -137,9 +149,14 @@ Apply them in new projects and packages even when no local precedent exists.
 
 ### Method And Component Shape
 
-- Give a method one concern. Split multi-concern logic into named stages behind
-  a short orchestrator; around fifty lines is the practical ceiling, while flat
-  single-concern checklists and component initializers may run longer.
+- Give a method one concern. Every hand-authored method, constructor, and local
+  function must stay at or below fifty physical lines, counted from its
+  declaration through its closing brace or expression-body semicolon; XML
+  documentation and attributes above the declaration do not count. This is a
+  hard ceiling, including for flat checklists and component initializers. Aim
+  for fewer than twenty-five lines in ordinary methods, and split longer logic
+  into named stages behind a short orchestrator well before it reaches the
+  ceiling.
 - Decompose a large subsystem into single-concern components of roughly one to
   two hundred lines driven by one orchestrator. Route cross-component effects
   through the orchestrator as return values, not as callbacks between
@@ -162,22 +179,60 @@ Apply them in new projects and packages even when no local precedent exists.
   value shape. Interface and abstract accessor declarations are contracts, not
   stored auto-properties, and remain valid.
 - If mutation by reference is genuinely required, keep the backing field
-  private and expose a narrowly scoped `ref` property. Prefer that shape when
-  get/set accessors would merely forward unrestricted access to the backing
-  field. Keep get/set accessors when they enforce validation, transformation,
-  restricted writes, or other behavior. Use an exposed field only for a
-  specific framework, binary-layout, generated-code, or measured hot-path
-  requirement.
+  private and expose a narrowly scoped `ref` property. Do not disguise
+  unrestricted field access behind trivial
+  `get => field; set => field = value;` forwarding; use a writable `ref`
+  property for that contract. Keep get/set accessors only when they enforce
+  validation, transformation, restricted writes, or other behavior. Use an
+  exposed field only for a specific framework, binary-layout, generated-code,
+  or measured hot-path requirement.
+- Prefer a `readonly struct` when none of its instance members mutate retained
+  state. In a non-readonly struct, explicitly mark every hand-authored instance
+  member that does not mutate retained state as `readonly`, including
+  expression-bodied properties, get-only properties, ordinary methods, and
+  non-mutating getters on behavioral get/set properties. Use an accessor-level
+  `readonly get` when the setter must remain mutating. A member that returns a
+  writable `ref`, or otherwise mutates the receiver, must remain non-readonly.
 - Organize every class and struct in the member order defined by AlvorKit's
-  root `C# Defaults`: readonly fields; non-readonly fields; get-only
+  root `C# Defaults`: constants; readonly fields; non-readonly fields; get-only
   properties; get/set or get/init properties; ref properties; constructors;
-  then remaining members. Within every field and property category, use
-  `private`, then `internal`, then `public` accessibility. A nontrivial
+  then remaining members. Constants always precede instance members and use
+  `public`, then `internal`, then `private` accessibility. Within every field
+  and property category, use `private`, then `internal`, then `public`
+  accessibility. Static readonly fields remain readonly fields. A nontrivial
   multiline property implementation may be the final property block
   immediately before the constructor, or before methods when no constructor
   exists.
 - Keep consecutive fields and simple properties compact. Do not put blank lines
   between members of the same category without a meaningful grouping reason.
+- Constants and fields are distinct member categories. Put exactly one blank
+  line between the final constant and the first field below it; never declare
+  constants and fields as one compact block.
+- Keep every class and struct at no more than eight directly retained instance
+  fields. Constants and static fields do not count; auto-property backing
+  storage and positional-record members do count. When cohesive private state
+  would exceed the limit, group it into one or more private nested carrier
+  structs. An embedded state-carrier struct must never be `internal` or
+  `public`, must not escape its containing type, and must not be returned or
+  passed by value. Its fields use `public` PascalCase names so the containing
+  type can access them; the carrier's private accessibility keeps those fields
+  effectively private. This is the sole exception to the ordinary
+  private-field rule. A passive carrier declares no constructor, including no
+  primary constructor. Initialize its fields explicitly where the owning state
+  is established. Add a carrier constructor only when construction enforces a
+  real invariant rather than merely copying values into fields. A standalone
+  `internal` passive carrier follows the same shape with `internal` PascalCase
+  fields; do not recreate private backing fields and forwarding properties
+  inside it. Do not make the carrier `readonly` merely to force
+  constructor-based population; the owner may retain the fully initialized
+  carrier in a `readonly` field instead.
+- A private embedded carrier must reduce the containing type's access surface,
+  not merely its direct field count. Never re-expose a carrier by mirroring its
+  fields through a block of one-to-one forwarding properties or methods. A
+  value that needs its own forwarding member is not private carrier state. Keep
+  such values directly on a deliberately small contract, or define a
+  standalone collaboration or snapshot type at the narrowest required
+  accessibility and expose the cohesive group as one member.
 - Default parameter values are banned. Require callers to provide every
   argument instead of hiding behavior behind an optional value.
 - A multiline declaration parameter list keeps its closing `)` directly after
@@ -187,14 +242,31 @@ Apply them in new projects and packages even when no local precedent exists.
 - The C# `checked` keyword is banned in all game code, including production
   source, scripts, tests, generated output, and templates. Express any required
   range contract without the keyword.
-- A captured primary constructor may precede the normal member layout when it
-  removes mechanical backing fields and assignments from a small value carrier
-  or non-public implementation type. Keep an explicit constructor when its
-  accessibility differs from the type or initialization performs behavior. A
-  ref-like parameter that cannot be captured may initialize one explicit field
-  inline without forcing an assignment-only constructor body.
-- Expression-bodied computed and forwarding properties are fine; they expose
-  behavior or controlled access rather than hiding owned storage.
+- Use a primary constructor by default for every class or behavioral struct
+  that receives constructor parameters, including public types, facades,
+  injected services, and stateful implementation types. New declarations must
+  use this shape, and materially edited types should convert assignment-only
+  explicit constructors. Passive field-carrier structs are the exception: they
+  receive no constructor merely to populate fields and are initialized
+  explicitly by their owner.
+- Refer to captured parameters directly when no named field is required. Do not
+  introduce mirrored private fields and an assignment-only constructor body.
+  When a parameter needs named storage, validation, or derived initialization,
+  retain the primary constructor and initialize the field or property inline,
+  using a focused static helper when necessary. Additional constructor
+  overloads must chain to the primary constructor and are not a reason to
+  abandon it.
+- Use an explicit constructor only when the required contract cannot be
+  expressed clearly with a primary constructor, such as when constructor
+  accessibility must differ from type accessibility or initialization
+  inherently requires statement-level control flow or ordered side effects.
+  Ordinary dependency capture, validation, derived values, base-constructor
+  arguments, and named backing fields are not exceptions. A ref-like parameter
+  that the compiler cannot capture may initialize one explicit ref-like field
+  inline while the remaining parameters stay captured.
+- Individual expression-bodied computed and forwarding properties are fine
+  when they form a deliberately small contract. A forwarding block that
+  reconstructs an embedded carrier's field surface is banned.
 - Configuration types bound by the configuration binder still expose
   properties, but non-record hand-authored implementations use explicit
   accessors over private fields. Generated `[Components]` source is exempt
@@ -235,6 +307,14 @@ Apply them in new projects and packages even when no local precedent exists.
   bit positions, masks, or similar arithmetic derivations. If the formula is
   awkward at the use site, improve the representation or move the calculation
   to the appropriate cold boundary instead of materializing a lookup cache.
+- Do not retain a small fixed lookup array or list when a closed mapping from
+  an index, enum, coordinate delta, or similarly compact key can be expressed
+  directly. Use a switch expression or a simple formula, and expose a named
+  count plus an indexed operation when callers must iterate the mapping.
+  Derive reverse, opposite, and related mappings from the same named
+  representation instead of adding a second lookup or linear search. Retained
+  tables are appropriate only when the values are authored or configured data,
+  can change at runtime, or measured performance justifies the storage.
 - For a dense grid whose hot loop repeatedly visits a fixed neighborhood,
   strongly prefer a blocked sentinel border around the retained data. Convert
   public coordinates or unpadded addresses to padded row-major indices in cold
@@ -336,6 +416,217 @@ Apply them in new projects and packages even when no local precedent exists.
   invalidation machinery.
 - An abstraction must remove duplication that already exists. Prefer a small
   toolkit that keeps call sites explicit over a framework that hides them.
+
+## Facade Projects
+
+A project containing a project-root `FACADE.md` is a facade project. Read that
+file before changing the project, its paired `.Debug` project, or a consumer.
+The facade is the project's single injected entry point: it presents a small
+public contract while hiding the cooperating services and retained state that
+implement that contract. Keep `FACADE.md` brief and stable: describe the
+business capability, identify the facade, and declare its concise PascalCase
+type prefix without cataloguing implementation details.
+
+### Established Public APIs — Facade Projects Only
+
+The approval requirement in this subsection applies only to a project that
+contains a project-root `FACADE.md`. It does not apply to a project without
+`FACADE.md`, even when that project exposes public repository-owned APIs. For a
+project without `FACADE.md`, follow the unshipped-development rule: breaking
+repository-owned APIs needs no special approval, and producers and consumers
+should be changed together.
+
+Within a facade project, once the facade's public API exists in source or
+documentation, treat it as an established design boundary. Changing it is a
+**BIG** design decision, even while the repository is unshipped. This
+facade-only rule overrides the shared default that breaking repository-owned
+APIs needs no special approval.
+
+Before changing an established facade public API, always stop and ask the user
+for explicit permission for that exact change. Do not edit the API or its
+consumers until the user replies affirmatively. The permission request must:
+
+- show the current and proposed C# declarations;
+- explain why the current contract is insufficient and why the change is
+  necessary;
+- identify the affected consumers and expected update scope; and
+- ask directly whether the specific public API change is approved.
+
+Adding, removing, renaming, retyping, or changing the accessibility of a public
+member or contract type counts as an API change, as does changing documented
+public behavior. A general request to implement a feature, perform a refactor,
+or improve an algorithm is not permission to change an established facade API.
+Internal implementation changes that preserve the public contract do not
+require this approval.
+
+Use a request shaped like this:
+
+> I need permission to change the established `PathFacade` API.
+>
+> Current:
+>
+> ```csharp
+> public PathResult FindPath(PathRequest request);
+> ```
+>
+> Proposed:
+>
+> ```csharp
+> public PathResult FindPath(PathRequest request, PathSearchOptions options);
+> ```
+>
+> Reason: the new search policy is caller-selected and cannot be represented by
+> `PathRequest` without giving that request unrelated responsibilities. This
+> requires updating the path scheduler and pathfinding tests. May I make this
+> specific public API change?
+
+Approval is a design gate, not a compatibility requirement. After approval,
+change producers and consumers together and remove the superseded API without
+adding compatibility overloads, aliases, adapters, or deprecation shims.
+
+### Layout, Composition, And Tests
+
+- Every type owned by a facade project uses the prefix declared in its
+  `FACADE.md`, including public contract types, injected services, internal
+  machinery, and nested implementation types. The single root injectable class
+  is named `<Prefix>Facade`. A paired debug facade declares its own prefix,
+  normally `<CorePrefix>Debug`, and names its root `<DebugPrefix>Facade`. Types
+  imported from another project retain the prefix of their owning project.
+- Exactly one injectable class lives at the project root beside the project
+  file and `FACADE.md`. Public static classes may live there at the same level.
+- Other public instantiated classes, structs, enums, and interfaces live in
+  `Classes/`, `Structs/`, `Enums/`, and `Interfaces/` respectively.
+- Injected implementation services and internal static classes live directly
+  in `Internal/`. Injected services are the hosted singleton collaborators of
+  the root facade.
+- Non-injected internal implementation types are grouped by kind:
+  `Internal/Classes/`, `Internal/Structs/`, `Internal/Enums/`, and
+  `Internal/Interfaces/`. `Internal/Classes/` is specifically for instantiated
+  non-singleton helper objects, not injected services or static classes.
+- The facade and its implementation graph use constructor injection. A facade
+  must not construct its own services.
+- Composition roots create the graph with `Host<TFacade>()` in the scope that
+  owns it, then resolve the facade normally. Tests must exercise the same
+  hosted composition rather than bypassing it with direct construction.
+- Dedicated unit tests are mandatory for every facade project. A new facade,
+  facade behavior change, or facade implementation change is incomplete until
+  its unit tests cover the public contract and the affected internal invariants
+  through the real hosted composition graph. This facade-specific requirement
+  overrides the Working Mode default that otherwise prohibits adding or
+  running game unit tests without an explicit user request.
+- Facade tests must assert behavior, values, state transitions, failure
+  semantics, or representation requirements that matter at runtime.
+  Reflection-based API surface locks, exported-type or member-name inventories,
+  and tests whose purpose is merely to prove that a declaration exists or has
+  particular accessibility are banned. Compilation of behavioral call sites
+  already proves that required declarations exist.
+
+### Debug Facades
+
+A facade project is paired with a `<FacadeProject>.Debug` facade project when
+internal diagnostics are required. The debug project follows the same layout
+rules, contains its own single injected facade, and may receive friend-assembly
+access to the production facade's internals. Host both facades in the same
+scope so the debug facade observes that scope's production facade instance.
+The debug facade may inject and use the core project's internal services
+directly; it does not need to depend on or route internal access through the
+production facade.
+
+Keep production-facade implementation types and members private unless another
+core implementation type must use them. Use `internal` only for genuine
+assembly collaboration or deliberate access from the paired debug assembly.
+Friend-assembly access is not a reason to expose the whole implementation.
+Debug-owned coordination, storage, transformation, and presentation belong in
+the debug project. Retain an opt-in hook in the core only when information must
+be recorded at the exact point where the production algorithm executes.
+
+The debug facade is an observation and control surface over the actual hosted
+core machinery. It may expose captured state, counters, traces, visualization
+data, and explicit diagnostic controls already supported by that machinery. It
+must not implement an alternative algorithm, reference or oracle
+implementation, fallback path, duplicated state model, or extra domain behavior
+that the core facade does not perform. When higher-level debug tooling needs to
+observe an operation, run the real core operation and inspect its captured
+internals. Put genuinely higher-level visualization or comparison orchestration
+in the owning higher-level `.Debug` project rather than manufacturing new
+behavior inside the lower-level debug facade.
+
+Core game-logic projects may depend only on a production facade's public
+contract. They must never import its internal machinery or reference its paired
+debug project. The debug facade is for higher-level diagnostic, visualization,
+testing, and benchmark projects only.
+
+### Facade Benchmarks
+
+Every production facade project `<FacadeProject>` must have one executable
+benchmark project named `<FacadeProject>.Bench`. Add only `.Bench`; names such
+as `<FacadeProject>Benchmark` and `<FacadeProject>.Benchmark` are banned. A
+paired debug facade is hosted and exercised by the production facade's bench;
+it does not receive a separate `.Debug.Bench` project.
+
+Each game repository must also have one common `<Game>.Bench` library for
+facade-benchmark infrastructure. Individual facade bench projects reference
+that common project for allocation capture, report formatting, and other
+genuinely shared harness code instead of copying it. Non-facade benchmark
+runners may also reuse this library; doing so does not make them facade
+benchmarks or subject their project names to the facade-bench naming rule.
+
+Every facade bench must support both modes below from the game repository root:
+
+```powershell
+# Authoritative performance run without allocation callbacks.
+dotnet run -c Release --project scripts\<FacadeProject>.Bench -- `
+    --json-output out\facade-benchmarks\<FacadeProject>-timing.json
+
+# Diagnostic run with exact process-wide managed-object counts.
+dotnet run --project ..\AlvorKit\scripts\AlvorKit.Script.TestInterception -c Release -- `
+    --exec-project scripts\<FacadeProject>.Bench\<FacadeProject>.Bench.csproj `
+    --configuration Release `
+    --allocation-profiling `
+    --module <FacadeProject>.Bench `
+    --timeout-seconds 300 -- `
+    --json-output out\facade-benchmarks\<FacadeProject>-objects.json
+
+# Diagnostic lower/high/extreme allocation-scaling matrix.
+dotnet run --project ..\AlvorKit\scripts\AlvorKit.Script.TestInterception -c Release -- `
+    --exec-project scripts\<FacadeProject>.Bench\<FacadeProject>.Bench.csproj `
+    --configuration Release `
+    --allocation-profiling `
+    --module <FacadeProject>.Bench `
+    --timeout-seconds 300 -- `
+    --allocation-matrix `
+    --json-output out\facade-benchmarks\<FacadeProject>-scaling.json
+```
+
+Allocation tracking is opt-in because profiler callbacks affect timing. Use the
+ordinary untracked run for speed conclusions, and the tracked run for allocation
+counts; never compare tracked timing directly with untracked timing. The report
+must state whether tracking is on.
+
+The allocation matrix must include lower-bound, high, and extreme cases. Judge
+object counts by growth with game-data dimensions such as chunks, cells,
+entities, or requests. Fixed composition, singleton, host, service, profiler
+capture, and process objects establish the lower-bound baseline and must not be
+treated as scaling regressions. Capture cold lifecycle allocation and warmed
+steady-state work separately so background or retained-path allocations remain
+visible even when the narrow hot loop is allocation-free.
+
+Every facade bench must accept `--json-output <path>` for its normal catalog
+and allocation matrix. The versioned JSON artifact retains execution and CI
+metadata, settings and selection, every preparatory and measured sample, raw
+durations and allocation bytes, exact object counts for each captured lifecycle
+or measured phase, per-operation object counts, validation signatures,
+diagnostics, and aggregate totals. Represent unavailable untracked object
+counts explicitly as null. Do not replace detailed samples with console
+medians or summaries.
+
+Game CI runs every facade bench on each push and pull-request commit. For each
+facade it archives three separate JSON artifacts: the profiler-free catalog for
+authoritative timing, the profiler-enabled catalog for exact process-wide
+object counts, and the profiler-enabled lower/high/extreme allocation matrix
+for scaling analysis. Include commit and CI-run metadata in each file. Do not
+merge tracked and untracked timing into one comparison because allocation
+callbacks change execution cost.
 
 ## Documentation Router
 

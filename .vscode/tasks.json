@@ -152,6 +152,20 @@
       "group": "build"
     },
     {
+      "label": "build AlvorKit.Interception.CoreClr.Demo.Allocations",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.Interception.CoreClr.Demo.Allocations/AlvorKit.Interception.CoreClr.Demo.Allocations.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
       "label": "build AlvorKit.Maths.Demo.Bench",
       "type": "process",
       "command": "dotnet",

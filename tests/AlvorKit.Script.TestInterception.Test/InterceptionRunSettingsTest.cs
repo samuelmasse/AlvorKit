@@ -1,7 +1,7 @@
 namespace AlvorKit.Script.TestInterception;
 
 [TestClass]
-public sealed class InterceptionRunSettingsTest
+public class InterceptionRunSettingsTest
 {
     /// <summary>Scopes the profiler path and module allowlist to one VSTest run.</summary>
     [TestMethod]
@@ -11,7 +11,8 @@ public sealed class InterceptionRunSettingsTest
 
         var settings = InterceptionRunSettings.Create(
             profiler,
-            ["Example.Test", "Example.Game", "Example.Test"]);
+            ["Example.Test", "Example.Game", "Example.Test"],
+            allocationProfiling: true);
         var environment = settings
             .Root!
             .Element("RunConfiguration")!
@@ -40,6 +41,10 @@ public sealed class InterceptionRunSettingsTest
         Assert.AreEqual(
             "0",
             environment.Element("DOTNET_ReadyToRun")!.Value);
+        Assert.AreEqual(
+            "1",
+            environment.Element(
+                InterceptionRunSettings.AllocationProfilingVariable)!.Value);
     }
 
     /// <summary>Rejects a run configuration without an allowed module.</summary>
@@ -49,6 +54,7 @@ public sealed class InterceptionRunSettingsTest
         Assert.ThrowsExactly<ArgumentException>(
             () => InterceptionRunSettings.Create(
                 @"C:\native\interception.dll",
-                []));
+                [],
+                allocationProfiling: false));
     }
 }

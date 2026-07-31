@@ -2,7 +2,7 @@ using AlvorKit.Interception.Profiler;
 
 namespace AlvorKit.Interception;
 
-public sealed partial class InterceptionProfiler
+public partial class InterceptionProfiler
 {
     internal ulong Replace(
         InterceptionPatchHandle handle,
@@ -69,7 +69,7 @@ public sealed partial class InterceptionProfiler
         var request = new InterceptionProfilerGeneration
         {
             Size = ((uint)Marshal.SizeOf<InterceptionProfilerGeneration>()),
-            AbiVersion = AbiVersion,
+            AbiVersion = NativeAbiVersion,
             RequestId = requestId,
             PatchId = patchId,
             Target = ToNative(plan.Target),

@@ -1,12 +1,12 @@
 namespace AlvorKit.Script.TestInterception;
 
 /// <summary>Builds a private profiler-enabled environment for one selected child.</summary>
-internal sealed class InterceptionLauncher
+internal class InterceptionLauncher
 {
     /// <summary>Launches the configured test or executable project.</summary>
     internal async Task<int> RunAsync(
         InterceptionLaunchOptions options,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var profilerPath = InterceptionProfilerAsset.Resolve(
             options.RepositoryRoot,
@@ -36,6 +36,8 @@ internal sealed class InterceptionLauncher
                 $"Interception child: dotnet {string.Join(" ", startInfo.ArgumentList)}");
             Console.WriteLine($"Profiler: {profilerPath}");
             Console.WriteLine($"Modules: {string.Join(";", modules)}");
+            Console.WriteLine(
+                $"Allocation profiling: {(options.AllocationProfiling ? "enabled" : "disabled")}");
             return await InterceptionChildProcess.RunAsync(
                 startInfo,
                 options.Timeout,
@@ -48,6 +50,7 @@ internal sealed class InterceptionLauncher
         }
     }
 
+    /// <summary>Creates one VSTest launch that scopes profiler variables through runsettings.</summary>
     private static ProcessStartInfo TestStartInfo(
         InterceptionLaunchOptions options,
         string projectPath,
@@ -58,7 +61,8 @@ internal sealed class InterceptionLauncher
         var settingsPath = InterceptionRunSettings.Write(
             temporaryRoot,
             profilerPath,
-            modules);
+            modules,
+            options.AllocationProfiling);
         var startInfo = BaseStartInfo(options.RepositoryRoot);
         Add(
             startInfo,
@@ -74,6 +78,7 @@ internal sealed class InterceptionLauncher
         return startInfo;
     }
 
+    /// <summary>Creates one executable launch with a private profiler environment.</summary>
     private static ProcessStartInfo ExecutableStartInfo(
         InterceptionLaunchOptions options,
         string projectPath,
@@ -94,10 +99,15 @@ internal sealed class InterceptionLauncher
             Add(startInfo, options.ChildArguments);
         }
 
-        SetProfilerEnvironment(startInfo, profilerPath, modules);
+        SetProfilerEnvironment(
+            startInfo,
+            profilerPath,
+            modules,
+            options.AllocationProfiling);
         return startInfo;
     }
 
+    /// <summary>Creates a redirected child process after clearing inherited profiler activation.</summary>
     private static ProcessStartInfo BaseStartInfo(string repositoryRoot)
     {
         var startInfo = new ProcessStartInfo("dotnet")
@@ -109,13 +119,17 @@ internal sealed class InterceptionLauncher
             CreateNoWindow = true
         };
         InterceptionProfilerEnvironment.Clear(startInfo);
+        startInfo.Environment.Remove(
+            InterceptionRunSettings.AllocationProfilingVariable);
         return startInfo;
     }
 
+    /// <summary>Applies the exact profiler, module allowlist, and optional allocation startup capability.</summary>
     private static void SetProfilerEnvironment(
         ProcessStartInfo startInfo,
         string profilerPath,
-        IReadOnlyList<string> modules)
+        IReadOnlyList<string> modules,
+        bool allocationProfiling)
     {
         startInfo.Environment["CORECLR_ENABLE_PROFILING"] = "1";
         startInfo.Environment["CORECLR_PROFILER"] =
@@ -127,6 +141,11 @@ internal sealed class InterceptionLauncher
         startInfo.Environment["DOTNET_ReadyToRun"] = "0";
         startInfo.Environment[
             InterceptionRunSettings.ModulesVariable] = string.Join(";", modules);
+        if (allocationProfiling)
+        {
+            startInfo.Environment[
+                InterceptionRunSettings.AllocationProfilingVariable] = "1";
+        }
     }
 
     private static void Add(

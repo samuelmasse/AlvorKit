@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference
+            Include="..\..\src\AlvorKit.Interception.CoreClr\AlvorKit.Interception.CoreClr.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Interception" />
+        <Using Include="AlvorKit.Interception.CoreClr.Advanced" />
+    </ItemGroup>
+
+    <Target
+        Name="CopyInterceptionProfilerForLaunch"
+        AfterTargets="Build"
+        Condition="'$(OS)' == 'Windows_NT'">
+        <Copy
+            SourceFiles="$(TargetDir)runtimes\win-x64\native\AlvorKit.Interception.Profiler.Native.dll"
+            DestinationFolder="$(TargetDir)" />
+    </Target>
+
+</Project>

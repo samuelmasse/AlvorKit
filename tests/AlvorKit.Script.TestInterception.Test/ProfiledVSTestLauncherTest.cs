@@ -5,7 +5,7 @@ namespace AlvorKit.Script.TestInterception;
 /// <summary>Accepts repeated profiled VSTest launches and a following plain launch.</summary>
 [TestClass]
 [DoNotParallelize]
-public sealed class ProfiledVSTestLauncherTest
+public class ProfiledVSTestLauncherTest
 {
     /// <summary>The exact child evidence test selected by every acceptance leg.</summary>
     private const string ChildEvidenceFilter =
@@ -45,6 +45,7 @@ public sealed class ProfiledVSTestLauncherTest
             ChildEvidenceFilter,
             profilerPath,
             [Assembly.GetExecutingAssembly().GetName().Name!],
+            AllocationProfiling: false,
             TimeSpan.FromMinutes(2),
             [
                 "--no-build",
@@ -56,8 +57,8 @@ public sealed class ProfiledVSTestLauncherTest
             ]);
         var launcher = new InterceptionLauncher();
 
-        var firstExitCode = await launcher.RunAsync(options);
-        var secondExitCode = await launcher.RunAsync(options);
+        var firstExitCode = await launcher.RunAsync(options, CancellationToken.None);
+        var secondExitCode = await launcher.RunAsync(options, CancellationToken.None);
         var plainExitCode = await RunPlainChildAsync(
             repositoryRoot,
             projectPath,

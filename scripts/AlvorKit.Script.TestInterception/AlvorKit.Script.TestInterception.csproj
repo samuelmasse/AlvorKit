@@ -8,7 +8,7 @@
     <ItemGroup>
         <PackageReference
             Include="AlvorKit.Interception.Profiler.Native"
-            Version="0.4.0.1" />
+            Version="0.4.0.2" />
         <PackageReference Include="System.CommandLine" Version="2.0.8" />
     </ItemGroup>
 

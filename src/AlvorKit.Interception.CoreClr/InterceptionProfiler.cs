@@ -3,42 +3,75 @@ using AlvorKit.Interception.Profiler;
 namespace AlvorKit.Interception;
 
 /// <summary>Queues exact method-version operations through the profiler loaded into this process.</summary>
-public sealed partial class InterceptionProfiler :
+public partial class InterceptionProfiler :
     IInterceptionBackend,
     IInterceptionGenerationBackend
 {
-    private const string NativeLibraryName =
-        "AlvorKit.Interception.Profiler.Native";
-    private const uint AbiVersion = 3;
+    /// <summary>The environment variable containing the exact profiler native-library path.</summary>
+    public const string PathEnvironmentVariable = "ALVORKIT_INTERCEPTION_PROFILER_PATH";
+
+    /// <summary>The startup opt-in that enables exact object-allocation callbacks and stack snapshots.</summary>
+    public const string AllocationProfilingEnvironmentVariable = "ALVORKIT_INTERCEPTION_ALLOCATION_PROFILING";
+
+    /// <summary>The native ABI revision required by this managed backend.</summary>
+    internal const uint NativeAbiVersion = 3;
+
+    private const string NativeLibraryName = "AlvorKit.Interception.Profiler.Native";
+
     private static readonly Lock NativeGate = new();
     private static readonly InterceptionCollisionRegistry ProcessCollisionRegistry = new();
+    private readonly InterceptionProfilerApi api;
+    /// <summary>Allocation-specific ABI adapter present only when startup enabled the capability.</summary>
+    private readonly InterceptionAllocationNative? allocationNative;
+    /// <summary>Negotiated native limits and supported operations.</summary>
+    private readonly InterceptionCapabilities capabilities;
+    private readonly ConcurrentDictionary<ulong, InterceptionTarget> knownTargets = [];
     private static long nextRequestId;
     private static long nextPatchId;
     private static string? nativePath;
     private static nint nativeHandle;
     private static bool resolverInstalled;
 
-    private readonly InterceptionProfilerApi api;
-    private readonly ConcurrentDictionary<ulong, InterceptionTarget> knownTargets = [];
+    /// <summary>Gets the connected profiler's negotiated features and limits.</summary>
+    public InterceptionCapabilities Capabilities => capabilities;
 
+    /// <summary>Gets the process-wide neutral claim registry shared by CoreCLR consumers.</summary>
+    public InterceptionCollisionRegistry CollisionRegistry => ProcessCollisionRegistry;
+
+    /// <summary>Creates one connected profiler over its generated native API.</summary>
     private InterceptionProfiler(
         InterceptionProfilerApi api,
         InterceptionCapabilities capabilities)
     {
         this.api = api;
-        Capabilities = capabilities;
+        this.capabilities = capabilities;
+        if (capabilities.Flags.HasFlag(InterceptionCapability.AllocationCapture))
+            allocationNative = new(api);
     }
 
-    /// <summary>The environment variable containing the exact profiler native-library path.</summary>
-    public const string PathEnvironmentVariable =
-        "ALVORKIT_INTERCEPTION_PROFILER_PATH";
+    /// <summary>Starts an exact allocation-counting window with independently configurable stack sampling.</summary>
+    public InterceptionAllocationCapture BeginAllocationCapture(
+        InterceptionAllocationCaptureOptions options)
+    {
+        if (allocationNative is null)
+        {
+            throw new NotSupportedException(
+                $"Allocation capture requires {AllocationProfilingEnvironmentVariable}=1 at process startup.");
+        }
 
-    /// <summary>Gets the connected profiler's negotiated features and limits.</summary>
-    public InterceptionCapabilities Capabilities { get; }
+        options.Validate();
+        var capture = new InterceptionAllocationCapture(this);
+        allocationNative.Begin(options);
+        return capture;
+    }
 
-    /// <summary>Gets the process-wide neutral claim registry shared by CoreCLR consumers.</summary>
-    public InterceptionCollisionRegistry CollisionRegistry =>
-        ProcessCollisionRegistry;
+    /// <summary>Ends the active allocation window and returns its retained samples.</summary>
+    internal InterceptionAllocationCaptureResult CompleteAllocationCapture() =>
+        allocationNative!.End();
+
+    /// <summary>Ends the active allocation window without retaining its samples.</summary>
+    internal void DiscardAllocationCapture() =>
+        allocationNative!.EndAndDiscard();
 
     /// <summary>Connects generated bindings to the profiler already loaded by CoreCLR.</summary>
     public static InterceptionProfiler Connect()
@@ -58,14 +91,14 @@ public sealed partial class InterceptionProfiler :
         ConfigureNativeResolver(fullPath);
         InterceptionProfilerApi api = new InterceptionProfilerBackend();
         var actualAbiVersion = api.GetAbiVersion();
-        if (actualAbiVersion != AbiVersion)
+        if (actualAbiVersion != NativeAbiVersion)
         {
             throw new InvalidOperationException(
-                $"Profiler ABI {actualAbiVersion} cannot be used by managed ABI {AbiVersion}.");
+                $"Profiler ABI {actualAbiVersion} cannot be used by managed ABI {NativeAbiVersion}.");
         }
 
         Marshal.ThrowExceptionForHR(api.GetCapabilities(out var nativeCapabilities));
-        if (nativeCapabilities.AbiVersion != AbiVersion)
+        if (nativeCapabilities.AbiVersion != NativeAbiVersion)
             throw new InvalidOperationException("The profiler returned capabilities for a different ABI.");
 
         var capabilities = new InterceptionCapabilities(

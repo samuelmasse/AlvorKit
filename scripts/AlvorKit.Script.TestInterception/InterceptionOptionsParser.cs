@@ -1,7 +1,7 @@
 namespace AlvorKit.Script.TestInterception;
 
 /// <summary>Creates and parses the interception child-launcher command line.</summary>
-internal sealed class InterceptionOptionsParser
+internal class InterceptionOptionsParser
 {
     /// <summary>Creates the executable command surface.</summary>
     internal static RootCommand CreateRootCommand(
@@ -19,7 +19,7 @@ internal sealed class InterceptionOptionsParser
     /// <summary>Parses launcher arguments for focused tests.</summary>
     internal InterceptionLaunchOptions Parse(
         IReadOnlyList<string> arguments,
-        IReadOnlyList<string>? childArguments = null)
+        IReadOnlyList<string>? childArguments)
     {
         var options = CreateOptions();
         var command = new RootCommand();
@@ -34,6 +34,7 @@ internal sealed class InterceptionOptionsParser
         return ToOptions(result, options, childArguments ?? []);
     }
 
+    /// <summary>Creates the complete set of launcher-owned command options.</summary>
     private static (
         Option<string?> TestProject,
         Option<string?> ExecutableProject,
@@ -41,6 +42,7 @@ internal sealed class InterceptionOptionsParser
         Option<string?> Filter,
         Option<string?> ProfilerPath,
         Option<string[]> Modules,
+        Option<bool> AllocationProfiling,
         Option<string?> TimeoutSeconds,
         Option<string?> RepositoryRoot) CreateOptions() =>
         (
@@ -50,9 +52,15 @@ internal sealed class InterceptionOptionsParser
             new("--filter") { Description = "Optional dotnet test filter." },
             new("--profiler-path") { Description = "Exact first-party profiler library path." },
             new("--module") { Description = "Allowed managed module name." },
+            new("--allocation-profiling")
+            {
+                Description =
+                    "Enable exact object counting and sampled managed allocation stacks."
+            },
             new("--timeout-seconds") { Description = "Hard child-process timeout." },
             new("--repo-root") { Description = "Repository root used as the child working directory." });
 
+    /// <summary>Adds every launcher option to one command.</summary>
     private static void AddOptions(
         RootCommand command,
         (
@@ -62,6 +70,7 @@ internal sealed class InterceptionOptionsParser
             Option<string?> Filter,
             Option<string?> ProfilerPath,
             Option<string[]> Modules,
+            Option<bool> AllocationProfiling,
             Option<string?> TimeoutSeconds,
             Option<string?> RepositoryRoot) options)
     {
@@ -71,10 +80,12 @@ internal sealed class InterceptionOptionsParser
         command.Options.Add(options.Filter);
         command.Options.Add(options.ProfilerPath);
         command.Options.Add(options.Modules);
+        command.Options.Add(options.AllocationProfiling);
         command.Options.Add(options.TimeoutSeconds);
         command.Options.Add(options.RepositoryRoot);
     }
 
+    /// <summary>Validates parsed values and creates immutable launcher inputs.</summary>
     private static InterceptionLaunchOptions ToOptions(
         ParseResult parse,
         (
@@ -84,6 +95,7 @@ internal sealed class InterceptionOptionsParser
             Option<string?> Filter,
             Option<string?> ProfilerPath,
             Option<string[]> Modules,
+            Option<bool> AllocationProfiling,
             Option<string?> TimeoutSeconds,
             Option<string?> RepositoryRoot) options,
         IReadOnlyList<string> childArguments)
@@ -118,6 +130,7 @@ internal sealed class InterceptionOptionsParser
             filter,
             parse.GetValue(options.ProfilerPath),
             parse.GetValue(options.Modules) ?? [],
+            parse.GetValue(options.AllocationProfiling),
             timeout,
             childArguments);
     }

@@ -11,7 +11,7 @@ internal static class Program
             InterceptionCommandLine.Split(args);
         var command = InterceptionOptionsParser.CreateRootCommand(
             childArguments,
-            static options => new InterceptionLauncher().RunAsync(options));
+            static options => new InterceptionLauncher().RunAsync(options, CancellationToken.None));
         return await command.Parse(launcherArguments).InvokeAsync(
             new() { EnableDefaultExceptionHandler = false });
     }

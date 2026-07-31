@@ -172,6 +172,26 @@
       "stopAtEntry": false
     },
     {
+      "name": "AlvorKit.Interception.CoreClr.Demo.Allocations",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Interception.CoreClr.Demo.Allocations",
+      "program": "${workspaceFolder}/bin/AlvorKit.Interception.CoreClr.Demo.Allocations/Release/AlvorKit.Interception.CoreClr.Demo.Allocations.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "env": {
+        "CORECLR_ENABLE_PROFILING": "1",
+        "CORECLR_PROFILER": "{3840ACF7-5AF1-49EA-BF94-5F7086C57F57}",
+        "CORECLR_PROFILER_PATH": "${workspaceFolder}/bin/AlvorKit.Interception.CoreClr.Demo.Allocations/Release/AlvorKit.Interception.Profiler.Native.dll",
+        "CORECLR_PROFILER_PATH_64": "${workspaceFolder}/bin/AlvorKit.Interception.CoreClr.Demo.Allocations/Release/AlvorKit.Interception.Profiler.Native.dll",
+        "ALVORKIT_INTERCEPTION_PROFILER_PATH": "${workspaceFolder}/bin/AlvorKit.Interception.CoreClr.Demo.Allocations/Release/AlvorKit.Interception.Profiler.Native.dll",
+        "DOTNET_ReadyToRun": "0",
+        "ALVORKIT_INTERCEPTION_MODULES": "AlvorKit.Interception.CoreClr.Demo.Allocations",
+        "ALVORKIT_INTERCEPTION_ALLOCATION_PROFILING": "1"
+      }
+    },
+    {
       "name": "AlvorKit.Maths.Demo.Bench",
       "type": "coreclr",
       "request": "launch",

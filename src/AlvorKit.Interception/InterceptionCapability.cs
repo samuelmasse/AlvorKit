@@ -41,5 +41,8 @@ public enum InterceptionCapability : ulong
     BodyIdentity = 1 << 10,
 
     /// <summary>The profiler returns exact loaded method-body bytes after eligibility checks.</summary>
-    LoadedBody = 1 << 11
+    LoadedBody = 1 << 11,
+
+    /// <summary>The startup-enabled profiler can count allocations and sample their managed call stacks.</summary>
+    AllocationCapture = 0b1_0000_0000_0000
 }

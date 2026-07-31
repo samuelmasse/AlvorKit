@@ -2,7 +2,7 @@ using AlvorKit.Interception.Profiler;
 
 namespace AlvorKit.Interception;
 
-public sealed partial class InterceptionProfiler
+public partial class InterceptionProfiler
 {
     internal ulong Replace(InterceptionPatchHandle handle, InterceptionPlan plan)
     {
@@ -28,7 +28,7 @@ public sealed partial class InterceptionProfiler
         var request = new InterceptionProfilerRemove
         {
             Size = ((uint)Marshal.SizeOf<InterceptionProfilerRemove>()),
-            AbiVersion = AbiVersion,
+            AbiVersion = NativeAbiVersion,
             RequestId = requestId,
             PatchId = handle.PatchId,
             Target = ToNative(handle.Target)
@@ -51,7 +51,7 @@ public sealed partial class InterceptionProfiler
         var request = new InterceptionProfilerInstall
         {
             Size = ((uint)Marshal.SizeOf<InterceptionProfilerInstall>()),
-            AbiVersion = AbiVersion,
+            AbiVersion = NativeAbiVersion,
             RequestId = requestId,
             PatchId = patchId,
             Target = ToNative(plan.Target),
@@ -73,7 +73,7 @@ public sealed partial class InterceptionProfiler
         var request = new InterceptionProfilerInstallDispatch
         {
             Size = ((uint)Marshal.SizeOf<InterceptionProfilerInstallDispatch>()),
-            AbiVersion = AbiVersion,
+            AbiVersion = NativeAbiVersion,
             RequestId = requestId,
             PatchId = patchId,
             Target = ToNative(plan.Target),
@@ -120,8 +120,6 @@ public sealed partial class InterceptionProfiler
         Assembly assembly,
         DllImportSearchPath? searchPath)
     {
-        _ = assembly;
-        _ = searchPath;
         return libraryName == NativeLibraryName ? nativeHandle : 0;
     }
 
@@ -158,7 +156,8 @@ public sealed partial class InterceptionProfiler
         return result;
     }
 
-    private static Guid FromNative(InterceptionProfilerGuid value)
+    /// <summary>Converts one generated native GUID record to its managed value.</summary>
+    internal static Guid FromNative(InterceptionProfilerGuid value)
     {
         Span<byte> bytes = stackalloc byte[16];
         BitConverter.TryWriteBytes(bytes, value.Data1);

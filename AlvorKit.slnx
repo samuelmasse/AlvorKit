@@ -15,6 +15,8 @@
         <Project Path="demos/AlvorKit.XxHash.Demo.Bench/AlvorKit.XxHash.Demo.Bench.csproj" />
         <Project Path="demos/AlvorKit.FreeType.Demo/AlvorKit.FreeType.Demo.csproj" />
         <Project Path="demos/AlvorKit.Injection.Demo/AlvorKit.Injection.Demo.csproj" />
+        <Project
+            Path="demos/AlvorKit.Interception.CoreClr.Demo.Allocations/AlvorKit.Interception.CoreClr.Demo.Allocations.csproj" />
         <Project Path="demos/AlvorKit.Engine.LiveCode.Demo/AlvorKit.Engine.LiveCode.Demo.csproj" />
         <Project
             Path="demos/AlvorKit.Engine.SourceUpdate.Demo/AlvorKit.Engine.SourceUpdate.Demo.csproj" />

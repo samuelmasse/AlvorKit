@@ -1,12 +1,12 @@
 namespace AlvorKit.Interception;
 
-public sealed partial class InterceptionProfiler
+public partial class InterceptionProfiler
 {
     /// <summary>Reads cold-path queue and active-patch diagnostics.</summary>
     public InterceptionBackendState GetState()
     {
         Marshal.ThrowExceptionForHR(api.GetProfilerState(out var value));
-        if (value.AbiVersion != AbiVersion)
+        if (value.AbiVersion != NativeAbiVersion)
             throw new InvalidOperationException("The profiler returned state for a different ABI.");
 
         return new(
@@ -58,7 +58,7 @@ public sealed partial class InterceptionProfiler
 
         Marshal.ThrowExceptionForHR(
             api.GetGenerationCompletion(requestId, out var value));
-        if (value.AbiVersion != AbiVersion)
+        if (value.AbiVersion != NativeAbiVersion)
             throw new InvalidOperationException("The profiler returned a different generation ABI.");
         return new(
             value.RequestId,
@@ -91,7 +91,7 @@ public sealed partial class InterceptionProfiler
                 requestId,
                 relocationIndex,
                 out var value));
-        if (value.AbiVersion != AbiVersion)
+        if (value.AbiVersion != NativeAbiVersion)
             throw new InvalidOperationException("The profiler returned a different relocation ABI.");
         return new(
             value.RequestId,

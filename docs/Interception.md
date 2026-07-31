@@ -131,6 +131,46 @@ The launcher has an executable isolation acceptance: two profiled VSTest
 children observe the native module, followed by an ordinary VSTest child that
 observes neither profiler variables nor the native module.
 
+## Managed allocation capture
+
+The same profiler can opt into exact managed-object counting and bounded stack
+sampling. The opt-in must be present when CoreCLR loads the profiler because
+individual allocation callbacks and stack snapshots are immutable startup
+capabilities:
+
+```powershell
+dotnet run --project scripts/AlvorKit.Script.TestInterception -- `
+    --exec-project demos/AlvorKit.Interception.CoreClr.Demo.Allocations/AlvorKit.Interception.CoreClr.Demo.Allocations.csproj `
+    --allocation-profiling `
+    --module AlvorKit.Interception.CoreClr.Demo.Allocations
+```
+
+`BeginAllocationCapture` defines the measured window. Every managed heap object
+allocated inside that window increments an exact native atomic counter.
+`SampleInterval` independently controls how often the profiler synchronously
+walks the allocating thread. A value of `1` gives exact retained line
+attribution for bounded investigations; a larger value keeps the exact total
+while producing a weighted sampled Speedscope chart. `MaximumSamples = 0`
+provides count-only measurement.
+
+The native callback performs no heap allocation, metadata lookup, lock
+acquisition, or source decoding. It writes raw function IDs and instruction
+pointers into buffers allocated before the window. After the window closes,
+AlvorKit maps native instruction pointers to IL offsets and maps those offsets
+through Portable PDBs to selected game assemblies and source lines.
+
+Allocation benchmarks should compare at least two game-scale inputs and report
+the slope:
+
+```text
+(allocations at large N - allocations at small N) / (large N - small N)
+```
+
+This keeps one-time services, singletons, caches, and setup objects from
+dominating the optimization signal. The demo contrasts one class per entity
+with one array of inline structs: the former grows by one object per entity;
+the latter retains one constant managed array object.
+
 Before starting a child, the launcher guard rejects missing opt-in, partial or
 conflicting profiler variables, unsupported host/runtime/architecture
 combinations, and mismatched profiler assets with structured failure kinds.
