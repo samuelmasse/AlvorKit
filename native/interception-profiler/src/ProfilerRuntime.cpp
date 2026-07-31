@@ -2,7 +2,8 @@
 
 #include <new>
 
-ProfilerRuntime::ProfilerRuntime(ICorProfilerInfo10* info) : info_(info), modules_(info) {}
+ProfilerRuntime::ProfilerRuntime(ICorProfilerInfo10* info, bool allocation_capture_enabled)
+    : info_(info), allocation_capture_(info, allocation_capture_enabled), modules_(info) {}
 
 ProfilerRuntime::~ProfilerRuntime() {
   Stop();
@@ -38,6 +39,7 @@ void ProfilerRuntime::Stop() {
     ready_ = false;
     changed_.notify_all();
     body_completed_.notify_all();
+    frame_completed_.notify_all();
   }
   if (worker_.joinable())
     worker_.join();

@@ -23,12 +23,14 @@ void ProfilerRuntime::WorkerMain() {
   for (;;) {
     ProfilerCommand command;
     BodyReadRequest* body_request = nullptr;
+    AllocationFrameResolveRequest* frame_request = nullptr;
     ModuleID catalog_module = 0;
     bool has_command = false;
     {
       std::unique_lock lock(queue_mutex_);
       changed_.wait(lock, [this] {
-        return stopping_ || !catalog_requests_.empty() || !body_requests_.empty() || !commands_.empty();
+        return stopping_ || !catalog_requests_.empty() || !body_requests_.empty() || !frame_requests_.empty() ||
+               !commands_.empty();
       });
       if (stopping_)
         return;
@@ -39,6 +41,9 @@ void ProfilerRuntime::WorkerMain() {
       } else if (!body_requests_.empty()) {
         body_request = body_requests_.front();
         body_requests_.pop_front();
+      } else if (!frame_requests_.empty()) {
+        frame_request = frame_requests_.front();
+        frame_requests_.pop_front();
       } else {
         command = std::move(commands_.front());
         commands_.pop_front();
@@ -50,6 +55,17 @@ void ProfilerRuntime::WorkerMain() {
       try {
         (void)modules_.Catalog(catalog_module);
       } catch (...) {
+      }
+      continue;
+    }
+    if (frame_request != nullptr) {
+      try {
+        ProcessAllocationFrameResolve(frame_request);
+      } catch (...) {
+        std::lock_guard lock(queue_mutex_);
+        frame_request->status = E_FAIL;
+        frame_request->completed = true;
+        frame_completed_.notify_all();
       }
       continue;
     }
@@ -84,6 +100,18 @@ void ProfilerRuntime::WorkerMain() {
       rejit_.Fail(command.request_id, E_FAIL);
     }
   }
+}
+
+void ProfilerRuntime::ProcessAllocationFrameResolve(AllocationFrameResolveRequest* request) {
+  alvorkit_interception_resolved_frame_v3 resolved{};
+  const HRESULT status = allocation_capture_.ResolveFrame(&request->frame, &resolved);
+  {
+    std::lock_guard lock(queue_mutex_);
+    request->status = status;
+    request->resolved = resolved;
+    request->completed = true;
+  }
+  frame_completed_.notify_all();
 }
 
 void ProfilerRuntime::ProcessBodyRead(BodyReadRequest* request) {

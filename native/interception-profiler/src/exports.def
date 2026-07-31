@@ -12,3 +12,7 @@ EXPORTS
     alvorkit_interception_get_completion
     alvorkit_interception_get_generation_completion
     alvorkit_interception_get_relocation_result
+    alvorkit_interception_begin_allocation_capture
+    alvorkit_interception_end_allocation_capture
+    alvorkit_interception_get_allocation_sample
+    alvorkit_interception_resolve_allocation_frame

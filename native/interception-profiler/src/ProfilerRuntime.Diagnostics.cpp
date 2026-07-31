@@ -16,6 +16,8 @@ HRESULT ProfilerRuntime::GetCapabilities(alvorkit_interception_capabilities_v2* 
       ALVORKIT_INTERCEPTION_CAPABILITY_EXACT_DISPATCH | ALVORKIT_INTERCEPTION_CAPABILITY_METHOD_GENERATIONS |
       ALVORKIT_INTERCEPTION_CAPABILITY_LATE_METADATA | ALVORKIT_INTERCEPTION_CAPABILITY_IL_MAP |
       ALVORKIT_INTERCEPTION_CAPABILITY_BODY_IDENTITY | ALVORKIT_INTERCEPTION_CAPABILITY_LOADED_BODY;
+  if (allocation_capture_.IsEnabled())
+    capabilities->flags |= ALVORKIT_INTERCEPTION_CAPABILITY_ALLOCATION_CAPTURE;
   capabilities->maximum_il_body_bytes = ALVORKIT_INTERCEPTION_MAX_IL_BODY_BYTES;
   capabilities->maximum_metadata_bytes = ALVORKIT_INTERCEPTION_MAX_METADATA_BYTES;
   capabilities->maximum_relocations = ALVORKIT_INTERCEPTION_MAX_RELOCATIONS;
@@ -61,4 +63,18 @@ HRESULT ProfilerRuntime::GetRelocationResult(uint64_t request_id, uint32_t reloc
   if (request_id == 0 || result == nullptr)
     return E_INVALIDARG;
   return rejit_.GetRelocationResult(request_id, relocation_index, result);
+}
+
+HRESULT ProfilerRuntime::BeginAllocationCapture(const alvorkit_interception_allocation_capture_v3* request) {
+  return allocation_capture_.Begin(request);
+}
+
+HRESULT ProfilerRuntime::EndAllocationCapture(alvorkit_interception_allocation_summary_v3* summary) {
+  return allocation_capture_.End(summary);
+}
+
+HRESULT ProfilerRuntime::GetAllocationSample(uint32_t sample_index, alvorkit_interception_allocation_sample_v3* sample,
+                                             alvorkit_interception_allocation_frame_v3* frames,
+                                             uint32_t frame_capacity) {
+  return allocation_capture_.GetSample(sample_index, sample, frames, frame_capacity);
 }

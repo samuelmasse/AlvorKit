@@ -19,6 +19,7 @@ public:
   HRESULT STDMETHODCALLTYPE Shutdown() override;
   HRESULT STDMETHODCALLTYPE ModuleLoadFinished(ModuleID module_id, HRESULT status) override;
   HRESULT STDMETHODCALLTYPE ModuleUnloadStarted(ModuleID module_id) override;
+  HRESULT STDMETHODCALLTYPE ObjectAllocated(ObjectID object_id, ClassID class_id) override;
   HRESULT STDMETHODCALLTYPE ReJITCompilationStarted(FunctionID function_id, ReJITID rejit_id,
                                                     BOOL safe_to_block) override;
   HRESULT STDMETHODCALLTYPE GetReJITParameters(ModuleID module_id, mdMethodDef method_id,
@@ -44,6 +45,12 @@ public:
   HRESULT GetGenerationCompletion(uint64_t request_id, alvorkit_interception_generation_completion_v3* completion);
   HRESULT GetRelocationResult(uint64_t request_id, uint32_t relocation_index,
                               alvorkit_interception_relocation_result_v3* result);
+  HRESULT BeginAllocationCapture(const alvorkit_interception_allocation_capture_v3* request);
+  HRESULT EndAllocationCapture(alvorkit_interception_allocation_summary_v3* summary);
+  HRESULT GetAllocationSample(uint32_t sample_index, alvorkit_interception_allocation_sample_v3* sample,
+                              alvorkit_interception_allocation_frame_v3* frames, uint32_t frame_capacity);
+  HRESULT ResolveAllocationFrame(const alvorkit_interception_allocation_frame_v3* frame,
+                                 alvorkit_interception_resolved_frame_v3* resolved);
 
 private:
   void DetachInstance();

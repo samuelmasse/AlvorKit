@@ -55,3 +55,24 @@ HRESULT InterceptionProfiler::GetRelocationResult(uint64_t request_id, uint32_t 
                                                   alvorkit_interception_relocation_result_v3* result) {
   return runtime_ == nullptr ? E_UNEXPECTED : runtime_->GetRelocationResult(request_id, relocation_index, result);
 }
+
+HRESULT InterceptionProfiler::BeginAllocationCapture(const alvorkit_interception_allocation_capture_v3* request) {
+  return runtime_ == nullptr ? E_UNEXPECTED : runtime_->BeginAllocationCapture(request);
+}
+
+HRESULT InterceptionProfiler::EndAllocationCapture(alvorkit_interception_allocation_summary_v3* summary) {
+  return runtime_ == nullptr ? E_UNEXPECTED : runtime_->EndAllocationCapture(summary);
+}
+
+HRESULT InterceptionProfiler::GetAllocationSample(uint32_t sample_index,
+                                                  alvorkit_interception_allocation_sample_v3* sample,
+                                                  alvorkit_interception_allocation_frame_v3* frames,
+                                                  uint32_t frame_capacity) {
+  return runtime_ == nullptr ? E_UNEXPECTED
+                             : runtime_->GetAllocationSample(sample_index, sample, frames, frame_capacity);
+}
+
+HRESULT InterceptionProfiler::ResolveAllocationFrame(const alvorkit_interception_allocation_frame_v3* frame,
+                                                     alvorkit_interception_resolved_frame_v3* resolved) {
+  return runtime_ == nullptr ? E_UNEXPECTED : runtime_->ResolveAllocationFrame(frame, resolved);
+}

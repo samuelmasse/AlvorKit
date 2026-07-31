@@ -25,7 +25,9 @@ enum {
   ALVORKIT_INTERCEPTION_MAX_RELOCATIONS = 4096,
   ALVORKIT_INTERCEPTION_MAX_IL_MAP_ENTRIES = 65536,
   ALVORKIT_INTERCEPTION_MAX_PENDING_REQUESTS = 256,
-  ALVORKIT_INTERCEPTION_MAX_ACTIVE_PATCHES = 4096
+  ALVORKIT_INTERCEPTION_MAX_ACTIVE_PATCHES = 4096,
+  ALVORKIT_INTERCEPTION_MAX_ALLOCATION_SAMPLES = 65536,
+  ALVORKIT_INTERCEPTION_MAX_ALLOCATION_FRAMES = 128
 };
 
 typedef enum alvorkit_interception_capability_v2 {
@@ -41,7 +43,8 @@ typedef enum alvorkit_interception_capability_v2 {
   ALVORKIT_INTERCEPTION_CAPABILITY_LATE_METADATA = 1 << 8,
   ALVORKIT_INTERCEPTION_CAPABILITY_IL_MAP = 1 << 9,
   ALVORKIT_INTERCEPTION_CAPABILITY_BODY_IDENTITY = 1 << 10,
-  ALVORKIT_INTERCEPTION_CAPABILITY_LOADED_BODY = 1 << 11
+  ALVORKIT_INTERCEPTION_CAPABILITY_LOADED_BODY = 1 << 11,
+  ALVORKIT_INTERCEPTION_CAPABILITY_ALLOCATION_CAPTURE = 1 << 12
 } alvorkit_interception_capability_v2;
 
 typedef enum alvorkit_interception_operation_v2 {
@@ -240,6 +243,50 @@ typedef struct alvorkit_interception_profiler_state_v2 {
   uint64_t last_request_id;
 } alvorkit_interception_profiler_state_v2;
 
+typedef struct alvorkit_interception_allocation_capture_v3 {
+  uint32_t size;
+  uint32_t abi_version;
+  uint32_t sample_interval;
+  uint32_t maximum_samples;
+  uint32_t maximum_frames_per_sample;
+  uint32_t reserved;
+} alvorkit_interception_allocation_capture_v3;
+
+typedef struct alvorkit_interception_allocation_summary_v3 {
+  uint32_t size;
+  uint32_t abi_version;
+  uint64_t total_object_allocations;
+  uint64_t sampled_object_allocations;
+  uint64_t dropped_samples;
+  uint64_t failed_stack_walks;
+  uint32_t sample_interval;
+  uint32_t maximum_frames_per_sample;
+} alvorkit_interception_allocation_summary_v3;
+
+typedef struct alvorkit_interception_allocation_sample_v3 {
+  uint32_t size;
+  uint32_t abi_version;
+  uint64_t allocation_ordinal;
+  uint64_t class_id;
+  uint32_t frame_count;
+  int32_t stack_hresult;
+} alvorkit_interception_allocation_sample_v3;
+
+typedef struct alvorkit_interception_allocation_frame_v3 {
+  uint64_t function_id;
+  uint64_t instruction_pointer;
+} alvorkit_interception_allocation_frame_v3;
+
+typedef struct alvorkit_interception_resolved_frame_v3 {
+  uint32_t size;
+  uint32_t abi_version;
+  alvorkit_guid_v2 module_mvid;
+  int32_t method_token;
+  uint32_t il_offset;
+  uint32_t has_il_offset;
+  uint32_t reserved;
+} alvorkit_interception_resolved_frame_v3;
+
 ALVORKIT_INTERCEPTION_API uint32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_get_abi_version(void);
 
 ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL
@@ -274,6 +321,20 @@ ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_intercepti
 
 ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_get_relocation_result(
     uint64_t request_id, uint32_t relocation_index, alvorkit_interception_relocation_result_v3* result);
+
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_begin_allocation_capture(
+    const alvorkit_interception_allocation_capture_v3* request);
+
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL
+alvorkit_interception_end_allocation_capture(alvorkit_interception_allocation_summary_v3* summary);
+
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_get_allocation_sample(
+    uint32_t sample_index, alvorkit_interception_allocation_sample_v3* sample,
+    alvorkit_interception_allocation_frame_v3* frames, uint32_t frame_capacity);
+
+ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_resolve_allocation_frame(
+    const alvorkit_interception_allocation_frame_v3* frame,
+    alvorkit_interception_resolved_frame_v3* resolved);
 
 #ifdef __cplusplus
 }

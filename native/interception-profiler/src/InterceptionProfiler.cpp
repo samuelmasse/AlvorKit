@@ -1,11 +1,34 @@
 #include "InterceptionProfiler.hpp"
 
+#include <cstdlib>
 #include <mutex>
 #include <new>
+#include <string_view>
 
 namespace {
 std::mutex instance_mutex;
 InterceptionProfiler* instance = nullptr;
+
+bool AllocationCaptureEnabled() {
+#ifdef _WIN32
+  wchar_t* configured = nullptr;
+  size_t configured_size = 0;
+  if (_wdupenv_s(&configured, &configured_size, L"ALVORKIT_INTERCEPTION_ALLOCATION_PROFILING") != 0 ||
+      configured == nullptr) {
+    return false;
+  }
+  const std::wstring_view value(configured);
+  const bool enabled = value == L"1" || value == L"true" || value == L"TRUE";
+  std::free(configured);
+  return enabled;
+#else
+  const char* configured = std::getenv("ALVORKIT_INTERCEPTION_ALLOCATION_PROFILING");
+  if (configured == nullptr)
+    return false;
+  const std::string_view value(configured);
+  return value == "1" || value == "true" || value == "TRUE";
+#endif
+}
 
 template <typename Action> HRESULT GuardCallback(Action action) noexcept {
   try {
@@ -39,15 +62,20 @@ HRESULT STDMETHODCALLTYPE InterceptionProfiler::Initialize(IUnknown* unknown) {
   if (FAILED(status))
     return status;
 
-  const DWORD events = static_cast<DWORD>(COR_PRF_MONITOR_MODULE_LOADS | COR_PRF_MONITOR_JIT_COMPILATION |
-                                          COR_PRF_ENABLE_REJIT | COR_PRF_DISABLE_ALL_NGEN_IMAGES);
+  const bool allocation_capture_enabled = AllocationCaptureEnabled();
+  DWORD events = static_cast<DWORD>(COR_PRF_MONITOR_MODULE_LOADS | COR_PRF_MONITOR_JIT_COMPILATION |
+                                    COR_PRF_ENABLE_REJIT | COR_PRF_DISABLE_ALL_NGEN_IMAGES);
+  if (allocation_capture_enabled) {
+    events |= static_cast<DWORD>(COR_PRF_ENABLE_OBJECT_ALLOCATED | COR_PRF_MONITOR_OBJECT_ALLOCATED |
+                                 COR_PRF_ENABLE_STACK_SNAPSHOT);
+  }
   status = info->SetEventMask2(events, 0);
   if (FAILED(status)) {
     info->Release();
     return status;
   }
 
-  runtime_.reset(new (std::nothrow) ProfilerRuntime(info));
+  runtime_.reset(new (std::nothrow) ProfilerRuntime(info, allocation_capture_enabled));
   if (runtime_ == nullptr) {
     info->Release();
     return E_OUTOFMEMORY;
@@ -78,6 +106,12 @@ HRESULT STDMETHODCALLTYPE InterceptionProfiler::ModuleLoadFinished(ModuleID modu
 HRESULT STDMETHODCALLTYPE InterceptionProfiler::ModuleUnloadStarted(ModuleID module_id) {
   return GuardCallback(
       [this, module_id] { return runtime_ == nullptr ? S_OK : runtime_->ModuleUnloadStarted(module_id); });
+}
+
+HRESULT STDMETHODCALLTYPE InterceptionProfiler::ObjectAllocated(ObjectID, ClassID class_id) {
+  if (runtime_ != nullptr)
+    runtime_->ObjectAllocated(class_id);
+  return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE InterceptionProfiler::ReJITCompilationStarted(FunctionID function_id, ReJITID rejit_id,

@@ -80,6 +80,13 @@ struct BodyReadRequest {
   bool completed = false;
 };
 
+struct AllocationFrameResolveRequest {
+  alvorkit_interception_allocation_frame_v3 frame{};
+  alvorkit_interception_resolved_frame_v3 resolved{};
+  HRESULT status = E_PENDING;
+  bool completed = false;
+};
+
 struct MethodMetadata {
   mdSignature call_signature = mdSignatureNil;
   mdSignature resolver_signature = mdSignatureNil;

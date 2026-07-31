@@ -35,6 +35,11 @@ typeRenames:
   alvorkit_interception_remove_v2: InterceptionProfilerRemove
   alvorkit_interception_completion_v2: InterceptionProfilerCompletion
   alvorkit_interception_profiler_state_v2: InterceptionProfilerStateSnapshot
+  alvorkit_interception_allocation_capture_v3: InterceptionProfilerAllocationCapture
+  alvorkit_interception_allocation_summary_v3: InterceptionProfilerAllocationSummary
+  alvorkit_interception_allocation_sample_v3: InterceptionProfilerAllocationSample
+  alvorkit_interception_allocation_frame_v3: InterceptionProfilerAllocationFrame
+  alvorkit_interception_resolved_frame_v3: InterceptionProfilerResolvedFrame
 transparentStructs:
   - alvorkit_guid_v2
   - alvorkit_interception_target_v2
@@ -50,6 +55,11 @@ transparentStructs:
   - alvorkit_interception_remove_v2
   - alvorkit_interception_completion_v2
   - alvorkit_interception_profiler_state_v2
+  - alvorkit_interception_allocation_capture_v3
+  - alvorkit_interception_allocation_summary_v3
+  - alvorkit_interception_allocation_sample_v3
+  - alvorkit_interception_allocation_frame_v3
+  - alvorkit_interception_resolved_frame_v3
 functionRenames:
   alvorkit_interception_get_abi_version: GetAbiVersion
   alvorkit_interception_get_capabilities: GetCapabilities
@@ -62,6 +72,10 @@ functionRenames:
   alvorkit_interception_get_completion: GetCompletion
   alvorkit_interception_get_generation_completion: GetGenerationCompletion
   alvorkit_interception_get_relocation_result: GetRelocationResult
+  alvorkit_interception_begin_allocation_capture: BeginAllocationCapture
+  alvorkit_interception_end_allocation_capture: EndAllocationCapture
+  alvorkit_interception_get_allocation_sample: GetAllocationSample
+  alvorkit_interception_resolve_allocation_frame: ResolveAllocationFrame
 inParams:
   alvorkit_interception_get_loaded_method_body:
     - target
@@ -73,6 +87,10 @@ inParams:
     - request
   alvorkit_interception_enqueue_remove:
     - request
+  alvorkit_interception_begin_allocation_capture:
+    - request
+  alvorkit_interception_resolve_allocation_frame:
+    - frame
 outParams:
   alvorkit_interception_get_loaded_method_body:
     - body_size
@@ -87,6 +105,12 @@ outParams:
     - completion
   alvorkit_interception_get_relocation_result:
     - result
+  alvorkit_interception_end_allocation_capture:
+    - summary
+  alvorkit_interception_get_allocation_sample:
+    - sample
+  alvorkit_interception_resolve_allocation_frame:
+    - resolved
 spanOverloads: true
 spanParams:
   alvorkit_interception_enqueue_install:
@@ -96,4 +120,6 @@ spanParams:
     - relocations
     - metadata
     - il_map
+  alvorkit_interception_get_allocation_sample:
+    - frames
 skip: {}

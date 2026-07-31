@@ -79,6 +79,7 @@ CORECLR_PROFILER_PATH=<absolute native profiler path>
 CORECLR_PROFILER_PATH_64=<absolute native profiler path>
 ALVORKIT_INTERCEPTION_PROFILER_PATH=<the same absolute path>
 ALVORKIT_INTERCEPTION_MODULES=MyGame.Dev;MyGame.Game
+ALVORKIT_INTERCEPTION_ALLOCATION_PROFILING=1
 ```
 
 `ALVORKIT_INTERCEPTION_MODULES` is an explicit semicolon-separated module
@@ -88,6 +89,14 @@ should list their patchable assemblies.
 The managed binding opens the already loaded native library through
 `ALVORKIT_INTERCEPTION_PROFILER_PATH`; it does not attach a profiler to an
 arbitrary running process.
+
+The allocation-profiling variable is optional and disabled by default. When
+enabled at startup, the profiler exposes exact capture-window object counts and
+bounded stack sampling. `ObjectAllocated` only performs atomic accounting and
+writes sampled raw frames into preallocated native storage. Metadata, IL,
+Portable PDB, and source-line resolution occur after the capture ends. Exact
+totals therefore do not require exact stack collection: count-only and sampled
+captures remain available for large game workloads.
 
 ReJIT requires `COR_PRF_DISABLE_ALL_NGEN_IMAGES`, so a profiler-enabled launch
 does more cold JIT work instead of consuming ReadyToRun images. The process is
@@ -136,7 +145,7 @@ dotnet run --project scripts\AlvorKit.Script.Bindgen -- `
   interception-profiler --setup-local --strict
 ```
 
-The strict check currently validates 11 exported functions, 6 enums, 14
+The strict check currently validates 15 exported functions, 6 enums, 19
 natural-layout structs, and the native package asset for the current host.
 Cross-target layout checks protect the fixed-width C contract; runtime support
 is limited to the two explicitly packaged RIDs.

@@ -14,17 +14,21 @@ $ErrorActionPreference = "Stop"
 $expectedExports = @(
     "DllCanUnloadNow",
     "DllGetClassObject",
+    "alvorkit_interception_begin_allocation_capture",
+    "alvorkit_interception_end_allocation_capture",
     "alvorkit_interception_enqueue_generation",
     "alvorkit_interception_enqueue_install",
     "alvorkit_interception_enqueue_install_dispatch",
     "alvorkit_interception_enqueue_remove",
     "alvorkit_interception_get_abi_version",
+    "alvorkit_interception_get_allocation_sample",
     "alvorkit_interception_get_capabilities",
     "alvorkit_interception_get_completion",
     "alvorkit_interception_get_generation_completion",
     "alvorkit_interception_get_loaded_method_body",
     "alvorkit_interception_get_profiler_state",
-    "alvorkit_interception_get_relocation_result"
+    "alvorkit_interception_get_relocation_result",
+    "alvorkit_interception_resolve_allocation_frame"
 )
 function Enter-VisualStudioDevShell
 {

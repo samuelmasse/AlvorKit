@@ -2,6 +2,10 @@
 
 #include <cstring>
 
+void ProfilerRuntime::ObjectAllocated(ClassID class_id) noexcept {
+  allocation_capture_.ObjectAllocated(class_id);
+}
+
 HRESULT ProfilerRuntime::ModuleLoadFinished(ModuleID module_id, HRESULT status) {
   if (FAILED(status) || !modules_.IsAllowed(module_id))
     return S_OK;

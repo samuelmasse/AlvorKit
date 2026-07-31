@@ -133,6 +133,31 @@ extern "C" ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit
   });
 }
 
+extern "C" ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL
+alvorkit_interception_begin_allocation_capture(const alvorkit_interception_allocation_capture_v3* request) {
+  return InvokeProfiler(
+      [request](InterceptionProfiler* profiler) { return profiler->BeginAllocationCapture(request); });
+}
+
+extern "C" ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL
+alvorkit_interception_end_allocation_capture(alvorkit_interception_allocation_summary_v3* summary) {
+  return InvokeProfiler([summary](InterceptionProfiler* profiler) { return profiler->EndAllocationCapture(summary); });
+}
+
+extern "C" ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_get_allocation_sample(
+    uint32_t sample_index, alvorkit_interception_allocation_sample_v3* sample,
+    alvorkit_interception_allocation_frame_v3* frames, uint32_t frame_capacity) {
+  return InvokeProfiler([=](InterceptionProfiler* profiler) {
+    return profiler->GetAllocationSample(sample_index, sample, frames, frame_capacity);
+  });
+}
+
+extern "C" ALVORKIT_INTERCEPTION_API int32_t ALVORKIT_INTERCEPTION_CALL alvorkit_interception_resolve_allocation_frame(
+    const alvorkit_interception_allocation_frame_v3* frame, alvorkit_interception_resolved_frame_v3* resolved) {
+  return InvokeProfiler(
+      [=](InterceptionProfiler* profiler) { return profiler->ResolveAllocationFrame(frame, resolved); });
+}
+
 #ifdef _WIN32
 BOOL WINAPI DllMain(HINSTANCE instance_handle, DWORD reason, LPVOID) {
   if (reason == DLL_PROCESS_ATTACH)
