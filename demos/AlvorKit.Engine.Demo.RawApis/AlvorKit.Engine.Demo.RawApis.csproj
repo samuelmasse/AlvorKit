@@ -14,6 +14,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="System.IO.Hashing" Version="10.0.5" />
         <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
     </ItemGroup>
 
@@ -28,7 +29,7 @@
         <Using Include="AlvorKit.MiniAudio" />
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.Windowing" />
-        <Using Include="AlvorKit.XxHash" />
+        <Using Include="System.IO.Hashing" />
     </ItemGroup>
 
 </Project>

@@ -15,7 +15,7 @@ public sealed class AgentCoverageReportWriterTest
 
         Assert.AreEqual("Tool.Test", root.GetProperty("testProjectFilters")[0].GetString());
         Assert.AreEqual("Tool", root.GetProperty("sourceProjectFilters")[0].GetString());
-        Assert.AreEqual("xxhash", root.GetProperty("bindingFilters")[0].GetString());
+        Assert.AreEqual("glfw", root.GetProperty("bindingFilters")[0].GetString());
         Assert.AreEqual(95.0, root.GetProperty("thresholds").GetProperty("line").GetDouble());
         Assert.AreEqual(85.0, root.GetProperty("thresholds").GetProperty("branch").GetDouble());
         Assert.AreEqual(95.0, root.GetProperty("thresholds").GetProperty("method").GetDouble());
@@ -30,7 +30,7 @@ public sealed class AgentCoverageReportWriterTest
         using var workspace = TempWorkspace.Create();
         var output = OutputPaths(workspace.Root);
         Directory.CreateDirectory(output.Root);
-        var options = new CoverageOptions("Debug", CoverageThresholds.Default, ["Tool.Test"], ["Tool"], ["xxhash"], 1, false, false, false);
+        var options = new CoverageOptions("Debug", CoverageThresholds.Default, ["Tool.Test"], ["Tool"], ["glfw"], 1, false, false, false);
         var summary = new CoverageSummary(new(new(1, 1), new(1, 1), new(1, 1)), [], [], []);
 
         AgentCoverageReportWriter.Write(

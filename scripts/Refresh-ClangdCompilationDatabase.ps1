@@ -209,9 +209,7 @@ Get-ChildItem -LiteralPath (Join-Path $profilerRoot "src") -Filter *.cpp | Sort-
 
 $cSourcePatterns = @(
     "native\fastnoise2\verify\*.c",
-    "native\miniaudio\src\*.c",
-    "native\xxhash\src\*.c",
-    "native\xxhash\verify\*.c")
+    "native\miniaudio\src\*.c")
 foreach ($pattern in $cSourcePatterns)
 {
     Get-ChildItem -Path (Join-Path $repositoryRoot $pattern) | Sort-Object FullName | ForEach-Object {
@@ -222,12 +220,6 @@ foreach ($pattern in $cSourcePatterns)
             $tag = (Get-Content -LiteralPath (Join-Path $repositoryRoot "native\miniaudio\version\TAG") -Raw).Trim()
             $sourceArguments.Add("$includePrefix$(Join-Path $repositoryRoot "out\native-work\miniaudio-build\miniaudio-$tag")")
         }
-        elseif ($_.DirectoryName -like "*\native\xxhash\src")
-        {
-            $tag = (Get-Content -LiteralPath (Join-Path $repositoryRoot "native\xxhash\version\TAG") -Raw).Trim()
-            $sourceArguments.Add("$includePrefix$(Join-Path $repositoryRoot "out\native-work\xxhash-build\xxHash-$tag")")
-        }
-
         Add-CompileEntry $entries $repositoryRoot $compiler $_.FullName $sourceArguments
     }
 }

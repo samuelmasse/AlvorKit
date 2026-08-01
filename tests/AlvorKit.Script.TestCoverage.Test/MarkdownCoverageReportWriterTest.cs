@@ -28,7 +28,7 @@ public sealed class MarkdownCoverageReportWriterTest
             MarkdownPath: Path.Combine(workspace.Root, "test-output", "slowest-tests.md"),
             CsvPath: Path.Combine(workspace.Root, "test-output", "slowest-tests.csv"));
 
-        var options = new CoverageOptions("Debug", CoverageThresholds.Default, ["Tool.Test"], ["Tool"], ["xxhash"], 1, true, true, true);
+        var options = new CoverageOptions("Debug", CoverageThresholds.Default, ["Tool.Test"], ["Tool"], ["glfw"], 1, true, true, true);
         var output = OutputPaths(workspace.Root, path);
 
         MarkdownCoverageReportWriter.Write(
@@ -48,7 +48,7 @@ public sealed class MarkdownCoverageReportWriterTest
         StringAssert.Contains(markdown, "Thresholds: 95% line, 85% branch, and 95% method coverage");
         StringAssert.Contains(markdown, "Test project filter: `Tool.Test`");
         StringAssert.Contains(markdown, "Source project filter: `Tool`");
-        StringAssert.Contains(markdown, "Binding filter: `xxhash`");
+        StringAssert.Contains(markdown, "Binding filter: `glfw`");
         StringAssert.Contains(markdown, "MissingTool");
         StringAssert.Contains(markdown, "FAIL (1)");
         StringAssert.Contains(markdown, "test-output/coverage-summary.json");

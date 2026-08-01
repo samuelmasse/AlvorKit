@@ -266,7 +266,7 @@ public sealed class NativeBuildPlannerTest
     [TestMethod]
     public void VerifyCommands_LinuxArm_UsesCrossCompilerAndRunPrefix()
     {
-        var context = LoadXxHashContext(out var root);
+        var context = LoadVerifyContext("fastnoise2", out var root);
         try
         {
             var prefix = new NativeVerifyRunPrefix("qemu-arm", ["-L", "/usr/arm-linux-gnueabihf"]);
@@ -278,31 +278,7 @@ public sealed class NativeBuildPlannerTest
             CollectionAssert.AreEqual(
                 new[] { "-L", "/usr/arm-linux-gnueabihf", plan.ExecutablePath, plan.LibraryPath, plan.ReportPath, "linux-arm" },
                 plan.RunCommand.Arguments.ToArray());
-            StringAssert.EndsWith(plan.ReportPath, Path.Combine("out", "native-verify", "xxhash", "linux-arm", "report.json"));
-        }
-        finally
-        {
-            Directory.Delete(root, recursive: true);
-        }
-    }
-
-    /// <summary>xxhash verification planning keeps platform compiler names and executable suffixes.</summary>
-    [TestMethod]
-    public void VerifyCommands_XxHashPlatformCompilers_KeepTargetConventions()
-    {
-        var context = LoadXxHashContext(out var root);
-        try
-        {
-            var windows = NativeVerifyPlanner.Create(context, TargetRid.Parse("win-x64"));
-            var mac = NativeVerifyPlanner.Create(context, TargetRid.Parse("osx-arm64"));
-            var linux = NativeVerifyPlanner.Create(context, TargetRid.Parse("linux-x64"));
-
-            Assert.AreEqual("cl", windows.CompileCommand.FileName);
-            StringAssert.EndsWith(windows.SourcePath, Path.Combine("native", "xxhash", "verify", "verify-xxhash.c"));
-            StringAssert.EndsWith(windows.ExecutablePath, "verify-xxhash.exe");
-            Assert.AreEqual("clang", mac.CompileCommand.FileName);
-            CollectionAssert.Contains(mac.CompileCommand.Arguments.ToList(), "arm64");
-            Assert.AreEqual("gcc", linux.CompileCommand.FileName);
+            StringAssert.EndsWith(plan.ReportPath, Path.Combine("out", "native-verify", "fastnoise2", "linux-arm", "report.json"));
         }
         finally
         {
@@ -341,7 +317,7 @@ public sealed class NativeBuildPlannerTest
             var error = Assert.ThrowsExactly<NotSupportedException>(
                 () => NativeVerifyPlanner.Create(context, TargetRid.Parse("linux-x64")));
 
-            StringAssert.Contains(error.Message, "xxhash and fastnoise2");
+            StringAssert.Contains(error.Message, "fastnoise2");
         }
         finally
         {
@@ -353,7 +329,7 @@ public sealed class NativeBuildPlannerTest
     [TestMethod]
     public void VerifyCommands_InvalidTargetOperatingSystem_Throws()
     {
-        var context = LoadXxHashContext(out var root);
+        var context = LoadVerifyContext("fastnoise2", out var root);
         try
         {
             var invalid = new TargetRid("fixture", (TargetOperatingSystem)999, TargetArchitecture.X64);
@@ -429,12 +405,6 @@ public sealed class NativeBuildPlannerTest
         var workDir = "alvorkit-native-test-" + Guid.NewGuid().ToString("N");
         root = TestRepositoryFactory.CreateCMakeLibrary("sample", workDir);
         return LibraryBuildContext.Load(new(root), "sample");
-    }
-
-    /// <summary>Loads a temporary xxhash context for verifier planning tests.</summary>
-    private static LibraryBuildContext LoadXxHashContext(out string root)
-    {
-        return LoadVerifyContext("xxhash", out root);
     }
 
     /// <summary>Loads a temporary verifier context for planning tests.</summary>

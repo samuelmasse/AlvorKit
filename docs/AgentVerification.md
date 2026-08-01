@@ -120,7 +120,7 @@ Quick commands:
 - Agent report-only targeted run:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-project AlvorKit.Script.NativeBuild --threshold 0`
 - Agent generated binding report:
-  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --binding xxhash --threshold 0`
+  `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --binding fastnoise2 --threshold 0`
 - Agent full coverage gate:
   `dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent`
 
@@ -134,7 +134,7 @@ dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --source-pr
 For generated binding test work, gate coverage on the binding library name:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --binding xxhash --threshold 0
+dotnet run --project scripts\AlvorKit.Script.TestCoverage -- --agent --binding fastnoise2 --threshold 0
 ```
 
 The binding coverage path reads `native/<library>/conf/bindgen.yml`, measures

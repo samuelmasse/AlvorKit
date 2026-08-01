@@ -10,7 +10,6 @@ internal sealed unsafe class RawApisState(
     Fn fn,
     Ft ft,
     Ma ma,
-    Xxh xxh,
     RootInput input,
     RootScreen screen,
     RootCanvas canvas,
@@ -20,7 +19,7 @@ internal sealed unsafe class RawApisState(
     RootScale scale) : State
 {
     private static readonly Vec2u InitialSize = (1120u, 680u);
-    private const uint XxHashSeed = 0xC0DE_51E5u;
+    private const long XxHashSeed = 0xC0DE_51E5u;
     private const double TitleRefreshSeconds = 0.35;
 
     private RawApiSnapshot snapshot = RawApiSnapshot.Empty;
@@ -39,7 +38,7 @@ internal sealed unsafe class RawApisState(
         screen.IsVisible = true;
 
         log.Info("AlvorKit.Engine.Demo.RawApis");
-        log.Info("RootLoop injected Gl, Glfw, GlfwWindow, Fn, Ft, Ma, and Xxh directly into this state.");
+        log.Info("RootLoop injected Gl, Glfw, GlfwWindow, Fn, Ft, and Ma directly into this state.");
         log.Info("Esc exits. R re-runs the one-shot raw API probes.");
     }
 
@@ -59,7 +58,7 @@ internal sealed unsafe class RawApisState(
             nextTitleRefresh = glfw.GetTime() + TitleRefreshSeconds;
             glfw.SetWindowTitle(
                 window,
-                $"AlvorKit.Engine.Demo.RawApis | hash {snapshot.Hash32:X8} | noise {snapshot.NoiseSample:0.000}");
+                $"AlvorKit.Engine.Demo.RawApis | hash {snapshot.Hash:X16} | noise {snapshot.NoiseSample:0.000}");
         }
     }
 
@@ -90,8 +89,7 @@ internal sealed unsafe class RawApisState(
         WriteLine(font, ref cursor, lineHeight, text.Format("Glfw.GetFramebufferSize: {0} x {1}", framebufferSize.X, framebufferSize.Y));
         WriteLine(font, ref cursor, lineHeight, text.Format("RootCanvas.Size: {0:0} x {1:0}", canvas.Size.X, canvas.Size.Y));
         WriteLine(font, ref cursor, lineHeight, text.Format("Fn.GenUniformGrid3D(Simplex): {0:0.000000}", snapshot.NoiseSample));
-        WriteLine(font, ref cursor, lineHeight, text.Format("Xxh.Hash32(snapshot): 0x{0:X8}", snapshot.Hash32));
-        WriteLine(font, ref cursor, lineHeight, text.Format("Xxh.GetVersionNumber: {0}", snapshot.XxHashVersion));
+        WriteLine(font, ref cursor, lineHeight, text.Format("XxHash3.HashToUInt64(snapshot): 0x{0:X16}", snapshot.Hash));
         WriteLine(font, ref cursor, lineHeight, text.Format("Ft.LibraryVersion: {0}", snapshot.FreeTypeVersion));
         WriteLine(font, ref cursor, lineHeight, text.Format("Ma.VersionString: {0}", snapshot.MiniAudioVersion));
         WriteLine(font, ref cursor, lineHeight, "");
@@ -108,7 +106,6 @@ internal sealed unsafe class RawApisState(
         glfw.GetVersion(out var glfwMajor, out var glfwMinor, out var glfwRevision);
         var glfwVersion = $"{glfwMajor}.{glfwMinor}.{glfwRevision}";
         var noiseSample = SampleFastNoise();
-        var xxHashVersion = VersionString(xxh.GetVersionNumber());
         var freeTypeVersion = ProbeFreeTypeVersion();
         var miniAudioVersion = ProbeMiniAudioVersion();
 
@@ -117,7 +114,6 @@ internal sealed unsafe class RawApisState(
             openGlRenderer,
             glfwVersion,
             noiseSample,
-            xxHashVersion,
             freeTypeVersion,
             miniAudioVersion);
 
@@ -127,7 +123,6 @@ internal sealed unsafe class RawApisState(
             glfwVersion,
             noiseSample,
             hash,
-            xxHashVersion,
             freeTypeVersion,
             miniAudioVersion);
 
@@ -192,31 +187,24 @@ internal sealed unsafe class RawApisState(
         return version ?? "(null)";
     }
 
-    /// <summary>Hashes the captured native snapshot through the injected xxHash backend.</summary>
-    private uint HashSnapshot(
+    /// <summary>Hashes the captured native snapshot through managed XXH3.</summary>
+    private static ulong HashSnapshot(
         string? openGlVersion,
         string? openGlRenderer,
         string glfwVersion,
         float noiseSample,
-        string xxHashVersion,
         string freeTypeVersion,
         string miniAudioVersion)
     {
-        Span<byte> bytes = stackalloc byte[512];
         var textBytes = Encoding.UTF8.GetBytes(
             string.Create(
                 CultureInfo.InvariantCulture,
-                $"{openGlVersion}|{openGlRenderer}|{glfwVersion}|{noiseSample:R}|{xxHashVersion}|{freeTypeVersion}|{miniAudioVersion}"));
-
-        if (textBytes.Length > bytes.Length)
-            return xxh.Hash32(textBytes, XxHashSeed);
-
-        textBytes.CopyTo(bytes);
-        return xxh.Hash32(bytes[..textBytes.Length], XxHashSeed);
+                $"{openGlVersion}|{openGlRenderer}|{glfwVersion}|{noiseSample:R}|{freeTypeVersion}|{miniAudioVersion}"));
+        return XxHash3.HashToUInt64(textBytes, XxHashSeed);
     }
 
     /// <summary>Uses the snapshot hash and noise sample to make the raw GL clear visibly data-driven.</summary>
-    private static Vec4 ColorFromHash(uint hash, float noiseSample)
+    private static Vec4 ColorFromHash(ulong hash, float noiseSample)
     {
         var red = 0.04f + ((hash & 0xFFu) / 255f * 0.18f);
         var green = 0.05f + (((hash >> 8) & 0xFFu) / 255f * 0.16f);
@@ -238,9 +226,6 @@ internal sealed unsafe class RawApisState(
         if (error != 0)
             throw new InvalidOperationException($"{nativeName} returned FT_Error {error}.");
     }
-
-    private static string VersionString(uint versionNumber) =>
-        $"{versionNumber / 10000}.{versionNumber / 100 % 100}.{versionNumber % 100}";
 }
 
 /// <summary>Values captured through direct native-style API calls and displayed by the raw API demo.</summary>
@@ -249,8 +234,7 @@ internal sealed record RawApiSnapshot(
     string OpenGlRenderer,
     string GlfwVersion,
     float NoiseSample,
-    uint Hash32,
-    string XxHashVersion,
+    ulong Hash,
     string FreeTypeVersion,
     string MiniAudioVersion)
 {
@@ -260,7 +244,6 @@ internal sealed record RawApiSnapshot(
         "(not loaded)",
         0f,
         0,
-        "(not loaded)",
         "(not loaded)",
         "(not loaded)");
 }

@@ -500,6 +500,53 @@ textures, vertex arrays, programs), read [docs/GlOwnership.md](docs/GlOwnership.
 and a scope-lifetime object must not get its own `IDisposable` or `Delete*`
 teardown — disposing the scope's node reclaims everything it owns in one sweep.
 
+## Maths Types
+
+Before adding a maths helper, choosing vector or matrix shapes for an API, or
+searching for maths type sources, read [docs/Maths.md](docs/Maths.md). The
+concrete `Vec`, `Mat`, `Quat`, box, and geometry structs are generated into
+the `AlvorKit.Maths.Primitives` package by `scripts/AlvorKit.Script.MathsGen`
+and have no committed source under `src/`; the doc lists every public type,
+the naming scheme, and the usage rules, and
+[docs/MathsReference.md](docs/MathsReference.md) documents each family's
+members.
+
+Using the AlvorKit maths types and `ScalarMath` is mandatory, not stylistic.
+Represent positions, sizes, offsets, directions, extents, ranges, rotations,
+and transforms with the published maths types, and call the published vector,
+matrix, and `ScalarMath` functions instead of re-deriving them. Do not model
+a maths value as a scalar tuple such as `(int, int, int)`, parallel `x`/`y`/
+`z` parameters or fields, or a local vector, box, or range type, and do not
+hand-roll clamp, lerp, saturate, min/max, distance, power-of-two, or
+bit-count logic that the maths surface already provides. A project that
+needs a maths value but lacks the reference gains the `AlvorKit.Maths`
+reference; a missing reference is never a reason to invent a local shape.
+
+## Managed Non-Cryptographic Hashing
+
+Use `System.IO.Hashing.XxHash3` for general-purpose non-cryptographic hashing,
+stable content fingerprints, and deterministic procedural sampling. Projects
+that use it declare an explicit `System.IO.Hashing` package reference and use
+the managed static or incremental API directly. Do not add a native xxHash
+binding, P/Invoke backend, injected hash service, or game-local implementation
+of a general-purpose hash.
+
+Encode structured values explicitly and portably before hashing. Use
+`BinaryPrimitives` with a documented byte order, hash only the written span,
+and use `long` at the seed domain boundary because the managed XXH3 API accepts
+`long`. Treat field order, byte order, payload length, and seed derivation as
+part of any deterministic-output contract. The C# `unchecked` keyword is
+forbidden; choose types and explicit operations that make overflow and bit
+representation semantics visible instead.
+
+A small integer mixer may remain local only when its purpose is mapping an
+already-formed integer key into a fixed power-of-two hash table and the full
+XXH3 operation would be inappropriate table-index overhead. Likewise, a
+benchmark observation may use a deliberately cheap rolling signature when
+hashing is inside the measured loop. Name and document these as table indexing
+or benchmark observation, not as reusable content hashing. Other exceptions
+require a concrete semantic or measured performance reason.
+
 ## UI Menu Authoring
 
 Before creating or significantly changing an AlvorKit UI menu, read

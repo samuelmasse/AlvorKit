@@ -22,7 +22,6 @@
         <Using Include="AlvorKit.MiniAudio" />
         <Using Include="AlvorKit.OpenGL" />
         <Using Include="AlvorKit.Windowing" />
-        <Using Include="AlvorKit.XxHash" />
         <Using Include="BigGustave" />
     </ItemGroup>
 

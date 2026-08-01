@@ -8,10 +8,10 @@ public sealed class BindgenReviewCommandParserTest
     [TestMethod]
     public void Parse_StartCommand_ReturnsValues()
     {
-        var command = BindgenReviewCommandParser.Parse(["start", "xxhash", "--case", "overloads", "--repo-root", "C:/repo"], "C:/fallback");
+        var command = BindgenReviewCommandParser.Parse(["start", "freetype", "--case", "overloads", "--repo-root", "C:/repo"], "C:/fallback");
 
         Assert.AreEqual(BindgenReviewCommandKind.Start, command.Kind);
-        Assert.AreEqual("xxhash", command.Library);
+        Assert.AreEqual("freetype", command.Library);
         Assert.AreEqual("overloads", command.CaseName);
         Assert.AreEqual(Path.GetFullPath("C:/repo"), command.RepoRoot);
     }
@@ -20,10 +20,10 @@ public sealed class BindgenReviewCommandParserTest
     [TestMethod]
     public void Parse_FinishCommand_ReturnsValues()
     {
-        var command = BindgenReviewCommandParser.Parse(["finish", "out/bindgen-review/xxhash-a1b2c", "--keep"], "C:/repo");
+        var command = BindgenReviewCommandParser.Parse(["finish", "out/bindgen-review/freetype-a1b2c", "--keep"], "C:/repo");
 
         Assert.AreEqual(BindgenReviewCommandKind.Finish, command.Kind);
-        Assert.AreEqual("out/bindgen-review/xxhash-a1b2c", command.ReviewRoot);
+        Assert.AreEqual("out/bindgen-review/freetype-a1b2c", command.ReviewRoot);
         Assert.IsTrue(command.Keep);
     }
 
@@ -48,7 +48,7 @@ public sealed class BindgenReviewCommandParserTest
     {
         using var workspace = TempWorkspace.Create();
 
-        var command = BindgenReviewCommandParser.Parse(["start", "xxhash", "--repo-root", workspace.Root]);
+        var command = BindgenReviewCommandParser.Parse(["start", "freetype", "--repo-root", workspace.Root]);
 
         Assert.AreEqual(Path.GetFullPath(workspace.Root), command.RepoRoot);
     }
@@ -57,7 +57,7 @@ public sealed class BindgenReviewCommandParserTest
     [TestMethod]
     public void Parse_PublicWithoutRepoRoot_UsesDiscoveredRoot()
     {
-        var command = BindgenReviewCommandParser.Parse(["start", "xxhash"]);
+        var command = BindgenReviewCommandParser.Parse(["start", "freetype"]);
 
         Assert.IsTrue(File.Exists(Path.Combine(command.RepoRoot, "AlvorKit.slnx")));
     }
@@ -103,34 +103,34 @@ public sealed class BindgenReviewCommandParserTest
     [TestMethod]
     public void Parse_ExtraPositional_Throws()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse(["start", "xxhash", "extra"], "C:/repo"));
+        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse(["start", "freetype", "extra"], "C:/repo"));
     }
 
     /// <summary>Unknown options are rejected so typos do not silently skip cleanup.</summary>
     [TestMethod]
     public void Parse_UnknownOption_Throws()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse(["start", "xxhash", "--wat"], "C:/repo"));
+        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse(["start", "freetype", "--wat"], "C:/repo"));
     }
 
     /// <summary>Missing option values produce a targeted error.</summary>
     [TestMethod]
     public void Parse_MissingOptionValue_Throws()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse(["start", "xxhash", "--case"], "C:/repo"));
+        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse(["start", "freetype", "--case"], "C:/repo"));
     }
 
     /// <summary>Inline help options after a command point callers to the help command.</summary>
     [TestMethod]
     public void Parse_CommandHelpOption_Throws()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse(["start", "xxhash", "--help"], "C:/repo"));
+        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse(["start", "freetype", "--help"], "C:/repo"));
     }
 
     /// <summary>Unknown command names are rejected.</summary>
     [TestMethod]
     public void Parse_UnknownCommand_Throws()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse(["wat", "xxhash"], "C:/repo"));
+        Assert.ThrowsExactly<ArgumentException>(() => BindgenReviewCommandParser.Parse(["wat", "freetype"], "C:/repo"));
     }
 }

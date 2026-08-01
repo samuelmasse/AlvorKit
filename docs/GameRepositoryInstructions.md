@@ -69,6 +69,26 @@ Game-specific overrides:
   formatting, async state machines, and defensive copies.
 - Use AlvorKit shapes directly: scopes, controls, vectors, maths types,
   `GlLayer`, UI menus, and engine lifecycle APIs.
+- For the maths type inventory, naming scheme, and usage rules, read
+  `../AlvorKit/docs/Maths.md`; per-family members are in
+  `../AlvorKit/docs/MathsReference.md`. The concrete maths structs are
+  generated into the `AlvorKit.Maths.Primitives` package and have no source
+  under `../AlvorKit/src/`.
+- AlvorKit maths types and `ScalarMath` are mandatory for maths values. Do
+  not model positions, sizes, or ranges as `(int, int, int)`-style tuples,
+  parallel scalar members, or game-local vector/box/range types, and do not
+  re-implement clamp/lerp/min/max-style helpers the maths surface already
+  provides. A project missing the maths reference gains the reference; that
+  is never a reason to invent a local shape.
+- Use managed `System.IO.Hashing.XxHash3` for general-purpose
+  non-cryptographic hashing, stable content fingerprints, and deterministic
+  procedural sampling. Encode structured inputs explicitly with
+  `BinaryPrimitives`; do not add native xxHash bindings, injected hash
+  services, or game-local general-purpose hash implementations. Hash seed
+  domains use `long`, matching the managed API. The C# `unchecked` keyword is
+  forbidden. Keep a local integer mixer only for fixed-table slot selection,
+  or a cheap rolling signature inside measured benchmark work, when that
+  narrower operation is named and documented as such.
 
 ## VS Code Launch Configurations
 

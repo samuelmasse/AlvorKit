@@ -10,7 +10,6 @@ public sealed class CSharpNameTest
     {
         Assert.AreEqual("GetWindowSize", CSharpName.FromNativeIdentifier("glfwGetWindowSize", "glfw"));
         Assert.AreEqual("Texture2D", CSharpName.FromNativeIdentifier("GL_TEXTURE_2D", "GL_", dimensionSegments: true));
-        Assert.AreEqual("Xxh3_64bits", CSharpName.FromNativeIdentifier("XXH3_64bits", "XXH", "Xxh"));
         Assert.AreEqual("D0", CSharpName.FromNativeIdentifier("GLFW_KEY_0", "GLFW_KEY_", "D"));
     }
 

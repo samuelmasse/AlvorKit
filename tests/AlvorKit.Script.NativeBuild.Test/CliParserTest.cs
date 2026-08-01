@@ -22,10 +22,10 @@ public sealed class CliParserTest
     [TestMethod]
     public void Parse_BuildWithRidValue_ReturnsBuildRequest()
     {
-        var request = CliParser.Parse(["build", "xxhash", "--rid", "linux-x64"]);
+        var request = CliParser.Parse(["build", "fastnoise2", "--rid", "linux-x64"]);
 
         Assert.AreEqual(CliCommand.Build, request.Command);
-        Assert.AreEqual("xxhash", request.Selection);
+        Assert.AreEqual("fastnoise2", request.Selection);
         Assert.AreEqual("linux-x64", request.Rid);
     }
 
@@ -43,10 +43,10 @@ public sealed class CliParserTest
     [TestMethod]
     public void Parse_VerifyWithRid_ReturnsVerifyRequest()
     {
-        var request = CliParser.Parse(["verify", "xxhash", "--rid", "linux-arm"]);
+        var request = CliParser.Parse(["verify", "fastnoise2", "--rid", "linux-arm"]);
 
         Assert.AreEqual(CliCommand.Verify, request.Command);
-        Assert.AreEqual("xxhash", request.Selection);
+        Assert.AreEqual("fastnoise2", request.Selection);
         Assert.AreEqual("linux-arm", request.Rid);
     }
 
@@ -63,10 +63,10 @@ public sealed class CliParserTest
     {
         Assert.AreEqual(CliCommand.List, CliParser.Parse(["list"]).Command);
 
-        var version = CliParser.Parse(["version", "xxhash"]);
+        var version = CliParser.Parse(["version", "fastnoise2"]);
 
         Assert.AreEqual(CliCommand.Version, version.Command);
-        Assert.AreEqual("xxhash", version.Selection);
+        Assert.AreEqual("fastnoise2", version.Selection);
     }
 
     /// <summary>Invalid commands and missing option values produce argument errors.</summary>
@@ -74,8 +74,8 @@ public sealed class CliParserTest
     public void Parse_InvalidInput_Throws()
     {
         Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["build"]));
-        Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["build", "xxhash", "--rid"]));
-        Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["verify", "xxhash"]));
+        Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["build", "fastnoise2", "--rid"]));
+        Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["verify", "fastnoise2"]));
         Assert.ThrowsExactly<ArgumentException>(() => CliParser.Parse(["publish"]));
     }
 }

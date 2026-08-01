@@ -41,7 +41,6 @@ public sealed class BindgenConfigLoadTest
             header: fixture.h
             apiProject: generated/Fixture
             backendProject: generated/Fixture.Backend
-            xxHashConvenience: true
             fastNoise2Convenience: true
             advancedFunctions:
               - fixture_raw
@@ -98,7 +97,6 @@ public sealed class BindgenConfigLoadTest
         Assert.AreEqual("count", config.CountedSpanParams["fixture_icons"]["images"]);
         CollectionAssert.AreEqual(new[] { "fixture_raw" }, config.AdvancedFunctions);
         CollectionAssert.AreEqual(new[] { "fixture_win_only" }, config.PlatformFunctions["windows"]);
-        Assert.IsTrue(config.XxHashConvenience);
         Assert.IsTrue(config.FastNoise2Convenience);
     }
 

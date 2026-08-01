@@ -39,9 +39,9 @@ To compare generator changes without activating local bindings, write snapshots
 under `out/` and diff them:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.Bindgen -- xxhash --output-root out\bindgen-review\xxhash-before
-dotnet run --project scripts\AlvorKit.Script.Bindgen -- xxhash --output-root out\bindgen-review\xxhash-after
-git diff --no-index -- out\bindgen-review\xxhash-before out\bindgen-review\xxhash-after
+dotnet run --project scripts\AlvorKit.Script.Bindgen -- fastnoise2 --output-root out\bindgen-review\fastnoise2-before
+dotnet run --project scripts\AlvorKit.Script.Bindgen -- fastnoise2 --output-root out\bindgen-review\fastnoise2-after
+git diff --no-index -- out\bindgen-review\fastnoise2-before out\bindgen-review\fastnoise2-after
 ```
 
 ## Maths package development mode
@@ -143,13 +143,13 @@ dotnet run --project scripts\AlvorKit.Script.NativeBuild -- list
 Build one RID with:
 
 ```powershell
-dotnet run --project scripts\AlvorKit.Script.NativeBuild -- build xxhash --rid win-x64
+dotnet run --project scripts\AlvorKit.Script.NativeBuild -- build fastnoise2 --rid win-x64
 ```
 
 Then pack the native project:
 
 ```powershell
-dotnet build -c Release native\xxhash\AlvorKit.XxHash.Native.csproj
+dotnet build -c Release native\fastnoise2\AlvorKit.FastNoise2.Native.csproj
 ```
 
 Native package revisions live in `native/<lib>/version/REVISION`; generated binding package

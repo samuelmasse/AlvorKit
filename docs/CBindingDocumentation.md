@@ -2,7 +2,7 @@
 
 This guide is for generated C bindings where public managed APIs are projected
 from native headers. It is intentionally general-purpose: use it for GLFW,
-FreeType, MiniAudio, XxHash, or any future C-header binding.
+FreeType, MiniAudio, FastNoise2, or any future C-header binding.
 
 ## Principles
 

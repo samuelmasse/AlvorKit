@@ -48,13 +48,6 @@ internal sealed class BindingTypeEmitter(BindingEmitterContext context)
             ("NativeName", handle.NativeName),
             ("ManagedName", handle.ManagedName));
 
-    /// <summary>Emits the xxHash streaming-secret helper type.</summary>
-    public string XxHashSecret() =>
-        TemplateResource.Render(
-            typeof(BindingTypeEmitter),
-            "res/templates/bindgen/c-headers/csharp/xxhash-secret.cs.tmpl",
-            ("TypeHeader", TypeHeader()));
-
     /// <summary>Emits a native callback delegate type.</summary>
     public string Delegate(BindingDelegate callback)
     {

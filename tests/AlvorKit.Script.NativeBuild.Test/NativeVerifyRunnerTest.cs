@@ -4,35 +4,6 @@ namespace AlvorKit.Script.NativeBuild.Test;
 [TestClass]
 public sealed class NativeVerifyRunnerTest
 {
-    /// <summary>Verification compiles the xxhash verifier and runs it against the RID runtime library.</summary>
-    [TestMethod]
-    public async Task VerifyAsync_XxHashLinux_RunsCompileAndVerifierCommands()
-    {
-        var root = TestRepositoryFactory.CreateSingleCLibrary("xxhash", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
-        var context = LibraryBuildContext.Load(new(root), "xxhash");
-        try
-        {
-            CreateVerifierInputs(context, TargetRid.Parse("linux-x64"));
-            var processRunner = new RecordingProcessRunner();
-            var runner = new NativeVerifyRunner(
-                context,
-                TargetRid.Parse("linux-x64"),
-                processRunner,
-                new HostInfo(false, true, false, Architecture.X64));
-
-            await runner.VerifyAsync();
-
-            Assert.AreEqual("gcc", processRunner.RunCommands[0].FileName);
-            Assert.AreEqual(processRunner.RunCommands[0].Arguments[2], processRunner.RunCommands[1].FileName);
-            Assert.AreEqual(context.OutputFile(TargetRid.Parse("linux-x64")), processRunner.RunCommands[1].Arguments[0]);
-            Assert.IsTrue(Directory.Exists(Path.Combine(root, "out", "native-verify", "xxhash", "linux-x64")));
-        }
-        finally
-        {
-            Directory.Delete(root, recursive: true);
-        }
-    }
-
     /// <summary>Verification uses FastNoise2-specific verifier files and output directories.</summary>
     [TestMethod]
     public async Task VerifyAsync_FastNoise2Linux_RunsLibrarySpecificVerifier()
@@ -66,12 +37,12 @@ public sealed class NativeVerifyRunnerTest
     [TestMethod]
     public async Task VerifyAsync_MissingRuntimeLibrary_ThrowsBeforeRunningCommands()
     {
-        var root = TestRepositoryFactory.CreateSingleCLibrary("xxhash", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
-        var context = LibraryBuildContext.Load(new(root), "xxhash");
+        var root = TestRepositoryFactory.CreateSingleCLibrary("fastnoise2", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
+        var context = LibraryBuildContext.Load(new(root), "fastnoise2");
         try
         {
             Directory.CreateDirectory(Path.Combine(context.LibraryDirectory, "verify"));
-            File.WriteAllText(Path.Combine(context.LibraryDirectory, "verify", "verify-xxhash.c"), "int main(void) { return 0; }");
+            File.WriteAllText(Path.Combine(context.LibraryDirectory, "verify", "verify-fastnoise2.c"), "int main(void) { return 0; }");
             var processRunner = new RecordingProcessRunner();
             var runner = new NativeVerifyRunner(
                 context,
@@ -93,8 +64,8 @@ public sealed class NativeVerifyRunnerTest
     [TestMethod]
     public async Task VerifyAsync_LinuxArmWithRunnerEnvironment_UsesLauncherPrefix()
     {
-        var root = TestRepositoryFactory.CreateSingleCLibrary("xxhash", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
-        var context = LibraryBuildContext.Load(new(root), "xxhash");
+        var root = TestRepositoryFactory.CreateSingleCLibrary("fastnoise2", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
+        var context = LibraryBuildContext.Load(new(root), "fastnoise2");
         var oldRunner = Environment.GetEnvironmentVariable("ALVORKIT_NATIVE_VERIFY_LINUX_ARM_RUNNER");
         var oldSysroot = Environment.GetEnvironmentVariable("ALVORKIT_NATIVE_VERIFY_LINUX_ARM_SYSROOT");
         try
@@ -117,7 +88,7 @@ public sealed class NativeVerifyRunnerTest
                     "/usr/arm-linux-gnueabihf",
                     processRunner.RunCommands[0].Arguments[2],
                     context.OutputFile(target),
-                    Path.Combine(root, "out", "native-verify", "xxhash", "linux-arm", "report.json"),
+                    Path.Combine(root, "out", "native-verify", "fastnoise2", "linux-arm", "report.json"),
                     "linux-arm"
                 },
                 run.Arguments.ToArray());
@@ -134,8 +105,8 @@ public sealed class NativeVerifyRunnerTest
     [TestMethod]
     public async Task VerifyAsync_LinuxArmRunnerWithoutSysroot_UsesLauncherOnly()
     {
-        var root = TestRepositoryFactory.CreateSingleCLibrary("xxhash", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
-        var context = LibraryBuildContext.Load(new(root), "xxhash");
+        var root = TestRepositoryFactory.CreateSingleCLibrary("fastnoise2", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
+        var context = LibraryBuildContext.Load(new(root), "fastnoise2");
         var oldRunner = Environment.GetEnvironmentVariable("ALVORKIT_NATIVE_VERIFY_LINUX_ARM_RUNNER");
         var oldSysroot = Environment.GetEnvironmentVariable("ALVORKIT_NATIVE_VERIFY_LINUX_ARM_SYSROOT");
         try
@@ -164,8 +135,8 @@ public sealed class NativeVerifyRunnerTest
     [TestMethod]
     public async Task VerifyAsync_LinuxArmWithoutRunnerEnvironment_ThrowsActionableError()
     {
-        var root = TestRepositoryFactory.CreateSingleCLibrary("xxhash", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
-        var context = LibraryBuildContext.Load(new(root), "xxhash");
+        var root = TestRepositoryFactory.CreateSingleCLibrary("fastnoise2", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
+        var context = LibraryBuildContext.Load(new(root), "fastnoise2");
         var oldRunner = Environment.GetEnvironmentVariable("ALVORKIT_NATIVE_VERIFY_LINUX_ARM_RUNNER");
         try
         {
@@ -189,10 +160,10 @@ public sealed class NativeVerifyRunnerTest
 
     /// <summary>Windows verification compiles the verifier through a generated Visual Studio shell script.</summary>
     [TestMethod]
-    public async Task VerifyAsync_XxHashWindows_RunsCompilerThroughPowerShell()
+    public async Task VerifyAsync_FastNoise2Windows_RunsCompilerThroughPowerShell()
     {
-        var root = TestRepositoryFactory.CreateSingleCLibrary("xxhash", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
-        var context = LibraryBuildContext.Load(new(root), "xxhash");
+        var root = TestRepositoryFactory.CreateSingleCLibrary("fastnoise2", "alvorkit-native-test-" + Guid.NewGuid().ToString("N"));
+        var context = LibraryBuildContext.Load(new(root), "fastnoise2");
         try
         {
             var target = TargetRid.Parse("win-x64");
@@ -204,7 +175,7 @@ public sealed class NativeVerifyRunnerTest
 
             Assert.AreEqual("pwsh", processRunner.RunCommands[0].FileName);
             Assert.AreEqual("-File", processRunner.RunCommands[0].Arguments[^2]);
-            Assert.AreEqual(Path.Combine(root, "out", "native-verify", "xxhash", "win-x64", "verify-xxhash.exe"),
+            Assert.AreEqual(Path.Combine(root, "out", "native-verify", "fastnoise2", "win-x64", "verify-fastnoise2.exe"),
                 processRunner.RunCommands[1].FileName);
         }
         finally

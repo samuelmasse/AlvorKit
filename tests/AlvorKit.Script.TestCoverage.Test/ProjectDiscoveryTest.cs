@@ -132,12 +132,12 @@ public sealed class ProjectDiscoveryTest
     public void BindingSourceAssemblyNames_WithFilter_ReturnsApiAndBackendModules()
     {
         using var workspace = TempWorkspace.Create();
-        WriteBindingConfig(workspace, "xxhash", "AlvorKit.XxHash");
+        WriteBindingConfig(workspace, "glfw", "AlvorKit.GLFW");
         WriteBindingConfig(workspace, "freetype", "AlvorKit.FreeType");
 
-        var modules = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["xxhash"]);
+        var modules = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["glfw"]);
 
-        CollectionAssert.AreEqual(new[] { "AlvorKit.XxHash", "AlvorKit.XxHash.Backend" }, modules.ToArray());
+        CollectionAssert.AreEqual(new[] { "AlvorKit.GLFW", "AlvorKit.GLFW.Backend" }, modules.ToArray());
     }
 
     /// <summary>Binding source discovery returns no modules when the repository has no native directory.</summary>
@@ -146,7 +146,7 @@ public sealed class ProjectDiscoveryTest
     {
         using var workspace = TempWorkspace.Create();
 
-        var modules = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["xxhash"]);
+        var modules = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["glfw"]);
 
         Assert.AreEqual(0, modules.Count);
     }
@@ -156,15 +156,15 @@ public sealed class ProjectDiscoveryTest
     public void BindingSourceAssemblyNames_WithAlternateFilters_ReturnsMatchingModules()
     {
         using var workspace = TempWorkspace.Create();
-        WriteBindingConfig(workspace, "xxhash", "AlvorKit.XxHash");
+        WriteBindingConfig(workspace, "glfw", "AlvorKit.GLFW");
 
-        var byConfig = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["native/xxhash/conf/bindgen.yml"]);
-        var byDirectory = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["native/xxhash"]);
-        var byAssembly = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["AlvorKit.XxHash.Backend"]);
+        var byConfig = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["native/glfw/conf/bindgen.yml"]);
+        var byDirectory = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["native/glfw"]);
+        var byAssembly = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, ["AlvorKit.GLFW.Backend"]);
 
-        CollectionAssert.AreEqual(new[] { "AlvorKit.XxHash", "AlvorKit.XxHash.Backend" }, byConfig.ToArray());
-        CollectionAssert.AreEqual(new[] { "AlvorKit.XxHash", "AlvorKit.XxHash.Backend" }, byDirectory.ToArray());
-        CollectionAssert.AreEqual(new[] { "AlvorKit.XxHash", "AlvorKit.XxHash.Backend" }, byAssembly.ToArray());
+        CollectionAssert.AreEqual(new[] { "AlvorKit.GLFW", "AlvorKit.GLFW.Backend" }, byConfig.ToArray());
+        CollectionAssert.AreEqual(new[] { "AlvorKit.GLFW", "AlvorKit.GLFW.Backend" }, byDirectory.ToArray());
+        CollectionAssert.AreEqual(new[] { "AlvorKit.GLFW", "AlvorKit.GLFW.Backend" }, byAssembly.ToArray());
     }
 
     /// <summary>Binding source discovery without filters returns every configured binding module.</summary>
@@ -172,13 +172,13 @@ public sealed class ProjectDiscoveryTest
     public void BindingSourceAssemblyNames_WithEmptyFilters_ReturnsAllModules()
     {
         using var workspace = TempWorkspace.Create();
-        WriteBindingConfig(workspace, "xxhash", "AlvorKit.XxHash");
+        WriteBindingConfig(workspace, "glfw", "AlvorKit.GLFW");
         WriteBindingConfig(workspace, "freetype", "AlvorKit.FreeType");
 
         var modules = BindingProjectDiscovery.SourceAssemblyNames(workspace.Root, []);
 
         CollectionAssert.AreEqual(
-            new[] { "AlvorKit.FreeType", "AlvorKit.FreeType.Backend", "AlvorKit.XxHash", "AlvorKit.XxHash.Backend" },
+            new[] { "AlvorKit.FreeType", "AlvorKit.FreeType.Backend", "AlvorKit.GLFW", "AlvorKit.GLFW.Backend" },
             modules.ToArray());
     }
 
@@ -203,15 +203,15 @@ public sealed class ProjectDiscoveryTest
     public void TestProjectsReferencingBindingModules_ReturnsMatchingTests()
     {
         using var workspace = TempWorkspace.Create();
-        var packageTest = WriteBindingTestProject(workspace, "Package.Test", packageReference: "AlvorKit.XxHash.Backend");
+        var packageTest = WriteBindingTestProject(workspace, "Package.Test", packageReference: "AlvorKit.GLFW.Backend");
         var projectTest = WriteBindingTestProject(
             workspace,
             "Project.Test",
-            projectReference: "$(BindingsRoot)\\AlvorKit.XxHash.Backend\\AlvorKit.XxHash.Backend.csproj");
+            projectReference: "$(BindingsRoot)\\AlvorKit.GLFW.Backend\\AlvorKit.GLFW.Backend.csproj");
         WriteBindingTestProject(workspace, "Other.Test", packageReference: "AlvorKit.FreeType.Backend");
         var tests = ProjectDiscovery.TestProjects(workspace.Root, []);
 
-        var selected = BindingProjectDiscovery.TestProjectsReferencingBindingModules(tests, ["AlvorKit.XxHash", "AlvorKit.XxHash.Backend"]);
+        var selected = BindingProjectDiscovery.TestProjectsReferencingBindingModules(tests, ["AlvorKit.GLFW", "AlvorKit.GLFW.Backend"]);
 
         CollectionAssert.AreEqual(new[] { packageTest, projectTest }, selected.ToArray());
     }
@@ -234,7 +234,7 @@ public sealed class ProjectDiscoveryTest
 
         var selected = BindingProjectDiscovery.TestProjectsReferencingBindingModules(
             [test, Path.Combine(workspace.Root, "tests", "Missing.Test", "Missing.Test.csproj")],
-            ["AlvorKit.XxHash.Backend"]);
+            ["AlvorKit.GLFW.Backend"]);
 
         Assert.AreEqual(0, selected.Count);
     }
@@ -329,14 +329,14 @@ public sealed class ProjectDiscoveryTest
     public void CoverageSelection_WithBindingFilter_SelectsBindingTestsAndModules()
     {
         using var workspace = TempWorkspace.Create();
-        WriteBindingConfig(workspace, "xxhash", "AlvorKit.XxHash");
-        var test = WriteBindingTestProject(workspace, "AlvorKit.XxHash.Test", packageReference: "AlvorKit.XxHash.Backend");
+        WriteBindingConfig(workspace, "glfw", "AlvorKit.GLFW");
+        var test = WriteBindingTestProject(workspace, "AlvorKit.GLFW.Test", packageReference: "AlvorKit.GLFW.Backend");
 
-        var options = CoverageOptions.Parse(["--binding", "xxhash"]);
+        var options = CoverageOptions.Parse(["--binding", "glfw"]);
         var selection = CoverageSelection.FromOptions(workspace.Root, options);
 
         CollectionAssert.AreEqual(new[] { test }, selection.TestProjects.ToArray());
-        CollectionAssert.AreEqual(new[] { "AlvorKit.XxHash", "AlvorKit.XxHash.Backend" }, selection.SourceModules.ToArray());
+        CollectionAssert.AreEqual(new[] { "AlvorKit.GLFW", "AlvorKit.GLFW.Backend" }, selection.SourceModules.ToArray());
     }
 
     /// <summary>Coverage selection without filters includes all tests and source modules.</summary>

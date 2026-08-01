@@ -15,16 +15,16 @@ public sealed class BindgenReviewCoordinatorTest
         var result = await coordinator.ExecuteAsync(new(
             BindgenReviewCommandKind.Start,
             workspace.Root,
-            "xxhash",
+            "freetype",
             null,
             "overloads",
             false));
 
         Assert.AreEqual(0, result.ExitCode);
-        Assert.IsTrue(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "xxhash-overloads-a1b2c")));
-        StringAssert.Contains(File.ReadAllText(ManifestPath(workspace.Root)), "\"Library\": \"xxhash\"");
+        Assert.IsTrue(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "freetype-overloads-a1b2c")));
+        StringAssert.Contains(File.ReadAllText(ManifestPath(workspace.Root)), "\"Library\": \"freetype\"");
         CollectionAssert.Contains(result.Lines.ToArray(), "generated");
-        CollectionAssert.AreEqual(new[] { "xxhash", "--output-root", "out/bindgen-review/xxhash-overloads-a1b2c/before" }, runner.LastBindgenTail());
+        CollectionAssert.AreEqual(new[] { "freetype", "--output-root", "out/bindgen-review/freetype-overloads-a1b2c/before" }, runner.LastBindgenTail());
     }
 
     /// <summary>Start defaults the manifest case name to the selected library when no case is supplied.</summary>
@@ -36,12 +36,12 @@ public sealed class BindgenReviewCoordinatorTest
         await Coordinator(new FakeProcessRunner(), suffix: "a1b2c").ExecuteAsync(new(
             BindgenReviewCommandKind.Start,
             workspace.Root,
-            "xxhash",
+            "freetype",
             null,
             null,
             false));
 
-        StringAssert.Contains(File.ReadAllText(DefaultManifestPath(workspace.Root)), "\"CaseName\": \"xxhash\"");
+        StringAssert.Contains(File.ReadAllText(DefaultManifestPath(workspace.Root)), "\"CaseName\": \"freetype\"");
     }
 
     /// <summary>After uses the manifest library and writes into the after snapshot directory.</summary>
@@ -56,12 +56,12 @@ public sealed class BindgenReviewCoordinatorTest
             BindgenReviewCommandKind.After,
             workspace.Root,
             null,
-            "out/bindgen-review/xxhash-a1b2c",
+            "out/bindgen-review/freetype-a1b2c",
             null,
             false));
 
         Assert.AreEqual(0, result.ExitCode);
-        CollectionAssert.AreEqual(new[] { "xxhash", "--output-root", "out/bindgen-review/xxhash-a1b2c/after" }, runner.LastBindgenTail());
+        CollectionAssert.AreEqual(new[] { "freetype", "--output-root", "out/bindgen-review/freetype-a1b2c/after" }, runner.LastBindgenTail());
     }
 
     /// <summary>Diff returns a friendly message when git reports no generated changes.</summary>
@@ -75,7 +75,7 @@ public sealed class BindgenReviewCoordinatorTest
             BindgenReviewCommandKind.Diff,
             workspace.Root,
             null,
-            "out/bindgen-review/xxhash-a1b2c",
+            "out/bindgen-review/freetype-a1b2c",
             null,
             false));
 
@@ -94,7 +94,7 @@ public sealed class BindgenReviewCoordinatorTest
             BindgenReviewCommandKind.Diff,
             workspace.Root,
             null,
-            "out/bindgen-review/xxhash-a1b2c",
+            "out/bindgen-review/freetype-a1b2c",
             null,
             false));
 
@@ -113,12 +113,12 @@ public sealed class BindgenReviewCoordinatorTest
             BindgenReviewCommandKind.Clean,
             workspace.Root,
             null,
-            "out/bindgen-review/xxhash-a1b2c",
+            "out/bindgen-review/freetype-a1b2c",
             null,
             false));
 
         Assert.AreEqual(0, result.ExitCode);
-        Assert.IsFalse(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "xxhash-a1b2c")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "freetype-a1b2c")));
     }
 
     /// <summary>Finish captures after, treats git diff exit code one as a successful review, and deletes the review directory.</summary>
@@ -134,12 +134,12 @@ public sealed class BindgenReviewCoordinatorTest
             BindgenReviewCommandKind.Finish,
             workspace.Root,
             null,
-            "out/bindgen-review/xxhash-a1b2c",
+            "out/bindgen-review/freetype-a1b2c",
             null,
             false));
 
         Assert.AreEqual(0, result.ExitCode);
-        Assert.IsFalse(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "xxhash-a1b2c")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "freetype-a1b2c")));
         CollectionAssert.Contains(result.Lines.ToArray(), "diff --git a/before/file.cs b/after/file.cs");
         Assert.AreEqual(2, runner.Commands.Count);
     }
@@ -156,11 +156,11 @@ public sealed class BindgenReviewCoordinatorTest
             BindgenReviewCommandKind.Finish,
             workspace.Root,
             null,
-            "out/bindgen-review/xxhash-a1b2c",
+            "out/bindgen-review/freetype-a1b2c",
             null,
             true));
 
-        Assert.IsTrue(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "xxhash-a1b2c")));
+        Assert.IsTrue(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "freetype-a1b2c")));
     }
 
     /// <summary>Finish stops before diff and cleanup when the after bindgen run fails.</summary>
@@ -175,13 +175,13 @@ public sealed class BindgenReviewCoordinatorTest
             BindgenReviewCommandKind.Finish,
             workspace.Root,
             null,
-            "out/bindgen-review/xxhash-a1b2c",
+            "out/bindgen-review/freetype-a1b2c",
             null,
             false));
 
         Assert.AreEqual(5, result.ExitCode);
         CollectionAssert.Contains(result.Lines.ToArray(), "bindgen failed");
-        Assert.IsTrue(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "xxhash-a1b2c")));
+        Assert.IsTrue(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "freetype-a1b2c")));
         Assert.AreEqual(1, runner.Commands.Count);
     }
 
@@ -197,14 +197,14 @@ public sealed class BindgenReviewCoordinatorTest
             BindgenReviewCommandKind.Finish,
             workspace.Root,
             null,
-            "out/bindgen-review/xxhash-a1b2c",
+            "out/bindgen-review/freetype-a1b2c",
             null,
             false));
 
         Assert.AreEqual(2, result.ExitCode);
         CollectionAssert.Contains(result.Lines.ToArray(), "after warning");
         CollectionAssert.Contains(result.Lines.ToArray(), "fatal");
-        Assert.IsTrue(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "xxhash-a1b2c")));
+        Assert.IsTrue(Directory.Exists(Path.Combine(workspace.Root, "out", "bindgen-review", "freetype-a1b2c")));
     }
 
     /// <summary>Unknown command kinds are rejected defensively.</summary>
@@ -226,24 +226,24 @@ public sealed class BindgenReviewCoordinatorTest
 
     /// <summary>Returns the manifest path used by the start test.</summary>
     private static string ManifestPath(string repoRoot) =>
-        Path.Combine(repoRoot, "out", "bindgen-review", "xxhash-overloads-a1b2c", ".bindgen-review.json");
+        Path.Combine(repoRoot, "out", "bindgen-review", "freetype-overloads-a1b2c", ".bindgen-review.json");
 
     /// <summary>Returns the manifest path used by the default-case start test.</summary>
     private static string DefaultManifestPath(string repoRoot) =>
-        Path.Combine(repoRoot, "out", "bindgen-review", "xxhash-a1b2c", ".bindgen-review.json");
+        Path.Combine(repoRoot, "out", "bindgen-review", "freetype-a1b2c", ".bindgen-review.json");
 
     /// <summary>Writes a minimal manifest for an existing review session.</summary>
     private static void WriteManifest(string repoRoot)
     {
-        var root = Path.Combine(repoRoot, "out", "bindgen-review", "xxhash-a1b2c");
+        var root = Path.Combine(repoRoot, "out", "bindgen-review", "freetype-a1b2c");
         Directory.CreateDirectory(root);
         File.WriteAllText(
             Path.Combine(root, ".bindgen-review.json"),
             """
             {
-              "Library": "xxhash",
-              "CaseName": "xxhash",
-              "RelativeRoot": "out/bindgen-review/xxhash-a1b2c",
+              "Library": "freetype",
+              "CaseName": "freetype",
+              "RelativeRoot": "out/bindgen-review/freetype-a1b2c",
               "CreatedAt": "2026-06-15T18:00:00+00:00"
             }
             """);

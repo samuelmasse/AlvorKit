@@ -146,7 +146,6 @@ public static class RootLoop
         injector.Add<Fn>(new FnBackend());
         injector.Add<Ft>(new FtBackend());
         injector.Add<Ma>(CreateAudioBackend());
-        injector.Add<Xxh>(new XxhBackend());
         return injector;
     }
 

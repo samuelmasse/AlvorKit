@@ -342,26 +342,6 @@
       "stopAtEntry": false
     },
     {
-      "name": "AlvorKit.XxHash.Demo.Bench",
-      "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "build AlvorKit.XxHash.Demo.Bench",
-      "program": "${workspaceFolder}/bin/AlvorKit.XxHash.Demo.Bench/Release/AlvorKit.XxHash.Demo.Bench.dll",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "stopAtEntry": false
-    },
-    {
-      "name": "AlvorKit.XxHash.Demo",
-      "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "build AlvorKit.XxHash.Demo",
-      "program": "${workspaceFolder}/bin/AlvorKit.XxHash.Demo/Release/AlvorKit.XxHash.Demo.dll",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "stopAtEntry": false
-    },
-    {
       "name": "AlvorStarter",
       "type": "coreclr",
       "request": "launch",

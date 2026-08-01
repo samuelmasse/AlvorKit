@@ -55,7 +55,7 @@ policy unless this file is more specific.
   `--source-project`, adding `--test-project` only when an explicit test project
   choice is useful, then run scoped lint.
 - For generated binding test changes, run focused coverage with `--binding`
-  using the native library name and `--threshold 0`, such as `xxhash`, and
+  using the native library name and `--threshold 0`, such as `fastnoise2`, and
   inspect missing generated API and `.Backend` coverage before handoff.
 - If shared helper behavior changes across many projects, prefer the full strict
   coverage gate before handoff.

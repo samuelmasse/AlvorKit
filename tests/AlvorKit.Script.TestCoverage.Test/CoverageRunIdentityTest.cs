@@ -31,11 +31,11 @@ public sealed class CoverageRunIdentityTest
     [TestMethod]
     public void Create_BindingConfigFilter_UsesLibrarySlug()
     {
-        var options = CoverageOptions.Parse(["--binding", "native/xxhash/conf/bindgen.yml"]);
+        var options = CoverageOptions.Parse(["--binding", "native/glfw/conf/bindgen.yml"]);
 
         var runId = CoverageRunIdentity.Create(DateTimeOffset.Parse("2026-06-15T01:02:03Z"), options);
 
-        StringAssert.EndsWith(runId, "-xxhash");
+        StringAssert.EndsWith(runId, "-glfw");
     }
 
     /// <summary>Test filters are used when no source or binding filters are present.</summary>

@@ -10,13 +10,13 @@ public sealed class BindgenReviewPathsTest
     {
         using var workspace = TempWorkspace.Create();
 
-        var session = BindgenReviewPaths.Create(workspace.Root, "xxHash", "Typed overloads!", () => "a1b2c");
+        var session = BindgenReviewPaths.Create(workspace.Root, "freetype", "Typed overloads!", () => "a1b2c");
 
-        Assert.AreEqual("out/bindgen-review/xxhash-typed-overloads-a1b2c", session.RelativeRoot);
-        Assert.AreEqual("out/bindgen-review/xxhash-typed-overloads-a1b2c/before", session.BeforeRelativeRoot);
-        Assert.AreEqual("out/bindgen-review/xxhash-typed-overloads-a1b2c/after", session.AfterRelativeRoot);
-        StringAssert.EndsWith(session.BeforeRoot, Path.Combine("xxhash-typed-overloads-a1b2c", "before"));
-        StringAssert.EndsWith(session.AfterRoot, Path.Combine("xxhash-typed-overloads-a1b2c", "after"));
+        Assert.AreEqual("out/bindgen-review/freetype-typed-overloads-a1b2c", session.RelativeRoot);
+        Assert.AreEqual("out/bindgen-review/freetype-typed-overloads-a1b2c/before", session.BeforeRelativeRoot);
+        Assert.AreEqual("out/bindgen-review/freetype-typed-overloads-a1b2c/after", session.AfterRelativeRoot);
+        StringAssert.EndsWith(session.BeforeRoot, Path.Combine("freetype-typed-overloads-a1b2c", "before"));
+        StringAssert.EndsWith(session.AfterRoot, Path.Combine("freetype-typed-overloads-a1b2c", "after"));
     }
 
     /// <summary>Create omits the case segment when the case slug matches the library slug.</summary>
@@ -25,9 +25,9 @@ public sealed class BindgenReviewPathsTest
     {
         using var workspace = TempWorkspace.Create();
 
-        var session = BindgenReviewPaths.Create(workspace.Root, "xxhash", null, () => "a1b2c");
+        var session = BindgenReviewPaths.Create(workspace.Root, "freetype", null, () => "a1b2c");
 
-        Assert.AreEqual("out/bindgen-review/xxhash-a1b2c", session.RelativeRoot);
+        Assert.AreEqual("out/bindgen-review/freetype-a1b2c", session.RelativeRoot);
     }
 
     /// <summary>Create falls back to a generic case segment when human text has no safe characters.</summary>
@@ -36,9 +36,9 @@ public sealed class BindgenReviewPathsTest
     {
         using var workspace = TempWorkspace.Create();
 
-        var session = BindgenReviewPaths.Create(workspace.Root, "xxhash", "!!", () => "a1b2c");
+        var session = BindgenReviewPaths.Create(workspace.Root, "freetype", "!!", () => "a1b2c");
 
-        Assert.AreEqual("out/bindgen-review/xxhash-case-a1b2c", session.RelativeRoot);
+        Assert.AreEqual("out/bindgen-review/freetype-case-a1b2c", session.RelativeRoot);
     }
 
     /// <summary>Existing accepts the disposable review base directory itself.</summary>
@@ -67,8 +67,8 @@ public sealed class BindgenReviewPathsTest
     {
         using var workspace = TempWorkspace.Create();
 
-        Assert.ThrowsExactly<InvalidOperationException>(() => BindgenReviewPaths.Create(workspace.Root, "xxhash", null, () => "abc"));
-        Assert.ThrowsExactly<InvalidOperationException>(() => BindgenReviewPaths.Create(workspace.Root, "xxhash", null, () => "AB12C"));
+        Assert.ThrowsExactly<InvalidOperationException>(() => BindgenReviewPaths.Create(workspace.Root, "freetype", null, () => "abc"));
+        Assert.ThrowsExactly<InvalidOperationException>(() => BindgenReviewPaths.Create(workspace.Root, "freetype", null, () => "AB12C"));
     }
 
     /// <summary>RandomSuffix returns a lowercase alphanumeric five-character string.</summary>

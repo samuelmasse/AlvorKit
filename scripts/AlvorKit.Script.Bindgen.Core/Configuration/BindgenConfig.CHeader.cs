@@ -90,9 +90,6 @@ public sealed partial class BindgenConfig
     /// <summary>Whether to emit FreeType-specific convenience members over the raw freetype.h surface.</summary>
     public bool FreeTypeConvenience { get; set; }
 
-    /// <summary>Whether to emit xxHash-specific convenience members over the raw xxhash.h surface.</summary>
-    public bool XxHashConvenience { get; set; }
-
     /// <summary>Whether to emit FastNoise2-specific span convenience members over the raw FastNoise2 C API.</summary>
     public bool FastNoise2Convenience { get; set; }
 }

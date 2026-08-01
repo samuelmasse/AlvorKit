@@ -33,8 +33,8 @@ internal static class NativeVerifyPlanner
     private static string VerifierName(LibraryBuildContext library) =>
         library.Name switch
         {
-            "xxhash" or "fastnoise2" => "verify-" + library.Name,
-            _ => throw new NotSupportedException("Native verification currently supports xxhash and fastnoise2 only.")
+            "fastnoise2" => "verify-fastnoise2",
+            _ => throw new NotSupportedException("Native verification currently supports fastnoise2 only.")
         };
 
     /// <summary>Creates a compiler invocation for the verifier source and target RID.</summary>

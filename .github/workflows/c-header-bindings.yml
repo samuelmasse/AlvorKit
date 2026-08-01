@@ -26,7 +26,6 @@ on:
           - interception-profiler
           - miniaudio
           - nfde
-          - xxhash
       publish:
         description: Publish generated binding packages to NuGet.org
         required: true
@@ -46,7 +45,6 @@ on:
         "native/interception-profiler/version/BINDING_REVISION",
         "native/miniaudio/version/BINDING_REVISION",
         "native/nfde/version/BINDING_REVISION",
-        "native/xxhash/version/BINDING_REVISION",
       ]
 
 # The workflow only needs repository reads. NuGet publishing is authenticated
@@ -92,7 +90,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             selection="${{ inputs.library }}"
             if [[ "$selection" == "all" ]]; then
-              selected=(fastnoise2 freetype glfw interception-profiler miniaudio nfde xxhash)
+              selected=(fastnoise2 freetype glfw interception-profiler miniaudio nfde)
             else
               selected=("$selection")
             fi
@@ -115,7 +113,7 @@ jobs:
             }
 
             # version/BINDING_REVISION means "publish a new managed binding version".
-            for library in fastnoise2 freetype glfw interception-profiler miniaudio nfde xxhash; do
+            for library in fastnoise2 freetype glfw interception-profiler miniaudio nfde; do
               if changed_any "native/${library}/version/BINDING_REVISION"; then
                 selected+=("$library")
               fi
@@ -162,12 +160,6 @@ jobs:
                 native_id="alvorkit.nfde.native"
                 api_project="AlvorKit.NFDe"
                 backend_project="AlvorKit.NFDe.Backend"
-                ;;
-              xxhash)
-                id="alvorkit.xxhash"
-                native_id="alvorkit.xxhash.native"
-                api_project="AlvorKit.XxHash"
-                backend_project="AlvorKit.XxHash.Backend"
                 ;;
               *)
                 echo "::error::Unknown binding library '$library'."

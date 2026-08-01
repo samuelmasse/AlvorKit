@@ -19,9 +19,9 @@ public sealed class BindgenOptionsTest
     [TestMethod]
     public void Parse_ReadsSelectionStrictModeAndOutputRoot()
     {
-        var options = BindgenOptions.Parse(["xxhash", "--strict", "--output-root", "out/bindgen-review/after"]);
+        var options = BindgenOptions.Parse(["freetype", "--strict", "--output-root", "out/bindgen-review/after"]);
 
-        Assert.AreEqual("xxhash", options.Selection);
+        Assert.AreEqual("freetype", options.Selection);
         Assert.IsTrue(options.Strict);
         Assert.AreEqual("out/bindgen-review/after", options.OutputRoot);
     }
@@ -39,9 +39,9 @@ public sealed class BindgenOptionsTest
     [TestMethod]
     public void Parse_SetupLocal_ReturnsActiveLocalOutputRoot()
     {
-        var options = BindgenOptions.Parse(["xxhash", "--setup-local"]);
+        var options = BindgenOptions.Parse(["freetype", "--setup-local"]);
 
-        Assert.AreEqual("xxhash", options.Selection);
+        Assert.AreEqual("freetype", options.Selection);
         Assert.AreEqual("out/bindgen", options.OutputRoot);
     }
 
@@ -50,7 +50,7 @@ public sealed class BindgenOptionsTest
     public void Parse_SetupLocalWithOutputRoot_Throws()
     {
         var exception = Assert.ThrowsException<ArgumentException>(
-            () => BindgenOptions.Parse(["xxhash", "--setup-local", "--output-root", "out/custom"]));
+            () => BindgenOptions.Parse(["freetype", "--setup-local", "--output-root", "out/custom"]));
 
         StringAssert.Contains(exception.Message, "--setup-local cannot be combined with --output-root");
     }
@@ -68,7 +68,7 @@ public sealed class BindgenOptionsTest
     [TestMethod]
     public void Parse_RejectsExtraSelection()
     {
-        var exception = Assert.ThrowsException<ArgumentException>(() => BindgenOptions.Parse(["xxhash", "opengl"]));
+        var exception = Assert.ThrowsException<ArgumentException>(() => BindgenOptions.Parse(["freetype", "opengl"]));
 
         StringAssert.Contains(exception.Message, "Unrecognized command or argument 'opengl'");
     }

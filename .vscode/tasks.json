@@ -304,22 +304,6 @@
       "group": "build"
     },
     {
-      "label": "build AlvorKit.XxHash.Demo.Bench",
-      "type": "process",
-      "command": "dotnet",
-      "args": ["build", "${workspaceFolder}/demos/AlvorKit.XxHash.Demo.Bench/AlvorKit.XxHash.Demo.Bench.csproj", "--configuration", "Release", "--nologo"],
-      "problemMatcher": "$msCompile",
-      "group": "build"
-    },
-    {
-      "label": "build AlvorKit.XxHash.Demo",
-      "type": "process",
-      "command": "dotnet",
-      "args": ["build", "${workspaceFolder}/demos/AlvorKit.XxHash.Demo/AlvorKit.XxHash.Demo.csproj", "--configuration", "Release", "--nologo"],
-      "problemMatcher": "$msCompile",
-      "group": "build"
-    },
-    {
       "label": "build AlvorStarter",
       "type": "process",
       "command": "dotnet",
