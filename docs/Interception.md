@@ -100,9 +100,18 @@ its build output. `--profiler-path` and
 `ALVORKIT_INTERCEPTION_PROFILER_PATH` remain explicit overrides for CI proofs
 and development against an unpublished profiler build.
 
-The current supported profiler targets are Windows x64 and Linux x64. The
-CI-first support and expansion gates are recorded in
-[`InterceptionProfilerPlatformPlan.md`](InterceptionProfilerPlatformPlan.md).
+### Platform support
+
+The profiler supports **Windows x64, Linux x64, and Linux Arm64**. Each RID
+has explicit build configuration, a packaged runtime asset, artifact checks,
+binding verification, and an isolated profiled-process proof. Fixed-width C
+ABI layout checks for another target do not make that target supported.
+
+Support expands one RID at a time. A new target must add explicit native build
+configuration, pinned CoreCLR source acquisition, dependency and export
+verification, strict generated-binding checks, ABI negotiation, and an
+end-to-end ReJIT and revert test on a native .NET host. Until all gates pass,
+the target is unsupported rather than experimental or build-only.
 
 `InterceptionProfiler.Connect` negotiates ABI/capabilities with the library
 CoreCLR already loaded. It does not attach the profiler after startup.

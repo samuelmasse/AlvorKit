@@ -178,6 +178,3 @@ components, protocols, and tests.
 - [OpenGL maths overloads](OpenGLMaths.md) — GL integration surface.
 - [AlvorKit vectors versus System.Numerics](Maths.SystemVectorDifferences.md)
   — semantic and performance comparison for the float families.
-- [Maths Performance Surface Manifest](Maths.PerformanceSurfaceManifest.md)
-  and the other `Maths.Performance*` documents — the optimization epic's
-  inventory, theory, baselines, and interface dispatch appendix.

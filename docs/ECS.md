@@ -184,9 +184,8 @@ One thread owns reads, writes, queries, and structural changes for a particular
 they own different allocs. Query and row hot paths add no locking, volatile
 access, or ownership checks.
 
-For the representation, Release measurements, generated code shape, rejected
-alternatives, and remaining runtime-mode checks, read
-[`ECS.Archetypal.PerEntRowIteration.md`](ECS.Archetypal.PerEntRowIteration.md).
+For the low-level storage and query contract, read
+[`ECS.Archetypal.md`](ECS.Archetypal.md).
 
 ## Base Ent Ownership
 

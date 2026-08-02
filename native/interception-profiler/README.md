@@ -14,9 +14,9 @@ Its job is deliberately small:
 
 The supported runtime targets are **Windows x64**, **Linux x64**, and
 **Linux Arm64**. Each RID has its own build configuration, packaged runtime
-asset, artifact checks, and isolated profiled-process proof. The staged
-expansion decision is recorded in
-[`docs/InterceptionProfilerPlatformPlan.md`](https://github.com/AlvorKit/AlvorKit/blob/main/docs/InterceptionProfilerPlatformPlan.md).
+asset, artifact checks, and isolated profiled-process proof. The support
+boundary and expansion gates are documented in
+[`docs/Interception.md`](https://github.com/AlvorKit/AlvorKit/blob/main/docs/Interception.md#platform-support).
 
 ABI v3 retains raw IL and exact managed dispatch and adds immutable method
 generations. A generation carries its prior-generation ID, the authoritative
@@ -128,7 +128,7 @@ dotnet build `
 
 The CMake project deliberately rejects every target except `win-x64`,
 `linux-x64`, and `linux-arm64`. Other platform work resumes one RID at a time
-through the gates in the platform plan.
+through the platform-support gates in `docs/Interception.md`.
 
 The `interception profiler native package` workflow checks out the pinned
 CoreCLR headers and builds all three runtime assets. It verifies PE or ELF
