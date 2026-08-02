@@ -218,6 +218,10 @@ function Read-LinuxArtifact(
         "libpthread.so.0",
         "libstdc++.so.6"
     )
+    if ($runtimeIdentifier -eq "linux-arm64")
+    {
+        $allowed += "ld-linux-aarch64.so.1"
+    }
     Assert-ExactValues "exports" $expectedExports $exports
     Assert-AllowedValues "dependencies" $allowed $dependencies
 
