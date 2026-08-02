@@ -326,7 +326,7 @@ Axis-aligned, represented as public `Min` / `Max` corner fields.
 
 - `Empty` sentinel (inverted bounds: ±infinity for floats,
   `int.MaxValue`/`int.MinValue` for ints); `IsEmpty`.
-- Factories: `Create`, `CreateFromCorners` (sorts), 
+- Factories: `Create`, `CreateFromCorners` (sorts),
   `CreateFromCenterHalfSize`, `CreateFromCenterSize`.
 - Settable derived properties `Size`, `Center`, `HalfSize` (integer boxes
   truncate); `Width`, `Height`, plus `Depth` and `Volume` (3D) or `Area`
