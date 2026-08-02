@@ -18,9 +18,7 @@ Rule strengths are:
 - **Scoped default:** applies in its declared scope unless explicitly overridden.
 - **Workflow:** the procedure for performing an authorized operation.
 
-`RuleManifest.json` is the machine-readable inventory. `RuleLedger.md` records
-where each former root/shared section moved and the deliberate conflict
-resolutions made during migration.
+`RuleManifest.json` is the machine-readable inventory used by repository lint.
 
 ## Modules
 

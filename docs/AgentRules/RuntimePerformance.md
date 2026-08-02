@@ -10,9 +10,7 @@ deletion, unload, or teardown.
 
 Runtime deletion, disposal, unload, and scope teardown are allocation-sensitive.
 Genuinely cold final process-shutdown orchestration may allocate only when the
-cost is intentional and does not define a reusable runtime API. This resolves
-the former contradictory teardown statements in favor of the stronger runtime
-contract.
+cost is intentional and does not define a reusable runtime API.
 
 ### Hot-Path Data Layout
 
