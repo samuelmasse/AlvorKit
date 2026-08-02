@@ -389,31 +389,6 @@ unmarked contracts that should still resolve through a service type. Explicit
 service bindings are exact, so bind each unmarked service surface that
 constructors are allowed to request.
 
-## Hosted Service Graphs
-
-Use `Host<T>()` when a scope should own an otherwise-unscoped concrete service
-and its unscoped constructor dependencies. Hosting keeps a reusable library
-independent of the game's scope attribute while giving each game scope its own
-instance.
-
-```csharp
-var level = world.Scope<LevelScope>();
-level.Host<Pathfinder>();
-```
-
-A marked service can then use ordinary constructor injection:
-
-```csharp
-[Level]
-public sealed class LevelNavigation(Pathfinder pathfinder);
-```
-
-The hosted service is cached in the hosting scope, descendant scopes reuse it,
-and separate hosting scopes receive separate graphs. While the hosted service
-is being constructed, otherwise-unscoped dependencies are resolved and cached
-in the hosting scope instead of being promoted to the root. Types that already
-declare an injector scope attribute cannot be hosted.
-
 ## States And Scripts
 
 `State` is the top-level mode currently owned by `RootState`. Assigning

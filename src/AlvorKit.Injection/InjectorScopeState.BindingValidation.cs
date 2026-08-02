@@ -74,28 +74,8 @@ public partial record InjectorScopeState
     /// </summary>
     private void ValidateServiceKeyAvailable(Type serviceType, InjectorPath path)
     {
-        if (bindings.ContainsKey(serviceType) || hostedTypes.Contains(serviceType) || instances.ContainsKey(serviceType))
+        if (bindings.ContainsKey(serviceType) || instances.ContainsKey(serviceType))
             throw new InjectorException(path, $"Type '{serviceType.FullName}' is already registered in this scope.");
-    }
-
-    /// <summary>
-    /// Rejects types that cannot be hosted as unscoped concrete services.
-    /// </summary>
-    private void ValidateHostedType(Type type, InjectorPath path)
-    {
-        if (type.ContainsGenericParameters)
-            throw new InjectorException(path, $"Type '{type.FullName}' cannot be hosted because it is an open generic type.");
-        if (type.IsInterface || type.IsAbstract)
-            throw new InjectorException(path, $"Type '{type.FullName}' cannot be hosted because it is not concrete.");
-        if (GetInjectorAttributeType(type, path) is { } attributeType)
-        {
-            throw new InjectorException(
-                path,
-                $"Type '{type.FullName}' cannot be hosted because it already defines injector attribute '{attributeType.FullName}'.");
-        }
-
-        ValidateIncluded(type, path);
-        ValidateServiceKeyAvailable(type, path);
     }
 
     /// <summary>

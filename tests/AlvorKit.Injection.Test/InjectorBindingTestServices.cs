@@ -103,24 +103,6 @@ public class HandlerService : IHandlerService
     public string Message => "handled";
 }
 
-[Binding]
-public sealed class HostedConsumer(HostedService service)
-{
-    public HostedService Service => service;
-}
-
-public sealed class HostedService
-{
-    internal HostedService(HostedDependency dependency)
-    {
-        Dependency = dependency;
-    }
-
-    public HostedDependency Dependency { get; }
-}
-
-public sealed class HostedDependency;
-
 public class InterfaceHandler : InjectorCustomHandler
 {
     public override bool Handles(Type type) => type == typeof(IHandlerService);

@@ -41,12 +41,7 @@ public partial record InjectorScopeState(
         if (instances.TryGetValue(type, out var exist))
             return exist;
 
-        if (TryGetHostBoundary(type, path, out var boundary))
-            return boundary.GetWithinHostedGraph(type, path!);
-
-        FindRegistration(type, out var binding, out var host);
-        if (host is not null)
-            return host.GetHosted(type, path);
+        var binding = FindBinding(type);
         if (binding != null)
             return GetBound(type, binding, path);
 
@@ -60,12 +55,7 @@ public partial record InjectorScopeState(
     /// </summary>
     public object New(Type type, InjectorPath? path = null)
     {
-        if (TryGetHostBoundary(type, path, out var boundary))
-            return boundary.NewWithinHostedGraph(type, path!);
-
-        FindRegistration(type, out var binding, out var host);
-        if (host is not null)
-            return host.NewHosted(type, path);
+        var binding = FindBinding(type);
         if (binding != null)
             return NewBound(type, binding, path);
 

@@ -94,7 +94,7 @@ adding compatibility overloads, aliases, adapters, or deprecation shims.
 - Other public instantiated classes, structs, enums, and interfaces live in
   `Classes/`, `Structs/`, `Enums/`, and `Interfaces/` respectively.
 - Injected implementation services and internal static classes live directly
-  in `Internal/`. Injected services are the hosted singleton collaborators of
+  in `Internal/`. Injected services are the retained singleton collaborators of
   the root facade.
 - Non-injected internal implementation types are grouped by kind:
   `Internal/Classes/`, `Internal/Structs/`, `Internal/Enums/`, and
@@ -102,13 +102,14 @@ adding compatibility overloads, aliases, adapters, or deprecation shims.
   non-singleton helper objects, not injected services or static classes.
 - The facade and its implementation graph use constructor injection. A facade
   must not construct its own services.
-- Composition roots create the graph with `Host<TFacade>()` in the scope that
-  owns it, then resolve the facade normally. Tests must exercise the same
-  hosted composition rather than bypassing it with direct construction.
+- Composition roots create each facade graph in an ordinary `Injector`, then
+  publish the resolved facade to the scope or consumer that owns it. Tests must
+  exercise the same injector composition rather than bypassing it with direct
+  construction.
 - Dedicated unit tests are mandatory for every facade project. A new facade,
   facade behavior change, or facade implementation change is incomplete until
   its unit tests cover the public contract and the affected internal invariants
-  through the real hosted composition graph. This facade-specific requirement
+  through the real injector composition graph. This facade-specific requirement
   overrides the Working Mode default that otherwise prohibits adding or
   running game unit tests without an explicit user request.
 - Facade tests must assert behavior, values, state transitions, failure
@@ -123,8 +124,8 @@ adding compatibility overloads, aliases, adapters, or deprecation shims.
 A facade project is paired with a `<FacadeProject>.Debug` facade project when
 internal diagnostics are required. The debug project follows the same layout
 rules, contains its own single injected facade, and may receive friend-assembly
-access to the production facade's internals. Host both facades in the same
-scope so the debug facade observes that scope's production facade instance.
+access to the production facade's internals. Resolve both facades from the same
+injector so the debug facade observes the production facade's implementation graph.
 The debug facade may inject and use the core project's internal services
 directly; it does not need to depend on or route internal access through the
 production facade.
@@ -137,7 +138,7 @@ Debug-owned coordination, storage, transformation, and presentation belong in
 the debug project. Retain an opt-in hook in the core only when information must
 be recorded at the exact point where the production algorithm executes.
 
-The debug facade is an observation and control surface over the actual hosted
+The debug facade is an observation and control surface over the actual composed
 core machinery. It may expose captured state, counters, traces, visualization
 data, and explicit diagnostic controls already supported by that machinery. It
 must not implement an alternative algorithm, reference or oracle
@@ -158,7 +159,7 @@ testing, and benchmark projects only.
 Every production facade project `<FacadeProject>` must have one executable
 benchmark project named `<FacadeProject>.Bench`. Add only `.Bench`; names such
 as `<FacadeProject>Benchmark` and `<FacadeProject>.Benchmark` are banned. A
-paired debug facade is hosted and exercised by the production facade's bench;
+paired debug facade is resolved and exercised by the production facade's bench;
 it does not receive a separate `.Debug.Bench` project.
 
 Each game repository must also have one common `<Game>.Bench` library for
@@ -202,7 +203,7 @@ must state whether tracking is on.
 
 The allocation matrix must include lower-bound, high, and extreme cases. Judge
 object counts by growth with game-data dimensions such as chunks, cells,
-entities, or requests. Fixed composition, singleton, host, service, profiler
+entities, or requests. Fixed composition, singleton, service, profiler
 capture, and process objects establish the lower-bound baseline and must not be
 treated as scaling regressions. Capture cold lifecycle allocation and warmed
 steady-state work separately so background or retained-path allocations remain

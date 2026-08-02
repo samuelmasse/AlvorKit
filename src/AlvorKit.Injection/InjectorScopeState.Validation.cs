@@ -48,13 +48,6 @@ public partial record InjectorScopeState
     {
         var attributeType = GetInjectorAttributeType(type, path);
 
-        if (
-            attributeType == null
-            && path.HostScopes.TryPeek(out var host)
-            && ReferenceEquals(this, host)
-        )
-            return;
-
         if (attributeType == null && AttributeType != null)
             throw new InjectorException(path,
                 $"Type '{type.FullName}' cannot be injected into scope '{AttributeType.FullName}' " +

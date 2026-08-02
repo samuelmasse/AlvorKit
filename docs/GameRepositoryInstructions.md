@@ -48,7 +48,7 @@ or Commit Mode work.
   unless the user explicitly requests tests or an existing test is being
   diagnosed. Prefer targeted builds and behavior or AlvorSense verification.
 - **FACADE-TEST-OVERRIDE-001:** A project containing `FACADE.md` requires
-  dedicated behavioral unit tests through its real hosted composition. This
+  dedicated behavioral unit tests through its real injector composition. This
   overrides `GAME-TEST-DEFAULT-001` for facade creation, behavior, and
   implementation changes.
 - Game C# source files have a 350-line hard ceiling. Test files may be up to
