@@ -3,7 +3,6 @@ namespace AlvorKit.ECS.Demo.Bench;
 internal sealed partial class EcsArchBenchWorker
 {
     private const int NoFieldOrdinal = -1;
-    private const uint OrdinalHashMultiplier = 0x9E3779B9U;
 
     private EcsArchBenchSample RunMembership(string scenarioId)
     {
@@ -276,7 +275,7 @@ internal sealed partial class EcsArchBenchWorker
         int mask = slots.Length - 1;
         for (int ordinal = 0; ordinal < fieldIds.Length; ordinal++)
         {
-            int slot = OrdinalHashSlot(fieldIds[ordinal], mask);
+            int slot = TableHash.Index(fieldIds[ordinal], mask);
             while (slots[slot] != 0)
                 slot = (slot + 1) & mask;
 
@@ -287,7 +286,7 @@ internal sealed partial class EcsArchBenchWorker
     private static int FindOrdinalHash(ReadOnlySpan<int> fieldIds, ReadOnlySpan<int> slots, int fieldId)
     {
         int mask = slots.Length - 1;
-        int slot = OrdinalHashSlot(fieldId, mask);
+        int slot = TableHash.Index(fieldId, mask);
 
         while (true)
         {
@@ -301,12 +300,6 @@ internal sealed partial class EcsArchBenchWorker
 
             slot = (slot + 1) & mask;
         }
-    }
-
-    private static int OrdinalHashSlot(int fieldId, int mask)
-    {
-        uint hash = unchecked((uint)fieldId * OrdinalHashMultiplier);
-        return unchecked((int)(hash ^ (hash >> 16))) & mask;
     }
 
     private static int FindBinary(ReadOnlySpan<int> fieldIds, int fieldId)

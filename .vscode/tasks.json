@@ -242,6 +242,14 @@
       "group": "build"
     },
     {
+      "label": "build AlvorKit.Hashing.Demo.Bench",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "${workspaceFolder}/demos/AlvorKit.Hashing.Demo.Bench/AlvorKit.Hashing.Demo.Bench.csproj", "--configuration", "Release", "--nologo"],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
       "label": "build AlvorKit.Ranges.Demo.Bench",
       "type": "process",
       "command": "dotnet",

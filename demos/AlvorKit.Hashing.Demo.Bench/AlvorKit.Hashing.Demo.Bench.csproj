@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <ServerGarbageCollection>false</ServerGarbageCollection>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+        <ProjectReference Include="..\..\src\AlvorKit.Hashing\AlvorKit.Hashing.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="AlvorKit.Hashing" />
+        <Using Include="AlvorKit.Hashing.Demo.Bench" />
+        <Using Include="BenchmarkDotNet.Attributes" />
+        <Using Include="BenchmarkDotNet.Order" />
+        <Using Include="BenchmarkDotNet.Running" />
+    </ItemGroup>
+
+</Project>

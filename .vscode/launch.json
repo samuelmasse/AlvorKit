@@ -272,6 +272,16 @@
       "stopAtEntry": false
     },
     {
+      "name": "AlvorKit.Hashing.Demo.Bench",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Hashing.Demo.Bench",
+      "program": "${workspaceFolder}/bin/AlvorKit.Hashing.Demo.Bench/Release/AlvorKit.Hashing.Demo.Bench.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
       "name": "AlvorKit.Ranges.Demo.Bench",
       "type": "coreclr",
       "request": "launch",

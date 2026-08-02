@@ -91,7 +91,7 @@ internal static partial class EntArchGraph<A>
     {
         var index = Volatile.Read(ref transitionIndex)!;
         ulong key = PackEdgeKey(archId, fieldId);
-        int slot = EdgeHash(key) & (index.Keys.Length - 1);
+        int slot = TableHash.Index(key, index.Keys.Length - 1);
         while (true)
         {
             ulong storedKey = Volatile.Read(ref index.Keys[slot]);
@@ -132,7 +132,7 @@ internal static partial class EntArchGraph<A>
     /// <summary>Inserts one transition into a table with sufficient capacity.</summary>
     private static void InsertIndexedEdge(EntArchTransitionIndex index, ulong key, int dstArchId)
     {
-        int slot = EdgeHash(key) & (index.Keys.Length - 1);
+        int slot = TableHash.Index(key, index.Keys.Length - 1);
         while (index.Keys[slot] != 0)
             slot = (slot + 1) & (index.Keys.Length - 1);
 
@@ -144,14 +144,6 @@ internal static partial class EntArchGraph<A>
     /// <summary>Packs an arch and field into the nonzero transition key.</summary>
     private static ulong PackEdgeKey(int archId, int fieldId) =>
         ((ulong)(uint)archId << 32) | (uint)fieldId;
-
-    /// <summary>Hashes one packed transition key for a power-of-two table.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int EdgeHash(ulong key)
-    {
-        uint folded = (uint)key ^ (uint)(key >> 32);
-        return (int)(folded * 0x9E3779B1u);
-    }
 
     /// <summary>Grows the append-only linear transition arena.</summary>
     private static void EnsureEdgeCapacity(int requiredLength)

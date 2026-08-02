@@ -80,15 +80,37 @@ Game-specific overrides:
   re-implement clamp/lerp/min/max-style helpers the maths surface already
   provides. A project missing the maths reference gains the reference; that
   is never a reason to invent a local shape.
-- Use managed `System.IO.Hashing.XxHash3` for general-purpose
-  non-cryptographic hashing, stable content fingerprints, and deterministic
-  procedural sampling. Encode structured inputs explicitly with
-  `BinaryPrimitives`; do not add native xxHash bindings, injected hash
-  services, or game-local general-purpose hash implementations. Hash seed
-  domains use `long`, matching the managed API. The C# `unchecked` keyword is
-  forbidden. Keep a local integer mixer only for fixed-table slot selection,
-  or a cheap rolling signature inside measured benchmark work, when that
-  narrower operation is named and documented as such.
+- Treat the approved non-cryptographic hashing mechanisms as a closed policy.
+  Managed `System.IO.Hashing.XxHash3` is the default and first choice for all
+  general-purpose hashing, stable content fingerprints, and deterministic
+  procedural sampling. Use its managed static or incremental API directly and
+  declare an explicit `System.IO.Hashing` package reference.
+  - Use `System.HashCode` only for process-local CLR equality and collection
+    hash codes where stable or deterministic output is not required.
+  - Use `AlvorKit.Hashing.TableHash` only to map an already-formed integer key
+    to a power-of-two table. Use `EpochIndex32` or `EpochIndex64` when their
+    epoch-cleared key-to-slot lifecycle applies.
+  - Use `AlvorKit.Hashing.AdditiveChecksum64` only as a deliberately weak
+    additive observation or sink, normally in measured benchmark work; never
+    use it for identity, integrity, or correctness.
+- Never invent, copy, retain, or introduce another non-cryptographic hashing
+  system. Do not add custom mixers, magic-prime combinations, FNV-like loops,
+  rolling or lookup hashes, native bindings, P/Invoke backends, routing
+  wrappers, injected hash services, or game-local hash implementations. A
+  hand-rolled hash is not an allowed fallback.
+- If managed XXH3, `HashCode`, `TableHash`, and `AdditiveChecksum64` do not meet
+  a requirement, stop before changing code. Explain the exact semantics or
+  measured performance need, why every approved option is unsuitable, the
+  proposed owner and contract, and the required tests and benchmarks. Wait for
+  explicit user approval before implementing new hashing machinery.
+- Encode structured XXH3 inputs explicitly with `BinaryPrimitives`, including a
+  documented byte order, and hash only the written span. Hash seed domains use
+  `long`, matching the managed API. Field order, byte order, payload length,
+  and seed derivation are part of deterministic-output contracts. The C#
+  `unchecked` keyword is forbidden.
+- For cryptographic hashing, use the appropriate built-in .NET cryptographic
+  APIs such as `SHA256`, `HMACSHA256`, or `IncrementalHash`. Never use XXH3 as
+  a cryptographic hash, and never implement custom cryptography.
 
 ## VS Code Launch Configurations
 

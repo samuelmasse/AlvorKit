@@ -23,6 +23,7 @@
         <Project Path="demos/AlvorKit.MiniAudio.Demo/AlvorKit.MiniAudio.Demo.csproj" />
         <Project Path="demos/AlvorKit.MiniAudio.Demo.Music/AlvorKit.MiniAudio.Demo.Music.csproj" />
         <Project Path="demos/AlvorKit.Mocking.Demo/AlvorKit.Mocking.Demo.csproj" />
+        <Project Path="demos/AlvorKit.Hashing.Demo.Bench/AlvorKit.Hashing.Demo.Bench.csproj" />
         <Project Path="demos/AlvorKit.Ranges.Demo.Bench/AlvorKit.Ranges.Demo.Bench.csproj" />
         <Project Path="demos/AlvorKit.Ranges.Demo.Visualizer/AlvorKit.Ranges.Demo.Visualizer.csproj" />
         <Project Path="demos/AlvorKit.UI.Blend.Demo/AlvorKit.UI.Blend.Demo.csproj" />
@@ -92,6 +93,7 @@
     <Project Path="src/AlvorKit.Maths/AlvorKit.Maths.csproj" />
     <Project Path="src/AlvorKit.Text/AlvorKit.Text.csproj" />
     <Project Path="src/AlvorKit.Logging/AlvorKit.Logging.csproj" />
+    <Project Path="src/AlvorKit.Hashing/AlvorKit.Hashing.csproj" />
     <Project Path="src/AlvorKit.Ranges/AlvorKit.Ranges.csproj" />
     <Project Path="src/AlvorKit.Engine/AlvorKit.Engine.csproj" />
     <Project Path="src/AlvorKit.Engine.Loop/AlvorKit.Engine.Loop.csproj" />
@@ -134,6 +136,7 @@
         <Project Path="tests/AlvorKit.Maths.Test/AlvorKit.Maths.Test.csproj" />
         <Project
             Path="tests/AlvorKit.ProfilerFreeBoundary.Test/AlvorKit.ProfilerFreeBoundary.Test.csproj" />
+        <Project Path="tests/AlvorKit.Hashing.Test/AlvorKit.Hashing.Test.csproj" />
         <Project Path="tests/AlvorKit.Ranges.Test/AlvorKit.Ranges.Test.csproj" />
         <Project Path="tests/AlvorKit.Engine.Test/AlvorKit.Engine.Test.csproj" />
         <Project

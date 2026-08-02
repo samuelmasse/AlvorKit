@@ -6,11 +6,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Hashing\AlvorKit.Hashing.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Interception\AlvorKit.Interception.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Interception.CoreClr\AlvorKit.Interception.CoreClr.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="AlvorKit.Hashing" />
         <Using Include="AlvorKit.Interception" />
         <Using Include="System.Buffers.Binary" />
         <Using Include="System.Diagnostics" />

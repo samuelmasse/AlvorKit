@@ -40,34 +40,34 @@ internal static class InterceptionPerformanceMeasurement
     /// <summary>Executes enough calls for tiered compilation to settle before sampling.</summary>
     internal static void WarmCaller()
     {
-        long checksum = 0;
+        var checksum = default(AdditiveChecksum64);
         for (var index = 0; index < TierWarmupIterations; index++)
-            checksum += InterceptionPerformanceTarget.Caller(index);
-        GC.KeepAlive(checksum);
+            checksum.Add(InterceptionPerformanceTarget.Caller(index));
+        GC.KeepAlive(checksum.Value);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static long MeasureCallerTicks()
     {
-        long checksum = 0;
+        var checksum = default(AdditiveChecksum64);
         var started = Stopwatch.GetTimestamp();
         for (var index = 0; index < TimedIterations; index++)
-            checksum += InterceptionPerformanceTarget.Caller(index);
+            checksum.Add(InterceptionPerformanceTarget.Caller(index));
         var elapsed = Stopwatch.GetTimestamp() - started;
-        GC.KeepAlive(checksum);
+        GC.KeepAlive(checksum.Value);
         return elapsed;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static long MeasureCallerAllocations()
     {
-        long checksum = 0;
+        var checksum = default(AdditiveChecksum64);
         var before = GC.GetAllocatedBytesForCurrentThread();
         for (var index = 0; index < AllocationIterations; index++)
-            checksum += InterceptionPerformanceTarget.Caller(index);
+            checksum.Add(InterceptionPerformanceTarget.Caller(index));
         var allocated =
             GC.GetAllocatedBytesForCurrentThread() - before;
-        GC.KeepAlive(checksum);
+        GC.KeepAlive(checksum.Value);
         return allocated;
     }
 }
