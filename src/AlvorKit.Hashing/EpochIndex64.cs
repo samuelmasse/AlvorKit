@@ -61,7 +61,7 @@ public class EpochIndex64(int capacity)
         if (count >= stamps.Length >> 1)
         {
             EnsureCapacity(count + 1);
-            index = Find(key, out found);
+            index = Find(key, out _);
         }
 
         keys[index] = key;
