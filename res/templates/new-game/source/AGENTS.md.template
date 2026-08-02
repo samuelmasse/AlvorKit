@@ -1,0 +1,17 @@
+# Game Repository Instructions
+
+Before designing or editing in this repository, read:
+
+1. This repository's `README.md`, relevant project and source files, and every
+   applicable local `AGENTS.md` from the root to each target directory.
+2. `../AlvorKit/docs/GameRepositoryInstructions.md`.
+3. Every topic policy routed by that shared game guide for the intended paths
+   and operation. Read `../AlvorKit/AGENTS.md` and applicable scoped AlvorKit
+   instructions before designing a solution that changes AlvorKit.
+
+Repeat the preflight if the solution scope expands. Do not assume another
+sibling game repository exists.
+
+## Local Overrides
+
+None.

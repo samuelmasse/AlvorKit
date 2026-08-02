@@ -51,6 +51,15 @@ internal sealed class LintRunner(
             return 1;
         }
 
+        var agentPolicyViolations = RepositoryPolicy.FindAgentPolicyViolations(repoRoot);
+        if (agentPolicyViolations.Count > 0)
+        {
+            WriteProgress("[lint:fail] agent instruction policy graph is invalid");
+            foreach (var violation in agentPolicyViolations)
+                WriteProgress(violation);
+            return 1;
+        }
+
         var actionlintTask = LintPlan.RequiresActionlint(scope) ? ResolveActionlintAsync(repoRoot) : null;
         var preActionlintCommands = scope is null
             ? LintPlan.CommandsBeforeActionlint(repoRoot, options.Fix)

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "budgets": {
+    "AGENTS.md": { "maxBytes": 12000, "maxLines": 170 },
+    "docs/GameRepositoryInstructions.md": { "maxBytes": 12000, "maxLines": 220 }
+  },
+  "rootExposedRules": ["CORE-COMPAT-001", "CORE-FALLBACK-001", "FACADE-API-001", "HASH-EXTEND-001", "NATIVE-BUILD-001"],
+  "rules": [
+    { "id": "CORE-COMPAT-001", "strength": "invariant", "owner": "AGENTS.md" },
+    { "id": "CORE-FALLBACK-001", "strength": "invariant", "owner": "AGENTS.md" },
+    { "id": "FACADE-API-001", "strength": "approval-gate", "owner": "docs/AgentRules/Facades.md" },
+    { "id": "HASH-EXTEND-001", "strength": "approval-gate", "owner": "docs/AgentRules/Hashing.md" },
+    { "id": "NATIVE-BUILD-001", "strength": "approval-gate", "owner": "AGENTS.md" },
+    { "id": "GAME-TEST-DEFAULT-001", "strength": "scoped-default", "owner": "docs/GameRepositoryInstructions.md" },
+    { "id": "FACADE-TEST-OVERRIDE-001", "strength": "scoped-default", "owner": "docs/AgentRules/Facades.md" }
+  ],
+  "modules": [
+    {
+      "id": "CSHARP",
+      "path": "docs/AgentRules/CSharp.md",
+      "strength": "invariant",
+      "triggers": ["C#", "C# templates", "generated C#"]
+    },
+    {
+      "id": "GAME-DESIGN",
+      "path": "docs/AgentRules/GameCodeDesign.md",
+      "strength": "scoped-default",
+      "triggers": ["game source", "services", "state", "failure", "lifecycle", "concurrency"]
+    },
+    {
+      "id": "RUNTIME-PERF",
+      "path": "docs/AgentRules/RuntimePerformance.md",
+      "strength": "invariant",
+      "triggers": ["hot path", "allocation", "render", "update", "resource", "native boundary", "teardown"]
+    },
+    {
+      "id": "FACADE",
+      "path": "docs/AgentRules/Facades.md",
+      "strength": "approval-gate",
+      "triggers": ["FACADE.md", "new facade", "facade consumer", "facade test", "facade benchmark"]
+    },
+    {
+      "id": "HASHING",
+      "path": "docs/AgentRules/Hashing.md",
+      "strength": "approval-gate",
+      "triggers": ["hash", "checksum", "fingerprint", "deterministic sampling", "table mapping"]
+    },
+    {
+      "id": "PROJECTS",
+      "path": "docs/AgentRules/ProjectsAndDependencies.md",
+      "strength": "invariant",
+      "triggers": ["project", "package reference", "launch", "scope", "ECS", "GL", "maths", "menu"]
+    },
+    {
+      "id": "GENERATED",
+      "path": "docs/AgentRules/GeneratedBindings.md",
+      "strength": "workflow",
+      "triggers": ["generator", "template", "binding", "generated output", "native test double"]
+    },
+    {
+      "id": "DOCS",
+      "path": "docs/AgentRules/Documentation.md",
+      "strength": "scoped-default",
+      "triggers": ["public documentation", "generated documentation", "binding documentation"]
+    }
+  ],
+  "overrides": [
+    { "rule": "FACADE-API-001", "overrides": "CORE-COMPAT-001", "scope": "established facade public API and documented behavior only" },
+    { "rule": "FACADE-TEST-OVERRIDE-001", "overrides": "GAME-TEST-DEFAULT-001", "scope": "facade creation, behavior, and implementation changes" }
+  ]
+}

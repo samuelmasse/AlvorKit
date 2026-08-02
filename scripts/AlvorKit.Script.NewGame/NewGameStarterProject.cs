@@ -9,6 +9,8 @@ internal sealed class NewGameStarterProject
     private const string SourceTitle = "Alvor Starter";
     /// <summary>Non-solution reference file kept beside the starter source for humans, not copied into games.</summary>
     private const string SourceSolutionTemplateFile = SourceName + ".slnx.template";
+    /// <summary>Inert agent-instruction payload emitted with its active repository filename.</summary>
+    private const string SourceAgentsTemplateFile = "AGENTS.md.template";
     /// <summary>Relative AlvorKit path used by the starter source when built in place.</summary>
     private const string SourceAlvorKitRelativePath = @"..\..\..\..";
     /// <summary>Relative AlvorKit path emitted into generated sibling game repositories.</summary>
@@ -58,7 +60,9 @@ internal sealed class NewGameStarterProject
 
     /// <summary>Renders a starter source path for a generated game repository.</summary>
     public string RenderPath(string relativePath, NewGameOptions options) =>
-        relativePath.Replace(SourceName, options.Name.Identifier, StringComparison.Ordinal);
+        relativePath == SourceAgentsTemplateFile
+            ? "AGENTS.md"
+            : relativePath.Replace(SourceName, options.Name.Identifier, StringComparison.Ordinal);
 
     /// <summary>Renders starter source content for a generated game repository.</summary>
     public string RenderText(NewGameSourceFile file, NewGameOptions options)

@@ -12,5 +12,8 @@ embedded-resource path. Align behavior with the script renderer when practical,
 but do not add script-tool dependencies to analyzer projects.
 
 Follow `README.md` for naming, fragment, and generated-output check rules.
+Read [`../../docs/AgentRules/GeneratedBindings.md`](../../docs/AgentRules/GeneratedBindings.md)
+and, for C# output,
+[`../../docs/AgentRules/CSharp.md`](../../docs/AgentRules/CSharp.md).
 Generated-output checks for template changes are a Commit Mode gate; in Working
 Mode, generate or inspect output only when it helps iteration.

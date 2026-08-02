@@ -18,6 +18,7 @@ public class NewGameGeneratorTest
         Assert.AreEqual(21, result.FileCount);
         AssertFile(output, "AGENTS.md");
         StringAssert.Contains(Read(output, "AGENTS.md"), "../AlvorKit/docs/GameRepositoryInstructions.md");
+        Assert.IsFalse(File.Exists(Path(output, "AGENTS.md.template")));
         AssertFile(output, "HelloAlvor.slnx");
         AssertFile(output, "src/Directory.Build.props");
         AssertFile(output, "src/HelloAlvor/Program.cs");
@@ -111,6 +112,8 @@ public class NewGameGeneratorTest
         var root = Path(AlvorKitRoot(), "res/templates/new-game/source");
 
         Assert.IsFalse(File.Exists(Path(root, "AlvorStarter.slnx")));
+        Assert.IsFalse(File.Exists(Path(root, "AGENTS.md")));
+        AssertFile(root, "AGENTS.md.template");
         AssertFile(root, "AlvorStarter.slnx.template");
         AssertFile(root, "src/AlvorStarter/Program.cs");
         AssertFile(root, "src/AlvorStarter.App/AppScope.cs");

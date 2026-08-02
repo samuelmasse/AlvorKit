@@ -6,6 +6,12 @@ These instructions apply to C# code under `demos/`. Demos are an override
 layer, not `src/` code: optimize them as teaching surfaces and runnable
 narrative walkthroughs, while still respecting game-runtime hot paths.
 
+Read [`../docs/AgentRules/CSharp.md`](../docs/AgentRules/CSharp.md) for shared C#
+invariants and
+[`../docs/AgentRules/RuntimePerformance.md`](../docs/AgentRules/RuntimePerformance.md)
+for runtime-sensitive paths. The explicit demo exceptions below override only
+the scoped defaults they name.
+
 ## Working Standard
 
 - Review the requested demo and nearby collaborators before editing.
@@ -77,7 +83,9 @@ narrative walkthroughs, while still respecting game-runtime hot paths.
   pooled or caller-owned buffers, and explicit ownership where they reduce hot
   path allocations without hiding the lesson.
 - Allocate freely when clarity wins in startup, asset loading, configuration,
-  diagnostics, error paths, teardown, and explicit load/unload operations.
+  diagnostics, and explicit cold loading. Reusable unload and teardown paths
+  remain allocation-sensitive; genuinely final process shutdown may allocate
+  when intentional.
 
 ## C# Style
 

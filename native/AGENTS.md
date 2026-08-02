@@ -6,6 +6,10 @@ These instructions apply to first-party native code under `native/`. They are a
 delta over the repository root instructions. Generated, vendored, extracted,
 and packaged runtime files are not hand-authored native source.
 
+Read [`../docs/AgentRules/RuntimePerformance.md`](../docs/AgentRules/RuntimePerformance.md)
+when changing runtime callbacks, allocation, ownership, or native-boundary
+behavior. The root **NATIVE-BUILD-001** authorization gate remains in force.
+
 ## Source Shape
 
 - In Commit Mode, keep each edited hand-authored `.c`, `.cc`, `.cpp`, `.h`, and

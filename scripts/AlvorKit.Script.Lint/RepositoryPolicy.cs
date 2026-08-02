@@ -43,6 +43,10 @@ internal static class RepositoryPolicy
             .ToArray();
     }
 
+    /// <summary>Returns structural violations in the canonical agent-policy graph when the repository owns one.</summary>
+    public static IReadOnlyList<string> FindAgentPolicyViolations(string repoRoot) =>
+        AgentPolicyGraph.FindViolations(repoRoot);
+
     /// <summary>Returns uses of the prohibited keyword in one repository-relative source file.</summary>
     private static IEnumerable<RepositoryKeywordUsage> FindCheckedKeywordUsages(string repoRoot, string file)
     {

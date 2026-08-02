@@ -2,12 +2,15 @@
 
 ## Scope
 
-These instructions apply to C# code under `scripts/` and the matching tests under
-`tests/AlvorKit.Script.*.Test/`.
+These instructions apply only to descendants of `scripts/`. Matching tests are
+governed by `tests/AGENTS.md`; read both scoped files when a task changes both
+trees.
 
-This file is a delta over the root instructions. Use the root for shared
-Working/Commit Mode, visual automation, verification, C# defaults, and test-size
-policy unless this file is more specific.
+This file is a delta over the root instructions. Before changing C#, read
+[`../docs/AgentRules/CSharp.md`](../docs/AgentRules/CSharp.md). Read the other
+topic policies routed by the root when the script generates output, changes
+templates, handles runtime-sensitive work, or operates on another governed
+domain.
 
 ## Command-Line Tools
 

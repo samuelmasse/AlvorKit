@@ -12,6 +12,17 @@ The mechanisms have distinct roles:
 - Source Update compiles a unified diff to an original project `.cs` file and
   updates one existing method definition in the loaded module.
 
+Choose the narrowest mechanism that answers the question:
+
+- Use AlvorSense for deterministic input, updates, rendering, screenshots, and
+  user-visible proof.
+- Use a predefined LiveCode bridge for a stable allowlisted operation.
+- Use ordinary LiveCode for exact-scope inspection or a short-lived diagnostic
+  command.
+- Use frozen inspection only after the game-frame heartbeat is stale.
+- Use Source Update when the intended effect is a normal edit to one existing
+  method in its original `.cs` file.
+
 Source Update is the normal choice when the desired result is “this method in
 the original file now has this body.” The replacement is ordinary compiler
 output for the declaring type. Private fields, properties, methods, and captured
@@ -124,6 +135,11 @@ Use ordinary `lc/` submissions for diagnostic commands. Use `bridge/` and
 `puppet/` for their respective recorded payloads. Source Update diffs belong
 only under `source/diffs/`.
 
+Agent-authored files belong only beneath `tmp/live/<workspace-id>/lc/`,
+`bridge/`, `puppet/`, or `source/diffs/`. Do not put disposable submissions in
+production or demo directories; the intentional original `.cs` edit is the
+only exception.
+
 ## Generation and cleanup rules
 
 Every successful update is a forward runtime generation. A later edit may
@@ -138,6 +154,10 @@ Before closing:
 3. Stop or intentionally restart the target process.
 4. Resolve the Source Update intervention after process exit is proved.
 5. Capture any required final screenshot and close the workspace.
+
+Stop sessions started by the agent. Leave user-owned sessions running unless
+the user asks otherwise. Report the original source path, immutable diff path,
+runtime generation, terminal evidence path, and visible proof.
 
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.LiveCode -- source stop `

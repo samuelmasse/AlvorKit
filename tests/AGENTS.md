@@ -4,9 +4,12 @@
 
 These instructions apply to all test projects under `tests/`.
 
-This file is a delta over the root instructions. Use the root for shared
-Working/Commit Mode, visual automation, verification, C# defaults, and test-size
-policy unless this file is more specific.
+This file is a delta over the root instructions. Before changing C#, read
+[`../docs/AgentRules/CSharp.md`](../docs/AgentRules/CSharp.md). Also read the
+subject policy for the behavior under test, such as runtime performance,
+facades, generated bindings, hashing, or project structure. A sibling
+`src/AGENTS.md` or `scripts/AGENTS.md` is not automatically in scope for this
+tree.
 
 ## Shared Test Code
 
