@@ -9,14 +9,21 @@ if(WIN32)
         message(FATAL_ERROR "Windows profiler builds require ALVORKIT_PROFILER_RID=win-x64.")
     endif()
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    if(NOT ALVORKIT_PROFILER_RID STREQUAL "linux-x64")
-        message(FATAL_ERROR "Linux profiler builds require ALVORKIT_PROFILER_RID=linux-x64.")
-    endif()
-    if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64|AMD64)$")
-        message(FATAL_ERROR "linux-x64 requires an x86-64 compiler target.")
+    if(ALVORKIT_PROFILER_RID STREQUAL "linux-x64")
+        if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64|AMD64)$")
+            message(FATAL_ERROR "linux-x64 requires an x86-64 compiler target.")
+        endif()
+        set(ALVORKIT_PROFILER_ARCH_DEFINITIONS HOST_AMD64 TARGET_AMD64)
+    elseif(ALVORKIT_PROFILER_RID STREQUAL "linux-arm64")
+        if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64)$")
+            message(FATAL_ERROR "linux-arm64 requires an Arm64 compiler target.")
+        endif()
+        set(ALVORKIT_PROFILER_ARCH_DEFINITIONS HOST_ARM64 TARGET_ARM64)
+    else()
+        message(FATAL_ERROR "Linux profiler builds require ALVORKIT_PROFILER_RID=linux-x64 or linux-arm64.")
     endif()
 else()
-    message(FATAL_ERROR "The interception profiler supports only win-x64 and linux-x64.")
+    message(FATAL_ERROR "The interception profiler supports only win-x64, linux-x64, and linux-arm64.")
 endif()
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "The interception profiler requires a 64-bit compiler target.")
@@ -104,10 +111,9 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         ${ALVORKIT_PROFILER_TARGET}
         PRIVATE
         DISABLE_CONTRACTS
-        HOST_AMD64
+        ${ALVORKIT_PROFILER_ARCH_DEFINITIONS}
         HOST_64BIT
         HOST_UNIX
-        TARGET_AMD64
         TARGET_64BIT
         TARGET_LINUX
         TARGET_UNIX

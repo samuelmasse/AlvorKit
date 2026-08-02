@@ -46,12 +46,16 @@ internal static class CoreClrProfilerGuard
                 CoreClrProfilerGuardFailureKind.OperatingSystem,
                 "The interception profiler supports Windows and Linux only.");
         }
-        if (input.ProcessArchitecture != Architecture.X64 ||
-            input.OsArchitecture != Architecture.X64)
+        var matchingArchitecture =
+            input.ProcessArchitecture == input.OsArchitecture;
+        var supportedArchitecture =
+            input.ProcessArchitecture == Architecture.X64 ||
+            input.IsLinux && input.ProcessArchitecture == Architecture.Arm64;
+        if (!matchingArchitecture || !supportedArchitecture)
         {
             return Failed(
                 CoreClrProfilerGuardFailureKind.Architecture,
-                "The interception profiler requires an x64 process on an x64 OS.");
+                "The interception profiler requires Windows x64 or Linux x64/Arm64 with matching process and OS architectures.");
         }
         if (input.RuntimeMajor != 10 || !input.IsMicrosoftCoreClr)
         {

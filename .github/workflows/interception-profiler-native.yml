@@ -1,5 +1,5 @@
-# Builds, verifies, packs, and optionally publishes the Windows and Linux x64
-# interception-profiler native package.
+# Builds, verifies, packs, and optionally publishes the Windows x64 and Linux
+# x64/Arm64 interception-profiler native package.
 name: interception profiler native package
 
 on:
@@ -57,6 +57,9 @@ jobs:
           - rid: linux-x64
             runner: ubuntu-24.04
             library: native/interception-profiler/runtimes/linux-x64/native/libAlvorKit.Interception.Profiler.Native.so
+          - rid: linux-arm64
+            runner: ubuntu-24.04-arm
+            library: native/interception-profiler/runtimes/linux-arm64/native/libAlvorKit.Interception.Profiler.Native.so
 
     steps:
       - uses: actions/checkout@v6
@@ -150,6 +153,11 @@ jobs:
           name: interception-profiler-native-linux-x64
           path: native/interception-profiler/runtimes/linux-x64/native
 
+      - uses: actions/download-artifact@v8
+        with:
+          name: interception-profiler-native-linux-arm64
+          path: native/interception-profiler/runtimes/linux-arm64/native
+
       - name: Pack native profiler
         run: >
           dotnet pack
@@ -169,7 +177,8 @@ jobs:
               $entries = @($archive.Entries.FullName)
               $expected = @(
                   "runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
-                  "runtimes/linux-x64/native/libAlvorKit.Interception.Profiler.Native.so"
+                  "runtimes/linux-x64/native/libAlvorKit.Interception.Profiler.Native.so",
+                  "runtimes/linux-arm64/native/libAlvorKit.Interception.Profiler.Native.so"
               )
               $missing = @($expected | Where-Object { $_ -notin $entries })
               if ($missing.Count -gt 0) {

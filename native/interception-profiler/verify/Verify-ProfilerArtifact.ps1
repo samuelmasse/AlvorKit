@@ -4,7 +4,7 @@ param(
     [string] $LibraryPath,
 
     [Parameter(Mandatory)]
-    [ValidateSet("win-x64", "linux-x64")]
+    [ValidateSet("win-x64", "linux-x64", "linux-arm64")]
     [string] $RuntimeIdentifier
 )
 
@@ -171,17 +171,30 @@ function Read-WindowsArtifact([string] $path)
     }
 }
 
-function Read-LinuxArtifact([string] $path)
+function Read-LinuxArtifact(
+    [string] $path,
+    [string] $runtimeIdentifier)
 {
+    $expectedMachine = switch ($runtimeIdentifier)
+    {
+        "linux-x64" { "Advanced Micro Devices X86-64" }
+        "linux-arm64" { "AArch64" }
+        default { throw "Unsupported Linux profiler RID: $runtimeIdentifier" }
+    }
+    $machineLabel = switch ($runtimeIdentifier)
+    {
+        "linux-x64" { "Linux x64" }
+        "linux-arm64" { "Linux Arm64" }
+    }
     $headers = [string[]] (& readelf -h $path)
     if ($LASTEXITCODE -ne 0)
     {
         throw "readelf -h failed."
     }
     if (-not ($headers -match "Class:\s+ELF64") -or
-        -not ($headers -match "Machine:\s+Advanced Micro Devices X86-64"))
+        -not ($headers -match "Machine:\s+$([regex]::Escape($expectedMachine))"))
     {
-        throw "Profiler shared library is not a Linux x64 ELF image."
+        throw "Profiler shared library is not a $machineLabel ELF image."
     }
 
     $exportOutput = [string[]] (& nm --dynamic --defined-only --format=posix $path)
@@ -209,7 +222,7 @@ function Read-LinuxArtifact([string] $path)
     Assert-AllowedValues "dependencies" $allowed $dependencies
 
     return [pscustomobject] @{
-        Machine = "Linux x64"
+        Machine = $machineLabel
         Exports = $exports
         Dependencies = $dependencies
     }
@@ -227,7 +240,7 @@ $artifact = if ($RuntimeIdentifier -eq "win-x64")
 }
 else
 {
-    Read-LinuxArtifact $resolvedLibrary
+    Read-LinuxArtifact $resolvedLibrary $RuntimeIdentifier
 }
 
 $loaderSource = if ($RuntimeIdentifier -eq "win-x64")

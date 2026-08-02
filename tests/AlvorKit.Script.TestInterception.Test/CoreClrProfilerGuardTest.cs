@@ -18,7 +18,7 @@ public sealed class CoreClrProfilerGuardTest
         StringAssert.Contains(result.Failure, "explicit");
     }
 
-    /// <summary>Accepts the supported Windows and Linux x64 .NET 10 CoreCLR hosts.</summary>
+    /// <summary>Accepts the supported Windows x64 and Linux x64/Arm64 .NET 10 hosts.</summary>
     [TestMethod]
     public void EvaluateAcceptsSupportedHost()
     {
@@ -29,9 +29,18 @@ public sealed class CoreClrProfilerGuardTest
                 IsWindows = false,
                 IsLinux = true
             });
+        var linuxArm64 = CoreClrProfilerGuard.Evaluate(
+            SupportedInput() with
+            {
+                IsWindows = false,
+                IsLinux = true,
+                ProcessArchitecture = Architecture.Arm64,
+                OsArchitecture = Architecture.Arm64
+            });
 
         Assert.IsTrue(windows.Supported, windows.Failure);
         Assert.IsTrue(linux.Supported, linux.Failure);
+        Assert.IsTrue(linuxArm64.Supported, linuxArm64.Failure);
         Assert.AreEqual(CoreClrProfilerGuardFailureKind.None, windows.FailureKind);
         Assert.AreEqual(CoreClrProfilerGuardFailureKind.None, linux.FailureKind);
         Assert.IsNull(windows.Failure);
@@ -80,12 +89,12 @@ public sealed class CoreClrProfilerGuardTest
                 IsWindows = false,
                 IsLinux = false
             });
-        var processArchitecture = CoreClrProfilerGuard.Evaluate(
+        var windowsArm64 = CoreClrProfilerGuard.Evaluate(
             SupportedInput() with
             {
                 ProcessArchitecture = Architecture.Arm64
             });
-        var operatingSystemArchitecture = CoreClrProfilerGuard.Evaluate(
+        var mismatchedArchitecture = CoreClrProfilerGuard.Evaluate(
             SupportedInput() with
             {
                 OsArchitecture = Architecture.Arm64
@@ -104,10 +113,10 @@ public sealed class CoreClrProfilerGuardTest
             operatingSystem.FailureKind);
         Assert.AreEqual(
             CoreClrProfilerGuardFailureKind.Architecture,
-            processArchitecture.FailureKind);
+            windowsArm64.FailureKind);
         Assert.AreEqual(
             CoreClrProfilerGuardFailureKind.Architecture,
-            operatingSystemArchitecture.FailureKind);
+            mismatchedArchitecture.FailureKind);
         Assert.AreEqual(
             CoreClrProfilerGuardFailureKind.Runtime,
             runtimeVersion.FailureKind);
@@ -121,7 +130,7 @@ public sealed class CoreClrProfilerGuardTest
             CoreClrProfilerGuardFailureKind.Debugger,
             debugger.FailureKind);
         StringAssert.Contains(operatingSystem.Failure, "Windows and Linux");
-        StringAssert.Contains(processArchitecture.Failure, "x64");
+        StringAssert.Contains(windowsArm64.Failure, "Windows x64");
         StringAssert.Contains(runtimeVersion.Failure, ".NET 10");
         StringAssert.Contains(dynamicCode.Failure, "dynamic-code");
         StringAssert.Contains(debugger.Failure, "debugger");

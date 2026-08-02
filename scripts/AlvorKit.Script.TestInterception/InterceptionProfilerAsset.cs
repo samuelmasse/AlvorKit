@@ -1,6 +1,6 @@
 namespace AlvorKit.Script.TestInterception;
 
-/// <summary>Resolves and validates the profiler asset for the current supported x64 host.</summary>
+/// <summary>Resolves and validates the profiler asset for the current supported host.</summary>
 internal static class InterceptionProfilerAsset
 {
     internal const string PathVariable =
@@ -8,12 +8,24 @@ internal static class InterceptionProfilerAsset
 
     /// <summary>Gets the native package RID for the current supported host.</summary>
     internal static string RuntimeIdentifier =>
-        OperatingSystem.IsWindows()
-            ? "win-x64"
-            : OperatingSystem.IsLinux()
-                ? "linux-x64"
-                : throw new PlatformNotSupportedException(
-                    "The interception profiler supports Windows and Linux only.");
+        RuntimeIdentifierFor(
+            OperatingSystem.IsWindows(),
+            OperatingSystem.IsLinux(),
+            RuntimeInformation.ProcessArchitecture);
+
+    /// <summary>Maps a supported operating system and process architecture to its package RID.</summary>
+    internal static string RuntimeIdentifierFor(
+        bool isWindows,
+        bool isLinux,
+        Architecture architecture) =>
+        (isWindows, isLinux, architecture) switch
+        {
+            (true, false, Architecture.X64) => "win-x64",
+            (false, true, Architecture.X64) => "linux-x64",
+            (false, true, Architecture.Arm64) => "linux-arm64",
+            _ => throw new PlatformNotSupportedException(
+                "The interception profiler supports Windows x64 and Linux x64/Arm64 only.")
+        };
 
     /// <summary>Gets the platform-native profiler filename for the current host.</summary>
     internal static string FileName =>

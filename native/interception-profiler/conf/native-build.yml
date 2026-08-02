@@ -16,6 +16,8 @@ linux:
   ridCMakeOptions:
     linux-x64:
       - -DALVORKIT_PROFILER_RID=linux-x64
+    linux-arm64:
+      - -DALVORKIT_PROFILER_RID=linux-arm64
   allowedDependencies:
     - libc.so.6
     - libdl.so.2

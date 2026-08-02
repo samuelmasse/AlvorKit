@@ -12,9 +12,10 @@ Its job is deliberately small:
 - publish callback counts, HRESULTs, elapsed time, and terminal state; and
 - restore the original IL when the final owner removes a patch.
 
-The supported runtime targets are **Windows x64** and **Linux x64**. Each RID
-has its own build configuration, packaged runtime asset, artifact checks, and
-isolated profiled-process proof. The staged expansion decision is recorded in
+The supported runtime targets are **Windows x64**, **Linux x64**, and
+**Linux Arm64**. Each RID has its own build configuration, packaged runtime
+asset, artifact checks, and isolated profiled-process proof. The staged
+expansion decision is recorded in
 [`docs/InterceptionProfilerPlatformPlan.md`](https://github.com/AlvorKit/AlvorKit/blob/main/docs/InterceptionProfilerPlatformPlan.md).
 
 ABI v3 retains raw IL and exact managed dispatch and adds immutable method
@@ -51,8 +52,8 @@ one place.
 
 The current ABI-v3 milestone has deliberately bounded proof coverage:
 
-- Windows x64 and Linux x64 run an isolated install, replacement, revert, and
-  original-body ReJIT proof in native package CI. Windows x64 also has
+- Windows x64, Linux x64, and Linux Arm64 run an isolated install, replacement,
+  revert, and original-body ReJIT proof in native package CI. Windows x64 also has
   executable post-JIT coverage for all four relocation kinds.
   One proof creates a previously absent Cdecl `int(int)` StandAloneSig. A
   second generation creates a closed generic TypeSpec, a custom-modifier-bearing
@@ -117,17 +118,20 @@ dotnet run --project scripts\AlvorKit.Script.NativeBuild -- `
 dotnet run --project scripts\AlvorKit.Script.NativeBuild -- `
   build interception-profiler --rid linux-x64
 
+dotnet run --project scripts\AlvorKit.Script.NativeBuild -- `
+  build interception-profiler --rid linux-arm64
+
 dotnet build `
   native\interception-profiler\AlvorKit.Interception.Profiler.Native.csproj `
   -c Release
 ```
 
-The CMake project deliberately rejects every target except `win-x64` and
-`linux-x64`. Other platform work resumes one RID at a time through the gates in
-the platform plan.
+The CMake project deliberately rejects every target except `win-x64`,
+`linux-x64`, and `linux-arm64`. Other platform work resumes one RID at a time
+through the gates in the platform plan.
 
 The `interception profiler native package` workflow checks out the pinned
-CoreCLR headers and builds both runtime assets. It verifies PE or ELF
+CoreCLR headers and builds all three runtime assets. It verifies PE or ELF
 architecture, exact exports, dependency allowlists, and ABI version, then runs
 an isolated profiler-load proof on each OS. A final package is then consumed by
 Windows and Linux ReJIT proofs that install a patch, execute its replacement,
@@ -148,7 +152,7 @@ dotnet run --project scripts\AlvorKit.Script.Bindgen -- `
 The strict check currently validates 15 exported functions, 6 enums, 19
 natural-layout structs, and the native package asset for the current host.
 Cross-target layout checks protect the fixed-width C contract; runtime support
-is limited to the two explicitly packaged RIDs.
+is limited to the three explicitly packaged RIDs.
 
 The managed API and backend packages release separately through the
 `C header bindings packages` workflow. Changing `version/BINDING_REVISION`

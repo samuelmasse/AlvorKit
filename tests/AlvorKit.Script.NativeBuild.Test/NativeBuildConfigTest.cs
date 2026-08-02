@@ -29,6 +29,20 @@ public sealed class NativeBuildConfigTest
         }
     }
 
+    /// <summary>The interception profiler manifest exposes its native Linux Arm64 target.</summary>
+    [TestMethod]
+    public void InterceptionProfilerManifest_LinuxArm64UsesExplicitRid()
+    {
+        var context = LibraryBuildContext.Load(
+            RepositoryLayout.FindFrom(AppContext.BaseDirectory),
+            "interception-profiler");
+
+        CollectionAssert.Contains(
+            context.Build.Linux.CMakeOptionsFor(
+                TargetRid.Parse("linux-arm64")).ToArray(),
+            "-DALVORKIT_PROFILER_RID=linux-arm64");
+    }
+
     /// <summary>NFDe uses the portal backend and target pkg-config paths for the cross-built Linux ARM package.</summary>
     [TestMethod]
     public void NfdeManifest_LinuxUsesPortalAndArmPkgConfig()
