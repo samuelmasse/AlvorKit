@@ -168,6 +168,10 @@ requirements but must not relax them.
   after the final parameter. A closing parenthesis on its own line is banned.
   This applies to methods, constructors, primary constructors, records,
   delegates, and lambdas.
+- Keep a generic `where` clause on the same physical line as its type or method
+  declaration whenever the complete declaration remains readable within the
+  line-length limit. Wrap constraints only when the declaration genuinely does
+  not fit; do not place a short constraint on its own line by default.
 - An injected service enters a collaborator only through constructor injection.
   Never pass an injected service through an ordinary method, local function,
   delegate, command, record, or other operation parameter. A type is either a
@@ -231,6 +235,11 @@ requirements but must not relax them.
   that the compiler cannot capture may initialize one explicit ref-like field
   inline while the remaining parameters stay captured. In partial types, first
   verify whether primary constructor parameters are already in scope.
+- Never declare an explicit parameterless struct constructor with an empty
+  body. Rely on implicit default construction when no initialization is needed.
+  When parameterless construction establishes real state, perform that
+  initialization in the constructor instead of combining field initializers
+  with an empty constructor body.
 - Trust nullable reference type analysis for non-null contracts. Do not add
   manual null guards or asserts just to recheck a non-nullable value.
 - Prefer file-scoped namespaces, nullable-aware code, collection expressions,

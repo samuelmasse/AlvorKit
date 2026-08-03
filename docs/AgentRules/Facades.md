@@ -218,10 +218,23 @@ diagnostics, and aggregate totals. Represent unavailable untracked object
 counts explicitly as null. Do not replace detailed samples with console
 medians or summaries.
 
-Game CI runs every facade bench on each push and pull-request commit. For each
-facade it archives three separate JSON artifacts: the profiler-free catalog for
-authoritative timing, the profiler-enabled catalog for exact process-wide
-object counts, and the profiler-enabled lower/high/extreme allocation matrix
-for scaling analysis. Include commit and CI-run metadata in each file. Do not
-merge tracked and untracked timing into one comparison because allocation
-callbacks change execution cost.
+Facade CI integration follows the game repository's existing benchmark
+orchestration and cadence. When CI uses a shared facade catalog, project list,
+or matrix, register a new facade through that shared mechanism. Do not add a
+facade-specific command block, filename branch, duplicated profiler invocation,
+or workflow trigger merely to satisfy this policy.
+
+A task scoped to one facade does not authorize changing repository-wide CI
+triggers, benchmark cadence, or the modes run for every facade. If the shared
+orchestration cannot express a desired benchmark mode uniformly, keep the
+required mode available through the facade bench command and leave the CI
+orchestration unchanged until a separately requested repository-wide change
+introduces the reusable mechanism.
+
+When CI runs more than one mode for a facade, archive each mode as a separate
+JSON artifact: the profiler-free catalog for authoritative timing, the
+profiler-enabled catalog for exact process-wide object counts, and the
+profiler-enabled lower/high/extreme allocation matrix for scaling analysis.
+Include commit and CI-run metadata in each file. Do not merge tracked and
+untracked timing into one comparison because allocation callbacks change
+execution cost.
