@@ -1,5 +1,5 @@
-# Builds, verifies, packs, and optionally publishes the Windows x64 and Linux
-# x64/Arm64 interception-profiler native package.
+# Builds, verifies, packs, and optionally publishes the Windows x64, Linux
+# x64/Arm64, and macOS Arm64 interception-profiler native package.
 name: interception profiler native package
 
 on:
@@ -60,6 +60,9 @@ jobs:
           - rid: linux-arm64
             runner: ubuntu-24.04-arm
             library: native/interception-profiler/runtimes/linux-arm64/native/libAlvorKit.Interception.Profiler.Native.so
+          - rid: osx-arm64
+            runner: macos-15
+            library: native/interception-profiler/runtimes/osx-arm64/native/libAlvorKit.Interception.Profiler.Native.dylib
 
     steps:
       - uses: actions/checkout@v6
@@ -123,6 +126,18 @@ jobs:
           --filter FullyQualifiedName~ProfiledRunsFollowedByPlainRun_IsolateProfilerActivation
           --verbosity minimal
 
+      - name: Prove ReJIT install, replacement, and revert
+        run: >
+          dotnet run
+          --project scripts/AlvorKit.Script.TestInterception
+          --
+          --test-project tests/AlvorKit.Interception.CallerProof.Test/AlvorKit.Interception.CallerProof.Test.csproj
+          --configuration Release
+          --filter FullyQualifiedName=AlvorKit.Interception.CallerProof.Test.LateMetadataGenerationProfilerTest.GenerationRelocatesLateCalliSignatureIdempotently
+          --profiler-path ${{ github.workspace }}/${{ matrix.library }}
+          --module AlvorKit.Interception.CallerProof.Test
+          --timeout-seconds 120
+
       - name: Upload native profiler runtime
         uses: actions/upload-artifact@v7
         with:
@@ -158,6 +173,11 @@ jobs:
           name: interception-profiler-native-linux-arm64
           path: native/interception-profiler/runtimes/linux-arm64/native
 
+      - uses: actions/download-artifact@v8
+        with:
+          name: interception-profiler-native-osx-arm64
+          path: native/interception-profiler/runtimes/osx-arm64/native
+
       - name: Pack native profiler
         run: >
           dotnet pack
@@ -178,7 +198,8 @@ jobs:
               $expected = @(
                   "runtimes/win-x64/native/AlvorKit.Interception.Profiler.Native.dll",
                   "runtimes/linux-x64/native/libAlvorKit.Interception.Profiler.Native.so",
-                  "runtimes/linux-arm64/native/libAlvorKit.Interception.Profiler.Native.so"
+                  "runtimes/linux-arm64/native/libAlvorKit.Interception.Profiler.Native.so",
+                  "runtimes/osx-arm64/native/libAlvorKit.Interception.Profiler.Native.dylib"
               )
               $missing = @($expected | Where-Object { $_ -notin $entries })
               if ($missing.Count -gt 0) {

@@ -200,7 +200,7 @@ public class GlfwWindowHost : IWindowHost, IDisposable
     private void AcceptMouseMove(WindowMouseMoveEvent e)
     {
         if (AcceptsNativeEvents)
-            OnMouseMove(e);
+            OnMouseMove(new(runtime.WindowToFramebuffer(e.Position)));
     }
 
     /// <summary>Publishes native wheel input when input callbacks are accepted.</summary>

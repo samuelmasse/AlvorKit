@@ -21,7 +21,7 @@ internal sealed class WindowMousePosition
         window.MouseMove += OnMouseMove;
     }
 
-    /// <summary>Gets or sets the cursor position in window coordinates.</summary>
+    /// <summary>Gets or sets the cursor position in drawable client coordinates.</summary>
     internal Vec2 Position
     {
         get => position;

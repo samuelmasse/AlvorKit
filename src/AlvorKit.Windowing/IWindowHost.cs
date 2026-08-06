@@ -60,7 +60,7 @@ public interface IWindowHost
     /// <summary>Gets the primary monitor horizontal content scale.</summary>
     float MonitorScale { get; }
 
-    /// <summary>Gets or sets the current cursor position in window coordinates.</summary>
+    /// <summary>Gets or sets the current cursor position in drawable client coordinates.</summary>
     Vec2 MousePosition { get; set; }
 
     /// <summary>Gets or sets the high-level window state.</summary>

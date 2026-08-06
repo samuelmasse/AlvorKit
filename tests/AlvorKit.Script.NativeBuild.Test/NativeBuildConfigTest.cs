@@ -43,6 +43,23 @@ public sealed class NativeBuildConfigTest
             "-DALVORKIT_PROFILER_RID=linux-arm64");
     }
 
+    /// <summary>The interception profiler manifest exposes its native macOS Arm64 target.</summary>
+    [TestMethod]
+    public void InterceptionProfilerManifest_MacArm64UsesExplicitRid()
+    {
+        var context = LibraryBuildContext.Load(
+            RepositoryLayout.FindFrom(AppContext.BaseDirectory),
+            "interception-profiler");
+
+        CollectionAssert.Contains(
+            context.Build.MacOS.CMakeOptionsFor(
+                TargetRid.Parse("osx-arm64")).ToArray(),
+            "-DALVORKIT_PROFILER_RID=osx-arm64");
+        Assert.AreEqual(
+            "libAlvorKit.Interception.Profiler.Native.dylib",
+            context.Build.MacOS.CMakeOutput);
+    }
+
     /// <summary>NFDe uses the portal backend and target pkg-config paths for the cross-built Linux ARM package.</summary>
     [TestMethod]
     public void NfdeManifest_LinuxUsesPortalAndArmPkgConfig()

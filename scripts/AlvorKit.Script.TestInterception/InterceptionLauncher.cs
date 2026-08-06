@@ -136,6 +136,7 @@ internal class InterceptionLauncher
             InterceptionRunSettings.ProfilerClsid;
         startInfo.Environment["CORECLR_PROFILER_PATH"] = profilerPath;
         startInfo.Environment["CORECLR_PROFILER_PATH_64"] = profilerPath;
+        startInfo.Environment["CORECLR_PROFILER_PATH_ARM64"] = profilerPath;
         startInfo.Environment[
             InterceptionProfilerAsset.PathVariable] = profilerPath;
         startInfo.Environment["DOTNET_ReadyToRun"] = "0";

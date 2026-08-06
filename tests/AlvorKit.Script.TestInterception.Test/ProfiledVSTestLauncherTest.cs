@@ -148,14 +148,20 @@ public class ProfiledVSTestLauncherTest
                 Path.GetFullPath(
                     Environment.GetEnvironmentVariable(
                         "CORECLR_PROFILER_PATH_64")!));
-            Assert.IsNotNull(
-                profilerModule,
-                "The launcher variables were present but CoreCLR did not load the profiler.");
             Assert.AreEqual(
                 Path.GetFullPath(profilerPath),
-                Path.GetFullPath(profilerModule.FileName));
+                Path.GetFullPath(
+                    Environment.GetEnvironmentVariable(
+                        "CORECLR_PROFILER_PATH_ARM64")!));
+            ProfilerActivationProbe.AssertActive(profilerPath);
+            if (profilerModule is not null)
+            {
+                Assert.AreEqual(
+                    Path.GetFullPath(profilerPath),
+                    Path.GetFullPath(profilerModule.FileName));
+            }
             Console.WriteLine(
-                $"PROFILED_TESTHOST PID={Environment.ProcessId} PROFILER={profilerModule.FileName}");
+                $"PROFILED_TESTHOST PID={Environment.ProcessId} PROFILER={profilerPath}");
             return;
         }
 

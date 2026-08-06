@@ -13,18 +13,28 @@ public class InterceptionProfilerAssetTest
             InterceptionProfilerAsset.RuntimeIdentifierFor(
                 isWindows: true,
                 isLinux: false,
+                isMacOS: false,
                 Architecture.X64));
         Assert.AreEqual(
             "linux-x64",
             InterceptionProfilerAsset.RuntimeIdentifierFor(
                 isWindows: false,
                 isLinux: true,
+                isMacOS: false,
                 Architecture.X64));
         Assert.AreEqual(
             "linux-arm64",
             InterceptionProfilerAsset.RuntimeIdentifierFor(
                 isWindows: false,
                 isLinux: true,
+                isMacOS: false,
+                Architecture.Arm64));
+        Assert.AreEqual(
+            "osx-arm64",
+            InterceptionProfilerAsset.RuntimeIdentifierFor(
+                isWindows: false,
+                isLinux: false,
+                isMacOS: true,
                 Architecture.Arm64));
     }
 
@@ -36,16 +46,25 @@ public class InterceptionProfilerAssetTest
             InterceptionProfilerAsset.RuntimeIdentifierFor(
                 isWindows: true,
                 isLinux: false,
+                isMacOS: false,
                 Architecture.Arm64));
         Assert.ThrowsExactly<PlatformNotSupportedException>(() =>
             InterceptionProfilerAsset.RuntimeIdentifierFor(
                 isWindows: false,
                 isLinux: true,
+                isMacOS: false,
                 Architecture.X86));
         Assert.ThrowsExactly<PlatformNotSupportedException>(() =>
             InterceptionProfilerAsset.RuntimeIdentifierFor(
                 isWindows: false,
                 isLinux: false,
+                isMacOS: false,
+                Architecture.X64));
+        Assert.ThrowsExactly<PlatformNotSupportedException>(() =>
+            InterceptionProfilerAsset.RuntimeIdentifierFor(
+                isWindows: false,
+                isLinux: false,
+                isMacOS: true,
                 Architecture.X64));
     }
 }

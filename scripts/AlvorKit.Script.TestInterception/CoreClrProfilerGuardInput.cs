@@ -5,6 +5,7 @@ internal sealed record CoreClrProfilerGuardInput(
     bool IsOptedIn,
     bool IsWindows,
     bool IsLinux,
+    bool IsMacOS,
     Architecture ProcessArchitecture,
     Architecture OsArchitecture,
     int RuntimeMajor,

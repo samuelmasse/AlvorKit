@@ -19,6 +19,7 @@ internal static class CoreClrProfilerGuard
                 isOptedIn,
                 OperatingSystem.IsWindows(),
                 OperatingSystem.IsLinux(),
+                OperatingSystem.IsMacOS(),
                 RuntimeInformation.ProcessArchitecture,
                 RuntimeInformation.OSArchitecture,
                 Environment.Version.Major,
@@ -40,22 +41,28 @@ internal static class CoreClrProfilerGuard
                 CoreClrProfilerGuardFailureKind.OptInRequired,
                 "An explicit interception-profiler child launch is required.");
         }
-        if (!input.IsWindows && !input.IsLinux)
+        var operatingSystemCount =
+            (input.IsWindows ? 1 : 0) +
+            (input.IsLinux ? 1 : 0) +
+            (input.IsMacOS ? 1 : 0);
+        if (operatingSystemCount != 1)
         {
             return Failed(
                 CoreClrProfilerGuardFailureKind.OperatingSystem,
-                "The interception profiler supports Windows and Linux only.");
+                "The interception profiler supports Windows, Linux, and macOS only.");
         }
         var matchingArchitecture =
             input.ProcessArchitecture == input.OsArchitecture;
         var supportedArchitecture =
-            input.ProcessArchitecture == Architecture.X64 ||
-            input.IsLinux && input.ProcessArchitecture == Architecture.Arm64;
+            ((input.IsWindows || input.IsLinux) &&
+                input.ProcessArchitecture == Architecture.X64) ||
+            ((input.IsLinux || input.IsMacOS) &&
+                input.ProcessArchitecture == Architecture.Arm64);
         if (!matchingArchitecture || !supportedArchitecture)
         {
             return Failed(
                 CoreClrProfilerGuardFailureKind.Architecture,
-                "The interception profiler requires Windows x64 or Linux x64/Arm64 with matching process and OS architectures.");
+                "The interception profiler requires Windows x64, Linux x64/Arm64, or macOS Arm64 with matching process and OS architectures.");
         }
         if (input.RuntimeMajor != 10 || !input.IsMicrosoftCoreClr)
         {
