@@ -22,7 +22,7 @@
 
         <FastNoise2BindVer>1.1.1.2</FastNoise2BindVer>
 
-        <InterceptionProfilerBindVer>0.4.0.2</InterceptionProfilerBindVer>
+        <InterceptionProfilerBindVer>0.4.0.3</InterceptionProfilerBindVer>
     </PropertyGroup>
 
     <Target Name="EnsureGeneratedMathsPrimitives"
