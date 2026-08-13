@@ -62,8 +62,8 @@ internal sealed class GlfwWindowRuntime
     /// <summary>Gets the primary monitor horizontal content scale.</summary>
     internal float MonitorScale => sizes.MonitorContentScale;
 
-    /// <summary>Gets or sets the GLFW cursor position in window coordinates.</summary>
-    internal Vec2 MousePosition { get => GetMousePosition(); set => glfw.SetCursorPos(window, value.X, value.Y); }
+    /// <summary>Gets or sets the GLFW cursor position in drawable framebuffer coordinates.</summary>
+    internal Vec2 MousePosition { get => GetMousePosition(); set => SetMousePosition(value); }
 
     /// <summary>Gets or sets the AlvorKit window state represented by GLFW calls.</summary>
     internal WindowState WindowState { get => mode.Current; set => mode.Set(value); }
@@ -173,11 +173,21 @@ internal sealed class GlfwWindowRuntime
     /// <summary>Accepts a GLFW maximize callback and updates the cached observed window state.</summary>
     internal void AcceptMaximize(bool value) => mode.AcceptMaximize(value);
 
-    /// <summary>Reads the GLFW cursor position and converts it to an AlvorKit vector.</summary>
+    /// <summary>Converts GLFW window coordinates to drawable framebuffer coordinates.</summary>
+    internal Vec2 WindowToFramebuffer(Vec2 value) => sizes.WindowToFramebuffer(value);
+
+    /// <summary>Reads the GLFW cursor position and converts it to drawable framebuffer coordinates.</summary>
     private Vec2 GetMousePosition()
     {
         glfw.GetCursorPos(window, out var x, out var y);
-        return new((float)x, (float)y);
+        return sizes.WindowToFramebuffer(new((float)x, (float)y));
+    }
+
+    /// <summary>Converts a drawable framebuffer position and moves the GLFW cursor to the corresponding window position.</summary>
+    private void SetMousePosition(Vec2 value)
+    {
+        var position = sizes.FramebufferToWindow(value);
+        glfw.SetCursorPos(window, position.X, position.Y);
     }
 
     /// <summary>Applies cursor mode and raw mouse motion state for mouselook-style capture.</summary>

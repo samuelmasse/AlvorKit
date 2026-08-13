@@ -5,6 +5,8 @@ namespace AlvorKit.Engine;
 [ExcludeFromCodeCoverage(Justification = "Compiles and links OpenGL shaders through the live graphics backend.")]
 public class RootPositionColorTextureProgram3D : RenderProgram3D<PositionColorTextureVertex>, ITextureProgram
 {
+    private const int SamplerTextureIndex = 0;
+
     /// <summary>Vertex shader source for 3D textured color rendering.</summary>
     internal const string Vert =
         """
@@ -32,7 +34,7 @@ public class RootPositionColorTextureProgram3D : RenderProgram3D<PositionColorTe
 
     /// <summary>Creates the shader program and assigns its sampler uniform.</summary>
     public RootPositionColorTextureProgram3D(RootGl gl) : base(gl, Vert, RootPositionColorTextureProgram.Frag) =>
-        gl.ProgramUniform1i(Id, gl.GetUniformLocation(Id, nameof(samplerTexture)), (int)samplerTexture);
+        gl.ProgramUniform1i(Id, gl.GetUniformLocation(Id, nameof(samplerTexture)), SamplerTextureIndex);
 
     /// <inheritdoc />
     public GlTextureUnit SamplerTexture => samplerTexture;

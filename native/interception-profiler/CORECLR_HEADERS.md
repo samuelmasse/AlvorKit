@@ -4,12 +4,12 @@ The profiler builds against the public CoreCLR profiling and PAL headers from
 the `dotnet/runtime` tag recorded in `version/CORECLR_TAG` (`v10.0.9`).
 
 Set `ALVORKIT_CORECLR_SOURCE` to a license-reviewed checkout of that exact tag
-before invoking `AlvorKit.Script.NativeBuild`. Both builds consume:
+before invoking `AlvorKit.Script.NativeBuild`. All builds consume:
 
 - `src/coreclr/inc`
 - `src/coreclr/pal/prebuilt/inc`
 
-The Linux x64 build additionally consumes:
+The Unix builds (Linux and macOS) additionally consume:
 
 - `src/coreclr/pal/inc`
 - `src/coreclr/pal/inc/rt`

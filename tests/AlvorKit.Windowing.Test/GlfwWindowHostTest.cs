@@ -3,6 +3,29 @@ namespace AlvorKit.Windowing.Test;
 [TestClass]
 public class GlfwWindowHostTest
 {
+    /// <summary>Verifies Retina cursor positions use the drawable coordinate space used by rendering and UI hit testing.</summary>
+    [TestMethod]
+    public void GlfwWindowHost_RetinaCursor_UsesFramebufferCoordinates()
+    {
+        var glfw = new WindowingTestGlfw(new(960, 540))
+        {
+            FramebufferSize = new(1920, 1080),
+            CursorPosition = new(120, 80)
+        };
+        using var host = new GlfwWindowHost(glfw, glfw.Window);
+        WindowMouseMoveEvent? moved = null;
+        host.MouseMove += value => moved = value;
+
+        Assert.AreEqual(new Vec2(240, 160), host.MousePosition);
+        host.MousePosition = new(600, 400);
+        Assert.AreEqual(new Vec2(300, 200), glfw.CursorPosition);
+
+        glfw.RaiseCursorPosition(new(450, 250));
+
+        Assert.IsNotNull(moved);
+        Assert.AreEqual(new Vec2(900, 500), moved.Value.Position);
+    }
+
     /// <summary>Verifies direct GLFW-backed host state writes are forwarded through the generated noop test double.</summary>
     [TestMethod]
     public void GlfwWindowHost_StateWrites_ForwardToGlfw()

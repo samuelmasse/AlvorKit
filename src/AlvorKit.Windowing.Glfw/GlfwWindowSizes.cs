@@ -4,6 +4,12 @@ namespace AlvorKit.Windowing;
 [ExcludeFromCodeCoverage]
 internal sealed class GlfwWindowSizes(Glfw glfw, GlfwWindow window)
 {
+    /// <summary>Converts a position from GLFW window coordinates to drawable framebuffer coordinates.</summary>
+    internal Vec2 WindowToFramebuffer(Vec2 value) => value * FramebufferScale;
+
+    /// <summary>Converts a position from drawable framebuffer coordinates to GLFW window coordinates.</summary>
+    internal Vec2 FramebufferToWindow(Vec2 value) => value / FramebufferScale;
+
     /// <summary>Gets the drawable framebuffer size of the window.</summary>
     internal Vec2u FramebufferSize
     {
@@ -39,4 +45,15 @@ internal sealed class GlfwWindowSizes(Glfw glfw, GlfwWindow window)
         }
     }
 
+    private Vec2 FramebufferScale
+    {
+        get
+        {
+            glfw.GetWindowSize(window, out var windowWidth, out var windowHeight);
+            glfw.GetFramebufferSize(window, out var framebufferWidth, out var framebufferHeight);
+            return new(
+                framebufferWidth / (float)windowWidth,
+                framebufferHeight / (float)windowHeight);
+        }
+    }
 }

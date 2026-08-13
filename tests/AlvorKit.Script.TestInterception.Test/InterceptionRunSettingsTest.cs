@@ -32,6 +32,9 @@ public class InterceptionRunSettingsTest
             environment.Element("CORECLR_PROFILER_PATH_64")!.Value);
         Assert.AreEqual(
             profiler,
+            environment.Element("CORECLR_PROFILER_PATH_ARM64")!.Value);
+        Assert.AreEqual(
+            profiler,
             environment.Element(
                 InterceptionProfilerAsset.PathVariable)!.Value);
         Assert.AreEqual(

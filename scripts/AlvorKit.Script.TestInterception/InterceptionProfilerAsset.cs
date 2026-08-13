@@ -11,20 +11,23 @@ internal static class InterceptionProfilerAsset
         RuntimeIdentifierFor(
             OperatingSystem.IsWindows(),
             OperatingSystem.IsLinux(),
+            OperatingSystem.IsMacOS(),
             RuntimeInformation.ProcessArchitecture);
 
     /// <summary>Maps a supported operating system and process architecture to its package RID.</summary>
     internal static string RuntimeIdentifierFor(
         bool isWindows,
         bool isLinux,
+        bool isMacOS,
         Architecture architecture) =>
-        (isWindows, isLinux, architecture) switch
+        (isWindows, isLinux, isMacOS, architecture) switch
         {
-            (true, false, Architecture.X64) => "win-x64",
-            (false, true, Architecture.X64) => "linux-x64",
-            (false, true, Architecture.Arm64) => "linux-arm64",
+            (true, false, false, Architecture.X64) => "win-x64",
+            (false, true, false, Architecture.X64) => "linux-x64",
+            (false, true, false, Architecture.Arm64) => "linux-arm64",
+            (false, false, true, Architecture.Arm64) => "osx-arm64",
             _ => throw new PlatformNotSupportedException(
-                "The interception profiler supports Windows x64 and Linux x64/Arm64 only.")
+                "The interception profiler supports Windows x64, Linux x64/Arm64, and macOS Arm64 only.")
         };
 
     /// <summary>Gets the platform-native profiler filename for the current host.</summary>
@@ -33,8 +36,10 @@ internal static class InterceptionProfilerAsset
             ? "AlvorKit.Interception.Profiler.Native.dll"
             : OperatingSystem.IsLinux()
                 ? "libAlvorKit.Interception.Profiler.Native.so"
-                : throw new PlatformNotSupportedException(
-                    "The interception profiler supports Windows and Linux only.");
+                : OperatingSystem.IsMacOS()
+                    ? "libAlvorKit.Interception.Profiler.Native.dylib"
+                    : throw new PlatformNotSupportedException(
+                        "The interception profiler supports Windows, Linux, and macOS only.");
 
     /// <summary>Resolves the explicit, inherited, or packaged profiler.</summary>
     internal static string Resolve(string repositoryRoot, string? configuredPath)

@@ -49,6 +49,7 @@ internal static class InterceptionRunSettings
             Variable("CORECLR_PROFILER", ProfilerClsid),
             Variable("CORECLR_PROFILER_PATH", profilerPath),
             Variable("CORECLR_PROFILER_PATH_64", profilerPath),
+            Variable("CORECLR_PROFILER_PATH_ARM64", profilerPath),
             Variable(
                 InterceptionProfilerAsset.PathVariable,
                 profilerPath),

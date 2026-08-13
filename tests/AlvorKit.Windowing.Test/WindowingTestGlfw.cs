@@ -3,6 +3,9 @@ namespace AlvorKit.Windowing.Test;
 internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsVisible = false) : GlfwNoop
 {
     private Vec2u clientSize = initialClientSize;
+    private Vec2u framebufferSize = initialClientSize;
+    private Vec2 cursorPosition;
+    private nint cursorPositionCallback;
     private bool isVisible = initialIsVisible;
 
     public GlfwWindow Window { get; } = new((nint)1);
@@ -25,6 +28,18 @@ internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsV
     public (int Count, int Width, int Height) LastIcon { get; private set; }
     public byte[] LastIconPixels { get; private set; } = [];
 
+    public Vec2u FramebufferSize
+    {
+        get => framebufferSize;
+        set => framebufferSize = value;
+    }
+
+    public Vec2 CursorPosition
+    {
+        get => cursorPosition;
+        set => cursorPosition = value;
+    }
+
     public override void GetWindowPos(GlfwWindow window, out int xpos, out int ypos)
     {
         xpos = 0;
@@ -39,10 +54,42 @@ internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsV
 
     public override void SetWindowSize(GlfwWindow window, int width, int height)
     {
+        var scale = new Vec2(
+            framebufferSize.X / (float)clientSize.X,
+            framebufferSize.Y / (float)clientSize.Y);
         clientSize = (((uint)width), ((uint)height));
+        framebufferSize = new(
+            (uint)MathF.Round(width * scale.X),
+            (uint)MathF.Round(height * scale.Y));
     }
 
-    public override void GetFramebufferSize(GlfwWindow window, out int width, out int height) => GetWindowSize(window, out width, out height);
+    public override void GetFramebufferSize(GlfwWindow window, out int width, out int height)
+    {
+        width = ((int)framebufferSize.X);
+        height = ((int)framebufferSize.Y);
+    }
+
+    public override void GetCursorPos(GlfwWindow window, out double xpos, out double ypos)
+    {
+        xpos = cursorPosition.X;
+        ypos = cursorPosition.Y;
+    }
+
+    public override void SetCursorPos(GlfwWindow window, double xpos, double ypos) =>
+        cursorPosition = new((float)xpos, (float)ypos);
+
+    public override nint SetCursorPosCallback(GlfwWindow window, nint callback)
+    {
+        var previous = cursorPositionCallback;
+        cursorPositionCallback = callback;
+        return previous;
+    }
+
+    public void RaiseCursorPosition(Vec2 position)
+    {
+        cursorPosition = position;
+        Marshal.GetDelegateForFunctionPointer<GlfwCursorPosDelegate>(cursorPositionCallback)(Window, position.X, position.Y);
+    }
 
     public override int GetWindowAttrib(GlfwWindow window, int attrib) =>
         attrib == (int)GlfwWindowHint.Focused || (attrib == (int)GlfwWindowHint.Visible && isVisible) ? 1 : 0;

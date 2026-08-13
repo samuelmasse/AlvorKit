@@ -21,7 +21,7 @@ internal static class SourceUpdateCoordinatorProcess
         if (!File.Exists(launchManifestPath))
             throw new FileNotFoundException("Editable launch manifest was not found.", launchManifestPath);
 
-        var pipeName = "alvorkit-source-update-" + Guid.NewGuid().ToString("N");
+        var pipeName = "avk-su-" + Guid.NewGuid().ToString("N")[..16];
         var initial = new SourceUpdateCoordinatorManifest(
             1,
             workspace.WorkspacePath,

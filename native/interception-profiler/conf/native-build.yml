@@ -25,3 +25,11 @@ linux:
     - libm.so.6
     - libpthread.so.0
     - libstdc++.so.6
+macos:
+  cmakeOutput: libAlvorKit.Interception.Profiler.Native.dylib
+  ridCMakeOptions:
+    osx-arm64:
+      - -DALVORKIT_PROFILER_RID=osx-arm64
+  allowedDependencies:
+    - /usr/lib/libSystem.B.dylib
+    - /usr/lib/libc++.1.dylib

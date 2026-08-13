@@ -39,46 +39,51 @@ public class SharedVertexBuffer
     /// <summary>Frees a logical allocation.</summary>
     public void Free(int allocation) => allocator.Free(allocation);
 
-    private void PackCallback()
+    private unsafe void PackCallback()
     {
-        var copyVbo = gl.GenBuffer();
-        gl.BindBuffer(GlBufferTarget.CopyWriteBuffer, copyVbo);
-        gl.BufferData(GlBufferTarget.CopyWriteBuffer, (nint)size, 0, GlBufferUsage.DynamicCopy);
         gl.BindBuffer(GlBufferTarget.CopyReadBuffer, vbo);
-        gl.CopyBufferSubData(GlCopyBufferSubDataTarget.CopyReadBuffer, GlCopyBufferSubDataTarget.CopyWriteBuffer, 0, 0, (nint)size);
-
-        var liveAllocations = allocator.Allocations;
-        var allocationSlots = allocator.AllocationSlots;
-        var lastAllocationSlots = allocator.LastAllocationSlots;
-        foreach (var allocation in liveAllocations)
+        var snapshot = System.Runtime.InteropServices.NativeMemory.Alloc((nuint)size);
+        try
         {
-            var last = lastAllocationSlots[allocation];
-            var current = allocationSlots[allocation];
-            gl.CopyBufferSubData(
-                GlCopyBufferSubDataTarget.CopyWriteBuffer,
-                GlCopyBufferSubDataTarget.CopyReadBuffer,
-                (nint)allocator.AlignedAddr(last.Index, last.Alignment),
-                (nint)allocator.AlignedAddr(current.Index, current.Alignment),
-                (nint)current.Size);
-        }
+            gl.GetBufferSubData(GlBufferTarget.CopyReadBuffer, 0, (nint)size, (nint)snapshot);
 
-        gl.UnbindBuffer(GlBufferTarget.CopyReadBuffer);
-        gl.UnbindBuffer(GlBufferTarget.CopyWriteBuffer);
-        gl.DeleteBuffer(copyVbo);
+            var liveAllocations = allocator.Allocations;
+            var allocationSlots = allocator.AllocationSlots;
+            var lastAllocationSlots = allocator.LastAllocationSlots;
+            foreach (var allocation in liveAllocations)
+            {
+                var last = lastAllocationSlots[allocation];
+                var current = allocationSlots[allocation];
+                var source = (byte*)snapshot + allocator.AlignedAddr(last.Index, last.Alignment);
+                gl.BufferSubData(
+                    GlBufferTarget.CopyReadBuffer,
+                    (nint)allocator.AlignedAddr(current.Index, current.Alignment),
+                    (nint)current.Size,
+                    (nint)source);
+            }
+        }
+        finally
+        {
+            System.Runtime.InteropServices.NativeMemory.Free(snapshot);
+            gl.UnbindBuffer(GlBufferTarget.CopyReadBuffer);
+        }
     }
 
-    private void ResizeCallback(long newSize)
+    private unsafe void ResizeCallback(long newSize)
     {
-        var copyVbo = gl.GenBuffer();
-        gl.BindBuffer(GlBufferTarget.CopyWriteBuffer, copyVbo);
-        gl.BufferData(GlBufferTarget.CopyWriteBuffer, (nint)size, 0, GlBufferUsage.DynamicCopy);
         gl.BindBuffer(GlBufferTarget.CopyReadBuffer, vbo);
-        gl.CopyBufferSubData(GlCopyBufferSubDataTarget.CopyReadBuffer, GlCopyBufferSubDataTarget.CopyWriteBuffer, 0, 0, (nint)size);
-        gl.BufferData(GlBufferTarget.CopyReadBuffer, (nint)newSize, 0, GlBufferUsage.DynamicDraw);
-        gl.CopyBufferSubData(GlCopyBufferSubDataTarget.CopyWriteBuffer, GlCopyBufferSubDataTarget.CopyReadBuffer, 0, 0, (nint)size);
-        gl.UnbindBuffer(GlBufferTarget.CopyReadBuffer);
-        gl.UnbindBuffer(GlBufferTarget.CopyWriteBuffer);
-        gl.DeleteBuffer(copyVbo);
+        var snapshot = System.Runtime.InteropServices.NativeMemory.Alloc((nuint)size);
+        try
+        {
+            gl.GetBufferSubData(GlBufferTarget.CopyReadBuffer, 0, (nint)size, (nint)snapshot);
+            gl.BufferData(GlBufferTarget.CopyReadBuffer, (nint)newSize, 0, GlBufferUsage.DynamicDraw);
+            gl.BufferSubData(GlBufferTarget.CopyReadBuffer, 0, (nint)size, (nint)snapshot);
+        }
+        finally
+        {
+            System.Runtime.InteropServices.NativeMemory.Free(snapshot);
+            gl.UnbindBuffer(GlBufferTarget.CopyReadBuffer);
+        }
         size = newSize;
     }
 }

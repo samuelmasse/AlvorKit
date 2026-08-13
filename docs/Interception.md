@@ -87,7 +87,8 @@ The profiler must be present at startup:
 ```text
 CORECLR_ENABLE_PROFILING=1
 CORECLR_PROFILER={3840ACF7-5AF1-49EA-BF94-5F7086C57F57}
-CORECLR_PROFILER_PATH_64=<absolute profiler DLL>
+CORECLR_PROFILER_PATH_64=<absolute profiler library>
+CORECLR_PROFILER_PATH_ARM64=<absolute profiler library>
 ALVORKIT_INTERCEPTION_PROFILER_PATH=<the same path>
 ALVORKIT_INTERCEPTION_MODULES=<semicolon-separated managed module allowlist>
 ```
@@ -102,10 +103,11 @@ and development against an unpublished profiler build.
 
 ### Platform support
 
-The profiler supports **Windows x64, Linux x64, and Linux Arm64**. Each RID
-has explicit build configuration, a packaged runtime asset, artifact checks,
-binding verification, and an isolated profiled-process proof. Fixed-width C
-ABI layout checks for another target do not make that target supported.
+The profiler supports **Windows x64, Linux x64, Linux Arm64, and macOS Arm64**.
+Each RID has explicit build configuration, a packaged runtime asset, artifact
+checks, binding verification, and isolated profiler-load plus ReJIT/revert
+proofs. Fixed-width C ABI layout checks for another target do not make that
+target supported.
 
 Support expands one RID at a time. A new target must add explicit native build
 configuration, pinned CoreCLR source acquisition, dependency and export

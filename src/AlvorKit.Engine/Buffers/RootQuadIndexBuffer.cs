@@ -34,9 +34,9 @@ public class RootQuadIndexBuffer(RootGl gl)
             vertexIndex += 4u;
         }
 
-        gl.BindBuffer(GlBufferTarget.ElementArrayBuffer, id);
-        gl.BufferData(GlBufferTarget.ElementArrayBuffer, indexValues, GlBufferUsage.StaticDraw);
-        gl.UnbindBuffer(GlBufferTarget.ElementArrayBuffer);
+        gl.BindBuffer(GlBufferTarget.CopyWriteBuffer, id);
+        gl.BufferData(GlBufferTarget.CopyWriteBuffer, indexValues, GlBufferUsage.StaticDraw);
+        gl.UnbindBuffer(GlBufferTarget.CopyWriteBuffer);
         capacity = newCapacity;
     }
 

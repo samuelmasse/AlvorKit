@@ -18,7 +18,7 @@ public sealed class CoreClrProfilerGuardTest
         StringAssert.Contains(result.Failure, "explicit");
     }
 
-    /// <summary>Accepts the supported Windows x64 and Linux x64/Arm64 .NET 10 hosts.</summary>
+    /// <summary>Accepts the supported Windows, Linux, and macOS .NET 10 hosts.</summary>
     [TestMethod]
     public void EvaluateAcceptsSupportedHost()
     {
@@ -27,13 +27,24 @@ public sealed class CoreClrProfilerGuardTest
             SupportedInput() with
             {
                 IsWindows = false,
-                IsLinux = true
+                IsLinux = true,
+                IsMacOS = false
             });
         var linuxArm64 = CoreClrProfilerGuard.Evaluate(
             SupportedInput() with
             {
                 IsWindows = false,
                 IsLinux = true,
+                IsMacOS = false,
+                ProcessArchitecture = Architecture.Arm64,
+                OsArchitecture = Architecture.Arm64
+            });
+        var macArm64 = CoreClrProfilerGuard.Evaluate(
+            SupportedInput() with
+            {
+                IsWindows = false,
+                IsLinux = false,
+                IsMacOS = true,
                 ProcessArchitecture = Architecture.Arm64,
                 OsArchitecture = Architecture.Arm64
             });
@@ -41,6 +52,7 @@ public sealed class CoreClrProfilerGuardTest
         Assert.IsTrue(windows.Supported, windows.Failure);
         Assert.IsTrue(linux.Supported, linux.Failure);
         Assert.IsTrue(linuxArm64.Supported, linuxArm64.Failure);
+        Assert.IsTrue(macArm64.Supported, macArm64.Failure);
         Assert.AreEqual(CoreClrProfilerGuardFailureKind.None, windows.FailureKind);
         Assert.AreEqual(CoreClrProfilerGuardFailureKind.None, linux.FailureKind);
         Assert.IsNull(windows.Failure);
@@ -87,7 +99,8 @@ public sealed class CoreClrProfilerGuardTest
             SupportedInput() with
             {
                 IsWindows = false,
-                IsLinux = false
+                IsLinux = false,
+                IsMacOS = false
             });
         var windowsArm64 = CoreClrProfilerGuard.Evaluate(
             SupportedInput() with
@@ -129,7 +142,7 @@ public sealed class CoreClrProfilerGuardTest
         Assert.AreEqual(
             CoreClrProfilerGuardFailureKind.Debugger,
             debugger.FailureKind);
-        StringAssert.Contains(operatingSystem.Failure, "Windows and Linux");
+        StringAssert.Contains(operatingSystem.Failure, "Windows, Linux, and macOS");
         StringAssert.Contains(windowsArm64.Failure, "Windows x64");
         StringAssert.Contains(runtimeVersion.Failure, ".NET 10");
         StringAssert.Contains(dynamicCode.Failure, "dynamic-code");
@@ -160,6 +173,7 @@ public sealed class CoreClrProfilerGuardTest
             IsOptedIn: true,
             IsWindows: true,
             IsLinux: false,
+            IsMacOS: false,
             ProcessArchitecture: Architecture.X64,
             OsArchitecture: Architecture.X64,
             RuntimeMajor: 10,

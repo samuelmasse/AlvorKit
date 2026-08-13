@@ -342,6 +342,20 @@ Do not use AlvorSense as a replacement for unit tests, lint, coverage, or
 non-visual command-line verification. It is for visual and interactive behavior
 where seeing the frame matters.
 
+## Visible macOS Window Automation
+
+When OS-level behavior requires a visible native window, activate the game and
+confirm that it is frontmost and focused before sending a synthetic click. Keep
+activation and the click as separate automation steps: a click sent while macOS
+is bringing the application forward can be consumed by activation or arrive
+before GLFW has focus.
+
+Treat momentary black frames during activation as ambiguous. Wait for a stable
+frame and confirm a scene change through persistent UI or game state before
+diagnosing hit testing, rendering, or navigation. Reproduce at least one click
+after focus is confirmed; if that works, the earlier failure was desktop
+automation timing rather than an engine input defect.
+
 ## Practical Gotchas
 
 - A session is not useful until `start` reports readiness. If `send` times out,

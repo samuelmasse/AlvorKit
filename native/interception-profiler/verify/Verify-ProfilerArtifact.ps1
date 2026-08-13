@@ -4,7 +4,7 @@ param(
     [string] $LibraryPath,
 
     [Parameter(Mandatory)]
-    [ValidateSet("win-x64", "linux-x64", "linux-arm64")]
+    [ValidateSet("win-x64", "linux-x64", "linux-arm64", "osx-arm64")]
     [string] $RuntimeIdentifier
 )
 
@@ -99,6 +99,40 @@ function Read-ElfDependencies([string[]] $lines)
         if ($line -match "\(NEEDED\).*\[([^\]]+)\]")
         {
             $dependencies.Add($Matches[1])
+        }
+    }
+    return [string[]] $dependencies
+}
+
+function Read-MacExports([string[]] $lines)
+{
+    $exports = [Collections.Generic.List[string]]::new()
+    foreach ($line in $lines)
+    {
+        $name = $line.Trim()
+        if ($name.StartsWith("_", [StringComparison]::Ordinal))
+        {
+            $exports.Add($name.Substring(1))
+        }
+    }
+    return [string[]] $exports
+}
+
+function Read-MacDependencies([string[]] $lines)
+{
+    $dependencies = [Collections.Generic.List[string]]::new()
+    $readingLoadCommand = $false
+    foreach ($line in $lines)
+    {
+        if ($line -match "^\s+cmd LC_(LOAD|LOAD_WEAK|REEXPORT|LOAD_UPWARD)_DYLIB\s*$")
+        {
+            $readingLoadCommand = $true
+            continue
+        }
+        if ($readingLoadCommand -and $line -match "^\s+name (\S+) \(offset \d+\)\s*$")
+        {
+            $dependencies.Add($Matches[1])
+            $readingLoadCommand = $false
         }
     }
     return [string[]] $dependencies
@@ -232,19 +266,66 @@ function Read-LinuxArtifact(
     }
 }
 
+function Read-MacArtifact([string] $path)
+{
+    $architectures = [string[]] (& lipo -archs $path)
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "lipo architecture inspection failed."
+    }
+    if (($architectures -join " ").Trim() -ne "arm64")
+    {
+        throw "Profiler dynamic library is not an exact macOS Arm64 image."
+    }
+
+    $fileOutput = [string[]] (& file $path)
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "file architecture inspection failed."
+    }
+    if (-not ($fileOutput -match "Mach-O 64-bit dynamically linked shared library arm64"))
+    {
+        throw "Profiler dynamic library is not a 64-bit macOS Arm64 Mach-O shared library."
+    }
+
+    $exportOutput = [string[]] (& nm -gUj $path)
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "nm export inspection failed."
+    }
+    $exports = @(Read-MacExports $exportOutput | Sort-Object -Unique)
+
+    $dependencyOutput = [string[]] (& otool -l $path)
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "otool dependency inspection failed."
+    }
+    $dependencies = @(Read-MacDependencies $dependencyOutput | Sort-Object -Unique)
+    $allowed = @(
+        "/usr/lib/libSystem.B.dylib",
+        "/usr/lib/libc++.1.dylib"
+    )
+    Assert-ExactValues "exports" $expectedExports $exports
+    Assert-AllowedValues "dependencies" $allowed $dependencies
+
+    return [pscustomobject] @{
+        Machine = "macOS Arm64"
+        Exports = $exports
+        Dependencies = $dependencies
+    }
+}
+
 $resolvedLibrary = [IO.Path]::GetFullPath($LibraryPath)
 if (-not (Test-Path -LiteralPath $resolvedLibrary -PathType Leaf))
 {
     throw "Profiler library was not found: $resolvedLibrary"
 }
 
-$artifact = if ($RuntimeIdentifier -eq "win-x64")
+$artifact = switch ($RuntimeIdentifier)
 {
-    Read-WindowsArtifact $resolvedLibrary
-}
-else
-{
-    Read-LinuxArtifact $resolvedLibrary $RuntimeIdentifier
+    "win-x64" { Read-WindowsArtifact $resolvedLibrary }
+    "osx-arm64" { Read-MacArtifact $resolvedLibrary }
+    default { Read-LinuxArtifact $resolvedLibrary $RuntimeIdentifier }
 }
 
 $loaderSource = if ($RuntimeIdentifier -eq "win-x64")
@@ -280,6 +361,47 @@ $loaderSource = if ($RuntimeIdentifier -eq "win-x64")
         finally
         {
             FreeLibrary(library);
+        }
+    }
+"@
+}
+elseif ($RuntimeIdentifier -eq "osx-arm64")
+{
+@"
+    private const int RtldNow = 2;
+
+    [DllImport("libSystem.B.dylib", CharSet = CharSet.Ansi)]
+    private static extern IntPtr dlopen(string path, int mode);
+
+    [DllImport("libSystem.B.dylib", CharSet = CharSet.Ansi)]
+    private static extern IntPtr dlsym(IntPtr library, string name);
+
+    [DllImport("libSystem.B.dylib")]
+    private static extern int dlclose(IntPtr library);
+
+    [DllImport("libSystem.B.dylib")]
+    private static extern IntPtr dlerror();
+
+    public static uint ReadAbiVersion(string path)
+    {
+        IntPtr library = dlopen(path, RtldNow);
+        if (library == IntPtr.Zero)
+            throw new InvalidOperationException(
+                "dlopen failed: " + Marshal.PtrToStringAnsi(dlerror()));
+
+        try
+        {
+            IntPtr address = dlsym(
+                library,
+                "alvorkit_interception_get_abi_version");
+            if (address == IntPtr.Zero)
+                throw new InvalidOperationException(
+                    "dlsym failed: " + Marshal.PtrToStringAnsi(dlerror()));
+            return Marshal.GetDelegateForFunctionPointer<GetAbiVersion>(address)();
+        }
+        finally
+        {
+            dlclose(library);
         }
     }
 "@
@@ -342,7 +464,7 @@ Add-Type -TypeDefinition $verifierSource
 $abiVersion = [AlvorKitProfilerArtifact]::ReadAbiVersion($resolvedLibrary)
 if ($abiVersion -ne 3)
 {
-    throw "Profiler DLL reports ABI version $abiVersion instead of 3."
+    throw "Profiler library reports ABI version $abiVersion instead of 3."
 }
 
 Write-Output "Profiler artifact verified:"

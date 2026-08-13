@@ -22,8 +22,16 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     else()
         message(FATAL_ERROR "Linux profiler builds require ALVORKIT_PROFILER_RID=linux-x64 or linux-arm64.")
     endif()
+elseif(APPLE)
+    if(NOT ALVORKIT_PROFILER_RID STREQUAL "osx-arm64")
+        message(FATAL_ERROR "macOS profiler builds require ALVORKIT_PROFILER_RID=osx-arm64.")
+    endif()
+    if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64)$")
+        message(FATAL_ERROR "osx-arm64 requires an Arm64 compiler target.")
+    endif()
+    set(ALVORKIT_PROFILER_ARCH_DEFINITIONS HOST_ARM64 TARGET_ARM64)
 else()
-    message(FATAL_ERROR "The interception profiler supports only win-x64, linux-x64, and linux-arm64.")
+    message(FATAL_ERROR "The interception profiler supports only win-x64, linux-x64, linux-arm64, and osx-arm64.")
 endif()
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "The interception profiler requires a 64-bit compiler target.")
@@ -106,7 +114,7 @@ elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
         /EHsc
         /W4
         /permissive-)
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+elseif(UNIX)
     target_compile_definitions(
         ${ALVORKIT_PROFILER_TARGET}
         PRIVATE
@@ -115,10 +123,23 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         HOST_64BIT
         HOST_UNIX
         TARGET_64BIT
-        TARGET_LINUX
-        TARGET_UNIX
-        _FILE_OFFSET_BITS=64
-        _TIME_BITS=64)
+        TARGET_UNIX)
+    if(APPLE)
+        target_compile_definitions(
+            ${ALVORKIT_PROFILER_TARGET}
+            PRIVATE
+            HOST_APPLE
+            OSX_ARM64_ABI
+            TARGET_APPLE
+            TARGET_OSX)
+    else()
+        target_compile_definitions(
+            ${ALVORKIT_PROFILER_TARGET}
+            PRIVATE
+            TARGET_LINUX
+            _FILE_OFFSET_BITS=64
+            _TIME_BITS=64)
+    endif()
     target_compile_options(
         ${ALVORKIT_PROFILER_TARGET}
         PRIVATE
@@ -130,11 +151,18 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         PROPERTIES
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN YES)
-    target_link_options(
-        ${ALVORKIT_PROFILER_TARGET}
-        PRIVATE
-        LINKER:--no-undefined
-        "LINKER:--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/exports.map")
+    if(APPLE)
+        target_link_options(
+            ${ALVORKIT_PROFILER_TARGET}
+            PRIVATE
+            "LINKER:-exported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/src/exports.macos")
+    else()
+        target_link_options(
+            ${ALVORKIT_PROFILER_TARGET}
+            PRIVATE
+            LINKER:--no-undefined
+            "LINKER:--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/exports.map")
+    endif()
 else()
     message(FATAL_ERROR "Unsupported interception-profiler compiler.")
 endif()
