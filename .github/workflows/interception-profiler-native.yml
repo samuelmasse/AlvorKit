@@ -43,8 +43,61 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
 jobs:
+  # A force push can include version-marker commits in its replacement history
+  # even when the marker values at the old and new tips are identical. Compare
+  # the tips directly so only a net marker change starts a push release.
+  plan:
+    name: plan native profiler release
+    runs-on: ubuntu-24.04
+    outputs:
+      should_build: ${{ steps.plan.outputs.should_build }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Decide whether to build the native profiler
+        id: plan
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          should_build=true
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            base="${{ github.event.before }}"
+            head="${{ github.sha }}"
+            if [[ -n "$base" && "$base" != "0000000000000000000000000000000000000000" ]]; then
+              # A non-fast-forward push can leave the previous tip unreachable
+              # from every current branch even after a full-history checkout.
+              if ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+                git fetch --no-tags --depth=1 origin "$base"
+              fi
+              if ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+                echo "::error::Could not load the previous push tip $base."
+                exit 1
+              fi
+              if ! changed_output="$(git diff --name-only "$base" "$head" -- \
+                native/interception-profiler/version/TAG \
+                native/interception-profiler/version/REVISION)"; then
+                echo "::error::Could not compare push tips $base and $head."
+                exit 1
+              fi
+              if [[ -z "$changed_output" ]]; then
+                should_build=false
+                echo "The native profiler version markers are unchanged between push tips."
+              fi
+            fi
+          fi
+
+          echo "should_build=$should_build" >> "$GITHUB_OUTPUT"
+
   build:
-    name: build ${{ matrix.rid }}
+    # Keep this static because a no-op push skips the matrix before GitHub can
+    # expand matrix expressions in the display name.
+    name: build native profiler
+    needs: [plan]
+    if: needs.plan.outputs.should_build == 'true'
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     strategy:

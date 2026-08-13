@@ -98,9 +98,29 @@ jobs:
             base="${{ github.event.before }}"
             head="${{ github.sha }}"
             if [[ -z "$base" || "$base" == "0000000000000000000000000000000000000000" ]]; then
-              mapfile -t changed < <(git diff-tree --no-commit-id --name-only -r "$head")
+              if ! changed_output="$(git diff-tree --root --no-commit-id --name-only -r "$head")"; then
+                echo "::error::Could not inspect the pushed commit $head."
+                exit 1
+              fi
             else
-              mapfile -t changed < <(git diff --name-only "$base" "$head")
+              # A non-fast-forward push can leave the previous tip unreachable
+              # from every current branch even after a full-history checkout.
+              if ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+                git fetch --no-tags --depth=1 origin "$base"
+              fi
+              if ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+                echo "::error::Could not load the previous push tip $base."
+                exit 1
+              fi
+              if ! changed_output="$(git diff --name-only "$base" "$head")"; then
+                echo "::error::Could not compare push tips $base and $head."
+                exit 1
+              fi
+            fi
+
+            changed=()
+            if [[ -n "$changed_output" ]]; then
+              mapfile -t changed <<< "$changed_output"
             fi
 
             changed_any() {
@@ -191,7 +211,9 @@ jobs:
 
   # Generates, packs, artifacts, and optionally publishes the selected bindings.
   pack:
-    name: bindings ${{ matrix.package.selection }}
+    # Keep this static because GitHub does not expand matrix expressions when
+    # the job-level condition skips the matrix before expansion.
+    name: bindings packages
     needs: [detect]
     if: needs.detect.outputs.has_packages == 'true'
     timeout-minutes: 30
