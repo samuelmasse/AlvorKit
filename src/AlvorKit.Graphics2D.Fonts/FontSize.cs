@@ -1,7 +1,7 @@
 namespace AlvorKit.Graphics2D.Fonts;
 
 /// <summary>Loads and caches glyphs for one pixel size of a font face.</summary>
-public sealed unsafe class FontSize
+public unsafe class FontSize
 {
     /// <summary>The FreeType binding used to load glyphs.</summary>
     private readonly Ft ft;
@@ -104,6 +104,24 @@ public sealed unsafe class FontSize
         if (bitmap.Buffer == 0)
             return pixels;
 
+        switch ((FtPixelMode)bitmap.PixelMode)
+        {
+            case FtPixelMode.PixelModeGray:
+                ReadGrayPixels(bitmap, width, height, pixels);
+                break;
+            case FtPixelMode.PixelModeMono:
+                ReadMonochromePixels(bitmap, width, height, pixels);
+                break;
+            default:
+                throw new FontException($"Unsupported FreeType pixel mode '{(FtPixelMode)bitmap.PixelMode}'.");
+        }
+
+        return pixels;
+    }
+
+    /// <summary>Reads one byte of coverage per pixel from a grayscale FreeType bitmap.</summary>
+    private static void ReadGrayPixels(FtBitmap bitmap, int width, int height, Span<Vec4u8> pixels)
+    {
         for (var y = 0; y < height; y++)
         {
             var row = RowPointer(bitmap, y, height);
@@ -113,8 +131,22 @@ public sealed unsafe class FontSize
                 pixels[((height - y - 1) * width) + x] = (byte.MaxValue, byte.MaxValue, byte.MaxValue, value);
             }
         }
+    }
 
-        return pixels;
+    /// <summary>Expands MSB-first packed monochrome rows into byte coverage pixels.</summary>
+    private static void ReadMonochromePixels(FtBitmap bitmap, int width, int height, Span<Vec4u8> pixels)
+    {
+        for (var y = 0; y < height; y++)
+        {
+            var row = RowPointer(bitmap, y, height);
+            for (var x = 0; x < width; x++)
+            {
+                var source = Marshal.ReadByte(row, x >> 3);
+                var mask = 0b1000_0000 >> (x & 0b111);
+                var value = (source & mask) != 0 ? byte.MaxValue : byte.MinValue;
+                pixels[((height - y - 1) * width) + x] = (byte.MaxValue, byte.MaxValue, byte.MaxValue, value);
+            }
+        }
     }
 
     /// <summary>Returns a row pointer while respecting positive or negative FreeType pitch.</summary>

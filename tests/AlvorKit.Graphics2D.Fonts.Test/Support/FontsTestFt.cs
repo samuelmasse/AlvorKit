@@ -1,7 +1,7 @@
 namespace AlvorKit.Graphics2D.Fonts.Test;
 
 /// <summary>Deterministic FreeType binding used to feed fake face and glyph slot state to font tests.</summary>
-internal sealed unsafe class FontsTestFt : FtNoop, IDisposable
+internal unsafe class FontsTestFt : FtNoop, IDisposable
 {
     /// <summary>The fake FreeType library handle.</summary>
     private static readonly nint Library = 0xFEED;
@@ -147,7 +147,29 @@ internal sealed unsafe class FontsTestFt : FtNoop, IDisposable
     /// <summary>Configures a glyph bitmap and metrics for a Unicode scalar.</summary>
     internal void SetGlyph(Rune character, int width, int height, int bearingX, int bearingY, float advance, ReadOnlySpan<byte> alpha)
     {
-        glyphs[(uint)character.Value] = new GlyphData(width, height, width, bearingX, bearingY, advance, alpha.ToArray());
+        glyphs[(uint)character.Value] = new GlyphData(
+            width,
+            height,
+            width,
+            bearingX,
+            bearingY,
+            advance,
+            (byte)FtPixelMode.PixelModeGray,
+            alpha.ToArray());
+    }
+
+    /// <summary>Configures an MSB-first packed monochrome glyph bitmap for a Unicode scalar.</summary>
+    internal void SetMonochromeGlyph(Rune character, int width, int height, int pitch, ReadOnlySpan<byte> packed)
+    {
+        glyphs[(uint)character.Value] = new GlyphData(
+            width,
+            height,
+            pitch,
+            0,
+            0,
+            0f,
+            (byte)FtPixelMode.PixelModeMono,
+            packed.ToArray());
     }
 
     /// <summary>Configures a horizontal kerning adjustment between two Unicode scalars.</summary>
@@ -197,6 +219,7 @@ internal sealed unsafe class FontsTestFt : FtNoop, IDisposable
         glyph->Bitmap.Rows = (uint)data.Height;
         glyph->Bitmap.Pitch = data.Pitch;
         glyph->Bitmap.Buffer = glyphBuffer;
+        glyph->Bitmap.PixelMode = data.PixelMode;
         glyph->BitmapLeft = data.BearingX;
         glyph->BitmapTop = data.BearingY;
         glyph->Advance.X = Pixel(data.Advance);
@@ -209,9 +232,17 @@ internal sealed unsafe class FontsTestFt : FtNoop, IDisposable
     private static ulong KerningKey(uint leftGlyph, uint rightGlyph) => ((ulong)leftGlyph << 32) | rightGlyph;
 
     /// <summary>One configured glyph slot payload.</summary>
-    private sealed record GlyphData(int Width, int Height, int Pitch, int BearingX, int BearingY, float Advance, byte[] Alpha)
+    private record GlyphData(
+        int Width,
+        int Height,
+        int Pitch,
+        int BearingX,
+        int BearingY,
+        float Advance,
+        byte PixelMode,
+        byte[] Alpha)
     {
         /// <summary>Gets an empty glyph payload.</summary>
-        internal static GlyphData Empty { get; } = new(0, 0, 0, 0, 0, 0f, []);
+        internal static GlyphData Empty { get; } = new(0, 0, 0, 0, 0, 0f, byte.MinValue, []);
     }
 }

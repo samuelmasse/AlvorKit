@@ -240,6 +240,12 @@ requirements but must not relax them.
   When parameterless construction establishes real state, perform that
   initialization in the constructor instead of combining field initializers
   with an empty constructor body.
+- Disposal generally means clearing owned state. When a type already has a
+  `Clear` operation, prefer `Dispose() => Clear()`. Make cleanup naturally
+  repeatable by resetting the ownership pointers and collections it releases.
+  Avoid flag-maintained disposal, and do not call `GC.SuppressFinalize` as
+  routine disposal bookkeeping; retain lifecycle state only when distinct
+  post-disposal behavior is an explicit contract.
 - Trust nullable reference type analysis for non-null contracts. Do not add
   manual null guards or asserts just to recheck a non-nullable value.
 - Prefer file-scoped namespaces, nullable-aware code, collection expressions,

@@ -2,7 +2,7 @@ namespace AlvorKit.Graphics2D.Fonts.Test;
 
 /// <summary>Tests glyph loading, caching, atlas upload, rollover, and repacking behavior.</summary>
 [TestClass]
-public sealed class FontSizeTest
+public class FontSizeTest
 {
     /// <summary>An empty glyph still creates a cached atlas slot without uploading pixels.</summary>
     [TestMethod]
@@ -88,6 +88,31 @@ public sealed class FontSizeTest
                     255, 255, 255, 2
                 },
                 backend.LastTexSubImageBytes);
+        }
+        finally
+        {
+            context.Dispose();
+            batch.Dispose();
+            driver.Dispose();
+        }
+    }
+
+    /// <summary>A packed monochrome glyph expands MSB-first bits into bottom-up RGBA coverage.</summary>
+    [TestMethod]
+    public void GlyphSlot_MonochromeGlyph_ExpandsPackedBits()
+    {
+        var (backend, driver, batch, context) = FontsTestHarness.CreateContext();
+        driver.SetMonochromeGlyph(new Rune('A'), 4, 2, 1, [0b1010_0000, 0b0101_0000]);
+        try
+        {
+            using var font = new Font(context, "Unscii8Thin.pcf");
+            var slot = font.Size(8).GlyphSlot(new Rune('A'));
+            var coverage = new byte[8];
+            for (var index = 0; index < coverage.Length; index++)
+                coverage[index] = backend.LastTexSubImageBytes[(index * 4) + 3];
+
+            Assert.AreEqual(new Vec2u(4u, 2u), slot.Glyph.Box);
+            CollectionAssert.AreEqual(new byte[] { 0, 255, 0, 255, 255, 0, 255, 0 }, coverage);
         }
         finally
         {
