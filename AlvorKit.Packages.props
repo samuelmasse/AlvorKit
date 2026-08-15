@@ -10,19 +10,19 @@
             Condition="'$(UseLocalMathsPrimitives)' == '' and Exists('$(MathsPrimitivesRoot)\AlvorKit.Maths.Primitives.csproj')">true</UseLocalMathsPrimitives>
         <UseLocalMathsPrimitives Condition="'$(UseLocalMathsPrimitives)' == ''">false</UseLocalMathsPrimitives>
 
-        <FtBindVer>2.14.3.13</FtBindVer>
+        <FtBindVer>2.14.3.14</FtBindVer>
 
-        <GlfwBindVer>3.4.14</GlfwBindVer>
+        <GlfwBindVer>3.4.15</GlfwBindVer>
 
-        <MaBindVer>0.11.25.13</MaBindVer>
+        <MaBindVer>0.11.25.14</MaBindVer>
 
-        <NfdeBindVer>1.3.0.1</NfdeBindVer>
+        <NfdeBindVer>1.3.0.2</NfdeBindVer>
 
-        <GlBindVer>4.6.14</GlBindVer>
+        <GlBindVer>4.6.15</GlBindVer>
 
-        <FastNoise2BindVer>1.1.1.2</FastNoise2BindVer>
+        <FastNoise2BindVer>1.1.1.3</FastNoise2BindVer>
 
-        <InterceptionProfilerBindVer>0.4.0.3</InterceptionProfilerBindVer>
+        <InterceptionProfilerBindVer>0.4.0.4</InterceptionProfilerBindVer>
     </PropertyGroup>
 
     <Target Name="EnsureGeneratedMathsPrimitives"
