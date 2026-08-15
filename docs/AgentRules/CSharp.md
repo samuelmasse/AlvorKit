@@ -60,6 +60,23 @@ requirements but must not relax them.
   statements that keep the main path flat. Avoid complicated `if`/`else`
   chains and nested conditionals when their exceptional or terminal cases can
   be handled first.
+- Put a blank line before a control-flow statement such as `if`, `for`,
+  `foreach`, `while`, `do`, `switch`, `try`, `using (...)`, or `lock` when the
+  immediately preceding line contains a declaration or executable statement.
+  No blank line is required when the control-flow statement follows an opening
+  brace, another structural line, or a comment-only line that contains no
+  statement. Never place a declaration, assignment, invocation, or other
+  statement directly above a control-flow statement.
+
+  ```csharp
+  ChunkVertex<byte> lastVertex = default;
+
+  for (var z = 0; z < cubeSize; z++)
+  {
+      for (var y = 0; y < cubeSize; y++)
+          Visit(y, z);
+  }
+  ```
 - Keep each mathematical computation and boolean expression on one physical
   line whenever it remains readable within the hard line-length limit. Prefer
   that single-line form even when it exceeds the preferred wrapping point. If
