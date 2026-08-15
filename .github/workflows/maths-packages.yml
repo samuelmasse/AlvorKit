@@ -51,13 +51,27 @@ jobs:
       - name: Generate
         run: dotnet run --project scripts/AlvorKit.Script.MathsGen -- --setup-local
 
-      - name: Test
-        run: |
-          dotnet test tests/AlvorKit.Script.MathsGen.Test/AlvorKit.Script.MathsGen.Test.csproj
-          dotnet test tests/AlvorKit.Maths.Test/AlvorKit.Maths.Test.csproj
+      - name: Test generator
+        run: dotnet test tests/AlvorKit.Script.MathsGen.Test/AlvorKit.Script.MathsGen.Test.csproj
 
       - name: Pack
         run: dotnet build -c Release src/AlvorKit.Maths/AlvorKit.Maths.csproj
+
+      - name: Test packed primitives
+        run: |
+          mkdir -p out/maths-package-feed
+          cp bin/AlvorKit.Maths.Core/Release/*.nupkg out/maths-package-feed/
+          cp bin/AlvorKit.Maths.Primitives/Release/*.nupkg out/maths-package-feed/
+          cp bin/AlvorKit.Maths/Release/*.nupkg out/maths-package-feed/
+          rm -rf out/mathgen
+          dotnet nuget locals all --clear
+          dotnet restore tests/AlvorKit.Maths.Test/AlvorKit.Maths.Test.csproj \
+            --force \
+            --no-cache \
+            -p:RestoreAdditionalProjectSources="${{ github.workspace }}/out/maths-package-feed"
+          dotnet test tests/AlvorKit.Maths.Test/AlvorKit.Maths.Test.csproj \
+            --configuration Release \
+            --no-restore
 
       - uses: actions/upload-artifact@v7
         with:
