@@ -53,8 +53,9 @@ or Commit Mode work.
   implementation changes.
 - Game C# source files have a 350-line hard ceiling. Test files may be up to
   750 lines when related scenarios read better together.
-- Add a checked-in VS Code launch configuration and referenced build task in
-  the same change as any directly launchable project.
+- Add a checked-in VS Code launch configuration and referenced build task for
+  directly launchable projects whose project files are tracked by Git. Ignored
+  and untracked projects must not change checked-in `.vscode` configuration.
 
 ## Game Policy Router
 

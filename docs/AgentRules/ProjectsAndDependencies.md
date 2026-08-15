@@ -14,14 +14,17 @@ request and permission for that run.
 
 ## VS Code Launch Configurations
 
-Whenever an agent creates a project that can be launched directly, the same
-change must add a checked-in VS Code launch configuration for it under
-`.vscode/launch.json`. This requirement is unconditional and applies to
-executables, demos, games, tools, and runnable fixtures in both Working Mode and
-Commit Mode. Add any corresponding `.vscode/tasks.json` build task referenced
-by `preLaunchTask`, and include the working directory, arguments, and
-environment required for the launch configuration to exercise the project's
-supported launch contract.
+Add checked-in VS Code launch configurations and build tasks only for projects
+whose project files are tracked by Git. Verify that status mechanically with
+`git ls-files --error-unmatch -- <project-path>` before changing `.vscode`.
+Ignored and untracked projects, including anything under `tmp/`, must not add
+or change checked-in `.vscode/launch.json` or `.vscode/tasks.json` entries.
+
+For a tracked project that can be launched directly, add a checked-in launch
+configuration under `.vscode/launch.json` and any corresponding
+`.vscode/tasks.json` build task referenced by `preLaunchTask`. Include the
+working directory, arguments, and environment required for the launch
+configuration to exercise the project's supported launch contract.
 
 ## Project Split Model
 
