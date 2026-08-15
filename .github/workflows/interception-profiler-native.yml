@@ -170,6 +170,23 @@ jobs:
               -LibraryPath "${{ matrix.library }}" `
               -RuntimeIdentifier "${{ matrix.rid }}"
 
+      - name: Pack current native profiler for managed verification
+        run: >
+          dotnet pack
+          native/interception-profiler/AlvorKit.Interception.Profiler.Native.csproj
+          --configuration Release
+
+      - name: Generate current managed profiler binding
+        env:
+          RestoreAdditionalProjectSources: ${{ github.workspace }}/bin/AlvorKit.Interception.Profiler.Native/Release
+        run: >
+          dotnet run
+          --project scripts/AlvorKit.Script.Bindgen
+          --
+          interception-profiler
+          --setup-local
+          --strict
+
       - name: Prove isolated profiled child launch
         env:
           ALVORKIT_INTERCEPTION_PROFILER_PATH: ${{ github.workspace }}/${{ matrix.library }}
