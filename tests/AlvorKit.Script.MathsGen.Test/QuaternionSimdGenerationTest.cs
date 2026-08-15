@@ -43,7 +43,7 @@ public sealed class QuaternionSimdGenerationTest
             "System.Runtime.Intrinsics.Vector256.MultiplyAddEstimate(");
         StringAssert.Contains(source, "System.Runtime.Intrinsics.Vector256.Shuffle(");
         StringAssert.Contains(source,
-            $"[MethodImpl(MethodImplOptions.NoInlining)]{Environment.NewLine}" +
+            $"[MethodImpl(MethodImplOptions.AggressiveInlining)]{Environment.NewLine}" +
             "    private static Quatd HamiltonProduct(Quatd left, Quatd right)");
         StringAssert.Contains(source, "HamiltonProduct(left, right)");
         StringAssert.Contains(source,

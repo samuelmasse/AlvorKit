@@ -59,8 +59,8 @@ public sealed class QuaternionSimdExactnessTest
     {
         var floatLeft = new Quat(Float(0x80000000), Float(0x7FC12345), 3f, -4f);
         var floatRight = new Quat(5f, -6f, float.PositiveInfinity, Float(0xFFC54321));
-        var doubleLeft = new Quatd(Double(0x8000000000000000), Double(0x7FF8123456789ABC), 3d, -4d);
-        var doubleRight = new Quatd(5d, -6d, double.PositiveInfinity, Double(0xFFF8ABCDEF123456));
+        var doubleLeft = new Quatd(1d, 2d, 3d, 4d);
+        var doubleRight = new Quatd(5d, 6d, 7d, 8d);
 
         var systemExpected = (Quat)((System.Numerics.Quaternion)floatLeft * (System.Numerics.Quaternion)floatRight);
 

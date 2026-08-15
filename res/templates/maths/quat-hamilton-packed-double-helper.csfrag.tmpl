@@ -1,5 +1,5 @@
     /// <summary>Computes the Hamilton product with the packed algorithm used by System.Numerics.</summary>
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static {{TypeName}} HamiltonProduct({{TypeName}} left, {{TypeName}} right)
     {
         var rightPacked = Unsafe.BitCast<{{TypeName}}, System.Runtime.Intrinsics.Vector256<double>>(right);

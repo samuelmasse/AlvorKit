@@ -70,6 +70,8 @@ jobs:
             --no-cache \
             -p:RestoreAdditionalProjectSources="${{ github.workspace }}/out/maths-package-feed"
           dotnet test tests/AlvorKit.Maths.Test/AlvorKit.Maths.Test.csproj \
+            --no-restore
+          dotnet test tests/AlvorKit.Maths.Test/AlvorKit.Maths.Test.csproj \
             --configuration Release \
             --no-restore
 
