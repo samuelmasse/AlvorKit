@@ -131,7 +131,7 @@ void DrawSprites(Vec2 canvasSize, Vec2 mousePosition)
     sprites.Writer.DrawLine(canvasSize * 0.5f, mousePosition, 20f, (1f, 0f, 0f, 1f));
 }
 
-// Draws the coloured cell grid that makes clipping, alpha, batching, and texture reuse visible.
+// Draws the colored cell grid that makes clipping, alpha, batching, and texture reuse visible.
 void DrawGrid(Vec2 canvasSize, Vec2 mousePosition, Vec2 unit, float grid)
 {
     for (var y = 0; y < GridCells; y++)
@@ -153,7 +153,7 @@ void DrawGrid(Vec2 canvasSize, Vec2 mousePosition, Vec2 unit, float grid)
     }
 }
 
-// Reads input once per poll-loop turn, preserving the old edge-triggered toggle behaviour.
+// Reads input once per poll-loop turn, preserving the old edge-triggered toggle behavior.
 void UpdateInput()
 {
     if (glfw.GetKey(window, GlfwKey.Escape) == GlfwInputAction.Press)

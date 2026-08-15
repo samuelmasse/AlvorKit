@@ -22,7 +22,7 @@ The facade is the project's single injected entry point: it presents a small
 public contract while hiding the cooperating services and retained state that
 implement that contract. Keep `FACADE.md` brief and stable: describe the
 business capability, identify the facade, and declare its concise PascalCase
-type prefix without cataloguing implementation details.
+type prefix without cataloging implementation details.
 
 ### Established Public APIs — Facade Projects Only
 

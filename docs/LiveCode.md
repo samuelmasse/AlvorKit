@@ -392,7 +392,7 @@ Immediately before loading the command, the game thread resolves the requested
 scope ID through `InjectorScopeGraph`. An ended scope produces `ScopeEnded`; the
 host never substitutes another scope with the same type or label.
 
-Commands and bridges cannot be safely force-cancelled. A client timeout can
+Commands and bridges cannot be safely force-canceled. A client timeout can
 stop waiting, but work that blocks either execution thread may require
 restarting the development process. `LiveCodeHostOptions` can independently
 disable arbitrary C# (`EnableCodeExecution`) or predefined bridges

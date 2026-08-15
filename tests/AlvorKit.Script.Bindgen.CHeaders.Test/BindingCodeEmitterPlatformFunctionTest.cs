@@ -34,7 +34,7 @@ public sealed class BindingCodeEmitterPlatformFunctionTest
 
     /// <summary>Functions without a platform label emit no platform-support attribute anywhere.</summary>
     [TestMethod]
-    public void Emit_UnlabelledFunctionEmitsNoPlatformAttribute()
+    public void Emit_UnlabeledFunctionEmitsNoPlatformAttribute()
     {
         using var workspace = TempWorkspace.Create();
         var config = CHeaderTestConfig.Create();

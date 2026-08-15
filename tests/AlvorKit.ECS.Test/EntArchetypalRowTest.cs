@@ -47,8 +47,8 @@ public sealed class EntArchetypalRowTest
     {
         using var arena = new EntArena();
         EntMut plain = CreateWide(arena, 10);
-        EntMut labelled = CreateWide(arena, 20);
-        labelled.RowTag = "labelled";
+        EntMut labeled = CreateWide(arena, 20);
+        labeled.RowTag = "labeled";
         EntMut excluded = arena.Alloc();
         excluded.C0 = 30;
 
@@ -81,7 +81,7 @@ public sealed class EntArchetypalRowTest
         Assert.AreEqual(2, count);
         Assert.AreEqual((10 + 20) + 2 * (1 + 2 + 3 + 4 + 5 + 6 + 7), sum);
         Assert.AreEqual(11, plain.C0);
-        Assert.AreEqual(21, labelled.C0);
+        Assert.AreEqual(21, labeled.C0);
         Assert.AreEqual(30, excluded.C0);
     }
 

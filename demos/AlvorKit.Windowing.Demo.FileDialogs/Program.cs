@@ -74,14 +74,14 @@ void Render()
 
 // Prints a single selection or cancellation.
 void Print(string operation, string? path) =>
-    log.Info(path is null ? $"{operation}: cancelled" : $"{operation}: {path}");
+    log.Info(path is null ? $"{operation}: canceled" : $"{operation}: {path}");
 
 // Prints multiple selections or cancellation.
 void PrintMany(string operation, string[]? paths)
 {
     if (paths is null)
     {
-        log.Info($"{operation}: cancelled");
+        log.Info($"{operation}: canceled");
         return;
     }
 

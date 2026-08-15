@@ -30,6 +30,10 @@ Do not assume another sibling game repository exists.
 - **CORE-FALLBACK-001:** Implement one correct design for the supported
   contract. Do not add slower, legacy, approximate, reduced-fidelity,
   best-effort, default-result, retry, stale, or partial fallback paths.
+- **CORE-LANGUAGE-001:** Whenever repository-owned prose, identifiers, labels,
+  or diagnostics use English, use American English exclusively. Preserve exact
+  externally owned identifiers and verbatim quotations. The established
+  AlvorKit `Maths` terminology is the sole repository-owned exception.
 - AlvorKit is owned source, not a fixed external dependency. Put engine, UI,
   injection, windowing, GL lifetime, maths, bindings, scripts, and reusable
   harness capability in AlvorKit rather than forcing a game-local workaround.

@@ -6,7 +6,7 @@ public static class Noise
     /// <summary>The seeded random source that keeps the generated demo textures stable across runs.</summary>
     private static readonly Random Random = new(2353);
 
-    /// <summary>Generates a square RGBA texture with coloured orientation markers and random interior pixels.</summary>
+    /// <summary>Generates a square RGBA texture with colored orientation markers and random interior pixels.</summary>
     public static Vec4u8[] Generate(int size)
     {
         var pixels = new Vec4u8[size * size];

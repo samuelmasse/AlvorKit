@@ -1,6 +1,6 @@
 namespace AlvorKit;
 
-/// <summary>The classic coloured triangle, driven directly through the raw <see cref="Gl"/> surface.</summary>
+/// <summary>The classic colored triangle, driven directly through the raw <see cref="Gl"/> surface.</summary>
 public sealed class HelloTriangle : IDisposable
 {
     /// <summary>The number of vertices submitted by the triangle draw call.</summary>

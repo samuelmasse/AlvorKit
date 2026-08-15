@@ -49,6 +49,13 @@ catch-and-retry, stale, partial, or otherwise inferior fallback. Strengthen the
 representation or ask for a missing product decision. Separately specified
 platforms and backends are first-class modes, not fallbacks.
 
+### CORE-LANGUAGE-001: American English
+
+Whenever repository-owned prose, identifiers, labels, or diagnostics use
+English, use American English exclusively. Preserve exact externally owned
+identifiers and verbatim quotations. The established `Maths` package, project,
+API, and documentation terminology is the sole repository-owned exception.
+
 ## Approval And Authorization Gates
 
 - **FACADE-API-001:** Before changing an established public API or documented

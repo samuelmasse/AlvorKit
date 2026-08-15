@@ -35,7 +35,7 @@ internal sealed class BlendDragField(
         var pressPosition = Vec2.Zero;
         var startValue = 0f;
         var dragging = false;
-        var dragCancelled = false;
+        var dragCanceled = false;
         EntMut leftArrow = default;
         EntMut rightArrow = default;
 
@@ -47,7 +47,7 @@ internal sealed class BlendDragField(
                 pressPosition = uiMouse.Position;
                 startValue = get();
                 dragging = false;
-                dragCancelled = false;
+                dragCanceled = false;
             })
             .OnClickF(() =>
             {
@@ -126,7 +126,7 @@ internal sealed class BlendDragField(
 
         bool Hot() => field.IsHoveredR || leftArrow.IsHoveredR || rightArrow.IsHoveredR;
 
-        bool Scrubbing() => field.IsPressedR && dragging && !dragCancelled;
+        bool Scrubbing() => field.IsPressedR && dragging && !dragCanceled;
 
         float Fraction() => Math.Clamp((get() - min) / (max - min), 0f, 1f);
 
@@ -193,10 +193,10 @@ internal sealed class BlendDragField(
             if (keyboard.IsKeyPressed(Keys.Escape) && dragging)
             {
                 Apply(startValue);
-                dragCancelled = true;
+                dragCanceled = true;
             }
 
-            if (dragCancelled)
+            if (dragCanceled)
                 return;
 
             var dx = uiMouse.Position.X - pressPosition.X;

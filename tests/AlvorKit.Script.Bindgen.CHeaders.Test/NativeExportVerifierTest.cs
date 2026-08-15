@@ -21,8 +21,8 @@ public sealed class NativeExportVerifierTest
     public void Verification_SplitsMissingFunctionsByPlatformLabel()
     {
         var required = new BindingFunction("test_a", "A", "void", "void", [], null);
-        var labelled = new BindingFunction("test_b", "B", "void", "void", [], null, Platform: "windows");
-        var verification = new NativeExportVerification("lib.so", LibraryExists: true, [required, labelled]);
+        var labeled = new BindingFunction("test_b", "B", "void", "void", [], null, Platform: "windows");
+        var verification = new NativeExportVerification("lib.so", LibraryExists: true, [required, labeled]);
 
         Assert.AreEqual("test_a", verification.MissingRequired.Single().NativeName);
         Assert.AreEqual("test_b", verification.MissingPlatform.Single().NativeName);
