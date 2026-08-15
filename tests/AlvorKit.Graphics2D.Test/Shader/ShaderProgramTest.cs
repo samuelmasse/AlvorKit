@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Test;
+namespace AlvorKit;
 
 /// <summary>Tests shader program link behavior.</summary>
 [TestClass]

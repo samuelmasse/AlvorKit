@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies the ECMA-335 header encoding used by a loaded method body.</summary>
 public enum LoadedMethodBodyHeaderKind

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease.Test;
+namespace AlvorKit;
 
 /// <summary>Tests advisory path normalization and overlap heuristics.</summary>
 [TestClass]

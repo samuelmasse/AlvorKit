@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Renders Maths generator templates from the repository <c>res/templates/maths</c> directory.</summary>
 internal static class MathsTemplate

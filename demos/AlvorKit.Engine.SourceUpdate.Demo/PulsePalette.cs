@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate.Demo;
+namespace AlvorKit;
 
 /// <summary>Injected reference dependency captured by the editable service.</summary>
 [Root]

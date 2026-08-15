@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to the single-precision 3D plane type with <see cref="System.Numerics.Plane" /> conversions.</summary>
 /// <typeparam name="TSelf">The single-precision plane type, such as <c>Plane3</c>.</typeparam>

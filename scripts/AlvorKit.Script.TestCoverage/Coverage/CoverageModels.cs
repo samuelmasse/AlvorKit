@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Top-level aggregated coverage report.</summary>
 /// <param name="Totals">Aggregate line, branch, and method metrics.</param>

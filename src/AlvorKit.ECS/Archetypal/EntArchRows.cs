@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Stores and mutates alloc-owned dense row sets through recyclable group-global IDs.</summary>
 internal static partial class EntArchRows<A>

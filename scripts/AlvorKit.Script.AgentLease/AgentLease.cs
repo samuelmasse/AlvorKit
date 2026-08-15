@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease;
+namespace AlvorKit;
 
 /// <summary>Describes one advisory lease written by an agent coordinating repository work.</summary>
 internal sealed record AgentLease

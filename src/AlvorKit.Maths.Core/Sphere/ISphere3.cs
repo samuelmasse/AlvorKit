@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 3D sphere types, including <c>Sphere3</c> and <c>Sphere3d</c>.</summary>
 /// <typeparam name="TSelf">The concrete sphere type.</typeparam>

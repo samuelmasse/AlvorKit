@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Tests generated plane source emission.</summary>
 [TestClass]

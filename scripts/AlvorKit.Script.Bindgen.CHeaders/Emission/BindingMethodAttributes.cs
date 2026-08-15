@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Formats attributes shared by generated API, backend, wrapper, and noop methods.</summary>
 internal static class BindingMethodAttributes

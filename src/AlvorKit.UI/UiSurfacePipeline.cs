@@ -1,4 +1,4 @@
-namespace AlvorKit.UI;
+namespace AlvorKit;
 
 /// <summary>Runs layout and drawing while one UI surface's scale and viewport are active.</summary>
 internal sealed class UiSurfacePipeline(

@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies source-method targeting of synchronous and generated loaded bodies.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Describes an immutable backend-specific rejection before instrumentation is installed.

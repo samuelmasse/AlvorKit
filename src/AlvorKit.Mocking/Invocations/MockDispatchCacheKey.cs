@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Keys one reusable exact-signature dispatch artifact without retaining per-mock or per-call state.

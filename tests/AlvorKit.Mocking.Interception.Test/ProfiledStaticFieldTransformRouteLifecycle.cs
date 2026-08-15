@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates the exact write and read sites in the static-field row.</summary>
 internal sealed class ProfiledStaticFieldTransformRouteLifecycle :

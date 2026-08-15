@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging;
+namespace AlvorKit;
 
 /// <inheritdoc cref="Log"/>
 public partial class Log

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for small OpenGL extension helper utilities and guards.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Collects stable text output from one live command without redirecting process-wide console streams.</summary>
 public sealed class LiveCodeContext

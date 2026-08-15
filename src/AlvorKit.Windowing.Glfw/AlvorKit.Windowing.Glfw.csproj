@@ -28,11 +28,6 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.Windowing.Test" />
-        <Using Include="AlvorKit.Maths" />
-        <Using Include="AlvorKit.GLFW" />
-        <Using Include="AlvorKit.NFDe" />
-        <Using Include="AlvorKit.Windowing" />
-        <Using Include="System.Collections.Concurrent" />
         <Using Include="System.Runtime.ExceptionServices" />
         <Using Include="System.Runtime.Versioning" />
     </ItemGroup>

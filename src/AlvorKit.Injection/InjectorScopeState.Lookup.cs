@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>
 /// Handler, attribute, and include lookup helpers for <see cref="InjectorScopeState"/>.

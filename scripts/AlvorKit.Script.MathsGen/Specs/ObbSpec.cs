@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one generated 3D oriented bounding box type.</summary>
 internal sealed record ObbSpec(ScalarSpec Scalar)

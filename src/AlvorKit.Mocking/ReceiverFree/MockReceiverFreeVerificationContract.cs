@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Runs one receiver-free count check against its owning session ledger.</summary>
 internal delegate void MockReceiverFreeVerify(

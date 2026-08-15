@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>
 /// Marks services that are valid only inside an injector scope carrying the same attribute type.

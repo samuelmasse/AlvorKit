@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Runs focused microbenchmarks for range allocation, reuse, fragmentation, and packing.</summary>
 public sealed class RangeBenchDemo(RangeBenchOptions options)

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Builds the OpenGL binding model from gl.xml plus configuration hints.</summary>
 /// <param name="config">Bindgen configuration that selects registry features and naming rules.</param>

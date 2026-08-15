@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Draws the live endpoint, injector graph, selection, and interaction HUD.</summary>
 [Root]

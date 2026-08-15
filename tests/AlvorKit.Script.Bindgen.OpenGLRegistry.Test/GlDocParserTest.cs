@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for importing Khronos DocBook reference pages into XML documentation.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Collects selected OpenGL tokens from registry enum blocks.</summary>
 /// <param name="config">Bindgen configuration used for naming and filtering tokens.</param>

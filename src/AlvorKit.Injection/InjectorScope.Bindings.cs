@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>
 /// Service binding helpers for <see cref="InjectorScope"/>.

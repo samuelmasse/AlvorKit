@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>Describes whether a tracked injector scope can still receive work.</summary>
 public enum InjectorScopeLifecycle

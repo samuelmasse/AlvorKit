@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Demo;
+namespace AlvorKit;
 
 /// <summary>Rendering collaborator used for strict, loose, matcher, and callback examples.</summary>
 public interface IRenderer

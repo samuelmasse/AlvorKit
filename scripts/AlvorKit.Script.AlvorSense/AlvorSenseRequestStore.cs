@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Implements the foreground side of the filesystem mailbox used to talk to a session host.</summary>
 internal static class AlvorSenseRequestStore

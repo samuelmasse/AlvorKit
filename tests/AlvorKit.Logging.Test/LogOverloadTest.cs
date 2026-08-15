@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies the complete severity and typed-format overload matrix.</summary>
 [TestClass]

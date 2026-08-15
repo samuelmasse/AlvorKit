@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Identifies where a glyph bitmap lives inside an atlas texture.</summary>
 /// <param name="glyph">The glyph metrics for this slot.</param>

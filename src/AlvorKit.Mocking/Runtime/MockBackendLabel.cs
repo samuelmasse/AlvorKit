@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Provides stable history labels for owned instance-dispatch backends.</summary>
 internal static class MockBackendLabel

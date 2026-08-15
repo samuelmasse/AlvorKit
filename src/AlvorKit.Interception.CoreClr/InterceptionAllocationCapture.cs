@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Owns one active allocation-counting window in the current profiled process.</summary>
 public class InterceptionAllocationCapture : IDisposable

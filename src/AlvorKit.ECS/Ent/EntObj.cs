@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 [DebuggerTypeProxy(typeof(EntDebugView))]
 public class EntObj : IEntMut

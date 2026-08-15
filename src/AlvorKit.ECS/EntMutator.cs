@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 public readonly record struct EntMutator<T>(T Ent) where T : IEntMut
 {

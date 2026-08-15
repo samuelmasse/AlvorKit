@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Right-angle texture-coordinate rotations that can be applied to a drawn sprite.</summary>
 public enum SpriteBatchRotation : byte

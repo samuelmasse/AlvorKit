@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Reads and writes GLFW window and monitor sizes using AlvorKit vector types.</summary>
 [ExcludeFromCodeCoverage]

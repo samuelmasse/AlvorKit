@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Shader program API for programs that sample a texture.</summary>
 public interface ITextureProgram : IRenderProgram

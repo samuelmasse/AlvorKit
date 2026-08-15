@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits generated API and backend project files.</summary>
 internal sealed class BindingProjectEmitter(BindingEmitterContext context)
@@ -27,7 +27,7 @@ internal sealed class BindingProjectEmitter(BindingEmitterContext context)
             "res/templates/bindgen/c-headers/backend-project.csproj.tmpl",
             ("XmlBanner", context.XmlBanner()),
             ("BindingVersion", bindingVersion),
-            ("NativePackageId", context.Config.Namespace + ".Native"),
+            ("NativePackageId", context.Config.NativePackageId),
             ("NativeVersion", nativeVersion),
             ("ApiProjectName", apiProjectName));
 }

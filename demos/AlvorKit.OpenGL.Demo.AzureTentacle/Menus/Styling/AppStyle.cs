@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Blend-backed UI style for the azure tentacle demo.</summary>
 [App]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Normal per-frame behavior running inside one colony scope.</summary>
 [Colony]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Applies one strict single-file unified diff to an acknowledged in-memory source snapshot.</summary>
 internal static class SourceUpdateDiff

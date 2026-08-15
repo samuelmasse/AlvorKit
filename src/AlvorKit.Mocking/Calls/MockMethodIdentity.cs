@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Identifies a runtime method definition and the declaring-type and method arguments used for one construction.

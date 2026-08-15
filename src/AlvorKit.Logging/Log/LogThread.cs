@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging;
+namespace AlvorKit;
 
 /// <summary>Owns the rotating buffers written by one producer thread.</summary>
 /// <param name="thread">The producer thread.</param>

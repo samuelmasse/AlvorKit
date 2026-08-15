@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits callback setter overloads that root delegates on the API instance.</summary>
 internal static class BindingCallbackSetterEmitter

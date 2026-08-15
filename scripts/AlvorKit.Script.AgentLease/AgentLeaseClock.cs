@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease;
+namespace AlvorKit;
 
 /// <summary>Supplies timestamps to lease operations.</summary>
 internal interface IAgentLeaseClock

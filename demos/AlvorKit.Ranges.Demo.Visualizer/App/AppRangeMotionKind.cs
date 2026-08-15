@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>How a live allocation's backing range changed between two visualizer snapshots.</summary>
 public enum AppRangeMotionKind

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 #pragma warning disable IDE0060
 

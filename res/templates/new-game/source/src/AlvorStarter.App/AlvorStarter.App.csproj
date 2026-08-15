@@ -5,9 +5,4 @@
         <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.Logging\AlvorKit.Logging.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Using Include="AlvorKit.Injection" />
-        <Using Include="AlvorKit.Logging" />
-    </ItemGroup>
-
 </Project>

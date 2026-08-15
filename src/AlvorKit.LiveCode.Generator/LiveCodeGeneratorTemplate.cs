@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode.Generator;
+namespace AlvorKit;
 
 /// <summary>Loads and renders embedded LiveCode generator templates.</summary>
 internal static class LiveCodeGeneratorTemplate

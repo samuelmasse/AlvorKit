@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies the measured packed equality lowering for generated float vectors.</summary>
 [TestClass]

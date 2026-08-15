@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates the exact caller for the concrete asynchronous behavior row.</summary>
 internal sealed class ProfiledAsyncRouteLifecycle :

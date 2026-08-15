@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 // Archetypal design:
 // - A identifies an independent arch group. Each participating Ent has a sparse EntArchLoc<A> containing its row-set ID,

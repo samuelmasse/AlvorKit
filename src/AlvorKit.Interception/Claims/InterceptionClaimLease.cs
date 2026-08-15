@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Reversible ownership lease for one neutral physical-claim slot.</summary>
 public sealed class InterceptionClaimLease : IDisposable

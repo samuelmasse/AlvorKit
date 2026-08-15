@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>
 /// Calls one closed generic span operation through an exact receiver-first

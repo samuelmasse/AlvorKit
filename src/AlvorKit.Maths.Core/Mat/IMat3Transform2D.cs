@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 3x3 2D transform matrix types, including <c>Mat3</c> and <c>Mat3d</c>.</summary>
 /// <typeparam name="TSelf">The 3x3 transform matrix type.</typeparam>

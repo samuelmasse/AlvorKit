@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer;
+namespace AlvorKit;
 
 /// <summary>
 /// Tracks strict object bindings keyed by GL target, unit, index, or a composite of those values.

@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Stable runtime identity for one exact method definition.</summary>
 public readonly struct InterceptionTarget : IEquatable<InterceptionTarget>

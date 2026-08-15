@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection.Test;
+namespace AlvorKit;
 
 [TestClass]
 public class InjectorTest
@@ -132,7 +132,7 @@ public class InjectorTest
     public void Injector_GetWithExcludedDependencies_ThrowsException()
     {
         var injector = new Injector();
-        injector.Include(new(@"^AlvorKit\.Injection\."));
+        injector.Include(new(@"^AlvorKit\."));
 
         Assert.ThrowsException<InjectorException>(injector.Get<ServiceInvalidDependencies>);
     }
@@ -142,7 +142,7 @@ public class InjectorTest
     public void Injector_GetWithExcludedDependenciesWeirdType_ThrowsException()
     {
         var injector = new Injector();
-        injector.Include(new(@"^AlvorKit\.Injection\."));
+        injector.Include(new(@"^AlvorKit\.Derived"));
 
         Type t = typeof(Derived<>);
         Type baseType = t.BaseType!;
@@ -155,7 +155,7 @@ public class InjectorTest
     public void Injector_GetWithIncludedDependencies_InjectsProperly()
     {
         var injector = new Injector();
-        injector.Include(new(@"^AlvorKit\.Injection\."));
+        injector.Include(new(@"^AlvorKit\."));
 
         injector.Get<ServiceE>();
     }

@@ -51,7 +51,7 @@ The failure looked like ordinary compiler errors rather than formatting errors:
 
 - `CS1503: Argument 1: cannot convert from 'method group' to
   'System.Action<T>'`
-- `CS1503: Argument 1: cannot convert from 'T' to 'AlvorKit.ECS.EntMut'`
+- `CS1503: Argument 1: cannot convert from 'T' to 'AlvorKit.EntMut'`
 
 The affected code used chained fluent UI calls produced by C# 14 extension
 members such as `extension<T>(EntMutator<T> mut) where T : IEntMut`, followed by

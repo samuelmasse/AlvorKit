@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Runs Windows COM file dialogs on one dedicated single-threaded apartment.</summary>
 [SupportedOSPlatform("windows")]

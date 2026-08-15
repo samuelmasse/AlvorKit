@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
-using static AlvorKit.Interception.CoreClr.Advanced.LoadedOperationOpCodes;
+using static AlvorKit.LoadedOperationOpCodes;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Resolves and validates prefixes owned by one candidate operation.</summary>
 internal static class LoadedOperationPrefixRecognizer

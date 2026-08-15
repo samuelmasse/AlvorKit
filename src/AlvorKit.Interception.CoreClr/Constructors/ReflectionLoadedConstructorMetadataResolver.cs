@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Resolves constructor-initializer metadata in one loaded reflection module.</summary>
 public sealed class ReflectionLoadedConstructorMetadataResolver(

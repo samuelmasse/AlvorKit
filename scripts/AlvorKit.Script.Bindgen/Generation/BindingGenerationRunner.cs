@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Coordinates binding generation for the selected native library metadata.</summary>
 /// <param name="repository">Repository layout used to discover configured native libraries.</param>

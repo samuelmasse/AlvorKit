@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer.Test;
+namespace AlvorKit;
 
 /// <summary>
 /// Exercises strict bind APIs that are structurally similar to the primary bind tests.

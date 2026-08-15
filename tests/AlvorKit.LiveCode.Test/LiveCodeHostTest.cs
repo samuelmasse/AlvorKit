@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies discovery, graph transport, and exact game-thread command execution over loopback.</summary>
 [TestClass]

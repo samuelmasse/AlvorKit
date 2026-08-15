@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Maps ordinary matcher captures back to declared argument positions.</summary>
 internal static class CaptureOrdinaryMatcherProcessing

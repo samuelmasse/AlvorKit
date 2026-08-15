@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Describes one four-byte metadata-token placeholder in a generated body.</summary>
 public sealed class InterceptionGenerationRelocation

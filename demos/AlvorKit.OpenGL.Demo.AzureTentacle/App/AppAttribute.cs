@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Marks services that belong to the azure tentacle demo app lifetime.</summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]

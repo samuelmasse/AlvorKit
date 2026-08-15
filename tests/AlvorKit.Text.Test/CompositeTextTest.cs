@@ -1,4 +1,4 @@
-namespace AlvorKit.Text.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies composite parsing, typed formatting, reusable growth, and allocation behavior.</summary>
 [TestClass]

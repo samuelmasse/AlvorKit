@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Maps OpenGL registry scalar aliases to generated C# scalar types.</summary>
 internal static class GlRegistryValueTypes

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for native build runner orchestration without invoking real tools.</summary>
 [TestClass]

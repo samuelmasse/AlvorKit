@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits arithmetic, bitwise, logical, and equality operators.</summary>
 internal static class OperatorEmitter

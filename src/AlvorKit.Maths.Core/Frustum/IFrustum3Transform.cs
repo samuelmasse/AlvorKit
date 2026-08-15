@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 3D frustum types that can be created from and transformed by matching matrices.</summary>
 /// <typeparam name="TSelf">The concrete frustum type.</typeparam>

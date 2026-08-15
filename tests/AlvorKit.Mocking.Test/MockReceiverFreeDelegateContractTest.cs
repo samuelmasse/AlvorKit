@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies receiver-free delegate metadata fails closed.</summary>
 [TestClass]

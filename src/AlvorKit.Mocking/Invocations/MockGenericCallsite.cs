@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Routes generic capture preparation through the selected backend.</summary>
 internal static class MockGenericCallsite

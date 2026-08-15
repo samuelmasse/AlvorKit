@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Data resolved in a temporary nested scope during a live inspection.</summary>
 [Probe]

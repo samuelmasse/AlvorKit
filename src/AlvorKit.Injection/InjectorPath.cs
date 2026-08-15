@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>
 /// Tracks transient dependency resolution state and reflection caches shared across one root injector.

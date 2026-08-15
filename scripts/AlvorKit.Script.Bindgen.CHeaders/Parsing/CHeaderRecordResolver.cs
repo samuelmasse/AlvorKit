@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Resolves native records into managed struct descriptions on demand.</summary>
 internal sealed class CHeaderRecordResolver(

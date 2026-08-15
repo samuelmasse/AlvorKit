@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies how an invocation target is owned.</summary>
 internal enum MockInvocationTargetKind

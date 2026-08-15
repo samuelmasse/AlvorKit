@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Cursor capture and visibility mode for a window.</summary>
 public enum CursorMode

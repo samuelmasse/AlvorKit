@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Owns a two-dimensional RGBA texture and uploads pixel spans into level zero.</summary>
 public class Texture2D : Texture

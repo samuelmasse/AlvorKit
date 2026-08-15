@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates every caller in the no-session struct original row.</summary>
 internal sealed partial class ProfiledStructRouteLifecycle :

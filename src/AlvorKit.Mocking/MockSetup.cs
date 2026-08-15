@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Binds a method and captured argument pattern to one configured behavior.

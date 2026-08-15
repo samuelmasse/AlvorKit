@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease;
+namespace AlvorKit;
 
 /// <summary>Normalizes advisory path claims and conservatively detects possible overlap.</summary>
 internal static class AgentLeasePath

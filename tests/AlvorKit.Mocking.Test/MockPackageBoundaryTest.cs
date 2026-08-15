@@ -1,6 +1,6 @@
 using System.Reflection.Metadata;
 
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 /// <summary>Freezes the instrumentation-neutral core assembly boundary.</summary>
 [TestClass]

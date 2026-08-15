@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Determines whether Clang declarations belong to the requested source or shim roots.</summary>
 internal sealed class CHeaderScope(string filterRoot, string libraryDirectory, string translationUnitPath)

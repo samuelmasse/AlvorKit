@@ -35,8 +35,6 @@
         <Using Include="Microsoft.CodeAnalysis" />
         <Using Include="Microsoft.CodeAnalysis.CSharp.Syntax" />
         <Using Include="Microsoft.CodeAnalysis.Text" />
-        <Using Include="System.Reflection" />
-        <Using Include="System.Text.RegularExpressions" />
     </ItemGroup>
 
 </Project>

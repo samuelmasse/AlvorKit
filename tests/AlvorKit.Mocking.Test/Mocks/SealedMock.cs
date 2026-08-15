@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 public sealed class SealedMock : BaseMock
 {

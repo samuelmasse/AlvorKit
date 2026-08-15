@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Retains the exact compiler baseline and acknowledges only target-confirmed generations.</summary>
 [ExcludeFromCodeCoverage(Justification = "Long-lived local process integration is covered by CLI integration tests.")]

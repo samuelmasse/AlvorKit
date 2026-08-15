@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Owns a compiled OpenGL shader stage.</summary>
 public class ShaderStage : IDisposable

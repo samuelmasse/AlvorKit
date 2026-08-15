@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Provides one consistent heap-safe invocation snapshot.</summary>
 internal sealed class MockInvocation

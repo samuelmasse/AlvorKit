@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Configures heap-safe values on struct setup clauses.</summary>
 public static class MockStructSetupClauseExtensions

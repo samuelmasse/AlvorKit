@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Tracks close state and makes unload callbacks idempotent.</summary>
 internal sealed class WindowClose

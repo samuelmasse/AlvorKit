@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Mocking.Interception;
+namespace AlvorKit;
 
 /// <summary>Returns either one complete activation or actionable diagnostics.</summary>
 public sealed class MockInterceptionPreparationResult

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Writes the generated C-header API, backend, native imports, and support projects.</summary>
 public sealed class BindingCodeEmitter(BindgenConfig config, string tag)

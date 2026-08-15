@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 /// <summary>Proves session ownership and exact identity for receiver-free interception runtime dispatch.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 internal static class ProfiledReadInstanceFieldCaller
 {

@@ -7,10 +7,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Engine.Loop" />
-        <Using Include="AlvorKit.Injection" />
-        <Using Include="AlvorKit.LiveCode" />
-        <Using Include="AlvorKit.Windowing" />
         <Using Include="System.Text.Json" />
     </ItemGroup>
 

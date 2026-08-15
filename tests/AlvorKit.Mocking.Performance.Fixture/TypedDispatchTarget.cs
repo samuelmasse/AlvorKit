@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Provides a concrete span-parameter method for warm typed dispatch measurements.</summary>
 public sealed class TypedDispatchTarget

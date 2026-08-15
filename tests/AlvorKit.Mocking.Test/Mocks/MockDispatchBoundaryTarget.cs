@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 /// <summary>Exposes exact-dispatch signatures beyond the retired grouped-carrier widths.</summary>
 public abstract class MockDispatchBoundaryTarget

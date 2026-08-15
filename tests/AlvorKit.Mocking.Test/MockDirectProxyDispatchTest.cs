@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 /// <summary>Proves generated proxy overrides dispatch through owned exact prefixes.</summary>
 [TestClass]

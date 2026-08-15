@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Configures one ordinary instance or static field read.</summary>
 public sealed class MockFieldReadSetupClause<T>

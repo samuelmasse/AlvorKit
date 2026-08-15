@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Samples a source metric at that metric's rolling duration.</summary>
 public class TickMetricWindow(TickMetric metric)

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits tuple and cross-scalar vector conversions.</summary>
 internal static class ConversionEmitter

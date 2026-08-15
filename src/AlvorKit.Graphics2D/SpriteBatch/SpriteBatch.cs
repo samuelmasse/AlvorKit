@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Batches textured quads into indexed draw calls grouped by available texture slots.</summary>
 public class SpriteBatch : IDisposable

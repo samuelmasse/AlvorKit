@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 internal readonly record struct EntArchEdge(
     int FieldId,

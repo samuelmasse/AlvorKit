@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Provides OpenGL texture limits used by dense visualizer rasters.</summary>
 [App]

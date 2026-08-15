@@ -1,4 +1,4 @@
-namespace AlvorKit.UI;
+namespace AlvorKit;
 
 internal class NodeArrayAllocator
 {

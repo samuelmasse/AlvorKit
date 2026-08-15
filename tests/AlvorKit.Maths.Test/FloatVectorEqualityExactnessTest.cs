@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies packed float-vector equality preserves the established scalar value semantics.</summary>
 [TestClass]

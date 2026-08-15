@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits span and array transfer helpers for matrices.</summary>
 internal static class MatrixSpanInteropEmitter

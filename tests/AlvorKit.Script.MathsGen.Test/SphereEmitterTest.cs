@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Tests generated 3D sphere source planning and emission.</summary>
 [TestClass]

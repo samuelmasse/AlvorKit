@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>
 /// Stores instances, handlers, includes, and scope metadata for one injector scope.

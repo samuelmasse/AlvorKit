@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Connects to one discovered LiveCode host over its private loopback protocol.</summary>
 public sealed class LiveCodeClient(LiveCodeSessionManifest session)

@@ -6,7 +6,6 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.Engine.SourceUpdate.Test" />
-        <Using Include="AlvorKit.LiveCode" />
         <Using Include="System.Reflection.Metadata" />
         <Using Include="System.Security.Cryptography" />
         <Using Include="System.Text.Json" />

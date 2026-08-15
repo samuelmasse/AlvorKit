@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Describes the face source and index used when opening a font.</summary>
 public class FontOptions

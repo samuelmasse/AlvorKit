@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>
 /// Imports Khronos DocBook reference pages into XML-doc comments keyed by GL command name. A single

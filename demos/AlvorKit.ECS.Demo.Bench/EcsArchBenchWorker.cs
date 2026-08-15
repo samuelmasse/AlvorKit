@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Runs one archetypal case inside a fresh worker process.</summary>
 internal sealed partial class EcsArchBenchWorker(EcsBenchOptions options)

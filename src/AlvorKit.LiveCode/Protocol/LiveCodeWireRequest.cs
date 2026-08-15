@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>One authenticated request sent to a running LiveCode host.</summary>
 internal sealed record LiveCodeWireRequest(

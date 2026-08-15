@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Measures the conversion directions that occur most often in Craftdig.</summary>
 [MemoryDiagnoser]

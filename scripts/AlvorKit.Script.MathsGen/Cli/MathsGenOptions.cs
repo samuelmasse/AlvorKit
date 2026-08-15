@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Command-line options for regenerating AlvorKit.Maths primitive package source.</summary>
 /// <param name="OutputRoot">Directory where generated source files should be written.</param>

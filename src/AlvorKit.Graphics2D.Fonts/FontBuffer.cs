@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Owns a framebuffer and scratch tablet used during atlas repacking.</summary>
 internal sealed class FontBuffer : IDisposable

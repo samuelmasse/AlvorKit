@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestTiming.Test;
+namespace AlvorKit;
 
 /// <summary>Tests MSTest TRX timing parsing.</summary>
 [TestClass]

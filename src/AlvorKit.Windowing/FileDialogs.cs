@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Exposes native file dialogs without platform handles or binding types.</summary>
 public class FileDialogs(IFileDialogHost host)

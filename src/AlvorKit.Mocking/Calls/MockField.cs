@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Carries exact reflection metadata for one field with a statically checked

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Writes generated PowerShell to a temporary file and executes it.</summary>
 [ExcludeFromCodeCoverage]

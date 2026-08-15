@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview;
+namespace AlvorKit;
 
 /// <summary>Result returned by one bindgen review operation.</summary>
 /// <param name="ExitCode">Process exit code to return to the caller.</param>

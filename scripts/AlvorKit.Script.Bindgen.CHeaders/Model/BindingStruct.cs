@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Describes a managed struct emitted from a native struct or union.</summary>
 /// <param name="NativeName">Native struct, union, or typedef name.</param>

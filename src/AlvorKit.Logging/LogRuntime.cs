@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging;
+namespace AlvorKit;
 
 /// <summary>Owns the background collection and console lifetime for one application log.</summary>
 public sealed class LogRuntime : IDisposable

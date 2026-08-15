@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Tracks exact original struct-method executions.</summary>
 internal static class ProfiledStructOriginalCounters

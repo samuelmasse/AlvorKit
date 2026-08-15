@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Owns the OpenGL resources that display the checked-in azure tentacle monster GLB.</summary>
 public sealed class GlbModel : IDisposable

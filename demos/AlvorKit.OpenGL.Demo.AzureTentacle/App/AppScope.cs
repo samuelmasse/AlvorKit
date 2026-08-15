@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Dependency injection scope for the azure tentacle demo app lifetime.</summary>
 [App]

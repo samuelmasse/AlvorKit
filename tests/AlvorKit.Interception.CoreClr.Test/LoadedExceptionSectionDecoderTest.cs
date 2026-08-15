@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies small and fat exception clauses against baseline IL boundaries.</summary>
 [TestClass]

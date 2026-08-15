@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Executes native verifier plans for one library and target RID.</summary>
 /// <param name="library">Resolved library metadata and paths.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Lowers a validated loaded constructor split into executable managed artifacts.</summary>
 public static class LoadedConstructorRemainderComposer

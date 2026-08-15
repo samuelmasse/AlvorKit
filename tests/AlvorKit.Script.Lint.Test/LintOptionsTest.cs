@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint.Test;
+namespace AlvorKit;
 
 /// <summary>Tests command-line parsing for the lint coordinator.</summary>
 [TestClass]

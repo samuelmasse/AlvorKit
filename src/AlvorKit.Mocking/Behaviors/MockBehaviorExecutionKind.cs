@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies how a selected configured behavior is executed.</summary>
 internal enum MockBehaviorExecutionKind

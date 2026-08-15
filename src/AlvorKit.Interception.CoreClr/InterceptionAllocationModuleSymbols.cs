@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Resolves one selected runtime module through its adjacent Portable PDB.</summary>
 internal class InterceptionAllocationModuleSymbols : IDisposable

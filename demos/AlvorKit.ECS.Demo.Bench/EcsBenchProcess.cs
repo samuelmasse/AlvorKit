@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Runs one archetypal sample in a fresh copy of the already-built benchmark assembly.</summary>
 internal static class EcsBenchProcess

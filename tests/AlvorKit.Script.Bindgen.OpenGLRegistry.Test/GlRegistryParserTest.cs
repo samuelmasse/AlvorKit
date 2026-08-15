@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
+namespace AlvorKit;
 
 /// <summary>Core tests for OpenGL registry parsing and type mapping.</summary>
 [TestClass]

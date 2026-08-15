@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for native build manifest platform selection.</summary>
 [TestClass]

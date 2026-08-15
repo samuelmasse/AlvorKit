@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Operating systems supported by native runtime packages.</summary>
 internal enum TargetOperatingSystem

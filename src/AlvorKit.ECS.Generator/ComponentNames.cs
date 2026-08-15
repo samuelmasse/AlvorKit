@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Generator;
+namespace AlvorKit;
 
 internal static class ComponentNames
 {

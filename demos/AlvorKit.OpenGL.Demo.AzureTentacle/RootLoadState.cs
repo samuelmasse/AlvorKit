@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Bootstraps the azure tentacle demo app scope from the engine root scope.</summary>
 [Root]

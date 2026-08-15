@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for loading resolved library build metadata.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>
 /// Applies to all two-component numeric vector types with axis constants,

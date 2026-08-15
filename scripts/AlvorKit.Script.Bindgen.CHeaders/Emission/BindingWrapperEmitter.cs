@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits a generated forwarding wrapper base class.</summary>
 internal sealed class BindingWrapperEmitter(BindingEmitterContext context)

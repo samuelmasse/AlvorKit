@@ -1,4 +1,4 @@
-namespace AlvorKit.UI;
+namespace AlvorKit;
 
 [Root]
 public class RootUiDraw(RootSprites sprites, RootUiScale scale, RootUiPosition position, RootUiClipping clipping)

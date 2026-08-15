@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates the exact reference-field write and read sites.</summary>
 internal sealed class ProfiledReferenceFieldTransformRouteLifecycle :

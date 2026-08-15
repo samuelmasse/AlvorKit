@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer;
+namespace AlvorKit;
 
 /// <summary>
 /// Tracks one strict binding slot that may hold either zero or one live GL object id.

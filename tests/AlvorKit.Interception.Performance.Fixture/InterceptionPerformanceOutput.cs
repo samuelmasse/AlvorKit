@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Writes concise human-readable and structured performance evidence.</summary>
 internal static class InterceptionPerformanceOutput

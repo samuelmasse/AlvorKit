@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Protects exact Vec4i and Vec4u behavior implemented through complete-register SIMD.</summary>
 [TestClass]

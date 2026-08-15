@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Validates host configuration, authentication tokens, and arbitrary-execution requests.</summary>
 internal static class LiveCodeHostRequestGuard

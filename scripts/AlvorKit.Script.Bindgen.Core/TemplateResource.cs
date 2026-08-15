@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Loads and renders text templates from the repository root <c>res/</c> directory.</summary>
 public static class TemplateResource

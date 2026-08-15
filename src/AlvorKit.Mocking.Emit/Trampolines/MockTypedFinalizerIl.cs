@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Emits shared partial-original completion through exact dispatch state.

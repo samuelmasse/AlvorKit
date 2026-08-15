@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint.Test;
+namespace AlvorKit;
 
 /// <summary>Tests scoped lint file expansion and classification.</summary>
 [TestClass]

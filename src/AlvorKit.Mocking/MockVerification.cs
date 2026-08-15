@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Applies a count constraint to one captured mocked call.</summary>
 public sealed class MockVerification

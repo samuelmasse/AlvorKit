@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease;
+namespace AlvorKit;
 
 /// <summary>Formatting and normalization helpers for advisory lease coordination.</summary>
 internal sealed partial class AgentLeaseCoordinator

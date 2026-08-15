@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Validates parsed coverage options and shared option value access.</summary>
 internal static class CoverageOptionsValidation

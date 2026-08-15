@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Coordinates vector source generation and filesystem output.</summary>
 [ExcludeFromCodeCoverage(Justification = "Coordinates full generated-project filesystem output; focused emitter tests cover generation logic.")]

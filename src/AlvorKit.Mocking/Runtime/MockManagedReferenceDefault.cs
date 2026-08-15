@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Creates per-mock stable loose and capture backing for managed references.</summary>
 internal static class MockManagedReferenceDefault

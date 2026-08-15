@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Describes one exception clause using symbolic rewritten labels.</summary>
 public sealed class LoadedSymbolicExceptionRegion

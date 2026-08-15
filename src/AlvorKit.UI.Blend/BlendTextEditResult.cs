@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Outcome of one text-edit input pass.</summary>
 public enum BlendTextEditResult

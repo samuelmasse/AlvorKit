@@ -507,19 +507,22 @@ static void Section(string title)
 static void Print(string label, string value) =>
     Console.WriteLine($"{label,-46} {value}");
 
-/// <summary>Small result-checking helper for miniaudio calls that return <see cref="MaResult"/>.</summary>
-internal static class MiniAudioStatus
+namespace AlvorKit
 {
-    /// <summary>Throws with miniaudio's result description when a native call fails.</summary>
-    public static void Require(Ma ma, string nativeName, MaResult result)
+    /// <summary>Small result-checking helper for miniaudio calls that return <see cref="MaResult"/>.</summary>
+    internal static class MiniAudioStatus
     {
-        if (result == MaResult.Success)
-            return;
+        /// <summary>Throws with miniaudio's result description when a native call fails.</summary>
+        public static void Require(Ma ma, string nativeName, MaResult result)
+        {
+            if (result == MaResult.Success)
+                return;
 
-        ma.ResultDescription(result, out var description);
-        throw new InvalidOperationException($"{nativeName} returned {result}: {description ?? "no description"}.");
+            ma.ResultDescription(result, out var description);
+            throw new InvalidOperationException($"{nativeName} returned {result}: {description ?? "no description"}.");
+        }
     }
-}
 
-/// <summary>A compact analysis of an interleaved PCM sample block.</summary>
-internal readonly record struct PcmSummary(int SampleCount, float Peak, float Rms);
+    /// <summary>A compact analysis of an interleaved PCM sample block.</summary>
+    internal readonly record struct PcmSummary(int SampleCount, float Peak, float Rms);
+}

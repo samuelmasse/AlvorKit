@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Owns physical claim slots and rejects implicit cross-consumer composition.</summary>
 public sealed class InterceptionCollisionRegistry

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests exact SIMD variable-count Int32 shift semantics.</summary>
 [TestClass]

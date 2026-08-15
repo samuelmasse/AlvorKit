@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Keys one exact interception wrapper artifact without site or mock state.</summary>
 internal sealed record MockInterceptionWrapperCacheKey(

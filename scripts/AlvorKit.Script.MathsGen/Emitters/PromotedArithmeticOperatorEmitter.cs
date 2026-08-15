@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits cross-scalar operators whose result follows C# numeric promotion.</summary>
 internal static class PromotedArithmeticOperatorEmitter

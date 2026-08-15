@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Exact Debug artifact identity passed to an explicitly composed Source Update target.</summary>
 internal sealed record AlvorSenseEditableLaunchManifest(

@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Root UI scale derived from monitor scale and adjustable by integer numerator and denominator.</summary>
 [Root]

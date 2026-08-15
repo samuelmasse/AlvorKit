@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestTiming;
+namespace AlvorKit;
 
 /// <summary>Separates timing guard options from arbitrary trailing <c>dotnet test</c> arguments.</summary>
 /// <param name="TimingArguments">Arguments parsed by System.CommandLine for the timing guard.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds measured fixed-width float-to-Int32 conversion expressions.</summary>
 internal static class FloatToInt32Expression

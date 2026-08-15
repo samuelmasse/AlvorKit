@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Canonicalizes and validates a signature before a backend installs instrumentation.

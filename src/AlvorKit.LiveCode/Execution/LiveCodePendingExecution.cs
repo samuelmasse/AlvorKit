@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>One compiled command waiting for execution by the game-thread pump.</summary>
 internal sealed class LiveCodePendingExecution(

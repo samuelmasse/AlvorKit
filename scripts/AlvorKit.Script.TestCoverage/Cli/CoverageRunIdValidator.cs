@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Validates coverage run identifiers before they are used as output directory names.</summary>
 internal static class CoverageRunIdValidator

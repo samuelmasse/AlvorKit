@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits the UTF-8 helper used by generated string overloads.</summary>
 internal static class BindingUtf8HelperEmitter

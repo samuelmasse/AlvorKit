@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Defines 3D segment scalar types emitted by the generator.</summary>
 internal static class SegmentCatalog

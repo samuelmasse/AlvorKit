@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests SIMD-backed single-precision vector fused multiply-add operations.</summary>
 [TestClass]

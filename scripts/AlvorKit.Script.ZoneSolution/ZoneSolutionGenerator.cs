@@ -1,7 +1,4 @@
-using DevSolutionGenerator = AlvorKit.Script.DevSolution.DevSolutionGenerator;
-using DevSolutionOptions = AlvorKit.Script.DevSolution.DevSolutionOptions;
-
-namespace AlvorKit.Script.ZoneSolution;
+namespace AlvorKit;
 
 /// <summary>Generates a deterministic .slnx that groups sibling repositories by solution folder.</summary>
 internal sealed class ZoneSolutionGenerator

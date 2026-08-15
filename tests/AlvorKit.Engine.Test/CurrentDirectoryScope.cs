@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Test;
+namespace AlvorKit;
 
 /// <summary>Temporarily changes the process current directory for asset-resolution tests.</summary>
 internal sealed class CurrentDirectoryScope : IDisposable

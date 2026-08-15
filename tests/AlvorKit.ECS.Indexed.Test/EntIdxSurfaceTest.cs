@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Indexed.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies the small forwarding surfaces that sit around the indexed core paths.</summary>
 [TestClass]

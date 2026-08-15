@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Prepares an isolated copy of the AlvorSense command-line runtime for detached host processes.</summary>
 internal static class AlvorSenseHostRuntime

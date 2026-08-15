@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits integer bit inspection helpers.</summary>
 internal static class BitFunctionEmitter

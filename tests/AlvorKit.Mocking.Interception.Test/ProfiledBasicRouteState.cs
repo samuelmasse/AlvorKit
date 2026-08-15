@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Holds one basic caller's inert pointer and coordinator-gated lease.</summary>
 internal sealed class ProfiledBasicRouteState

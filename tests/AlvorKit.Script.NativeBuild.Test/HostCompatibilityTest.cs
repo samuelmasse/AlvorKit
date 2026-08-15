@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for host and target compatibility checks.</summary>
 [TestClass]

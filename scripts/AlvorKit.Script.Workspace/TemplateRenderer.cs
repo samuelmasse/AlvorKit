@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Workspace;
+namespace AlvorKit;
 
 /// <summary>Renders simple double-brace text templates.</summary>
 internal static class TemplateRenderer

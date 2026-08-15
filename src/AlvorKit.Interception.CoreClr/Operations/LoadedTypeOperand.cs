@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Provides exact resolved metadata for a constrained-prefix type operand.</summary>
 public sealed class LoadedTypeOperand

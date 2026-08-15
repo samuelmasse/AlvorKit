@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Owns the exact Roslyn project, PE/PDB baseline, and chained acknowledged generations.</summary>
 internal sealed class SourceUpdateProjectBaseline : IDisposable

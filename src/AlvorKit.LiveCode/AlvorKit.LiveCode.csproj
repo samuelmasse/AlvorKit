@@ -9,7 +9,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Injection" />
         <Using Include="System.Buffers.Binary" />
         <Using Include="System.Globalization" />
         <Using Include="System.Net" />

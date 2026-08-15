@@ -1,7 +1,7 @@
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace AlvorKit.Script.Workspace;
+namespace AlvorKit;
 
 /// <summary>Finds and reads repository-owned configuration files written as YAML or transitional JSON.</summary>
 public static class RepositoryConfigFile

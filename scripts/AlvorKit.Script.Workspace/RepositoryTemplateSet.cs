@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Workspace;
+namespace AlvorKit;
 
 /// <summary>Loads related repository templates from one <c>res/templates</c> subdirectory.</summary>
 /// <param name="anchor">A type from the calling assembly, used to help locate the repository root.</param>

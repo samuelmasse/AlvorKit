@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint.Test;
+namespace AlvorKit;
 
 /// <summary>Tests command planning for repository lint checks.</summary>
 [TestClass]

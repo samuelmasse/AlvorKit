@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>One local foreground request to the retained Source Update coordinator.</summary>
 internal sealed record SourceUpdateCoordinatorRequest(

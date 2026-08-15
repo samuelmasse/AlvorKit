@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.ZoneSolution;
+namespace AlvorKit;
 
 /// <summary>Entry point for the sibling-repository zone solution generator.</summary>
 [ExcludeFromCodeCoverage]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Applies deterministic collection and total-message bounds.</summary>
 internal static class MockDiagnosticMessageFormatter

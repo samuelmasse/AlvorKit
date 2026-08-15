@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Owns a tracked OpenGL texture and exposes strict bind helpers for a single target.</summary>
 /// <param name="gl">The strict OpenGL layer that owns the texture handle.</param>

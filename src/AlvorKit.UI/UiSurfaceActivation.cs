@@ -1,4 +1,4 @@
-namespace AlvorKit.UI;
+namespace AlvorKit;
 
 /// <summary>Activates and restores the scale and viewport shared by one UI surface callback.</summary>
 internal sealed class UiSurfaceActivation(

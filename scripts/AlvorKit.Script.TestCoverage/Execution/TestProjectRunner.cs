@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Runs one test project with Coverlet instrumentation enabled.</summary>
 /// <param name="repoRoot">Repository root used as the process working directory.</param>

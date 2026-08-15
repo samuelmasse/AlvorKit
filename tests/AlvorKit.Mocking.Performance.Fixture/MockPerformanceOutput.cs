@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Prints human-readable measurements and optionally writes the complete JSON artifact.</summary>
 internal static class MockPerformanceOutput

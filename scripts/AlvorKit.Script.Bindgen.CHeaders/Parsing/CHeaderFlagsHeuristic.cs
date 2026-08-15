@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Decides whether an enum should be emitted with the <see cref="FlagsAttribute"/>.</summary>
 internal static class CHeaderFlagsHeuristic

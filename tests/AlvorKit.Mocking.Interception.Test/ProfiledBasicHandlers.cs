@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Exposes the concrete addition wrapper as an exact handler.</summary>
 public sealed class ProfiledBasicAddHandler(

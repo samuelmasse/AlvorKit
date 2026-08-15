@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Resolves and validates the profiler asset for the current supported host.</summary>
 internal static class InterceptionProfilerAsset

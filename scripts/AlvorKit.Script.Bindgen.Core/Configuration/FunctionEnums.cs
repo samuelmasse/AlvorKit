@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Enum typing rules for one native function.</summary>
 public sealed class FunctionEnums

@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>One interleaved vertex consumed by the sprite batch shader.</summary>
 [StructLayout(LayoutKind.Sequential)]

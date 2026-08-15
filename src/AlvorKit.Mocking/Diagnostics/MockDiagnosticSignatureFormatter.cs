@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Appends declared and canonical signatures without runtime value formatting.</summary>
 internal static class MockDiagnosticSignatureFormatter

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns one closed generic struct construction's exact route resources.</summary>
 internal sealed class ProfiledConstructedGenericStructRouteEntry<T>

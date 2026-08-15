@@ -1,5 +1,5 @@
 kind: c-header
-namespace: AlvorKit.NFDe
+namespace: AlvorKit
 apiClass: Nfd
 apiSummary: The UTF-8 Native File Dialog Extended API from <c>nfd.h</c>.
 backendClass: NfdBackend

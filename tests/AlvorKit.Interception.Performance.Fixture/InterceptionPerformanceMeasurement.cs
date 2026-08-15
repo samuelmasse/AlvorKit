@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Warms and samples the caller without adding work inside its measured loop.</summary>
 internal static class InterceptionPerformanceMeasurement

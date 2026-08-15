@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Configures one ordinary instance or static field write.</summary>
 public sealed class MockFieldWriteSetupClause<T>

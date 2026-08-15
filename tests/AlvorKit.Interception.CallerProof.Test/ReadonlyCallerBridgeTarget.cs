@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CallerProof.Test;
+namespace AlvorKit;
 
 internal readonly struct ReadonlyCallerBridgeValue(int value)
 {

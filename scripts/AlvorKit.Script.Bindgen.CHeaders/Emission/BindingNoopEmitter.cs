@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits a generated null-object API implementation.</summary>
 internal sealed class BindingNoopEmitter(BindingEmitterContext context)

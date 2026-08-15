@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Sealed target for the concrete asynchronous-answer behavior row.</summary>
 public sealed class ProfiledAsyncTarget

@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging;
+namespace AlvorKit;
 
 /// <summary>Collects per-thread buffers into globally ordered reusable segments.</summary>
 internal sealed class LogStream : IDisposable

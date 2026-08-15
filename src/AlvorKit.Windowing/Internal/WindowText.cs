@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Buffers text input and clipboard access for a window loop.</summary>
 internal sealed class WindowText

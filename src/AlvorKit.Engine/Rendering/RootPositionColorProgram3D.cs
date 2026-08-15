@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Root-owned 3D position-color shader program.</summary>
 [Root]

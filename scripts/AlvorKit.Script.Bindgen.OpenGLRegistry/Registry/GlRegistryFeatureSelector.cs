@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Selects OpenGL registry symbols from features and configured extensions.</summary>
 /// <param name="config">Bindgen configuration containing OpenGL version, profile, API, and extensions.</param>

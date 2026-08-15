@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Proves the constructor initializer leaves an empty evaluation stack.</summary>
 internal static class LoadedConstructorStackValidator

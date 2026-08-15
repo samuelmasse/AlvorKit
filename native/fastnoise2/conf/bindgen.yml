@@ -1,5 +1,5 @@
 kind: c-header
-namespace: AlvorKit.FastNoise2
+namespace: AlvorKit
 apiClass: Fn
 apiSummary: FastNoise2 C API.
 backendClass: FnBackend

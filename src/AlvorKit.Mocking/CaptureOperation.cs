@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies why the current thread is capturing a mocked call.</summary>
 internal enum CaptureOperation

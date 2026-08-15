@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Tracks drawable size and resize/move update suppression for a window loop.</summary>
 internal sealed class WindowPhysical

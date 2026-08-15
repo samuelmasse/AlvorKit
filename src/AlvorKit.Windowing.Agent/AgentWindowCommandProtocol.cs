@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Applies parsed agent commands to the agent-controlled window host.</summary>
 internal class AgentWindowCommandProtocol(AgentGlfwWindowHost host, TextWriter output, Action<string>? screenshot)

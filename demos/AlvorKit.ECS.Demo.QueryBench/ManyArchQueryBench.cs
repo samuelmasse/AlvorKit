@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.QueryBench;
+namespace AlvorKit;
 
 /// <summary>Measures repeated query discovery after a group has materialized many sparsely active archs.</summary>
 internal static class ManyArchQueryBench

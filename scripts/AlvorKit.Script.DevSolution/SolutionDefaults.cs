@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.DevSolution;
+namespace AlvorKit;
 
 /// <summary>Finds default solution paths for local development solution generation.</summary>
 internal static class SolutionDefaults

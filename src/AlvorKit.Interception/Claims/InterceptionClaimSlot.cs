@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Stable registry slot holding one active physical claim.</summary>
 public sealed class InterceptionClaimSlot

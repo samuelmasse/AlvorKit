@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds exact AVX2 variable-count shift expressions for complete-register Int32 vectors.</summary>
 internal static class Int32VariableShiftExpression

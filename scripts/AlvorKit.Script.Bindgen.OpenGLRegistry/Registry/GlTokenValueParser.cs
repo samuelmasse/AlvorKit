@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Parses OpenGL registry token values.</summary>
 internal static class GlTokenValueParser

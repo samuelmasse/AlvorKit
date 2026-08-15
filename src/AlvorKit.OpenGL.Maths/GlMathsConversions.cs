@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL;
+namespace AlvorKit;
 
 internal static class GlMathsConversions
 {

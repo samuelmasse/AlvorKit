@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Selected registry symbol names plus their originating version or extension.</summary>
 /// <param name="Commands">Selected command names.</param>

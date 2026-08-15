@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies one heap-safe projection of live <c>this</c>.</summary>
 internal readonly record struct MockStructThisProjection(

@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Base class for root-loop extension logic ordered by execution order.</summary>
 public class Script : State

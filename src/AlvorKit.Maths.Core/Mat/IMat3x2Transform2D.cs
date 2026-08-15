@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to compact 3x2 2D affine transform matrix types, including <c>Mat3x2</c> and <c>Mat3x2d</c>.</summary>
 /// <typeparam name="TSelf">The compact 2D affine transform matrix type.</typeparam>

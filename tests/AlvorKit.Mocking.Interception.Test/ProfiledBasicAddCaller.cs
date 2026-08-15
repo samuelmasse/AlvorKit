@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns the selected concrete addition caller and its gated route.</summary>
 internal static class ProfiledBasicAddCaller

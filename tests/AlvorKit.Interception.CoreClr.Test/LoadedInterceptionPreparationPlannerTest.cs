@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies explicit code-first loaded-caller preparation.</summary>
 [TestClass]

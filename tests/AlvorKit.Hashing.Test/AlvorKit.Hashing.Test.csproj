@@ -3,9 +3,4 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.Hashing\AlvorKit.Hashing.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.Hashing" />
-    </ItemGroup>
-
 </Project>

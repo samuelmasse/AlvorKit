@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to inclusive one-dimensional interval types, including <c>Intervalf</c> and <c>Intervald</c>.</summary>
 /// <typeparam name="TSelf">The concrete interval type.</typeparam>

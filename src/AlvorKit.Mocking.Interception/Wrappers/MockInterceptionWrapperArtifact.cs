@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Holds one reusable exact wrapper method.</summary>
 internal sealed class MockInterceptionWrapperArtifact(

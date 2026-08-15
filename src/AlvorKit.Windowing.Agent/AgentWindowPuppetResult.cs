@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Structured output from one atomic AlvorSense command batch.</summary>
 /// <param name="CommandsExecuted">Number of commands successfully executed before stop.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Shared matrix and quaternion operations that also exist in System.Numerics.</summary>
 public enum SystemTypeOperation

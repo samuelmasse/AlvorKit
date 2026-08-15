@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Provides an original-call control that bypasses all mocking instrumentation.</summary>
 public sealed class DirectDispatchTarget

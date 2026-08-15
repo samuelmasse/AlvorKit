@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns the exact asynchronous caller and its gated route lease.</summary>
 internal static class ProfiledAsyncCaller

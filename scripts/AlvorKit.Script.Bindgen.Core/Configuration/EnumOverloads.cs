@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Type hints for overloads that turn raw integer parameters into enums.</summary>
 public sealed class EnumOverloads

@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer.Test;
+namespace AlvorKit;
 
 /// <summary>
 /// Tests strict bind and unbind rules enforced by <see cref="GlLayer"/>.

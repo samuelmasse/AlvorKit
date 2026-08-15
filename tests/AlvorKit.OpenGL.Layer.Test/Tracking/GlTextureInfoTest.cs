@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer.Test;
+namespace AlvorKit;
 
 /// <summary>
 /// Tests byte-size estimates for texture and renderbuffer shapes.

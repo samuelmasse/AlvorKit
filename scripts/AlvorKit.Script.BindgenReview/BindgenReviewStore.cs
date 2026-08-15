@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview;
+namespace AlvorKit;
 
 /// <summary>Reads, writes, and deletes disposable bindgen review session metadata.</summary>
 internal sealed class BindgenReviewStore

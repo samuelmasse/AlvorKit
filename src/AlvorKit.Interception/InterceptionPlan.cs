@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Exact target plus replacement method body submitted atomically to a backend.</summary>
 public sealed class InterceptionPlan

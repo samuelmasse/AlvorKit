@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits single-string helpers for OpenGL shader-source-style APIs.</summary>
 /// <param name="state">Shared extension-emission state.</param>

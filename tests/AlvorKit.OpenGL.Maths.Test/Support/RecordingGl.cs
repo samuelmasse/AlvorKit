@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Maths.Test;
+namespace AlvorKit;
 
 internal sealed class RecordingGl : GlNoop
 {

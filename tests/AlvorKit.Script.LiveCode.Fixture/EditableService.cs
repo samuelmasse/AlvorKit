@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode.Fixture;
+namespace AlvorKit;
 
 /// <summary>Stable dependency captured before Source Update changes an existing service method.</summary>
 public sealed class EditableDependency(string identity)

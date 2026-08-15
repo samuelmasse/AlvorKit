@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges;
+namespace AlvorKit;
 
 /// <summary>Indexes free range blocks by address and size for best-fit allocation and coalescing.</summary>
 internal sealed class RangeFreeBlockMap

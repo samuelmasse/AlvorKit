@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 // Payload and active-list capacity changes stay outside point access and query enumeration.
 internal static partial class EntArchRows<A>

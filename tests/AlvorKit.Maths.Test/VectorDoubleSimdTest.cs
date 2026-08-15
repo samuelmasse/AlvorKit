@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests exact semantics of fixed-width double-vector implementations.</summary>
 [TestClass]

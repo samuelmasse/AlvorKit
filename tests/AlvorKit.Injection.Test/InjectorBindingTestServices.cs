@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection.Test;
+namespace AlvorKit;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface)]
 public class BindingAttribute : InjectorAttribute;

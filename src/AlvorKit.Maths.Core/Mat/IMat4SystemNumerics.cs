@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to the single-precision 4x4 matrix type with <see cref="System.Numerics.Matrix4x4" /> conversions.</summary>
 /// <typeparam name="TSelf">The single-precision 4x4 matrix type, such as <c>Mat4</c>.</typeparam>

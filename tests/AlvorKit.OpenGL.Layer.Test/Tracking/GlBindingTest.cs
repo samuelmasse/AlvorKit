@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer.Test;
+namespace AlvorKit;
 
 [TestClass]
 public class GlBindingTest

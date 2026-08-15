@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Applies pass/fail rules to test execution and coverage summaries.</summary>
 internal static class CoverageGate

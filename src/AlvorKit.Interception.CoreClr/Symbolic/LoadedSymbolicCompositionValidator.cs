@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
-using static AlvorKit.Interception.CoreClr.Advanced.LoadedOperationOpCodes;
+using static AlvorKit.LoadedOperationOpCodes;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Validates site freshness and disjoint edit regions before symbolic emission.</summary>
 internal static class LoadedSymbolicCompositionValidator

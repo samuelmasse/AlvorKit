@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Tracks root-loop update and frame durations.</summary>
 [Root]

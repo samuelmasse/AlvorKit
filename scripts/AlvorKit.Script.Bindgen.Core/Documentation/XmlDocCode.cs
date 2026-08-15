@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Represents temporary XML code markers that survive text escaping.</summary>
 internal static class XmlDocCode

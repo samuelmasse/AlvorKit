@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception;
+namespace AlvorKit;
 
 /// <summary>Selects Mocking operation interception capabilities.</summary>
 public static class MockInterception

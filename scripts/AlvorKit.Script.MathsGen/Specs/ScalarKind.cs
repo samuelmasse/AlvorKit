@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Classifies scalar behavior needed by vector generation.</summary>
 internal enum ScalarKind

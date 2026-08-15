@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Parses and validates native library dependency output.</summary>
 internal static class NativeDependencyVerifier

@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Builds the bottom status strip with frame, playback, scenario, and ui-scale readouts.</summary>
 [App]

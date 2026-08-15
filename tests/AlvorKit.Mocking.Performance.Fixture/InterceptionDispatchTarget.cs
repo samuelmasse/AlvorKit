@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>
 /// Provides one concrete method shared by mocked and unmocked interception

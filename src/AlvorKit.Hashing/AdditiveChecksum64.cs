@@ -1,4 +1,4 @@
-namespace AlvorKit.Hashing;
+namespace AlvorKit;
 
 /// <summary>Accumulates primitive values as a modulo-2^64 additive checksum.</summary>
 public struct AdditiveChecksum64

@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Font-wide metrics for one selected pixel size.</summary>
 /// <param name="Ascender">The ascender in pixels.</param>

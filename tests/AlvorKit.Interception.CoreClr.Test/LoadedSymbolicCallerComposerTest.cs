@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies immutable multi-site symbolic caller rewrite composition.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>
 /// Root-layer dropdown popup shared by every <see cref="BlendFields"/> dropdown: one field opens it at a

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Exact source result and identities produced by one numbered unified diff.</summary>
 internal sealed record SourceUpdateDiffResult(

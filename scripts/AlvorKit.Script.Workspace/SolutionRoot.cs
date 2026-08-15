@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Workspace;
+namespace AlvorKit;
 
 /// <summary>Finds repository roots and solution files for script tools.</summary>
 public static class SolutionRoot

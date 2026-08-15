@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Demo;
+namespace AlvorKit;
 
 /// <summary>Creates deterministic RGBA noise textures used by the Graphics2D sprite-batch demo.</summary>
 public static class Noise

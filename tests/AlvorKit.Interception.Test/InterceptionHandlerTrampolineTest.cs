@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies stable identities and the generated exact managed handler ABI.</summary>
 [TestClass]

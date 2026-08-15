@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>
 /// Exception thrown when a scope is invalid, uninitialized, or nested in an unsupported way.

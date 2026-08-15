@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Clears the root window backbuffer with strict OpenGL state pairing.</summary>
 [Root]

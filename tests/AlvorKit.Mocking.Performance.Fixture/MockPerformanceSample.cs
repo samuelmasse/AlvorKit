@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Stores one raw elapsed-time and allocation sample.</summary>
 internal readonly record struct MockPerformanceSample(

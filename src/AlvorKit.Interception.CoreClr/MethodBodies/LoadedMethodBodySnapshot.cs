@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>
 /// Owns an immutable decoded snapshot of the exact method body supplied by the loaded runtime.

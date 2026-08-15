@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Repository-display paths for artifacts produced by one coverage run.</summary>
 internal sealed record CoverageArtifactPaths(

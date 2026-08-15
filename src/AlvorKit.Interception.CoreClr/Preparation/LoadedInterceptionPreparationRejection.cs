@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies one stable preparation-selection rejection category.</summary>
 public enum LoadedInterceptionPreparationRejectionReason

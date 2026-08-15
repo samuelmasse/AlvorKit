@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode.Generator.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies project-wide imports are preserved as LiveCode assembly metadata.</summary>
 [TestClass]
@@ -53,13 +53,13 @@ public sealed class LiveCodeGlobalUsingGeneratorTest
             .ReplaceLineEndings("\n");
         StringAssert.Contains(
             generated,
-            "[assembly: global::AlvorKit.LiveCode.LiveCodeGlobalUsingAttribute(\"System\")]");
+            "[assembly: global::AlvorKit.LiveCodeGlobalUsingAttribute(\"System\")]");
         StringAssert.Contains(
             generated,
-            "[assembly: global::AlvorKit.LiveCode.LiveCodeGlobalUsingAttribute(\"static System.Math\")]");
+            "[assembly: global::AlvorKit.LiveCodeGlobalUsingAttribute(\"static System.Math\")]");
         StringAssert.Contains(
             generated,
-            "[assembly: global::AlvorKit.LiveCode.LiveCodeGlobalUsingAttribute(\"Text = System.String\")]");
+            "[assembly: global::AlvorKit.LiveCodeGlobalUsingAttribute(\"Text = System.String\")]");
         Assert.IsFalse(generated.Contains("System.Text", StringComparison.Ordinal));
     }
 

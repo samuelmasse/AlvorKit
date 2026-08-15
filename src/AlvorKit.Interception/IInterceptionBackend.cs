@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Runtime-neutral operations supplied by one prepared method-interception backend.</summary>
 public interface IInterceptionBackend

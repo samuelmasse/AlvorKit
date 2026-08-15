@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Stores one measured range allocator benchmark result.</summary>
 public sealed record RangeBenchResult(

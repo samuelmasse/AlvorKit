@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Generator;
+namespace AlvorKit;
 
 [ExcludeFromCodeCoverage]
 internal static class EntArchRowModelFactory
@@ -59,11 +59,11 @@ internal static class EntArchRowModelFactory
         {
             string markerType = groupType + "." + field.Name;
             selectType = string.IsNullOrEmpty(selectType)
-                ? $"global::AlvorKit.ECS.EntArchSelect<{field.NullableType}, {markerType}, {groupType}>"
-                : $"global::AlvorKit.ECS.EntArchSelect<{field.NullableType}, {markerType}, {groupType}, {selectType}>";
+                ? $"global::AlvorKit.EntArchSelect<{field.NullableType}, {markerType}, {groupType}>"
+                : $"global::AlvorKit.EntArchSelect<{field.NullableType}, {markerType}, {groupType}, {selectType}>";
         }
 
-        string queryType = $"global::AlvorKit.ECS.EntArchQuery<{groupType}, {selectType}>";
+        string queryType = $"global::AlvorKit.EntArchQuery<{groupType}, {selectType}>";
         var fields = DistinctProperties(selection)
             .Select(field => new EntArchRowFieldModel(
                 field.Name,
@@ -298,12 +298,12 @@ internal static class EntArchRowModelFactory
 
     private static bool IsSelect(INamedTypeSymbol select) =>
         select.Name == "EntArchSelect" &&
-        select.ContainingNamespace.ToDisplayString() == "AlvorKit.ECS" &&
+        select.ContainingNamespace.ToDisplayString() == "AlvorKit" &&
         select.Arity is 3 or 4;
 
     private static bool IsQuery(INamedTypeSymbol query) =>
         query.Name == "EntArchQuery" &&
-        query.ContainingNamespace.ToDisplayString() == "AlvorKit.ECS" &&
+        query.ContainingNamespace.ToDisplayString() == "AlvorKit" &&
         query.Arity == 2;
 
     private static string AccessAt(ITypeSymbol marker, IAssemblySymbol assembly, string name)

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Manifest persisted when a session starts so the background host can launch the target.</summary>
 /// <param name="Id">Stable session id used by subsequent commands.</param>

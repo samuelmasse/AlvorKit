@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds matrix expressions from exact-order operations on complete public columns.</summary>
 internal static class MatrixColumnExpression

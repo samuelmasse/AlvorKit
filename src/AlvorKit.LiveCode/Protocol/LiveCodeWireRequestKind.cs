@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Identifies one operation in the private LiveCode loopback protocol.</summary>
 internal enum LiveCodeWireRequestKind

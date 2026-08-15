@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits matrix arithmetic and multiplication operators.</summary>
 internal static class MatrixOperatorEmitter

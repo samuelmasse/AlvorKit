@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL;
+namespace AlvorKit;
 
 /// <summary>Provides maths-shaped bound and direct-state-access texture subimage overloads.</summary>
 public static class GlTextureSubImageMathsExtensions

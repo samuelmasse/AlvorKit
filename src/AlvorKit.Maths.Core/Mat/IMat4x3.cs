@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 4x3 matrix types.</summary>
 /// <typeparam name="TSelf">The concrete matrix type.</typeparam>

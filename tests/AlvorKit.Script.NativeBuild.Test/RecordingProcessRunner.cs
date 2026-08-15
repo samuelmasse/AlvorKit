@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild.Test;
+namespace AlvorKit;
 
 /// <summary>Process runner test double that records commands and returns configured output.</summary>
 internal sealed class RecordingProcessRunner : IProcessRunner

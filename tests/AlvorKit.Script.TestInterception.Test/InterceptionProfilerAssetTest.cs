@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Verifies supported host mappings for packaged profiler assets.</summary>
 [TestClass]

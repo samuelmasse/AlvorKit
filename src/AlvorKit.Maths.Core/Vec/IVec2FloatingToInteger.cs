@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to two-component floating-point vector types with integer rounding helpers, including <c>Vec2</c> and <c>Vec2d</c>.</summary>
 /// <typeparam name="TInteger">The matching two-component integer vector type, such as <c>Vec2i</c>.</typeparam>

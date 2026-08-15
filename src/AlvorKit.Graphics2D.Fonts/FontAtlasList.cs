@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Owns all atlas textures for one font and chooses a fitting atlas for new glyphs.</summary>
 internal sealed class FontAtlasList : IDisposable

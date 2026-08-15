@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges;
+namespace AlvorKit;
 
 /// <summary>Tracks live allocation handles, allocation slots, and reusable slot indexes.</summary>
 internal sealed class RangeAllocationList

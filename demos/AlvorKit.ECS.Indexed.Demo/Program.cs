@@ -83,24 +83,27 @@ static void PrintBags(
 // Use the component name while it is present; Clear() may unset it before other hooks run.
 static string Label(EntMutIdx ent) => ent.HasName ? ent.Name : "<name cleared>";
 
-/// <summary>Small demo hook consumer that maintains an id-to-entity index.</summary>
-internal sealed class DemoIdIndex
+namespace AlvorKit
 {
-    private readonly Dictionary<Guid, EntMutIdx> entsById = [];
-
-    /// <summary>Updates the id index before the component value changes, while the old id is still readable.</summary>
-    internal void Track(EntMutIdx ent, in Guid value)
+    /// <summary>Small demo hook consumer that maintains an id-to-entity index.</summary>
+    internal sealed class DemoIdIndex
     {
-        if (ent.Id == value)
-            return;
+        private readonly Dictionary<Guid, EntMutIdx> entsById = [];
 
-        if (ent.Id != default)
-            entsById.Remove(ent.Id);
+        /// <summary>Updates the id index before the component value changes, while the old id is still readable.</summary>
+        internal void Track(EntMutIdx ent, in Guid value)
+        {
+            if (ent.Id == value)
+                return;
 
-        if (value != default)
-            entsById.Add(value, ent);
+            if (ent.Id != default)
+                entsById.Remove(ent.Id);
+
+            if (value != default)
+                entsById.Add(value, ent);
+        }
+
+        /// <summary>Returns whether the index currently contains the requested id.</summary>
+        internal bool Contains(Guid id) => entsById.ContainsKey(id);
     }
-
-    /// <summary>Returns whether the index currently contains the requested id.</summary>
-    internal bool Contains(Guid id) => entsById.ContainsKey(id);
 }

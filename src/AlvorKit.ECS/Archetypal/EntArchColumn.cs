@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Stores the direct row-set column directory used by point access for one exact field.</summary>
 internal static class EntArchColumn<T, N, A>

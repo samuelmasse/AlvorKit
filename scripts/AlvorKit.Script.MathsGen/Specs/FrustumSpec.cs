@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one generated 3D frustum type.</summary>
 internal sealed record FrustumSpec(ScalarSpec Scalar)

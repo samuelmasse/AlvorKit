@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Validates that a target can be built on a given host.</summary>
 internal static class HostCompatibility

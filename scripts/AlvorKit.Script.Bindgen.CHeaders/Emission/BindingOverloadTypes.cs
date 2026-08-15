@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Plans managed parameter shapes shared by generated convenience overload emitters.</summary>
 internal static class BindingOverloadTypes

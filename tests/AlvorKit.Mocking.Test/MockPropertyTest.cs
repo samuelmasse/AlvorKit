@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 public abstract class MockPropertyTest<T> where T : class, IMockTarget
 {

@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Drains the root deletion bin tree from the root loop.</summary>
 [Root]

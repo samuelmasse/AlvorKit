@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Creates an intentional game-loop stall that remains releasable from the frozen LiveCode lane.</summary>
 [Root]

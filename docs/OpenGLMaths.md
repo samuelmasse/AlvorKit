@@ -5,12 +5,11 @@ AlvorKit vectors, matrices, quaternions, intervals, and spatial values. The
 generated `AlvorKit.OpenGL` API remains available for calls that are naturally
 scalar or need exact control over the native arguments.
 
-The extensions use the `AlvorKit.OpenGL` namespace and accept `Gl`, so they work
+The extensions use the `AlvorKit` namespace and accept `Gl`, so they work
 with both a raw `Gl` instance and `GlLayer`:
 
 ```csharp
-using AlvorKit.Maths;
-using AlvorKit.OpenGL;
+using AlvorKit;
 
 gl.Viewport(canvas.Size);
 gl.ClearColor(new Vec4(0.08f, 0.12f, 0.18f, 1));

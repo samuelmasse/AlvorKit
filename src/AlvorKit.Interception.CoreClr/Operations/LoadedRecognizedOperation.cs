@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Transfers one internally validated operation into a stable site descriptor.</summary>
 internal sealed class LoadedRecognizedOperation

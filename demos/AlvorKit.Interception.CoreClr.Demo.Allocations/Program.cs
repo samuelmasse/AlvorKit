@@ -129,34 +129,37 @@ static void PrintRow(
         $"{name,-20} {small,7:N0}      {large,7:N0}   {growth,8:N3}");
 }
 
-/// <summary>Allocation shapes compared by the managed profiler walkthrough.</summary>
-internal static class AllocationScenario
+namespace AlvorKit
 {
-    /// <summary>Allocates one reference object per entity plus one constant-size reference array.</summary>
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    internal static DemoParticle[] ObjectsPerEntity(int count)
+    /// <summary>Allocation shapes compared by the managed profiler walkthrough.</summary>
+    internal static class AllocationScenario
     {
-        var particles = new DemoParticle[count];
-        for (var index = 0; index < particles.Length; ++index)
-            particles[index] = new(index, index * 0.5f);
-        return particles;
+        /// <summary>Allocates one reference object per entity plus one constant-size reference array.</summary>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static DemoParticle[] ObjectsPerEntity(int count)
+        {
+            var particles = new DemoParticle[count];
+            for (var index = 0; index < particles.Length; ++index)
+                particles[index] = new(index, index * 0.5f);
+            return particles;
+        }
+
+        /// <summary>Allocates one reference array whose elements are inline value types.</summary>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static DemoParticleValue[] StructArraySlab(int count)
+        {
+            var particles = new DemoParticleValue[count];
+            for (var index = 0; index < particles.Length; ++index)
+                particles[index] = new(index, index * 0.5f);
+            return particles;
+        }
     }
 
-    /// <summary>Allocates one reference array whose elements are inline value types.</summary>
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    internal static DemoParticleValue[] StructArraySlab(int count)
-    {
-        var particles = new DemoParticleValue[count];
-        for (var index = 0; index < particles.Length; ++index)
-            particles[index] = new(index, index * 0.5f);
-        return particles;
-    }
+    /// <summary>Reference-backed demo entity that allocates once per instance.</summary>
+    internal record DemoParticle(int Id, float Position);
+
+    /// <summary>Inline demo entity stored directly inside one managed array.</summary>
+    internal readonly record struct DemoParticleValue(
+        int Id,
+        float Position);
 }
-
-/// <summary>Reference-backed demo entity that allocates once per instance.</summary>
-internal record DemoParticle(int Id, float Position);
-
-/// <summary>Inline demo entity stored directly inside one managed array.</summary>
-internal readonly record struct DemoParticleValue(
-    int Id,
-    float Position);

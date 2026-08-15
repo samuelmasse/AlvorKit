@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Provides ASCII whitespace helpers for generated UTF-8 maths parsing.</summary>
 internal static class MathsUtf8TextHelper

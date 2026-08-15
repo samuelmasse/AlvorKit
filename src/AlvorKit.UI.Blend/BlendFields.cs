@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>
 /// Builders for Blend form controls: drag/edit number fields, bounded sliders, dropdown fields, text

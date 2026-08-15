@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Exercises constructed generic value receivers through a real profiler.</summary>
 [TestClass]

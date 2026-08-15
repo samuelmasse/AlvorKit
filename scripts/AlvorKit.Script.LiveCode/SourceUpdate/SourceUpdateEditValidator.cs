@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Proves that two source versions differ only in one supported existing method body.</summary>
 internal static class SourceUpdateEditValidator

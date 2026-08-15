@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Indexed;
+namespace AlvorKit;
 
 public delegate void EntIdxPreHook<T>(EntMutIdx ent, in T value);
 

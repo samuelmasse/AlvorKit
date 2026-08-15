@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits ergonomic OpenGL convenience overloads from registry metadata.</summary>
 /// <param name="config">Bindgen configuration that controls generated API names and span hints.</param>

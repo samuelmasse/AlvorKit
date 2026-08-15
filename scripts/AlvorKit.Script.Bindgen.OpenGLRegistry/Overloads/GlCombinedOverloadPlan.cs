@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Mutable transformation plan for one generated combined overload.</summary>
 /// <param name="Command">Command being transformed.</param>

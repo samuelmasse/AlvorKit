@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Builds a managed binding model from C declarations and library-specific hints.</summary>
 public sealed class CHeaderBindingParser(BindgenConfig config, string managedTypePrefix)

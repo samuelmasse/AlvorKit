@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using System.Security.Cryptography;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Creates stable site identities from exact loaded-baseline coordinates.</summary>
 internal static class LoadedOperationSiteIdentity

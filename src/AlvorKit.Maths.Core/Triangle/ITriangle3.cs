@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 3D triangle types, including <c>Triangle3</c> and <c>Triangle3d</c>.</summary>
 /// <typeparam name="TSelf">The concrete triangle type.</typeparam>

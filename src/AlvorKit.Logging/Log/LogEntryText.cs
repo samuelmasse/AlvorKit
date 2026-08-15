@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging;
+namespace AlvorKit;
 
 /// <summary>Couples one formatted entry buffer to its owning producer thread.</summary>
 internal readonly struct LogEntryText(LogThread thread, TextBuffer buffer)

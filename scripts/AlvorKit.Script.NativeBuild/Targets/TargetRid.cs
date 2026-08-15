@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Parsed .NET runtime identifier with helper values for native toolchains.</summary>
 /// <param name="Value">Runtime identifier string, for example linux-x64.</param>

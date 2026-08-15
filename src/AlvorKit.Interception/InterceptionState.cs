@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Describes one profiler request's lifecycle.</summary>
 public enum InterceptionState

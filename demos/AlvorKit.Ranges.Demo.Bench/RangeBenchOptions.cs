@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Stores command-line options for the range allocator benchmark demo.</summary>
 public sealed record RangeBenchOptions(int Operations, int Runs, int Warmups, int Window, string? JsonPath)

@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Indexes the runtime's ECMA-335 opcode metadata by encoded opcode value.</summary>
 internal static class LoadedIlOpcodeTable

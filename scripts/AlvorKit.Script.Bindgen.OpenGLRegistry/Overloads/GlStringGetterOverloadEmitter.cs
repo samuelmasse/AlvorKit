@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits decoded string overloads for OpenGL commands that return C strings.</summary>
 /// <param name="state">Shared extension-emission state.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Computes a fixed evaluation-stack transition for one loaded IL instruction.</summary>
 internal static class LoadedConstructorStackEffect

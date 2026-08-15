@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Entry point for the repository coverage reporting tool.</summary>
 [ExcludeFromCodeCoverage]

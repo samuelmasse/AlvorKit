@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Shares FreeType, OpenGL atlas staging, and sprite batching resources between fonts.</summary>
 /// <remarks>Creates a context with a caller-supplied FreeType binding.</remarks>

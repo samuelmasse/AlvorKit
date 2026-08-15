@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense.Demo;
+namespace AlvorKit;
 
 /// <summary>Mutable game state for the AlvorSense visual automation demo.</summary>
 public sealed class AlvorSenseDemoState

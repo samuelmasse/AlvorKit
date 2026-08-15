@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.DevSolution;
+namespace AlvorKit;
 
 /// <summary>Command-line options for generating a combined local development solution.</summary>
 /// <param name="ConsumerSolutionPath">Solution owned by the consumer repository.</param>

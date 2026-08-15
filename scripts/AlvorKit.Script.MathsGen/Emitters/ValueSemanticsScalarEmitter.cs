@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds scalar-specific statement bodies for generated vector value semantics.</summary>
 internal static class ValueSemanticsScalarEmitter

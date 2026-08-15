@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Completes returned and thrown dispatch continuations.</summary>
 internal static class MockDispatchCompletion

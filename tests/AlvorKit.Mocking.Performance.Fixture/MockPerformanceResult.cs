@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Stores robust timing and current-thread allocation statistics for one case.</summary>
 internal sealed record MockPerformanceResult(

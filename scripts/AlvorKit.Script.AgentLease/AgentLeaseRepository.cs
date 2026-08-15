@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease;
+namespace AlvorKit;
 
 /// <summary>Reads and writes advisory lease files under <c>out/agents</c>.</summary>
 /// <param name="repoRoot">Repository root that owns the coordination directory.</param>

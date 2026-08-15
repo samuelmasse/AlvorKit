@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits generated strongly typed OpenGL handle wrappers.</summary>
 /// <param name="context">Shared source-emission context.</param>

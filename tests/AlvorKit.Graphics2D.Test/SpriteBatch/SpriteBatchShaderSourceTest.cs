@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Test;
+namespace AlvorKit;
 
 /// <summary>Tests the built-in sprite batch shader source generation.</summary>
 [TestClass]

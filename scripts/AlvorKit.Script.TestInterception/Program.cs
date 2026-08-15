@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Entry point for isolated Interception-profiler child launches.</summary>
 [ExcludeFromCodeCoverage]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Separates floating-vector equality from hashing against the matching System.Numerics shapes.</summary>
 [MemoryDiagnoser]

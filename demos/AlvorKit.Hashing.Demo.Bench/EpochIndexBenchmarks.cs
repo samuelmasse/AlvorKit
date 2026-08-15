@@ -1,4 +1,4 @@
-namespace AlvorKit.Hashing.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Measures retained 32-bit epoch indexing against a retained dictionary.</summary>
 [MemoryDiagnoser]

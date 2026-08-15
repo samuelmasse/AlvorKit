@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL;
+namespace AlvorKit;
 
 /// <summary>Provides typed maths-vector vertex attribute declarations.</summary>
 public static class GlVertexFormatMathsExtensions

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Provides an ordinary boxed-dispatch target for the isolated fixture.</summary>
 public interface IOrdinaryDispatchTarget

@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Wire-safe snapshot of the active development process scope graph.</summary>
 public sealed record LiveCodeScopeGraph(

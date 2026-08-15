@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Observes one live field value without retaining or boxing it.</summary>
 /// <typeparam name="T">The exact field value type.</typeparam>

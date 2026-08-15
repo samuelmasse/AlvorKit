@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Exposes screen, visibility, title, and close operations for a window loop.</summary>
 public class WindowScreen(WindowLoop window)

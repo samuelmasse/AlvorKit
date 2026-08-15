@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Builds the stable AFR-02 archetypal scenario catalog.</summary>
 internal static class EcsArchBenchScenarios

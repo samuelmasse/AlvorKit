@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Mocking.Interception;
+namespace AlvorKit;
 
 /// <summary>Owns a complete set of active routes and reverses them in LIFO order.</summary>
 public sealed class MockInterceptionActivation : IDisposable

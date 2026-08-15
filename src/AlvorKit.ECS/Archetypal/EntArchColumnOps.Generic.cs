@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Performs cold structural operations and precise registration for one exact field.</summary>
 internal sealed class EntArchColumnOps<T, N, A> : EntArchColumnOps

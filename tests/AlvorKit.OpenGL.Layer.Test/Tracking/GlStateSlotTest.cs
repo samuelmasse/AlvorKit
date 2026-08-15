@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer.Test;
+namespace AlvorKit;
 
 /// <summary>
 /// Tests the single-value strict state tracker.

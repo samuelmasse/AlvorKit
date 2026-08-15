@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Complete OpenGL binding model consumed by the generated-code emitters.</summary>
 /// <param name="Groups">Typed enum groups emitted as public enums.</param>

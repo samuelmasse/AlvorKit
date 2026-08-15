@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds equal-size fixed-width expressions for complete-register Int64 and UInt64 vectors.</summary>
 internal static class Int64VectorExpression

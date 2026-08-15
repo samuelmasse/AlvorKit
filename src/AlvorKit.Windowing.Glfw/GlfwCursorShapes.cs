@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Maps AlvorKit cursor shapes to cached GLFW standard cursor handles.</summary>
 [ExcludeFromCodeCoverage]

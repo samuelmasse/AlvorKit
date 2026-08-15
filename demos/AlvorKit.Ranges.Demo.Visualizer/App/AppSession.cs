@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Owns the allocator visualizer model and the commands the menus can issue.</summary>
 [App]

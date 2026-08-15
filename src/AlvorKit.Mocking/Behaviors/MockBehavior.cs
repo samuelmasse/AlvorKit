@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Defines fallback behavior for a newly-created full mock.</summary>
 public enum MockBehavior

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Parsed callback function-pointer signature.</summary>
 /// <param name="ReturnType">Native return type text.</param>

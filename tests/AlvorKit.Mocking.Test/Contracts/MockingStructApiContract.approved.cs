@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test.Contracts.Structs;
+namespace AlvorKit;
 
 // These methods compile the public struct interception surface without executing
 // setup.

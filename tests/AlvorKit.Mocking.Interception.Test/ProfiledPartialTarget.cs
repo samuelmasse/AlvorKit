@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Sealed target for the concrete configured-and-original partial scenario.</summary>
 public sealed class ProfiledPartialTarget(Exception? failure = null)

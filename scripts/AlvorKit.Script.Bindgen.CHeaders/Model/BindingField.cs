@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Describes one managed field emitted for a native struct or union field.</summary>
 /// <param name="ManagedName">Managed C# field name.</param>

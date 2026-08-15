@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview;
+namespace AlvorKit;
 
 /// <summary>Process invocation planned by the bindgen review coordinator.</summary>
 /// <param name="FileName">Executable file name or absolute path.</param>

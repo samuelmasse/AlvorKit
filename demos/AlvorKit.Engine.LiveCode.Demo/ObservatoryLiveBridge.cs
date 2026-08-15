@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Demonstrates a game-owned structured bridge beside the built-in AlvorSense and arbitrary-C# paths.</summary>
 internal sealed class ObservatoryLiveBridge(UniverseColonies universe) : ILiveCodeBridge

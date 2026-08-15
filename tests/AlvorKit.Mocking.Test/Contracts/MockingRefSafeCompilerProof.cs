@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test.Contracts.RefSafe;
+namespace AlvorKit;
 
 /// <summary>
 /// Retains the executable callback-normalization proof independently of the

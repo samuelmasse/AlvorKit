@@ -1,4 +1,4 @@
-namespace AlvorStarter.App.Frontend;
+namespace AlvorStarter;
 
 /// <summary>Draws a raw OpenGL color triangle through the root GL layer.</summary>
 [App]

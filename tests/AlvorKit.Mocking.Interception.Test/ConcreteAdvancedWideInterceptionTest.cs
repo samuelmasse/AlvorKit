@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Exercises the wide concrete operation through a real profiled caller.</summary>
 [TestClass]

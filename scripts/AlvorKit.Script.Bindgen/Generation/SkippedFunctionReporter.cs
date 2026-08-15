@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Writes a stable console summary for functions skipped during model construction.</summary>
 internal static class SkippedFunctionReporter

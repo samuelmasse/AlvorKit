@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>UI metadata components contributed by the Blend style package.</summary>
 [Components(SkipBuilder = true)]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview;
+namespace AlvorKit;
 
 /// <summary>Parses command-line arguments for the bindgen review helper.</summary>
 internal static partial class BindgenReviewCommandParser

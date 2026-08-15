@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Dynamic;
+namespace AlvorKit;
 
 /// <summary>Selects the optional runtime-emitted proxy and callback backend.</summary>
 public static class MockDynamic

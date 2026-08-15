@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Owns a parsed GLB 2.0 document and exposes small helpers for the demo loader.</summary>
 internal sealed class GlbDocument : IDisposable

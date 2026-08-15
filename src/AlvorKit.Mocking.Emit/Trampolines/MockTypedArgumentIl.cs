@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Emits shared declared-argument normalization into the heap-safe control-plane carrier.

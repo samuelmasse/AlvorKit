@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception;
+namespace AlvorKit;
 
 /// <summary>
 /// Identifies one code-first operation route and guards its capture/use state.

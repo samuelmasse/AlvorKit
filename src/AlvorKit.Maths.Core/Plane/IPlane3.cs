@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to all 3D plane types, including <c>Plane3</c> and <c>Plane3d</c>.</summary>
 /// <typeparam name="TSelf">The concrete plane type.</typeparam>

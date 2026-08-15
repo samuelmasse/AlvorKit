@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Defines the exact encoded opcode values used by operation recognition.</summary>
 internal static class LoadedOperationOpCodes

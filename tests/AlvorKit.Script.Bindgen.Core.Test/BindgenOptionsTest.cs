@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.Core.Test;
+namespace AlvorKit;
 
 /// <summary>Covers bindgen command-line option parsing.</summary>
 [TestClass]

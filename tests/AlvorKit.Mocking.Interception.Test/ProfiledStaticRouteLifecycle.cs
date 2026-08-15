@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates the four receiver-free static callers in the session behavior row.</summary>
 internal sealed class ProfiledStaticRouteLifecycle :

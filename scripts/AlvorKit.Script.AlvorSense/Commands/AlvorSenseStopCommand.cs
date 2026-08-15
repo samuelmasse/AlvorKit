@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Stops a running AlvorSense session and its hosted game process.</summary>
 /// <param name="Id">Session id selected by the start command.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>App-scoped Blend form-control builders wired to the shared dropdown popup.</summary>
 [App]

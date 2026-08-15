@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Base class for a game state owned by the current root loop.</summary>
 public class State

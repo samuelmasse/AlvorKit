@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Mouse button input data reported by a host window.</summary>
 /// <param name="Button">The AlvorKit mouse button identifier.</param>

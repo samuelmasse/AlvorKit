@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Validates that generated structs can use natural CLR layout for the target ABI.</summary>
 internal static class CHeaderLayoutValidator

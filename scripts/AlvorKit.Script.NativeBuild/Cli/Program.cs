@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Entry point for the native package build runner.</summary>
 [ExcludeFromCodeCoverage]

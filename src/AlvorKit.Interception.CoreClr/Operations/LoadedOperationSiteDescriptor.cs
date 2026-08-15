@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Describes one exact supported operation in an immutable loaded baseline.</summary>
 public sealed class LoadedOperationSiteDescriptor

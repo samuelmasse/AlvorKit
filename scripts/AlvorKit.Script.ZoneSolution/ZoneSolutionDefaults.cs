@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.ZoneSolution;
+namespace AlvorKit;
 
 /// <summary>Finds default paths for AlvorZone solution generation.</summary>
 internal static class ZoneSolutionDefaults

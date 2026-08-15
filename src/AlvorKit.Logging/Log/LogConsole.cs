@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging;
+namespace AlvorKit;
 
 /// <summary>Writes published log segments to a text destination.</summary>
 /// <param name="logStream">The ordered segment source.</param>

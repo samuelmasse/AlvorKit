@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Finds comma separators in generated maths text representations.</summary>
 internal static class MathsTextSeparatorHelper

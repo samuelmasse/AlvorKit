@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one generated scalar interval type.</summary>
 internal sealed record IntervalSpec(ScalarSpec Scalar)

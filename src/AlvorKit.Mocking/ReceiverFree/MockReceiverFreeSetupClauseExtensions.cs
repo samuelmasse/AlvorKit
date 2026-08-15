@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Configures heap-safe values on receiver-free field clauses.</summary>
 public static class MockReceiverFreeSetupClauseExtensions

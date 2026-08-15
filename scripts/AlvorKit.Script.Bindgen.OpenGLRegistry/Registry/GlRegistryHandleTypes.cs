@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Maps OpenGL registry object classes to generated strongly typed handle structs.</summary>
 internal static class GlRegistryHandleTypes

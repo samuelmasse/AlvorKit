@@ -1,4 +1,4 @@
-namespace AlvorKit.UI;
+namespace AlvorKit;
 
 [DebuggerDisplay("{DebugDisplay,nq}")]
 [DebuggerTypeProxy(typeof(UiCallback<>.DebugView))]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Applies manifest-owned text patches to extracted native source archives.</summary>
 internal static class SourcePatcher

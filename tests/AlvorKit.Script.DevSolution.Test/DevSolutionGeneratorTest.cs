@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.DevSolution.Test;
+namespace AlvorKit;
 
 /// <summary>Tests generated development solution structure.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Describes the fields and values used to construct one final archetypal shape.</summary>
 public interface IEntArchInit<A>

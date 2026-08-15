@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests exact ordered semantics of direct float-vector distance kernels.</summary>
 [TestClass]

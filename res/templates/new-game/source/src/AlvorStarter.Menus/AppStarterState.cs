@@ -1,4 +1,4 @@
-namespace AlvorStarter.Menus;
+namespace AlvorStarter;
 
 /// <summary>Runs the starter scene, including raw GL, sprite batch drawing, and UI.</summary>
 [App]

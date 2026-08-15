@@ -18,12 +18,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Maths" />
-        <Using Include="AlvorKit.OpenGL" />
-        <Using Include="AlvorKit.OpenGL.Layer" />
-        <Using Include="AlvorKit.Windowing" />
-        <Using Include="AlvorKit.GLFW" />
-        <Using Include="AlvorKit.Script.AlvorSense.Demo" />
         <Using Include="System.Text.Json" />
     </ItemGroup>
 

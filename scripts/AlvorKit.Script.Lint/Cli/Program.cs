@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Entry point for the repository lint coordinator.</summary>
 [ExcludeFromCodeCoverage]

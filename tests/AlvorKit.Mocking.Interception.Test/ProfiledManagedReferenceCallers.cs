@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns the mutable managed-reference selected caller.</summary>
 internal static class ProfiledMutableReferenceCaller

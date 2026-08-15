@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies raw instruction operands and immutable baseline coordinates.</summary>
 [TestClass]

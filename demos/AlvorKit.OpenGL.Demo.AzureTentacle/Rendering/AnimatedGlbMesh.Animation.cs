@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Contains the animation data shapes used by <see cref="AnimatedGlbMesh"/>.</summary>
 internal sealed partial class AnimatedGlbMesh

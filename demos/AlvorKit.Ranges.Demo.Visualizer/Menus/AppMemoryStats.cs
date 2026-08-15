@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Computes aggregate readouts over the current allocator snapshot.</summary>
 [App]

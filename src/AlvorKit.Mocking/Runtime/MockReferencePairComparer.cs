@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Compares object pairs by identity while traversing capture values.</summary>
 internal sealed class MockReferencePairComparer :

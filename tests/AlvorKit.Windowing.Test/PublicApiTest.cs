@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing.Test;
+namespace AlvorKit;
 
 [TestClass]
 public class PublicApiTest
@@ -31,7 +31,7 @@ public class PublicApiTest
         var ns = type.Namespace ?? string.Empty;
         Assert.IsFalse(ns.StartsWith("OpenTK", StringComparison.Ordinal), $"{owner} exposes {type.FullName}.");
         if (!allowGlfwTypes)
-            Assert.IsFalse(ns.StartsWith("AlvorKit.GLFW", StringComparison.Ordinal), $"{owner} exposes {type.FullName}.");
+            Assert.AreNotEqual("AlvorKit.GLFW", type.Assembly.GetName().Name, $"{owner} exposes {type.FullName}.");
 
         Assert.IsFalse((type.FullName ?? string.Empty).Contains("Wigdow", StringComparison.Ordinal), owner);
     }

@@ -9,11 +9,4 @@
         <ProjectReference Include="..\..\src\AlvorKit.Mocking\AlvorKit.Mocking.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Mocking.Dynamic\AlvorKit.Mocking.Dynamic.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.Mocking" />
-        <Using Include="AlvorKit.Mocking.Dynamic" />
-        <Using Include="AlvorKit.Mocking.Demo" />
-    </ItemGroup>
-
 </Project>

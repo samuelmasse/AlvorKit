@@ -11,8 +11,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Hashing" />
-        <Using Include="AlvorKit.Hashing.Demo.Bench" />
         <Using Include="BenchmarkDotNet.Attributes" />
         <Using Include="BenchmarkDotNet.Order" />
         <Using Include="BenchmarkDotNet.Running" />

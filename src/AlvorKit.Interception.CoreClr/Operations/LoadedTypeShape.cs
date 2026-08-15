@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Classifies a resolved declaring or constrained type for stack-shape recognition.</summary>
 public enum LoadedTypeShape

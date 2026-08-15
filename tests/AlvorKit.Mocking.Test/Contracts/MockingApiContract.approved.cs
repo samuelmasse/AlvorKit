@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test.Contracts;
+namespace AlvorKit;
 
 // This compiling source-shape fixture is the ordinary public API contract.
 // Ref-safe and receiver-free shapes live in dedicated contract fixtures.

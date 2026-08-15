@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection.Test;
+namespace AlvorKit;
 
 public record class ServiceA;
 public record class ServiceB(ServiceA ServiceA);

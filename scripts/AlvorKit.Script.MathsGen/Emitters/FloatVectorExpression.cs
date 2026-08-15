@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds expressions over the private packed System.Numerics view of float vectors.</summary>
 internal static class FloatVectorExpression

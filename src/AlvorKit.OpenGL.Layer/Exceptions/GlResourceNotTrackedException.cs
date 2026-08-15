@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer;
+namespace AlvorKit;
 
 /// <summary>
 /// Exception thrown when a delete or size-tracking call references an object the layer does not own.

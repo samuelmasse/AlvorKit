@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one generated matrix type.</summary>
 internal sealed record MatrixSpec(int Columns, int Rows, ScalarSpec Scalar)

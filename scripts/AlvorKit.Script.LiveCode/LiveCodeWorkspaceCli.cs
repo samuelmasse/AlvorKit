@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Creates and audits persistent local records around one exact running LiveCode process.</summary>
 internal sealed class LiveCodeWorkspaceCli(

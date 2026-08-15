@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.CHeaders.Test;
+namespace AlvorKit;
 
 [TestClass]
 public sealed class BindingCodeEmitterTest
@@ -81,7 +81,7 @@ public sealed class BindingCodeEmitterTest
 
         var backendProject = File.ReadAllText(Path.Combine(workspace.Root, config.BackendProject, "Fixture.Backend.csproj"));
         StringAssert.Contains(backendProject, "<Version>2.0.0</Version>");
-        StringAssert.Contains(backendProject, "<PackageReference Include=\"AlvorKit.Bindgen.Fixture.Native\" Version=\"1.0.0\" />");
+        StringAssert.Contains(backendProject, "<PackageReference Include=\"Fixture.Native\" Version=\"1.0.0\" />");
         Assert.IsFalse(backendProject.Contains("AlvorKitSkipNativePackageReference", StringComparison.Ordinal));
     }
 

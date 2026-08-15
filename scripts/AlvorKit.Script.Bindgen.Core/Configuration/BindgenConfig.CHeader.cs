@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>C-header-specific configuration for one native library binding.</summary>
 public sealed partial class BindgenConfig

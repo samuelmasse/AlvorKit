@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Aggregate render modes for allocator backing-store strips.</summary>
 public enum AppMemoryOverlayMode

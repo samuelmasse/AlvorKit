@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.TestCube;
+namespace AlvorKit;
 
 /// <summary>Owns the OpenGL layer resources that render a rotating, procedurally textured cube.</summary>
 public sealed class TestCube : IDisposable

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Exposes one closed generic target echo wrapper as an exact handler.</summary>
 public sealed class ProfiledClosedGenericEchoHandler<T>(

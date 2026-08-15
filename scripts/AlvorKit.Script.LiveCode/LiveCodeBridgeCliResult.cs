@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Exact structured bridge result written by the CLI and optional live workspace recorder.</summary>
 internal sealed record LiveCodeBridgeCliResult(

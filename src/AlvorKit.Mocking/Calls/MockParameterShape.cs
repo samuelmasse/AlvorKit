@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Describes one executable parameter without retaining any invocation value.

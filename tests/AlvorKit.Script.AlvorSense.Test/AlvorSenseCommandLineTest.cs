@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense.Test;
+namespace AlvorKit;
 
 /// <summary>Tests command parsing for the persistent AlvorSense session script.</summary>
 [TestClass]

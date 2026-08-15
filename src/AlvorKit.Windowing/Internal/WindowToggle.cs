@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Tracks fullscreen and vsync toggle state.</summary>
 internal sealed class WindowToggle(IWindowHost window)

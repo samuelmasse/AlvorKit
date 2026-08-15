@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Appends bounded values using only known framework formatting paths.</summary>
 internal static class MockDiagnosticValueFormatter

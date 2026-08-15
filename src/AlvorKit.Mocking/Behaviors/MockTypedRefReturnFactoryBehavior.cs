@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Retains one stable exact ref-result delegate, never the referenced value.</summary>
 internal sealed class MockTypedRefReturnFactoryBehavior(

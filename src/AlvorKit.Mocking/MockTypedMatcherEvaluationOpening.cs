@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Opens typed matcher evaluations from immutable setup generations.</summary>
 internal static class MockTypedMatcherEvaluationOpening

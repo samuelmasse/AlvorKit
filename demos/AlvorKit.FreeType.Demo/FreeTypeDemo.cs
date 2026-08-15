@@ -1,4 +1,4 @@
-namespace AlvorKit.FreeType.Demo;
+namespace AlvorKit;
 
 /// <summary>Owns the FreeType binding tour state, native handles, and generated PNG output path.</summary>
 internal sealed unsafe partial class FreeTypeDemo(Ft ft, string fontPath, string outputRoot) : IDisposable

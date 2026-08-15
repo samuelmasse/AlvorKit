@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Builds the modal scenario picker with a two-column grid of selectable scenario options.</summary>
 [App]

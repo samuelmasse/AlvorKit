@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.HelloTriangle;
+namespace AlvorKit;
 
 /// <summary>The classic coloured triangle, driven directly through the raw <see cref="Gl"/> surface.</summary>
 public sealed class HelloTriangle : IDisposable

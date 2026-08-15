@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>Builds the noise viewport: stats header strip and the pannable, zoomable preview with a value probe.</summary>
 [App]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Sealed target for concurrent receiver-isolation behavior.</summary>
 public sealed class ProfiledInstanceIsolationTarget

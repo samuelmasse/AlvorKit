@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Builds <see cref="ControlList"/> constructor arguments from root control names.</summary>
 [Root]

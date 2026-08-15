@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Executes one heap-safe configured behavior claim.</summary>
 internal static class MockBehaviorClaimExecution

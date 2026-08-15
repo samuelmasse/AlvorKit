@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits vector interfaces whose signatures depend on generated concrete vector types.</summary>
 internal static class VectorInterfaceFileEmitter

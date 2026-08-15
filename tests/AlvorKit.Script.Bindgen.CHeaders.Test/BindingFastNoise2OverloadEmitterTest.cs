@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.CHeaders.Test;
+namespace AlvorKit;
 
 /// <summary>Covers generated FastNoise2 span overloads.</summary>
 [TestClass]

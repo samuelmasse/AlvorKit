@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Test;
+namespace AlvorKit;
 
 /// <summary>Creates shared Graphics2D test fixtures.</summary>
 internal static class Graphics2DTestHarness

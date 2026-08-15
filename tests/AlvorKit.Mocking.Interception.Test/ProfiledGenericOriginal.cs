@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Preserves untouched generic operations for wrapper fallbacks.</summary>
 internal static class ProfiledGenericOriginal

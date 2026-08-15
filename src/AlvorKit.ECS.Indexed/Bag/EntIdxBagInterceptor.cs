@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Indexed;
+namespace AlvorKit;
 
 internal sealed class EntIdxBagInterceptor<N>(EntIdxBagMut<N> bag) where N : IComponent
 {

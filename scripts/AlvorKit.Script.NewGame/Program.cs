@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NewGame;
+namespace AlvorKit;
 
 /// <summary>Entry point for creating a sibling AlvorKit game repository.</summary>
 [ExcludeFromCodeCoverage]

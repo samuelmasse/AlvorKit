@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Parsed command-line request with values normalized for execution.</summary>
 /// <param name="Command">Command selected by the user.</param>

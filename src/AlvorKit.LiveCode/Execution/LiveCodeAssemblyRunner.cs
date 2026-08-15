@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Loads and invokes compiled commands against exact active graph scopes.</summary>
 internal sealed class LiveCodeAssemblyRunner(InjectorScopeGraph graph)

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests regular System single-precision vector minimum, maximum, and clamp operations.</summary>
 [TestClass]

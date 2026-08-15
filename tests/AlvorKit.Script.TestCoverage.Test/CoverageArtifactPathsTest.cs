@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for coverage artifact display paths.</summary>
 [TestClass]

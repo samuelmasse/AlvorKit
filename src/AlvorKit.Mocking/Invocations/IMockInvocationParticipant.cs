@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Exposes one session participant's invocation ledger.</summary>
 internal interface IMockInvocationParticipant

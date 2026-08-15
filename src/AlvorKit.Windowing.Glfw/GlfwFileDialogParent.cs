@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Maps a GLFW window to the native parent-window representation accepted by NFDe.</summary>
 [ExcludeFromCodeCoverage(Justification = "Dispatches runtime OS-specific GLFW native accessors.")]

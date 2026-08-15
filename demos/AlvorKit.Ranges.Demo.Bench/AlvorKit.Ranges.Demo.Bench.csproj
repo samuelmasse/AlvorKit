@@ -11,8 +11,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Ranges" />
-        <Using Include="AlvorKit.Ranges.Demo.Bench" />
         <Using Include="System.CommandLine" />
         <Using Include="System.CommandLine.Parsing" />
         <Using Include="System.Runtime" />

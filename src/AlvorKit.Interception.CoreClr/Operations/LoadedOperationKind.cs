@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies an exact loaded IL operation supported by caller planning.</summary>
 public enum LoadedOperationKind

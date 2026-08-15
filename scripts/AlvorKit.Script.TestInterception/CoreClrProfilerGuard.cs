@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Evaluates the supported private-child CoreCLR profiler launch contract.</summary>
 internal static class CoreClrProfilerGuard

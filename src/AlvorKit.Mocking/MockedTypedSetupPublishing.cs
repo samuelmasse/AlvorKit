@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Publishes typed value and managed-reference return factories.</summary>
 internal static class MockedTypedSetupPublishing

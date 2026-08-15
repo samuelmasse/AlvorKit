@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestTiming;
+namespace AlvorKit;
 
 /// <summary>Writes human-readable and machine-readable unit test timing reports.</summary>
 internal sealed class TestTimingReportWriter

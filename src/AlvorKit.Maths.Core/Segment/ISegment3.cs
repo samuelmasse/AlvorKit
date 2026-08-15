@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 3D line segment types, including <c>Segment3</c> and <c>Segment3d</c>.</summary>
 /// <typeparam name="TSelf">The concrete segment type.</typeparam>

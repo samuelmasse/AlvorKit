@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Defines fixed measurement batches and the optional JSON artifact path.</summary>
 internal sealed record MockPerformanceOptions(

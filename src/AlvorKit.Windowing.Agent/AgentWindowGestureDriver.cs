@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Runs deterministic mouse gestures through the existing agent event driver.</summary>
 internal static class AgentWindowGestureDriver

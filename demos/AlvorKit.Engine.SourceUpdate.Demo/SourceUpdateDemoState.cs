@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate.Demo;
+namespace AlvorKit;
 
 /// <summary>Runs two pre-existing service instances through the normal engine loop.</summary>
 [Root]

@@ -1,6 +1,4 @@
-using AlvorKit.Interception.Profiler;
-
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 public partial class InterceptionProfiler
 {

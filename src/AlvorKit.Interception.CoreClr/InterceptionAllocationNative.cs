@@ -1,13 +1,11 @@
-using AlvorKit.Interception.Profiler;
-
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Adapts the generated profiler ABI to completed managed allocation captures.</summary>
 /// <param name="api">Generated ABI surface connected to the already-loaded profiler.</param>
 internal unsafe class InterceptionAllocationNative(InterceptionProfilerApi api)
 {
     /// <summary>Starts one native capture with preallocated sample and frame storage.</summary>
-    internal void Begin(CoreClr.Advanced.InterceptionAllocationCaptureOptions options)
+    internal void Begin(InterceptionAllocationCaptureOptions options)
     {
         InterceptionProfilerAllocationCapture request = new()
         {
@@ -21,11 +19,11 @@ internal unsafe class InterceptionAllocationNative(InterceptionProfilerApi api)
     }
 
     /// <summary>Ends the active native capture and resolves every retained raw frame.</summary>
-    internal CoreClr.Advanced.InterceptionAllocationCaptureResult End()
+    internal InterceptionAllocationCaptureResult End()
     {
         Marshal.ThrowExceptionForHR(api.EndAllocationCapture(out var summary));
 
-        var samples = new CoreClr.Advanced.InterceptionAllocationSample[(int)summary.SampledObjectAllocations];
+        var samples = new InterceptionAllocationSample[(int)summary.SampledObjectAllocations];
         var frameCapacity = (int)summary.MaximumFramesPerSample;
         InterceptionProfilerAllocationFrame* nativeFrames =
             stackalloc InterceptionProfilerAllocationFrame[frameCapacity];
@@ -36,7 +34,7 @@ internal unsafe class InterceptionAllocationNative(InterceptionProfilerApi api)
             Marshal.ThrowExceptionForHR(
                 api.GetAllocationSample((uint)sampleIndex, out var sample, nativeFrames, (uint)frameCapacity));
 
-            var resolvedFrames = new CoreClr.Advanced.InterceptionAllocationStackFrame[sample.FrameCount];
+            var resolvedFrames = new InterceptionAllocationStackFrame[sample.FrameCount];
             var resolvedCount = 0;
             for (var frameIndex = 0; frameIndex < sample.FrameCount; ++frameIndex)
             {

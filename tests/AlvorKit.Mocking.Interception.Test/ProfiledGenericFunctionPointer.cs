@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Prepares concrete exact route methods used by generic caller constructions.</summary>
 internal static class ProfiledGenericFunctionPointer

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Creates side-effect-free command specs and scripts for native builds.</summary>
 internal static class NativeBuildPlanner

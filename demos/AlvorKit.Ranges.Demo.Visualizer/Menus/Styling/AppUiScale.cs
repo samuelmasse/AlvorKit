@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Adapts visualizer UI scale commands to the engine UI scale roots.</summary>
 [App]

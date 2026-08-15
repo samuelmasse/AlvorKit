@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds equal-size fixed-width expressions for complete-register double vectors.</summary>
 internal static class DoubleVectorExpression

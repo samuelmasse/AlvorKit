@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests single-precision vector negation and scalar-left multiplication.</summary>
 [TestClass]

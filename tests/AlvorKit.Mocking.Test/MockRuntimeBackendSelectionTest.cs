@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 /// <summary>Freezes independent proxy and operation capability selection.</summary>
 [TestClass]

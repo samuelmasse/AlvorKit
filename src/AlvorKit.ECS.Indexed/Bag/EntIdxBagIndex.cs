@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Indexed;
+namespace AlvorKit;
 
 internal abstract class EntIdxBagIndex<N> : IComponent
 {

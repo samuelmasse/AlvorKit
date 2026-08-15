@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Owns the vertical offset of one reusable Blend scroll view.</summary>
 public sealed class BlendScrollHandle

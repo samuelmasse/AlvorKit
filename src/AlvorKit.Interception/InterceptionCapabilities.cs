@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Versioned limits and features of the connected profiler.</summary>
 public readonly record struct InterceptionCapabilities(

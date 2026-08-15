@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Coordinates root state, scripts, metrics, rendering, and cleanup for a running game.</summary>
 [Root]

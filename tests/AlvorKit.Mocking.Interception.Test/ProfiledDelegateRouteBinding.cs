@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns immutable exact delegates until every acquired route call drains.</summary>
 internal sealed class ProfiledDelegateRouteBinding<TDelegate>(

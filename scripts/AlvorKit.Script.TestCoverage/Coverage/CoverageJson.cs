@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Shared JSON formatting for generated coverage reports.</summary>
 internal static class CoverageJson

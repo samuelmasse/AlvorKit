@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates the exact caller for the 48-parameter concrete row.</summary>
 internal sealed class ProfiledWideRouteLifecycle :

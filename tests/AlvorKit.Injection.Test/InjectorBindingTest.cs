@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection.Test;
+namespace AlvorKit;
 
 [TestClass]
 public class InjectorBindingTest

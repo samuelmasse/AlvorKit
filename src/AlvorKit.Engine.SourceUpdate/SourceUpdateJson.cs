@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Shared stable JSON conventions for Source Update launch and bridge contracts.</summary>
 internal static class SourceUpdateJson

@@ -1,4 +1,4 @@
-namespace AlvorStarter.App;
+namespace AlvorStarter;
 
 /// <summary>Marks services owned by the application lifetime.</summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, Inherited = false)]

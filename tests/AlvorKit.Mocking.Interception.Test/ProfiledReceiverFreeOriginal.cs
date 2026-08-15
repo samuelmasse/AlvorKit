@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Preserves every original receiver-free opcode behind exact delegates.</summary>
 internal static class ProfiledReceiverFreeOriginal

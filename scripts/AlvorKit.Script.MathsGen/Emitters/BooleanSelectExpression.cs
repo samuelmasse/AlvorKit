@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds measured complete-register Boolean selection expressions.</summary>
 internal static class BooleanSelectExpression

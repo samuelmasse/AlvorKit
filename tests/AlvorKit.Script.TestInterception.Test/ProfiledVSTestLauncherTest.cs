@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Accepts repeated profiled VSTest launches and a following plain launch.</summary>
 [TestClass]
@@ -9,7 +9,7 @@ public class ProfiledVSTestLauncherTest
 {
     /// <summary>The exact child evidence test selected by every acceptance leg.</summary>
     private const string ChildEvidenceFilter =
-        "FullyQualifiedName=AlvorKit.Script.TestInterception." +
+        "FullyQualifiedName=AlvorKit." +
         "ProfiledVSTestLauncherTest.ChildEvidence_ReportsCurrentProfilerActivation";
 
     /// <summary>The VSTest parameter that declares the activation expected by the parent.</summary>

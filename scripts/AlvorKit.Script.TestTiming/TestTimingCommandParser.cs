@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestTiming;
+namespace AlvorKit;
 
 /// <summary>Parses command-line options for the unit test timing guard.</summary>
 internal sealed class TestTimingCommandParser

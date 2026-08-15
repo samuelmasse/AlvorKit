@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Generates Windows PowerShell build fragments for MSVC-based builds.</summary>
 internal static class WindowsBuildScripts

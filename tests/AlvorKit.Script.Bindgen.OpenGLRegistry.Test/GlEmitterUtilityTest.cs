@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for shared OpenGL registry source-emission helpers.</summary>
 [TestClass]
@@ -73,7 +73,7 @@ public sealed class GlEmitterUtilityTest
         StringAssert.Contains(emitter.Emit(noDocs), "contains no third-party content");
         var notice = emitter.Emit(withDocs);
 
-        StringAssert.Contains(notice, "AlvorKit.Bindgen.OpenGLFixture");
+        StringAssert.Contains(notice, "AlvorKit");
         StringAssert.Contains(notice, "1 of");
         StringAssert.Contains(notice, "documentation");
     }

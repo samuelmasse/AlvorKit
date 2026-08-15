@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace;
+namespace AlvorKit;
 
 /// <summary>One persistent live-process effect and the evidence required to clean it up.</summary>
 /// <param name="Id">Stable identifier unique within the workspace.</param>

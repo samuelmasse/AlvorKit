@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Coordinates host window events into AlvorKit update, frame, and render callbacks.</summary>
 public sealed class WindowLoop

@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Window movement data reported by a host window.</summary>
 /// <param name="Position">The current window position in screen coordinates.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Explains why invocation history has no retained argument value.</summary>
 internal enum MockUnavailableReason

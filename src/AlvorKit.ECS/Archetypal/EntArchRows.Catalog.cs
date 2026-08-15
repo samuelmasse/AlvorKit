@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 // Cold alloc and row-set catalog work shares the same closed generic state as the access and mutation paths.
 internal static partial class EntArchRows<A>

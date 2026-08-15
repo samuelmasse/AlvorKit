@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Retains one exact zero-argument delegate, never its produced value.</summary>
 internal sealed class MockTypedReturnFactoryBehavior : MockConfiguredBehavior

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Defines one collectible exact wrapper around a preserved original delegate.</summary>
 internal static class MockInterceptionWrapperEmitter

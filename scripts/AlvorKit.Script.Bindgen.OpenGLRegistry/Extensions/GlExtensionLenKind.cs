@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Recognized shapes of OpenGL registry len attributes.</summary>
 internal enum GlExtensionLenKind

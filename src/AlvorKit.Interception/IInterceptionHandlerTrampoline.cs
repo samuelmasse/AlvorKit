@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Exact managed handler entry with in-flight acquisition and retirement semantics.</summary>
 public interface IInterceptionHandlerTrampoline : IDisposable

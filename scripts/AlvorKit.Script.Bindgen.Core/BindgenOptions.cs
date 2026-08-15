@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Command-line options accepted by the bindgen executable.</summary>
 /// <param name="Selection">Requested native library name, or <c>all</c> to generate every configured binding.</param>

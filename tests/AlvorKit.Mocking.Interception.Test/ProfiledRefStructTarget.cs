@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Represents one borrowed value window used by profiled concrete calls.</summary>
 public readonly ref struct ProfiledWindow(ReadOnlySpan<int> values)

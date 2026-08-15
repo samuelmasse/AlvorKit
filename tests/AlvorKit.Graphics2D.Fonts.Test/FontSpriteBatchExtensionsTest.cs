@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts.Test;
+namespace AlvorKit;
 
 /// <summary>Tests text measurement and sprite-batch text writing helpers.</summary>
 [TestClass]

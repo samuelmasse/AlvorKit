@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Decodes and validates one small or fat exception-handling clause.</summary>
 internal static class LoadedExceptionClauseDecoder

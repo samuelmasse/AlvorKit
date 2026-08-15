@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Publishes one immutable struct setup into a caller-owned target.</summary>
 internal sealed class MockStructSetupPublisher

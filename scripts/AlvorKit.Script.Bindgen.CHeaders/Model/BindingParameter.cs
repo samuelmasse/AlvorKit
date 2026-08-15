@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Describes a function parameter after C has been reduced to managed and interop types.</summary>
 /// <param name="ManagedName">Managed C# parameter name.</param>

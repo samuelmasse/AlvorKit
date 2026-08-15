@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Coordinates parsed command-line requests with repository metadata and build services.</summary>
 [ExcludeFromCodeCoverage]

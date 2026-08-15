@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Describes a keyboard, mouse wheel, and modifier combination for a control.</summary>
 public sealed record class KeyBinding

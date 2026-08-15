@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Stores the current canvas size used to normalize sprite coordinates.</summary>
 internal class SpriteBatchCanvas

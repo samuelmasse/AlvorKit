@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Writes per-test timing budget results into the coverage Markdown report.</summary>
 internal static class MarkdownTestTimingSectionWriter

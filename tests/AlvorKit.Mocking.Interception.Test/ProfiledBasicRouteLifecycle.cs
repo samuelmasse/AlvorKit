@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates the six exact callers in the concrete basic behavior row.</summary>
 internal sealed class ProfiledBasicRouteLifecycle :

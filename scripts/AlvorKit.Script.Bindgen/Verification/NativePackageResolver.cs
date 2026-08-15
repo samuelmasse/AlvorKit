@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Resolved native package location for export verification.</summary>
 /// <param name="PackageId">Native package identifier expected by the backend project.</param>

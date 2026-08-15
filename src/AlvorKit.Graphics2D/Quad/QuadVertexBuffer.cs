@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Owns the dynamic vertex buffer used by the sprite batch.</summary>
 /// <typeparam name="T">The unmanaged vertex type stored in the buffer.</typeparam>

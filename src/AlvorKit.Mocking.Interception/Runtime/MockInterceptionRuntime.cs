@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Binds one prepared operation to the exact Mocking control-plane wrapper.

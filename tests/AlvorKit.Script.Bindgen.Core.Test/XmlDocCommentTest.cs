@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.Core.Test;
+namespace AlvorKit;
 
 /// <summary>Covers native comment normalization for generated XML docs.</summary>
 [TestClass]

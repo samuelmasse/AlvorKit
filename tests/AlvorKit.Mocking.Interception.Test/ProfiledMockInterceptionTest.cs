@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Proves one public Mocking behavior through a real ReJITted owned caller.</summary>
 [TestClass]

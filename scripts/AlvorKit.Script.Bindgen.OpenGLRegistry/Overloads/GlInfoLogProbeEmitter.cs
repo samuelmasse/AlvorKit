@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits shared probe-and-grow bodies for OpenGL info-log helpers.</summary>
 internal static class GlInfoLogProbeEmitter

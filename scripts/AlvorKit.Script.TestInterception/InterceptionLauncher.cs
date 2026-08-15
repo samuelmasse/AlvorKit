@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Builds a private profiler-enabled environment for one selected child.</summary>
 internal class InterceptionLauncher

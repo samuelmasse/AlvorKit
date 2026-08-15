@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies which selected path executed an invocation.</summary>
 internal enum MockInvocationExecutionSource

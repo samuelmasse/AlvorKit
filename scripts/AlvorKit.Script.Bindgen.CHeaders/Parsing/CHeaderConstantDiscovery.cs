@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Discovers supported integer macro constants from the parsed translation unit.</summary>
 internal sealed class CHeaderConstantDiscovery(

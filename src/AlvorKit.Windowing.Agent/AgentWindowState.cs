@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Stores deterministic window state owned by an agent-mode GLFW host.</summary>
 internal sealed class AgentWindowState

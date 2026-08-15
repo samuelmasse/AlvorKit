@@ -1,4 +1,4 @@
-namespace AlvorKit.UI;
+namespace AlvorKit;
 
 /// <summary>
 /// Owns the default full-window UI surface and any opt-in independently scaled surfaces.

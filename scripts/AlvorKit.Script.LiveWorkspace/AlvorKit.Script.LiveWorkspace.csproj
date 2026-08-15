@@ -9,7 +9,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Script.Workspace" />
         <Using Include="System.Security.Cryptography" />
         <Using Include="System.Text.Json.Serialization" />
     </ItemGroup>

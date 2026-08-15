@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Returns one mutable alias through the internal exact dispatch ABI.</summary>
 /// <typeparam name="T">The referenced element type.</typeparam>

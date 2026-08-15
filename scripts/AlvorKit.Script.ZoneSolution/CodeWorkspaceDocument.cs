@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.ZoneSolution;
+namespace AlvorKit;
 
 /// <summary>Formats generated VS Code workspace JSON for the selected sibling repositories.</summary>
 internal static class CodeWorkspaceDocument

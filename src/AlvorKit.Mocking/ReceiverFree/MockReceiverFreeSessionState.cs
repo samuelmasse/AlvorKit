@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Owns receiver-free setup and history state for one mock session.</summary>
 internal sealed class MockReceiverFreeSessionState

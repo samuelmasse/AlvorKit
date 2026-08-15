@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Describes one complete immutable symbolic caller generation.</summary>
 public sealed class LoadedSymbolicMethodGeneration

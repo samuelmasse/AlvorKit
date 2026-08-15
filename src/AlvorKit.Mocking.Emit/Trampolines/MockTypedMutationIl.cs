@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Emits shared synchronous live-struct receiver mutation hooks.</summary>
 internal static class MockTypedMutationIl

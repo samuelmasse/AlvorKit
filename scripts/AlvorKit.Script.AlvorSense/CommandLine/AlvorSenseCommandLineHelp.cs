@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Recognizes and renders generated AlvorSense command-line help.</summary>
 internal static class AlvorSenseCommandLineHelp

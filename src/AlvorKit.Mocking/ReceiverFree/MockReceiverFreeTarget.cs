@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Provides a synthetic receiver for one session-owned interception site.</summary>
 internal sealed class MockReceiverFreeTarget(Mocked mocked)

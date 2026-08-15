@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Contains vertex accessor loading for <see cref="AnimatedGlbMesh"/>.</summary>
 internal sealed partial class AnimatedGlbMesh

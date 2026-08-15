@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.DevSolution;
+namespace AlvorKit;
 
 /// <summary>Entry point for the local development solution generator.</summary>
 [ExcludeFromCodeCoverage]

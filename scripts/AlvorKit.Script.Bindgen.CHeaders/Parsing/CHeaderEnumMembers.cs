@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Reads enum members and fixes comment placement from common C trailing-comment style.</summary>
 internal static class CHeaderEnumMembers

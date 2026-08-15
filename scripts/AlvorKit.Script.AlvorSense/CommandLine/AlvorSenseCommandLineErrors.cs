@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Converts System.CommandLine parse failures into compact CLI errors.</summary>
 internal static class AlvorSenseCommandLineErrors

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Shared environment variables written by AlvorSense target launches.</summary>
 internal static class AlvorSenseEnvironment

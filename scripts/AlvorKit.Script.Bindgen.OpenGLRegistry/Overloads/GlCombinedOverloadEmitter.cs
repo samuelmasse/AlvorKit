@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits combined overloads where every safe OpenGL parameter transform is applied at once.</summary>
 /// <param name="state">Shared extension-emission state.</param>

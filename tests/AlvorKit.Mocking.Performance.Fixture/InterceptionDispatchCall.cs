@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>
 /// Calls one ordinary concrete operation through an exact receiver-first frame.

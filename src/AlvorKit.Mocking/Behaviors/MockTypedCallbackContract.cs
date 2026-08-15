@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Validates and normalizes source callbacks to one stable exact delegate type.</summary>
 internal static class MockTypedCallbackContract

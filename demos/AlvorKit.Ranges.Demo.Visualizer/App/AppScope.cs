@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Dependency injection scope for the range allocator visualizer app lifetime.</summary>
 [App]

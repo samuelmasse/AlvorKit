@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Finds repository-relative paths used by the coverage tool.</summary>
 internal static class RepositoryPaths

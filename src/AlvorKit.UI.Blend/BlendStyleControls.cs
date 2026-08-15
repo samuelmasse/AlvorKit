@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Implements Blend button, chip, field, and keyboard-activation recipes.</summary>
 internal sealed class BlendStyleControls

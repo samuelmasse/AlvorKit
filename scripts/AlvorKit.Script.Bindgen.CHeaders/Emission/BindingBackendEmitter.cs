@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits the generated backend implementation.</summary>
 internal sealed class BindingBackendEmitter(BindingEmitterContext context)

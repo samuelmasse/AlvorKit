@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Formats hovered strip regions as tooltip text: a title line plus muted detail lines.</summary>
 [App]

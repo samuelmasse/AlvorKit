@@ -1,20 +1,20 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Exercises the production receiver-free wrapper seam through its internal descriptor boundary.</summary>
 internal static class ProfiledReceiverFreeRuntimeBinder
 {
     private static readonly Type DescriptorType =
         typeof(Mock).Assembly.GetType(
-            "AlvorKit.Mocking.MockInterceptionSiteDescriptor",
+            "AlvorKit.MockInterceptionSiteDescriptor",
             throwOnError: true)!;
     private static readonly Type OperationKindType =
         typeof(Mock).Assembly.GetType(
-            "AlvorKit.Mocking.MockInvocationOperationKind",
+            "AlvorKit.MockInvocationOperationKind",
             throwOnError: true)!;
     private static readonly MethodInfo BindDefinition =
         typeof(MockInterceptionPreparationCoordinator).Assembly
             .GetType(
-                "AlvorKit.Mocking.MockInterceptionRuntime",
+                "AlvorKit.MockInterceptionRuntime",
                 throwOnError: true)!
             .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
             .Single(method =>

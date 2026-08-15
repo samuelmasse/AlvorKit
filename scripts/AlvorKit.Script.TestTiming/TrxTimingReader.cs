@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestTiming;
+namespace AlvorKit;
 
 /// <summary>Reads per-test timing information from MSTest TRX files.</summary>
 internal sealed class TrxTimingReader

@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Stores the first field value in a final archetypal shape.</summary>
 public readonly struct EntArchInit<T, N, A>(T value) : IEntArchInit<A>

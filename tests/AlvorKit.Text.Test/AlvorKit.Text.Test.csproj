@@ -3,9 +3,4 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.Text\AlvorKit.Text.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.Text" />
-    </ItemGroup>
-
 </Project>

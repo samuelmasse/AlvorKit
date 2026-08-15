@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Applies Blender-inspired recipes to AlvorKit UI nodes, using the embedded Inter faces from <see cref="RootInter"/>.</summary>
 public class BlendStyle

@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Best-effort dark title bar switch for GLFW windows on Windows.</summary>
 [ExcludeFromCodeCoverage]

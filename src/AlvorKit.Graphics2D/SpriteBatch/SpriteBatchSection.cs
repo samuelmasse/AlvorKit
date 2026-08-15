@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Describes one drawable run that fits within the available texture slots.</summary>
 internal struct SpriteBatchSection

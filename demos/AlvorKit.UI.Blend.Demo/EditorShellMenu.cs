@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo;
+namespace AlvorKit;
 
 /// <summary>Builds the stripped Blender-like editor shell demo using layout primitives.</summary>
 [App]

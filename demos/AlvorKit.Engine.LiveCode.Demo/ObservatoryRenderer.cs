@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Renders colonies, their injector relationships, and the live execution endpoint.</summary>
 [Root]

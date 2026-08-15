@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Describes one validated declared-index projection registration.</summary>
 internal abstract class MockSnapshotProjector(

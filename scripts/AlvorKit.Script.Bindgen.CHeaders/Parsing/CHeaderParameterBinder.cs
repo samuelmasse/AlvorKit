@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Binds native function parameters into managed and interop parameter shapes.</summary>
 internal sealed class CHeaderParameterBinder(BindgenConfig config, CHeaderParseState state, CHeaderTypeMapper types)

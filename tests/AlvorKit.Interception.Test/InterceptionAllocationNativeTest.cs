@@ -1,6 +1,4 @@
-using AlvorKit.Interception.Profiler;
-
-namespace AlvorKit.Interception.Test;
+namespace AlvorKit;
 
 [TestClass]
 public unsafe class InterceptionAllocationNativeTest

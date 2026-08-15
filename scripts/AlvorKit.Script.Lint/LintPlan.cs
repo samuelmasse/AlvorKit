@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Builds the external tool command plan for repository linting.</summary>
 internal static class LintPlan

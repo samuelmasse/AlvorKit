@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Provides mutable caller-owned storage.</summary>
 public struct ExactMutableReceiver(int value)

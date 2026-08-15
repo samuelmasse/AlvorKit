@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Provides one span-only signature shared by configured typed measurements.</summary>
 public sealed class ConfiguredTypedDispatchTarget

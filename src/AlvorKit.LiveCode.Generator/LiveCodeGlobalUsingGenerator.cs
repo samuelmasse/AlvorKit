@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode.Generator;
+namespace AlvorKit;
 
 /// <summary>Publishes one executable project's resolved global usings as assembly metadata.</summary>
 [Generator]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Resolves operation operands in one loaded reflection method context.</summary>
 public sealed class ReflectionLoadedOperationMetadataResolver :

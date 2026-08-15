@@ -18,6 +18,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Using Include="AlvorKit" />
         <Using Include="System.Collections.Concurrent" />
         <Using Include="System.Diagnostics" />
         <Using Include="System.Diagnostics.CodeAnalysis" />

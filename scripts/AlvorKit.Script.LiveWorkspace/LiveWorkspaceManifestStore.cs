@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace;
+namespace AlvorKit;
 
 /// <summary>Persists versioned live-workspace manifests and their related JSON artifacts.</summary>
 internal sealed class LiveWorkspaceManifestStore

@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Optional loaded-body and immutable-generation interception capability.</summary>
 public interface IInterceptionGenerationBackend :

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to all four-component vector types, including <c>Vec4</c>, <c>Vec4i</c>, and <c>Vec4b</c>.</summary>
 /// <typeparam name="TSelf">The concrete four-component vector type.</typeparam>

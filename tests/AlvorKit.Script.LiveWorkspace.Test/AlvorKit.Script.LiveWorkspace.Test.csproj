@@ -5,7 +5,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Script.LiveWorkspace" />
         <Using Include="System.Security.Cryptography" />
     </ItemGroup>
 

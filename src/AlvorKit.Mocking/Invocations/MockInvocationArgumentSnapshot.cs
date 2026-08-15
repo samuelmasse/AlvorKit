@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Stores one heap-safe retained representation of an argument.</summary>
 internal sealed class MockInvocationArgumentSnapshot

@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer;
+namespace AlvorKit;
 
 internal sealed unsafe partial class GlResourceSet<THandle> where THandle : unmanaged
 {

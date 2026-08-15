@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Mouse wheel input data reported by a host window.</summary>
 /// <param name="Offset">The horizontal and vertical wheel offset.</param>

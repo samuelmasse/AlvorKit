@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Creates validated System.CommandLine arguments for agent window commands.</summary>
 internal static class AgentWindowCommandArguments

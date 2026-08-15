@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one generated quaternion type.</summary>
 internal sealed record QuaternionSpec(ScalarSpec Scalar)

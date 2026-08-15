@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Describes one instruction at its immutable loaded-baseline coordinate.</summary>
 public sealed class LoadedIlInstruction

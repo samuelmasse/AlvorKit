@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CallerProof.Test;
+namespace AlvorKit;
 
 [TestClass]
 public sealed class LateMetadataGenerationProfilerTest

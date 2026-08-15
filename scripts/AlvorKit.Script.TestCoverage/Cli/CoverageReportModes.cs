@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Tracks which coverage report artifacts should be generated.</summary>
 /// <param name="Html">Whether to generate browser-readable HTML output.</param>

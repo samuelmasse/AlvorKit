@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Creates stable values for explicit loose-mock fallback.</summary>
 internal static class MockDefaultValue

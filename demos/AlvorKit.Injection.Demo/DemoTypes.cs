@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection.Demo;
+namespace AlvorKit;
 
 /// <summary>
 /// Root application object used to show constructor injection of shared services.

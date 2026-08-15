@@ -7,10 +7,5 @@
     <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.ECS.Indexed.Test" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.ECS" />
-    </ItemGroup>
-
 </Project>
 

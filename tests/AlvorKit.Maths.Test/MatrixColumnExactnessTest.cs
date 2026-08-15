@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Locks exact component bits for matrix operations against their selected column or System backend.</summary>
 [TestClass]

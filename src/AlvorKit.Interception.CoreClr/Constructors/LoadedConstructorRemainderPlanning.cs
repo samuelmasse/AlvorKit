@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Returns either one pristine constructor split or deterministic rejections.</summary>
 public sealed class LoadedConstructorRemainderPlanning

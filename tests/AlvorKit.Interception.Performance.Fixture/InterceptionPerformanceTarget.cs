@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Provides the direct caller and exact routed replacement used by the profiler fixture.</summary>
 internal static class InterceptionPerformanceTarget

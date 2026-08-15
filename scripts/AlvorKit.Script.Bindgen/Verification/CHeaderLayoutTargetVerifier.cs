@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Validates that generated C header structs keep natural layout across supported targets.</summary>
 [ExcludeFromCodeCoverage]

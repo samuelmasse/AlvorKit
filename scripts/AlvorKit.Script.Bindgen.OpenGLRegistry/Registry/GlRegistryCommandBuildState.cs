@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Mutable command-build collections kept private to command construction.</summary>
 /// <param name="Commands">Commands accumulated during the build.</param>

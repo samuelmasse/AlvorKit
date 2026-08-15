@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Stores returned arrays for one exact capacity and drops inactive storage after Gen2 aging.</summary>
 internal sealed class EntArchArrayPoolBucket<T>

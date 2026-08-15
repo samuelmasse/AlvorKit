@@ -1,4 +1,4 @@
-namespace AlvorKit.UI;
+namespace AlvorKit;
 
 [Root]
 public class RootUiSize(RootSprites sprites, RootUiScale scale)

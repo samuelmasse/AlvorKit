@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Returns a read-only managed reference to caller-owned stable storage.</summary>
 /// <typeparam name="T">The referenced element type.</typeparam>

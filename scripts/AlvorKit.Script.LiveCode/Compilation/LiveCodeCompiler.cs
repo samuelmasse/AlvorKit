@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Compiles one source submission against references reported by its exact running target.</summary>
 internal sealed class LiveCodeCompiler

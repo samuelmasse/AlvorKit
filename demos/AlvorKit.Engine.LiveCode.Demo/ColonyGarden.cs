@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Mutable visual and behavioral state intentionally exposed to exact-scope LiveCode.</summary>
 [Colony]

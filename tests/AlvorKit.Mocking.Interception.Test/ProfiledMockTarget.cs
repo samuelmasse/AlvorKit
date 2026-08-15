@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Concrete sealed target whose ordinary nonvirtual operation is intercepted.</summary>
 public sealed class ProfiledMockTarget

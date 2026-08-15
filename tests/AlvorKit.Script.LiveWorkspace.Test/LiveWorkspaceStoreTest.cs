@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace.Test;
+namespace AlvorKit;
 
 /// <summary>Tests the filesystem contract shared by live-debug command-line tools.</summary>
 [TestClass]

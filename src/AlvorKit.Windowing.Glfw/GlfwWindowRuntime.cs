@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Owns direct GLFW operations for a wrapped window while <see cref="GlfwWindowHost"/> exposes the public contract.</summary>
 [ExcludeFromCodeCoverage]

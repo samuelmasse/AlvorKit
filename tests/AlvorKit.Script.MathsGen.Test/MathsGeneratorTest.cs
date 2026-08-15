@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Tests generated math source planning and focused source emission.</summary>
 [TestClass]

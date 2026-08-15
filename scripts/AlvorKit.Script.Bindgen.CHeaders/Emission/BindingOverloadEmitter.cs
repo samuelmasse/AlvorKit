@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits generated partial-class overloads for managed convenience shapes.</summary>
 internal sealed class BindingOverloadEmitter(BindingEmitterContext context)

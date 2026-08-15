@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>GLFW-backed implementation of the AlvorKit window host contract.</summary>
 [ExcludeFromCodeCoverage]

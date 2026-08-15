@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits OpenGL info-log and generated-name string helper overloads.</summary>
 /// <param name="state">Shared extension-emission state.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Gamepad button flags exposed by AlvorKit windowing.</summary>
 [Flags]

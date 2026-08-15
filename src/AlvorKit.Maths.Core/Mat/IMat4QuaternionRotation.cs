@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 4x4 matrix types that can be created from matching quaternions.</summary>
 /// <typeparam name="TSelf">The 4x4 matrix type.</typeparam>

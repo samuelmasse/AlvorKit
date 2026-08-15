@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>
 /// Validation and reflection helpers for <see cref="InjectorScope"/>.

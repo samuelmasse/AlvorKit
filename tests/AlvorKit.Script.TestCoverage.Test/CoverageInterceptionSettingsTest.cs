@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage.Test;
+namespace AlvorKit;
 
 /// <summary>Tests coverage-specific Interception settings and child argument routing.</summary>
 [TestClass]

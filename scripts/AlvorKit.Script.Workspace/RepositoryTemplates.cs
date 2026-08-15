@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Workspace;
+namespace AlvorKit;
 
 /// <summary>Loads and renders text templates from the repository root <c>res/templates</c> directory.</summary>
 public static class RepositoryTemplates

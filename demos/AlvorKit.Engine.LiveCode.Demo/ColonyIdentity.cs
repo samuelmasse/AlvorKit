@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Colony-local identity resolved only from its exact injector scope.</summary>
 [Colony]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Owns the System.CommandLine command tree for foreground and private AlvorSense commands.</summary>
 internal static class AlvorSenseCommandTree

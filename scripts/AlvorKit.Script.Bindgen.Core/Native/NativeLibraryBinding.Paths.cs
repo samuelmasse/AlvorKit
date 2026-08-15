@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Resolved bindgen filesystem paths and package names for one native library.</summary>
 public sealed partial class NativeLibraryBinding
@@ -19,7 +19,7 @@ public sealed partial class NativeLibraryBinding
     public string? SizeofShimPath => Config.SizeofShim is null ? null : ResolvePath(Directory, Config.SizeofShim);
 
     /// <summary>Generated native package identifier.</summary>
-    public string NativePackageId => Config.Namespace + ".Native";
+    public string NativePackageId => Config.NativePackageId;
 
     /// <summary>Runtime identifier for the current host process.</summary>
     public string HostRuntimeIdentifier => NativeHost.CurrentRuntimeIdentifier;

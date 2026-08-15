@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies the retained representation of an invocation argument.</summary>
 internal enum MockInvocationArgumentSnapshotKind

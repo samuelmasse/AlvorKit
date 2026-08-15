@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Controls exact object counting and bounded stack sampling for one allocation capture.</summary>
 public record InterceptionAllocationCaptureOptions

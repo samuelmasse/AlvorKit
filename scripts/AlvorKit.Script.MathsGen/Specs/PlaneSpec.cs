@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one generated 3D plane type.</summary>
 internal sealed record PlaneSpec(ScalarSpec Scalar)

@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Parses text, float, and enum tokens for agent command-line arguments.</summary>
 internal static class AgentWindowCommandArgumentText

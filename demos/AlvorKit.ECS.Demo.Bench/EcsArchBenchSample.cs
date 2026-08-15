@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Stores one isolated raw AFR-02 worker sample.</summary>
 public sealed record EcsArchBenchSample(

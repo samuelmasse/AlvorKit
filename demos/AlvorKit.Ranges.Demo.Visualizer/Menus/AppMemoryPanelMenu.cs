@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Builds the memory viewport: mode/legend header strip above the backing-store charts.</summary>
 [App]

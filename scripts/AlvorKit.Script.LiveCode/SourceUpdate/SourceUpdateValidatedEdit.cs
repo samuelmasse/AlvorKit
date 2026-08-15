@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>One conservatively validated existing method-body update.</summary>
 internal sealed record SourceUpdateValidatedEdit(

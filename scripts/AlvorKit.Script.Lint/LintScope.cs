@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Resolved repository files selected by scoped lint include patterns.</summary>
 /// <param name="AllFiles">Every existing file selected for lint checks.</param>

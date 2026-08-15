@@ -1,4 +1,4 @@
-namespace AlvorKit.Text;
+namespace AlvorKit;
 
 /// <summary>Appends strongly typed composite formats without argument arrays or boxing.</summary>
 internal static class CompositeText

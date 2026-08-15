@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL;
+namespace AlvorKit;
 
 /// <summary>Provides single-precision vector and quaternion uniform overloads.</summary>
 public static class GlFloatUniformMathsExtensions

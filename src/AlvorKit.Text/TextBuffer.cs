@@ -1,4 +1,4 @@
-namespace AlvorKit.Text;
+namespace AlvorKit;
 
 /// <summary>Owns reusable UTF-16 storage for allocation-free steady-state formatting.</summary>
 internal sealed class TextBuffer

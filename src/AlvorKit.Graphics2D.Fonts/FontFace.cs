@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Owns one FreeType face and any native-copied bytes backing it.</summary>
 internal sealed unsafe class FontFace : IDisposable

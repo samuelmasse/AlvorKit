@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview;
+namespace AlvorKit;
 
 /// <summary>Resolved directories for one disposable bindgen review session.</summary>
 /// <param name="Root">Absolute review directory.</param>

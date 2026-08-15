@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Describes an opaque native pointer represented as a managed handle struct.</summary>
 /// <param name="NativeName">Native pointee type name.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>
 /// Shares console IO, workspace recording, source resolution, and stable JSON

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Stores an optional asynchronous event on an existing invocation.</summary>
 internal sealed record MockInvocationAsyncCompletion

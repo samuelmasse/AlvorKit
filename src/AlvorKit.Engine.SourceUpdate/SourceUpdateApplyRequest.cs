@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Exact compiler-produced delta submitted for one forward source generation.</summary>
 public sealed record SourceUpdateApplyRequest(

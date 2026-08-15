@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Runs platform-specific checks against a built native binary.</summary>
 internal static class NativeBuildVerifier

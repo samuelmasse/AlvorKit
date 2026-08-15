@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Logical operation identity used to detect cross-method consumer composition.</summary>
 public readonly struct InterceptionLogicalOperand : IEquatable<InterceptionLogicalOperand>

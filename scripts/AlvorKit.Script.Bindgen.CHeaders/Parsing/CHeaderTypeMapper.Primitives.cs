@@ -1,6 +1,6 @@
 using ClangType = ClangSharp.Type;
 
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Maps primitive native C types for <see cref="CHeaderTypeMapper"/>.</summary>
 internal sealed partial class CHeaderTypeMapper

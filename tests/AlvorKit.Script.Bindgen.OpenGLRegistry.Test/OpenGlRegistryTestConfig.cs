@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
+namespace AlvorKit;
 
 /// <summary>Factory for OpenGL registry bindgen configs used by tests.</summary>
 internal static class OpenGlRegistryTestConfig
@@ -7,7 +7,7 @@ internal static class OpenGlRegistryTestConfig
     public static BindgenConfig Create(string glVersion = "1.0") => new()
     {
         Kind = BindgenConfig.GlRegistryKind,
-        Namespace = "AlvorKit.Bindgen.OpenGLFixture",
+        Namespace = "AlvorKit",
         ApiClass = "Gl",
         ApiSummary = "Fixture GL API.",
         BackendClass = "GlBackend",

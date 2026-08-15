@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts.Test;
+namespace AlvorKit;
 
 /// <summary>Tests glyph loading, caching, atlas upload, rollover, and repacking behavior.</summary>
 [TestClass]

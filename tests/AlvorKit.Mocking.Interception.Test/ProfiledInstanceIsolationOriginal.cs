@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Preserves the untouched receiver-isolation operation.</summary>
 internal static class ProfiledInstanceIsolationOriginal

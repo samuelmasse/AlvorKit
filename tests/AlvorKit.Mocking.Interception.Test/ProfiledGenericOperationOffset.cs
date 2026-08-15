@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Finds a generic caller's exact constructed operation instruction.</summary>
 internal static class ProfiledGenericOperationOffset

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense.Demo;
+namespace AlvorKit;
 
 /// <summary>Renders the simple colored game board used by the AlvorSense demo.</summary>
 public sealed class AlvorSenseDemoRenderer : IDisposable

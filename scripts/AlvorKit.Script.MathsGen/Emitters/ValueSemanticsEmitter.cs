@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits equality, hashing, and text formatting for generated vectors.</summary>
 internal static class ValueSemanticsEmitter

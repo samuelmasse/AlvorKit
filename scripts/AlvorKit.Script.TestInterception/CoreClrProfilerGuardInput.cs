@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Captures the managed host state evaluated before a profiled child launch.</summary>
 internal sealed record CoreClrProfilerGuardInput(

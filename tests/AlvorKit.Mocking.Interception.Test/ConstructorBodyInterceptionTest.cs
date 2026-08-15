@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Exercises definition-wide constructor remainder routing through ABI v3.</summary>
 [TestClass]

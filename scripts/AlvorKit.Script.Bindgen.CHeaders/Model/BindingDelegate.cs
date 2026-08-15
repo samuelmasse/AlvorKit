@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Describes a managed delegate emitted from a native function-pointer typedef.</summary>
 /// <param name="ManagedName">Managed C# delegate name.</param>

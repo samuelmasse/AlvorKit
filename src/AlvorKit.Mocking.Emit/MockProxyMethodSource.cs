@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Resolves runtime-emitted proxy overrides to the source metadata that owns their

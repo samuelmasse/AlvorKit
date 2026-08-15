@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Pairs one coordinator gate with its exact managed trampoline.</summary>
 internal sealed class ProfiledRouteBinding(

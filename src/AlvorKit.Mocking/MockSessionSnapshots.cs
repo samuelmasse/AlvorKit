@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Reads and validates stable invocation windows owned by a mock session.</summary>
 internal static class MockSessionSnapshots

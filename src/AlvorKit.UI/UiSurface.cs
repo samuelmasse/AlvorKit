@@ -1,4 +1,4 @@
-namespace AlvorKit.UI;
+namespace AlvorKit;
 
 /// <summary>
 /// Owns an independent UI tree whose layout, text, clipping, input, and drawing share one scale and viewport.

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits one generated matrix source file.</summary>
 internal static class MatrixFileEmitter

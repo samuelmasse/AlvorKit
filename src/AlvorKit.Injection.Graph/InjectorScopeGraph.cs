@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>
 /// Creates and owns an explicit lifetime graph above ordinary injector scopes.

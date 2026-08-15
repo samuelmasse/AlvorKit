@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Polled button and axis state for one gamepad slot.</summary>
 /// <param name="Buttons">The buttons currently held down.</param>

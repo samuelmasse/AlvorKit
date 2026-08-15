@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one generated axis-aligned box type.</summary>
 internal sealed record BoxSpec(int Dimension, ScalarSpec Scalar)

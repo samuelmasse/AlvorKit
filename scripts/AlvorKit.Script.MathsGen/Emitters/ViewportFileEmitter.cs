@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits one generated viewport source file.</summary>
 internal static class ViewportFileEmitter

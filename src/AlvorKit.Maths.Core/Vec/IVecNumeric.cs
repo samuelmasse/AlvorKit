@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>
 /// Applies to all non-Boolean numeric vector types, including <c>Vec2</c>, <c>Vec3i</c>, and <c>Vec4u64</c>.

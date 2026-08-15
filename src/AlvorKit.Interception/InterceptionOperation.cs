@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Identifies a native method-version lifecycle request.</summary>
 public enum InterceptionOperation

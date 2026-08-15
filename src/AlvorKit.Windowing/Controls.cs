@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Stores named control bindings for a window loop.</summary>
 public class Controls(WindowLoop window)

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one generated 3D capsule type.</summary>
 internal sealed record CapsuleSpec(ScalarSpec Scalar)

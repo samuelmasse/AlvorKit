@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Starts a persistent AlvorSense session for one project or prebuilt assembly.</summary>
 /// <param name="Id">Stable session id used for later send and stop commands.</param>

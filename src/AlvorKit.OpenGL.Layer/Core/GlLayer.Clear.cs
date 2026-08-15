@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer;
+namespace AlvorKit;
 
 public partial class GlLayer
 {

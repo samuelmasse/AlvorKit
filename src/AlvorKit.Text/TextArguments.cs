@@ -1,4 +1,4 @@
-namespace AlvorKit.Text;
+namespace AlvorKit;
 
 /// <summary>Stores up to eight heterogeneous composite-format arguments without boxing.</summary>
 /// <typeparam name="T1">The first argument type.</typeparam>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Runs the C header binding pipeline for one configured native library.</summary>
 /// <param name="options">Command-line options that control strict validation.</param>

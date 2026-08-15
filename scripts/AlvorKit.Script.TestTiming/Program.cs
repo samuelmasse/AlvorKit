@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestTiming;
+namespace AlvorKit;
 
 /// <summary>Entry point for the unit test timing guard.</summary>
 [ExcludeFromCodeCoverage]

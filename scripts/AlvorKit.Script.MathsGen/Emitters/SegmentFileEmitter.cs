@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits one generated 3D segment source file.</summary>
 internal static class SegmentFileEmitter

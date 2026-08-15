@@ -16,12 +16,4 @@
         <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Windowing.Agent\AlvorKit.Windowing.Agent.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.GLFW" />
-        <Using Include="AlvorKit.OpenGL" />
-        <Using Include="AlvorKit.OpenGL.Layer" />
-        <Using Include="AlvorKit.Windowing" />
-    </ItemGroup>
-
 </Project>

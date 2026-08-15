@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Caches generated proxy types for mockable interfaces and inheritable classes.</summary>
 internal static class Proxies

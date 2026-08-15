@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Retains one exact normalized callback for generated invocation.</summary>
 internal sealed class MockTypedCallbackBehavior(

@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Emits the retained constructor prefix followed by one exact route call.</summary>
 internal static class LoadedConstructorRemainderMethodBodyEmitter

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to all numeric vector types with comparison operators, including <c>Vec3</c>, <c>Vec2i</c>, and <c>Vec4u64</c>.</summary>
 /// <typeparam name="TSelf">The numeric vector type being compared.</typeparam>

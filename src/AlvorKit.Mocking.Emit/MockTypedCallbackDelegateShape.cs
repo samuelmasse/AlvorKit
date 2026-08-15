@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Builds shared direct delegate types for supported exact callbacks.</summary>
 internal static class MockTypedCallbackDelegateShape

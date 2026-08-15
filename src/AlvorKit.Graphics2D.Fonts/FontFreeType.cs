@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Contains FreeType-specific helpers used by the font runtime.</summary>
 internal static class FontFreeType

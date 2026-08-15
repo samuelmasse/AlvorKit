@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits generated managed delegates for OpenGL callback typedefs.</summary>
 /// <param name="context">Shared source-emission context.</param>

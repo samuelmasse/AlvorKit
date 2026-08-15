@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>
 /// Explicitly enables the development-only scope graph, loopback host, and root-loop execution pump for an AlvorKit game.

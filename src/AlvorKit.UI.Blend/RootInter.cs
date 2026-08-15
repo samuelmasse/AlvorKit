@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Root-owned embedded Inter font faces used by the Blend design system.</summary>
 [Root]

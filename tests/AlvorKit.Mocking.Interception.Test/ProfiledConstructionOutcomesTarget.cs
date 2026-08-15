@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Provides observable original construction for outcome routing.</summary>
 public sealed class ProfiledConstructionOutcomesTarget

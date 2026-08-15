@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Transforms one live field value without routing it through an object carrier.</summary>
 /// <typeparam name="T">The exact field value type.</typeparam>

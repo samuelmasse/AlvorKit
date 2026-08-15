@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits configured span-return convenience overloads.</summary>
 internal sealed class BindingSpanReturnEmitter(BindingEmitterContext context)

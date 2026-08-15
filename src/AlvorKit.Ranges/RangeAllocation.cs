@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges;
+namespace AlvorKit;
 
 /// <summary>Describes one live range allocation in a <see cref="RangeAllocator"/>.</summary>
 public struct RangeAllocation

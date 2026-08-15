@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Test;
+namespace AlvorKit;
 
 /// <summary>Tests sprite writer geometry, clipping, rotation, and line output.</summary>
 [TestClass]

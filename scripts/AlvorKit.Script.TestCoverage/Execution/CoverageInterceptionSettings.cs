@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Resolved profiler settings shared by coverage testhost children.</summary>
 internal sealed record CoverageInterceptionSettings(

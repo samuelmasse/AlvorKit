@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>
 /// Single-line editable text state: buffer, caret, selection, and key handling. One instance backs one

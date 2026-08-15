@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns the wide selected caller and its exact gated trampoline lease.</summary>
 internal static class ProfiledWideCaller

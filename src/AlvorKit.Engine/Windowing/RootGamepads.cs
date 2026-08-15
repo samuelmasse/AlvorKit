@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Root-scoped polled gamepad reader.</summary>
 [Root]

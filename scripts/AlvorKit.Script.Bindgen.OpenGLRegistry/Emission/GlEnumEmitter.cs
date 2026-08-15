@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits generated enum source files for OpenGL token groups.</summary>
 /// <param name="context">Shared source-emission context.</param>

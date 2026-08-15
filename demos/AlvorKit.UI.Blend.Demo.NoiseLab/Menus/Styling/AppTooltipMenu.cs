@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>App-scoped Blend tooltip layer; parameter fields carry metadata descriptions as tooltips.</summary>
 [App]

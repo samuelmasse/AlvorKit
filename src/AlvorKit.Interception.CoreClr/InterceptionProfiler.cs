@@ -1,6 +1,4 @@
-using AlvorKit.Interception.Profiler;
-
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Queues exact method-version operations through the profiler loaded into this process.</summary>
 public partial class InterceptionProfiler :

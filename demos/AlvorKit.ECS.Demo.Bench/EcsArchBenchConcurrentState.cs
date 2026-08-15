@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Owns threads and gates for one alloc-partitioned concurrency sample.</summary>
 internal sealed class EcsArchBenchConcurrentState(

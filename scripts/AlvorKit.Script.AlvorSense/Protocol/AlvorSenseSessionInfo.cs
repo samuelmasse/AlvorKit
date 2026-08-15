@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Agent-readable summary of one persisted session directory.</summary>
 /// <param name="Id">Session id matching the directory name.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Texture-coordinate flips that can be applied to a drawn sprite.</summary>
 [Flags]

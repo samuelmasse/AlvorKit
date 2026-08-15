@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds measured semantics-preserving double-to-Int32 conversion expressions.</summary>
 internal static class DoubleToInt32Expression

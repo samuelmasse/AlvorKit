@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Completes projected typed matcher invocations through the shared capture path.</summary>
 internal static class MockTypedMatcherCompletion

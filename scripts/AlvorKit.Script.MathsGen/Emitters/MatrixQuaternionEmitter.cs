@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits quaternion rotation helpers for 3D transform matrices.</summary>
 internal static class MatrixQuaternionEmitter

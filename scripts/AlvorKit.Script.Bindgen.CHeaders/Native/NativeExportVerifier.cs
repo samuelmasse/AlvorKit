@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Checks that generated binding functions are present in a native library.</summary>
 [ExcludeFromCodeCoverage]

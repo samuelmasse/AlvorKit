@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Response emitted by the background host after a command batch completes or times out.</summary>
 /// <param name="Id">Unique request id copied from the matching request.</param>

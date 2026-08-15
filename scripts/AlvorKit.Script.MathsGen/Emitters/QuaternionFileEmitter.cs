@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits one generated quaternion source file.</summary>
 internal static class QuaternionFileEmitter

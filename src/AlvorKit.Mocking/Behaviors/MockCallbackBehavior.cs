@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Invokes one ordinary callback using an invocation-local call context.</summary>
 internal sealed class MockCallbackBehavior : MockConfiguredBehavior

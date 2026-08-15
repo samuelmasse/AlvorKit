@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Test;
+namespace AlvorKit;
 
 internal sealed class FakeWindowHost : IWindowHost
 {

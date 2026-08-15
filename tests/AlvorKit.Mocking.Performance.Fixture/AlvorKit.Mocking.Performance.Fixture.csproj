@@ -12,10 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Mocking" />
-        <Using Include="AlvorKit.Mocking.Dynamic" />
-        <Using Include="AlvorKit.Mocking.Interception" />
-        <Using Include="AlvorKit.Mocking.Performance.Fixture" />
         <Using Include="System.Diagnostics" />
         <Using Include="System.Reflection" />
         <Using Include="System.Runtime" />

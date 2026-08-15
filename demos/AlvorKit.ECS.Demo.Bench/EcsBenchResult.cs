@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Stores one measured ECS benchmark result.</summary>
 public sealed record EcsBenchResult(

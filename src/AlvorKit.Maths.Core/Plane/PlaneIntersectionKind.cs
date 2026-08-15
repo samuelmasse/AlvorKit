@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Describes which side of a plane contains a point or bounded shape.</summary>
 public enum PlaneIntersectionKind

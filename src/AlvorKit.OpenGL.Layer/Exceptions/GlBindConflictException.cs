@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer;
+namespace AlvorKit;
 
 /// <summary>
 /// Exception thrown when a bind would conflict with another live binding.

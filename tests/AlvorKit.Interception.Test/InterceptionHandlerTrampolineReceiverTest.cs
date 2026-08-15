@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies exact managed-reference value receiver call shapes.</summary>
 [TestClass]

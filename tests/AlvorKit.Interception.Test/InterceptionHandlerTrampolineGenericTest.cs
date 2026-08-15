@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies exact trampolines for fully closed generic contexts.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests exact Half-vector cached normalization behavior.</summary>
 [TestClass]

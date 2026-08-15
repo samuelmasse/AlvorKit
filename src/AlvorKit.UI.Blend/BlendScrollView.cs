@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>
 /// Builds a clipped vertical viewport, content list, wheel behavior, and a proportional scrollbar.

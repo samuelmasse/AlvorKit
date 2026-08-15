@@ -1,4 +1,4 @@
-namespace: "AlvorKit.MiniAudio"
+namespace: "AlvorKit"
 apiClass: "Ma"
 apiSummary: "Managed API surface for <c>miniaudio.h</c>: devices, engines, sounds, waveforms, decoding, and node graphs."
 backendClass: "MaBackend"

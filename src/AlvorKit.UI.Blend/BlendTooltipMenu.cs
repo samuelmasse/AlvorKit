@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Builds a mouse-following tooltip layer that renders hovered-node tooltip text as a title plus muted detail lines.</summary>
 public class BlendTooltipMenu(RootUiMouse uiMouse, BlendStyle style)

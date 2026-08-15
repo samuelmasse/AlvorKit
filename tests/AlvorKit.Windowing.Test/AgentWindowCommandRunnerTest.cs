@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing.Test;
+namespace AlvorKit;
 
 [TestClass]
 public class AgentWindowCommandRunnerTest

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Owns proxy metadata and one collectible emitter beneath a weak source-module

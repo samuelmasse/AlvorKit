@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits component-wise numeric relational helpers.</summary>
 internal static class RelationalEmitter

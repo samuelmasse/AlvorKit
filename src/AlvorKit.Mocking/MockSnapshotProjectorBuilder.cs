@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Validates and collects typed snapshot projectors for one setup clause.</summary>
 internal sealed class MockSnapshotProjectorBuilder(MethodInfo method)

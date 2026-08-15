@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Builds and snapshots one exact Debug project for a Source Update session.</summary>
 [ExcludeFromCodeCoverage(Justification = "Runs the selected SDK and copies a complete external build output.")]

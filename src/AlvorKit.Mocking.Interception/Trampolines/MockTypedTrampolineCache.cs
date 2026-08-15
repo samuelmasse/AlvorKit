@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Owns exact interception prefix artifacts beneath a weak source-module boundary.

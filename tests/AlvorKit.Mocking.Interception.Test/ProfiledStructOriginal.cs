@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Preserves exact original struct operations behind typed delegates.</summary>
 internal static class ProfiledStructOriginal

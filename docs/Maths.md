@@ -17,7 +17,7 @@ AlvorKit.Maths                the facade package consumers reference
                               quaternion, box, and geometry struct
 ```
 
-Every public type lives in the `AlvorKit.Maths` namespace regardless of which
+Every public type lives in the flat `AlvorKit` namespace regardless of which
 underlying project declares it.
 
 The concrete primitive structs are generated and are not committed under
@@ -164,7 +164,7 @@ components, protocols, and tests.
 - Matrices are column-major; transform composition follows
   `projection * view * model`, and the OpenGL overloads upload storage
   directly with `transpose: false`.
-- In generic maths code, use `ScalarMath` and the `AlvorKit.Maths`
+- In generic maths code, use `ScalarMath` and the `AlvorKit`
   interfaces rather than re-deriving per-scalar arithmetic.
 - The float vector and matrix surface is System-backed where `System.Numerics`
   implements the same operation; behavior differences from the historical

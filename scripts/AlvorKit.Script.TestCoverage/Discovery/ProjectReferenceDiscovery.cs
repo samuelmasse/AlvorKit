@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Finds source modules reachable from selected test projects through project references.</summary>
 internal static class ProjectReferenceDiscovery

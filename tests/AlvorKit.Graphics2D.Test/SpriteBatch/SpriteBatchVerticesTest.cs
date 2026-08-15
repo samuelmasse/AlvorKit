@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Test;
+namespace AlvorKit;
 
 /// <summary>Tests sectioning and texture-slot assignment for sprite batch vertices.</summary>
 [TestClass]

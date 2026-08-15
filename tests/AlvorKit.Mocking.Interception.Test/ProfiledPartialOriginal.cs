@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Preserves the four untouched concrete operations used by wrapper fallbacks.</summary>
 internal static class ProfiledPartialOriginal

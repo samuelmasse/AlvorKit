@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for manifest-driven source archive patches.</summary>
 [TestClass]

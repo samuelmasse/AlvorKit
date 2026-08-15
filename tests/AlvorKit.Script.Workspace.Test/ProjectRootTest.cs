@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Workspace.Test;
+namespace AlvorKit;
 
 /// <summary>Tests repository-root discovery shared by script tools.</summary>
 [TestClass]

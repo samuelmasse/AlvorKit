@@ -12,8 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Hashing" />
-        <Using Include="AlvorKit.Interception" />
         <Using Include="System.Buffers.Binary" />
         <Using Include="System.Diagnostics" />
         <Using Include="System.Reflection" />

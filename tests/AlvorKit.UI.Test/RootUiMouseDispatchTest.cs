@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Test;
+namespace AlvorKit;
 
 /// <summary>Covers mouse hover, press, click, capture, and scroll dispatch through <see cref="RootUiScript"/> frames.</summary>
 [TestClass]

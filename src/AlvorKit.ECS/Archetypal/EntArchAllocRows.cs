@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Stores the sparse row-set index and active row sets owned by one alloc in one arch group.</summary>
 internal sealed class EntArchAllocRows

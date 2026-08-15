@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Emits tracked original, constructor, field, and alias-factory paths.</summary>
 internal static partial class MockInterceptionWrapperIl

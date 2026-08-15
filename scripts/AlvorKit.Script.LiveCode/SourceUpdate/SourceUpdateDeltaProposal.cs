@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Uncommitted compiler generation retained until the target acknowledges its exact delta.</summary>
 internal sealed record SourceUpdateDeltaProposal(

@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer.Test;
+namespace AlvorKit;
 
 /// <summary>
 /// Verifies XML documentation contracts on the layer surface.
@@ -49,9 +49,9 @@ public class GlLayerDocumentationTest
                 Member = e.Attribute("name")!.Value,
                 Target = e.Element("inheritdoc")?.Attribute("cref")?.Value,
             })
-            .Where(e => e.Target is not null && e.Target.StartsWith("M:AlvorKit.OpenGL.Gl.", StringComparison.Ordinal))
+            .Where(e => e.Target is not null && e.Target.StartsWith("M:AlvorKit.Gl.", StringComparison.Ordinal))
             .Where(e => layerOverrideNames.Contains(DocSimpleName(e.Target!)))
-            .Select(e => e.Member.Replace("M:AlvorKit.OpenGL.Gl.", "M:AlvorKit.OpenGL.Layer.GlLayer."))
+            .Select(e => e.Member.Replace("M:AlvorKit.Gl.", "M:AlvorKit.GlLayer."))
             .Distinct()
             .Order();
     }

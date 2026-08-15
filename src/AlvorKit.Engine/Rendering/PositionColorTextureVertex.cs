@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Position, color, and texture-coordinate vertex used by built-in textured shaders.</summary>
 [StructLayout(LayoutKind.Sequential)]

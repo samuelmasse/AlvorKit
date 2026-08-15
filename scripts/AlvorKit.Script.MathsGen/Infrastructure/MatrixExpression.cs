@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds generated constructor expressions for matrices.</summary>
 internal static class MatrixExpression

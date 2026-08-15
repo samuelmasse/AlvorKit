@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Contract implemented by a submitted command that is constructed through a selected injector scope.</summary>
 public interface ILiveCodeCommand

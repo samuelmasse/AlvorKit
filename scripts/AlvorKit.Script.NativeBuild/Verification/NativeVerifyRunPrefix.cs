@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Optional executable prefix used when the verifier needs an emulator or launcher.</summary>
 /// <param name="FileName">Launcher executable name or path.</param>

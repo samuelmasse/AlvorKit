@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Transformation chosen for one generated combined-overload parameter.</summary>
 internal enum GlExtensionPlanKind

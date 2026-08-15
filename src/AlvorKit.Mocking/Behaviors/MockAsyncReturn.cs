@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Normalizes a task-like return and prepares its later slot-only observation.</summary>
 internal sealed class MockAsyncReturn

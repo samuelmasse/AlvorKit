@@ -1,4 +1,4 @@
-namespace AlvorKit.Demo;
+namespace AlvorKit;
 
 /// <summary>Plays an endless Ode to Joy on a sine waveform through miniaudio.</summary>
 public sealed unsafe class MelodyPlayer : IDisposable

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for generated OpenGL code-emission artifacts.</summary>
 [TestClass]

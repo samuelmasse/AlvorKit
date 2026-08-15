@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Connects one closed archetypal group to allocator cleanup without adding point-access indirection.</summary>
 internal sealed class EntArchGroupOps<A> : EntArchGroupOps

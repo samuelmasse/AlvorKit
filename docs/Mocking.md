@@ -41,8 +41,7 @@ The ordinary API uses executable call expressions for both setup and
 verification:
 
 ```csharp
-using AlvorKit.Mocking;
-using AlvorKit.Mocking.Dynamic;
+using AlvorKit;
 
 MockDynamic.Enable();
 

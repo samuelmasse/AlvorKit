@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate.Demo;
+namespace AlvorKit;
 
 /// <summary>Injected value used by every existing editable service instance.</summary>
 [Root]

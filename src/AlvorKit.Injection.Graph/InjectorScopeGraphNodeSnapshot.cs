@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>Immutable diagnostic metadata for one tracked injector scope.</summary>
 public sealed record InjectorScopeGraphNodeSnapshot(

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits floating-point-only vector helpers.</summary>
 internal static class FloatingFunctionsEmitter

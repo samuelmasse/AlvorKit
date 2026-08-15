@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits GLM-style constructors that compose vectors from smaller vectors.</summary>
 internal static class CompositionConstructorEmitter

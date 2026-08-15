@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test.Contracts.RefSafe;
+namespace AlvorKit;
 
 [TestClass]
 public sealed class MockingRefSafeApiContractTest

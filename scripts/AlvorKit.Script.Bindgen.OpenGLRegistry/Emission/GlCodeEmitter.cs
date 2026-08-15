@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Writes the generated OpenGL API, proc-loading backend, and convenience surface.</summary>
 /// <param name="config">Bindgen configuration that controls output names and paths.</param>

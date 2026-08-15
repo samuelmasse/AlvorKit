@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Stores rolling duration metrics for one repeated runtime tick.</summary>
 public class TickMetric(TimeSpan duration)

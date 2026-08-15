@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Builds the source-file update command surface.</summary>
 internal static class SourceUpdateCommandTree

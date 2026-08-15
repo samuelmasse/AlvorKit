@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Translates AlvorKit cursor modes to and from GLFW cursor modes.</summary>
 [ExcludeFromCodeCoverage]

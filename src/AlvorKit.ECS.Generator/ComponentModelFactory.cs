@@ -1,10 +1,10 @@
-namespace AlvorKit.ECS.Generator;
+namespace AlvorKit;
 
 [ExcludeFromCodeCoverage]
 internal static class ComponentModelFactory
 {
-    internal const string ComponentsAttributeName = "AlvorKit.ECS.Generator.ComponentsAttribute";
-    internal const string ArchetypalAttributeName = "AlvorKit.ECS.Generator.ArchetypalAttribute";
+    internal const string ComponentsAttributeName = "AlvorKit.ComponentsAttribute";
+    internal const string ArchetypalAttributeName = "AlvorKit.ArchetypalAttribute";
 
     private static readonly SymbolDisplayFormat NullableFriendlyFormat = new(
     typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,

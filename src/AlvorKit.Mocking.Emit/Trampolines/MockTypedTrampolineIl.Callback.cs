@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Emits shared exact typed callback paths.</summary>
 internal static partial class MockTypedTrampolineIl

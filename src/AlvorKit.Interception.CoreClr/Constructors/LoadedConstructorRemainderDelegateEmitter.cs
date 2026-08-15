@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Extracts one relocated post-initializer constructor suffix as a dynamic delegate.</summary>
 internal static class LoadedConstructorRemainderDelegateEmitter

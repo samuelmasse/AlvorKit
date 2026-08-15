@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Reads fixed-width little-endian values from loaded IL operands.</summary>
 internal static class LoadedIlPrimitiveReader

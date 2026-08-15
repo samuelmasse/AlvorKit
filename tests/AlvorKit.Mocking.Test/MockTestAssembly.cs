@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 /// <summary>Selects the optional JIT backend for the dynamic integration suite.</summary>
 [TestClass]

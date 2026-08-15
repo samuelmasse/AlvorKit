@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts.Test;
+namespace AlvorKit;
 
 /// <summary>Tests font construction, size caching, metrics, and empty packing paths.</summary>
 [TestClass]

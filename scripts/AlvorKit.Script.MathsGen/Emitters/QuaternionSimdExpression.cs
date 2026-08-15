@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds equal-layout intrinsic expressions for generated float and double quaternions.</summary>
 internal static class QuaternionSimdExpression

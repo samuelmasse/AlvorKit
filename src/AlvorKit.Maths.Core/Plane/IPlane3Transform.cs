@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 3D plane types that can be transformed by matching matrices and quaternions.</summary>
 /// <typeparam name="TSelf">The concrete plane type.</typeparam>

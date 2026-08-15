@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Pointer parameter that references a count parameter in a combined overload plan.</summary>
 /// <param name="Pointer">Pointer parameter index.</param>

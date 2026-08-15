@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Stores one immutable decoded IL operand without resolving loaded metadata.</summary>
 public sealed class LoadedIlOperand

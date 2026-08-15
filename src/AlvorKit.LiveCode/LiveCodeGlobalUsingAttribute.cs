@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Records one project-wide C# import for LiveCode submission compilation.</summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]

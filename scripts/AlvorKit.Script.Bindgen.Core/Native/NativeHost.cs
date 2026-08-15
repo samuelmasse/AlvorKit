@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Maps the current host to NuGet runtime identifiers and native library file names.</summary>
 internal static class NativeHost

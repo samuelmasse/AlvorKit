@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>Builds the node/seed/generate tool strip; rebuilds its controls when the session UI revision changes.</summary>
 [App]

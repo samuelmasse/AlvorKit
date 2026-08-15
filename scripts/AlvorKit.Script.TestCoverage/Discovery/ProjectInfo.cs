@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Basic project metadata used for coverage project discovery.</summary>
 /// <param name="Path">Absolute project path.</param>

@@ -10,8 +10,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.ECS" />
-        <Using Include="AlvorKit.ECS.Generator" />
         <Using Include="Microsoft.CodeAnalysis" />
         <Using Include="Microsoft.CodeAnalysis.CSharp" />
         <Using Include="Microsoft.CodeAnalysis.Text" />

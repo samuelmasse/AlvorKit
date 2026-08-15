@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL;
+namespace AlvorKit;
 
 /// <summary>Provides maths-shaped compute dispatch overloads.</summary>
 public static class GlComputeMathsExtensions

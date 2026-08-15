@@ -11,13 +11,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Maths" />
         <Using Include="BenchmarkDotNet.Attributes" />
         <Using Include="BenchmarkDotNet.Configs" />
         <Using Include="BenchmarkDotNet.Diagnosers" />
         <Using Include="BenchmarkDotNet.Order" />
         <Using Include="BenchmarkDotNet.Running" />
-        <Using Include="System.Runtime.CompilerServices" />
         <Using Include="System.Runtime.Intrinsics" />
         <Using Include="System.Runtime.Intrinsics.X86" />
     </ItemGroup>

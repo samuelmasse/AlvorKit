@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint.Test;
+namespace AlvorKit;
 
 /// <summary>Tests platform-specific actionlint release asset selection.</summary>
 [TestClass]

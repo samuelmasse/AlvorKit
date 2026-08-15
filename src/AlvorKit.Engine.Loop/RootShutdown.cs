@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Tracks whether the root loop is shutting down after a requested close or runtime failure.</summary>
 [Root]

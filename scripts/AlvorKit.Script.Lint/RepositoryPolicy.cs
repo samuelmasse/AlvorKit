@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Checks repository files against policies shared by AlvorKit and its game repositories.</summary>
 internal static class RepositoryPolicy
@@ -43,6 +43,22 @@ internal static class RepositoryPolicy
             .ToArray();
     }
 
+    /// <summary>Returns authored type declarations outside the repository's single root namespace.</summary>
+    public static IReadOnlyList<string> FindNamespaceViolations(string repoRoot, LintScope? scope = null)
+    {
+        var root = Path.GetFullPath(repoRoot);
+        var repositoryNamespace = FindRepositoryNamespace(root);
+        if (repositoryNamespace is null)
+            return [];
+
+        var files = scope is null ? EnumerateFiles(root) : scope.AllFiles;
+        return files
+            .Where(file => file.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(file => FindNamespaceViolations(root, file, repositoryNamespace))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+    }
+
     /// <summary>Returns structural violations in the canonical agent-policy graph when the repository owns one.</summary>
     public static IReadOnlyList<string> FindAgentPolicyViolations(string repoRoot) =>
         AgentPolicyGraph.FindViolations(repoRoot);
@@ -61,6 +77,58 @@ internal static class RepositoryPolicy
             yield return new(file, position.Line + 1, position.Character + 1);
         }
     }
+
+    /// <summary>Returns namespace violations in one C# source file.</summary>
+    private static IEnumerable<string> FindNamespaceViolations(
+        string repoRoot,
+        string file,
+        string repositoryNamespace)
+    {
+        var expectedNamespace = file.StartsWith("res/templates/new-game/source/", StringComparison.OrdinalIgnoreCase)
+            ? "AlvorStarter"
+            : repositoryNamespace;
+        var source = File.ReadAllText(Path.Combine(repoRoot, file));
+        var tree = CSharpSyntaxTree.ParseText(source, path: file);
+        foreach (var declaration in tree.GetRoot().DescendantNodes().Where(IsTypeDeclaration))
+        {
+            var actualNamespace = NamespaceOf(declaration);
+            if (actualNamespace == expectedNamespace || IsExternalNamespaceException(file, actualNamespace))
+                continue;
+
+            var position = tree.GetLineSpan(declaration.Span).StartLinePosition;
+            var displayNamespace = string.IsNullOrEmpty(actualNamespace) ? "<global>" : actualNamespace;
+            yield return $"{file}({position.Line + 1},{position.Character + 1}): " +
+                $"namespace '{displayNamespace}' must be '{expectedNamespace}'";
+        }
+    }
+
+    /// <summary>Returns the namespace surrounding one declaration.</summary>
+    private static string NamespaceOf(SyntaxNode declaration) =>
+        string.Join(
+            ".",
+            declaration.Ancestors()
+                .OfType<BaseNamespaceDeclarationSyntax>()
+                .Reverse()
+                .Select(item => item.Name.ToString()));
+
+    /// <summary>Returns true for syntax nodes that introduce authored CLR types.</summary>
+    private static bool IsTypeDeclaration(SyntaxNode node) =>
+        node is BaseTypeDeclarationSyntax or DelegateDeclarationSyntax;
+
+    /// <summary>Returns the root namespace declared by the repository's primary solution.</summary>
+    private static string? FindRepositoryNamespace(string repoRoot) =>
+        Directory.EnumerateFiles(repoRoot, "*.slnx", SearchOption.TopDirectoryOnly)
+            .Where(path => !path.EndsWith(".Dev.slnx", StringComparison.OrdinalIgnoreCase))
+            .Select(Path.GetFileNameWithoutExtension)
+            .Order(StringComparer.Ordinal)
+            .FirstOrDefault();
+
+    /// <summary>Allows the two intentional external contracts that must use namespaces owned by their hosts.</summary>
+    private static bool IsExternalNamespaceException(string file, string actualNamespace) =>
+        (actualNamespace == "System.Runtime.CompilerServices" &&
+            (Path.GetFileName(file) is "IsExternalInit.cs" or "IgnoresAccessChecksToAttribute.cs"))
+        || (actualNamespace == "AgentSubmissions" &&
+            file.StartsWith("demos/AlvorKit.Engine.LiveCode.Demo/Submissions/", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>Returns true for C# files and repository templates that emit C# source.</summary>
     private static bool IsCSharpSource(string file) =>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Describes an inline-array helper type emitted for a native fixed-size array field.</summary>
 /// <param name="ManagedName">Managed C# inline buffer type name.</param>

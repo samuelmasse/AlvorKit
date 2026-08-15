@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Defines scalar interval types emitted by the generator.</summary>
 internal static class IntervalCatalog

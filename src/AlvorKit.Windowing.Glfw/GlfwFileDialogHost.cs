@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>GLFW-parented Native File Dialog Extended implementation.</summary>
 public sealed class GlfwFileDialogHost : IFileDialogHost, IDisposable

@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Runs native GLFW polling and translates elapsed time into update and render frames.</summary>
 [ExcludeFromCodeCoverage]

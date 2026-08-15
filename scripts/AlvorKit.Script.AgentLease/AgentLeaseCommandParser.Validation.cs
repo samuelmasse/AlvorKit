@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease;
+namespace AlvorKit;
 
 /// <summary>Validation and shared helpers for the advisory lease command parser.</summary>
 internal static partial class AgentLeaseCommandParser

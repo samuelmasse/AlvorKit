@@ -5,7 +5,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Engine.SourceUpdate" />
         <Using Include="System.Reflection" />
         <Using Include="System.Security.Cryptography" />
     </ItemGroup>

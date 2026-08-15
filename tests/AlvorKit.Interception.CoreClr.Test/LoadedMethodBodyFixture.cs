@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Builds reviewed raw ECMA-335 body fixtures without reflection body data.</summary>
 internal static class LoadedMethodBodyFixture

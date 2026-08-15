@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Provides scalar reference parameters for partial-original dispatch.</summary>
 public sealed class PartialRefOutDispatchTarget

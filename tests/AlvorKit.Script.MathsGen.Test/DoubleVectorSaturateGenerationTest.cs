@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Tests System-compatible packed double-vector Saturate generation.</summary>
 [TestClass]

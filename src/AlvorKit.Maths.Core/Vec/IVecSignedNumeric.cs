@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to all signed numeric vector types, including <c>Vec2</c>, <c>Vec3i</c>, and <c>Vec4d</c>.</summary>
 /// <typeparam name="TSelf">The signed numeric vector type, such as <c>Vec3</c> or <c>Vec4i</c>.</typeparam>

@@ -1,3 +1,3 @@
-namespace AlvorKit.Interception.CallerProof.Test;
+namespace AlvorKit;
 
 internal sealed class LateMetadataBox<T>;

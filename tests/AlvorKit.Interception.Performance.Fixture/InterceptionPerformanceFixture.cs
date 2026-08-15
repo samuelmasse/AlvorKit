@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Measures direct and profiler-routed caller costs without activating a mocking adapter.</summary>
 internal static class InterceptionPerformanceFixture

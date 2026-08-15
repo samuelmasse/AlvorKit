@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Captured result from an external process invocation.</summary>
 /// <param name="ExitCode">Process exit code.</param>

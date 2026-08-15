@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Writes all coverage report formats owned by the script.</summary>
 internal static class CoverageReportWriter

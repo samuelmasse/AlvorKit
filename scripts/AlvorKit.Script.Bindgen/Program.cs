@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Entry point for the binding generator.</summary>
 [ExcludeFromCodeCoverage]

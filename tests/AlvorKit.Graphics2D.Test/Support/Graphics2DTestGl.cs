@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Test;
+namespace AlvorKit;
 
 /// <summary>Small fake OpenGL backend used behind <see cref="GlLayer"/> in Graphics2D tests.</summary>
 internal sealed unsafe class Graphics2DTestGl : GlNoop

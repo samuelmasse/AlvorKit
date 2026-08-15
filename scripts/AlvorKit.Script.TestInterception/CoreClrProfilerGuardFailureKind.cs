@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Identifies one stable reason an interception-profiler launch is unavailable.</summary>
 internal enum CoreClrProfilerGuardFailureKind

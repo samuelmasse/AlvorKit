@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestTiming;
+namespace AlvorKit;
 
 /// <summary>Runs <c>dotnet test</c>, reads TRX output, and reports test timing budget violations.</summary>
 [ExcludeFromCodeCoverage(Justification = "Coordinates external dotnet test processes and filesystem artifacts.")]

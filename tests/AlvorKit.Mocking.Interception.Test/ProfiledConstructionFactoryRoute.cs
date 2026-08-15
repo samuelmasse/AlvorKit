@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Publishes one exact construction wrapper behind the coordinator gate.</summary>
 internal static class ProfiledConstructionFactoryRoute

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits standalone generated type files for enums, structs, handles, and delegates.</summary>
 internal sealed class BindingTypeEmitter(BindingEmitterContext context)

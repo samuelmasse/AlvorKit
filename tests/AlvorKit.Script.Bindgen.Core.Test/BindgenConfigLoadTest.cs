@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.Core.Test;
+namespace AlvorKit;
 
 /// <summary>Covers YAML-backed bindgen config loading.</summary>
 [TestClass]
@@ -10,13 +10,13 @@ public sealed class BindgenConfigLoadTest
     {
         using var workspace = TempWorkspace.Create();
         WriteMinimalConfig(workspace.Root, """
-            NAMESPACE: Fixture.Native
+            NAMESPACE: AlvorKit
             """);
 
         var config = BindgenConfig.Load(workspace.Root);
 
         Assert.AreEqual(BindgenConfig.CHeaderKind, config.Kind);
-        Assert.AreEqual("Fixture.Native", config.Namespace);
+        Assert.AreEqual("AlvorKit", config.Namespace);
         Assert.AreEqual("FixtureApi", config.ApiClass);
         Assert.AreEqual("fixture", config.NativeLibrary);
     }
@@ -29,7 +29,7 @@ public sealed class BindgenConfigLoadTest
         var conf = Path.Combine(workspace.Root, "conf");
         Directory.CreateDirectory(conf);
         File.WriteAllText(Path.Combine(conf, "bindgen.yml"), """
-            namespace: Fixture.Native
+            namespace: AlvorKit
             apiClass: FixtureApi
             apiSummary: Fixture API.
             backendClass: FixtureBackend

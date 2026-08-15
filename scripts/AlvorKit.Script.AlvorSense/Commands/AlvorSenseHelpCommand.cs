@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Prints generated CLI help without contacting a session.</summary>
 /// <param name="Args">Arguments to parse when rendering contextual help.</param>

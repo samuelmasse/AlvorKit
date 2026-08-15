@@ -37,7 +37,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Script.LiveCode.Fixture" />
         <Using Include="System.Reflection.Metadata" />
         <Using Include="System.Reflection.Metadata.Ecma335" />
         <Using Include="System.Reflection.PortableExecutable" />

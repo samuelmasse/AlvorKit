@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging;
+namespace AlvorKit;
 
 /// <summary>Writes formatted, caller-annotated entries to an application log stream.</summary>
 public partial class Log

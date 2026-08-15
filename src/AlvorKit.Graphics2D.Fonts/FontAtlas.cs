@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Packs glyph bitmaps into one atlas texture and can repack them through a sprite batch.</summary>
 internal sealed partial class FontAtlas : IDisposable

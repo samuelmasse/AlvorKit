@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits generated coordinate, color, and texture swizzle properties.</summary>
 internal static class SwizzleEmitter

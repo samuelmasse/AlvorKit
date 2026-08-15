@@ -12,7 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Script.Workspace" />
         <Using Include="System.CommandLine" />
         <Using Include="System.CommandLine.Parsing" />
     </ItemGroup>

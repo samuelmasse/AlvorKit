@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Command verbs accepted by the native build CLI.</summary>
 internal enum CliCommand

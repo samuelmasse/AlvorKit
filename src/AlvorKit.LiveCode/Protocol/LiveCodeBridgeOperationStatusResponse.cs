@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Out-of-band status for one accepted two-phase bridge operation.</summary>
 public sealed record LiveCodeBridgeOperationStatusResponse(

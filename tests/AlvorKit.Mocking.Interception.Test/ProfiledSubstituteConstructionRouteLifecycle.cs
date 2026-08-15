@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns one exact profiled construction route through rollback.</summary>
 internal sealed class ProfiledSubstituteConstructionRouteLifecycle :

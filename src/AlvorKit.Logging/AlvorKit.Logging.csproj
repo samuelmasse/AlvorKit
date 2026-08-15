@@ -5,7 +5,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Text" />
         <InternalsVisibleTo Include="AlvorKit.Logging.Test" />
     </ItemGroup>
 

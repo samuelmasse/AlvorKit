@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies an IL prefix accepted for exact original-operation replay.</summary>
 public enum LoadedOperationPrefixKind

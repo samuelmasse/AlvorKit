@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Mouse movement data reported by a host window.</summary>
 /// <param name="Position">The current cursor position in window coordinates.</param>

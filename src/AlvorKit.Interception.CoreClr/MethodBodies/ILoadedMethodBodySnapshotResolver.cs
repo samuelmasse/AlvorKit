@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Resolves authoritative loaded-body snapshots for exact runtime method identities.</summary>
 public interface ILoadedMethodBodySnapshotResolver

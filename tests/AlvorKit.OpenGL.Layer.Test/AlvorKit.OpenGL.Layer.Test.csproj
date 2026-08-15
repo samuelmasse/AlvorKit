@@ -19,10 +19,4 @@
             Link="AlvorKit.OpenGL.xml"
             Visible="false" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.OpenGL" />
-        <Using Include="AlvorKit.OpenGL.Layer" />
-    </ItemGroup>
-
 </Project>

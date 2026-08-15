@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Validates and advances source generations for an exact allowlisted loaded module.</summary>
 public sealed class SourceUpdateModuleLedger

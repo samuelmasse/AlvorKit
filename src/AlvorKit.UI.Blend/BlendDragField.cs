@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>
 /// Builds the numeric drag/edit fields behind <see cref="BlendFields"/>: label-inside surface, optional

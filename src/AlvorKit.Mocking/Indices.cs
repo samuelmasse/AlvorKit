@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Builds and caches logical argument index maps for intercepted methods.</summary>
 internal static class Indices

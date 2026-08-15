@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns the exact reference-field write site for the typed row.</summary>
 internal static class ProfiledReferenceFieldTransformWriteCaller

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Provides a zero-argument configured-dispatch target.</summary>
 public interface IZeroArgumentDispatchTarget

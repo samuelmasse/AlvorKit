@@ -1,4 +1,4 @@
-namespace AlvorKit.UI;
+namespace AlvorKit;
 
 [DebuggerDisplay("Count = {Count}")]
 [DebuggerTypeProxy(typeof(NodeArrayDebugView))]

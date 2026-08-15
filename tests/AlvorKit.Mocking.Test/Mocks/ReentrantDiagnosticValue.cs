@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 internal sealed class ReentrantDiagnosticValue(Action onFormatting)
 {

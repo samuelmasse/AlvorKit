@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Publishes heap-safe constant, sequence, throw, and callback setups.</summary>
 internal static class MockedOrdinarySetupPublishing

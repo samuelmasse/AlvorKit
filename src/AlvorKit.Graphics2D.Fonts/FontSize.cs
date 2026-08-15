@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Loads and caches glyphs for one pixel size of a font face.</summary>
 public unsafe class FontSize

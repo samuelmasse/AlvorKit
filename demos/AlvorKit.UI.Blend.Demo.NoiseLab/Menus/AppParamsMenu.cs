@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>Builds the metadata-driven parameter dock; rebuilds its sections when the node graph changes.</summary>
 [App]

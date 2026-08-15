@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Locates repository-level paths used by the lint coordinator.</summary>
 internal static class RepositoryPaths

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Verifies the production host contract for isolated profiler children.</summary>
 [TestClass]

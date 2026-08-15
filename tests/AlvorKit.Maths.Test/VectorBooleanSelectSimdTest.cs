@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests complete-register Boolean mask selection.</summary>
 [TestClass]

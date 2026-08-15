@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>
 /// App-local color ramps mapping normalized noise to pixels. Ramp colors are Noise Lab data semantics,

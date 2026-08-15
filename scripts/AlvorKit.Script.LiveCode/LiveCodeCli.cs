@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Coordinates discovery, compilation, scope selection, and result presentation.</summary>
 internal sealed class LiveCodeCli(LiveCodeCliContext context)

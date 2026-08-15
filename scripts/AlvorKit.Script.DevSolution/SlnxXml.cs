@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.DevSolution;
+namespace AlvorKit;
 
 /// <summary>Formats generated .slnx XML consistently.</summary>
 internal static class SlnxXml

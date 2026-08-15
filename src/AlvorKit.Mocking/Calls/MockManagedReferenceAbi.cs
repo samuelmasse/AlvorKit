@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Describes managed-reference returns representable by the exact dispatch ABI.</summary>
 internal static class MockManagedReferenceAbi

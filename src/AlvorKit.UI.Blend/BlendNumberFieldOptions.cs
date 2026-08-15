@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Configuration for a float drag/edit field; leave the range infinite for an unbounded number field.</summary>
 public sealed record BlendNumberFieldOptions

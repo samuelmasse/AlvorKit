@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Mutable hit accumulator for a source line.</summary>
 /// <param name="module">Assembly that owns the line.</param>

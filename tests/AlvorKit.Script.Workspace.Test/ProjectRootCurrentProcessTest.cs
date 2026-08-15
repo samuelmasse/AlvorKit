@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Workspace.Test;
+namespace AlvorKit;
 
 /// <summary>Tests process-based repository-root discovery.</summary>
 [TestClass]

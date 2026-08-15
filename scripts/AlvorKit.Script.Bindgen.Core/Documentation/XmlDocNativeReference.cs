@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Finds native C-family symbol names in parsed documentation prose.</summary>
 internal static class XmlDocNativeReference

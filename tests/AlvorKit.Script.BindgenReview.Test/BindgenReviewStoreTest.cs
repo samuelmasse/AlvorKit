@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview.Test;
+namespace AlvorKit;
 
 /// <summary>Tests manifest storage for disposable bindgen review sessions.</summary>
 [TestClass]

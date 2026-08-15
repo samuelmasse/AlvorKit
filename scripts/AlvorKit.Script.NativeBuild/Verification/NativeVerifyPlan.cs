@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Resolved paths and process commands for one native verification run.</summary>
 /// <param name="LibraryPath">Native runtime library loaded by the verifier.</param>

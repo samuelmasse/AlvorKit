@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits shared helper members used by generated OpenGL extension overloads.</summary>
 internal static class GlExtensionHelperEmitter

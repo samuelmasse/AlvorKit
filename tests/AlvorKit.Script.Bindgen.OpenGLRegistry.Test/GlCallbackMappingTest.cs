@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for OpenGL callback typedef parsing and managed delegate mapping.</summary>
 [TestClass]

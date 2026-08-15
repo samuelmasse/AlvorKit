@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview;
+namespace AlvorKit;
 
 /// <summary>Coordinates disposable before/after bindgen snapshots and generated-code diffs.</summary>
 /// <param name="store">Filesystem store for review manifests and cleanup.</param>

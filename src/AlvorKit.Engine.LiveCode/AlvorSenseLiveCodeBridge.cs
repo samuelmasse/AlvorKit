@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Runs finite AlvorSense command batches against the same window used by an ordinary live game launch.</summary>
 internal sealed class AlvorSenseLiveCodeBridge(

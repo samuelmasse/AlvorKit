@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Plans string and string-array substitutions for combined OpenGL overloads.</summary>
 /// <param name="state">Shared extension-emission state.</param>

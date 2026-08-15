@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies the semantic kind of one loaded exception-handling clause.</summary>
 public enum LoadedExceptionRegionKind

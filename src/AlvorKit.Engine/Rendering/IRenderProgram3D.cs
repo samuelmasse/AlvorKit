@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Shader program API for 3D programs with view and projection matrices.</summary>
 public interface IRenderProgram3D : IRenderProgram

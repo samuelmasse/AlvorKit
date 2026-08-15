@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Maps one original IL offset to its generated-body IL offset.</summary>
 public readonly record struct InterceptionGenerationIlMapEntry(

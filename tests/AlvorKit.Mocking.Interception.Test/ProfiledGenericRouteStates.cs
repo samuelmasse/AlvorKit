@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Holds one closed generic echo construction's route state.</summary>
 internal static class ProfiledClosedGenericEchoRoute<T>

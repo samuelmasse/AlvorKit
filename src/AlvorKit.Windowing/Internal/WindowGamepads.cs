@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Reads polled gamepad state for a window loop.</summary>
 internal sealed class WindowGamepads

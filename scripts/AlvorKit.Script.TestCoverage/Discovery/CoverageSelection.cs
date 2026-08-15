@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Selected test projects and source modules for one coverage run.</summary>
 /// <param name="TestProjects">Runnable test projects selected for execution.</param>

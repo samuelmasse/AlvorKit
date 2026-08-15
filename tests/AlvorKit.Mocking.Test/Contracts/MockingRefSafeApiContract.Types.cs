@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test.Contracts.RefSafe;
+namespace AlvorKit;
 
 internal delegate void ExactTransformCallback(
     scoped in ReadOnlySpan<int> source,

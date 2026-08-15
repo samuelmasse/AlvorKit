@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Owns a Clang translation unit and the declarations selected from it.</summary>
 internal sealed class CHeaderTranslationUnit : IDisposable

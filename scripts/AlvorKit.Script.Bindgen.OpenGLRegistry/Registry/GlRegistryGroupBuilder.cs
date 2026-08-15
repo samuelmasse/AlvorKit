@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Builds generated enum groups from collected registry tokens.</summary>
 /// <param name="config">Bindgen configuration used for type renames and API class prefixing.</param>

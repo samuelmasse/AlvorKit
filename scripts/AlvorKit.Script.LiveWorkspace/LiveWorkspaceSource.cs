@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace;
+namespace AlvorKit;
 
 /// <summary>Immutable source-file identity recorded beside a live operation.</summary>
 /// <param name="Path">Absolute path to the workspace-owned source file.</param>

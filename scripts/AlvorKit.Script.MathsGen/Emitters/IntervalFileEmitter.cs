@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits one generated scalar interval source file.</summary>
 internal static class IntervalFileEmitter

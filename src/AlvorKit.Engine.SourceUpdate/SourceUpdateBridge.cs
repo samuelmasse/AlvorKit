@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Applies compiler-produced source deltas at the LiveCode safe-frame boundary.</summary>
 public sealed class SourceUpdateBridge(SourceUpdateModuleLedger ledger) : ILiveCodeBridge

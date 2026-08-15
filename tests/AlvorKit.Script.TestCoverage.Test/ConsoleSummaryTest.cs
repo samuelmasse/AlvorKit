@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for console summary link formatting.</summary>
 [TestClass]

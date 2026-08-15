@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies a baseline instruction or one symbolic caller-route operation.</summary>
 public enum LoadedSymbolicInstructionKind

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests generated quaternion rotation, formatting, and interop helpers.</summary>
 [TestClass]

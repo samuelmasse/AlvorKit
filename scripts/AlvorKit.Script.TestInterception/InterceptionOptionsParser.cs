@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Creates and parses the interception child-launcher command line.</summary>
 internal class InterceptionOptionsParser

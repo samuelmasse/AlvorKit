@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Starts and contacts the detached process that owns one Roslyn generation chain.</summary>
 [ExcludeFromCodeCoverage(Justification = "Coordinates a detached local helper process and named pipe.")]

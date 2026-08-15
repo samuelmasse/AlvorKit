@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests SIMD-backed single-precision vector saturation and step operations.</summary>
 [TestClass]

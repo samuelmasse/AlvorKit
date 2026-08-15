@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Consumer and selector metadata attached to one physical claim.</summary>
 public sealed class InterceptionClaimOwner

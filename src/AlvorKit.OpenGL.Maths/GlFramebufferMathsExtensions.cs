@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL;
+namespace AlvorKit;
 
 /// <summary>Provides maths-shaped framebuffer and renderbuffer overloads.</summary>
 public static class GlFramebufferMathsExtensions

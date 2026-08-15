@@ -7,10 +7,4 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.Injection\AlvorKit.Injection.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.Injection" />
-        <Using Include="AlvorKit.Injection.Demo" />
-    </ItemGroup>
-
 </Project>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Supported argument matcher strategies.</summary>
 internal enum MatcherType

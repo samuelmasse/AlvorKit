@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Validates invocation-ledger ownership and entry snapshot invariants.</summary>
 internal static class MockInvocationLedgerContract

@@ -11,19 +11,19 @@ internal static class {{ExtensionType}}
 
 internal readonly ref struct {{RowType}}
 {
-    private readonly ref global::AlvorKit.ECS.EntMut ents;
+    private readonly ref global::AlvorKit.EntMut ents;
     // Native-width indexing avoids widening the row for every 64-bit address calculation.
 {{RowFields}}    private readonly nint row;
 
     internal {{RowType}}(
-        ref global::AlvorKit.ECS.EntMut ents,
+        ref global::AlvorKit.EntMut ents,
 {{ConstructorParameters}}        nint row)
     {
         this.ents = ref ents;
 {{ConstructorAssignments}}        this.row = row;
     }
 
-    public global::AlvorKit.ECS.EntMut Ent
+    public global::AlvorKit.EntMut Ent
     {
         [global::System.Runtime.CompilerServices.MethodImpl(
             global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -35,14 +35,14 @@ internal readonly ref struct {{RowType}}
 internal ref struct {{RowsType}}
 {
     private {{QueryType}}.Enumerator archs;
-    private ref global::AlvorKit.ECS.EntMut ents;
+    private ref global::AlvorKit.EntMut ents;
 {{RowsFields}}    private nint row;
     private nint count;
 
     internal {{RowsType}}({{QueryType}} query)
     {
         archs = query.GetEnumerator();
-        ents = ref global::System.Runtime.CompilerServices.Unsafe.NullRef<global::AlvorKit.ECS.EntMut>();
+        ents = ref global::System.Runtime.CompilerServices.Unsafe.NullRef<global::AlvorKit.EntMut>();
 {{NullAssignments}}        row = -1;
         count = 0;
     }
@@ -68,7 +68,7 @@ internal ref struct {{RowsType}}
         while (archs.MoveNext())
         {
             var chunk = archs.Current;
-            global::System.ReadOnlySpan<global::AlvorKit.ECS.EntMut> nextEnts = chunk.Ents;
+            global::System.ReadOnlySpan<global::AlvorKit.EntMut> nextEnts = chunk.Ents;
             ents = ref global::System.Runtime.InteropServices.MemoryMarshal.GetReference(nextEnts);
 {{BindAssignments}}            count = nextEnts.Length;
             row = 0;

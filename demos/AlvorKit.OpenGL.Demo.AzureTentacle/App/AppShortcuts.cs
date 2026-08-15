@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Maps keyboard shortcuts onto animation and camera commands.</summary>
 [App]

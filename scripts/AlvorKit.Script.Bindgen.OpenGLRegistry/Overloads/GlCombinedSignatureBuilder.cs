@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Builds generated method signatures for combined OpenGL overload plans.</summary>
 internal static class GlCombinedSignatureBuilder

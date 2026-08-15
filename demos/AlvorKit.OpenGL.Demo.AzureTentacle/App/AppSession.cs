@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Owns the loaded GLB model, camera state, and menu command surface for the demo.</summary>
 [App]

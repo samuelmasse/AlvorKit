@@ -6,9 +6,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Maths" />
-        <Using Include="AlvorKit.OpenGL" />
-        <Using Include="AlvorKit.OpenGL.Layer" />
         <Using Include="System.Reflection" />
         <Using Include="System.Runtime.CompilerServices" />
     </ItemGroup>

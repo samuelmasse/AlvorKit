@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Completed process invocation result.</summary>
 /// <param name="Command">Command that was executed.</param>

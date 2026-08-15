@@ -1,16 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <Using Include="AlvorKit.ECS" />
-        <Using Include="AlvorKit.ECS.Generator" />
-        <Using Include="AlvorKit.Engine" />
-        <Using Include="AlvorKit.Engine.Loop" />
-        <Using Include="AlvorKit.Graphics2D" />
-        <Using Include="AlvorKit.Graphics2D.Fonts" />
-        <Using Include="AlvorKit.Maths" />
-        <Using Include="AlvorKit.OpenGL.Layer" />
-        <Using Include="AlvorKit.Windowing" />
-        <Using Include="AlvorKit.UI.UiSyntax">
+        <Using Include="AlvorKit.UiSyntax">
             <Static>true</Static>
         </Using>
     </ItemGroup>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Validates receiver requirements for typed field contracts.</summary>
 internal static class MockFieldContract

@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Loads PNG files into bottom-left-origin RGBA image data for OpenGL uploads.</summary>
 [Root]

@@ -1,4 +1,4 @@
-namespace AlvorStarter.App;
+namespace AlvorStarter;
 
 /// <summary>Dependency-injection scope for the application lifetime.</summary>
 [App]

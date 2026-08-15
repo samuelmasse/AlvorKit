@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Configures heap-safe behavior or an exact typed factory for a captured value-returning call.</summary>
 public sealed class MockSetupClause<T>

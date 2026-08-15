@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits the generated public API base class.</summary>
 internal sealed class BindingApiEmitter(BindingEmitterContext context)

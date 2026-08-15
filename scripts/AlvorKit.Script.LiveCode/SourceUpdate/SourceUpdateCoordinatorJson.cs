@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Stable JSON and length-prefixed pipe framing for Source Update coordinator traffic.</summary>
 internal static class SourceUpdateCoordinatorJson

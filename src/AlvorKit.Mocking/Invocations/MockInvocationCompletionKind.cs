@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies the synchronous completion state of an invocation.</summary>
 internal enum MockInvocationCompletionKind

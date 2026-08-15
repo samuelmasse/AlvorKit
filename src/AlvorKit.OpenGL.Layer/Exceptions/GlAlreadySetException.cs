@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer;
+namespace AlvorKit;
 
 /// <summary>
 /// Exception thrown when a state value is set while it is already set.

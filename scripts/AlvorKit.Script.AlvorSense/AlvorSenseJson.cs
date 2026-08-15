@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Reads and writes the small JSON protocol used by the session mailbox.</summary>
 internal static class AlvorSenseJson

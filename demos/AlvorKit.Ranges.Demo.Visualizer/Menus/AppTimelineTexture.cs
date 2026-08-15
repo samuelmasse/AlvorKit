@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Rasterizes scenario command timelines into one-row textures and maps pointer positions to commands.</summary>
 [App]

@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Provides a stable SHA-256 identity for exact authoritative method-body bytes.</summary>
 public sealed class LoadedMethodBodyIdentity :

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Builds the generated System.CommandLine surface for LiveCode operations.</summary>
 internal static class LiveCodeCommandTree

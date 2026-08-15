@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 // Signature internment is separated from the transition implementation without changing the closed generic state.
 internal static partial class EntArchGraph<A>

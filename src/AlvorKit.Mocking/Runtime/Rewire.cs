@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Dispatches intercepted calls into capture, event, and behavior handling.</summary>
 internal static class Rewire

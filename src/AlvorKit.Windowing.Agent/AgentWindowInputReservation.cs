@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Releases one exclusive synthetic-input reservation exactly once.</summary>
 internal sealed class AgentWindowInputReservation : IDisposable

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease;
+namespace AlvorKit;
 
 /// <summary>Command result with process exit code and console lines.</summary>
 /// <param name="ExitCode">Process exit code to return to the caller.</param>

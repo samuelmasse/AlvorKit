@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Discoverable identity, policy, and request schema for one predefined LiveCode bridge.</summary>
 public sealed record LiveCodeBridgeDescriptor(

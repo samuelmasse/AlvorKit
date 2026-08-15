@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Command-line entry point for regenerating AlvorKit.Maths primitive package source.</summary>
 internal static class Program

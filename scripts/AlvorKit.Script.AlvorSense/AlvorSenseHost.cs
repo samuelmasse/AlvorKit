@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Runs the background request loop for one persistent agent-controlled game session.</summary>
 /// <param name="sessionDir">Session directory containing the manifest, request mailbox, and logs.</param>

@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Lowers one recognized loaded <c>newobj</c> site to an exact static route.</summary>
 public static class LoadedConstructionCallerComposer

@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>Builds the Noise Lab shell: menu bar, toolbar, parameter dock + viewport workspace, and status bar.</summary>
 [App]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to the single-precision 3x2 matrix type with <see cref="System.Numerics.Matrix3x2" /> conversions.</summary>
 /// <typeparam name="TSelf">The single-precision 3x2 matrix type, such as <c>Mat3x2</c>.</typeparam>

@@ -198,5 +198,8 @@ glfw.DestroyWindow(window);
 glfw.Terminate();
 return 0;
 
-/// <summary>Marker type used to resolve repository resources for the Fonts demo.</summary>
-internal sealed class FontDemoMarker;
+namespace AlvorKit
+{
+    /// <summary>Marker type used to resolve repository resources for the Fonts demo.</summary>
+    internal sealed class FontDemoMarker;
+}

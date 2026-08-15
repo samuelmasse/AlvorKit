@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies an optionally observed asynchronous outcome.</summary>
 internal enum MockInvocationAsyncCompletionKind

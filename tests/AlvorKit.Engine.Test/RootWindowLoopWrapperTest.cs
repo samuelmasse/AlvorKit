@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Test;
+namespace AlvorKit;
 
 [TestClass]
 public sealed class RootWindowLoopWrapperTest
@@ -18,7 +18,7 @@ public sealed class RootWindowLoopWrapperTest
         foreach (var wrapper in wrappers)
         {
             var rootName = RootName(wrapper);
-            var rootType = typeof(RootScope).Assembly.GetType($"AlvorKit.Engine.{rootName}");
+            var rootType = typeof(RootScope).Assembly.GetType($"AlvorKit.{rootName}");
 
             Assert.IsNotNull(rootType, $"Missing root equivalent '{rootName}' for '{wrapper.FullName}'.");
             Assert.IsTrue(rootType.IsDefined(typeof(RootAttribute), false), $"'{rootName}' must be marked [Root].");
@@ -32,7 +32,7 @@ public sealed class RootWindowLoopWrapperTest
     private static bool IsPublicWindowLoopWrapper(Type type) =>
         type.IsClass &&
         type.IsPublic &&
-        type.Namespace == "AlvorKit.Windowing" &&
+        type.Namespace == "AlvorKit" &&
         type.GetConstructors().Any(x => x.GetParameters().FirstOrDefault()?.ParameterType == typeof(WindowLoop));
 
     private static string RootName(Type wrapper) =>

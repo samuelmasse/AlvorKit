@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection.Graph.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies explicit scope ownership, sibling identity, and lifecycle transitions.</summary>
 [TestClass]

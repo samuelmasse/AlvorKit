@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Creates and validates common AlvorSense command-line options.</summary>
 internal static class AlvorSenseCliOptions

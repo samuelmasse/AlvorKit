@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges;
+namespace AlvorKit;
 
 /// <summary>Stores one free block plus intrusive links for the address and size indexes.</summary>
 internal struct RangeFreeBlockNode

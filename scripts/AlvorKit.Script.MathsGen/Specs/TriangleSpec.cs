@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one generated 3D triangle type.</summary>
 internal sealed record TriangleSpec(ScalarSpec Scalar)

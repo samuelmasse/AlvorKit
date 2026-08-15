@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Terminal status of one structured bridge invocation.</summary>
 public enum LiveCodeBridgeExecutionStatus

@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Root-owned embedded Roboto Mono font used by demos and games that want a built-in monospace face.</summary>
 [Root]

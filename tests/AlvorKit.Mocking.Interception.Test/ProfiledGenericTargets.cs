@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Provides nonvirtual members on a closed concrete generic type.</summary>
 public sealed class ProfiledGenericTarget<T>

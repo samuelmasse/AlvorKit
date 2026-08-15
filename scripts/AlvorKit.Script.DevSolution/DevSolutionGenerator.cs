@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.DevSolution;
+namespace AlvorKit;
 
 /// <summary>Generates a deterministic .slnx that combines a consumer solution with AlvorKit projects.</summary>
 internal sealed class DevSolutionGenerator

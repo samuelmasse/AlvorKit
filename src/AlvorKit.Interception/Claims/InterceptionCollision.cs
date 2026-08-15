@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Order-independent diagnostic describing two incompatible claims.</summary>
 public sealed class InterceptionCollision

@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Implements Blend root, panel, list, and row layout recipes.</summary>
 internal sealed class BlendStyleLayout

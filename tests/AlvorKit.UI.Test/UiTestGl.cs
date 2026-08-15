@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Test;
+namespace AlvorKit;
 
 /// <summary>Minimal fake OpenGL backend so UI tests can construct the sprite pipeline without a GPU.</summary>
 internal sealed unsafe class UiTestGl : GlNoop

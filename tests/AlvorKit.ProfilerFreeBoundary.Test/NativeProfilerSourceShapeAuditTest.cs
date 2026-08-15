@@ -1,4 +1,4 @@
-namespace AlvorKit.ProfilerFreeBoundary.Test;
+namespace AlvorKit;
 
 /// <summary>Enforces the hand-authored source shape of the native profiler.</summary>
 [TestClass]

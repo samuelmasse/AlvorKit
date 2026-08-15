@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Test;
+namespace AlvorKit;
 
 /// <summary>Records one engine-facing file-dialog request.</summary>
 internal sealed class EngineTestFileDialogHost : IFileDialogHost

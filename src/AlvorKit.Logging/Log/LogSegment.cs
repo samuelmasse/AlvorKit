@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging;
+namespace AlvorKit;
 
 /// <summary>Stores an ordered, reusable batch of collected log entries.</summary>
 internal sealed class LogSegment

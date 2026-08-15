@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Test;
+namespace AlvorKit;
 
 /// <summary>Drives <see cref="RootUiScript"/> frames over fake windowing, GL, and input roots, mirroring the RootLoop wiring.</summary>
 internal sealed class UiTestHarness

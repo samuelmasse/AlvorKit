@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer;
+namespace AlvorKit;
 
 /// <summary>
 /// Context-wide tracking state shared by every <see cref="GlLayer"/> node in one hierarchy:

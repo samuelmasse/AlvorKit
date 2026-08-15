@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Generates reusable rounded control edge textures for the Blend style.</summary>
 public class BlendControlChrome(GlLayer gl, RootUiScale scale)

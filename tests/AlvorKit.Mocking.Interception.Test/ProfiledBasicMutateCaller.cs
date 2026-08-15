@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns the selected concrete ref/out caller and its gated route.</summary>
 internal static class ProfiledBasicMutateCaller

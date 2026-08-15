@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Describes the actionlint release asset required for a platform.</summary>
 /// <param name="Os">Actionlint asset operating-system segment.</param>

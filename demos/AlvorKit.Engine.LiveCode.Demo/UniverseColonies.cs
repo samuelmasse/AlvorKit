@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Owns all simultaneously active colony lifetimes beneath the engine root.</summary>
 [Root]

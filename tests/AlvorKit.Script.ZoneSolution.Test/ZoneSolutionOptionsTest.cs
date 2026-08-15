@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.ZoneSolution.Test;
+namespace AlvorKit;
 
 /// <summary>Tests command-line option parsing for the AlvorZone solution generator.</summary>
 [TestClass]

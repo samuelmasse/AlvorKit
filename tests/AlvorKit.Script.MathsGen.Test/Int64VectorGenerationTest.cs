@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Protects the complete-register Int64 and UInt64 vector generation paths.</summary>
 [TestClass]

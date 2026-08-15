@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Builds generated managed delegates for callback typedefs used by selected commands.</summary>
 /// <param name="config">Bindgen configuration containing callback metadata.</param>

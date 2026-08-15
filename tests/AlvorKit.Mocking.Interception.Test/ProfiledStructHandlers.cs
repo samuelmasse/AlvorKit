@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Counts and enters one writable struct wrapper.</summary>
 internal sealed class ProfiledStructInt32Handler<T>(

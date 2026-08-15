@@ -1,4 +1,4 @@
-namespace AlvorKit.Demo;
+namespace AlvorKit;
 
 /// <summary>A glyph rasterized by FreeType into tight grayscale rows.</summary>
 public sealed class GlyphBitmap

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.CHeaders.Test;
+namespace AlvorKit;
 
 /// <summary>Covers generated attributes and docs for platform-specific native functions.</summary>
 [TestClass]

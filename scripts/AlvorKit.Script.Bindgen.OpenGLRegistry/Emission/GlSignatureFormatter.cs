@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Formats common generated OpenGL command signatures and call fragments.</summary>
 internal static class GlSignatureFormatter

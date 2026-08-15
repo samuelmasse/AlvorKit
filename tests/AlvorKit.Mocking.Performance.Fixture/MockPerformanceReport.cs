@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Combines environment, method, measurements, and explicit deferrals in one artifact.</summary>
 internal sealed record MockPerformanceReport(

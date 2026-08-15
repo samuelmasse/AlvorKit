@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Platform-neutral visual cursor shapes for a window.</summary>
 public enum CursorShape

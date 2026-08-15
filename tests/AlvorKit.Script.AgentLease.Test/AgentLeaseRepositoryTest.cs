@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease.Test;
+namespace AlvorKit;
 
 /// <summary>Tests lease repository filesystem behavior.</summary>
 [TestClass]

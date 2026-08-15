@@ -1,4 +1,4 @@
-namespace AlvorKit.Text;
+namespace AlvorKit;
 
 /// <summary>Appends typed values without mutable process-wide formatter registration.</summary>
 internal static class TextValueFormatter

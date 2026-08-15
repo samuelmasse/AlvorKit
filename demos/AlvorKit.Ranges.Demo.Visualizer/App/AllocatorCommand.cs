@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>The allocator operation represented by one visualizer script step.</summary>
 public enum AllocatorCommandKind

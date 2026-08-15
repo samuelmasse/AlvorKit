@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL;
+namespace AlvorKit;
 
 /// <summary>Provides direct-state-access single-precision matrix uniform overloads.</summary>
 public static class GlFloatProgramUniformMatrixMathsExtensions

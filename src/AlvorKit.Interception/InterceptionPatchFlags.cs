@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Code generation policy for one replacement body.</summary>
 [Flags]

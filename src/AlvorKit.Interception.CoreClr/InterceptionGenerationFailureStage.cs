@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies the native stage that rejected a method generation.</summary>
 public enum InterceptionGenerationFailureStage

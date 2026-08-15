@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Test;
+namespace AlvorKit;
 
 /// <summary>Tests reusable Blend scroll offset positioning.</summary>
 [TestClass]

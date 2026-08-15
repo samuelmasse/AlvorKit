@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Provides distinct closed interface types for cache-cold proxy generation samples.</summary>
 public interface IColdProxyTarget<TTag>

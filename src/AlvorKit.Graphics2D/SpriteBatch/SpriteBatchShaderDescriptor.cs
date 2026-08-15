@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Configures the vertex attributes consumed by the built-in sprite batch shader.</summary>
 internal class SpriteBatchShaderDescriptor(GlLayer gl)

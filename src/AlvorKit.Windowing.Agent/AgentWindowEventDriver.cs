@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Raises deterministic agent window events while updating owned simulated state.</summary>
 internal sealed class AgentWindowEventDriver(

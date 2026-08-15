@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Build manifest loaded from native/&lt;library&gt;/conf/native-build.yml.</summary>
 internal sealed class NativeBuildConfig

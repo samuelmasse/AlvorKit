@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns the receiver-isolation caller and its gated route.</summary>
 internal static class ProfiledInstanceIsolationCaller

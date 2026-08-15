@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies metadata that native lowering must create or reuse safely.</summary>
 public enum LoadedSymbolicRelocationKind

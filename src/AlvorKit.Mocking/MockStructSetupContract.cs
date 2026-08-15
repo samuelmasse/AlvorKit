@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Validates and materializes live-struct setup contracts.</summary>
 internal static class MockStructSetupContract

@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>One physical interception ownership request plus logical and consumer metadata.</summary>
 public sealed class InterceptionClaim

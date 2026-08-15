@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies how an indexed matcher placeholder reaches its parameter.</summary>
 internal enum MockIndexedMatcherPassingKind

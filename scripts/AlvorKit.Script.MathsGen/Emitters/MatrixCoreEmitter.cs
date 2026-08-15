@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits fields, constructors, constants, rows, and indexers for matrices.</summary>
 internal static class MatrixCoreEmitter

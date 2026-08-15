@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Gamepad axes exposed by AlvorKit windowing.</summary>
 public enum GamepadAxis

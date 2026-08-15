@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Executes line-oriented commands against an agent-controlled window host.</summary>
 internal class AgentWindowCommandRunner

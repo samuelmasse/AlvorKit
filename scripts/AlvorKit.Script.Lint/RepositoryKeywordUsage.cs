@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Location of a prohibited C# keyword in repository-owned source.</summary>
 /// <param name="File">Repository-relative source file.</param>

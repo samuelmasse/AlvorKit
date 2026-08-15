@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Writes the temporary C translation unit passed to Clang.</summary>
 [ExcludeFromCodeCoverage]

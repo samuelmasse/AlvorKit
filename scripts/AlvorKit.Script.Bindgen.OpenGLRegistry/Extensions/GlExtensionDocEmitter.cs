@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits XML documentation for generated OpenGL extension overloads.</summary>
 internal static class GlExtensionDocEmitter

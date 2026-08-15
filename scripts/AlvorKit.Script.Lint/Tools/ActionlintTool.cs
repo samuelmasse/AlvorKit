@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Downloads and resolves the pinned actionlint executable used by the lint coordinator.</summary>
 [ExcludeFromCodeCoverage]

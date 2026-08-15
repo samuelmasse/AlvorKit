@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.Core.Test;
+namespace AlvorKit;
 
 /// <summary>Covers low-level native comment text cleanup.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Configures a captured read-only managed-reference return.</summary>
 public sealed class MockRefReadonlySetupClause<T>

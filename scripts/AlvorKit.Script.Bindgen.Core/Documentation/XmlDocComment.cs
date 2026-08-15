@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Native documentation after it has been reduced to XML-doc-friendly prose.</summary>
 /// <param name="Summary">Summary prose for the documented member.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Test;
+namespace AlvorKit;
 
 /// <summary>Covers the single-line text edit engine: buffer, caret, selection, and key handling.</summary>
 [TestClass]

@@ -1,7 +1,7 @@
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Reads and validates exact managed module identities without loading an assembly.</summary>
 public static class CoreClrModuleIdentity

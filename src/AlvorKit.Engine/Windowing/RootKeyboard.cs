@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Root-scoped keyboard and text-input reader.</summary>
 [Root]

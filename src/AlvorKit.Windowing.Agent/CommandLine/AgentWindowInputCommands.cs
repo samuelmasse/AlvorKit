@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Creates commands that inject deterministic input into the agent window.</summary>
 internal static class AgentWindowInputCommands

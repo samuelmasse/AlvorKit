@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Builds a compilation manifest from the target application, framework, and loaded extension assemblies.</summary>
 internal sealed class LiveCodeReferenceCatalog(LiveCodeHostOptions options)

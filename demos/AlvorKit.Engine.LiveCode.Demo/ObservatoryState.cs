@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Runs a living multi-scope colony observatory inside the normal AlvorKit engine loop.</summary>
 [Root]

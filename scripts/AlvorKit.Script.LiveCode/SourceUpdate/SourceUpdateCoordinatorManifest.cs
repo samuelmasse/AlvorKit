@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Token-free identity and latest durable state for one workspace Source Update owner.</summary>
 internal sealed record SourceUpdateCoordinatorManifest(

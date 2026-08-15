@@ -1,4 +1,4 @@
-namespace AlvorKit.Text;
+namespace AlvorKit;
 
 /// <summary>Creates consistent exceptions for invalid composite format strings.</summary>
 internal static class CompositeTextFormatException

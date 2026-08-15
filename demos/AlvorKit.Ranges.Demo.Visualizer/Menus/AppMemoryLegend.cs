@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Projects the active memory overlay mode into viewport-header legend entries.</summary>
 [App]

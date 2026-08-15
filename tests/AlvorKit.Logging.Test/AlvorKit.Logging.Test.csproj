@@ -4,10 +4,4 @@
         <ProjectReference Include="..\..\src\AlvorKit.Logging\AlvorKit.Logging.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Maths\AlvorKit.Maths.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.Logging" />
-        <Using Include="AlvorKit.Maths" />
-    </ItemGroup>
-
 </Project>

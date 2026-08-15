@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense.Test;
+namespace AlvorKit;
 
 /// <summary>Tests the JSON protocol and filesystem mailbox used by AlvorSense sessions.</summary>
 [TestClass]

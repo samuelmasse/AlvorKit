@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Queries immutable projector selections used by typed matching.</summary>
 internal static class MockTypedMatcherProjectors

@@ -5,7 +5,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Maths" />
         <InternalsVisibleTo Include="AlvorKit.Windowing.Test" />
         <InternalsVisibleTo Include="AlvorKit.Windowing.Agent" />
         <InternalsVisibleTo Include="AlvorKit.Engine.LiveCode" />

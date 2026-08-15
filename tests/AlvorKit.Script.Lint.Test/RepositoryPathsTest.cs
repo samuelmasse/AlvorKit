@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint.Test;
+namespace AlvorKit;
 
 /// <summary>Tests repository root discovery for lint command execution.</summary>
 [TestClass]

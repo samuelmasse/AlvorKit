@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Creates mock state for proxy- and interception-owned dispatch sites.</summary>
 public static partial class Mock

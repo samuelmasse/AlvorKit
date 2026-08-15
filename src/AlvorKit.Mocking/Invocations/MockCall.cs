@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Provides declared-order ordinary arguments and validated reference writeback.</summary>
 public sealed class MockCall

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Stores heap-safe outcome metadata for a normal invocation return.</summary>
 internal sealed class MockInvocationReturn

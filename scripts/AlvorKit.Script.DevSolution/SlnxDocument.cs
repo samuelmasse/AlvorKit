@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.DevSolution;
+namespace AlvorKit;
 
 /// <summary>Project entries read from a .slnx file.</summary>
 /// <param name="SolutionPath">Source solution path.</param>

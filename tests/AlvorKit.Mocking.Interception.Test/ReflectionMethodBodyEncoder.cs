@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Encodes one same-module test template as a complete raw profiler body.</summary>
 internal static class ReflectionMethodBodyEncoder

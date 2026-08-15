@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns one exact byref value-receiver caller route.</summary>
 internal sealed class ProfiledStructCallerRoute<TDelegate> :

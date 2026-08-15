@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Validates exact construction and field site delegates.</summary>
 internal static class MockReceiverFreeDelegateContract

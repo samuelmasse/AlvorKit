@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Structured terminal response from one predefined LiveCode bridge.</summary>
 public sealed record LiveCodeBridgeExecutionResult(

@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate.Demo;
+namespace AlvorKit;
 
 /// <summary>Visible result produced by the editable method.</summary>
 public readonly record struct PulseReading(

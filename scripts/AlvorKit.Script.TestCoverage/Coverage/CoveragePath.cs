@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Normalizes document paths stored in coverage artifacts.</summary>
 internal static class CoveragePath

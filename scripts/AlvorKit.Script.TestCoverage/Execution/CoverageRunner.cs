@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Coordinates project discovery, test execution, coverage aggregation, and report writing.</summary>
 /// <param name="options">Validated command-line options for this run.</param>

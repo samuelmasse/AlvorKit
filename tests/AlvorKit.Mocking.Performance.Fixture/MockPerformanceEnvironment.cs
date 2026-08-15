@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Records runtime and machine properties needed to interpret one fixture run.</summary>
 internal sealed record MockPerformanceEnvironment(

@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies one stable source-to-loaded-body resolution failure.</summary>
 public enum LoadedSourceMethodRejectionReason

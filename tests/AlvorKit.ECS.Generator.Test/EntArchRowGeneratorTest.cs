@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Generator.Test;
+namespace AlvorKit;
 
 /// <summary>Tests exact archetypal row source generation from consumer query usage.</summary>
 [TestClass]
@@ -11,8 +11,7 @@ public sealed class EntArchRowGeneratorTest
         const string source = """
             namespace Fixture;
 
-            using AlvorKit.ECS;
-            using AlvorKit.ECS.Generator;
+            using AlvorKit;
 
             [Components]
             public interface IMotionComponents
@@ -99,7 +98,7 @@ public sealed class EntArchRowGeneratorTest
         const string source = """
             namespace Fixture.Components
             {
-                using AlvorKit.ECS.Generator;
+                using AlvorKit;
 
                 [Components]
                 public interface ISeparatedComponents
@@ -110,7 +109,7 @@ public sealed class EntArchRowGeneratorTest
 
             namespace Fixture.Systems
             {
-                using AlvorKit.ECS;
+                using AlvorKit;
                 using Fixture.Components;
 
                 public static class Runner

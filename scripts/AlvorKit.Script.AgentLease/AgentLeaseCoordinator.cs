@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease;
+namespace AlvorKit;
 
 /// <summary>Coordinates advisory lease operations against the repository lease store.</summary>
 /// <param name="repository">Lease file repository.</param>

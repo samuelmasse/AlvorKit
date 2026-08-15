@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Exercises managed-reference aliases through real profiled callers.</summary>
 [TestClass]

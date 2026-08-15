@@ -1,4 +1,4 @@
-namespace AlvorKit.UI;
+namespace AlvorKit;
 
 /// <summary>Describes the physical viewport and logical extent of the UI surface currently being processed.</summary>
 [Root]

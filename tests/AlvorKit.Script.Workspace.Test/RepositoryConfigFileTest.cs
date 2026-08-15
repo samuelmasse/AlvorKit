@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Workspace.Test;
+namespace AlvorKit;
 
 /// <summary>Covers repository config discovery and YAML/JSON loading behavior.</summary>
 [TestClass]

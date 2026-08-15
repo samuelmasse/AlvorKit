@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace;
+namespace AlvorKit;
 
 /// <summary>Stable public identity of the LiveCode process associated with a workspace.</summary>
 /// <param name="SessionId">Immutable LiveCode session identifier.</param>

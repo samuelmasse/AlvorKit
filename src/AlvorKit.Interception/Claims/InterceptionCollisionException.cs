@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Rejects ambiguous physical or logical interception ownership.</summary>
 public sealed class InterceptionCollisionException(

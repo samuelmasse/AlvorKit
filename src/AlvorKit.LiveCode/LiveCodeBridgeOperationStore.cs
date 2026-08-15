@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Bounds, reserves, and exposes two-phase bridge operations without entering the game thread.</summary>
 internal sealed class LiveCodeBridgeOperationStore(int maximumOperations)

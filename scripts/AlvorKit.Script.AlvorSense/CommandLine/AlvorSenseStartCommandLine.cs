@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Creates the System.CommandLine surface for starting AlvorSense sessions.</summary>
 internal static class AlvorSenseStartCommandLine

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Centralizes file and directory names used by persistent AlvorSense sessions.</summary>
 internal static class AlvorSensePaths

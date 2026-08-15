@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview.Test;
+namespace AlvorKit;
 
 /// <summary>Tests command-line parsing for the bindgen review helper.</summary>
 [TestClass]

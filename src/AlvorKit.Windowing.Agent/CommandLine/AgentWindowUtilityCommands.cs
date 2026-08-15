@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Creates commands for inspection, screenshots, and command-loop control.</summary>
 internal static class AgentWindowUtilityCommands

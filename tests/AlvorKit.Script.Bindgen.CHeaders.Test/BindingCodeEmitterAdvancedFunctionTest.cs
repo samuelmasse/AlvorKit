@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.CHeaders.Test;
+namespace AlvorKit;
 
 /// <summary>Covers generated attributes for raw native-shaped methods that should be de-emphasized.</summary>
 [TestClass]

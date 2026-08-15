@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Window resize data reported by a host window.</summary>
 /// <param name="Size">The current drawable client size.</param>

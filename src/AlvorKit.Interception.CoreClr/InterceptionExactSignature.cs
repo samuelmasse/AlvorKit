@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Owns one reviewed exact target signature used by emitted handler types.</summary>
 internal sealed record InterceptionExactSignature(

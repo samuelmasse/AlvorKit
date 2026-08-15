@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Implements one discoverable, versioned operation that runs directly on the game thread.</summary>
 public interface ILiveCodeBridge

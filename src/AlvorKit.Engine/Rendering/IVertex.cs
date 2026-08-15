@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Static vertex-layout contract consumed by <see cref="RenderProgram{T}"/>.</summary>
 public interface IVertex

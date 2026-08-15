@@ -8,13 +8,7 @@
         <ProjectReference
             Include="..\..\src\AlvorKit.Interception.CoreClr\AlvorKit.Interception.CoreClr.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.Interception" />
-        <Using Include="AlvorKit.Interception.CoreClr.Advanced" />
-    </ItemGroup>
-
-    <Target
+<Target
         Name="CopyInterceptionProfilerForLaunch"
         AfterTargets="Build"
         Condition="'$(OS)' == 'Windows_NT'">

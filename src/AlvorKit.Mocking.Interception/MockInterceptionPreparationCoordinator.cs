@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Mocking.Interception;
+namespace AlvorKit;
 
 /// <summary>
 /// Prepares every route before activation and rolls partial activation back.

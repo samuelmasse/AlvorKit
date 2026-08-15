@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Partitions complete exception clauses around a constructor initializer split.</summary>
 internal static class LoadedConstructorExceptionPartitioner

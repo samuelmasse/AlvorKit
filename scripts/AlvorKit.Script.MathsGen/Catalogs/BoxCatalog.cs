@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Defines axis-aligned box dimensions and scalar families emitted by the generator.</summary>
 internal static class BoxCatalog

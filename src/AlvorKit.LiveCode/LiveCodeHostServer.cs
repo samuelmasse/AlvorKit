@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Owns loopback transport, discovery, and the queue crossing into the game thread.</summary>
 internal sealed class LiveCodeHostServer(

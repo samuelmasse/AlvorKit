@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies the mock or interception call site that owns an invocation.</summary>
 internal sealed record MockInvocationTarget

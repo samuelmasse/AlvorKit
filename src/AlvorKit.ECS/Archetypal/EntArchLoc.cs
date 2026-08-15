@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Locates an Ent inside one archetypal group's row-set and arch catalogs.</summary>
 internal struct EntArchLoc(int rowSetId, int archId, int row)

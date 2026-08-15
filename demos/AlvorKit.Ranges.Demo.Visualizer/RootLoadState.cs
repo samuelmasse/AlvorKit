@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Bootstraps the demo app scope from the engine root scope.</summary>
 [Root]

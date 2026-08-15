@@ -11,7 +11,7 @@ list only the differences per scalar family or dimension.
 
 ## Conventions shared by every type
 
-Every public type is a `partial struct` in the `AlvorKit.Maths` namespace
+Every public type is a `partial struct` in the `AlvorKit` namespace
 with a primary constructor over its fields. Vectors, `Mat4`, `Mat3x2`, and
 `Quat` use explicit layout (for aliases and `System.Numerics` overlays);
 other types are sequential.

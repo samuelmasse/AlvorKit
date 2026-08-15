@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Owns one stable setup-lifetime location used by value-based ref returns.</summary>
 internal sealed class MockRefStorage<T>(T value)

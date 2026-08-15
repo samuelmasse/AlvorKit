@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace;
+namespace AlvorKit;
 
 /// <summary>Lifecycle of one local agent workspace associated with a live game process.</summary>
 public enum LiveWorkspaceStatus

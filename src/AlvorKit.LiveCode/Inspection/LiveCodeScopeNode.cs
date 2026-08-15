@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Wire-safe metadata for one tracked injector scope.</summary>
 public sealed record LiveCodeScopeNode(

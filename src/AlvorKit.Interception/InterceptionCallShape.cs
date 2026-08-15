@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>
 /// Reviewed exact operation signature plus the ownership of its hidden receiver.

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Describes how one spatial shape relates to another.</summary>
 public enum ContainmentKind

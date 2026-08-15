@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Declares generated component accessors used by the ECS benchmark demo.</summary>
 [Components]

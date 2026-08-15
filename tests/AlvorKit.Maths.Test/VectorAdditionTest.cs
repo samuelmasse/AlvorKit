@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests single-precision vector addition behavior across generated dimensions.</summary>
 [TestClass]

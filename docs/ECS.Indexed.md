@@ -444,9 +444,7 @@ bag.
 </ItemGroup>
 
 <ItemGroup>
-    <Using Include="AlvorKit.ECS" />
-    <Using Include="AlvorKit.ECS.Indexed" />
-    <Using Include="AlvorKit.ECS.Generator" />
+    <Using Include="AlvorKit" />
 </ItemGroup>
 ```
 

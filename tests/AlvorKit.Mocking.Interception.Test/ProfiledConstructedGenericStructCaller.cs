@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns a genuinely generic caller rewritten for all its constructions.</summary>
 internal static class ProfiledConstructedGenericStructCaller

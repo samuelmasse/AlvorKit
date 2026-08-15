@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Resolves reviewed exact metadata for isolated operation-recognition tests.</summary>
 internal sealed class LoadedOperationMetadataFixture :

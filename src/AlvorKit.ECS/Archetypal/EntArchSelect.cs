@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Represents the first component in an archetypal query selection.</summary>
 public readonly struct EntArchSelect<T, N, A> : IEntArchSelect<A>

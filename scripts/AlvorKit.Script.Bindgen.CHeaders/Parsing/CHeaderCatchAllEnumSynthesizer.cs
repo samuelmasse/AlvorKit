@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Promotes discovered macro constants into a catch-all managed enum.</summary>
 internal static class CHeaderCatchAllEnumSynthesizer

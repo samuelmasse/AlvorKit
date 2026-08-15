@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges;
+namespace AlvorKit;
 
 /// <summary>Provides boundary searches over sorted numeric lists used by range indexes.</summary>
 internal static class RangeBoundarySearch

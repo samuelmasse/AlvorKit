@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo;
+namespace AlvorKit;
 
 /// <summary>Bootstraps the Blend editor-shell demo app scope from the engine root scope.</summary>
 [Root]

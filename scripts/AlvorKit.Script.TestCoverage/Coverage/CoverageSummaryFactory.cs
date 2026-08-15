@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Creates immutable report summaries from accumulated coverage items.</summary>
 internal static class CoverageSummaryFactory

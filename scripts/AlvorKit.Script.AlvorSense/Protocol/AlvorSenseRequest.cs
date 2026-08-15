@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>One filesystem-mailbox request from the foreground CLI to the background host.</summary>
 /// <param name="Id">Unique request id used to match responses.</param>

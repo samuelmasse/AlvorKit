@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies one stable constructor-split rejection category.</summary>
 public enum LoadedConstructorRemainderRejectionReason

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace;
+namespace AlvorKit;
 
 /// <summary>Maintains persistent live-process effects and enforces cleanup before workspace closure.</summary>
 /// <param name="manifests">Manifest persistence boundary.</param>

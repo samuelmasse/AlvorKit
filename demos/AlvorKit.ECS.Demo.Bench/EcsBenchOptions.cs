@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Stores command-line options for the ECS benchmark demo.</summary>
 public sealed record EcsBenchOptions(

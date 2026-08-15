@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to all 3D axis-aligned box types.</summary>
 public interface IBox3<TSelf, TScalar, TVector> : IBox<TSelf, TScalar, TVector>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Maps one immutable baseline coordinate to a symbolic generation instruction.</summary>
 public sealed class LoadedSymbolicIlMapEntry

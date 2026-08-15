@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Default process runner backed by System.Diagnostics.Process.</summary>
 [ExcludeFromCodeCoverage]

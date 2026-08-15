@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Root-owned handle for one tracked colony and its cached hot-loop services.</summary>
 public sealed class UniverseColony(

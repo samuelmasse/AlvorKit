@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Projects collected registry tokens into deterministic generated enum members.</summary>
 internal static class GlRegistryMemberSorter

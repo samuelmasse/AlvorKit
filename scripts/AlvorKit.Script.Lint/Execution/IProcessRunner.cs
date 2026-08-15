@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Runs planned process commands for the lint coordinator.</summary>
 internal interface IProcessRunner

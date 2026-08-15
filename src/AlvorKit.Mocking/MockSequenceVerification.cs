@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Captures, compares, diagnoses, and marks exact logical invocation sequences.</summary>
 internal static class MockSequenceVerification

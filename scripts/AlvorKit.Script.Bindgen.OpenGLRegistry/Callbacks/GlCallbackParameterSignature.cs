@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Native callback parameter declaration.</summary>
 /// <param name="CType">Native parameter type text.</param>

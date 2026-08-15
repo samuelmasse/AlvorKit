@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Tests the retained fixed-width float-to-Int32 conversion generation.</summary>
 [TestClass]

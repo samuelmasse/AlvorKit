@@ -1,9 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <Using Include="System.Reflection" />
-        <Using Include="System.Runtime.CompilerServices" />
-        <Using Include="System.Text" />
         <InternalsVisibleTo Include="AlvorKit.Engine.Loop" />
         <InternalsVisibleTo Include="AlvorKit.Logging" />
         <InternalsVisibleTo Include="AlvorKit.Text.Test" />

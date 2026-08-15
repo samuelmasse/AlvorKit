@@ -1,4 +1,4 @@
-namespace AlvorKit.Text;
+namespace AlvorKit;
 
 /// <summary>Parses standard composite-format items directly into reusable storage.</summary>
 internal static class CompositeTextWriter

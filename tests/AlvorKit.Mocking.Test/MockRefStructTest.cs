@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 [TestClass]
 public sealed class MockRefStructTest

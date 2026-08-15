@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL;
+namespace AlvorKit;
 
 /// <summary>Provides maths-shaped texture image definition overloads.</summary>
 public static class GlTextureImageMathsExtensions

@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Plans one safe post-initializer constructor remainder from loaded IL.</summary>
 public static class LoadedConstructorRemainderPlanner

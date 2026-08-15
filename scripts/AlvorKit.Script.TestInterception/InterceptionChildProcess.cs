@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Runs one bounded child and forwards its captured output.</summary>
 internal static class InterceptionChildProcess

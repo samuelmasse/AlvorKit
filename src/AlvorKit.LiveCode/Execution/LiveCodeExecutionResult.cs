@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Structured terminal response for one submitted command.</summary>
 public sealed record LiveCodeExecutionResult(

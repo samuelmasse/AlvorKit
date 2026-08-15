@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Current lifecycle state of one accepted two-phase bridge invocation.</summary>
 public enum LiveCodeBridgeOperationState

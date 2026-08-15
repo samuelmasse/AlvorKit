@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Test;
+namespace AlvorKit;
 
 /// <summary>Tests texture ownership and strict bind behavior.</summary>
 [TestClass]

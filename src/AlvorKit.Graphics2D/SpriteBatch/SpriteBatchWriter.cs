@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Accepts high-level sprite and line draw calls for a running <see cref="SpriteBatch"/>.</summary>
 public partial class SpriteBatchWriter

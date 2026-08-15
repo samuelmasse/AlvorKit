@@ -1,4 +1,4 @@
-namespace AlvorKit.Hashing;
+namespace AlvorKit;
 
 /// <summary>Maps integer keys to indices in power-of-two hash tables.</summary>
 public static class TableHash

@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Provides allocator lifecycle operations for one registered archetypal group.</summary>
 internal abstract class EntArchGroupOps

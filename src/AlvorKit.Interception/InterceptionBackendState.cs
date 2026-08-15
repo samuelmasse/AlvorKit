@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Cold-path diagnostic state for one interception backend.</summary>
 public readonly record struct InterceptionBackendState(

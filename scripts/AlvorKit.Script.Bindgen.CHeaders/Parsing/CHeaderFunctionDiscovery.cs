@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Discovers exported native functions selected for the generated managed API.</summary>
 internal sealed class CHeaderFunctionDiscovery(

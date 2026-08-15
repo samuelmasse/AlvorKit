@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NewGame;
+namespace AlvorKit;
 
 /// <summary>Summary of a generated game repository.</summary>
 /// <param name="OutputPath">Absolute path of the created repository.</param>

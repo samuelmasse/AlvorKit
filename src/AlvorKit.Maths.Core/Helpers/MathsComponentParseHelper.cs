@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Provides shared comma-separated component readers for generated maths types.</summary>
 internal static class MathsComponentParseHelper

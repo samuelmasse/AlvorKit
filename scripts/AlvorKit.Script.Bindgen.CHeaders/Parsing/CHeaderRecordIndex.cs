@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Indexes native record definitions by direct and typedef names.</summary>
 internal static class CHeaderRecordIndex

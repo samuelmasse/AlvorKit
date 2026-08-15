@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Position and color vertex used by built-in simple color shaders.</summary>
 [StructLayout(LayoutKind.Sequential)]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to all floating-point vector types, including <c>Vec2</c>, <c>Vec3h</c>, and <c>Vec4d</c>.</summary>
 /// <typeparam name="TSelf">The floating-point vector type, such as <c>Vec3</c> or <c>Vec4d</c>.</typeparam>

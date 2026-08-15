@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Represents the skinned mesh, embedded texture, and animation clips loaded from the GLB.</summary>
 internal sealed partial class AnimatedGlbMesh

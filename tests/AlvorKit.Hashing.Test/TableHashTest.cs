@@ -1,4 +1,4 @@
-namespace AlvorKit.Hashing.Test;
+namespace AlvorKit;
 
 [TestClass]
 public class TableHashTest

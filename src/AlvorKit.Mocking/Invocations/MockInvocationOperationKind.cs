@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies the intercepted operation represented by an invocation.</summary>
 internal enum MockInvocationOperationKind

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 3D ray types, including <c>Ray3</c> and <c>Ray3d</c>.</summary>
 /// <typeparam name="TSelf">The concrete ray type.</typeparam>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Owns one immutable receiver-free match and its behavior state.</summary>
 internal sealed class MockReceiverFreeSetup

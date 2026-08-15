@@ -1,4 +1,4 @@
-namespace AlvorStarter.Menus;
+namespace AlvorStarter;
 
 /// <summary>Builds the starter menu with a click counter.</summary>
 [App]

@@ -19,11 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Maths" />
-        <Using Include="AlvorKit.FreeType" />
-        <Using Include="AlvorKit.OpenGL" />
-        <Using Include="AlvorKit.Graphics2D" />
-        <Using Include="AlvorKit.OpenGL.Layer" />
         <InternalsVisibleTo Include="AlvorKit.Graphics2D.Fonts.Test" />
     </ItemGroup>
 

@@ -1,9 +1,4 @@
 namespace AgentSubmissions;
-
-using AlvorKit.Engine.Loop;
-using AlvorKit.Graphics2D;
-using AlvorKit.Graphics2D.Fonts;
-
 [Root]
 public sealed class ResizeAndRescale(
     RootScope root,

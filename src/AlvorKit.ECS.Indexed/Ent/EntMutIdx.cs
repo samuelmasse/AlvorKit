@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Indexed;
+namespace AlvorKit;
 
 [DebuggerTypeProxy(typeof(EntDebugView))]
 public readonly record struct EntMutIdx : IEntMut

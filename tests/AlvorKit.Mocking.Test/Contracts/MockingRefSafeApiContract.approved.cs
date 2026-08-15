@@ -1,12 +1,12 @@
-namespace AlvorKit.Mocking.Test.Contracts.RefSafe;
+namespace AlvorKit;
 
 // Every clause, matcher, projector, and delegate shape below binds the
 // production public surface.
 internal static class MockingRefSafeApiContract
 {
     internal static void ByValueCallbacks(
-        global::AlvorKit.Mocking.MockSetupClause clause,
-        global::AlvorKit.Mocking.MockSetupClause<int> resultClause,
+        global::AlvorKit.MockSetupClause clause,
+        global::AlvorKit.MockSetupClause<int> resultClause,
         int[] observed)
     {
         clause.Do(
@@ -32,8 +32,8 @@ internal static class MockingRefSafeApiContract
     }
 
     internal static void ExactReferenceCallbacks(
-        global::AlvorKit.Mocking.MockSetupClause clause,
-        global::AlvorKit.Mocking.MockSetupClause<int> resultClause)
+        global::AlvorKit.MockSetupClause clause,
+        global::AlvorKit.MockSetupClause<int> resultClause)
     {
         clause.Do(
             (
@@ -58,7 +58,7 @@ internal static class MockingRefSafeApiContract
     }
 
     internal static void WideCallback(
-        global::AlvorKit.Mocking.MockSetupClause clause,
+        global::AlvorKit.MockSetupClause clause,
         int[] observed)
     {
         clause.Do(
@@ -79,28 +79,28 @@ internal static class MockingRefSafeApiContract
         int[] expected)
     {
         target.Observe(
-            global::AlvorKit.Mocking.Arg
+            global::AlvorKit.Arg
                 .Any<ReadOnlySpan<int>>(0));
         target.Observe(
-            global::AlvorKit.Mocking.Arg
+            global::AlvorKit.Arg
                 .Match<ReadOnlySpan<int>>(
                 0,
                 values => values.SequenceEqual(expected)));
         target.Transform(
-            ref global::AlvorKit.Mocking.Arg
+            ref global::AlvorKit.Arg
                 .AnyRef<Span<int>>(0));
         target.Transform(
-            ref global::AlvorKit.Mocking.Arg
+            ref global::AlvorKit.Arg
                 .Match<Span<int>>(
                 0,
                 (scoped in values) =>
                     values.Length >= expected.Length));
         target.TransformExact(
-            global::AlvorKit.Mocking.Arg
+            global::AlvorKit.Arg
                 .Match<ReadOnlySpan<int>>(
                 0,
                 values => values.SequenceEqual(expected)),
-            ref global::AlvorKit.Mocking.Arg
+            ref global::AlvorKit.Arg
                 .AnyRef<Span<int>>(1),
             out _);
     }
@@ -110,15 +110,15 @@ internal static class MockingRefSafeApiContract
         ReadOnlySpan<int> expected)
     {
         target.Observe(
-            global::AlvorKit.Mocking.Arg
+            global::AlvorKit.Arg
                 .ReadOnlySpanEqual(0, expected));
         target.TransformByValue(
-            global::AlvorKit.Mocking.Arg
+            global::AlvorKit.Arg
                 .SpanEqual(0, expected));
     }
 
     internal static void Snapshots(
-        global::AlvorKit.Mocking.MockSetupClause clause)
+        global::AlvorKit.MockSetupClause clause)
     {
         clause
             .SnapshotArgument(
@@ -137,7 +137,7 @@ internal static class MockingRefSafeApiContract
     }
 
     internal static void TaskReturning(
-        global::AlvorKit.Mocking.MockSetupClause<Task<int>> clause)
+        global::AlvorKit.MockSetupClause<Task<int>> clause)
     {
         clause.Answer(
             (ReadOnlySpan<byte> bytes) =>
@@ -145,7 +145,7 @@ internal static class MockingRefSafeApiContract
     }
 
     internal static void ValueTaskReturning(
-        global::AlvorKit.Mocking.MockSetupClause<ValueTask<int>> clause)
+        global::AlvorKit.MockSetupClause<ValueTask<int>> clause)
     {
         clause.Answer(
             (ReadOnlySpan<byte> bytes) =>

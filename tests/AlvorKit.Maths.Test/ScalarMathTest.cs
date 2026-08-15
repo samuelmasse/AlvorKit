@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests scalar helpers shared by vector math.</summary>
 [TestClass]

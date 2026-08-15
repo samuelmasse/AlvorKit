@@ -2,7 +2,7 @@ using System.Buffers.Binary;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies exact one-site newobj lowering over complete loaded caller bodies.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Discovers source and test projects that participate in coverage measurement.</summary>
 internal static class ProjectDiscovery

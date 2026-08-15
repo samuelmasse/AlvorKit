@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Runs ordinary scoped LiveCode commands on a dedicated thread only after frame heartbeats stop.</summary>
 internal sealed class LiveCodeFrozenInspectionLane(

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.ZoneSolution;
+namespace AlvorKit;
 
 /// <summary>Command-line options for generating an AlvorZone solution.</summary>
 /// <param name="ZoneRoot">Directory that contains sibling repositories.</param>

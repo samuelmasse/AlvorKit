@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NewGame;
+namespace AlvorKit;
 
 /// <summary>Loads and parameterizes the concrete starter game that backs new-game generation.</summary>
 internal sealed class NewGameStarterProject

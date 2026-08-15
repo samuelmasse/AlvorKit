@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Projects and mutates live values carried by a dispatch continuation.</summary>
 internal static class MockDispatchProjection

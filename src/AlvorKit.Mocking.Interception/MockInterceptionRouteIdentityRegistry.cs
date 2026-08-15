@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception;
+namespace AlvorKit;
 
 /// <summary>
 /// Owns stable route-identity claims without retaining completed lifecycles.

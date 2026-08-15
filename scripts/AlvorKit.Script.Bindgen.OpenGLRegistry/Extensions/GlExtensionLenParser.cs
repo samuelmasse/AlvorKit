@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Parses OpenGL registry len metadata for convenience overload generation.</summary>
 internal static class GlExtensionLenParser

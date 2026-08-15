@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>
 /// Applies to integer vector types with signed integer-vector shift counts, including <c>Vec2u</c>, <c>Vec3i8</c>,

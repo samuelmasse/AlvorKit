@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies when an invocation argument snapshot was observed.</summary>
 internal enum MockSnapshotPhase

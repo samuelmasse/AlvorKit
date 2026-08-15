@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests the unmanaged layout and System.Numerics conversions of single-precision vectors.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.DevSolution;
+namespace AlvorKit;
 
 /// <summary>Path text helpers for stable generated .slnx output.</summary>
 internal static class PathText

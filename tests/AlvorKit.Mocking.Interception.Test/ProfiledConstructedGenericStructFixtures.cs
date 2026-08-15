@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Tracks original execution independently for every closed receiver type.</summary>
 internal static class ProfiledConstructedGenericStructOriginalCounter<T>

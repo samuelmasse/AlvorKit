@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception;
+namespace AlvorKit;
 
 /// <summary>Publishes or blocks one complete transaction's routes atomically.</summary>
 internal sealed class MockInterceptionPublicationGate

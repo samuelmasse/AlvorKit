@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Tracks intercepted operations beneath weak module ownership.</summary>
 internal static class MockInterceptionMethodRegistry

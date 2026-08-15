@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits forwarding wrapper classes for generated OpenGL APIs.</summary>
 /// <param name="context">Shared source-emission context.</param>

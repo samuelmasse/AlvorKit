@@ -222,6 +222,15 @@ requirements but must not relax them.
   including `Array.Clear`, `Array.Fill`, `Array.Copy`, `Array.IndexOf`,
   `Array.Reverse`, and `Array.Sort`. Obtain an appropriate `Span<T>` or
   `ReadOnlySpan<T>` view and use span-based operations instead.
+- Put every repository-owned type in the repository's single root namespace:
+  `AlvorKit` in AlvorKit, `Shroom` in Shroom, and the corresponding game name
+  in each game repository. Project names, package names, assemblies, and source
+  folders do not create subnamespaces. Explicit types that follow top-level
+  statements must use a block namespace or move to a namespaced file; the
+  compiler-generated top-level `Program` type is not an authored declaration.
+  Externally owned contracts may use their required namespace only when the
+  host contract demands it, such as compiler shims in
+  `System.Runtime.CompilerServices` and checked-in LiveCode submission inputs.
 - Prefer repository-level and project-level global usings over ordinary
   file-level `using` directives. Before adding a file-level import, check
   implicit usings and existing `<Using Include="..." />` entries. Add broadly
@@ -229,6 +238,12 @@ requirements but must not relax them.
   namespaces to the `.csproj`. Reserve file-level imports for aliases, rare
   conflicts, or one-off third-party APIs. `using var` and `using (...)`
   disposal statements are allowed and are not import directives.
+- Do not import feature or project subnamespaces for repository-owned types.
+  A dependent repository imports `AlvorKit` once at the broadest useful
+  MSBuild scope. Source already declared in its root namespace needs no import
+  for that namespace; add the root import only where top-level statements or a
+  distinct repository namespace require it. Static imports name the flat type,
+  such as `AlvorKit.UiSyntax`.
 - Use a primary constructor by default for every class or behavioral struct
   that receives constructor parameters, including public types, facades,
   injected services, and stateful implementation types. New declarations must

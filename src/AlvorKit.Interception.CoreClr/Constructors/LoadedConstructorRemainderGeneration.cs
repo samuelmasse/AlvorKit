@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Owns one executable constructor generation and its extracted original remainder.</summary>
 public sealed class LoadedConstructorRemainderGeneration

@@ -1,6 +1,4 @@
-namespace AlvorKit.UI;
-
-using AlvorKit.UI.Root;
+namespace AlvorKit;
 
 [Root]
 public class RootUi : EntObj

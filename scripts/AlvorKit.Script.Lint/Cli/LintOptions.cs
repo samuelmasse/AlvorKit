@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Command-line options for the lint coordinator.</summary>
 /// <param name="RepoRoot">Absolute or relative repository root to lint.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Structured foreground output produced after starting a session.</summary>
 /// <param name="Id">Stable session id used by subsequent commands.</param>

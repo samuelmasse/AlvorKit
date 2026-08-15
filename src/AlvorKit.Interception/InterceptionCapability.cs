@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Capabilities reported by the loaded native profiler.</summary>
 [Flags]

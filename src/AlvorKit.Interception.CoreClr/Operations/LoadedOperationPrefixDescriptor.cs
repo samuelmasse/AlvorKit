@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Describes one accepted prefix at its immutable baseline coordinate.</summary>
 public sealed class LoadedOperationPrefixDescriptor

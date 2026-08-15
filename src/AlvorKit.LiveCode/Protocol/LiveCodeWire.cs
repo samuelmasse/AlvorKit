@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Reads and writes bounded length-prefixed JSON protocol messages.</summary>
 internal sealed class LiveCodeWire

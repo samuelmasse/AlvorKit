@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Owns one prepared benchmark body and its optional cleanup.</summary>
 internal sealed class MockPerformanceOperation(

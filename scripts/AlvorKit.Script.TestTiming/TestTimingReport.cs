@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestTiming;
+namespace AlvorKit;
 
 /// <summary>Paths and slow results produced by a timing report write.</summary>
 /// <param name="totalCount">Total number of parsed test cases.</param>

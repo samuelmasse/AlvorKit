@@ -1,3 +1,5 @@
+namespace AlvorKit;
+
 /// <summary>Owns a Craftdig-style FastNoise2 FBm node, reusable sample buffers, and the texture used by the demo.</summary>
 internal sealed class FastNoise2Field : IDisposable
 {

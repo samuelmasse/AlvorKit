@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>
 /// Adds containing-constructor relationship metadata to loaded operation resolution.

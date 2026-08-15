@@ -1,10 +1,10 @@
-namespace AlvorKit.Script.Bindgen.CHeaders.Test;
+namespace AlvorKit;
 
 internal static class CHeaderTestConfig
 {
     public static BindgenConfig Create() => new()
     {
-        Namespace = "AlvorKit.Bindgen.Fixture",
+        Namespace = "AlvorKit",
         ApiClass = "Test",
         ApiSummary = "Fixture API.",
         BackendClass = "TestBackend",

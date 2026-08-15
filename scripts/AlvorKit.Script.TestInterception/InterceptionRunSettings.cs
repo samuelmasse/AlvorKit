@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Writes temporary VSTest settings that profile only the testhost child.</summary>
 internal static class InterceptionRunSettings

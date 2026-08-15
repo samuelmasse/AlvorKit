@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Provides exact resolved metadata needed to recognize one loaded field operand.</summary>
 public sealed class LoadedFieldOperand

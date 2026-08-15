@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Encodes fat method bodies and exception sections for constructor lowering.</summary>
 internal static class LoadedConstructorMethodBodyEncoding

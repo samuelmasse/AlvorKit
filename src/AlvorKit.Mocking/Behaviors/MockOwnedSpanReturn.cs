@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Owns one copied span setup buffer for the lifetime of its configured factory.</summary>
 internal sealed class MockOwnedSpanReturn<T>

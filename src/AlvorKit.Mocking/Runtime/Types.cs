@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Caches per-type reflection state used by the mocking runtime.</summary>
 internal static class Types

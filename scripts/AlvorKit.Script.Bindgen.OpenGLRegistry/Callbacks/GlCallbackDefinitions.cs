@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Configured callback typedef definitions and managed names.</summary>
 /// <param name="Signatures">Parsed typedef signatures by native typedef name.</param>

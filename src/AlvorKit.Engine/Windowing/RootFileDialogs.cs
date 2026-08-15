@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Root-scoped native file dialogs for application and menu composition.</summary>
 [Root]

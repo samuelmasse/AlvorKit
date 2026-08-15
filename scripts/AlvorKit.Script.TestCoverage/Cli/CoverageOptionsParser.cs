@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Parses command-line arguments for the coverage runner.</summary>
 internal sealed class CoverageOptionsParser

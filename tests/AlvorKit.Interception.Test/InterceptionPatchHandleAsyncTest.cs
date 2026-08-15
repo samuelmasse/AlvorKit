@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies the explicit asynchronous patch-retirement contract.</summary>
 [TestClass]

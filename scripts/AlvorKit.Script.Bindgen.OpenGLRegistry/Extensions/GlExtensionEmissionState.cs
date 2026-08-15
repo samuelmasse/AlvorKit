@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Shared mutable state for one generated OpenGL extension source file.</summary>
 /// <param name="Config">Bindgen configuration that controls generated API names and span hints.</param>

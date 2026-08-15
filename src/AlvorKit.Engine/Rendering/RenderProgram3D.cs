@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Base class for shader programs with view and projection matrix uniforms.</summary>
 [ExcludeFromCodeCoverage(Justification = "Writes uniforms to a live OpenGL program.")]

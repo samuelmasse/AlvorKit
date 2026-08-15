@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Structured ABI v3 completion for one immutable method generation.</summary>
 public readonly record struct InterceptionGenerationCompletion(

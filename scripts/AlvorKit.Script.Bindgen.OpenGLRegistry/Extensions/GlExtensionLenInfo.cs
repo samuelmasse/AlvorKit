@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Normalized form of a registry len attribute such as n, count*3, 4, or COMPSIZE(pname).</summary>
 /// <param name="Kind">Recognized len expression shape.</param>

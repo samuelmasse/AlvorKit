@@ -1,4 +1,4 @@
-namespace AlvorKit.FreeType.Demo;
+namespace AlvorKit;
 
 internal sealed unsafe partial class FreeTypeDemo
 {

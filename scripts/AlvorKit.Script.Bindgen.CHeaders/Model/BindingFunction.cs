@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Describes a managed function emitted from a native exported function.</summary>
 /// <param name="NativeName">Native exported function name.</param>

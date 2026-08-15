@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits System.Numerics interop for matching matrix shapes.</summary>
 internal static class MatrixSystemNumericsEmitter

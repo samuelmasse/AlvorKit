@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies which dispatch stage threw an invocation exception.</summary>
 internal enum MockInvocationFailureStage

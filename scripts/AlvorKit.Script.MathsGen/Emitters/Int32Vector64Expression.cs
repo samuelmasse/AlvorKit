@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds measured equal-size Vector64 expressions for two-lane Int32 bitwise operations.</summary>
 internal static class Int32Vector64Expression

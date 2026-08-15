@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Validates control-flow and exception-clause ownership at a constructor split.</summary>
 internal static class LoadedConstructorSplitValidator

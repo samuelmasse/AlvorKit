@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts.Test;
+namespace AlvorKit;
 
 /// <summary>Tests the font layer against the generated FreeType backend and checked-in Inter font.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Emits shared exact typed initialization helpers.</summary>
 internal static partial class MockTypedTrampolineIl

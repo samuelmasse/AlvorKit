@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Exact managed dispatch requested for one method while preserving its original IL fallback.</summary>
 public sealed class InterceptionDispatchPlan

@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Binds the Shift +/- keyboard shortcuts to ui-scale changes.</summary>
 [App]

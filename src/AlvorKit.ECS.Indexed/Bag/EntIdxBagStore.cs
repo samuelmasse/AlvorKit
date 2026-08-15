@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Indexed;
+namespace AlvorKit;
 
 internal struct EntIdxBagStore<TIndex> where TIndex : IComponent
 {

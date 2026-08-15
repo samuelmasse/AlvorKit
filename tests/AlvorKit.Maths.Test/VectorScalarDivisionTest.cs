@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests single-precision vector-right-scalar division behavior across generated dimensions.</summary>
 [TestClass]

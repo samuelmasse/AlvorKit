@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Implements Blend text, label, tab, and tooltip text recipes.</summary>
 internal sealed class BlendStyleTypography

@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Reads keyboard state and text input from a window loop.</summary>
 public class Keyboard(WindowLoop window)

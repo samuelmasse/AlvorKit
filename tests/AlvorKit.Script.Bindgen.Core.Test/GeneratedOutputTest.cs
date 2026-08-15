@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.Core.Test;
+namespace AlvorKit;
 
 /// <summary>Covers generated output filesystem and MSBuild helpers.</summary>
 [TestClass]

@@ -10,12 +10,4 @@
         <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Using Include="AlvorStarter.App" />
-        <Using Include="AlvorStarter.Menus" />
-        <Using Include="AlvorKit.Engine" />
-        <Using Include="AlvorKit.Engine.Loop" />
-        <Using Include="AlvorKit.Injection" />
-    </ItemGroup>
-
 </Project>

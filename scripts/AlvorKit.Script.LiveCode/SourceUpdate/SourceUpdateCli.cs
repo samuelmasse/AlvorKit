@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Starts and controls source-file updates owned by one live workspace.</summary>
 internal sealed class SourceUpdateCli(LiveCodeCliContext context)

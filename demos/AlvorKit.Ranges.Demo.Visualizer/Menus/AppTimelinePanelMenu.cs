@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Builds the bottom timeline dock: overlay-mode tabs, last-call caption, and the scrubbable lane.</summary>
 [App]

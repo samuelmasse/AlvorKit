@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Prevents inherited CLR-profiler state from escaping launcher control.</summary>
 internal static class InterceptionProfilerEnvironment

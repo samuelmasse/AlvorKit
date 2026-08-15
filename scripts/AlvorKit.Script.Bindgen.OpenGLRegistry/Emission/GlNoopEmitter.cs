@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits null-object OpenGL implementations for tests and headless paths.</summary>
 /// <param name="context">Shared source-emission context.</param>

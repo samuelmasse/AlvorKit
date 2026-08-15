@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one generated 3D segment type.</summary>
 internal sealed record SegmentSpec(ScalarSpec Scalar)

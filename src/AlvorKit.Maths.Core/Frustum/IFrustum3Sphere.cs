@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 3D frustum types that can test matching 3D spheres.</summary>
 /// <typeparam name="TSelf">The concrete frustum type.</typeparam>

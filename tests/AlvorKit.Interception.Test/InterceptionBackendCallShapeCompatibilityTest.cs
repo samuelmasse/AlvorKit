@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies the compatibility boundary for old-only backends.</summary>
 [TestClass]

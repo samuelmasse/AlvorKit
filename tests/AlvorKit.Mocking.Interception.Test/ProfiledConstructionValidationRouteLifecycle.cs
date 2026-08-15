@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates one exact rewritten construction-validation site.</summary>
 internal sealed class ProfiledConstructionValidationRouteLifecycle(

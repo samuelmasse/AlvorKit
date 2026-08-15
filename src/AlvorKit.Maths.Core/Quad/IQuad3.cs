@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 3D quad types, including <c>Quad3</c> and <c>Quad3d</c>.</summary>
 /// <typeparam name="TSelf">The concrete quad type.</typeparam>

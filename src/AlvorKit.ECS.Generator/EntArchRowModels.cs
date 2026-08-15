@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Generator;
+namespace AlvorKit;
 
 internal sealed record EntArchRowFieldModel(
     string Name,

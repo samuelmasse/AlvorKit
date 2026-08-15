@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Reads mouse button, wheel, cursor, and motion state from a window loop.</summary>
 /// <param name="window">The window loop that owns the mouse state.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Owns the System.CommandLine command tree for the agent window protocol.</summary>
 internal sealed class AgentWindowCommandTree

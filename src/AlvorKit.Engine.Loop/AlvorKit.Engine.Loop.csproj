@@ -68,20 +68,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Engine" />
-        <Using Include="AlvorKit.FastNoise2" />
-        <Using Include="AlvorKit.FreeType" />
-        <Using Include="AlvorKit.Graphics2D" />
-        <Using Include="AlvorKit.Graphics2D.Fonts" />
-        <Using Include="AlvorKit.GLFW" />
-        <Using Include="AlvorKit.MiniAudio" />
-        <Using Include="AlvorKit.Injection" />
-        <Using Include="AlvorKit.Logging" />
-        <Using Include="AlvorKit.Maths" />
-        <Using Include="AlvorKit.Text" />
-        <Using Include="AlvorKit.OpenGL" />
-        <Using Include="AlvorKit.OpenGL.Layer" />
-        <Using Include="AlvorKit.Windowing" />
         <Using Include="System.Globalization" />
         <Using Include="System.Runtime" />
         <Using Include="Tomlyn" />

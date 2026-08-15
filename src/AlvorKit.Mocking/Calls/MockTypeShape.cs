@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Classifies runtime and emitted generic types that may carry borrowed values.</summary>
 internal static class MockTypeShape

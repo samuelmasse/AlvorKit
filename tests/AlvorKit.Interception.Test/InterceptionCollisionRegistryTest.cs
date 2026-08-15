@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Test;
+namespace AlvorKit;
 
 [TestClass]
 public sealed class InterceptionCollisionRegistryTest

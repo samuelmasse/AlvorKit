@@ -11,8 +11,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Script.Workspace" />
+        <Using Include="Microsoft.CodeAnalysis" />
         <Using Include="Microsoft.CodeAnalysis.CSharp" />
+        <Using Include="Microsoft.CodeAnalysis.CSharp.Syntax" />
         <Using Include="System.CommandLine" />
         <Using Include="System.CommandLine.Parsing" />
     </ItemGroup>

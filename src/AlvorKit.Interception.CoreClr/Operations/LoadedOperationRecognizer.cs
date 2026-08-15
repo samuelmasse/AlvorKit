@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
-using static AlvorKit.Interception.CoreClr.Advanced.LoadedOperationOpCodes;
+using static AlvorKit.LoadedOperationOpCodes;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>
 /// Recognizes exact caller operations from an immutable authoritative loaded-body baseline.

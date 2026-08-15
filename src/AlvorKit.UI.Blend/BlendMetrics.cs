@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Reusable pixel metrics for Blender-inspired UI surfaces and controls.</summary>
 public sealed record BlendMetrics

@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Creates compact deterministic mouse gesture commands.</summary>
 internal static class AgentWindowGestureCommands

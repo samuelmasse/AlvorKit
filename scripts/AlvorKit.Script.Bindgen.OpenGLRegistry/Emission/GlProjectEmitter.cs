@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits generated OpenGL API and backend project files.</summary>
 /// <param name="context">Shared source-emission context.</param>

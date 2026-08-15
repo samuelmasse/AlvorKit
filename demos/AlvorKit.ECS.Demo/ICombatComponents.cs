@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo;
+namespace AlvorKit;
 
 /// <summary>Declares the generated component accessors used by the ECS demo.</summary>
 [Components]

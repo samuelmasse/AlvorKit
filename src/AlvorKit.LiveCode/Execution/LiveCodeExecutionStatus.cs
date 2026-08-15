@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Describes the terminal state of a submitted LiveCode command.</summary>
 public enum LiveCodeExecutionStatus

@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Describes the current frame heartbeat and dedicated frozen-inspection lane.</summary>
 public sealed record LiveCodeFrozenInspectionSnapshot(

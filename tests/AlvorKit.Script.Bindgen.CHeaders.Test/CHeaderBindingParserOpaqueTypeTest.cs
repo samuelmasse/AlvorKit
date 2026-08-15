@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.CHeaders.Test;
+namespace AlvorKit;
 
 /// <summary>Covers configured opaque pointer handle projection.</summary>
 [TestClass]

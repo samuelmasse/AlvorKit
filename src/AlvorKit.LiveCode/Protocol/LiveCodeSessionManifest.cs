@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Describes one discoverable LiveCode endpoint owned by a running development process.</summary>
 public sealed record LiveCodeSessionManifest(

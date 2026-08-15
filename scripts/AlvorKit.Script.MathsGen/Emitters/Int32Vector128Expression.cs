@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds equal-size <c>Vector128</c> expressions for complete-register Int32 and UInt32 vectors.</summary>
 internal static class Int32Vector128Expression

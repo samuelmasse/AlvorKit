@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing.Test;
+namespace AlvorKit;
 
 /// <summary>Tests the managed NFDe ownership and result contract without displaying OS dialogs.</summary>
 [TestClass]

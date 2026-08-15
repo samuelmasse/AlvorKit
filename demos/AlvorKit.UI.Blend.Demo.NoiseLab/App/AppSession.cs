@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>
 /// UI-facing session state for the Noise Lab: view transform, seed, post options, and the dirty flag that

@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Changes input-related host state for a window loop.</summary>
 /// <param name="window">The window loop that owns the input state.</param>

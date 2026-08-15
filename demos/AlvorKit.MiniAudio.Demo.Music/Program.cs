@@ -106,5 +106,8 @@ static void Require(Ma ma, string operation, MaResult result)
     throw new InvalidOperationException($"{operation} failed: {description ?? result.ToString()}");
 }
 
-/// <summary>Assembly marker used to resolve repository demo assets.</summary>
-internal sealed class MusicDemoMarker;
+namespace AlvorKit
+{
+    /// <summary>Assembly marker used to resolve repository demo assets.</summary>
+    internal sealed class MusicDemoMarker;
+}

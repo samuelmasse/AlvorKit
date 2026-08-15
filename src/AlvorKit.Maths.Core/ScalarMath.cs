@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Provides scalar math helpers shared by vector component operations.</summary>
 public static class ScalarMath

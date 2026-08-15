@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>A deterministic allocator script shown by the visualizer.</summary>
 public class AllocatorScenario(string name, string description, long initialSize, AllocatorCommand[] commands)

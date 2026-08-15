@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Tests measured fixed-width generation for complete-register double vectors.</summary>
 [TestClass]

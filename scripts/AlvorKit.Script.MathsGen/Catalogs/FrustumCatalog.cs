@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Defines 3D frustum scalar types emitted by the generator.</summary>
 internal static class FrustumCatalog

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Runs isolated fixed-batch mocking measurements without timing assertions.</summary>
 internal sealed class MockPerformanceFixture(MockPerformanceOptions options)

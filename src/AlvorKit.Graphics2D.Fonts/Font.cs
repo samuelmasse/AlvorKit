@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Owns a FreeType face and its glyph atlases for all requested sizes.</summary>
 public sealed class Font : IDisposable

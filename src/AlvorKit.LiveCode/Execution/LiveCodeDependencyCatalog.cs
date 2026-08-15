@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Finds the managed runtime dependency closure of one application assembly without loading it.</summary>
 internal static class LiveCodeDependencyCatalog

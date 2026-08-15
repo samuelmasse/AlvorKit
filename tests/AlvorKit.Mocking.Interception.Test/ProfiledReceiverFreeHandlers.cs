@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Reports whether a rewritten caller entered its exact Mocking wrapper.</summary>
 internal interface IProfiledReceiverFreeHandler

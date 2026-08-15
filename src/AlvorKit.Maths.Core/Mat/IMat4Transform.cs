@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 4x4 transform matrix types, including <c>Mat4</c> and <c>Mat4d</c>.</summary>
 /// <typeparam name="TSelf">The 4x4 transform matrix type.</typeparam>

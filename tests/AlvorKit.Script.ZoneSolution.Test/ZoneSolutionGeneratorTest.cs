@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.ZoneSolution.Test;
+namespace AlvorKit;
 
 /// <summary>Tests generated AlvorZone solution structure.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Stores one quiescent snapshot of archetypal retained state.</summary>
 public readonly record struct EcsArchFootprint(

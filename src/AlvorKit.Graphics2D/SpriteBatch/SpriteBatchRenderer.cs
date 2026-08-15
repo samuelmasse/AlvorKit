@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Flushes collected sprite vertices to OpenGL draw calls.</summary>
 internal class SpriteBatchRenderer(

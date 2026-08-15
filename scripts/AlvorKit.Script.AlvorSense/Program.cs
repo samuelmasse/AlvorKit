@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Entry point for persistent AlvorSense sessions.</summary>
 [ExcludeFromCodeCoverage]

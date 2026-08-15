@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Sends one batch of interactive commands to a running AlvorSense session.</summary>
 /// <param name="Id">Session id selected by the start command.</param>

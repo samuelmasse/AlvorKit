@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emitter contract for one family of generated OpenGL convenience overloads.</summary>
 internal interface IGlOverloadEmitter

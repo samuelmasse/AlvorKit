@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.ZoneSolution;
+namespace AlvorKit;
 
 /// <summary>A sibling repository selected for the generated zone solution.</summary>
 /// <param name="Name">Repository directory name used as the solution folder prefix.</param>

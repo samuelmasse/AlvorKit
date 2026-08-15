@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Emits shared exact typed entry and exit history projection calls.</summary>
 internal static class MockTypedProjectionIl

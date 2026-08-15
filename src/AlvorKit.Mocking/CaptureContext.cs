@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Thread-local state describing one setup, verification, or event capture.</summary>
 /// <param name="IsActive">Whether this thread is currently capturing an invocation.</param>

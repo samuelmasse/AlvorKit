@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace;
+namespace AlvorKit;
 
 /// <summary>Cleanup state of one persistent intervention in a live process.</summary>
 public enum LiveWorkspaceInterventionState

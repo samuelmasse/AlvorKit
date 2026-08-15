@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Starts an AlvorKit game root scope and wires it to a window loop.</summary>
 [ExcludeFromCodeCoverage]

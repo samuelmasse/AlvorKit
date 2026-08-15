@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Begins an allocation that enters its final archetypal shape once.</summary>
 public readonly struct EntArchCreate<A>(EntArena arena)

@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate.Demo;
+namespace AlvorKit;
 
 /// <summary>
 /// Ordinary service whose existing method is edited in this file; its private state and

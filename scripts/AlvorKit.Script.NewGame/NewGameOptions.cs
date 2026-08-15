@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NewGame;
+namespace AlvorKit;
 
 /// <summary>Command-line options for creating a sibling AlvorKit game repository.</summary>
 internal sealed record NewGameOptions(NewGameName Name, string OutputPath, string AlvorKitRoot)

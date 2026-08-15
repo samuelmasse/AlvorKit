@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Appends captured and retained invocation shapes without running user code.</summary>
 internal static class MockDiagnosticFormatter

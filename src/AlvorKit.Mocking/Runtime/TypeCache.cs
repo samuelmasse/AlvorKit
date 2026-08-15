@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Reflection lookup caches for one mocked target type.</summary>
 internal class TypeCache

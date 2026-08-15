@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies how a selected source method maps to an executable loaded body.</summary>
 public enum LoadedSourceMethodKind

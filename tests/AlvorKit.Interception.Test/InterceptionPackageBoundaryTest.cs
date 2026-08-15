@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Test;
+namespace AlvorKit;
 
 [TestClass]
 public sealed class InterceptionPackageBoundaryTest
@@ -39,33 +39,24 @@ public sealed class InterceptionPackageBoundaryTest
                 typeof(InterceptionHandlerTrampoline)));
     }
 
-    /// <summary>The ordinary CoreCLR namespace exports only its connection facade.</summary>
+    /// <summary>Every CoreCLR public type uses the single AlvorKit namespace.</summary>
     [TestMethod]
-    public void CoreClrAssembly_OrdinaryNamespaceHasMinimalFacade()
+    public void CoreClrAssembly_UsesFlatNamespace()
     {
-        var facade = typeof(InterceptionProfiler).Assembly
+        var exported = typeof(InterceptionProfiler).Assembly
             .ExportedTypes
-            .Where(static type =>
-                type.Namespace == "AlvorKit.Interception")
-            .Select(static type => type.Name)
-            .Order()
             .ToArray();
 
-        CollectionAssert.AreEqual(
-            new[] { nameof(InterceptionProfiler) },
-            facade);
+        Assert.IsTrue(exported.Length > 0);
+        Assert.IsTrue(exported.All(static type => type.Namespace == "AlvorKit"));
+        Assert.IsTrue(exported.Contains(typeof(InterceptionProfiler)));
     }
 
-    /// <summary>Loaded-body and generation models remain available only through the advanced namespace.</summary>
+    /// <summary>Loaded-body and generation models remain public while runtime ownership types stay internal.</summary>
     [TestMethod]
     public void CoreClrAssembly_AdvancedPlanningIsExplicit()
     {
-        var advanced = typeof(InterceptionProfiler).Assembly
-            .ExportedTypes
-            .Where(static type =>
-                type.Namespace ==
-                "AlvorKit.Interception.CoreClr.Advanced")
-            .ToArray();
+        var advanced = typeof(InterceptionProfiler).Assembly.ExportedTypes.ToArray();
 
         Assert.IsTrue(advanced.Length > 0);
         Assert.IsTrue(advanced.Any(static type =>

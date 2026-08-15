@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Parses conventional Doxygen comments into XML documentation fields.</summary>
 internal static class DoxygenDocParser

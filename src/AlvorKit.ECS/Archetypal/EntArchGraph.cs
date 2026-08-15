@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Interns immutable arch signatures and their observed structural transitions for one group.</summary>
 internal static partial class EntArchGraph<A>

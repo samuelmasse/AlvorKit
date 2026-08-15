@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Materializes immutable argument patterns for configured behaviors.</summary>
 internal static class MockedSetupPublication

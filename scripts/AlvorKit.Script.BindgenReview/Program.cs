@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview;
+namespace AlvorKit;
 
 /// <summary>Entry point for the bindgen generated-output review helper.</summary>
 [ExcludeFromCodeCoverage]

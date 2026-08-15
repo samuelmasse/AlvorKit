@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Metadata token kinds supported by native late relocation.</summary>
 public enum InterceptionGenerationRelocationKind

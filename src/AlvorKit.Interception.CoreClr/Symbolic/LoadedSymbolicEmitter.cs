@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Emits deterministic symbolic caller routes from validated disjoint edits.</summary>
 internal static class LoadedSymbolicEmitter

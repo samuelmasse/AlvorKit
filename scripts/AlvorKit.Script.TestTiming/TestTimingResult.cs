@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestTiming;
+namespace AlvorKit;
 
 /// <summary>One test case duration parsed from TRX output.</summary>
 /// <param name="testName">Display name of the test case.</param>

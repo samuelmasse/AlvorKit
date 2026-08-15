@@ -1,4 +1,4 @@
-namespace: "AlvorKit.GLFW"
+namespace: "AlvorKit"
 apiClass: "Glfw"
 apiSummary: "The <c>glfw3.h</c> GLFW API: windows, OpenGL and Vulkan contexts, monitors, keyboard, mouse and joystick input, events, clipboard and timing."
 backendClass: "GlfwBackend"

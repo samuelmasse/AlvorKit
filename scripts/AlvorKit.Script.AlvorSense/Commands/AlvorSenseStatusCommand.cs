@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Reads the persisted state of one known AlvorSense session.</summary>
 /// <param name="Id">Session id selected by the start command.</param>

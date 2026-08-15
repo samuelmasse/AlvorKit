@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns one selected baseline newobj caller and validation route.</summary>
 internal static class ProfiledConstructionValidationCaller

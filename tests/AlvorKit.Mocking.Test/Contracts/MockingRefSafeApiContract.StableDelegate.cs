@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace AlvorKit.Mocking.Test.Contracts.RefSafe;
+namespace AlvorKit;
 
 internal static class RefSafeStableDelegateCache
 {

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to the four-component single-precision vector type with <see cref="System.Numerics.Vector4" /> conversions, including <c>Vec4</c>.</summary>
 /// <typeparam name="TSelf">The four-component single-precision vector type, such as <c>Vec4</c>.</typeparam>

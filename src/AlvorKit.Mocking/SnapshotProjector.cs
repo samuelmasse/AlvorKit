@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Copies one live argument into a heap-safe history representation.</summary>
 /// <typeparam name="T">The exact live argument type.</typeparam>

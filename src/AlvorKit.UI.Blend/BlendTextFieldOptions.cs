@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Configuration for a single-line text field.</summary>
 public sealed record BlendTextFieldOptions

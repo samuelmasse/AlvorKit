@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates the four exact callers in the partial concrete behavior row.</summary>
 internal sealed class ProfiledPartialRouteLifecycle :

@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Owns the vertex array object that captures sprite batch vertex layout.</summary>
 internal class QuadVertexArray : IDisposable

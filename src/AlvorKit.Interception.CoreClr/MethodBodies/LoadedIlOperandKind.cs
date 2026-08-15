@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies the decoded representation of an ECMA-335 instruction operand.</summary>
 public enum LoadedIlOperandKind

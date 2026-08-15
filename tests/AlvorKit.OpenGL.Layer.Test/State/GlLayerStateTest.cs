@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer.Test;
+namespace AlvorKit;
 
 /// <summary>
 /// Tests strict state set/reset rules enforced by <see cref="GlLayer"/>.

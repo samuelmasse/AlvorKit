@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>One text replacement applied to extracted upstream source before native build commands run.</summary>
 internal sealed class SourcePatchConfig

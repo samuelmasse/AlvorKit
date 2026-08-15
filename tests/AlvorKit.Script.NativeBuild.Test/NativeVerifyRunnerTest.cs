@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for native verification orchestration without invoking real compilers.</summary>
 [TestClass]

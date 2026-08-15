@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode.Generator;
+namespace AlvorKit;
 
 /// <summary>Emits assembly metadata for one compilation's distinct global-using clauses.</summary>
 internal static class LiveCodeGlobalUsingSourceEmitter

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Generated enum groups plus the native-to-managed group name map.</summary>
 /// <param name="Groups">Typed enum groups selected for emission.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 3D capsule types, including <c>Capsule3</c> and <c>Capsule3d</c>.</summary>
 /// <typeparam name="TSelf">The concrete capsule type.</typeparam>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Evaluates the limited integer macro expressions accepted as generated constants.</summary>
 public static class ConstantExpressionEvaluator

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Creates side-effect-free command plans for native verification runs.</summary>
 internal static class NativeVerifyPlanner

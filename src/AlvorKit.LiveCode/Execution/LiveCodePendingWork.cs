@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Base for one authenticated operation waiting to cross onto the game thread.</summary>
 internal abstract class LiveCodePendingWork

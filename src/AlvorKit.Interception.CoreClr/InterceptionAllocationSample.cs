@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>One retained allocation and its leaf-to-root managed stack.</summary>
 /// <param name="AllocationOrdinal">One-based allocation position inside the capture.</param>

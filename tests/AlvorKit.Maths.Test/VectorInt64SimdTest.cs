@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Protects exact natural-register Vec2/Vec4 signed and unsigned 64-bit behavior.</summary>
 [TestClass]

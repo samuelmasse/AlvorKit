@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Writes the machine-readable JSON coverage summary for agents.</summary>
 internal static class AgentCoverageReportWriter

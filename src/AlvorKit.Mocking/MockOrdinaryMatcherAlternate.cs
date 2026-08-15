@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Owns one immutable, type-valid alternate value for an ordinary matcher type.</summary>
 internal static class MockOrdinaryMatcherAlternate<T>

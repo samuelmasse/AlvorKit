@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace;
+namespace AlvorKit;
 
 /// <summary>Machine-readable identity, progress, and cleanup state for one agent live-debug workspace.</summary>
 /// <param name="SchemaVersion">Workspace manifest schema version.</param>

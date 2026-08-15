@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests regular System vector semantics of packed double-vector Saturate.</summary>
 [TestClass]

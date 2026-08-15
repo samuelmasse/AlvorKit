@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Physical baseline-IL region owned by one interception claim.</summary>
 public readonly struct InterceptionPhysicalRegion : IEquatable<InterceptionPhysicalRegion>

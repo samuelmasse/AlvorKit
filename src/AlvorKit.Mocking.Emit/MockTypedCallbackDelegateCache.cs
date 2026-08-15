@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Owns shared stable exact callback delegate types beneath weak source-module boundaries.</summary>
 internal sealed class MockTypedCallbackDelegateCache

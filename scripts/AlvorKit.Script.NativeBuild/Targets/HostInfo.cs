@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Operating system and architecture values used for host compatibility checks.</summary>
 /// <param name="IsWindows">True when the process is running on Windows.</param>

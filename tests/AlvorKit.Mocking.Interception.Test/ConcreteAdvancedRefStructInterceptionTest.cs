@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Exercises ref-struct input and return behavior through real profiled callers.</summary>
 [TestClass]

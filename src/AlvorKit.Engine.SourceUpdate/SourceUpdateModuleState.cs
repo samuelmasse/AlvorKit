@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Mutable forward-only target ledger for one exact loaded module.</summary>
 internal sealed class SourceUpdateModuleState(

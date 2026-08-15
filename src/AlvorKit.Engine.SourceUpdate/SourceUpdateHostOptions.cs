@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Configures an explicitly allowlisted editable-source runtime bridge.</summary>
 public sealed class SourceUpdateHostOptions

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.OpenGLRegistry.Test;
+namespace AlvorKit;
 
 /// <summary>Structural tests for the OpenGL registry bindgen source project.</summary>
 [TestClass]

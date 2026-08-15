@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Downloads and extracts native source material required by a binding run.</summary>
 [ExcludeFromCodeCoverage]

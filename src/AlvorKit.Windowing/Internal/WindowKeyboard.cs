@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Tracks key down, press, and repeat state for a window loop.</summary>
 internal sealed class WindowKeyboard

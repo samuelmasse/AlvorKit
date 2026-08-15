@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace;
+namespace AlvorKit;
 
 /// <summary>Creates, records, audits, and closes ignored agent workspaces for live AlvorKit processes.</summary>
 public sealed class LiveWorkspaceStore

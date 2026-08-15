@@ -1,4 +1,4 @@
-namespace AlvorKit.Testing;
+namespace AlvorKit;
 
 /// <summary>Writes simple repository config fixtures used by tests.</summary>
 public static class RepositoryConfigFixture

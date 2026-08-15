@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NewGame;
+namespace AlvorKit;
 
 /// <summary>Copies and renames the starter AlvorKit game project into a new repository.</summary>
 internal sealed class NewGameGenerator

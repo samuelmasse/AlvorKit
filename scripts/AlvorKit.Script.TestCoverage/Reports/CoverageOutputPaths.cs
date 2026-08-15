@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Absolute paths for generated coverage artifacts.</summary>
 /// <param name="Root">Coverage output root directory.</param>

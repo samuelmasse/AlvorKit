@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Stores one versioned mixed-suite benchmark report.</summary>
 public sealed record EcsBenchReport(

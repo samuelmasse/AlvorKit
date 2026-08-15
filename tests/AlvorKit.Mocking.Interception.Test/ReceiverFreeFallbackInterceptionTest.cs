@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Exercises original behavior for every receiver-free operation without a session.</summary>
 [TestClass]

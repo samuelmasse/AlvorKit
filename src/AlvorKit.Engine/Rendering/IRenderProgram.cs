@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Common API for engine shader programs that expose vertex attribute setup.</summary>
 public interface IRenderProgram

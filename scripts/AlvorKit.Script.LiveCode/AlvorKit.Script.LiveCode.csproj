@@ -75,10 +75,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Injection" />
-        <Using Include="AlvorKit.Engine.SourceUpdate" />
-        <Using Include="AlvorKit.LiveCode" />
-        <Using Include="AlvorKit.Script.LiveWorkspace" />
         <Using Include="Microsoft.CodeAnalysis" />
         <Using Include="Microsoft.CodeAnalysis.CSharp" />
         <Using Include="Microsoft.CodeAnalysis.CSharp.Syntax" />

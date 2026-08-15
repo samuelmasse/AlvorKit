@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL;
+namespace AlvorKit;
 
 /// <summary>Provides maths-shaped OpenGL state overloads.</summary>
 public static class GlStateMathsExtensions

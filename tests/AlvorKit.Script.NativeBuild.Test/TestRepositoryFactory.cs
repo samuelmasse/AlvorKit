@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild.Test;
+namespace AlvorKit;
 
 /// <summary>Creates minimal temporary repositories for native build tests.</summary>
 internal static class TestRepositoryFactory

@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Test;
+namespace AlvorKit;
 
 [TestClass]
 public sealed class RangeBoundarySearchTest

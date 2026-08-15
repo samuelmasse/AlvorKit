@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Discovers generated binding modules and tests that reference them.</summary>
 internal static class BindingProjectDiscovery

@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>Blend-backed UI style for the Noise Lab; ramps and probe colors stay in <see cref="AppRamps"/>.</summary>
 [App]

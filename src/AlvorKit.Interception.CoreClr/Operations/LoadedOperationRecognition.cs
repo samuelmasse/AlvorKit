@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Returns either pristine supported sites or structured deterministic rejections.</summary>
 public sealed class LoadedOperationRecognition

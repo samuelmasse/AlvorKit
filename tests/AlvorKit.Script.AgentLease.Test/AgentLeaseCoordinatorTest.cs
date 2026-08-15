@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease.Test;
+namespace AlvorKit;
 
 /// <summary>Tests advisory lease coordination behavior against a temporary lease store.</summary>
 [TestClass]

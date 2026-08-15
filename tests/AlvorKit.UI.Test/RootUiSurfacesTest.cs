@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Test;
+namespace AlvorKit;
 
 /// <summary>Covers independently scaled UI roots while preserving the default full-window path.</summary>
 [TestClass]

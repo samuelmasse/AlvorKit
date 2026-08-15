@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo;
+namespace AlvorKit;
 
 /// <summary>Dependency injection scope for the Blend editor-shell demo lifetime.</summary>
 [App]

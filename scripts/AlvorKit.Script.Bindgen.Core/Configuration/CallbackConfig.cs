@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Describes one callback typedef that should be surfaced as a typed managed delegate.</summary>
 public sealed class CallbackConfig

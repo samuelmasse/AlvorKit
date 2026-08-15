@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview.Test;
+namespace AlvorKit;
 
 /// <summary>Tests bindgen review coordination with fake process execution.</summary>
 [TestClass]

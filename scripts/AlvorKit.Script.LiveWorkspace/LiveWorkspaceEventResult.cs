@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace;
+namespace AlvorKit;
 
 /// <summary>Location and sequence assigned to one exact live-operation record.</summary>
 /// <param name="EventId">Monotonic sequence number assigned within the workspace.</param>

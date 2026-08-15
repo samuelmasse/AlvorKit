@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Declares the runtime reservation a structured bridge requires.</summary>
 public enum LiveCodeBridgeLease

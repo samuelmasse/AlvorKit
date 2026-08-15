@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Creates configured enum groups from macro constants.</summary>
 internal static class CHeaderEnumGroupSynthesizer

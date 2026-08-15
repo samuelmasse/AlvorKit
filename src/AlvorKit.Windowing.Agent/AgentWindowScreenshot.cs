@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Saves agent-host framebuffer captures for visual inspection.</summary>
 /// <param name="gl">The OpenGL layer used to read framebuffer pixels.</param>

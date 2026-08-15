@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Runs the standard ReportGenerator dotnet tool over collected Cobertura reports.</summary>
 [ExcludeFromCodeCoverage]

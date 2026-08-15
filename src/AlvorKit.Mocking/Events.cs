@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Maps intercepted event accessor calls to mocked event handler storage.</summary>
 internal static class Events

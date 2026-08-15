@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Writes the human-readable Markdown coverage summary.</summary>
 internal static class MarkdownCoverageReportWriter

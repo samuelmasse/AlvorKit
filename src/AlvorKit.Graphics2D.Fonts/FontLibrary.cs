@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Owns an initialized FreeType library handle.</summary>
 internal sealed class FontLibrary(Ft ft) : IDisposable

@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 internal class EntAllocator(int allocatorIndex, bool exclusive)
 {

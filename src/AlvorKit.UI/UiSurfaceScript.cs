@@ -1,4 +1,4 @@
-namespace AlvorKit.UI;
+namespace AlvorKit;
 
 /// <summary>Connects one non-default UI surface to the ordered root drawing pipeline.</summary>
 internal sealed class UiSurfaceScript(

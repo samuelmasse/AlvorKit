@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Root-scoped window screen, visibility, title, and close facade.</summary>
 [Root]

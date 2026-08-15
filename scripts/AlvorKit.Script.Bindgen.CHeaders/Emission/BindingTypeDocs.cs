@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Formats XML documentation for standalone generated binding types.</summary>
 internal static class BindingTypeDocs

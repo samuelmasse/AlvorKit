@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Preserves an exact runtime type, including constructed, pointer, function-pointer, and by-reference forms.

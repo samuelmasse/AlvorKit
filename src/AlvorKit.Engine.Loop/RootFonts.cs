@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 [Root]
 public class RootFonts(RootGl gl, Ft ft)

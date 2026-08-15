@@ -1,6 +1,6 @@
 using ClangType = ClangSharp.Type;
 
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Discovers native enums and emits their managed enum descriptions.</summary>
 internal static class CHeaderEnumDiscovery

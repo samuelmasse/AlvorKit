@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Matches repository-relative paths against the limited glob syntax used by lint scopes.</summary>
 internal static class GlobPattern

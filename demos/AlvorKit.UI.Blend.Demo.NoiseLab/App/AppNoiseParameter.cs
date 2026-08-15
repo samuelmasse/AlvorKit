@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>How a FastNoise2 metadata member maps onto a Blend form control.</summary>
 public enum AppNoiseParameterKind

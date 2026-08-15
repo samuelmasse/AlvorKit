@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies Cecil-free semantic operation recognition over loaded raw IL.</summary>
 [TestClass]

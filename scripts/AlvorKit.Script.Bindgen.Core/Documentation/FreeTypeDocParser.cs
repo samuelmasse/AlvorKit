@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Parses FreeType's sectioned comment format into XML documentation fields.</summary>
 internal static class FreeTypeDocParser

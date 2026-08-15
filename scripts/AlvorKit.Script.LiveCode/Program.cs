@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Entry point for discovering targets and submitting compiled C# LiveCode commands.</summary>
 [ExcludeFromCodeCoverage]

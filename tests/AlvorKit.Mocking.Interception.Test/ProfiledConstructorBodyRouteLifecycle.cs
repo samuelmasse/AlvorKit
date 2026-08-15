@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates one definition-wide constructor remainder generation.</summary>
 internal sealed class ProfiledConstructorBodyRouteLifecycle(

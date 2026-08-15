@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits FreeType-specific convenience members over the generated freetype.h API.</summary>
 internal static partial class BindingFreeTypeOverloadEmitter

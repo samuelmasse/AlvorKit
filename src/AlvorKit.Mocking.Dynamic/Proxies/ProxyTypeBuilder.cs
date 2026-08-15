@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Emits runtime proxy types used for interface and inheritable class mocks.</summary>
 internal static partial class ProxyTypeBuilder

@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts.Test;
+namespace AlvorKit;
 
 /// <summary>Deterministic FreeType binding used to feed fake face and glyph slot state to font tests.</summary>
 internal unsafe class FontsTestFt : FtNoop, IDisposable

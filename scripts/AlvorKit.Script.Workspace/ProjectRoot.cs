@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Workspace;
+namespace AlvorKit;
 
 /// <summary>Finds the repository root for script tools that can run from build, test, or command-line directories.</summary>
 public static class ProjectRoot

@@ -1,4 +1,4 @@
-namespace AlvorKit.Text;
+namespace AlvorKit;
 
 /// <summary>Provides indexed, strongly typed arguments to the composite-format parser.</summary>
 internal interface ITextArguments

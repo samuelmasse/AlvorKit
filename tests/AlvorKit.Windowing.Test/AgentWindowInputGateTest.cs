@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing.Test;
+namespace AlvorKit;
 
 /// <summary>Tests exclusive synthetic input and post-release native poll quarantine.</summary>
 [TestClass]

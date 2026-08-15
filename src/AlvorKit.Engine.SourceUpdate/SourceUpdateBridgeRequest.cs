@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Versioned Source Update bridge request envelope.</summary>
 public sealed record SourceUpdateBridgeRequest(

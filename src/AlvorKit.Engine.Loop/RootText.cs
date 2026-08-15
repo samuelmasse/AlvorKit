@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Root-owned transient text formatter backed by reusable AlvorKit storage.</summary>
 [Root]

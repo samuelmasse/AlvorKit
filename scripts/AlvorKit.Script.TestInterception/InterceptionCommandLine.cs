@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Separates launcher options from arguments forwarded after <c>--</c>.</summary>
 internal static class InterceptionCommandLine

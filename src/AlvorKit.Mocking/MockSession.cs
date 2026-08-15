@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Scopes a logical cross-mock timeline through the execution context.</summary>
 public sealed class MockSession : IDisposable

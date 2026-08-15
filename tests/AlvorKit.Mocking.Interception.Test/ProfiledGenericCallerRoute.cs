@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns one ReJITted generic caller definition and all prepared constructions.</summary>
 internal sealed class ProfiledGenericCallerRoute :

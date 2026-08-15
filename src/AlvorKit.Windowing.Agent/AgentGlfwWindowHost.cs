@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>GLFW window host that switches inherited window behavior to deterministic agent control when requested.</summary>
 [ExcludeFromCodeCoverage(Justification = "Bridges deterministic agent state to native GLFW behavior; extracted state and driver logic are covered directly.")]

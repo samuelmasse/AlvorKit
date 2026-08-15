@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Collects sprite vertices and splits them into texture-slot-compatible sections.</summary>
 internal class SpriteBatchVertices(int textureSlots)

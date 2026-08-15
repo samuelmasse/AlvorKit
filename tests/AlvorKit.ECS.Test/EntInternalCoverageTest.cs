@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Test;
+namespace AlvorKit;
 
 /// <summary>Tests internal diagnostic surfaces that are exposed to friend test assemblies.</summary>
 [TestClass]

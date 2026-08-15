@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Test;
+namespace AlvorKit;
 
 [Components]
 public interface IEntArchRowComponents

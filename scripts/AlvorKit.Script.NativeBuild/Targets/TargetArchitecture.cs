@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>CPU architectures supported by native runtime packages.</summary>
 internal enum TargetArchitecture

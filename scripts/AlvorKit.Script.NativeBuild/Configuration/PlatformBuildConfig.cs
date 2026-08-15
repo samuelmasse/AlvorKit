@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Per-platform build settings for a native library.</summary>
 internal sealed class PlatformBuildConfig

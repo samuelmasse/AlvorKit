@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.DevSolution;
+namespace AlvorKit;
 
 /// <summary>Result of a local development solution generation run.</summary>
 /// <param name="OutputPath">Generated solution path.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Emits shared exact managed-reference return paths.</summary>
 internal static partial class MockTypedTrampolineIl

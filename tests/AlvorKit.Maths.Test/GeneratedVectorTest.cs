@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests vector behavior that is available only after multi-dimension generation.</summary>
 [TestClass]

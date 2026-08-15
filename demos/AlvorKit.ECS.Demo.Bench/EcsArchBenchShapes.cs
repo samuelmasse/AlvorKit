@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Creates exact arch shapes outside timed point-operation loops.</summary>
 internal static class EcsArchBenchShapes

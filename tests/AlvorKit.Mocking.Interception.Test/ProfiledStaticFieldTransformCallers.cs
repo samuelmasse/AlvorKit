@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns the exact static-field write site for the transform row.</summary>
 internal static class ProfiledStaticFieldTransformWriteCaller

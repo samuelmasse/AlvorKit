@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Runtime boundary used to apply one compiler-produced metadata delta.</summary>
 internal interface ISourceUpdateRuntime

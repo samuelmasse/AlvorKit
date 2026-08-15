@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.CHeaders.Test;
+namespace AlvorKit;
 
 /// <summary>Covers generated translation unit file placement and cleanup.</summary>
 [TestClass]

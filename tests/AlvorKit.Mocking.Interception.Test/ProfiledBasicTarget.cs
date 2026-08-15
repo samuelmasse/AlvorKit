@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Sealed target for the concrete basic behavior matrix.</summary>
 public sealed class ProfiledBasicTarget

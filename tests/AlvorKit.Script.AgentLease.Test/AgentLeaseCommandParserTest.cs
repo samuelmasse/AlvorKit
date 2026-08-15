@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease.Test;
+namespace AlvorKit;
 
 /// <summary>Tests command-line parsing for the advisory lease helper.</summary>
 [TestClass]

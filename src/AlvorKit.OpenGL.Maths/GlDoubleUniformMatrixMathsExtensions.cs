@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL;
+namespace AlvorKit;
 
 /// <summary>Provides current-program double-precision matrix uniform overloads.</summary>
 public static class GlDoubleUniformMatrixMathsExtensions

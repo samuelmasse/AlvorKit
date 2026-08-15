@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits equality, hashing, comparison, and text conversion for matrices.</summary>
 internal static class MatrixValueSemanticsEmitter

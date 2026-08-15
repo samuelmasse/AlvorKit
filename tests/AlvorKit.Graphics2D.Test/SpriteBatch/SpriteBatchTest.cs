@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Test;
+namespace AlvorKit;
 
 /// <summary>Tests the top-level sprite batch lifecycle.</summary>
 [TestClass]

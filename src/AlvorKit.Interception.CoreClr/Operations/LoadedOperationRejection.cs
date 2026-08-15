@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies a stable category of loaded-operation recognition failure.</summary>
 public enum LoadedOperationRejectionReason

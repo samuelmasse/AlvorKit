@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Immutable launch identity and current generation of one editable loaded module.</summary>
 public sealed record SourceUpdateModuleIdentity(

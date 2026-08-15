@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace;
+namespace AlvorKit;
 
 /// <summary>Appends exact request and result artifacts to a live workspace event stream.</summary>
 /// <param name="manifests">Manifest and JSON persistence boundary.</param>

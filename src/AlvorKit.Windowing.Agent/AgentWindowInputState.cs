@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Tracks deterministic input values injected through the agent event driver.</summary>
 internal sealed class AgentWindowInputState

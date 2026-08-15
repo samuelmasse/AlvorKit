@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview;
+namespace AlvorKit;
 
 /// <summary>Builds and validates paths used by disposable bindgen review snapshots.</summary>
 internal static class BindgenReviewPaths

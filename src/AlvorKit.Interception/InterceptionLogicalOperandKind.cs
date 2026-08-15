@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Identifies the logical operation operand owned by an interception claim.</summary>
 public enum InterceptionLogicalOperandKind

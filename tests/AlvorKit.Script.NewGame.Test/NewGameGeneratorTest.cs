@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NewGame.Test;
+namespace AlvorKit;
 
 /// <summary>Tests the new-game repository scaffolder.</summary>
 [TestClass]
@@ -123,7 +123,7 @@ public class NewGameGeneratorTest
         AssertFile(root, "src/AlvorStarter.Menus/AppStarterState.cs");
         AssertFile(root, "src/AlvorStarter.Menus/AppStyle.cs");
         AssertFile(root, "src/AlvorStarter.Menus/AppMainMenu.cs");
-        StringAssert.Contains(Read(root, "src/AlvorStarter.Menus/AppStarterState.cs"), "namespace AlvorStarter.Menus;");
+        StringAssert.Contains(Read(root, "src/AlvorStarter.Menus/AppStarterState.cs"), "namespace AlvorStarter;");
     }
 
     /// <summary>Ignores local build output and live-debug workspaces in generated repositories.</summary>
@@ -168,7 +168,7 @@ public class NewGameGeneratorTest
     }
 
     private static Func<string> AlvorKitRoot => () =>
-        AlvorKit.Script.Workspace.ProjectRoot.FindFromCurrentProcess(typeof(NewGameGeneratorTest));
+        AlvorKit.ProjectRoot.FindFromCurrentProcess(typeof(NewGameGeneratorTest));
 
     private static void AssertFile(string root, string relativePath) =>
         Assert.IsTrue(File.Exists(Path(root, relativePath)), $"Expected generated file '{relativePath}'.");

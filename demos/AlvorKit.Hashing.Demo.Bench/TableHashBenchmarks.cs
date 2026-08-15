@@ -1,4 +1,4 @@
-namespace AlvorKit.Hashing.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Integer key shapes supported by <see cref="TableHash"/>.</summary>
 public enum TableHashShape

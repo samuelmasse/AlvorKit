@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Filters markdown tables from native Doxygen prose before XML docs are flattened.</summary>
 internal static class DoxygenDocTable

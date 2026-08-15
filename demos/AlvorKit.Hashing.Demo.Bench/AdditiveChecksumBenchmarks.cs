@@ -1,4 +1,4 @@
-namespace AlvorKit.Hashing.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Measures additive checksum helper overhead against direct addition.</summary>
 [MemoryDiagnoser]

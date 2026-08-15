@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Coordinates core measurements and isolated archetypal worker samples.</summary>
 internal sealed class EcsBenchCoordinator(EcsBenchOptions options)

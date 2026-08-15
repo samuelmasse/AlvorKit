@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates the exact caller for concurrent receiver isolation.</summary>
 internal sealed class ProfiledInstanceIsolationRouteLifecycle :

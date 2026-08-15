@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Invokes the managed Hot Reload cache-notification contract after a committed update.</summary>
 internal static class SourceUpdateMetadataHandlers

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Writes the non-authoritative pointer to the most recent coverage run.</summary>
 internal static class LatestCoverageRunWriter

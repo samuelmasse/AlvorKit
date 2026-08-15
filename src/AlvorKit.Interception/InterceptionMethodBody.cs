@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>A complete CLR method body beginning with a tiny or fat method header.</summary>
 public sealed class InterceptionMethodBody

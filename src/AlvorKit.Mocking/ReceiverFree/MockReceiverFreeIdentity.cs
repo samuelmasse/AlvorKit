@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies one session-owned receiver-free dispatch target.</summary>
 internal sealed record MockReceiverFreeIdentity(

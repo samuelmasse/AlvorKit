@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Runs the OpenGL registry binding pipeline for one configured native library.</summary>
 [ExcludeFromCodeCoverage]

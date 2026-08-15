@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.Core.Test;
+namespace AlvorKit;
 
 /// <summary>Covers host runtime identifier and native library file-name mappings.</summary>
 [TestClass]

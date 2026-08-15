@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to signed two-component numeric vector types with planar helpers, including <c>Vec2</c> and <c>Vec2i</c>.</summary>
 /// <typeparam name="TSelf">The signed two-component numeric vector type, such as <c>Vec2</c> or <c>Vec2i</c>.</typeparam>

@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 // Value-only snapshot of retained archetypal storage. Logical payload bytes include allocated array capacity,
 // but exclude managed object headers, alignment, runtime type data, JIT data, and GC fragmentation. Catalog

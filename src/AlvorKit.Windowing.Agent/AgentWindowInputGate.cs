@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Excludes native input during one synthetic transaction and quarantines the following native poll.</summary>
 internal sealed class AgentWindowInputGate

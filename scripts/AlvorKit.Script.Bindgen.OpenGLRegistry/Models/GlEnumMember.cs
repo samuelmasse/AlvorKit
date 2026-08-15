@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Registry token after naming and availability mapping.</summary>
 /// <param name="ManagedName">Generated C# enum member name.</param>

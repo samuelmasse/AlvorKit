@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies managed PE module identity evidence without loading a second assembly.</summary>
 [TestClass]

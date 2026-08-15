@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception;
+namespace AlvorKit;
 
 /// <summary>
 /// Supplies backend-specific cold-path preparation, activation, and rollback.

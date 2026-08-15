@@ -4,12 +4,7 @@
         <OutputType>Exe</OutputType>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.MiniAudio" />
-    </ItemGroup>
-
-    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">
+<ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">
         <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="$(MaBindVer)" />
     </ItemGroup>
 

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Maps native names and type spellings into managed binding names.</summary>
 internal sealed class CHeaderNameMapper(BindgenConfig config, string managedTypePrefix)

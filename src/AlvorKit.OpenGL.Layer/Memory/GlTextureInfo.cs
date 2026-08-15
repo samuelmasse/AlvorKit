@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer;
+namespace AlvorKit;
 
 /// <summary>
 /// The shape of texture or renderbuffer storage, used to estimate GPU memory from explicit byte

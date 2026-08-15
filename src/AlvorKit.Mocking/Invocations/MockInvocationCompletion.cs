@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Stores the synchronous return or exact thrown exception of an invocation.</summary>
 internal sealed class MockInvocationCompletion

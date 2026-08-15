@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestTiming;
+namespace AlvorKit;
 
 /// <summary>Options that describe one guarded unit test timing run.</summary>
 /// <param name="repoRoot">Repository root used as the <c>dotnet test</c> working directory.</param>

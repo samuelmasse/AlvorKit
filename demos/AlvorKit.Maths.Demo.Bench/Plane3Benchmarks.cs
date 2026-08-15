@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Operations shared by Plane3 and System.Numerics.Plane.</summary>
 public enum Plane3Operation

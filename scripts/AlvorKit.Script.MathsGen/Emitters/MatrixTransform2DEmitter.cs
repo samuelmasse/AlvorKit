@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits 2D transform helpers for 3x3 floating-point matrices.</summary>
 internal static class MatrixTransform2DEmitter

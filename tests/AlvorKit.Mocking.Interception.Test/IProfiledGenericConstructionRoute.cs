@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Controls one exact construction behind a generic caller definition.</summary>
 internal interface IProfiledGenericConstructionRoute

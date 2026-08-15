@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Exposes exact wrapper-entry evidence for one receiver-free caller.</summary>
 internal interface IProfiledReceiverFreeCallerRoute :

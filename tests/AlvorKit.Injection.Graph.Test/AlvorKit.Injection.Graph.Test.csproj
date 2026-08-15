@@ -3,9 +3,4 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.Injection.Graph\AlvorKit.Injection.Graph.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.Injection" />
-    </ItemGroup>
-
 </Project>

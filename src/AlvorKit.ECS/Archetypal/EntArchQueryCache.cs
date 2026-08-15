@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Caches group-global matching arch IDs for one exact compile-time query selection.</summary>
 internal static class EntArchQueryCache<A, TSelect>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Tests retained Vec4 Int32 packed bit-function generation.</summary>
 [TestClass]

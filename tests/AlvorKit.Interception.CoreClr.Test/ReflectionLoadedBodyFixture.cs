@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using System.Reflection;
 
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Copies reflection IL and exception clauses into one complete fat method body.</summary>
 internal static class ReflectionLoadedBodyFixture

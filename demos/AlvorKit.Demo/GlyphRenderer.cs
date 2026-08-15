@@ -1,4 +1,4 @@
-namespace AlvorKit.Demo;
+namespace AlvorKit;
 
 /// <summary>
 /// Draws a glyph as a textured quad. Resources are created once; every per-frame bind and state-set is

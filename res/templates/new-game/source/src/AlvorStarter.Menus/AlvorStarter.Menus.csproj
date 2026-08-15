@@ -13,15 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorStarter.App" />
-        <Using Include="AlvorStarter.App.Frontend" />
-        <Using Include="AlvorKit.ECS" />
-        <Using Include="AlvorKit.Engine" />
-        <Using Include="AlvorKit.Engine.Loop" />
-        <Using Include="AlvorKit.UI" />
-        <Using Include="AlvorKit.UI.Blend" />
-        <Using Include="AlvorKit.UI.UiSyntax" Static="true" />
-        <Using Include="AlvorKit.Windowing" />
+        <Using Include="AlvorKit.UiSyntax" Static="true" />
     </ItemGroup>
 
 </Project>

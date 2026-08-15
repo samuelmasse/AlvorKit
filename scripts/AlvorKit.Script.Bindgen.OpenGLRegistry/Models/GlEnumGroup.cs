@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Generated enum group with its registry source name and members.</summary>
 /// <param name="NativeName">OpenGL registry group name.</param>

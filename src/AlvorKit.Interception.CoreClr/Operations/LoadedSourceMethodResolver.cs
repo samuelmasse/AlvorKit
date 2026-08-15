@@ -1,6 +1,6 @@
-using static AlvorKit.Interception.CoreClr.Advanced.LoadedSourceMethodMetadata;
+using static AlvorKit.LoadedSourceMethodMetadata;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>
 /// Resolves synchronous and compiler state-machine source methods to authoritative loaded bodies.

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Publishes ordinary and managed-reference constant return setups.</summary>
 internal static class MockSetupReturnPublisher

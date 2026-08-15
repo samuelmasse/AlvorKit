@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>Mutable graph-owned state for one injector scope lifetime.</summary>
 internal sealed class InjectorScopeGraphNode(

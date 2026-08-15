@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 [TestClass]
 public sealed class InterceptionProfilerEnvironmentTest

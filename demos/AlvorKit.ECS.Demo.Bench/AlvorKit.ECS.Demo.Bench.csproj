@@ -14,10 +14,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.ECS" />
-        <Using Include="AlvorKit.ECS.Demo.Bench" />
-        <Using Include="AlvorKit.ECS.Generator" />
-        <Using Include="AlvorKit.Hashing" />
         <Using Include="System.CommandLine" />
         <Using Include="System.CommandLine.Parsing" />
         <Using Include="System.Runtime" />

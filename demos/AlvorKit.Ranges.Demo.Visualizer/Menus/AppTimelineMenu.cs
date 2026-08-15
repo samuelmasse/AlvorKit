@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Builds the scrubbable command timeline lane with playhead, hover cell, and progress shade.</summary>
 [App]

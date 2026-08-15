@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies matrix generation selects the retained column-vector and System-backed implementation shapes.</summary>
 [TestClass]

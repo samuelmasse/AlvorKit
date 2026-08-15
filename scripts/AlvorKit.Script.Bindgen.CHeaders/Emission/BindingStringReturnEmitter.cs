@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits string-return convenience overloads for const C-string functions.</summary>
 internal sealed class BindingStringReturnEmitter(BindingEmitterContext context)

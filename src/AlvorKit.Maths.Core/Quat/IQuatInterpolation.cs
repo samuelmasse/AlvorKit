@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to quaternion types with orientation interpolation and exponential helpers.</summary>
 /// <typeparam name="TSelf">The concrete quaternion type.</typeparam>

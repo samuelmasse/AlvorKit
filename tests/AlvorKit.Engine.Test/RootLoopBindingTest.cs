@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Test;
+namespace AlvorKit;
 
 [TestClass]
 public sealed class RootLoopBindingTest

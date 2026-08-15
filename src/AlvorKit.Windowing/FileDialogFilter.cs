@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Names one native file-dialog filter and its comma-separated extensions without dots.</summary>
 /// <param name="Name">Friendly filter name shown by platforms that support it.</param>

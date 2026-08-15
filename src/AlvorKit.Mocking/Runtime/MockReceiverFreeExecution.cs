@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Executes configured receiver-free operations or prepares their continuation.</summary>
 internal static class MockReceiverFreeExecution

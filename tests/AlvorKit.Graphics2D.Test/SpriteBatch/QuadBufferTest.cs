@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Test;
+namespace AlvorKit;
 
 /// <summary>Tests small observable state on sprite batch quad buffers.</summary>
 [TestClass]

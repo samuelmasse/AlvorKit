@@ -1,4 +1,4 @@
-namespace AlvorStarter.App.Frontend;
+namespace AlvorStarter;
 
 /// <summary>Draws simple starter shapes directly with the root sprite batch.</summary>
 [App]

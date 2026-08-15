@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Function-pointer typedef surfaced as a managed delegate for a rooted setter overload.</summary>
 /// <param name="NativeName">Native callback typedef name.</param>

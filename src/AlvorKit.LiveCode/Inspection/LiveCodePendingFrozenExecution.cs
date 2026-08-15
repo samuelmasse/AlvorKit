@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>One ordinary scoped command waiting for the dedicated frozen-game execution thread.</summary>
 internal sealed class LiveCodePendingFrozenExecution(

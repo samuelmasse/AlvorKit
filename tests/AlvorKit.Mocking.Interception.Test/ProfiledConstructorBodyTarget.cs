@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Provides observable base-initializer state for constructor interception.</summary>
 public class ProfiledConstructorBodyBaseTarget

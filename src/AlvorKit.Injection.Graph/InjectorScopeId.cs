@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>Identifies one scope instance for the lifetime of an injector scope graph.</summary>
 public readonly record struct InjectorScopeId(long Value)

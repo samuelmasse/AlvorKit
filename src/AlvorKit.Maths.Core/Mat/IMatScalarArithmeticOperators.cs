@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>
 /// Applies to matrix types with matrix-scalar arithmetic operators, including <c>Mat2</c> and <c>Mat4d</c>.

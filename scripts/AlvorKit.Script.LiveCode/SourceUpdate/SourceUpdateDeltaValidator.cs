@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Rejects emitted deltas that add definitions outside the v1 method-body boundary.</summary>
 internal static class SourceUpdateDeltaValidator

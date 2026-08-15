@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Root-owned reusable index buffer that expands quad vertices into triangles.</summary>
 [Root]

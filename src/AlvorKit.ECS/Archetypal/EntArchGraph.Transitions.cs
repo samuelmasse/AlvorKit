@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 // Transition lookup stays on the same closed generic type so the source split introduces no forwarding layer.
 internal static partial class EntArchGraph<A>

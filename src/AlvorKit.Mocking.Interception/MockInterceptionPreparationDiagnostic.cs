@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception;
+namespace AlvorKit;
 
 /// <summary>Describes one public actionable operation-route preparation failure.</summary>
 public sealed class MockInterceptionPreparationDiagnostic

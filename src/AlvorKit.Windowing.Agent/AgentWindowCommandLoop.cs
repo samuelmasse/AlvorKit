@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Runs scripted agent-window commands against one deterministic host.</summary>
 /// <param name="host">Host that receives parsed commands and screenshot renders.</param>

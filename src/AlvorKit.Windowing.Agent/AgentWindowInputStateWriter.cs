@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Formats deterministic input state for the agent command line.</summary>
 internal static class AgentWindowInputStateWriter

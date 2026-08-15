@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Queues OpenGL object deletes so finalizers can defer cleanup to the root GL thread.</summary>
 public class GlBin : IDisposable

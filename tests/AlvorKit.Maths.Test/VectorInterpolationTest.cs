@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests SIMD-composed single-precision vector interpolation formulas.</summary>
 [TestClass]

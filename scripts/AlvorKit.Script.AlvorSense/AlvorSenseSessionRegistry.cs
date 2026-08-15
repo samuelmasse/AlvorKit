@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Reads persisted AlvorSense session directories for recovery, status checks, and handoffs.</summary>
 internal static class AlvorSenseSessionRegistry

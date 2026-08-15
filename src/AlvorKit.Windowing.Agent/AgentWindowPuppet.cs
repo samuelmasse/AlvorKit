@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Executes a finite AlvorSense command batch under one exclusive native-input reservation.</summary>
 /// <param name="host">Agent-capable host receiving synthetic window commands.</param>

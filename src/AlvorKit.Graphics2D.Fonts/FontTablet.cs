@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Owns one square glyph atlas texture.</summary>
 internal sealed class FontTablet : IDisposable

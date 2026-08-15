@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Contains the retained entry and exit state of one declared argument.</summary>
 internal sealed record MockInvocationArgument

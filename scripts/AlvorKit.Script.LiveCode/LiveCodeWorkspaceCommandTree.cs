@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Builds the local workspace lifecycle commands shared by LiveCode and future agent façades.</summary>
 internal static class LiveCodeWorkspaceCommandTree

@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging.Test;
+namespace AlvorKit;
 
 /// <summary>Exercises application-log formatting, filtering, buffering, and lifecycle behavior.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NewGame;
+namespace AlvorKit;
 
 /// <summary>Validated game name values used for C# identifiers and display text.</summary>
 /// <param name="Identifier">PascalCase value safe for project names, namespaces, and type references.</param>

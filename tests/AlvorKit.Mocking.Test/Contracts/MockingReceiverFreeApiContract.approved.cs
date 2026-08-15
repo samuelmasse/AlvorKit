@@ -1,13 +1,13 @@
-namespace AlvorKit.Mocking.Test.Contracts.ReceiverFree;
+namespace AlvorKit;
 
 // These methods compile the public receiver-free surface without executing setup
 // before the owned-assembly runtime lane binds it.
 internal static class MockingReceiverFreeApiContract
 {
-    private static readonly MockField<Job> CurrentJob =
-        Mock.Field<Worker, Job>("currentJob");
+    private static readonly MockField<ReceiverFreeJob> CurrentJob =
+        Mock.Field<ReceiverFreeWorker, ReceiverFreeJob>("currentJob");
     private static readonly MockField<int> GlobalVersion =
-        Mock.Field<Worker, int>("globalVersion");
+        Mock.Field<ReceiverFreeWorker, int>("globalVersion");
 
     internal static void StaticMethodsAndProperties(
         DateTimeOffset fixedTime)
@@ -77,8 +77,8 @@ internal static class MockingReceiverFreeApiContract
     }
 
     internal static void Fields(
-        Worker worker,
-        Job expected,
+        ReceiverFreeWorker worker,
+        ReceiverFreeJob expected,
         MockCallSite readSite,
         MockCallSite writeSite)
     {
@@ -95,7 +95,7 @@ internal static class MockingReceiverFreeApiContract
         Mock.WhenFieldWrite(
                 worker,
                 CurrentJob,
-                () => Arg.Any<Job>())
+                () => Arg.Any<ReceiverFreeJob>())
             .AtSite(writeSite)
             .Observe(
                 (scoped in value) =>
@@ -112,7 +112,7 @@ internal static class MockingReceiverFreeApiContract
         Mock.VerifyFieldWrite(
                 worker,
                 CurrentJob,
-                () => Arg.Any<Job>())
+                () => Arg.Any<ReceiverFreeJob>())
             .AtSite(writeSite)
             .Once();
 
@@ -162,14 +162,14 @@ internal sealed class Buffer(int capacity)
     internal int ObservedCapacity { get; set; }
 }
 
-internal sealed class Worker
+internal sealed class ReceiverFreeWorker
 {
-    private readonly Job? currentJob = new(0);
+    private readonly ReceiverFreeJob? currentJob = new(0);
     private static readonly int globalVersion = 1;
 
-    internal Job? ReadCurrentJob() => currentJob;
+    internal ReceiverFreeJob? ReadCurrentJob() => currentJob;
 
     internal static int ReadGlobalVersion() => globalVersion;
 }
 
-internal sealed record Job(int Priority);
+internal sealed record ReceiverFreeJob(int Priority);

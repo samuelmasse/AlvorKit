@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns one exact generic construction's Mocking wrapper and trampoline.</summary>
 internal sealed class ProfiledGenericConstructionRoute<TDelegate> :

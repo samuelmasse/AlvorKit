@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Dependency injection scope for services owned by the root engine lifetime.</summary>
 [Root]

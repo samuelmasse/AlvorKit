@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Root-scoped mouse reader for buttons, wheel, position, and motion.</summary>
 [Root]

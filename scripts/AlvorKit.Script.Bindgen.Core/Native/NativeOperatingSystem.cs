@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Operating systems that have a native package runtime identifier mapping.</summary>
 internal enum NativeOperatingSystem

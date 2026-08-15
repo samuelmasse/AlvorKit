@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Resolved metadata and paths for one native library build.</summary>
 /// <param name="RepositoryRoot">Absolute repository root path.</param>

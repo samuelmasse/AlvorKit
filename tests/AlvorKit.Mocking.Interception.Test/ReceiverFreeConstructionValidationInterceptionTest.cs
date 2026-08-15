@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Exercises construction-factory result validation through a profiled newobj site.</summary>
 [TestClass]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Text;
+namespace AlvorKit;
 
 /// <summary>Optimizes the common one-argument, one-item composite format shape.</summary>
 internal static class SingleCompositeTextWriter

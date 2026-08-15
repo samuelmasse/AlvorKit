@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests exact Int32 results for retained packed float-vector conversions.</summary>
 [TestClass]

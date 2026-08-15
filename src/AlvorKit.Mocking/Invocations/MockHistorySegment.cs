@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Owns invocation slots for one history epoch.</summary>
 internal sealed class MockHistorySegment(MockHistoryEpoch epoch)

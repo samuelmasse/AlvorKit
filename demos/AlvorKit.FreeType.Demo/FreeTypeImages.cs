@@ -1,4 +1,4 @@
-namespace AlvorKit.FreeType.Demo;
+namespace AlvorKit;
 
 /// <summary>Small RGB color value used by generated demo images.</summary>
 internal readonly struct DemoColor(byte r, byte g, byte b)

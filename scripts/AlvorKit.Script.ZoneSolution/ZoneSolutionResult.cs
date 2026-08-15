@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.ZoneSolution;
+namespace AlvorKit;
 
 /// <summary>Result of an AlvorZone solution generation run.</summary>
 /// <param name="OutputPath">Generated solution path.</param>

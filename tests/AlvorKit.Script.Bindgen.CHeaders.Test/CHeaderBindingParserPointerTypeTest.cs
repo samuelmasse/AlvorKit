@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.CHeaders.Test;
+namespace AlvorKit;
 
 /// <summary>Covers pointer-shaped public signatures for transparent native records.</summary>
 [TestClass]
@@ -201,7 +201,7 @@ public sealed class CHeaderBindingParserPointerTypeTest
     {
         var assembly = AppDomain.CurrentDomain.GetAssemblies()
             .Single(candidate => candidate.GetName().Name == "AlvorKit.Script.Bindgen.CHeaders");
-        var mapper = assembly.GetType("AlvorKit.Script.Bindgen.CHeaderTypeMapper")!;
+        var mapper = assembly.GetType("AlvorKit.CHeaderTypeMapper")!;
         var method = mapper.GetMethod("MapIntegerKind", BindingFlags.Static | BindingFlags.NonPublic)!;
         return (string)method.Invoke(null, [kind])!;
     }

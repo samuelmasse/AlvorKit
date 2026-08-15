@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Reads compact tails from session log files for foreground diagnostics.</summary>
 internal static class AlvorSenseLogTail

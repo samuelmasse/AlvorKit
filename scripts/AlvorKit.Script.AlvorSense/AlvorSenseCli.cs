@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Coordinates the foreground command-line surface for AlvorSense sessions.</summary>
 [ExcludeFromCodeCoverage(Justification = "Coordinates external host processes and filesystem mailbox waits.")]

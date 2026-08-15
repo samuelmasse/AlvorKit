@@ -11,7 +11,7 @@ state, and registers its `Log` above the engine root scope. Root and nested game
 scopes can therefore request `Log` directly:
 
 ```csharp
-using AlvorKit.Logging;
+using AlvorKit;
 
 [App]
 public class AppLoader(Log log)
@@ -46,8 +46,7 @@ failures while opening or writing such a capture should be reported through
 Hosts that do not use `RootLoop` own the runtime explicitly:
 
 ```csharp
-using AlvorKit.Injection;
-using AlvorKit.Logging;
+using AlvorKit;
 
 using var logging = new LogRuntime();
 logging.Start();

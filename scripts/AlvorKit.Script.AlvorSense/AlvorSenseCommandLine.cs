@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Parses foreground and private host commands for persistent agent-controlled window sessions.</summary>
 internal static class AlvorSenseCommandLine

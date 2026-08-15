@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Represents one named user action with one or more key or mouse bindings.</summary>
 public sealed class Control

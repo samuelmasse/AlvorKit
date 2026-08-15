@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Caches exact power-of-two arrays for one value type across all archetypal groups and allocs.</summary>
 internal static class EntArchArrayPool<T>

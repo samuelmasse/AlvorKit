@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Mutable 3D perspective matrices derived from a canvas and camera.</summary>
 public class Perspective3D

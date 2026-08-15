@@ -1,4 +1,4 @@
-namespace AlvorKit.ProfilerFreeBoundary.Test;
+namespace AlvorKit;
 
 /// <summary>Audits repository project edges that must remain profiler-free.</summary>
 [TestClass]

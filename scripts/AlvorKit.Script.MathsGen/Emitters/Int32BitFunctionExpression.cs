@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds retained packed bit-function expressions for complete-register Int32 vectors.</summary>
 internal static class Int32BitFunctionExpression

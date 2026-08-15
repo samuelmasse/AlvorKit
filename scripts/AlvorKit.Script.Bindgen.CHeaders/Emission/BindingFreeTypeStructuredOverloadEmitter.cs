@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits FreeType overloads for small struct and caller-owned buffer shapes.</summary>
 internal static partial class BindingFreeTypeOverloadEmitter

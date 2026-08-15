@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Sealed target with mutable and readonly managed-reference returns.</summary>
 public sealed class ProfiledManagedReferenceTarget(int[]? aliases = null)

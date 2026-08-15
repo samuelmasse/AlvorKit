@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Validation helper for generated managed names.</summary>
 internal static class GlManagedNameGuard

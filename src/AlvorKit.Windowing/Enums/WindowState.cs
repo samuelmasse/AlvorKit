@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>High-level display state requested for a window.</summary>
 public enum WindowState

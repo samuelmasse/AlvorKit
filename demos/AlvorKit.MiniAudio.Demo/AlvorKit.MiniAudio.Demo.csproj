@@ -6,9 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.MiniAudio" />
         <Using Include="System.Buffers.Binary" />
-        <Using Include="System.Globalization" />
     </ItemGroup>
 
     <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to all integer vector types, including <c>Vec2i</c>, <c>Vec3u</c>, and <c>Vec4u64</c>.</summary>
 /// <typeparam name="TSelf">The integer vector type, such as <c>Vec3i</c> or <c>Vec4u</c>.</typeparam>

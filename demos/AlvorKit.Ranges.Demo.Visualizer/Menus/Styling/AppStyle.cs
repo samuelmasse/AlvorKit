@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Blend-backed UI style plus the allocator data-visualization palette.</summary>
 [App]

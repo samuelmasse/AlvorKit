@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Builds the overview and zoomed backing-store strips; rebuilds when the session visual revision changes.</summary>
 [App]

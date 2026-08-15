@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Terminal runtime outcome of one source-generated metadata delta.</summary>
 public enum SourceUpdateApplyStatus

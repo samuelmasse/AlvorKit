@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Centralizes workspace-owned Source Update coordinator artifacts.</summary>
 internal static class SourceUpdateCoordinatorPaths

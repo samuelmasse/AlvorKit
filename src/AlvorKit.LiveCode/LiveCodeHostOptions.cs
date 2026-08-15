@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Configures one explicitly enabled, loopback-only LiveCode development endpoint.</summary>
 public sealed record LiveCodeHostOptions(string Name)

@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Returns either one exact source/body target or structured deterministic rejections.</summary>
 public sealed class LoadedSourceMethodResolution

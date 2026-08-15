@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>
 /// Owns the FastNoise2 node graph and the preview texture. The graph is a fractal node over a swappable

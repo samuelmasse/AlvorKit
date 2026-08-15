@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Coordinates formatter, EditorConfig, and GitHub Actions lint checks.</summary>
 /// <param name="options">Validated lint options for the current run.</param>
@@ -48,6 +48,15 @@ internal sealed class LintRunner(
             foreach (var usage in checkedKeywordUsages)
                 WriteProgress(usage.ToString());
             WriteProgress("Use ordinary arithmetic and conversions, or express the required range contract without the keyword.");
+            return 1;
+        }
+
+        var namespaceViolations = RepositoryPolicy.FindNamespaceViolations(repoRoot, scope);
+        if (namespaceViolations.Count > 0)
+        {
+            WriteProgress("[lint:fail] authored types must use the repository's single root namespace");
+            foreach (var violation in namespaceViolations)
+                WriteProgress(violation);
             return 1;
         }
 

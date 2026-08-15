@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to quaternion types that convert to and from <see cref="System.Numerics.Quaternion" />.</summary>
 /// <typeparam name="TSelf">The concrete quaternion type.</typeparam>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Records end-to-end latency and native callback evidence for one cold operation.</summary>
 internal sealed record ColdInterceptionMeasurement(

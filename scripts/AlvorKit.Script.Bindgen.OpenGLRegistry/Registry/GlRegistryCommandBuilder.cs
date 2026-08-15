@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Builds selected OpenGL commands from registry command declarations.</summary>
 /// <param name="config">Bindgen configuration used for naming and configured skips.</param>

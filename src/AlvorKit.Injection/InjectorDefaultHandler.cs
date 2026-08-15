@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>
 /// Default reflection-based construction handler used when no custom handler accepts a dependency type.

@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Owns the reusable index buffer that expands quads into indexed triangles.</summary>
 internal class QuadIndexBuffer(GlLayer gl) : IDisposable

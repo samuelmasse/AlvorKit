@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Generator;
+namespace AlvorKit;
 
 internal sealed record PropertyModel(
     string Name,

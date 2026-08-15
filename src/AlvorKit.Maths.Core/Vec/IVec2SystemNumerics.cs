@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to the two-component single-precision vector type with <see cref="System.Numerics.Vector2" /> conversions, including <c>Vec2</c>.</summary>
 /// <typeparam name="TSelf">The two-component single-precision vector type, such as <c>Vec2</c>.</typeparam>

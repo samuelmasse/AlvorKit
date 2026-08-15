@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Maps OpenGL registry declarations into managed and raw interop shapes.</summary>
 /// <param name="catchAllName">Generated catch-all enum name for untyped GLenum positions.</param>

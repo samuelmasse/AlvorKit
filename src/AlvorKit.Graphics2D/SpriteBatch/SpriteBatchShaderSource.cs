@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Builds the GLSL source used by the default sprite batch shader.</summary>
 internal static class SpriteBatchShaderSource

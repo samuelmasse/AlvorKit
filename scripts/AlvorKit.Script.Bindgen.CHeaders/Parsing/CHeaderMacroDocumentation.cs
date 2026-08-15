@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Recovers documentation for macro constants when libclang does not attach it directly.</summary>
 internal sealed class CHeaderMacroDocumentation

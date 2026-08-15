@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Rasterizes dense allocator memory strips into one-row textures and resolves hovered bytes.</summary>
 [App]

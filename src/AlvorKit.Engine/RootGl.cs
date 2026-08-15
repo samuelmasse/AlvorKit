@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Root-owned strict OpenGL layer for engine and game rendering.</summary>
 [Root]

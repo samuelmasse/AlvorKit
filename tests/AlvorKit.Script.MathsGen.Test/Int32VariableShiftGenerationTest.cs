@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Tests AVX2 variable-count Int32 shift generation.</summary>
 [TestClass]

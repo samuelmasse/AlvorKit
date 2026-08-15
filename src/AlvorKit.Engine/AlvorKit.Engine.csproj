@@ -18,13 +18,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Graphics2D" />
-        <Using Include="AlvorKit.Injection" />
-        <Using Include="AlvorKit.Maths" />
-        <Using Include="AlvorKit.OpenGL" />
-        <Using Include="AlvorKit.OpenGL.Layer" />
-        <Using Include="AlvorKit.Ranges" />
-        <Using Include="AlvorKit.Windowing" />
         <Using Include="BigGustave" />
     </ItemGroup>
 

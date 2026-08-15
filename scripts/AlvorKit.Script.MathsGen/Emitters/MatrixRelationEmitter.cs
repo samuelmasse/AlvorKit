@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits matrix comparison masks and matrix query helpers.</summary>
 internal static class MatrixRelationEmitter

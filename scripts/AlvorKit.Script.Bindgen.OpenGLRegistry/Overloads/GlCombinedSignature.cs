@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Generated signature metadata for a planned combined overload.</summary>
 /// <param name="Key">Deduplication key for the overload signature.</param>

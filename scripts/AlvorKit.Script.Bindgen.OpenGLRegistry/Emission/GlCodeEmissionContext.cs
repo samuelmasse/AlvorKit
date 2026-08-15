@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Shared formatting context for generated OpenGL source artifacts.</summary>
 /// <param name="Config">Bindgen configuration that controls output names and paths.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Mutable state owned by one mock or partially mocked instance.</summary>
 internal sealed class Mocked(

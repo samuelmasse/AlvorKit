@@ -2,7 +2,7 @@ using MemoryMarshal = System.Runtime.InteropServices.MemoryMarshal;
 using Marshal = System.Runtime.InteropServices.Marshal;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Protects the public unmanaged layout used by vector SIMD implementations.</summary>
 [TestClass]

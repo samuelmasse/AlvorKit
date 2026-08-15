@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Describes a native macro or configured value promoted into the catch-all enum.</summary>
 /// <param name="NativeName">Native macro name, or managed configured name when no native macro exists.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies deterministic rejection of structurally unsafe loaded bodies.</summary>
 [TestClass]

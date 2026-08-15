@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Test;
+namespace AlvorKit;
 
 /// <summary>Tests the root-scoped file-dialog facade.</summary>
 [TestClass]

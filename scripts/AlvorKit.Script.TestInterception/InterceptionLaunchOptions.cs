@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Validated inputs for one isolated profiler-enabled child launch.</summary>
 /// <param name="RepositoryRoot">Repository used as the child working directory.</param>

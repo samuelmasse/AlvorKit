@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Generator;
+namespace AlvorKit;
 
 /// <summary>Stores a generated component in the declaring component group's archetypal storage.</summary>
 [AttributeUsage(AttributeTargets.Property)]

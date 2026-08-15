@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Normalizes Khronos OpenGL reference-page prose for generated XML documentation.</summary>
 internal static class GlDocText

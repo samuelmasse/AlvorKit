@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Root-scoped input mutation facade for clipboard, cursor mode, and cursor tracking.</summary>
 [Root]

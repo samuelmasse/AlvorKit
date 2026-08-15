@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits out-parameter overloads for scalar OpenGL getters.</summary>
 /// <param name="state">Shared extension-emission state.</param>

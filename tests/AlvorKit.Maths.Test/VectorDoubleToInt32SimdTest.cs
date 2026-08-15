@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests exact results of retained double-to-Int32 conversion kernels.</summary>
 [TestClass]

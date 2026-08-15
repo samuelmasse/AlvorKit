@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Defines the vector dimensions, scalar types, and conversion policy emitted by the generator.</summary>
 internal static class VectorCatalog

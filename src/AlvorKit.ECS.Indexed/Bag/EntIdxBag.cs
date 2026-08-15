@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Indexed;
+namespace AlvorKit;
 
 public class EntIdxBag<N>(EntIdxBagMut<N> bag) where N : IComponent
 {

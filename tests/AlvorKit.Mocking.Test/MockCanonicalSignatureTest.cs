@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 [TestClass]
 public sealed unsafe class MockCanonicalSignatureTest

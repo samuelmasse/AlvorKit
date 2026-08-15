@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 /// <summary>
 /// Audits exact typed data-plane behavior through a receiver-free interception

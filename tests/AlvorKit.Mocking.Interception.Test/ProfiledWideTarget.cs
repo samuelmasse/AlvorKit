@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Sealed target for the 48-parameter concrete behavior row.</summary>
 public sealed class ProfiledWideTarget

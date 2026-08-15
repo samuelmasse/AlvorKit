@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Provides distinct closed concrete types for cache-cold exact wrapper samples.</summary>
 public sealed class ColdTypedDispatchTarget<TTag>

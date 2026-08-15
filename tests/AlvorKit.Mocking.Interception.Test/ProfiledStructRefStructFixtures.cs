@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Tracks exact original bodies for the struct/ref-struct row.</summary>
 internal static class ProfiledStructRefStructOriginalCounters

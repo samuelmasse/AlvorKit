@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 3D frustum types, including <c>Frustum3</c> and <c>Frustum3d</c>.</summary>
 /// <typeparam name="TSelf">The concrete frustum type.</typeparam>

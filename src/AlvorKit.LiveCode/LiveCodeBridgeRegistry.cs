@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Owns the predefined bridges advertised and executed by one LiveCode session.</summary>
 public sealed class LiveCodeBridgeRegistry

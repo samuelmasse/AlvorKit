@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Resolved bindgen inputs, source paths, and package identity for one native library.</summary>
 public sealed partial class NativeLibraryBinding

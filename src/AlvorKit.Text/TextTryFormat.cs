@@ -1,4 +1,4 @@
-namespace AlvorKit.Text;
+namespace AlvorKit;
 
 /// <summary>Formats a typed value directly into caller-owned UTF-16 storage.</summary>
 /// <typeparam name="T">The formatted value type.</typeparam>

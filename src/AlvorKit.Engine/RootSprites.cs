@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Root-owned sprite batch used by two-dimensional engine drawing.</summary>
 [Root]

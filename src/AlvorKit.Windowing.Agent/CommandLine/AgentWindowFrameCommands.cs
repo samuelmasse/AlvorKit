@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Creates commands that advance deterministic agent time and rendering.</summary>
 internal static class AgentWindowFrameCommands

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for runtime identifier parsing and toolchain mapping.</summary>
 [TestClass]

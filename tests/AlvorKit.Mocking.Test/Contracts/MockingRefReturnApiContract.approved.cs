@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test.Contracts.RefReturns;
+namespace AlvorKit;
 
 // Mock.When<T> and ReturnFactory preserve exact by-value ref-struct return
 // types. Ordinary Return, ReturnSequence, and Answer remain heap-safe extension

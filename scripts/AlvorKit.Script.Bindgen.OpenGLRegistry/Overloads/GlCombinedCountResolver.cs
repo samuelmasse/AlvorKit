@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Resolves inferred count parameters for combined OpenGL overload plans.</summary>
 /// <param name="state">Shared extension-emission state.</param>

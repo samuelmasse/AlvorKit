@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer;
+namespace AlvorKit;
 
 /// <summary>
 /// Tracks strict state values keyed by GL target, index, face, parameter name, or a composite key.

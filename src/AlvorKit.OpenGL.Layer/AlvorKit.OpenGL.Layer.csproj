@@ -5,7 +5,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.OpenGL" />
         <InternalsVisibleTo Include="AlvorKit.OpenGL.Layer.Test" />
     </ItemGroup>
 

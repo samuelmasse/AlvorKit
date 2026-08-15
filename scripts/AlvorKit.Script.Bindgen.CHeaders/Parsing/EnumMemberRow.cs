@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Tracks an enum member with source lines used to repair trailing comments.</summary>
 /// <param name="Member">Binding member read from Clang.</param>

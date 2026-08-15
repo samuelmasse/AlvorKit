@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Performance.Fixture;
+namespace AlvorKit;
 
 /// <summary>Encodes a same-module template method as a complete profiler replacement body.</summary>
 internal static class ReflectionMethodBodyEncoder

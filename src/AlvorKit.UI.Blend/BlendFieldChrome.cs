@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>
 /// Shared visual plumbing for Blend form fields: the field surface, reactive border rules, the edit-mode

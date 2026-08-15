@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to matrix types that return column masks for equality helpers.</summary>
 /// <typeparam name="TSelf">The matrix type.</typeparam>

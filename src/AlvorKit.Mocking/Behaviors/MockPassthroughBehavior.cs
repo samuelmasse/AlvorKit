@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Selects the preserved original implementation.</summary>
 internal sealed class MockPassthroughBehavior : MockConfiguredBehavior

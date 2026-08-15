@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>
 /// Exception thrown when dependency resolution fails inside an initialized injector scope.

@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
-using static AlvorKit.Interception.CoreClr.Advanced.LoadedIlPrimitiveReader;
+using static AlvorKit.LoadedIlPrimitiveReader;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Decodes and validates instructions from an authoritative loaded IL stream.</summary>
 internal static class LoadedIlInstructionDecoder

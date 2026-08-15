@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Provides argument matchers for mocked value, reference, and by-ref parameters.</summary>
 public static class Arg

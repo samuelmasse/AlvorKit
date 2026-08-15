@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 3D oriented bounding box types, including <c>Obb3</c> and <c>Obb3d</c>.</summary>
 /// <typeparam name="TSelf">The concrete oriented bounding box type.</typeparam>

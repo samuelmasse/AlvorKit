@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Provides observable allocation state for factory substitution.</summary>
 public sealed class ProfiledConstructionFactoryTarget

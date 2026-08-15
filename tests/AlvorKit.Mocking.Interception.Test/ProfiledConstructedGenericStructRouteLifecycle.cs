@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates exact closed routes behind one rewritten generic caller.</summary>
 internal sealed class ProfiledConstructedGenericStructRouteLifecycle :

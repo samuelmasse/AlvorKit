@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Builds and installs one production generation for a selected newobj site.</summary>
 internal static class ProfiledConstructionGeneration

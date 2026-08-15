@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Tracks a Minecraft-style free camera for inspecting the static GLB model.</summary>
 public sealed class FlyCamera(Vec3 initialPosition, float initialYaw, float initialPitch)

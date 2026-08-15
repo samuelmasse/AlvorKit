@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Repository paths needed by the native build runner.</summary>
 /// <param name="root">Absolute path to the repository root.</param>

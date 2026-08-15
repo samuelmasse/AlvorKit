@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Owns thread-local mocked-call capture and matcher state.</summary>
 internal static partial class Capture

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Adapts the public mutable delegate to the internal exact alias ABI.</summary>
 internal sealed class MockRefReturnAdapter<T>(MockRefCall<T> factory)

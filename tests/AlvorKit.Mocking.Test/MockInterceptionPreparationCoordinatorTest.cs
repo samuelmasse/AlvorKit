@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies neutral transactional interception preparation and diagnostics.</summary>
 [TestClass]

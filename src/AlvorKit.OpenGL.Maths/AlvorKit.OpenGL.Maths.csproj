@@ -21,7 +21,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Maths" />
         <InternalsVisibleTo Include="AlvorKit.OpenGL.Maths.Test" />
     </ItemGroup>
 

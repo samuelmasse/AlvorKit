@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Runs the root two-dimensional drawing pass for state and scripts.</summary>
 [Root]

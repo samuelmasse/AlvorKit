@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Formats commands and shell fragments for logs and generated scripts.</summary>
 internal static class CommandText

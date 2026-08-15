@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Managed and raw interop type pair for a mapped declaration.</summary>
 /// <param name="Managed">Public managed type.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Test;
+namespace AlvorKit;
 
 /// <summary>Scriptable window host used to drive UI system frames in tests.</summary>
 internal sealed class FakeWindowHost : IWindowHost

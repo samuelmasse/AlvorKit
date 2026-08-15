@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Defines behavior when no configured setup matches a real call.</summary>
 internal enum MockFallbackBehavior

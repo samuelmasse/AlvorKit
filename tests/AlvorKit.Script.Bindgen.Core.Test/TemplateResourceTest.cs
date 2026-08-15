@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.Core.Test;
+namespace AlvorKit;
 
 /// <summary>Tests repository-root template file loading for bindgen emitters.</summary>
 [TestClass]

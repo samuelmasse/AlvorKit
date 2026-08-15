@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies a stable caller-composition rejection category.</summary>
 public enum LoadedSymbolicCompositionRejectionReason

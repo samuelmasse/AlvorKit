@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing.Test;
+namespace AlvorKit;
 
 internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsVisible = false) : GlfwNoop
 {

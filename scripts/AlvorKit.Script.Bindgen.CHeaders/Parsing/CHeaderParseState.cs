@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Mutable parse state shared by C-header discovery passes.</summary>
 internal sealed class CHeaderParseState

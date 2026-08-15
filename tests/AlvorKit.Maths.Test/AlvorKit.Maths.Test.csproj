@@ -5,7 +5,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Maths" />
         <Using Include="System.Numerics" />
     </ItemGroup>
 

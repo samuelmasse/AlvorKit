@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Returns one configured constant and reference-writeback set.</summary>
 internal sealed class MockConstantBehavior : MockConfiguredBehavior

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Process invocation planned by the native build runner.</summary>
 /// <param name="FileName">Executable file name or path.</param>

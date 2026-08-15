@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>
 /// Applies to numeric vector types with vector-scalar arithmetic operators, including <c>Vec2</c>, <c>Vec3i</c>, and

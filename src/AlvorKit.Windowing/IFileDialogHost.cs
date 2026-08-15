@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Platform file-dialog operations associated with a native application window.</summary>
 public interface IFileDialogHost

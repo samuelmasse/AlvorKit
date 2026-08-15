@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits typed convenience overloads for enums, booleans, and strings.</summary>
 internal sealed class BindingTypedOverloadEmitter(BindingEmitterContext context)

@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Placement and advance metrics for one rendered glyph.</summary>
 /// <param name="Char">The Unicode scalar represented by the glyph.</param>

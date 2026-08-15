@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Owns the hosted game process and captures stdout for interactive request responses.</summary>
 [ExcludeFromCodeCoverage(Justification = "Wraps a long-running child process with redirected streams.")]

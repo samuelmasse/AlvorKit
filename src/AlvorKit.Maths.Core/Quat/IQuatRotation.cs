@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to quaternion types with 3D rotation helpers.</summary>
 /// <typeparam name="TSelf">The concrete quaternion type.</typeparam>

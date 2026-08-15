@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to 4x4 matrix types that create transforms from matching 3D planes.</summary>
 /// <typeparam name="TSelf">The 4x4 matrix type.</typeparam>

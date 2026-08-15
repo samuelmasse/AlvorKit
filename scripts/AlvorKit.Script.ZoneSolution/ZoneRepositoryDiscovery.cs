@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.ZoneSolution;
+namespace AlvorKit;
 
 /// <summary>Discovers sibling repositories that own primary .slnx files.</summary>
 internal static class ZoneRepositoryDiscovery

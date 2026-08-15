@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Maps Clang types into public managed and raw interop type spellings.</summary>
 internal sealed partial class CHeaderTypeMapper(

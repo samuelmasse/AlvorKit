@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>App-scoped Blend tooltip layer for hovered visualizer nodes.</summary>
 [App]

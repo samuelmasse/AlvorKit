@@ -18,16 +18,10 @@
     <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.Windowing.Test" />
         <InternalsVisibleTo Include="AlvorKit.Engine.LiveCode" />
-        <Using Include="AlvorKit.Maths" />
-        <Using Include="AlvorKit.Windowing" />
-        <Using Include="AlvorKit.GLFW" />
-        <Using Include="AlvorKit.OpenGL" />
-        <Using Include="AlvorKit.OpenGL.Layer" />
         <Using Include="BigGustave" />
         <Using Include="System.CommandLine" />
         <Using Include="System.CommandLine.Parsing" />
         <Using Include="System.Globalization" />
-        <Using Include="System.Text" />
     </ItemGroup>
 
 </Project>

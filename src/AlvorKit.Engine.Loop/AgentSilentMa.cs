@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Forwards miniaudio calls while preventing agent runs from opening a real audio output device.</summary>
 internal sealed unsafe class AgentSilentMa(Ma inner) : MaWrapper(inner)

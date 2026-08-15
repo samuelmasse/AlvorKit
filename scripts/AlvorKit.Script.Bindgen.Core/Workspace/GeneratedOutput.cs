@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Absolute directories used for one generated API/backend project pair.</summary>
 /// <param name="Root">Directory that receives shared generated project files such as Directory.Build.props.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Provides cold-path exception helpers for generated maths types.</summary>
 internal static class MathsThrowHelper

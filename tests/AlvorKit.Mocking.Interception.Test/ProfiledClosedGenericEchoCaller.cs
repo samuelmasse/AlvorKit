@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns the generic caller for closed concrete echo operations.</summary>
 internal static class ProfiledClosedGenericEchoCaller

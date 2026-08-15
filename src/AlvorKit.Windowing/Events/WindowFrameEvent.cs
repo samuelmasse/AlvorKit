@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Frame timing data from the host event loop.</summary>
 /// <param name="Time">Seconds elapsed since the previous frame.</param>

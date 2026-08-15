@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Finds repository-level directories used by the bindgen scripts.</summary>
 public sealed class RepositoryLayout

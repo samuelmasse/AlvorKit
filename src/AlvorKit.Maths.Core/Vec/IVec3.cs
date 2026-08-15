@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to all three-component vector types, including <c>Vec3</c>, <c>Vec3i</c>, and <c>Vec3b</c>.</summary>
 /// <typeparam name="TSelf">The concrete three-component vector type.</typeparam>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits component-wise floating-point transcendental and root helpers.</summary>
 internal static class FloatingComponentFunctionsEmitter

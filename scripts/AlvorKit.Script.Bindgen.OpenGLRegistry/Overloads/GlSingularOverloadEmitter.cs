@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits singular Gen/Create/Delete-style OpenGL helpers.</summary>
 /// <param name="state">Shared extension-emission state.</param>

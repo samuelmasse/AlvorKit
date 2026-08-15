@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using System.Security.Cryptography;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Creates a deterministic identity for one baseline-plus-sites composition.</summary>
 internal static class LoadedSymbolicGenerationIdentity

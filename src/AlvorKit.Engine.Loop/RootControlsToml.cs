@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Loads root control bindings from TOML configuration text.</summary>
 [Root]

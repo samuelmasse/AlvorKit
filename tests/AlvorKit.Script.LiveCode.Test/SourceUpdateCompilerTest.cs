@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode.Test;
+namespace AlvorKit;
 
 /// <summary>Proves strict diff handling and a real public-Roslyn two-generation delta chain.</summary>
 [TestClass]

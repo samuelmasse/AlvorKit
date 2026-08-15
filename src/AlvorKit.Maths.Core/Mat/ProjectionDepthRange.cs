@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Defines the normalized device coordinate depth range used by projection matrix helpers.</summary>
 public enum ProjectionDepthRange

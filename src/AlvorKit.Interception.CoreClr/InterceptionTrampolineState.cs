@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Coordinates atomic handler removal with calls that already acquired its exact trampoline.</summary>
 internal sealed class InterceptionTrampolineState(Action clearHandler)

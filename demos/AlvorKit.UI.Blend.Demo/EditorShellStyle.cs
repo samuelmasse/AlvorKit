@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo;
+namespace AlvorKit;
 
 /// <summary>Blend-backed UI style for the editor-shell demo.</summary>
 [App]

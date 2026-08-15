@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies a stable logical cutoff within one mock session.</summary>
 public readonly record struct MockCheckpoint

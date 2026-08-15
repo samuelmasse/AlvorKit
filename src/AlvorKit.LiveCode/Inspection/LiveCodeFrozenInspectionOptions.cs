@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Configures the dormant out-of-band command lane used only after the game-frame heartbeat stalls.</summary>
 public sealed record LiveCodeFrozenInspectionOptions

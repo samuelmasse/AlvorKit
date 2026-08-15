@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Caller-side location and shape of one artifact returned by a LiveCode bridge.</summary>
 internal sealed record LiveCodeSavedArtifact(

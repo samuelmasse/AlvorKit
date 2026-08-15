@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Owns UTF-8 strings and native filter records for one synchronous NFDe call.</summary>
 internal sealed class NfdeDialogMemory : IDisposable

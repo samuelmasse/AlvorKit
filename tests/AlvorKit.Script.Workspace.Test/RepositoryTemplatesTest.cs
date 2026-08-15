@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Workspace.Test;
+namespace AlvorKit;
 
 /// <summary>Tests repository-root template loading and simple placeholder rendering.</summary>
 [TestClass]

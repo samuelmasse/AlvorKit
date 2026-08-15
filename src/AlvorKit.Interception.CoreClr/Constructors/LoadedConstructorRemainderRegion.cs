@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Describes one contiguous instruction region in immutable baseline coordinates.</summary>
 public sealed class LoadedConstructorRemainderRegion

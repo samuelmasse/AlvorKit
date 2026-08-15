@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 public readonly record struct AppMemoryStripView(
     AllocatorSnapshot Snapshot,

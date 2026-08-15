@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one generated 3D sphere type.</summary>
 internal sealed record SphereSpec(ScalarSpec Scalar)

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>
 /// Carries a canonical signature and an optional immutable rejection from pre-installation validation.

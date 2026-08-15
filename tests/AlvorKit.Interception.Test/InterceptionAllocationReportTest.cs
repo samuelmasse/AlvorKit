@@ -1,6 +1,4 @@
-using AlvorKit.Interception.CoreClr.Advanced;
-
-namespace AlvorKit.Interception.Test;
+namespace AlvorKit;
 
 [TestClass]
 public class InterceptionAllocationReportTest

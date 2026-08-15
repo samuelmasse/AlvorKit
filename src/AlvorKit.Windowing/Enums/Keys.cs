@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Keyboard keys exposed by AlvorKit windowing.</summary>
 public enum Keys

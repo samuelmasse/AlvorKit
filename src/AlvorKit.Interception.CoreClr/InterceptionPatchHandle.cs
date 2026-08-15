@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Stable ownership handle for installing, replacing, and removing one exact native patch.</summary>
 internal sealed class InterceptionPatchHandle :

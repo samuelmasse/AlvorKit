@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>Dependency injection scope for the Noise Lab demo lifetime.</summary>
 [App]

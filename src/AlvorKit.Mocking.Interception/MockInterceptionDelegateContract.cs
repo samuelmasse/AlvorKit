@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Validates a generated exact site delegate against its operation.</summary>
 internal static class MockInterceptionDelegateContract

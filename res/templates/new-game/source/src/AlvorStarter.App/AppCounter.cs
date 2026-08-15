@@ -1,4 +1,4 @@
-namespace AlvorStarter.App;
+namespace AlvorStarter;
 
 /// <summary>Stores the starter UI click count.</summary>
 [App]

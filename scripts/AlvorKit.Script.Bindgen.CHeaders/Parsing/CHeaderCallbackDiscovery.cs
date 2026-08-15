@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Discovers function-pointer typedefs used by generated callback APIs.</summary>
 internal static class CHeaderCallbackDiscovery

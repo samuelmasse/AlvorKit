@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveWorkspace;
+namespace AlvorKit;
 
 /// <summary>Runtime mechanism responsible for one tracked live intervention.</summary>
 public enum LiveWorkspaceInterventionKind

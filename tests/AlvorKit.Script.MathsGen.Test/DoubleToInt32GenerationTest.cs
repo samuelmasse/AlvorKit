@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Tests retained semantics-preserving double-to-Int32 conversion generation.</summary>
 [TestClass]

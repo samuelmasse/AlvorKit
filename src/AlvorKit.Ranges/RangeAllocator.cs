@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges;
+namespace AlvorKit;
 
 /// <summary>Allocates aligned logical ranges inside a compactable backing store.</summary>
 public class RangeAllocator

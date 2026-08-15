@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits Boolean vector helpers.</summary>
 internal static class BoolFunctionsEmitter

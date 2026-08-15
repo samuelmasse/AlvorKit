@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates exact instance-field read and write caller routes.</summary>
 internal sealed class ProfiledInstanceFieldRouteLifecycle :

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Configuration for one native library binding, loaded from native/&lt;library&gt;/conf/bindgen.yml.</summary>
 public sealed partial class BindgenConfig
@@ -47,6 +47,9 @@ public sealed partial class BindgenConfig
 
     /// <summary>Output path for the generated public API project.</summary>
     public required string ApiProject { get; set; }
+
+    /// <summary>Native package identifier paired with the generated public API project.</summary>
+    public string NativePackageId => ApiProject.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries)[^1] + ".Native";
 
     /// <summary>Output path for the generated backend project.</summary>
     public required string BackendProject { get; set; }

@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>Immutable point-in-time view of a tracked injector scope graph.</summary>
 public sealed record InjectorScopeGraphSnapshot(

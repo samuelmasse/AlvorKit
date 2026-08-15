@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Result of comparing generated binding functions with a native library's exports.</summary>
 /// <param name="LibraryPath">Native library path that was checked.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Tracks mouse button and wheel state for a window loop.</summary>
 internal sealed class WindowMouse

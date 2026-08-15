@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>One structured bridge invocation waiting for execution by the game-thread pump.</summary>
 internal sealed class LiveCodePendingBridge(

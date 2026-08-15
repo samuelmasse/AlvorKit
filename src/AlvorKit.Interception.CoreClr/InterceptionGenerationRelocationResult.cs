@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Reports the exact metadata token produced for one relocation.</summary>
 public readonly record struct InterceptionGenerationRelocationResult(

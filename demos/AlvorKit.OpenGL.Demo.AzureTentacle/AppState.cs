@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Runs the animated azure tentacle GLB demo with an AlvorKit UI overlay.</summary>
 [App]

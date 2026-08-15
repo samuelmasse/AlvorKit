@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies selected SIMD emission for generated quaternions.</summary>
 [TestClass]

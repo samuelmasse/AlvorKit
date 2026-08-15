@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint.Test;
+namespace AlvorKit;
 
 /// <summary>Tests the lint runner's parallel command coordination behavior.</summary>
 [TestClass]

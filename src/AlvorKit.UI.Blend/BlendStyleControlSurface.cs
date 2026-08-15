@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Builds rounded Blend control geometry and resolves its reactive colors.</summary>
 internal sealed class BlendStyleControlSurface

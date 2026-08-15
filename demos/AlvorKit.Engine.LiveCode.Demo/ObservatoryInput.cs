@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Maps ordinary engine input into direct manipulation of live colony state.</summary>
 [Root]

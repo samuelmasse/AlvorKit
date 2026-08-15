@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one scalar type emitted across vector dimensions.</summary>
 internal sealed record ScalarSpec(

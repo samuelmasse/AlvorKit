@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Writes a compact console summary after report generation.</summary>
 internal static class ConsoleSummary

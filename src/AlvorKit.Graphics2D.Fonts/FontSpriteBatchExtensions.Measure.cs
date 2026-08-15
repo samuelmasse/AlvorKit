@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts;
+namespace AlvorKit;
 
 /// <summary>Text measuring and drawing helpers for <see cref="SpriteBatchWriter"/>.</summary>
 public static partial class FontSpriteBatchExtensions

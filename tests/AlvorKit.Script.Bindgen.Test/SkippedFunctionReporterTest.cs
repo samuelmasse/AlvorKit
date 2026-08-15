@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for skipped-function console summaries.</summary>
 [TestClass]

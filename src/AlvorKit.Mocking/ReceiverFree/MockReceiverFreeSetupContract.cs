@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies one configured receiver-free behavior contract.</summary>
 internal enum MockReceiverFreeBehaviorKind

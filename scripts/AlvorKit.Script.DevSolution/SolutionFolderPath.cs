@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.DevSolution;
+namespace AlvorKit;
 
 /// <summary>Parses and formats .slnx solution-folder paths.</summary>
 internal static class SolutionFolderPath

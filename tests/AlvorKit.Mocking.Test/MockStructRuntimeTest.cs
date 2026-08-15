@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 /// <summary>Exercises the live-ref struct control plane through exact runtime bindings.</summary>
 [TestClass]

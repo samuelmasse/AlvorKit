@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Implements runtime-emitted proxy and callback execution.</summary>
 internal sealed class DynamicMockRuntimeBackend :

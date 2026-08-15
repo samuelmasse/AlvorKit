@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits one generated vector swizzle source file.</summary>
 internal static class SwizzleFileEmitter

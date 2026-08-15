@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Builds compact raw IL operation sequences for semantic recognition tests.</summary>
 internal sealed class LoadedOperationBodyBuilder

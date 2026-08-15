@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Window session contract used by the AlvorKit window loop.</summary>
 public interface IWindowHost

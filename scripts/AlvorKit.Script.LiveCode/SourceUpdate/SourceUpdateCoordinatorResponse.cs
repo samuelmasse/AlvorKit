@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Stable foreground status for one retained Source Update generation chain.</summary>
 internal sealed record SourceUpdateCoordinatorResponse(

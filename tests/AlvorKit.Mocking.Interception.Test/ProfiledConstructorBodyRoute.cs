@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Publishes one exact post-initializer constructor route.</summary>
 internal static class ProfiledConstructorBodyRoute

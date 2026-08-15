@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>Runs the Noise Lab: mounts the Blend UI and drives auto-regeneration.</summary>
 [App]

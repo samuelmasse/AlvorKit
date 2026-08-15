@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Foreground JSON result for a send request, optionally enriched with local diagnostics.</summary>
 /// <param name="Id">Unique request id copied from the matching request.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits third-party notice files for generated OpenGL documentation content.</summary>
 /// <param name="context">Shared source-emission context.</param>

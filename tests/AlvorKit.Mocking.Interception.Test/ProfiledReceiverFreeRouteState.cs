@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Holds one receiver-free caller's exact pointer and route lease.</summary>
 internal static class ProfiledReceiverFreeRouteState<TTag>

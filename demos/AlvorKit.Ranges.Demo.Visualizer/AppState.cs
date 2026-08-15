@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Runs the interactive slow-motion range allocator visualizer.</summary>
 [App]

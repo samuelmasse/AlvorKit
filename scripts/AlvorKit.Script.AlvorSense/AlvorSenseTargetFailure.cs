@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Formats foreground-friendly reasons for missing target responses.</summary>
 internal static class AlvorSenseTargetFailure

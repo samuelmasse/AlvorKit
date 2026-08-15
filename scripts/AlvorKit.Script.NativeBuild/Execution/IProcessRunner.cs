@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Runs external processes for build and verification steps.</summary>
 internal interface IProcessRunner

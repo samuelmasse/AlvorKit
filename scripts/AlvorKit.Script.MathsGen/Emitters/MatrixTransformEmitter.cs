@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits graphics-oriented transform helpers for 4x4 floating-point matrices.</summary>
 internal static class MatrixTransformEmitter

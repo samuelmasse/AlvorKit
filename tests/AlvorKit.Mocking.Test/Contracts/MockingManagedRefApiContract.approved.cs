@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test.Contracts.ManagedRefs;
+namespace AlvorKit;
 
 // Production preserves these exact mutable and readonly managed-reference
 // distinctions.
@@ -8,12 +8,12 @@ internal static class MockingManagedRefApiContract
         IManagedRefContractTarget target,
         ManagedRefContractOwner owner)
     {
-        global::AlvorKit.Mocking.Mock.WhenRef(target.Mutable)
+        global::AlvorKit.Mock.WhenRef(target.Mutable)
             .ReturnRef(owner.Mutable);
-        global::AlvorKit.Mocking.Mock.WhenRef(
+        global::AlvorKit.Mock.WhenRef(
                 () => ref target.Mutable())
             .ReturnRef(() => ref owner.Mutable());
-        global::AlvorKit.Mocking.Mock.WhenRef(target.Mutable)
+        global::AlvorKit.Mock.WhenRef(target.Mutable)
             .ReturnRef(13);
     }
 
@@ -21,13 +21,13 @@ internal static class MockingManagedRefApiContract
         IManagedRefContractTarget target,
         ManagedRefContractOwner owner)
     {
-        global::AlvorKit.Mocking.Mock.WhenRefReadonly(
+        global::AlvorKit.Mock.WhenRefReadonly(
                 target.ReadOnly)
             .ReturnRef(owner.ReadOnly);
-        global::AlvorKit.Mocking.Mock.WhenRefReadonly(
+        global::AlvorKit.Mock.WhenRefReadonly(
                 () => ref target.ReadOnly())
             .ReturnRef(() => ref owner.ReadOnly());
-        global::AlvorKit.Mocking.Mock.WhenRefReadonly(
+        global::AlvorKit.Mock.WhenRefReadonly(
                 target.ReadOnly)
             .ReturnRef(21);
     }

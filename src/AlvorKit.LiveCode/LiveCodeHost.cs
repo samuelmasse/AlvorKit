@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>
 /// Owns an explicitly enabled LiveCode endpoint, its game-thread pump, and an optional frozen-only execution lane.

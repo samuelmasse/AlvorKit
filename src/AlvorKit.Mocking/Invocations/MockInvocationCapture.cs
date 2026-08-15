@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Maps the heap-safe dispatch carrier into declared-order history.</summary>
 internal static class MockInvocationCapture

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Formats generated names and small expressions for OpenGL extension overloads.</summary>
 internal static class GlExtensionNames

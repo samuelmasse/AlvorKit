@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Maths.Test;
+namespace AlvorKit;
 
 internal static class ExpectedPublicApi
 {

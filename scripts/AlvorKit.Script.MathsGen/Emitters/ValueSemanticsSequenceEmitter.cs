@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Builds component-order statement blocks for generated vector value semantics.</summary>
 internal static class ValueSemanticsSequenceEmitter

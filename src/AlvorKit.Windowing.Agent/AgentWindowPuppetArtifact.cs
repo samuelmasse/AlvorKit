@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>One client-named framebuffer capture produced by a puppet command batch.</summary>
 /// <param name="Name">Client-selected artifact name.</param>

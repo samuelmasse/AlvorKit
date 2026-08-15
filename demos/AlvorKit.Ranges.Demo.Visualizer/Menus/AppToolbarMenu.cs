@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Builds the playback/speed/toggle tool strip; rebuilds its controls when the session UI revision changes.</summary>
 [App]

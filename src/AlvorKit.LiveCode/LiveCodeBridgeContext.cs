@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Collects structured output and caller-owned artifacts from a predefined bridge invocation.</summary>
 public sealed class LiveCodeBridgeContext

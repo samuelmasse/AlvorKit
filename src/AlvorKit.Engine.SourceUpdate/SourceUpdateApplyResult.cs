@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Generation acknowledgment returned after a Source Update request reaches the safe frame.</summary>
 public sealed record SourceUpdateApplyResult(

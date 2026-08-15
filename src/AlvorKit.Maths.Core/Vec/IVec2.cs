@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to all two-component vector types, including <c>Vec2</c>, <c>Vec2i</c>, and <c>Vec2b</c>.</summary>
 /// <typeparam name="TSelf">The concrete two-component vector type.</typeparam>

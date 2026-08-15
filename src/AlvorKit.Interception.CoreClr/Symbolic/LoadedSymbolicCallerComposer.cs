@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Composes disjoint exact sites into one immutable symbolic caller generation.</summary>
 public static class LoadedSymbolicCallerComposer

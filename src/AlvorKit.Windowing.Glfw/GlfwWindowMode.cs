@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Tracks and applies GLFW window mode changes that need previous windowed bounds.</summary>
 [ExcludeFromCodeCoverage]

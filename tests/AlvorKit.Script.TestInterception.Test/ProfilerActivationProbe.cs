@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Reads the native profiler ABI without assuming platform module enumeration.</summary>
 internal static class ProfilerActivationProbe

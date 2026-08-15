@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen.Test;
+namespace AlvorKit;
 
 /// <summary>Protects the measured complete-register Boolean selection paths.</summary>
 [TestClass]

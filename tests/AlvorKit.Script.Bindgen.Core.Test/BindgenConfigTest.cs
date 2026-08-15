@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen.Core.Test;
+namespace AlvorKit;
 
 /// <summary>Covers defaults on the bindgen config model.</summary>
 [TestClass]
@@ -25,12 +25,13 @@ public sealed class BindgenConfigTest
         Assert.AreEqual(0, config.EnumGroups.Count);
         Assert.IsNull(config.EnumOverloads);
         Assert.IsFalse(config.FastNoise2Convenience);
+        Assert.AreEqual("Fixture.Native", config.NativePackageId);
     }
 
     /// <summary>Creates the smallest valid C-header config used by defaults tests.</summary>
     private static BindgenConfig TestConfig() => new()
     {
-        Namespace = "Fixture.Native",
+        Namespace = "AlvorKit",
         ApiClass = "FixtureApi",
         ApiSummary = "Fixture API.",
         BackendClass = "FixtureBackend",

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Argument matcher captured while setting up a mocked call.</summary>
 internal readonly record struct Matcher(MatcherType Type, object? Object)

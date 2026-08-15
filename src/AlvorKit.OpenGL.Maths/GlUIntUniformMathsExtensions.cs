@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL;
+namespace AlvorKit;
 
 /// <summary>Provides unsigned integer vector uniform overloads.</summary>
 public static class GlUIntUniformMathsExtensions

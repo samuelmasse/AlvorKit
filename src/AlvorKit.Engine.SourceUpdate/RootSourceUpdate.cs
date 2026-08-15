@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Explicitly composes the editable-source bridge into one development LiveCode session.</summary>
 public sealed class RootSourceUpdate(

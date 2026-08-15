@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Tracks cursor position and frame-to-frame delta for a window loop.</summary>
 internal sealed class WindowMousePosition

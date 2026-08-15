@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Verifies receiver-free history against member and site scopes.</summary>
 internal static class MockReceiverFreeVerification

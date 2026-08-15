@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Interprets standard state-machine metadata without reading reflection bodies.</summary>
 internal static class LoadedSourceMethodMetadata

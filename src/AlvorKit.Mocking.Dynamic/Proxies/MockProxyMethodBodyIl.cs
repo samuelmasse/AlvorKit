@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Emits direct exact dispatch bodies for generated proxy methods.</summary>
 internal static class MockProxyMethodBodyIl

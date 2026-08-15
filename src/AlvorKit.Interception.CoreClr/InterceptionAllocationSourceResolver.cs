@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Maps retained profiler frames through selected assemblies and their Portable PDBs.</summary>
 internal static class InterceptionAllocationSourceResolver

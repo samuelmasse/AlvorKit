@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Runs focused ECS microbenchmarks for hot component and entity lifetime paths.</summary>
 public sealed class EcsBenchDemo(EcsBenchOptions options)

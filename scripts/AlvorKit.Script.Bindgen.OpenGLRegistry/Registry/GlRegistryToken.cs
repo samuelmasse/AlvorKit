@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Registry token after filtering and C# name mapping.</summary>
 /// <param name="NativeName">Native registry token name.</param>

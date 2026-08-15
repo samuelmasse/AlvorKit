@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Validates exact delegate parameter metadata for an intercepted operation.</summary>
 internal static class MockReceiverFreeParameterContract

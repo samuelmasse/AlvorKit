@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Builds the left allocator-state dock with label/value rows for the latest operation and store totals.</summary>
 [App]

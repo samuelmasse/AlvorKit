@@ -12,9 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.Script.TestInterception" />
-        <Using Include="AlvorKit.Script.TestTiming" />
-        <Using Include="AlvorKit.Script.Workspace" />
         <Using Include="System.CommandLine" />
         <Using Include="System.CommandLine.Parsing" />
         <Using Include="System.Text.Json.Nodes" />

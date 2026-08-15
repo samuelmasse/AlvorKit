@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Axis-aligned clipping rectangle for sprite-batch draw calls.</summary>
 /// <param name="Min">The inclusive minimum pixel coordinate.</param>

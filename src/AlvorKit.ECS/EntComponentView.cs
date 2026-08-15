@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Describes sparse and archetypal components for diagnostics and string rendering.</summary>
 internal abstract class EntComponentView

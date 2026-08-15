@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Formats generated method signatures and call arguments.</summary>
 internal static class BindingSignature

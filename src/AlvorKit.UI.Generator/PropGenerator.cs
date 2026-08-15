@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Generator;
+namespace AlvorKit;
 
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -11,7 +11,7 @@ internal class PropGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
-            "AlvorKit.ECS.Generator.ComponentsAttribute",
+            "AlvorKit.ComponentsAttribute",
             static (node, _) => node is InterfaceDeclarationSyntax,
             static (ctx, ct) =>
             {
@@ -88,7 +88,7 @@ internal class PropGenerator : IIncrementalGenerator
                 sb.AppendLine();
             }
 
-            sb.AppendLine("using AlvorKit.ECS;");
+            sb.AppendLine("using AlvorKit;");
             sb.AppendLine();
             sb.AppendLine("#nullable enable");
             sb.AppendLine();

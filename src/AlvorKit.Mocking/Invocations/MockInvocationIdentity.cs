@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies the target, member, and backend of one intercepted operation.</summary>
 internal sealed record MockInvocationIdentity

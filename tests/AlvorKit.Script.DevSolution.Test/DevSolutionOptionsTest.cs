@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.DevSolution.Test;
+namespace AlvorKit;
 
 /// <summary>Tests command-line option parsing for the development solution generator.</summary>
 [TestClass]

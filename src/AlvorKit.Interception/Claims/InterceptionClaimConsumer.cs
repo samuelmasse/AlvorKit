@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Opaque identity and diagnostic name for one interception consumer.</summary>
 public sealed class InterceptionClaimConsumer

@@ -3,7 +3,7 @@ using MethodImplOptions = System.Runtime.CompilerServices.MethodImplOptions;
 using Marshal = System.Runtime.InteropServices.Marshal;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Locks quaternion SIMD operations to their selected component order and special-value behavior.</summary>
 [TestClass]

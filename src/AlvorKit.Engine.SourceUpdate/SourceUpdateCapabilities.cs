@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Runtime capability and exact allowlisted module identities for one editable process.</summary>
 public sealed record SourceUpdateCapabilities(

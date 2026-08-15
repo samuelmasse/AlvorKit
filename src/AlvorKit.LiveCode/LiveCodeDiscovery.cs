@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Finds running loopback LiveCode sessions through same-user discovery manifests.</summary>
 public sealed class LiveCodeDiscovery(string? directory = null)

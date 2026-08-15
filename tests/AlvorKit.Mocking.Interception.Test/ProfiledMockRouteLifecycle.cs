@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns one test-only profiled Mocking route from inert preparation through rollback.</summary>
 /// <param name="profiler">The connected checked-in interception backend.</param>

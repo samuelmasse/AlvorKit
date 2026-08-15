@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Source-filtered allocation stacks that can be inspected directly or opened as a Speedscope flame chart.</summary>
 public class InterceptionAllocationSourceReport

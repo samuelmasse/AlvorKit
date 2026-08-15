@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Stores the shared sparse transition hash used only by high-degree archs in one group.</summary>
 /// <param name="capacity">Power-of-two slot capacity maintained at no more than 50% load.</param>

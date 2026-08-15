@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Builds an alloc-scoped archetypal span query.</summary>
 public readonly struct EntArchQuery<A>

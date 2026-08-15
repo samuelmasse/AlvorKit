@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>GPU array buffer backed by a <see cref="RangeAllocator"/> that can compact and resize itself.</summary>
 [ExcludeFromCodeCoverage(Justification = "Moves bytes between live OpenGL buffers.")]

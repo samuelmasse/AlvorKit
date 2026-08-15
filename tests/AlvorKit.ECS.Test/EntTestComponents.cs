@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Test;
+namespace AlvorKit;
 
 
 public record struct FirstComponent;

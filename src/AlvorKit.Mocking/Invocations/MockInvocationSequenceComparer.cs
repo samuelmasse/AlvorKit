@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Orders invocation snapshots by their logical timeline coordinate.</summary>
 internal sealed class MockInvocationSequenceComparer :

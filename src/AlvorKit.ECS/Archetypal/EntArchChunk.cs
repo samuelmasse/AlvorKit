@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Exposes aligned Ent and component spans for one active alloc-local arch.</summary>
 public readonly ref struct EntArchChunk<A>

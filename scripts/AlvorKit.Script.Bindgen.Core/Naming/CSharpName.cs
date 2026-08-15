@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Centralizes the native-to-managed naming rules shared by every generator pipeline.</summary>
 public static class CSharpName

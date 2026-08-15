@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging;
+namespace AlvorKit;
 
 /// <summary>Buffers entries written by one producer until the collector advances them.</summary>
 internal sealed class LogBuffer

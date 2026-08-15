@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits vector functions and derived properties.</summary>
 internal static class FunctionEmitter

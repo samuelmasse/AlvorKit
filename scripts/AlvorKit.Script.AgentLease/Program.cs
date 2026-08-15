@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease;
+namespace AlvorKit;
 
 /// <summary>Entry point for the advisory agent lease helper.</summary>
 [ExcludeFromCodeCoverage]

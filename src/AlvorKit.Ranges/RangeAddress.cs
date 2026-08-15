@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges;
+namespace AlvorKit;
 
 /// <summary>Provides address arithmetic for aligned range offsets.</summary>
 internal static class RangeAddress

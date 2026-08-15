@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Implements Blend tab, dock, rule, modal, tooltip, and swatch surfaces.</summary>
 internal sealed class BlendStyleSurfaces

@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 /// <summary>Describes a compile-time archetypal component selection.</summary>
 public interface IEntArchSelect<A>

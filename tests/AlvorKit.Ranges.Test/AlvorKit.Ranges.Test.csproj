@@ -3,9 +3,4 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.Ranges\AlvorKit.Ranges.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.Ranges" />
-    </ItemGroup>
-
 </Project>

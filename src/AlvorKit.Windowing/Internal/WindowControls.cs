@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Internal table of named controls for a window loop.</summary>
 internal sealed class WindowControls(WindowMouse mouse, WindowKeyboard keyboard)

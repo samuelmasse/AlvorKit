@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits FastNoise2-specific span overloads for bulk noise generation APIs.</summary>
 internal static class BindingFastNoise2OverloadEmitter

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Compiler-facing immutable editable launch identity.</summary>
 internal sealed record SourceUpdateCompilerLaunch(

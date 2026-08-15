@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease;
+namespace AlvorKit;
 
 /// <summary>Supported top-level commands for the advisory lease helper.</summary>
 internal enum AgentLeaseCommandKind

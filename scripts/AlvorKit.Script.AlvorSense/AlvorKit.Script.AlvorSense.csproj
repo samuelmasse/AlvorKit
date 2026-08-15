@@ -10,7 +10,6 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.Script.AlvorSense.Test" />
-        <Using Include="AlvorKit.Script.LiveWorkspace" />
         <Using Include="System.CommandLine" />
         <Using Include="System.CommandLine.Parsing" />
         <Using Include="System.Reflection.Metadata" />

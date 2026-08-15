@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns the one shared rewritten caller used by parallel ambient sessions.</summary>
 internal sealed class ProfiledParallelStaticRouteLifecycle :

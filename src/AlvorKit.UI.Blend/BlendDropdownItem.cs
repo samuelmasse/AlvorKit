@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>One dropdown option: display text plus an optional swatch color shown before it.</summary>
 /// <param name="Text">Display text for the option row and the closed field.</param>

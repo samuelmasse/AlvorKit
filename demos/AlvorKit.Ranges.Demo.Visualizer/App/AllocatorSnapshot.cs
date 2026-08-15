@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>One live allocation range captured for drawing.</summary>
 public readonly record struct AllocatorRangeVisual(

@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>
 /// Applies to all floating-point vector types with geometric helpers, including <c>Vec2</c>, <c>Vec3h</c>, and

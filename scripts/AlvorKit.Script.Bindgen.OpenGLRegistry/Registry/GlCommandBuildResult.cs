@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Mapped command set plus diagnostics accumulated while mapping declarations.</summary>
 /// <param name="Commands">Commands selected for emission.</param>

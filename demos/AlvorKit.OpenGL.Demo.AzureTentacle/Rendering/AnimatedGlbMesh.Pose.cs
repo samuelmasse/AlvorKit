@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Contains pose sampling, animation selection, and transition blending for <see cref="AnimatedGlbMesh"/>.</summary>
 internal sealed partial class AnimatedGlbMesh

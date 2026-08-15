@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate;
+namespace AlvorKit;
 
 /// <summary>Immutable artifact identity written by an editable AlvorSense launch.</summary>
 public sealed record SourceUpdateEditableLaunchManifest(

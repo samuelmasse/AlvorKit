@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestInterception;
+namespace AlvorKit;
 
 /// <summary>Reports whether a host can launch one isolated interception-profiler child.</summary>
 internal sealed record CoreClrProfilerGuardResult(

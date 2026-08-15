@@ -1,5 +1,5 @@
 kind: c-header
-namespace: AlvorKit.Interception.Profiler
+namespace: AlvorKit
 apiClass: InterceptionProfilerApi
 apiSummary: The versioned C ABI exposed by the in-process AlvorKit CoreCLR interception profiler.
 backendClass: InterceptionProfilerBackend

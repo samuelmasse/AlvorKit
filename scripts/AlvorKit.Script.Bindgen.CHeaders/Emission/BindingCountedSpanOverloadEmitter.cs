@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits span overloads for configured typed pointer plus element-count parameter pairs.</summary>
 internal sealed class BindingCountedSpanOverloadEmitter(BindingEmitterContext context)

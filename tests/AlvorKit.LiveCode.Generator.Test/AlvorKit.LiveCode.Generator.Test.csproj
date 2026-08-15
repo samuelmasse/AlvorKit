@@ -10,8 +10,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="AlvorKit.LiveCode" />
-        <Using Include="AlvorKit.LiveCode.Generator" />
         <Using Include="Microsoft.CodeAnalysis" />
         <Using Include="Microsoft.CodeAnalysis.CSharp" />
         <Using Include="Microsoft.CodeAnalysis.Text" />

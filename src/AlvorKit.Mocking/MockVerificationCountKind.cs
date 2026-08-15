@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies one supported invocation-count constraint.</summary>
 internal enum MockVerificationCountKind

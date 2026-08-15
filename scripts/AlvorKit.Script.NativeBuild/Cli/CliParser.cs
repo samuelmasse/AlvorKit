@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Pure parser for the native build command-line arguments.</summary>
 internal static class CliParser

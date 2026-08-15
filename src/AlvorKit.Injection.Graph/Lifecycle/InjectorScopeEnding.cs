@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>Synchronous notification raised after a node rejects new work and before teardown runs.</summary>
 public sealed record InjectorScopeEnding(

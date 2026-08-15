@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies the mandatory constructor relation established by one exact call.</summary>
 public enum LoadedConstructorInitializerKind

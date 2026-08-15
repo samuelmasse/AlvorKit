@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test.Contracts;
+namespace AlvorKit;
 
 /// <summary>Proves the immutable receiver-free public contract foundations.</summary>
 [TestClass]

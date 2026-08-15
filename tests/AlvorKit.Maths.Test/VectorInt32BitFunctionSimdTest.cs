@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests exact semantics of retained Vec4 Int32 packed bit functions.</summary>
 [TestClass]

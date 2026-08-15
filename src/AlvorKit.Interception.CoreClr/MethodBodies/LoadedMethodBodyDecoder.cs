@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>
 /// Decodes exact ECMA-335 method-body bytes supplied by the loaded-runtime backend.

@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts.Test;
+namespace AlvorKit;
 
 /// <summary>Small fake OpenGL backend used behind <see cref="GlLayer"/> in Graphics2D font tests.</summary>
 internal sealed unsafe class FontsTestGl : GlNoop

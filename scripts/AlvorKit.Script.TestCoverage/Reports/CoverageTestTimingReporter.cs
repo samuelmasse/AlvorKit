@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Parses coverage-run TRX files and writes the per-test timing reports.</summary>
 internal static class CoverageTestTimingReporter

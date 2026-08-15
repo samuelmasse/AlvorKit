@@ -1,4 +1,4 @@
-namespace AlvorKit.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Thread-safe target-side lifecycle for one accepted two-phase bridge operation.</summary>
 internal sealed class LiveCodeBridgeOperation(string id)

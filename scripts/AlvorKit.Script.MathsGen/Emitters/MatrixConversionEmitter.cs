@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits cross-scalar matrix conversions.</summary>
 internal static class MatrixConversionEmitter

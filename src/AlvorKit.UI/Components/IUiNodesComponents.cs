@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Root;
+namespace AlvorKit;
 
 [Components]
 internal interface IUiNodesComponents

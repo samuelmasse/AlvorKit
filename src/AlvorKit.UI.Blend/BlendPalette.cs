@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Color tokens for compact Blender-inspired editor UI.</summary>
 public readonly record struct BlendPalette(

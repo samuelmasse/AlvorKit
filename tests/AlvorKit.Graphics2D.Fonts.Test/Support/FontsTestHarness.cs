@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D.Fonts.Test;
+namespace AlvorKit;
 
 /// <summary>Creates shared Graphics2D font test fixtures.</summary>
 internal static class FontsTestHarness

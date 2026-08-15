@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Command parameter after registry typing.</summary>
 /// <param name="NativeName">Native registry parameter name.</param>

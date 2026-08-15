@@ -47,8 +47,7 @@ the component generator:
 </ItemGroup>
 
 <ItemGroup>
-    <Using Include="AlvorKit.ECS" />
-    <Using Include="AlvorKit.ECS.Generator" />
+    <Using Include="AlvorKit" />
 </ItemGroup>
 ```
 
@@ -61,7 +60,7 @@ component writes, or keeps derived indexes:
 </ItemGroup>
 
 <ItemGroup>
-    <Using Include="AlvorKit.ECS.Indexed" />
+    <Using Include="AlvorKit" />
 </ItemGroup>
 ```
 

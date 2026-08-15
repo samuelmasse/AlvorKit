@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test.Characterization;
+namespace AlvorKit;
 
 [TestClass]
 public class RefStructReturnCharacterizationTest

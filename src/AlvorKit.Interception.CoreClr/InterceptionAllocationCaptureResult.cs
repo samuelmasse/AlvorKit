@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Exact allocation totals plus bounded sampled stacks from one completed capture.</summary>
 public class InterceptionAllocationCaptureResult

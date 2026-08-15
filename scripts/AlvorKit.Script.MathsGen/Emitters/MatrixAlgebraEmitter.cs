@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits transpose, component-wise products, determinants, and inverses.</summary>
 internal static class MatrixAlgebraEmitter

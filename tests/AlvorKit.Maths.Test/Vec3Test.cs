@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests single-precision three-component vector behavior.</summary>
 [TestClass]

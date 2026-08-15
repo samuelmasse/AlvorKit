@@ -1,4 +1,4 @@
-namespace AlvorKit.Injection;
+namespace AlvorKit;
 
 /// <summary>Observes dependency instances without taking ownership of them.</summary>
 public interface IInjectorInstanceObserver

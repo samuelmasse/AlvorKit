@@ -1,4 +1,4 @@
-namespace AlvorKit.Hashing;
+namespace AlvorKit;
 
 /// <summary>Retains an epoch-cleared mapping from signed 32-bit keys to caller-owned dense slots.</summary>
 /// <param name="capacity">The active mapping count for which storage is initially retained.</param>

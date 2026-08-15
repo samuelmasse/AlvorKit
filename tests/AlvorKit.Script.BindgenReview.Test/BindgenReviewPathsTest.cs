@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview.Test;
+namespace AlvorKit;
 
 /// <summary>Tests path generation and safety checks for bindgen review sessions.</summary>
 [TestClass]

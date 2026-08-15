@@ -9,11 +9,4 @@
             OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\..\src\AlvorKit.ECS\AlvorKit.ECS.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.ECS" />
-        <Using Include="AlvorKit.ECS.Demo" />
-        <Using Include="AlvorKit.ECS.Generator" />
-    </ItemGroup>
-
 </Project>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Shared mapping between normalized colony anchors and engine canvas coordinates.</summary>
 public static class ObservatoryLayout

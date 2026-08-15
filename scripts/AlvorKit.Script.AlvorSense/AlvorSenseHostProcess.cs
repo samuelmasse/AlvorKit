@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Starts and waits for the detached host process that owns one interactive game session.</summary>
 [ExcludeFromCodeCoverage(Justification = "Starts detached helper processes for interactive agent sessions.")]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Keyboard input data reported by a host window.</summary>
 /// <param name="Key">The AlvorKit key identifier.</param>

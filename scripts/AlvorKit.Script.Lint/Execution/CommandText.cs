@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Formats process commands for human-readable logging.</summary>
 internal static class CommandText

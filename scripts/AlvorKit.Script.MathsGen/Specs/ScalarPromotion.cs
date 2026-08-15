@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Resolves generated scalar pairs according to C# binary numeric promotion rules.</summary>
 internal static class ScalarPromotion

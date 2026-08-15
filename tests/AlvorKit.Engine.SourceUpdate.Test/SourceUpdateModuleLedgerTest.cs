@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.SourceUpdate.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies exact identity, forward generations, idempotency, and poisoned apply handling.</summary>
 [TestClass]

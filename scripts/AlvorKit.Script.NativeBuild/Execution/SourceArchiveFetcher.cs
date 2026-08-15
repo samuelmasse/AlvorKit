@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Downloads and extracts upstream source archives when not already cached.</summary>
 [ExcludeFromCodeCoverage]

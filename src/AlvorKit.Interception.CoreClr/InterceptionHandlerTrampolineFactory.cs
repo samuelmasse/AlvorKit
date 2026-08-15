@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Emits exact delegate and managed-callable trampoline types for reviewed target signatures.</summary>
 internal static class InterceptionHandlerTrampolineFactory

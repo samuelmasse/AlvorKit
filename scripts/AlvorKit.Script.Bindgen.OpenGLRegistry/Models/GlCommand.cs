@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>OpenGL command selected from the registry and mapped into managed and interop shapes.</summary>
 /// <param name="NativeName">Native OpenGL command name.</param>

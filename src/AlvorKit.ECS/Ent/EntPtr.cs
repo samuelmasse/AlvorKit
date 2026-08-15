@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 [DebuggerTypeProxy(typeof(EntDebugView))]
 public readonly record struct EntPtr : IDisposable, IEntMut

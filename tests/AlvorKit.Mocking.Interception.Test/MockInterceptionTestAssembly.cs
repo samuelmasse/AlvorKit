@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Selects the dynamic and interception capabilities used by this fixture.</summary>
 [TestClass]

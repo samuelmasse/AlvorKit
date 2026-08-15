@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Colony-local atmosphere used by render code and live interventions.</summary>
 [Colony]

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Creates branch coverage values from Coverlet branch JSON nodes.</summary>
 internal static class BranchCoverageFactory

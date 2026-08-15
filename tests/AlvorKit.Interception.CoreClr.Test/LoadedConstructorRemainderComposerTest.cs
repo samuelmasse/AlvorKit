@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using System.Reflection;
 
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies executable constructor-remainder extraction and ABI-v3 composition.</summary>
 [TestClass]

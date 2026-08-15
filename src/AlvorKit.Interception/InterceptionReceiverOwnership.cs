@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Describes how one exact call shape carries its hidden receiver.</summary>
 public enum InterceptionReceiverOwnership

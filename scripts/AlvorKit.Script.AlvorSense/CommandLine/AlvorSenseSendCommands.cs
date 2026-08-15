@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Reads and normalizes command batches for foreground send requests.</summary>
 internal static class AlvorSenseSendCommands

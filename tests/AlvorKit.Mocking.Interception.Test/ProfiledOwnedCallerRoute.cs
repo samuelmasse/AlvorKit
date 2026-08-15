@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns one exact test caller from inert preparation through restoration.</summary>
 internal sealed class ProfiledOwnedCallerRoute<TDelegate>

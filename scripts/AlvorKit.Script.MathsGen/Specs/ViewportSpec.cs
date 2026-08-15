@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Describes one generated viewport type.</summary>
 internal sealed record ViewportSpec(ScalarSpec Scalar)

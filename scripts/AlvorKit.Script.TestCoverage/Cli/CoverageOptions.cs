@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Command-line options controlling coverage collection.</summary>
 /// <param name="Configuration">Build configuration passed to dotnet test.</param>

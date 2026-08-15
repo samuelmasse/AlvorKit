@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Holds command-line parse inputs and the command selected by invocation.</summary>
 /// <param name="args">Original command-line arguments, preserved for special send command sources.</param>

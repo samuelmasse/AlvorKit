@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.LiveCode;
+namespace AlvorKit;
 
 /// <summary>Portable assembly, symbols, and entry type emitted for one valid LiveCode command.</summary>
 internal sealed record LiveCodeCompilation(

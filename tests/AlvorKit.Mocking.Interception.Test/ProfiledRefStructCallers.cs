@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Owns the ref-struct input selected caller and trampoline lease.</summary>
 internal static class ProfiledObserveCaller

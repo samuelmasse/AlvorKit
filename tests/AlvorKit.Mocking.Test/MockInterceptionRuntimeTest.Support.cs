@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 internal delegate int InterceptionIntCall(
     InterceptionRuntimeTarget target,

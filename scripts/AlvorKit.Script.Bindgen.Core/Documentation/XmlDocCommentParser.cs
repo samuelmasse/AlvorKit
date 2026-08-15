@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Routes raw native comments to the supported XML documentation parsers.</summary>
 internal static class XmlDocCommentParser

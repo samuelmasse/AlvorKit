@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies exact managed-reference and ref-struct return lifetimes.</summary>
 [TestClass]

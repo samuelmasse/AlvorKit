@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Returns a claim that throws one configured exception instance.</summary>
 internal sealed class MockThrowBehavior : MockConfiguredBehavior

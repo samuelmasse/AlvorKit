@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo;
+namespace AlvorKit;
 
 /// <summary>Runs the stripped editor shell as a reusable Blend style demo.</summary>
 [App]

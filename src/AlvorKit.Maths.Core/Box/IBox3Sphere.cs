@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to floating-point 3D axis-aligned boxes that can test matching spheres.</summary>
 /// <typeparam name="TSelf">The concrete box type.</typeparam>

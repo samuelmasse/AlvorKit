@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Process invocation planned by the lint coordinator.</summary>
 /// <param name="FileName">Executable file name or absolute path.</param>

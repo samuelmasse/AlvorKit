@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to matrix types that expose tolerance-based matrix queries.</summary>
 /// <typeparam name="TSelf">The matrix type.</typeparam>

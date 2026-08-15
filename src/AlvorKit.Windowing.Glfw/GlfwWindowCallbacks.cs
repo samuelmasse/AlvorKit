@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Registers GLFW callbacks and translates their payloads into AlvorKit window events.</summary>
 [ExcludeFromCodeCoverage]

@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL;
+namespace AlvorKit;
 
 /// <summary>Provides maths-vector constant vertex attribute values.</summary>
 public static class GlVertexValueMathsExtensions

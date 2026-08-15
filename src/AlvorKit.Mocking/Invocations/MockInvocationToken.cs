@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Identifies one pending ledger slot through dispatch completion.</summary>
 internal sealed class MockInvocationToken

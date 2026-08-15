@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview;
+namespace AlvorKit;
 
 /// <summary>Supported commands for disposable bindgen review snapshots.</summary>
 internal enum BindgenReviewCommandKind

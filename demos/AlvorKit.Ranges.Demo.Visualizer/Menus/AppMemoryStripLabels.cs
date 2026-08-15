@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Builds centered byte-count labels over a memory strip's blocks and free spans.</summary>
 [App]

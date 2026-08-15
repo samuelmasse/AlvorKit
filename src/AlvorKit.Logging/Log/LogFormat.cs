@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging;
+namespace AlvorKit;
 
 /// <summary>Formats timestamps, severity prefixes, caller locations, and exceptions.</summary>
 internal static class LogFormat

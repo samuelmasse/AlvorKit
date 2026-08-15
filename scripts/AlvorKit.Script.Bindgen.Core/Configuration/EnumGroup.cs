@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Rules for building a managed enum from macro constants.</summary>
 public sealed class EnumGroup

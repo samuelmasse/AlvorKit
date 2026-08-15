@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Allows only local signatures whose module tokens remain valid in the owner scope.</summary>
 internal static class LoadedDynamicLocalSignatureValidator

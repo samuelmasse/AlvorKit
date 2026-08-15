@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Creates stable, filesystem-safe identifiers for coverage runs.</summary>
 internal static class CoverageRunIdentity

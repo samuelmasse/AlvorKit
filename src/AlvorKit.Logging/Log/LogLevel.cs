@@ -1,4 +1,4 @@
-namespace AlvorKit.Logging;
+namespace AlvorKit;
 
 /// <summary>Controls which severity levels an application log accepts.</summary>
 public enum LogLevel

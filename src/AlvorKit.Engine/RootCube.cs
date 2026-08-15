@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine;
+namespace AlvorKit;
 
 /// <summary>Root-owned unit cube face geometry used by simple block and test-cube meshers.</summary>
 [Root]

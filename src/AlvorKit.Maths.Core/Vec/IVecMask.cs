@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to all Boolean mask vector types, including <c>Vec2b</c>, <c>Vec3b</c>, and <c>Vec4b</c>.</summary>
 /// <typeparam name="TSelf">The Boolean mask vector type, such as <c>Vec3b</c>.</typeparam>

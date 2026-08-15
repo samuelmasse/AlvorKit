@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Emits one exact original <c>newobj</c> operation as a managed delegate.</summary>
 public static class LoadedConstructionOriginalDelegate

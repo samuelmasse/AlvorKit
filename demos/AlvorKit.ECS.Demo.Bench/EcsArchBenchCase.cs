@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Owns one isolated worker setup and its single measured body.</summary>
 internal sealed record EcsArchBenchCase(

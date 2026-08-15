@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 internal sealed class ProfiledConstructionAtSiteFirstTag;
 internal sealed class ProfiledConstructionAtSiteSecondTag;

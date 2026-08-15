@@ -1,4 +1,4 @@
-namespace AlvorKit.Graphics2D;
+namespace AlvorKit;
 
 /// <summary>Owns a linked OpenGL shader program.</summary>
 public class ShaderProgram : IDisposable

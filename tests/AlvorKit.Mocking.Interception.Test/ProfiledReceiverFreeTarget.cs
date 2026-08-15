@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Provides observable receiver-free operations for profiled no-session fallback.</summary>
 public sealed class ProfiledReceiverFreeTarget

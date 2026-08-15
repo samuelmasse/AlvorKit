@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Required coverage percentages for each metric.</summary>
 /// <param name="Line">Required line coverage percentage.</param>

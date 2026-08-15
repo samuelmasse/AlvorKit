@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Validates the canonical agent-policy manifest, entry budgets, discovery links, and template payload.</summary>
 internal static class AgentPolicyGraph

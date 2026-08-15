@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Complete generated binding model for one C-header library.</summary>
 /// <param name="Enums">Enums to emit.</param>

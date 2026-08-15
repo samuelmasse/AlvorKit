@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Wraps title and visibility state for a window loop.</summary>
 internal sealed class WindowDecoration(IWindowHost window)

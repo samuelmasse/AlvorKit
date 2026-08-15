@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Configures whether unhandled exceptions request root shutdown before process exit.</summary>
 public sealed class FailSafeConfig

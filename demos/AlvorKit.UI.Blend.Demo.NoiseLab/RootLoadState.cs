@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>Bootstraps the Noise Lab app scope from the engine root scope.</summary>
 [Root]

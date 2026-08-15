@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Parses configured OpenGL callback function-pointer typedefs from registry type text.</summary>
 /// <param name="config">Bindgen configuration containing callback typedefs.</param>

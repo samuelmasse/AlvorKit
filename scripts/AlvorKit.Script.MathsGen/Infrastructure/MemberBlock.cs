@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Accumulates generated member fragments with normalized line endings.</summary>
 internal sealed class MemberBlock

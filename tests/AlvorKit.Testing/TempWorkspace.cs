@@ -1,4 +1,4 @@
-namespace AlvorKit.Testing;
+namespace AlvorKit;
 
 /// <summary>Creates an isolated temporary directory for filesystem-oriented tests.</summary>
 public sealed class TempWorkspace : IDisposable

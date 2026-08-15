@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend;
+namespace AlvorKit;
 
 /// <summary>Configuration for an integer drag/edit field.</summary>
 public sealed record BlendIntFieldOptions

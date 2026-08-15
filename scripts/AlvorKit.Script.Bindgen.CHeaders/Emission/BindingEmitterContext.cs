@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Shared configuration and source-header helpers for generated binding files.</summary>
 /// <param name="Config">Binding generation configuration.</param>

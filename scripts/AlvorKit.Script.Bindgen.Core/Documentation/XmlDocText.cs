@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Text cleanup helpers shared by native comment parsers.</summary>
 internal static class XmlDocText

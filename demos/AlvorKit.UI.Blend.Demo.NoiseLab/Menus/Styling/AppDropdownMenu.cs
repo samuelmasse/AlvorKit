@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo.NoiseLab;
+namespace AlvorKit;
 
 /// <summary>App-scoped dropdown popup layer shared by every Noise Lab dropdown field.</summary>
 [App]

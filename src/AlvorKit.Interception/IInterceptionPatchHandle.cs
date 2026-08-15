@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Runtime-neutral ownership of one installed, replaceable, and removable method patch.</summary>
 public interface IInterceptionPatchHandle : IDisposable

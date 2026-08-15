@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.Loop;
+namespace AlvorKit;
 
 /// <summary>Owns root-loop scripts and maintains their execution order.</summary>
 [Root]

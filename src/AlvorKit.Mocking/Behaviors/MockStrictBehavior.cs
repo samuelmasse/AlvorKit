@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Selects an explicit strict failure for one matching setup.</summary>
 internal sealed class MockStrictBehavior : MockConfiguredBehavior

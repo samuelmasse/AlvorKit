@@ -1,3 +1,3 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 public interface IEntRead : IEnt;

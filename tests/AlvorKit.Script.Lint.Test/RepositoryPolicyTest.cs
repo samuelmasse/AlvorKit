@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint.Test;
+namespace AlvorKit;
 
 /// <summary>Tests repository-wide file policy discovery.</summary>
 [TestClass]
@@ -90,6 +90,40 @@ public sealed class RepositoryPolicyTest
         CollectionAssert.AreEqual(
             new[] { new RepositoryKeywordUsage("src/Game/B.cs", 1, 14) },
             usages.ToArray());
+    }
+
+    /// <summary>Accepts root namespaces and rejects subnamespaces and authored global types.</summary>
+    [TestMethod]
+    public void FindNamespaceViolationsEnforcesSingleRootNamespace()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.Write("Game.slnx", "<Solution />");
+        workspace.Write("src/Root.cs", "namespace Game; public sealed class Root;");
+        workspace.Write("src/Nested.cs", "namespace Game.Feature; public sealed class Nested;");
+        workspace.Write("src/Global.cs", "public sealed class Global;");
+
+        var violations = RepositoryPolicy.FindNamespaceViolations(workspace.Root);
+
+        Assert.HasCount(2, violations);
+        Assert.IsTrue(violations.Any(value => value.Contains("namespace 'Game.Feature' must be 'Game'", StringComparison.Ordinal)));
+        Assert.IsTrue(violations.Any(value => value.Contains("namespace '<global>' must be 'Game'", StringComparison.Ordinal)));
+    }
+
+    /// <summary>Uses the starter root in new-game source and permits exact external namespace contracts.</summary>
+    [TestMethod]
+    public void FindNamespaceViolationsAllowsTemplatesAndExternalContracts()
+    {
+        using var workspace = TempWorkspace.Create();
+        workspace.Write("AlvorKit.slnx", "<Solution />");
+        workspace.Write("res/templates/new-game/source/src/Game.cs", "namespace AlvorStarter; public sealed class Game;");
+        workspace.Write("src/Generator/IsExternalInit.cs", "namespace System.Runtime.CompilerServices; public sealed class IsExternalInit;");
+        workspace.Write(
+            "demos/AlvorKit.Engine.LiveCode.Demo/Submissions/Command.cs",
+            "namespace AgentSubmissions; public sealed class Command;");
+
+        var violations = RepositoryPolicy.FindNamespaceViolations(workspace.Root);
+
+        Assert.IsEmpty(violations);
     }
 
     /// <summary>Accepts a complete, budgeted agent-policy graph with an inert starter payload.</summary>

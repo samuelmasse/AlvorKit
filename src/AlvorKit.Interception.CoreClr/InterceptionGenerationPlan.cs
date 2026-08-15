@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>One immutable ABI v3 method generation with exact late-metadata inputs.</summary>
 public sealed class InterceptionGenerationPlan

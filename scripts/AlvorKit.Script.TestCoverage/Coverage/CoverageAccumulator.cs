@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage;
+namespace AlvorKit;
 
 /// <summary>Aggregates raw Coverlet JSON files into repository-level coverage counts.</summary>
 internal sealed class CoverageAccumulator

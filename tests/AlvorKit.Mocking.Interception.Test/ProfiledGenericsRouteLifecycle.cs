@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates the three generic caller definitions in the concrete basic row.</summary>
 internal sealed class ProfiledGenericsRouteLifecycle :

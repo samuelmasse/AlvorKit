@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Creates bounded deterministic failures without invoking arbitrary user code.</summary>
 internal static class MockDiagnostics

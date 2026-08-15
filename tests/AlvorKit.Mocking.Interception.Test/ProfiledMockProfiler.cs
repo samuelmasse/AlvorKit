@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Shares exact reflection and completion operations for the profiled fixture.</summary>
 internal static class ProfiledMockProfiler

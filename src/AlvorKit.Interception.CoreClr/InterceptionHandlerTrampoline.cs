@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>
 /// Stable exact managed entry point whose submitted handler reference is released

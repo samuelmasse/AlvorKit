@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Patch ownership that can replace an active immutable method generation.</summary>
 public interface IInterceptionGenerationPatchHandle :

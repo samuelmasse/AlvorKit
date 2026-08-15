@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Reason two neutral interception claims cannot coexist.</summary>
 public enum InterceptionCollisionReason

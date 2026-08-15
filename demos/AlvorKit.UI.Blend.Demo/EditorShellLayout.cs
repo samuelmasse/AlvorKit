@@ -1,4 +1,4 @@
-namespace AlvorKit.UI.Blend.Demo;
+namespace AlvorKit;
 
 /// <summary>Holds editor-shell geometry that belongs to this demo rather than to the shared Blend style.</summary>
 [App]

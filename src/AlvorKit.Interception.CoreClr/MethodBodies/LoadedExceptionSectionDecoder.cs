@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Decodes chained small and fat ECMA-335 exception sections.</summary>
 internal static class LoadedExceptionSectionDecoder

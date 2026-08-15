@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Describes one managed enum member emitted from a native enum or macro group.</summary>
 /// <param name="NativeName">Native enum member or macro constant name.</param>

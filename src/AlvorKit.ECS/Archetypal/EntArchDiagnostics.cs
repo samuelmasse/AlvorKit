@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS;
+namespace AlvorKit;
 
 internal static class EntArchDiagnostics<A>
 {

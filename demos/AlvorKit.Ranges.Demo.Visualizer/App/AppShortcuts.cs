@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Maps keyboard and mouse shortcuts onto visualizer app and UI commands.</summary>
 [App]

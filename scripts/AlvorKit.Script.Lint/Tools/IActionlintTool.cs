@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Resolves an actionlint executable for the current platform.</summary>
 internal interface IActionlintTool

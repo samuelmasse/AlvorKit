@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Configures ordinary behavior for a captured mocked void call.</summary>
 public sealed class MockSetupClause

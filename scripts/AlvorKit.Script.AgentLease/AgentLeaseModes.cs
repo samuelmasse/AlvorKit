@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AgentLease;
+namespace AlvorKit;
 
 /// <summary>Valid coordination modes understood by the lease helper.</summary>
 internal static class AgentLeaseModes

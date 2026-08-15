@@ -1,4 +1,4 @@
-namespace AlvorKit.Ranges.Demo.Visualizer;
+namespace AlvorKit;
 
 /// <summary>Runs one scenario against the real range allocator and captures visual snapshots.</summary>
 public class AllocatorScenarioRunner

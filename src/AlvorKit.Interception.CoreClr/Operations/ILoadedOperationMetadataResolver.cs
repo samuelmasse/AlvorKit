@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>
 /// Resolves loaded metadata tokens into exact constructed signatures without reflection bodies.

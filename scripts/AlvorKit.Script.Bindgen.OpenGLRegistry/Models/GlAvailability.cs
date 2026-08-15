@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Availability attached to generated docs: desktop GL version/extension and optional ES version.</summary>
 /// <param name="Gl">Desktop OpenGL version or extension that provides the symbol.</param>

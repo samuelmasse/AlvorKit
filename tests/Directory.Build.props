@@ -27,6 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="AlvorKit" />
         <Using Include="System.Runtime.InteropServices" />
         <Using Include="System.Text" />
         <Using Include="System.Text.Json" />
@@ -34,7 +35,6 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-        <Using Include="AlvorKit.Testing" />
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
     </ItemGroup>
 </Project>

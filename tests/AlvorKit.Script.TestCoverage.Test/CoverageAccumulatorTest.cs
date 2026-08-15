@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.TestCoverage.Test;
+namespace AlvorKit;
 
 /// <summary>Tests for aggregating raw Coverlet JSON into agent-readable summaries.</summary>
 [TestClass]

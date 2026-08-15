@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace AlvorKit.Interception.CoreClr.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies immutable body ownership, identity, and header metadata.</summary>
 [TestClass]

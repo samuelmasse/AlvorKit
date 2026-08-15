@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Identifies whether a physical claim covers a whole method or one IL range.</summary>
 public enum InterceptionPhysicalRegionKind

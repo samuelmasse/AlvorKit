@@ -1,4 +1,4 @@
-namespace AlvorKit.Engine.LiveCode.Demo;
+namespace AlvorKit;
 
 /// <summary>Marks services owned by one luminous colony lifetime.</summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]

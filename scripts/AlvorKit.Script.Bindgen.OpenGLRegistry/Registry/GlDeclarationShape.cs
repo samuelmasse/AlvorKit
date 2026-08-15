@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Mapped declaration shape with pointer and callback metadata.</summary>
 /// <param name="Name">Native declaration name.</param>

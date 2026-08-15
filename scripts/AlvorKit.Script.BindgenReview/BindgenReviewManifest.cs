@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.BindgenReview;
+namespace AlvorKit;
 
 /// <summary>Manifest that marks a directory as a disposable bindgen review snapshot.</summary>
 /// <param name="Library">Native library selected for generation.</param>

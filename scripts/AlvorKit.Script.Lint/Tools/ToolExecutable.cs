@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Lint;
+namespace AlvorKit;
 
 /// <summary>Resolves executable names that differ between Windows and Unix runners.</summary>
 [ExcludeFromCodeCoverage]

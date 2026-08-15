@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Emits one symbolic exact-site route into a composed generation.</summary>
 internal static class LoadedSymbolicRouteEmitter

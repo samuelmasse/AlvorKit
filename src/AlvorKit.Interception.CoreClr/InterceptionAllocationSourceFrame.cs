@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>One selected-assembly frame resolved to a readable method and optional source line.</summary>
 /// <param name="Method">Readable managed method identity.</param>

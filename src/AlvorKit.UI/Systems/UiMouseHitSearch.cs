@@ -1,4 +1,4 @@
-namespace AlvorKit.UI;
+namespace AlvorKit;
 
 /// <summary>Finds the deepest mouse target within a clipped UI tree.</summary>
 internal sealed class UiMouseHitSearch(RootUiClipping clipping)

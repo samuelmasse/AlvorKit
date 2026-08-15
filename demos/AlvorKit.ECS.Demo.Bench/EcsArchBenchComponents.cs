@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 internal sealed class WarmArch;
 internal sealed class RunArch;

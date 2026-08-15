@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.MathsGen;
+namespace AlvorKit;
 
 /// <summary>Emits fields, constructors, constants, indexing, and deconstruction.</summary>
 internal static class CoreEmitter

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Exercises the concrete basic matrix through real profiled callers.</summary>
 [TestClass]

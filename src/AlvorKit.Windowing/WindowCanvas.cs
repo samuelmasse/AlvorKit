@@ -1,4 +1,4 @@
-namespace AlvorKit.Windowing;
+namespace AlvorKit;
 
 /// <summary>Exposes the current drawable surface for a window loop.</summary>
 public class WindowCanvas(WindowLoop window)

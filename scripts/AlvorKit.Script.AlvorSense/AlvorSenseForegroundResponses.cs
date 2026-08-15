@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.AlvorSense;
+namespace AlvorKit;
 
 /// <summary>Writes foreground command JSON while adding requested local diagnostics.</summary>
 internal static class AlvorSenseForegroundResponses

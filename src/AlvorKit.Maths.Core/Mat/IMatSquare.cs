@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Applies to square matrix types, including <c>Mat2</c>, <c>Mat3</c>, and <c>Mat4d</c>.</summary>
 /// <typeparam name="TSelf">The square matrix type, such as <c>Mat3</c> or <c>Mat4d</c>.</typeparam>

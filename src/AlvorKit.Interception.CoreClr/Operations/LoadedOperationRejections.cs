@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Creates uniform coordinate-rich operation-recognition diagnostics.</summary>
 internal static class LoadedOperationRejections

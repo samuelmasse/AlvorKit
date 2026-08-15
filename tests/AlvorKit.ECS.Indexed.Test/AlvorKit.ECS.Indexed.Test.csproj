@@ -6,12 +6,5 @@
         <ProjectReference Include="..\..\src\AlvorKit.ECS\AlvorKit.ECS.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.ECS.Indexed\AlvorKit.ECS.Indexed.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="AlvorKit.ECS" />
-        <Using Include="AlvorKit.ECS.Generator" />
-        <Using Include="AlvorKit.ECS.Indexed" />
-    </ItemGroup>
-
 </Project>
 

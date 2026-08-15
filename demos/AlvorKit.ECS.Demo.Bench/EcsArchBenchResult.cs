@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Demo.Bench;
+namespace AlvorKit;
 
 /// <summary>Stores aggregate timing and raw samples for one AFR-02 scenario.</summary>
 public sealed record EcsArchBenchResult(

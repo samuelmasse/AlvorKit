@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Controls the exception boundary of an exact managed handler trampoline.</summary>
 public enum InterceptionHandlerExceptionPolicy

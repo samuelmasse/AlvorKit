@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits helpers that copy returned C string arrays into managed string arrays.</summary>
 internal sealed class BindingStringArrayReturnEmitter(BindingEmitterContext context)

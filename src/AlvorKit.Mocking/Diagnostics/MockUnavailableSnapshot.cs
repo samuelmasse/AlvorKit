@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking;
+namespace AlvorKit;
 
 /// <summary>Describes one argument value that invocation history cannot retain.</summary>
 internal sealed record MockUnavailableSnapshot

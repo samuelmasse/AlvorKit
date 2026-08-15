@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Finds one method, construction, or field opcode in its exact caller context.</summary>
 internal static class ProfiledReceiverFreeOperationOffset

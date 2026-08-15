@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Layer;
+namespace AlvorKit;
 
 /// <summary>
 /// A strict, self-checking wrapper over a <see cref="Gl"/> backend. It models OpenGL state as

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Subset of conf/bindgen.yml needed to build and package native binaries.</summary>
 internal sealed class BindgenMetadata

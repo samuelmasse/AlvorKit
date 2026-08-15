@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Returns either one complete symbolic generation or pristine rejections.</summary>
 public sealed class LoadedSymbolicComposition

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Coordinates the span-input and borrowed-window struct routes.</summary>
 internal sealed class ProfiledStructRefStructRouteLifecycle :

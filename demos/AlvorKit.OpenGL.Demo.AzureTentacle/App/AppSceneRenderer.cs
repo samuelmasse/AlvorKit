@@ -1,4 +1,4 @@
-namespace AlvorKit.OpenGL.Demo.AzureTentacle;
+namespace AlvorKit;
 
 /// <summary>Draws the animated GLB scene into the root OpenGL backbuffer.</summary>
 [App]

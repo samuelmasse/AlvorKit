@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AlvorKit.Interception.CoreClr.Advanced;
+namespace AlvorKit;
 
 /// <summary>Identifies one validated disjoint baseline region replaced by a symbolic route.</summary>
 internal sealed class LoadedSymbolicEdit

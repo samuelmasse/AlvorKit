@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception;
+namespace AlvorKit;
 
 /// <summary>Structured completion state for one native profiler request.</summary>
 public readonly record struct InterceptionCompletion(

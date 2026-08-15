@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits generated method bodies for combined OpenGL overload plans.</summary>
 /// <param name="state">Shared extension-emission state.</param>

@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.Bindgen;
+namespace AlvorKit;
 
 /// <summary>Emits raw native P/Invoke imports for the generated backend.</summary>
 internal sealed class BindingNativeImportEmitter(BindingEmitterContext context)
@@ -13,7 +13,7 @@ internal sealed class BindingNativeImportEmitter(BindingEmitterContext context)
             ("SourceHeader", context.SourceHeader().ToString()),
             ("Namespace", context.Config.Namespace),
             ("NativeLibrary", context.Config.NativeLibrary),
-            ("NativePackageId", context.Config.Namespace + ".Native"),
+            ("NativePackageId", context.Config.NativePackageId),
             ("NativeClass", context.Config.NativeClass),
             ("Imports", imports));
     }

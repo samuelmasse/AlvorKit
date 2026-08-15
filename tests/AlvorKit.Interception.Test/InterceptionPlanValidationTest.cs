@@ -1,4 +1,4 @@
-namespace AlvorKit.Interception.Test;
+namespace AlvorKit;
 
 /// <summary>Verifies public plans cannot bypass their construction invariants.</summary>
 [TestClass]

@@ -3,7 +3,6 @@
     <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.ECS.Demo.Bench" />
         <InternalsVisibleTo Include="AlvorKit.ECS.Test" />
-        <Using Include="AlvorKit.Hashing" />
     </ItemGroup>
 
     <ItemGroup>

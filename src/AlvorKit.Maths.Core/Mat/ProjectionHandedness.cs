@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>Defines the view-space handedness used by view and projection matrix helpers.</summary>
 public enum ProjectionHandedness

@@ -1,4 +1,4 @@
-namespace AlvorKit.Mocking.Test;
+namespace AlvorKit;
 
 /// <summary>Exercises concrete operation wrappers through the Interception runtime.</summary>
 [TestClass]

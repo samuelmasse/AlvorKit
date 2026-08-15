@@ -1,4 +1,4 @@
-namespace AlvorKit.ECS.Indexed.Test;
+namespace AlvorKit;
 
 [TestClass]
 public class EntIdxRegistrationTest

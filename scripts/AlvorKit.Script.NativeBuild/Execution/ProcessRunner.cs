@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NativeBuild;
+namespace AlvorKit;
 
 /// <summary>Default process runner backed by System.Diagnostics.Process.</summary>
 [ExcludeFromCodeCoverage]

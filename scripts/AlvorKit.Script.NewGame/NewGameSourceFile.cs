@@ -1,4 +1,4 @@
-namespace AlvorKit.Script.NewGame;
+namespace AlvorKit;
 
 /// <summary>A file loaded from the concrete starter game source tree.</summary>
 /// <param name="RelativePath">Repository-style path relative to the starter source root.</param>

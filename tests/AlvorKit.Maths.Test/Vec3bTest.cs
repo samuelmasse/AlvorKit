@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths.Test;
+namespace AlvorKit;
 
 /// <summary>Tests Boolean three-component vector mask behavior.</summary>
 [TestClass]

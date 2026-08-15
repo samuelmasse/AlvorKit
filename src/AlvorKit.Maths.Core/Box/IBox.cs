@@ -1,4 +1,4 @@
-namespace AlvorKit.Maths;
+namespace AlvorKit;
 
 /// <summary>
 /// Applies to all axis-aligned box types, such as <c>Box2</c>, <c>Box2i</c>, and <c>Box3d</c>.
