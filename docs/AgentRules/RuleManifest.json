@@ -4,10 +4,11 @@
     "AGENTS.md": { "maxBytes": 12000, "maxLines": 170 },
     "docs/GameRepositoryInstructions.md": { "maxBytes": 12000, "maxLines": 220 }
   },
-  "rootExposedRules": ["CORE-COMPAT-001", "CORE-FALLBACK-001", "FACADE-API-001", "HASH-EXTEND-001", "NATIVE-BUILD-001"],
+  "rootExposedRules": ["CORE-COMPAT-001", "CORE-FALLBACK-001", "SOLUTION-PAIR-001", "FACADE-API-001", "HASH-EXTEND-001", "NATIVE-BUILD-001"],
   "rules": [
     { "id": "CORE-COMPAT-001", "strength": "invariant", "owner": "AGENTS.md" },
     { "id": "CORE-FALLBACK-001", "strength": "invariant", "owner": "AGENTS.md" },
+    { "id": "SOLUTION-PAIR-001", "strength": "invariant", "owner": "docs/AgentRules/ProjectsAndDependencies.md" },
     { "id": "FACADE-API-001", "strength": "approval-gate", "owner": "docs/AgentRules/Facades.md" },
     { "id": "HASH-EXTEND-001", "strength": "approval-gate", "owner": "docs/AgentRules/Hashing.md" },
     { "id": "NATIVE-BUILD-001", "strength": "approval-gate", "owner": "AGENTS.md" },
@@ -49,7 +50,7 @@
       "id": "PROJECTS",
       "path": "docs/AgentRules/ProjectsAndDependencies.md",
       "strength": "invariant",
-      "triggers": ["project", "package reference", "launch", "scope", "ECS", "GL", "maths", "menu"]
+      "triggers": ["solution", ".slnx", "project", "package reference", "launch", "scope", "ECS", "GL", "maths", "menu"]
     },
     {
       "id": "GENERATED",

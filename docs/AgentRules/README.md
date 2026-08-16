@@ -27,7 +27,8 @@ Rule strengths are:
 - `RuntimePerformance.md`: allocation, hot-path, resource, and native-boundary policy.
 - `Facades.md`: facade API, layout, debug, test, and benchmark policy.
 - `Hashing.md`: closed hashing policy and extension gate.
-- `ProjectsAndDependencies.md`: projects, packages, scopes, ECS, GL, maths, and menus.
+- `ProjectsAndDependencies.md`: solutions, projects, packages, scopes, ECS, GL,
+  maths, and menus.
 - `GeneratedBindings.md`: generator, template, binding, and native-double policy.
 - `Documentation.md`: public and generated documentation policy.
 

@@ -2,15 +2,25 @@
 
 ## Scope
 
-Read this policy before creating or reorganizing projects, changing project or
-package references, adding a launchable project, changing game scopes, or
-working with ECS, GL ownership, maths types, or menus.
+Read this policy before editing a `.slnx` solution, creating or reorganizing
+projects, changing project or package references, adding a launchable project,
+changing game scopes, or working with ECS, GL ownership, maths types, or menus.
 
 ## Hard Stops
 
 **NATIVE-BUILD-001:** Creating a project does not authorize native package
 builds or dependency installation. Those operations require an explicit user
 request and permission for that run.
+
+## Paired Solution Files
+
+**SOLUTION-PAIR-001:** Treat a primary `<Name>.slnx` and an existing sibling
+`<Name>.Dev.slnx` as one solution-file pair. Apply every solution membership,
+folder, and structure change to both files in the same task. Never modify only
+one member of an existing pair. Before finishing, verify that the development
+solution mirrors every primary-solution change; its additional AlvorKit entries
+may remain development-only. This rule does not require creating a development
+solution when one does not exist.
 
 ## VS Code Launch Configurations
 

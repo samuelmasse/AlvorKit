@@ -56,6 +56,12 @@ English, use American English exclusively. Preserve exact externally owned
 identifiers and verbatim quotations. The established `Maths` package, project,
 API, and documentation terminology is the sole repository-owned exception.
 
+### SOLUTION-PAIR-001: Paired solution files
+
+When a primary `<Name>.slnx` has an existing sibling `<Name>.Dev.slnx`, make
+every solution change to both files in the same task. Never modify only one
+member of the existing pair.
+
 ## Approval And Authorization Gates
 
 - **FACADE-API-001:** Before changing an established public API or documented
@@ -98,9 +104,9 @@ Read these policies when any listed trigger matches:
   generated documentation, generated projects, or native test doubles.
 - `docs/AgentRules/Hashing.md`: hashes, checksums, fingerprints, deterministic
   sampling, table mapping, or cryptographic hashing.
-- `docs/AgentRules/ProjectsAndDependencies.md`: new or reorganized projects,
-  package references, launchable projects, DI scopes, ECS, GL ownership, maths,
-  or menus.
+- `docs/AgentRules/ProjectsAndDependencies.md`: `.slnx` solution changes, new
+  or reorganized projects, package references, launchable projects, DI scopes,
+  ECS, GL ownership, maths, or menus.
 - `docs/AgentRules/Documentation.md`: public or generated documentation.
 - `docs/AgentRules/GameCodeDesign.md`: game/runtime design in a game repository.
 - `docs/AgentRules/Facades.md`: a `FACADE.md` project, its paired debug project,
