@@ -18,11 +18,13 @@ the scope stated below.
 
 A project containing a project-root `FACADE.md` is a facade project. Read that
 file before changing the project, its paired `.Debug` project, or a consumer.
-The facade is the project's single injected entry point: it presents a small
-public contract while hiding the cooperating services and retained state that
-implement that contract. Keep `FACADE.md` brief and stable: describe the
-business capability, identify the facade, and declare its concise PascalCase
-type prefix without cataloging implementation details.
+The facade is the project's primary public entry point: it presents a small
+public contract while hiding the implementation and retained state behind that
+contract. A facade may be directly constructed, dependency-injection composed,
+or created through another explicit production-owned composition path. Keep
+`FACADE.md` brief and stable: describe the business capability, identify the
+exact primary facade type, and declare its concise PascalCase type prefix
+without cataloging implementation details.
 
 ### Established Public APIs — Facade Projects Only
 
@@ -58,7 +60,7 @@ require this approval.
 
 Use a request shaped like this:
 
-> I need permission to change the established `PathFacade` API.
+> I need permission to change the established `Paths` API.
 >
 > Current:
 >
@@ -83,35 +85,50 @@ adding compatibility overloads, aliases, adapters, or deprecation shims.
 
 ### Layout, Composition, And Tests
 
-- Every type owned by a facade project uses the prefix declared in its
-  `FACADE.md`, including public contract types, injected services, internal
-  machinery, and nested implementation types. The single root injectable class
-  is named `<Prefix>Facade`. A paired debug facade declares its own prefix,
-  normally `<CorePrefix>Debug`, and names its root `<DebugPrefix>Facade`. Types
-  imported from another project retain the prefix of their owning project.
-- Exactly one injectable class lives at the project root beside the project
-  file and `FACADE.md`. Public static classes may live there at the same level.
+- Every public or internal top-level type owned by a facade project uses the
+  prefix declared in its `FACADE.md`, including public contract types,
+  composition-owned services, and internal machinery. Private nested
+  implementation types need not repeat the prefix because their containing
+  type already supplies that context. Types imported from another project
+  retain the prefix of their owning project.
+- The primary facade class uses the exact domain name declared in `FACADE.md`.
+  It does not require a `Facade` suffix or a name derived mechanically from the
+  type prefix. A paired debug facade likewise declares its exact primary type
+  and its own prefix rather than deriving its name from the core facade.
+- Exactly one primary facade class lives at the project root beside the project
+  file and `FACADE.md`. Its root source file presents the public contract and
+  construction or lifetime surface. Public static classes may live there at
+  the same level.
 - Other public instantiated classes, structs, enums, and interfaces live in
   `Classes/`, `Structs/`, `Enums/`, and `Interfaces/` respectively.
-- Injected implementation services and internal static classes live directly
-  in `Internal/`. Injected services are the retained singleton collaborators of
-  the root facade.
+- Implementation-only partial declarations of the primary facade live directly
+  in `Internal/`. A cohesive facade may use a large hand-authored partial class;
+  this is an explicit facade-project override of the shared C# default against
+  hand-authored partials. Keep the root file focused on the public surface and
+  use the internal partial files to organize implementation concerns.
+- Composition-owned implementation services, when present, and internal static
+  classes live directly in `Internal/`. Injected services are the retained
+  singleton collaborators of an injector-composed facade.
 - Non-injected internal implementation types are grouped by kind:
   `Internal/Classes/`, `Internal/Structs/`, `Internal/Enums/`, and
   `Internal/Interfaces/`. `Internal/Classes/` is specifically for instantiated
   non-singleton helper objects, not injected services or static classes.
-- The facade and its implementation graph use constructor injection. A facade
-  must not construct its own services.
-- Composition roots create each facade graph in an ordinary `Injector`, then
-  publish the resolved facade to the scope or consumer that owns it. Tests must
-  exercise the same injector composition rather than bypassing it with direct
-  construction.
+- Dependency injection is optional. When a facade or implementation service is
+  injector-composed, injected collaborators enter only through constructor
+  injection and the composition root publishes the resolved facade to its
+  owner. Directly constructed facades may directly own ordinary private
+  implementation objects. Do not introduce service location, ambient
+  containers, or mixed ownership merely to support more than one construction
+  style.
+- Tests exercise the supported production construction path. Directly
+  constructed facades are constructed directly in tests; injector-composed
+  facades use their real injector composition rather than bypassing it.
 - Dedicated unit tests are mandatory for every facade project. A new facade,
   facade behavior change, or facade implementation change is incomplete until
   its unit tests cover the public contract and the affected internal invariants
-  through the real injector composition graph. This facade-specific requirement
-  overrides the Working Mode default that otherwise prohibits adding or
-  running game unit tests without an explicit user request.
+  through the supported production composition. This facade-specific
+  requirement overrides the Working Mode default that otherwise prohibits
+  adding or running game unit tests without an explicit user request.
 - Facade tests must assert behavior, values, state transitions, failure
   semantics, or representation requirements that matter at runtime.
   Reflection-based API surface locks, exported-type or member-name inventories,
@@ -123,11 +140,12 @@ adding compatibility overloads, aliases, adapters, or deprecation shims.
 
 A facade project is paired with a `<FacadeProject>.Debug` facade project when
 internal diagnostics are required. The debug project follows the same layout
-rules, contains its own single injected facade, and may receive friend-assembly
-access to the production facade's internals. Resolve both facades from the same
-injector so the debug facade observes the production facade's implementation graph.
-The debug facade may inject and use the core project's internal services
-directly; it does not need to depend on or route internal access through the
+rules, contains its own primary debug facade, and may receive friend-assembly
+access to the production facade's internals. Compose the debug facade against
+the same production facade instance and implementation state that consumers
+use. When the production facade uses an injector, resolve both facades from the
+same injector. The debug facade may receive and use the core project's internal
+services directly; it does not need to route internal access through the
 production facade.
 
 Keep production-facade implementation types and members private unless another

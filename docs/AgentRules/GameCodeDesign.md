@@ -33,8 +33,10 @@ stated. Repository invariants and approval gates remain in force.
 
 ### Services And Composition
 
-- Put runtime behavior in injected instance classes. A service should remain an
-  instance even when it currently has no fields.
+- Put runtime behavior in injected instance classes by default. A directly
+  constructed primary facade governed by `Facades.md` may own its runtime
+  behavior and ordinary private collaborators without introducing injection.
+  A service should remain an instance even when it currently has no fields.
 - Do not make a class or method static merely because it is stateless or
   because an analyzer recommends it.
 - Use constructor injection. Do not introduce service locators, ambient
