@@ -144,6 +144,30 @@ For high-DPI visual matching, pass
 This changes the simulated monitor scale reported by `RootScreen.MonitorScale`
 while preserving the screenshot's physical client size.
 
+## Running Over SSH
+
+AlvorSense can be controlled over SSH when the remote Linux machine has an
+active graphical user session. Inherit `DISPLAY`, `WAYLAND_DISPLAY`,
+`XAUTHORITY`, `XDG_RUNTIME_DIR`, and the D-Bus session address from that user
+session rather than hard-coding them. Report the missing graphical session if
+those values cannot be discovered.
+
+Run `start` from the game root with `--workdir .`. Redirect all three standard
+streams so the detached host does not keep the SSH channel open, then read the
+start response from its file:
+
+```sh
+dotnet run --project path/to/AlvorKit/scripts/AlvorKit.Script.AlvorSense -- \
+    start --id demo --project path/to/Game.csproj --workdir . \
+    >out/alvorsense-start.json 2>out/alvorsense-start.err </dev/null
+cat out/alvorsense-start.json
+```
+
+Use later `send`, `status`, and `stop` calls with the returned session id.
+Screenshots and other session artifacts remain under
+`out/alvorsense-sessions/<id>/` on the target and can be retrieved over SSH.
+Always stop the session when finished and verify that its host process exited.
+
 ## Send Commands
 
 `send` writes a batch of command lines to the running game and then appends
