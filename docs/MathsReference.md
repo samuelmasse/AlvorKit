@@ -9,9 +9,9 @@ family exists on each of its scalar variants with the scalar, vector, and
 matrix types substituted. Sections therefore describe one family and then
 list only the differences per scalar family or dimension.
 
-## Conventions shared by every type
+## Conventions shared by generated value types
 
-Every public type is a `partial struct` in the `AlvorKit` namespace
+Every generated public value type is a `partial struct` in the `AlvorKit` namespace
 with a primary constructor over its fields. Vectors, `Mat4`, `Mat3x2`, and
 `Quat` use explicit layout (for aliases and `System.Numerics` overlays);
 other types are sequential.
@@ -40,6 +40,19 @@ Float/double pairing is uniform across all families: `float` → `double` is
 an implicit operator, `double` → `float` is explicit, and the double
 variants drop all `System.Numerics` interop but are otherwise
 member-for-member identical.
+
+## Axes and axis directions
+
+`Axis2`, `Axis3`, and `Axis4` identify coordinate axes. Their zero-based
+values match vector component indexes: `X` is zero, followed by `Y`, `Z`, and
+`W` where the dimension includes them. `Count` is the exclusive iteration
+bound and is not itself an axis.
+
+`AxisDirection2`, `AxisDirection3`, and `AxisDirection4` identify signed
+coordinate-axis directions. Each negative direction is immediately followed
+by its positive opposite, so toggling the low bit produces the opposite of a
+valid direction. `Count` is the exclusive iteration bound and is not itself a
+direction.
 
 ## Vectors
 

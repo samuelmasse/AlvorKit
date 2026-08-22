@@ -10,12 +10,15 @@
         <IsCoverageSourceProject>false</IsCoverageSourceProject>
     </PropertyGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Maths.Core\AlvorKit.Maths.Core.csproj" />
+    </ItemGroup>
+
     <ItemGroup Condition="'$(UseLocalMathsPrimitives)' != 'true'">
         <PackageReference Include="AlvorKit.Maths.Primitives" Version="$(MathsPackageVer)" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(UseLocalMathsPrimitives)' == 'true'">
-        <ProjectReference Include="..\AlvorKit.Maths.Core\AlvorKit.Maths.Core.csproj" />
         <ProjectReference Include="$(MathsPrimitivesRoot)\AlvorKit.Maths.Primitives.csproj" />
     </ItemGroup>
 

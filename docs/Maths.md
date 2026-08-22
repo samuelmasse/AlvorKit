@@ -109,9 +109,11 @@ Hand-authored public surface in `AlvorKit.Maths.Core`:
   `Lerp`, `SmoothStep`, trigonometry, `Sqrt`, `Pow`, bit counts,
   `IsPowerOfTwo`, `Select`, and more) usable in generic maths code over any
   supported scalar.
-- Shared enums — `ContainmentKind` (`Disjoint`/`Intersects`/`Contains`),
+- Shared enums — coordinate axes (`Axis2`, `Axis3`, `Axis4`), signed axis
+  directions (`AxisDirection2`, `AxisDirection3`, `AxisDirection4`),
+  `ContainmentKind` (`Disjoint`/`Intersects`/`Contains`),
   `PlaneIntersectionKind` (`Negative`/`Intersecting`/`Positive`),
-  `ProjectionDepthRange` (`NegativeOneToOne`/`ZeroToOne`),
+  `ProjectionDepthRange` (`NegativeOneToOne`/`ZeroToOne`), and
   `ProjectionHandedness` (`Right`/`Left`).
 - Generic interfaces — the `IVec*`, `IMat*`, `IQuat*`, `IBox*`, and
   per-geometry interface families that every generated struct implements.
