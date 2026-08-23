@@ -301,9 +301,15 @@ requirements but must not relax them.
 - In AlvorKit's curated library projects, do not create private nested classes
   for helper composition; prefer internal top-level helper types when they are
   intentionally outside the public API. Game repositories override this and
-  prefer public game-code types and collaborating members. Avoid partial classes
-  for hand-authored code except for generated-code integration or unavoidable
-  framework/tooling requirements, and mention the reason in the work summary.
+  prefer public game-code types and collaborating members.
+- Declare repository-owned public behavioral classes as partial by default.
+  Keep the primary source file focused on the public contract, construction,
+  and lifetime surface. Put private fields, private implementation methods, and
+  implementation-only internal members in purpose-named partial declarations
+  directly under the project's `Internal/` folder. Public records, enums,
+  interfaces, delegates, and passive value structs do not need partial
+  declarations merely to satisfy this layout. Partial declarations also remain
+  appropriate for generated-code integration and framework/tooling contracts.
 - Avoid generic `Factory`, `Manager`, `Service`, and similarly broad suffixes
   when a constructor, static `Create`, delegate, or domain-specific type name is
   clearer. Generally avoid static helper types and methods in hand-authored

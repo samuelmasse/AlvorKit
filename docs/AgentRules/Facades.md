@@ -101,11 +101,10 @@ adding compatibility overloads, aliases, adapters, or deprecation shims.
   the same level.
 - Other public instantiated classes, structs, enums, and interfaces live in
   `Classes/`, `Structs/`, `Enums/`, and `Interfaces/` respectively.
-- Implementation-only partial declarations of the primary facade live directly
-  in `Internal/`. A cohesive facade may use a large hand-authored partial class;
-  this is an explicit facade-project override of the shared C# default against
-  hand-authored partials. Keep the root file focused on the public surface and
-  use the internal partial files to organize implementation concerns.
+- The primary facade is partial. Its implementation-only partial declarations
+  live directly in `Internal/`, following the shared C# public-class layout.
+  Keep the root file focused on the public surface and use purpose-named
+  internal partial files to organize implementation concerns.
 - Composition-owned implementation services, when present, and internal static
   classes live directly in `Internal/`. Injected services are the retained
   singleton collaborators of an injector-composed facade.
