@@ -32,7 +32,7 @@ public sealed class FloatToInt32GenerationTest
 
         Assert.IsFalse(vec2.Contains("Vector64.ConvertToInt32", StringComparison.Ordinal));
         Assert.IsFalse(vec2i.Contains("Vector64.ConvertToInt32", StringComparison.Ordinal));
-        StringAssert.Contains(vec2, "(int)ScalarMath.Floor(X)");
+        StringAssert.Contains(vec2, "(int)float.Floor(X)");
         StringAssert.Contains(vec2i, "(int)value.X");
     }
 }

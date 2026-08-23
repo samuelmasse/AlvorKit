@@ -224,6 +224,19 @@ public sealed class GeneratedVectorTest
         Assert.AreEqual(new Vec3u16(8, 8, 8), shiftedByVector);
         Assert.AreEqual(new Vec3i(int.MaxValue, 2147483646, 2147483644), unsignedRightShift);
         Assert.AreEqual(new Vec3i(1, 1, 1), Vec3u128.BitCount(big));
+
+        var signedBits = new Vec3i8(0, -1, sbyte.MinValue);
+        Assert.AreEqual(new Vec3i(0, 8, 1), Vec3i8.BitCount(signedBits));
+        Assert.AreEqual(new Vec3i(8, 0, 0), Vec3i8.LeadingZeroCount(signedBits));
+        Assert.AreEqual(new Vec3i(8, 0, 7), Vec3i8.TrailingZeroCount(signedBits));
+        Assert.AreEqual(new Vec3i(-1, 0, 7), Vec3i8.FindLeastSignificantBit(signedBits));
+        Assert.AreEqual(new Vec3i(-1, 7, 7), Vec3i8.FindMostSignificantBit(signedBits));
+
+        var unsignedBits = new Vec3u16(0, 1, 0x8000);
+        Assert.AreEqual(new Vec3i(0, 1, 1), Vec3u16.BitCount(unsignedBits));
+        Assert.AreEqual(new Vec3i(16, 15, 0), Vec3u16.LeadingZeroCount(unsignedBits));
+        Assert.AreEqual(new Vec3i(16, 0, 15), Vec3u16.TrailingZeroCount(unsignedBits));
+        Assert.AreEqual(new Vec3b(false, true, true), Vec3u16.IsPowerOfTwo(unsignedBits));
     }
 
     /// <summary>Generated numeric vectors support simple component-wise addition across every size and scalar family.</summary>

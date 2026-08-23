@@ -7,31 +7,31 @@ internal static class BitFunctionEmitter
     public static void Emit(VectorSpec vector, MemberBlock members)
     {
         var intVector = vector.IntTypeName;
-        var bitCount = NewInt(vector, c => $"ScalarMath.BitCount(value.{c})");
+        var bitCount = NewInt(vector, c => ScalarCall.BitCount(vector.Scalar, $"value.{c}"));
         members.Append(InlineRetainedVec4(vector, "BitCount",
             NumericFunctionsEmitter.Method("Returns the number of set bits in each component.", "static", intVector, "BitCount",
                 $"{vector.TypeName} value", Int32BitFunctionExpression.Function(vector, "BitCount", bitCount))));
-        var leadingZeroCount = NewInt(vector, c => $"ScalarMath.LeadingZeroCount(value.{c})");
+        var leadingZeroCount = NewInt(vector, c => ScalarCall.LeadingZeroCount(vector.Scalar, $"value.{c}"));
         members.Append(InlineRetainedVec4(vector, "LeadingZeroCount",
             NumericFunctionsEmitter.Method("Returns the number of leading zero bits in each component.", "static", intVector,
                 "LeadingZeroCount", $"{vector.TypeName} value",
                 Int32BitFunctionExpression.Function(vector, "LeadingZeroCount", leadingZeroCount))));
-        var trailingZeroCount = NewInt(vector, c => $"ScalarMath.TrailingZeroCount(value.{c})");
+        var trailingZeroCount = NewInt(vector, c => ScalarCall.TrailingZeroCount(vector.Scalar, $"value.{c}"));
         members.Append(InlineRetainedVec4(vector, "TrailingZeroCount",
             NumericFunctionsEmitter.Method("Returns the number of trailing zero bits in each component.", "static", intVector,
                 "TrailingZeroCount", $"{vector.TypeName} value",
                 Int32BitFunctionExpression.Function(vector, "TrailingZeroCount", trailingZeroCount))));
-        var findLeastSignificantBit = NewInt(vector, c => $"ScalarMath.FindLeastSignificantBit(value.{c})");
+        var findLeastSignificantBit = NewInt(vector, c => ScalarCall.FindLeastSignificantBit(vector.Scalar, $"value.{c}"));
         members.Append(InlineRetainedVec4(vector, "FindLeastSignificantBit",
             NumericFunctionsEmitter.Method("Returns the least-significant set-bit index for each component, or -1 for zero components.",
                 "static", intVector, "FindLeastSignificantBit", $"{vector.TypeName} value",
                 Int32BitFunctionExpression.Function(vector, "FindLeastSignificantBit", findLeastSignificantBit))));
-        var findMostSignificantBit = NewInt(vector, c => $"ScalarMath.FindMostSignificantBit(value.{c})");
+        var findMostSignificantBit = NewInt(vector, c => ScalarCall.FindMostSignificantBit(vector.Scalar, $"value.{c}"));
         members.Append(InlineRetainedVec4(vector, "FindMostSignificantBit",
             NumericFunctionsEmitter.Method("Returns the most-significant set-bit index for each component, or -1 for zero components.",
                 "static", intVector, "FindMostSignificantBit", $"{vector.TypeName} value",
                 Int32BitFunctionExpression.Function(vector, "FindMostSignificantBit", findMostSignificantBit))));
-        var isPowerOfTwo = NewBool(vector, c => $"ScalarMath.IsPowerOfTwo(value.{c})");
+        var isPowerOfTwo = NewBool(vector, c => ScalarCall.IsPowerOfTwo(vector.Scalar, $"value.{c}"));
         members.Append(InlineRetainedVec4(vector, "IsPowerOfTwo",
             NumericFunctionsEmitter.Method("Returns whether each component is a positive power of two.", "static", vector.BoolTypeName,
                 "IsPowerOfTwo", $"{vector.TypeName} value",

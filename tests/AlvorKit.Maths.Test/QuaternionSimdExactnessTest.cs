@@ -171,7 +171,7 @@ public sealed class QuaternionSimdExactnessTest
     private static Quat FloatConjugate(Quat value) => new(-value.X, -value.Y, -value.Z, value.W);
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static Quat FloatNormalize(Quat value) => FloatDivide(value, ScalarMath.Sqrt(FloatDot(value, value)));
+    private static Quat FloatNormalize(Quat value) => FloatDivide(value, float.Sqrt(FloatDot(value, value)));
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static Quat FloatInverse(Quat value) => FloatDivide(FloatConjugate(value), FloatDot(value, value));
@@ -206,10 +206,10 @@ public sealed class QuaternionSimdExactnessTest
         if (cosTheta > 1f - 1e-6f)
             return FloatNlerp(from, end, amount);
 
-        var angle = ScalarMath.Acos(cosTheta);
+        var angle = float.Acos(cosTheta);
         return FloatDivide(
-            FloatAdd(FloatScale(from, ScalarMath.Sin((1f - amount) * angle)), FloatScale(end, ScalarMath.Sin(amount * angle))),
-            ScalarMath.Sin(angle));
+            FloatAdd(FloatScale(from, float.Sin((1f - amount) * angle)), FloatScale(end, float.Sin(amount * angle))),
+            float.Sin(angle));
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -272,7 +272,7 @@ public sealed class QuaternionSimdExactnessTest
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static Quatd DoubleNormalize(Quatd value) => DoubleDivide(value, ScalarMath.Sqrt(DoubleDot(value, value)));
+    private static Quatd DoubleNormalize(Quatd value) => DoubleDivide(value, double.Sqrt(DoubleDot(value, value)));
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static Quatd DoubleInverse(Quatd value) => DoubleDivide(DoubleConjugate(value), DoubleDot(value, value));
@@ -307,10 +307,10 @@ public sealed class QuaternionSimdExactnessTest
         if (cosTheta > 1d - 1e-12d)
             return DoubleNlerp(from, end, amount);
 
-        var angle = ScalarMath.Acos(cosTheta);
+        var angle = double.Acos(cosTheta);
         return DoubleDivide(
-            DoubleAdd(DoubleScale(from, ScalarMath.Sin((1d - amount) * angle)), DoubleScale(end, ScalarMath.Sin(amount * angle))),
-            ScalarMath.Sin(angle));
+            DoubleAdd(DoubleScale(from, double.Sin((1d - amount) * angle)), DoubleScale(end, double.Sin(amount * angle))),
+            double.Sin(angle));
     }
 
     private static Vec3 FloatCross(Vec3 left, Vec3 right) =>

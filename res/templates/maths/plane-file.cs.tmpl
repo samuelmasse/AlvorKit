@@ -133,7 +133,7 @@ public struct {{TypeName}}({{Vector3Type}} normal, {{ScalarType}} offset)
             return false;
         }
 
-        normal /= ScalarMath.Sqrt(lengthSquared);
+        normal /= {{ScalarType}}.Sqrt(lengthSquared);
         result = CreateFromPointNormal(point0, normal);
         return true;
     }
@@ -339,7 +339,7 @@ public struct {{TypeName}}({{Vector3Type}} normal, {{ScalarType}} offset)
             return false;
         }
 
-        var length = ScalarMath.Sqrt(lengthSquared);
+        var length = {{ScalarType}}.Sqrt(lengthSquared);
         result = new(value.Normal / length, value.Offset / length);
         return true;
     }

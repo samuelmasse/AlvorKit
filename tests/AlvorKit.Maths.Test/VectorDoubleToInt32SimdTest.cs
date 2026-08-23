@@ -13,9 +13,9 @@ public sealed class VectorDoubleToInt32SimdTest
             var truncated = new Vec2i((int)value.X, (int)value.Y);
             Assert.AreEqual(truncated, value.TruncateToVec2i());
             Assert.AreEqual(truncated, (Vec2i)value);
-            Assert.AreEqual(new Vec2i((int)ScalarMath.Floor(value.X), (int)ScalarMath.Floor(value.Y)), value.FloorToVec2i());
-            Assert.AreEqual(new Vec2i((int)ScalarMath.Ceiling(value.X), (int)ScalarMath.Ceiling(value.Y)), value.CeilingToVec2i());
-            Assert.AreEqual(new Vec2i((int)ScalarMath.Round(value.X), (int)ScalarMath.Round(value.Y)), value.RoundToVec2i());
+            Assert.AreEqual(new Vec2i((int)double.Floor(value.X), (int)double.Floor(value.Y)), value.FloorToVec2i());
+            Assert.AreEqual(new Vec2i((int)double.Ceiling(value.X), (int)double.Ceiling(value.Y)), value.CeilingToVec2i());
+            Assert.AreEqual(new Vec2i((int)double.Round(value.X), (int)double.Round(value.Y)), value.RoundToVec2i());
         }
 
         foreach (var value in Values4())
@@ -23,9 +23,9 @@ public sealed class VectorDoubleToInt32SimdTest
             var truncated = new Vec4i((int)value.X, (int)value.Y, (int)value.Z, (int)value.W);
             Assert.AreEqual(truncated, value.TruncateToVec4i());
             Assert.AreEqual(truncated, (Vec4i)value);
-            Assert.AreEqual(Map(value, ScalarMath.Floor), value.FloorToVec4i());
-            Assert.AreEqual(Map(value, ScalarMath.Ceiling), value.CeilingToVec4i());
-            Assert.AreEqual(Map(value, ScalarMath.Round), value.RoundToVec4i());
+            Assert.AreEqual(Map(value, double.Floor), value.FloorToVec4i());
+            Assert.AreEqual(Map(value, double.Ceiling), value.CeilingToVec4i());
+            Assert.AreEqual(Map(value, double.Round), value.RoundToVec4i());
         }
     }
 

@@ -107,9 +107,9 @@ public struct {{TypeName}}({{Vector3Type}} center, {{ScalarType}} radius)
         var center = (min + max) / {{TwoLiteral}};
         var radiusSquared = {{ZeroLiteral}};
         for (var index = 0; index < points.Length; index++)
-            radiusSquared = ScalarMath.Max(radiusSquared, {{Vector3Type}}.DistanceSquared(center, points[index]));
+            radiusSquared = {{ScalarType}}.Max(radiusSquared, {{Vector3Type}}.DistanceSquared(center, points[index]));
 
-        var radius = radiusSquared == {{ZeroLiteral}} ? {{ZeroLiteral}} : {{ScalarType}}.BitIncrement(ScalarMath.Sqrt(radiusSquared));
+        var radius = radiusSquared == {{ZeroLiteral}} ? {{ZeroLiteral}} : {{ScalarType}}.BitIncrement({{ScalarType}}.Sqrt(radiusSquared));
         result = new {{TypeName}}(center, radius);
         return true;
     }
@@ -221,7 +221,7 @@ public struct {{TypeName}}({{Vector3Type}} center, {{ScalarType}} radius)
         if (distanceSquared <= RadiusSquared || distanceSquared == {{ZeroLiteral}})
             return point;
 
-        return Center + (offset * (Radius / ScalarMath.Sqrt(distanceSquared)));
+        return Center + (offset * (Radius / {{ScalarType}}.Sqrt(distanceSquared)));
     }
 
     /// <summary>Returns the distance from this sphere to <paramref name="point" />.</summary>
@@ -244,7 +244,7 @@ public struct {{TypeName}}({{Vector3Type}} center, {{ScalarType}} radius)
         if (centerDistanceSquared <= RadiusSquared)
             return {{ZeroLiteral}};
 
-        var distance = ScalarMath.Sqrt(centerDistanceSquared) - Radius;
+        var distance = {{ScalarType}}.Sqrt(centerDistanceSquared) - Radius;
         return distance * distance;
     }
 

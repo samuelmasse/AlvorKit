@@ -109,8 +109,9 @@ Hard gates remain visible here:
   controls, seeding, and dependency ordering.
 - `../AlvorKit/docs/GlOwnership.md`: hierarchical `GlLayer` ownership.
 - `../AlvorKit/docs/Maths.md` and `MathsReference.md`: mandatory AlvorKit maths
-  types and `ScalarMath`; add the reference instead of inventing local vector,
-  box, range, tuple, parallel-scalar, clamp, lerp, or min/max forms.
+  types and operations; use direct BCL scalar operations and reserve
+  `ScalarMath` for its distinct generic helpers. Add the reference instead of
+  inventing local vector, box, range, tuple, or parallel-scalar forms.
 - `../AlvorKit/docs/MenuAuthoring.md`: AlvorKit UI menus.
 - `../AlvorKit/docs/Logging.md`: engine-loop and custom-host logging.
 - `../AlvorKit/docs/AlvorSense.md`: visual automation.

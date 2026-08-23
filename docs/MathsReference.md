@@ -509,15 +509,15 @@ and `Depth` (`Intervalf`, defaulting to 0..1); derived `Size` and
 
 ## ScalarMath and generic programming
 
-`ScalarMath` provides generic scalar functions usable over any supported
-scalar in generic maths code: `Min`, `Max`, `Clamp`, `Abs`, `Lerp`,
-`Barycentric`, `Saturate`, `Floor`, `Ceiling`, `Round`
-(+`MidpointRounding`), `Truncate`, `FractionalPart`, `Modulo`, `Mod`,
-`Step`, `SmoothStep`, `Sin`, `Cos`, `Tan`, `Asin`, `Acos`, `Atan`,
-`Atan2`, `Exp`, `Log`, `Log2`, `Sqrt`, `InverseSqrt`, `Pow`,
-`FusedMultiplyAdd`, `IsNaN`, `IsInfinity`, `IsFinite`, `BitCount`,
-`LeadingZeroCount`, `TrailingZeroCount`, `FindLeastSignificantBit`,
-`FindMostSignificantBit`, `IsPowerOfTwo`, and `Select`.
+`ScalarMath` contains generic helpers whose semantics are not transparent BCL
+pass-throughs: `Clamp`, `Abs`, `Lerp`, `Barycentric`, `Saturate`,
+`FractionalPart`, `Modulo`, `Step`, `SmoothStep`, `InverseSqrt`,
+`FindLeastSignificantBit`, `FindMostSignificantBit`, and `Select`.
+
+Concrete scalar code calls `Math`, `MathF`, concrete primitive static
+functions, or `BitOperations` directly. Generic code calls the generic-math
+static abstract members directly for standard operations and uses
+`ScalarMath` only for the distinct helpers above.
 
 Generic algorithms constrain on the hand-authored interface families
 rather than concrete types:

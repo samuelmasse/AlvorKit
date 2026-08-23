@@ -294,7 +294,8 @@ public struct {{TypeName}}({{Vector3Type}} a, {{Vector3Type}} b, {{Vector3Type}}
 
     /// <summary>Returns whether projected triangle coordinates are disjoint from a centered box interval.</summary>
     private static bool SeparatesOnBoxAxis({{ScalarType}} a, {{ScalarType}} b, {{ScalarType}} c, {{ScalarType}} halfSize) =>
-        ScalarMath.Min(a, ScalarMath.Min(b, c)) > halfSize || ScalarMath.Max(a, ScalarMath.Max(b, c)) < -halfSize;
+        {{ScalarType}}.Min(a, {{ScalarType}}.Min(b, c)) > halfSize ||
+        {{ScalarType}}.Max(a, {{ScalarType}}.Max(b, c)) < -halfSize;
 
     /// <summary>Returns whether <paramref name="axis" /> separates a triangle from a centered box.</summary>
     private static bool SeparatesOnAxis(
@@ -310,8 +311,8 @@ public struct {{TypeName}}({{Vector3Type}} a, {{Vector3Type}} b, {{Vector3Type}}
         var projectionA = {{Vector3Type}}.Dot(a, axis);
         var projectionB = {{Vector3Type}}.Dot(b, axis);
         var projectionC = {{Vector3Type}}.Dot(c, axis);
-        return ScalarMath.Min(projectionA, ScalarMath.Min(projectionB, projectionC)) > radius ||
-            ScalarMath.Max(projectionA, ScalarMath.Max(projectionB, projectionC)) < -radius;
+        return {{ScalarType}}.Min(projectionA, {{ScalarType}}.Min(projectionB, projectionC)) > radius ||
+            {{ScalarType}}.Max(projectionA, {{ScalarType}}.Max(projectionB, projectionC)) < -radius;
     }
 
     /// <summary>Returns the closest point on this finite triangle to <paramref name="point" />.</summary>

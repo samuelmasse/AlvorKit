@@ -105,10 +105,10 @@ Float and double geometry — one float and one `d` variant each:
 
 Hand-authored public surface in `AlvorKit.Maths.Core`:
 
-- `ScalarMath` — generic scalar functions (`Min`, `Max`, `Clamp`, `Abs`,
-  `Lerp`, `SmoothStep`, trigonometry, `Sqrt`, `Pow`, bit counts,
-  `IsPowerOfTwo`, `Select`, and more) usable in generic maths code over any
-  supported scalar.
+- `ScalarMath` — generic helpers with distinct repository semantics:
+  `Clamp`, `Abs`, interpolation, saturation, floor-based fractional/modulo
+  operations, step functions, reciprocal square root, bit-index lookup, and
+  `Select`.
 - Shared enums — coordinate axes (`Axis2`, `Axis3`, `Axis4`), signed axis
   directions (`AxisDirection2`, `AxisDirection3`, `AxisDirection4`),
   `ContainmentKind` (`Disjoint`/`Intersects`/`Contains`),
@@ -138,11 +138,12 @@ components, protocols, and tests.
   exposes maths types rather than re-declaring their components. (Tuple
   *literals* remain the preferred construction syntax for a maths-typed
   target — the ban is on tuples as the declared type.)
-- Never re-implement maths the surface already provides. Clamp, lerp,
-  saturate, smoothstep, min/max, abs, dot, cross, distance, normalization,
-  rounding, remapping, power-of-two tests, and bit counts exist on the
-  vector families and `ScalarMath`; call them instead of writing the
-  formula inline or adding a private helper.
+- Never re-implement maths the surface already provides. Use the vector and
+  matrix functions for maths types. In concrete scalar code, use `Math`,
+  `MathF`, the concrete primitive static functions, and `BitOperations`
+  directly. Use `ScalarMath` only for its distinct semantics or in genuinely
+  generic scalar code; do not add transparent generic wrappers around BCL
+  operations.
 - A missing reference is not an excuse. When the current project does not
   reference `AlvorKit.Maths`, add the reference instead of smuggling the
   value through tuples, arrays, or custom structs. The maths packages
@@ -166,8 +167,9 @@ components, protocols, and tests.
 - Matrices are column-major; transform composition follows
   `projection * view * model`, and the OpenGL overloads upload storage
   directly with `transpose: false`.
-- In generic maths code, use `ScalarMath` and the `AlvorKit`
-  interfaces rather than re-deriving per-scalar arithmetic.
+- In generic maths code, use generic-math static abstract members directly
+  for standard operations, `ScalarMath` for its distinct helpers, and the
+  `AlvorKit` interfaces rather than re-deriving per-scalar arithmetic.
 - The float vector and matrix surface is System-backed where `System.Numerics`
   implements the same operation; behavior differences from the historical
   scalar implementations are documented in

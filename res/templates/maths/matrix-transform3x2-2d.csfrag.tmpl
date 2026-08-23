@@ -56,8 +56,8 @@
     /// <summary>Creates a compact 2D rotation transform.</summary>
     public static {{TypeName}} CreateRotation({{ScalarType}} radians)
     {
-        var c = ScalarMath.Cos(radians);
-        var s = ScalarMath.Sin(radians);
+        var c = {{ScalarType}}.Cos(radians);
+        var s = {{ScalarType}}.Sin(radians);
         return new(
             new {{Vector2Type}}(c, s),
             new {{Vector2Type}}(-s, c),
@@ -67,8 +67,8 @@
     /// <summary>Creates a compact 2D rotation transform around a center point.</summary>
     public static {{TypeName}} CreateRotation({{ScalarType}} radians, {{Vector2Type}} center)
     {
-        var c = ScalarMath.Cos(radians);
-        var s = ScalarMath.Sin(radians);
+        var c = {{ScalarType}}.Cos(radians);
+        var s = {{ScalarType}}.Sin(radians);
         return new(
             new {{Vector2Type}}(c, s),
             new {{Vector2Type}}(-s, c),
@@ -84,8 +84,8 @@
     /// <summary>Creates a compact 2D skew transform from X and Y skew angles in radians.</summary>
     public static {{TypeName}} CreateSkew({{Vector2Type}} radians)
     {
-        var skewX = ScalarMath.Tan(radians.X);
-        var skewY = ScalarMath.Tan(radians.Y);
+        var skewX = {{ScalarType}}.Tan(radians.X);
+        var skewY = {{ScalarType}}.Tan(radians.Y);
         return new(
             new {{Vector2Type}}({{OneLiteral}}, skewY),
             new {{Vector2Type}}(skewX, {{OneLiteral}}),
@@ -95,8 +95,8 @@
     /// <summary>Creates a compact 2D skew transform from X and Y skew angles in radians around a center point.</summary>
     public static {{TypeName}} CreateSkew({{Vector2Type}} radians, {{Vector2Type}} center)
     {
-        var skewX = ScalarMath.Tan(radians.X);
-        var skewY = ScalarMath.Tan(radians.Y);
+        var skewX = {{ScalarType}}.Tan(radians.X);
+        var skewY = {{ScalarType}}.Tan(radians.Y);
         return new(
             new {{Vector2Type}}({{OneLiteral}}, skewY),
             new {{Vector2Type}}(skewX, {{OneLiteral}}),

@@ -5,7 +5,7 @@
         {{ScalarType}} nearPlane,
         {{ScalarType}} farPlane)
     {
-        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        var tanHalf = {{ScalarType}}.Tan(fovYRadians / {{TwoLiteral}});
         return new(
             new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -28,7 +28,7 @@
         {{ScalarType}} nearPlane,
         {{ScalarType}} farPlane)
     {
-        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        var tanHalf = {{ScalarType}}.Tan(fovYRadians / {{TwoLiteral}});
         return new(
             new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -43,7 +43,7 @@
         {{ScalarType}} nearPlane,
         {{ScalarType}} farPlane)
     {
-        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        var tanHalf = {{ScalarType}}.Tan(fovYRadians / {{TwoLiteral}});
         return new(
             new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -66,7 +66,7 @@
         {{ScalarType}} nearPlane,
         {{ScalarType}} farPlane)
     {
-        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        var tanHalf = {{ScalarType}}.Tan(fovYRadians / {{TwoLiteral}});
         return new(
             new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -453,7 +453,7 @@
         {{ScalarType}} nearPlane,
         {{ScalarType}} farPlane)
     {
-        var h = ScalarMath.Cos(fovRadians / {{TwoLiteral}}) / ScalarMath.Sin(fovRadians / {{TwoLiteral}});
+        var h = {{ScalarType}}.Cos(fovRadians / {{TwoLiteral}}) / {{ScalarType}}.Sin(fovRadians / {{TwoLiteral}});
         var w = h * height / width;
         return new(
             new {{Vector4Type}}(w, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -478,7 +478,7 @@
         {{ScalarType}} nearPlane,
         {{ScalarType}} farPlane)
     {
-        var h = ScalarMath.Cos(fovRadians / {{TwoLiteral}}) / ScalarMath.Sin(fovRadians / {{TwoLiteral}});
+        var h = {{ScalarType}}.Cos(fovRadians / {{TwoLiteral}}) / {{ScalarType}}.Sin(fovRadians / {{TwoLiteral}});
         var w = h * height / width;
         return new(
             new {{Vector4Type}}(w, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -495,7 +495,7 @@
         {{ScalarType}} nearPlane,
         {{ScalarType}} farPlane)
     {
-        var h = ScalarMath.Cos(fovRadians / {{TwoLiteral}}) / ScalarMath.Sin(fovRadians / {{TwoLiteral}});
+        var h = {{ScalarType}}.Cos(fovRadians / {{TwoLiteral}}) / {{ScalarType}}.Sin(fovRadians / {{TwoLiteral}});
         var w = h * height / width;
         return new(
             new {{Vector4Type}}(w, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -520,7 +520,7 @@
         {{ScalarType}} nearPlane,
         {{ScalarType}} farPlane)
     {
-        var h = ScalarMath.Cos(fovRadians / {{TwoLiteral}}) / ScalarMath.Sin(fovRadians / {{TwoLiteral}});
+        var h = {{ScalarType}}.Cos(fovRadians / {{TwoLiteral}}) / {{ScalarType}}.Sin(fovRadians / {{TwoLiteral}});
         var w = h * height / width;
         return new(
             new {{Vector4Type}}(w, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -573,7 +573,7 @@
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane)
     {
-        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        var tanHalf = {{ScalarType}}.Tan(fovYRadians / {{TwoLiteral}});
         return new(
             new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -587,7 +587,7 @@
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane)
     {
-        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        var tanHalf = {{ScalarType}}.Tan(fovYRadians / {{TwoLiteral}});
         return new(
             new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -601,7 +601,7 @@
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane)
     {
-        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        var tanHalf = {{ScalarType}}.Tan(fovYRadians / {{TwoLiteral}});
         return new(
             new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -615,7 +615,7 @@
         {{ScalarType}} aspect,
         {{ScalarType}} nearPlane)
     {
-        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        var tanHalf = {{ScalarType}}.Tan(fovYRadians / {{TwoLiteral}});
         return new(
             new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -662,7 +662,7 @@
         {{ScalarType}} nearPlane,
         {{ScalarType}} epsilon)
     {
-        var tanHalf = ScalarMath.Tan(fovYRadians / {{TwoLiteral}});
+        var tanHalf = {{ScalarType}}.Tan(fovYRadians / {{TwoLiteral}});
         return new(
             new {{Vector4Type}}({{OneLiteral}} / (aspect * tanHalf), {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}} / tanHalf, {{ZeroLiteral}}, {{ZeroLiteral}}),

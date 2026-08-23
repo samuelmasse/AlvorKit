@@ -52,7 +52,7 @@ public sealed class VectorRoundingTest
     public void Round_InvalidMidpointModeMatchesScalarException()
     {
         var mode = (MidpointRounding)int.MaxValue;
-        var scalarException = Assert.ThrowsException<ArgumentException>(() => ScalarMath.Round(1f, mode));
+        var scalarException = Assert.ThrowsException<ArgumentException>(() => float.Round(1f, mode));
 
         AssertMatchingException(scalarException, Assert.ThrowsException<ArgumentException>(() => Vec2.Round(Vec2.One, mode)));
         AssertMatchingException(scalarException, Assert.ThrowsException<ArgumentException>(() => Vec3.Round(Vec3.One, mode)));
@@ -61,16 +61,16 @@ public sealed class VectorRoundingTest
 
     private static void AssertRoundingOperations(Vec2 value)
     {
-        AssertSameBits(Vec2.Floor(value), new(ScalarMath.Floor(value.X), ScalarMath.Floor(value.Y)));
-        AssertSameBits(Vec2.Ceiling(value), new(ScalarMath.Ceiling(value.X), ScalarMath.Ceiling(value.Y)));
+        AssertSameBits(Vec2.Floor(value), new(float.Floor(value.X), float.Floor(value.Y)));
+        AssertSameBits(Vec2.Ceiling(value), new(float.Ceiling(value.X), float.Ceiling(value.Y)));
         AssertSameBits(Vec2.Round(value), ScalarRound(value, MidpointRounding.ToEven));
         AssertSameBits(Vec2.Truncate(value), ScalarTruncate(value));
     }
 
     private static void AssertRoundingOperations(Vec3 value)
     {
-        AssertSameBits(Vec3.Floor(value), new(ScalarMath.Floor(value.X), ScalarMath.Floor(value.Y), ScalarMath.Floor(value.Z)));
-        AssertSameBits(Vec3.Ceiling(value), new(ScalarMath.Ceiling(value.X), ScalarMath.Ceiling(value.Y), ScalarMath.Ceiling(value.Z)));
+        AssertSameBits(Vec3.Floor(value), new(float.Floor(value.X), float.Floor(value.Y), float.Floor(value.Z)));
+        AssertSameBits(Vec3.Ceiling(value), new(float.Ceiling(value.X), float.Ceiling(value.Y), float.Ceiling(value.Z)));
         AssertSameBits(Vec3.Round(value), ScalarRound(value, MidpointRounding.ToEven));
         AssertSameBits(Vec3.Truncate(value), ScalarTruncate(value));
     }
@@ -78,30 +78,30 @@ public sealed class VectorRoundingTest
     private static void AssertRoundingOperations(Vec4 value)
     {
         AssertSameBits(Vec4.Floor(value),
-            new(ScalarMath.Floor(value.X), ScalarMath.Floor(value.Y), ScalarMath.Floor(value.Z), ScalarMath.Floor(value.W)));
+            new(float.Floor(value.X), float.Floor(value.Y), float.Floor(value.Z), float.Floor(value.W)));
         AssertSameBits(Vec4.Ceiling(value),
-            new(ScalarMath.Ceiling(value.X), ScalarMath.Ceiling(value.Y), ScalarMath.Ceiling(value.Z), ScalarMath.Ceiling(value.W)));
+            new(float.Ceiling(value.X), float.Ceiling(value.Y), float.Ceiling(value.Z), float.Ceiling(value.W)));
         AssertSameBits(Vec4.Round(value), ScalarRound(value, MidpointRounding.ToEven));
         AssertSameBits(Vec4.Truncate(value), ScalarTruncate(value));
     }
 
     private static Vec2 ScalarRound(Vec2 value, MidpointRounding mode) =>
-        new(ScalarMath.Round(value.X, mode), ScalarMath.Round(value.Y, mode));
+        new(float.Round(value.X, mode), float.Round(value.Y, mode));
 
     private static Vec3 ScalarRound(Vec3 value, MidpointRounding mode) =>
-        new(ScalarMath.Round(value.X, mode), ScalarMath.Round(value.Y, mode), ScalarMath.Round(value.Z, mode));
+        new(float.Round(value.X, mode), float.Round(value.Y, mode), float.Round(value.Z, mode));
 
     private static Vec4 ScalarRound(Vec4 value, MidpointRounding mode) =>
-        new(ScalarMath.Round(value.X, mode), ScalarMath.Round(value.Y, mode), ScalarMath.Round(value.Z, mode), ScalarMath.Round(value.W, mode));
+        new(float.Round(value.X, mode), float.Round(value.Y, mode), float.Round(value.Z, mode), float.Round(value.W, mode));
 
     private static Vec2 ScalarTruncate(Vec2 value) =>
-        new(ScalarMath.Truncate(value.X), ScalarMath.Truncate(value.Y));
+        new(float.Truncate(value.X), float.Truncate(value.Y));
 
     private static Vec3 ScalarTruncate(Vec3 value) =>
-        new(ScalarMath.Truncate(value.X), ScalarMath.Truncate(value.Y), ScalarMath.Truncate(value.Z));
+        new(float.Truncate(value.X), float.Truncate(value.Y), float.Truncate(value.Z));
 
     private static Vec4 ScalarTruncate(Vec4 value) =>
-        new(ScalarMath.Truncate(value.X), ScalarMath.Truncate(value.Y), ScalarMath.Truncate(value.Z), ScalarMath.Truncate(value.W));
+        new(float.Truncate(value.X), float.Truncate(value.Y), float.Truncate(value.Z), float.Truncate(value.W));
 
     private static void AssertMatchingException(ArgumentException expected, ArgumentException actual)
     {

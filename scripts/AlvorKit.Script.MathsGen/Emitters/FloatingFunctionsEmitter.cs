@@ -42,17 +42,19 @@ internal static class FloatingFunctionsEmitter
             members.Append(MathsTemplate.Fragment("double-vec3-saturate-helper.csfrag.tmpl"));
         members.Append(NumericFunctionsEmitter.Method("Returns each component rounded downward.", "static", vector.TypeName, "Floor",
             $"{vector.TypeName} value", RoundingExpression(vector, "Round(value, MidpointRounding.ToNegativeInfinity)",
-                c => RoundCall("Floor", $"value.{c}"))));
+                c => RoundCall(vector, "Floor", $"value.{c}"))));
         members.Append(NumericFunctionsEmitter.Method("Returns each component rounded upward.", "static", vector.TypeName, "Ceiling",
             $"{vector.TypeName} value", RoundingExpression(vector, "Round(value, MidpointRounding.ToPositiveInfinity)",
-                c => RoundCall("Ceiling", $"value.{c}"))));
+                c => RoundCall(vector, "Ceiling", $"value.{c}"))));
         members.Append(NumericFunctionsEmitter.Method("Returns each component rounded to the nearest value.", "static", vector.TypeName, "Round",
-            $"{vector.TypeName} value", RoundingExpression(vector, "Round(value)", c => RoundCall("Round", $"value.{c}"))));
+            $"{vector.TypeName} value",
+            RoundingExpression(vector, "Round(value)", c => RoundCall(vector, "Round", $"value.{c}"))));
         members.Append(NumericFunctionsEmitter.Method("Returns each component rounded to the nearest value using mode for midpoints.", "static",
             vector.TypeName, "Round", $"{vector.TypeName} value, MidpointRounding mode",
-            RoundingExpression(vector, "Round(value, mode)", c => RoundCall("Round", $"value.{c}", ", mode"))));
+            RoundingExpression(vector, "Round(value, mode)", c => RoundCall(vector, "Round", $"value.{c}", "mode"))));
         members.Append(NumericFunctionsEmitter.Method("Returns each component rounded toward zero.", "static", vector.TypeName, "Truncate",
-            $"{vector.TypeName} value", RoundingExpression(vector, "Truncate(value)", c => RoundCall("Truncate", $"value.{c}"))));
+            $"{vector.TypeName} value",
+            RoundingExpression(vector, "Truncate(value)", c => RoundCall(vector, "Truncate", $"value.{c}"))));
         members.Append(NumericFunctionsEmitter.Method("Returns the fractional part of each component using floor-based modulo semantics.", "static",
             vector.TypeName, "FractionalPart", $"{vector.TypeName} value",
             NumericFunctionsEmitter.New(vector, c => $"ScalarMath.FractionalPart(value.{c})")));
@@ -61,7 +63,7 @@ internal static class FloatingFunctionsEmitter
         members.Append(NumericFunctionsEmitter.Method("Returns floor-based modulo for each component against a scalar divisor.", "static",
             vector.TypeName, "Modulo", $"{vector.TypeName} left, {vector.Scalar.CSharpName} right", $"Modulo(left, new {vector.TypeName}(right))"));
         members.Append(NumericFunctionsEmitter.Method("Returns floor-based modulo for each component.", "static", vector.TypeName, "Mod",
-            $"{vector.TypeName} left, {vector.TypeName} right", NumericFunctionsEmitter.New(vector, c => $"ScalarMath.Mod(left.{c}, right.{c})")));
+            $"{vector.TypeName} left, {vector.TypeName} right", "Modulo(left, right)"));
         members.Append(NumericFunctionsEmitter.Method("Returns floor-based modulo for each component against a scalar divisor.", "static",
             vector.TypeName, "Mod", $"{vector.TypeName} left, {vector.Scalar.CSharpName} right", "Modulo(left, right)"));
         EmitStep(vector, members);
@@ -95,7 +97,7 @@ internal static class FloatingFunctionsEmitter
                     ? DoubleToInt32Expression.Convert(vector, "this", mode)
                     : FloatToInt32Expression.Supports(vector)
                         ? FloatToInt32Expression.Round(vector, method, "this")
-                        : $"new({string.Join(", ", vector.Components.Select(c => $"(int)ScalarMath.{method}({c})"))})"));
+                        : $"new({string.Join(", ", vector.Components.Select(c => $"(int){RoundCall(vector, method, c)}"))})"));
         if (vector.Scalar.Kind == ScalarKind.Float && vector.Dimension == 3)
             members.Append(FloatToInt32Expression.SourceHelper());
         if (packedDouble)
@@ -106,18 +108,21 @@ internal static class FloatingFunctionsEmitter
     private static void EmitFloatingRelational(VectorSpec vector, MemberBlock members)
     {
         members.Append(NumericFunctionsEmitter.Method("Returns a mask containing component-wise NaN checks.", "static", vector.BoolTypeName, "IsNaN",
-            $"{vector.TypeName} value", NumericFunctionsEmitter.New(vector with { Scalar = VectorCatalog.Bool }, c => $"ScalarMath.IsNaN(value.{c})")));
+            $"{vector.TypeName} value", NumericFunctionsEmitter.New(vector with { Scalar = VectorCatalog.Bool },
+                c => ScalarCall.Function(vector.Scalar, "IsNaN", $"value.{c}"))));
         members.Append(NumericFunctionsEmitter.Method("Returns a mask containing component-wise infinity checks.", "static", vector.BoolTypeName,
             "IsInfinity", $"{vector.TypeName} value",
-            NumericFunctionsEmitter.New(vector with { Scalar = VectorCatalog.Bool }, c => $"ScalarMath.IsInfinity(value.{c})")));
+            NumericFunctionsEmitter.New(vector with { Scalar = VectorCatalog.Bool },
+                c => ScalarCall.Function(vector.Scalar, "IsInfinity", $"value.{c}"))));
         members.Append(NumericFunctionsEmitter.Method("Returns a mask containing component-wise finite-number checks.", "static", vector.BoolTypeName,
             "IsFinite", $"{vector.TypeName} value",
-            NumericFunctionsEmitter.New(vector with { Scalar = VectorCatalog.Bool }, c => $"ScalarMath.IsFinite(value.{c})")));
+            NumericFunctionsEmitter.New(vector with { Scalar = VectorCatalog.Bool },
+                c => ScalarCall.Function(vector.Scalar, "IsFinite", $"value.{c}"))));
     }
 
     /// <summary>Returns a scalar rounding call for the floating-point family.</summary>
-    private static string RoundCall(string method, string value, string suffix = "") =>
-        $"ScalarMath.{method}({value}{suffix})";
+    private static string RoundCall(VectorSpec vector, string method, params string[] arguments) =>
+        ScalarCall.Function(vector.Scalar, method, arguments);
 
     /// <summary>Uses the exact scalar formula composed from SIMD-backed operators for float vectors.</summary>
     private static string InterpolationExpression(

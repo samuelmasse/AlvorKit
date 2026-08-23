@@ -14,13 +14,13 @@ public sealed class HalfVectorNormalizationGenerationTest
             StringAssert.Contains(half, "[MethodImpl(MethodImplOptions.AggressiveInlining)]");
             StringAssert.Contains(half, "var lengthSquared = LengthSquared;");
             StringAssert.Contains(half,
-                "return lengthSquared > (Half)0 ? this / ScalarMath.Sqrt(lengthSquared) : fallback;");
+                "return lengthSquared > (Half)0 ? this / Half.Sqrt(lengthSquared) : fallback;");
         }
 
         var single = VectorFileEmitter.Emit(new(3, VectorCatalog.Float));
         StringAssert.Contains(single, "LengthSquared > 0f ? this / Length : fallback");
         Assert.IsFalse(single.Contains(
-            "return lengthSquared > 0f ? this / ScalarMath.Sqrt(lengthSquared) : fallback;",
+            "return lengthSquared > 0f ? this / float.Sqrt(lengthSquared) : fallback;",
             StringComparison.Ordinal));
     }
 }

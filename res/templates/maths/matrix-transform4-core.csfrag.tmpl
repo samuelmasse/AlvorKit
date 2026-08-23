@@ -44,8 +44,8 @@
     /// <summary>Creates a rotation matrix around the X axis.</summary>
     public static {{TypeName}} CreateRotationX({{ScalarType}} radians)
     {
-        var c = ScalarMath.Cos(radians);
-        var s = ScalarMath.Sin(radians);
+        var c = {{ScalarType}}.Cos(radians);
+        var s = {{ScalarType}}.Sin(radians);
         return new(
             new {{Vector4Type}}({{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, c, s, {{ZeroLiteral}}),
@@ -60,8 +60,8 @@
     /// <summary>Creates a rotation matrix around the Y axis.</summary>
     public static {{TypeName}} CreateRotationY({{ScalarType}} radians)
     {
-        var c = ScalarMath.Cos(radians);
-        var s = ScalarMath.Sin(radians);
+        var c = {{ScalarType}}.Cos(radians);
+        var s = {{ScalarType}}.Sin(radians);
         return new(
             new {{Vector4Type}}(c, {{ZeroLiteral}}, -s, {{ZeroLiteral}}),
             new {{Vector4Type}}({{ZeroLiteral}}, {{OneLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -76,8 +76,8 @@
     /// <summary>Creates a rotation matrix around the Z axis.</summary>
     public static {{TypeName}} CreateRotationZ({{ScalarType}} radians)
     {
-        var c = ScalarMath.Cos(radians);
-        var s = ScalarMath.Sin(radians);
+        var c = {{ScalarType}}.Cos(radians);
+        var s = {{ScalarType}}.Sin(radians);
         return new(
             new {{Vector4Type}}(c, s, {{ZeroLiteral}}, {{ZeroLiteral}}),
             new {{Vector4Type}}(-s, c, {{ZeroLiteral}}, {{ZeroLiteral}}),
@@ -93,8 +93,8 @@
     public static {{TypeName}} CreateRotation({{ScalarType}} radians, {{Vector3Type}} axis)
     {
         var normalizedAxis = {{Vector3Type}}.Normalize(axis);
-        var c = ScalarMath.Cos(radians);
-        var s = ScalarMath.Sin(radians);
+        var c = {{ScalarType}}.Cos(radians);
+        var s = {{ScalarType}}.Sin(radians);
         var temp = ({{OneLiteral}} - c) * normalizedAxis;
         return new(
             new {{Vector4Type}}(

@@ -189,7 +189,7 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
     public readonly {{ScalarType}} LengthSquared => Dot(this, this);
 
     /// <summary>Returns the quaternion length.</summary>
-    public readonly {{ScalarType}} Length => ScalarMath.Sqrt(LengthSquared);
+    public readonly {{ScalarType}} Length => {{ScalarType}}.Sqrt(LengthSquared);
 
     /// <summary>Gets this quaternion divided by its length.</summary>
     public readonly {{TypeName}} Normalized => Normalize(this);
@@ -291,8 +291,8 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
     public static {{TypeName}} CreateFromAxisAngle({{Vector3Type}} axis, {{ScalarType}} radians)
     {
         var halfAngle = radians * {{HalfLiteral}};
-        var scale = ScalarMath.Sin(halfAngle);
-        return new(axis * scale, ScalarMath.Cos(halfAngle));
+        var scale = {{ScalarType}}.Sin(halfAngle);
+        return new(axis * scale, {{ScalarType}}.Cos(halfAngle));
     }
 
     /// <summary>Creates a quaternion from pitch, yaw, and roll angles in radians.</summary>
@@ -303,14 +303,14 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
     public static {{TypeName}} CreateFromYawPitchRoll({{ScalarType}} yaw, {{ScalarType}} pitch, {{ScalarType}} roll)
     {
         var halfYaw = yaw * {{HalfLiteral}};
-        var sy = ScalarMath.Sin(halfYaw);
-        var cy = ScalarMath.Cos(halfYaw);
+        var sy = {{ScalarType}}.Sin(halfYaw);
+        var cy = {{ScalarType}}.Cos(halfYaw);
         var halfPitch = pitch * {{HalfLiteral}};
-        var sp = ScalarMath.Sin(halfPitch);
-        var cp = ScalarMath.Cos(halfPitch);
+        var sp = {{ScalarType}}.Sin(halfPitch);
+        var cp = {{ScalarType}}.Cos(halfPitch);
         var halfRoll = roll * {{HalfLiteral}};
-        var sr = ScalarMath.Sin(halfRoll);
-        var cr = ScalarMath.Cos(halfRoll);
+        var sr = {{ScalarType}}.Sin(halfRoll);
+        var cr = {{ScalarType}}.Cos(halfRoll);
 
         return new(
             (cy * sp * cr) + (sy * cp * sr),
@@ -347,7 +347,7 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
             biggestIndex = 3;
         }
 
-        var biggestValue = ScalarMath.Sqrt(fourBiggestSquaredMinusOne + {{OneLiteral}}) * {{HalfLiteral}};
+        var biggestValue = {{ScalarType}}.Sqrt(fourBiggestSquaredMinusOne + {{OneLiteral}}) * {{HalfLiteral}};
         var multiplier = {{QuarterLiteral}} / biggestValue;
         return biggestIndex switch
         {
@@ -431,7 +431,7 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
         }
 
         var axis = {{Vector3Type}}.Cross(normalizedFrom, normalizedTo);
-        var scale = ScalarMath.Sqrt(({{OneLiteral}} + cosTheta) * {{TwoLiteral}});
+        var scale = {{ScalarType}}.Sqrt(({{OneLiteral}} + cosTheta) * {{TwoLiteral}});
         var inverseScale = {{OneLiteral}} / scale;
         return new {{TypeName}}(axis * inverseScale, scale * {{HalfLiteral}}).Normalized;
     }
@@ -444,7 +444,7 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
             var normalized = NormalizedOrIdentity;
             var vectorLength = normalized.Vector.Length;
             return vectorLength > {{ToleranceLiteral}}
-                ? {{TwoLiteral}} * ScalarMath.Atan2(vectorLength, normalized.W)
+                ? {{TwoLiteral}} * {{ScalarType}}.Atan2(vectorLength, normalized.W)
                 : {{ZeroLiteral}};
         }
     }
@@ -471,14 +471,14 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
             var y = {{TwoLiteral}} * ((Y * Z) + (W * X));
             var x = (W * W) - (X * X) - (Y * Y) + (Z * Z);
             return ScalarMath.Abs(x) <= {{ToleranceLiteral}} && ScalarMath.Abs(y) <= {{ToleranceLiteral}}
-                ? {{TwoLiteral}} * ScalarMath.Atan2(X, W)
-                : ScalarMath.Atan2(y, x);
+                ? {{TwoLiteral}} * {{ScalarType}}.Atan2(X, W)
+                : {{ScalarType}}.Atan2(y, x);
         }
     }
 
     /// <summary>Gets the yaw angle in radians.</summary>
     public readonly {{ScalarType}} Yaw =>
-        ScalarMath.Asin(ScalarMath.Clamp(-{{TwoLiteral}} * ((X * Z) - (W * Y)), {{MinusOneLiteral}}, {{OneLiteral}}));
+        {{ScalarType}}.Asin(ScalarMath.Clamp(-{{TwoLiteral}} * ((X * Z) - (W * Y)), {{MinusOneLiteral}}, {{OneLiteral}}));
 
     /// <summary>Gets the roll angle in radians.</summary>
     public readonly {{ScalarType}} Roll
@@ -489,7 +489,7 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
             var x = (W * W) + (X * X) - (Y * Y) - (Z * Z);
             return ScalarMath.Abs(x) <= {{ToleranceLiteral}} && ScalarMath.Abs(y) <= {{ToleranceLiteral}}
                 ? {{ZeroLiteral}}
-                : ScalarMath.Atan2(y, x);
+                : {{ScalarType}}.Atan2(y, x);
         }
     }
 
@@ -552,7 +552,7 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
     {
         var end = Dot(from, to) < {{ZeroLiteral}} ? -to : to;
         var value = Lerp(from, end, amount);
-        var length = ScalarMath.Sqrt(Dot(value, value));
+        var length = {{ScalarType}}.Sqrt(Dot(value, value));
         return new(value.X / length, value.Y / length, value.Z / length, value.W / length);
     }
 
@@ -570,10 +570,10 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
         if (cosTheta > {{OneLiteral}} - {{ToleranceLiteral}})
             return Nlerp(from, end, amount);
 
-        var angle = ScalarMath.Acos(cosTheta);
-        var fromScale = ScalarMath.Sin(({{OneLiteral}} - amount) * angle);
-        var toScale = ScalarMath.Sin(amount * angle);
-        var divisor = ScalarMath.Sin(angle);
+        var angle = {{ScalarType}}.Acos(cosTheta);
+        var fromScale = {{ScalarType}}.Sin(({{OneLiteral}} - amount) * angle);
+        var toScale = {{ScalarType}}.Sin(amount * angle);
+        var divisor = {{ScalarType}}.Sin(angle);
         return new(
             ((from.X * fromScale) + (end.X * toScale)) / divisor,
             ((from.Y * fromScale) + (end.Y * toScale)) / divisor,
@@ -595,11 +595,11 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
         if (cosTheta > {{OneLiteral}} - {{ToleranceLiteral}})
             return Nlerp(from, end, amount);
 
-        var angle = ScalarMath.Acos(cosTheta);
+        var angle = {{ScalarType}}.Acos(cosTheta);
         var phi = angle + (extraSpins * {{PiLiteral}});
-        var fromScale = ScalarMath.Sin(angle - (amount * phi));
-        var toScale = ScalarMath.Sin(amount * phi);
-        var divisor = ScalarMath.Sin(angle);
+        var fromScale = {{ScalarType}}.Sin(angle - (amount * phi));
+        var toScale = {{ScalarType}}.Sin(amount * phi);
+        var divisor = {{ScalarType}}.Sin(angle);
         return new(
             ((from.X * fromScale) + (end.X * toScale)) / divisor,
             ((from.Y * fromScale) + (end.Y * toScale)) / divisor,
@@ -627,12 +627,12 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
     public static {{TypeName}} Exp({{TypeName}} value)
     {
         var vectorLength = value.Vector.Length;
-        var expScalar = ScalarMath.Exp(value.W);
+        var expScalar = {{ScalarType}}.Exp(value.W);
         if (vectorLength <= {{ToleranceLiteral}})
             return new({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, expScalar);
 
-        var scale = expScalar * ScalarMath.Sin(vectorLength) / vectorLength;
-        return new(value.Vector * scale, expScalar * ScalarMath.Cos(vectorLength));
+        var scale = expScalar * {{ScalarType}}.Sin(vectorLength) / vectorLength;
+        return new(value.Vector * scale, expScalar * {{ScalarType}}.Cos(vectorLength));
     }
 
     /// <summary>Returns the quaternion logarithm.</summary>
@@ -641,10 +641,10 @@ public struct {{TypeName}}({{ScalarType}} x, {{ScalarType}} y, {{ScalarType}} z,
         var vectorLength = value.Vector.Length;
         var quaternionLength = value.Length;
         if (vectorLength <= {{ToleranceLiteral}})
-            return new({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, ScalarMath.Log(quaternionLength));
+            return new({{ZeroLiteral}}, {{ZeroLiteral}}, {{ZeroLiteral}}, {{ScalarType}}.Log(quaternionLength));
 
-        var scale = ScalarMath.Atan2(vectorLength, value.W) / vectorLength;
-        return new(value.Vector * scale, ScalarMath.Log(quaternionLength));
+        var scale = {{ScalarType}}.Atan2(vectorLength, value.W) / vectorLength;
+        return new(value.Vector * scale, {{ScalarType}}.Log(quaternionLength));
     }
 
     /// <summary>Raises a quaternion to a scalar power.</summary>

@@ -15,7 +15,7 @@ public sealed class FloatVectorDistanceGenerationTest
             StringAssert.Contains(source, "[MethodImpl(MethodImplOptions.AggressiveInlining)]");
             StringAssert.Contains(source, "var x = left.X - right.X;");
             StringAssert.Contains(source, "var y = left.Y - right.Y;");
-            StringAssert.Contains(source, "ScalarMath.Sqrt(DistanceSquared(left, right))");
+            StringAssert.Contains(source, "float.Sqrt(DistanceSquared(left, right))");
             Assert.IsFalse(source.Contains("(left - right).LengthSquared", StringComparison.Ordinal));
         }
     }

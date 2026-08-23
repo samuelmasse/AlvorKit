@@ -16,12 +16,12 @@ public sealed class VectorInt32BitFunctionSimdTest
                      new Vec4i(unchecked((int)0xAAAAAAAA), 0x55555555, -17, 17),
                  })
         {
-            Assert.AreEqual(Map(value, ScalarMath.BitCount), Vec4i.BitCount(value));
-            Assert.AreEqual(Map(value, ScalarMath.LeadingZeroCount), Vec4i.LeadingZeroCount(value));
-            Assert.AreEqual(Map(value, ScalarMath.TrailingZeroCount), Vec4i.TrailingZeroCount(value));
+            Assert.AreEqual(Map(value, component => BitOperations.PopCount((uint)component)), Vec4i.BitCount(value));
+            Assert.AreEqual(Map(value, component => BitOperations.LeadingZeroCount((uint)component)), Vec4i.LeadingZeroCount(value));
+            Assert.AreEqual(Map(value, component => BitOperations.TrailingZeroCount((uint)component)), Vec4i.TrailingZeroCount(value));
             Assert.AreEqual(Map(value, ScalarMath.FindLeastSignificantBit), Vec4i.FindLeastSignificantBit(value));
             Assert.AreEqual(Map(value, ScalarMath.FindMostSignificantBit), Vec4i.FindMostSignificantBit(value));
-            Assert.AreEqual(MapBool(value, ScalarMath.IsPowerOfTwo), Vec4i.IsPowerOfTwo(value));
+            Assert.AreEqual(MapBool(value, component => component > 0 && int.IsPow2(component)), Vec4i.IsPowerOfTwo(value));
         }
     }
 
@@ -37,12 +37,12 @@ public sealed class VectorInt32BitFunctionSimdTest
                      new Vec4u(0xAAAAAAAAU, 0x55555555U, 17U, 0x01010101U),
                  })
         {
-            Assert.AreEqual(Map(value, ScalarMath.BitCount), Vec4u.BitCount(value));
-            Assert.AreEqual(Map(value, ScalarMath.LeadingZeroCount), Vec4u.LeadingZeroCount(value));
-            Assert.AreEqual(Map(value, ScalarMath.TrailingZeroCount), Vec4u.TrailingZeroCount(value));
+            Assert.AreEqual(Map(value, BitOperations.PopCount), Vec4u.BitCount(value));
+            Assert.AreEqual(Map(value, BitOperations.LeadingZeroCount), Vec4u.LeadingZeroCount(value));
+            Assert.AreEqual(Map(value, BitOperations.TrailingZeroCount), Vec4u.TrailingZeroCount(value));
             Assert.AreEqual(Map(value, ScalarMath.FindLeastSignificantBit), Vec4u.FindLeastSignificantBit(value));
             Assert.AreEqual(Map(value, ScalarMath.FindMostSignificantBit), Vec4u.FindMostSignificantBit(value));
-            Assert.AreEqual(MapBool(value, ScalarMath.IsPowerOfTwo), Vec4u.IsPowerOfTwo(value));
+            Assert.AreEqual(MapBool(value, uint.IsPow2), Vec4u.IsPowerOfTwo(value));
         }
     }
 

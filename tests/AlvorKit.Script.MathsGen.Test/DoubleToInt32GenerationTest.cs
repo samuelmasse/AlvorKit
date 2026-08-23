@@ -32,6 +32,6 @@ public sealed class DoubleToInt32GenerationTest
 
         Assert.IsFalse(vec3d.Contains("ConvertToInt32Packed", StringComparison.Ordinal));
         Assert.IsFalse(vec3i.Contains("Vec3d.ConvertToInt32Packed", StringComparison.Ordinal));
-        StringAssert.Contains(vec3d, "(int)ScalarMath.Floor(X)");
+        StringAssert.Contains(vec3d, "(int)double.Floor(X)");
     }
 }

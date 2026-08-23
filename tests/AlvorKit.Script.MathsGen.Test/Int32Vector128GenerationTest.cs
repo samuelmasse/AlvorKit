@@ -77,8 +77,8 @@ public sealed class Int32Vector128GenerationTest
 
         StringAssert.Contains(signed, "left.X < right.X ? left.X : right.X");
         StringAssert.Contains(unsigned, "left.X > right.X ? left.X : right.X");
-        StringAssert.Contains(signed, "ScalarMath.Max(left.X, right.X)");
-        StringAssert.Contains(unsigned, "ScalarMath.Min(left.X, right.X)");
+        StringAssert.Contains(signed, "int.Max(left.X, right.X)");
+        StringAssert.Contains(unsigned, "uint.Min(left.X, right.X)");
         StringAssert.Contains(signed, "ScalarMath.Clamp(value.X, min.X, max.X)");
         StringAssert.Contains(unsigned, "ScalarMath.Clamp(value.X, min.X, max.X)");
     }

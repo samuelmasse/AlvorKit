@@ -39,13 +39,13 @@ public sealed class VectorSqrtInverseSqrtTest
     }
 
     private static Vec2 ScalarSqrt(Vec2 value) =>
-        new(ScalarMath.Sqrt(value.X), ScalarMath.Sqrt(value.Y));
+        new(float.Sqrt(value.X), float.Sqrt(value.Y));
 
     private static Vec3 ScalarSqrt(Vec3 value) =>
-        new(ScalarMath.Sqrt(value.X), ScalarMath.Sqrt(value.Y), ScalarMath.Sqrt(value.Z));
+        new(float.Sqrt(value.X), float.Sqrt(value.Y), float.Sqrt(value.Z));
 
     private static Vec4 ScalarSqrt(Vec4 value) =>
-        new(ScalarMath.Sqrt(value.X), ScalarMath.Sqrt(value.Y), ScalarMath.Sqrt(value.Z), ScalarMath.Sqrt(value.W));
+        new(float.Sqrt(value.X), float.Sqrt(value.Y), float.Sqrt(value.Z), float.Sqrt(value.W));
 
     private static Vec2 ScalarInverseSqrt(Vec2 value) =>
         new(ScalarMath.InverseSqrt(value.X), ScalarMath.InverseSqrt(value.Y));

@@ -211,8 +211,8 @@ public struct {{TypeName}}({{Vector3Type}} start, {{Vector3Type}} end)
         if (first > second)
             (first, second) = (second, first);
 
-        near = ScalarMath.Max(near, first);
-        far = ScalarMath.Min(far, second);
+        near = {{ScalarType}}.Max(near, first);
+        far = {{ScalarType}}.Min(far, second);
         return near <= far;
     }
 

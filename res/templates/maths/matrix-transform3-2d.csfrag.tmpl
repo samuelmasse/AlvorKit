@@ -51,8 +51,8 @@
     /// <summary>Creates a 2D rotation matrix.</summary>
     public static {{TypeName}} CreateRotation2D({{ScalarType}} radians)
     {
-        var c = ScalarMath.Cos(radians);
-        var s = ScalarMath.Sin(radians);
+        var c = {{ScalarType}}.Cos(radians);
+        var s = {{ScalarType}}.Sin(radians);
         return new(
             new {{Vector3Type}}(c, s, {{ZeroLiteral}}),
             new {{Vector3Type}}(-s, c, {{ZeroLiteral}}),
@@ -62,8 +62,8 @@
     /// <summary>Creates a 2D rotation matrix around a center point.</summary>
     public static {{TypeName}} CreateRotation2D({{ScalarType}} radians, {{Vector2Type}} center)
     {
-        var c = ScalarMath.Cos(radians);
-        var s = ScalarMath.Sin(radians);
+        var c = {{ScalarType}}.Cos(radians);
+        var s = {{ScalarType}}.Sin(radians);
         return new(
             new {{Vector3Type}}(c, s, {{ZeroLiteral}}),
             new {{Vector3Type}}(-s, c, {{ZeroLiteral}}),
@@ -76,8 +76,8 @@
     /// <summary>Applies a 2D rotation after an existing transform.</summary>
     public static {{TypeName}} Rotate2D({{TypeName}} value, {{ScalarType}} radians)
     {
-        var c = ScalarMath.Cos(radians);
-        var s = ScalarMath.Sin(radians);
+        var c = {{ScalarType}}.Cos(radians);
+        var s = {{ScalarType}}.Sin(radians);
         return new(
             (value.Column0 * c) + (value.Column1 * s),
             (value.Column0 * -s) + (value.Column1 * c),
@@ -87,8 +87,8 @@
     /// <summary>Creates a 2D skew matrix from X and Y skew angles in radians.</summary>
     public static {{TypeName}} CreateSkew2D({{Vector2Type}} radians)
     {
-        var skewX = ScalarMath.Tan(radians.X);
-        var skewY = ScalarMath.Tan(radians.Y);
+        var skewX = {{ScalarType}}.Tan(radians.X);
+        var skewY = {{ScalarType}}.Tan(radians.Y);
         return new(
             new {{Vector3Type}}({{OneLiteral}}, skewY, {{ZeroLiteral}}),
             new {{Vector3Type}}(skewX, {{OneLiteral}}, {{ZeroLiteral}}),
@@ -98,8 +98,8 @@
     /// <summary>Creates a 2D skew matrix from X and Y skew angles in radians around a center point.</summary>
     public static {{TypeName}} CreateSkew2D({{Vector2Type}} radians, {{Vector2Type}} center)
     {
-        var skewX = ScalarMath.Tan(radians.X);
-        var skewY = ScalarMath.Tan(radians.Y);
+        var skewX = {{ScalarType}}.Tan(radians.X);
+        var skewY = {{ScalarType}}.Tan(radians.Y);
         return new(
             new {{Vector3Type}}({{OneLiteral}}, skewY, {{ZeroLiteral}}),
             new {{Vector3Type}}(skewX, {{OneLiteral}}, {{ZeroLiteral}}),

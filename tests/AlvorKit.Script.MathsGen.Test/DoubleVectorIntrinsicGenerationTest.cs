@@ -54,11 +54,11 @@ public sealed class DoubleVectorIntrinsicGenerationTest
         StringAssert.Contains(vec2d, "(double)left.X * (double)right");
         StringAssert.Contains(vec2d, "(double)left * (double)right.X");
         StringAssert.Contains(vec2d, "(double)left / (double)right.X");
-        StringAssert.Contains(vec2d, "ScalarMath.Max(left.X, right.X)");
+        StringAssert.Contains(vec2d, "double.Max(left.X, right.X)");
         StringAssert.Contains(vec2d, "ScalarMath.Clamp(value.X, min.X, max.X)");
-        StringAssert.Contains(vec2d, "ScalarMath.Truncate(value.X)");
-        StringAssert.Contains(vec2d, "ScalarMath.Round(value.X)");
-        StringAssert.Contains(vec2d, "ScalarMath.FusedMultiplyAdd(left.X, right.X, addend.X)");
+        StringAssert.Contains(vec2d, "double.Truncate(value.X)");
+        StringAssert.Contains(vec2d, "double.Round(value.X)");
+        StringAssert.Contains(vec2d, "double.FusedMultiplyAdd(left.X, right.X, addend.X)");
         StringAssert.Contains(vec2d, "left.X * right.X + left.Y * right.Y");
         StringAssert.Contains(vec4d, "(double)left.X + (double)right.X");
         StringAssert.Contains(vec4d, "(double)left.X - (double)right.X");
@@ -66,11 +66,11 @@ public sealed class DoubleVectorIntrinsicGenerationTest
         StringAssert.Contains(vec4d, "(double)left.X * (double)right");
         StringAssert.Contains(vec4d, "(double)left * (double)right.X");
         StringAssert.Contains(vec4d, "(double)left / (double)right.X");
-        StringAssert.Contains(vec4d, "ScalarMath.Min(left.X, right.X)");
+        StringAssert.Contains(vec4d, "double.Min(left.X, right.X)");
         StringAssert.Contains(vec4d, "public static Vec4d operator -(Vec4d value)");
         StringAssert.Contains(vec4d, "-value.X");
-        StringAssert.Contains(vec4d, "ScalarMath.Round(value.X)");
-        StringAssert.Contains(vec4d, "ScalarMath.FusedMultiplyAdd(left.X, right.X, addend.X)");
+        StringAssert.Contains(vec4d, "double.Round(value.X)");
+        StringAssert.Contains(vec4d, "double.FusedMultiplyAdd(left.X, right.X, addend.X)");
         StringAssert.Contains(vec4d, "left.X * right.X + left.Y * right.Y + left.Z * right.Z + left.W * right.W");
     }
 

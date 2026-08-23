@@ -230,7 +230,7 @@ public struct {{TypeName}}({{Vector3Type}} origin, {{Vector3Type}} direction)
         if (discriminant < {{ZeroLiteral}})
             return false;
 
-        var root = ScalarMath.Sqrt(discriminant);
+        var root = {{ScalarType}}.Sqrt(discriminant);
         var denominator = {{TwoLiteral}} * directionLengthSquared;
         var first = (-b - root) / denominator;
         var second = (-b + root) / denominator;

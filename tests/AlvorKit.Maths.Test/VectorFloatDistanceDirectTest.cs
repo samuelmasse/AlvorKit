@@ -23,7 +23,7 @@ public sealed class VectorFloatDistanceDirectTest
         var delta = left - right;
         var squared = (delta.X * delta.X) + (delta.Y * delta.Y);
         AssertBits(squared, Vec2.DistanceSquared(left, right));
-        AssertBits(ScalarMath.Sqrt(squared), Vec2.Distance(left, right));
+        AssertBits(float.Sqrt(squared), Vec2.Distance(left, right));
     }
 
     private static void AssertDistance(Vec3 left, Vec3 right)
@@ -31,7 +31,7 @@ public sealed class VectorFloatDistanceDirectTest
         var delta = left - right;
         var squared = (delta.X * delta.X) + (delta.Y * delta.Y) + (delta.Z * delta.Z);
         AssertBits(squared, Vec3.DistanceSquared(left, right));
-        AssertBits(ScalarMath.Sqrt(squared), Vec3.Distance(left, right));
+        AssertBits(float.Sqrt(squared), Vec3.Distance(left, right));
     }
 
     private static void AssertDistance(Vec4 left, Vec4 right)
@@ -39,7 +39,7 @@ public sealed class VectorFloatDistanceDirectTest
         var delta = left - right;
         var squared = (delta.X * delta.X) + (delta.Y * delta.Y) + (delta.Z * delta.Z) + (delta.W * delta.W);
         AssertBits(squared, Vec4.DistanceSquared(left, right));
-        AssertBits(ScalarMath.Sqrt(squared), Vec4.Distance(left, right));
+        AssertBits(float.Sqrt(squared), Vec4.Distance(left, right));
     }
 
     private static void AssertBits(float expected, float actual) =>

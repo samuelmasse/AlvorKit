@@ -25,7 +25,7 @@ public sealed class Int32BitFunctionGenerationTest
 
         StringAssert.Contains(signed, "IsPowerOfTwoPacked(value)");
         StringAssert.Contains(signed, "[MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        StringAssert.Contains(unsigned, "ScalarMath.IsPowerOfTwo(value.X)");
+        StringAssert.Contains(unsigned, "value.X > 0u && uint.IsPow2(value.X)");
         Assert.IsFalse(unsigned.Contains("IsPowerOfTwoPacked", StringComparison.Ordinal));
     }
 
@@ -43,7 +43,28 @@ public sealed class Int32BitFunctionGenerationTest
         {
             var source = VectorFileEmitter.Emit(vector);
             Assert.IsFalse(source.Contains("BitCountPacked", StringComparison.Ordinal));
-            StringAssert.Contains(source, "ScalarMath.BitCount(value.X)");
+            StringAssert.Contains(source, "System.Numerics.BitOperations.PopCount(");
         }
+    }
+
+    /// <summary>Narrow and 128-bit vectors emit width-correct direct operations without generic wrappers.</summary>
+    [TestMethod]
+    public void OtherIntegerWidths_UseDirectWidthCorrectBitFunctions()
+    {
+        var signedByteScalar = VectorCatalog.Scalars.Single(scalar => scalar.Kind == ScalarKind.Int8);
+        var unsignedShortScalar = VectorCatalog.Scalars.Single(scalar => scalar.Kind == ScalarKind.UInt16);
+        var signedByte = VectorFileEmitter.Emit(new(2, signedByteScalar));
+        var unsignedShort = VectorFileEmitter.Emit(new(2, unsignedShortScalar));
+        var unsigned128 = VectorFileEmitter.Emit(new(2, VectorCatalog.UInt128));
+
+        StringAssert.Contains(signedByte, "System.Numerics.BitOperations.PopCount((uint)(byte)value.X)");
+        StringAssert.Contains(signedByte, "System.Numerics.BitOperations.LeadingZeroCount((uint)(byte)value.X) - 24");
+        StringAssert.Contains(signedByte, "value.X == (sbyte)0 ? 8 : System.Numerics.BitOperations.TrailingZeroCount");
+        StringAssert.Contains(unsignedShort, "System.Numerics.BitOperations.LeadingZeroCount((uint)value.X) - 16");
+        StringAssert.Contains(unsigned128, "(int)UInt128.PopCount(value.X)");
+        StringAssert.Contains(unsigned128, "value.X > (UInt128)0 && UInt128.IsPow2(value.X)");
+        Assert.IsFalse(signedByte.Contains("ScalarMath.BitCount", StringComparison.Ordinal));
+        Assert.IsFalse(unsignedShort.Contains("ScalarMath.LeadingZeroCount", StringComparison.Ordinal));
+        Assert.IsFalse(unsigned128.Contains("ScalarMath.IsPowerOfTwo", StringComparison.Ordinal));
     }
 }

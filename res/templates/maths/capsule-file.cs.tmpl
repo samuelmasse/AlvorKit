@@ -212,7 +212,7 @@ public struct {{TypeName}}({{Segment3Type}} segment, {{ScalarType}} radius)
         var radiusDistance = Radius * plane.NormalLength;
         var start = plane.Evaluate(Start);
         var end = plane.Evaluate(End);
-        return ScalarMath.Min(start, end) <= radiusDistance && ScalarMath.Max(start, end) >= -radiusDistance;
+        return {{ScalarType}}.Min(start, end) <= radiusDistance && {{ScalarType}}.Max(start, end) >= -radiusDistance;
     }
 
     /// <summary>Returns whether this capsule intersects <paramref name="frustum" />.</summary>
@@ -294,7 +294,7 @@ public struct {{TypeName}}({{Segment3Type}} segment, {{ScalarType}} radius)
         if (IsEmpty)
             return {{ZeroLiteral}};
 
-        return ScalarMath.Max(Segment.DistanceTo(point) - Radius, {{ZeroLiteral}});
+        return {{ScalarType}}.Max(Segment.DistanceTo(point) - Radius, {{ZeroLiteral}});
     }
 
     /// <summary>Returns the squared distance from this capsule to <paramref name="point" />.</summary>
@@ -368,14 +368,14 @@ public struct {{TypeName}}({{Segment3Type}} segment, {{ScalarType}} radius)
         var edgeX = new {{Vector3Type}}(size.X, {{ZeroLiteral}}, {{ZeroLiteral}});
         var edgeY = new {{Vector3Type}}({{ZeroLiteral}}, size.Y, {{ZeroLiteral}});
         var edgeZ = new {{Vector3Type}}({{ZeroLiteral}}, {{ZeroLiteral}}, size.Z);
-        var best = ScalarMath.Min(box.DistanceSquaredTo(segment.Start), box.DistanceSquaredTo(segment.End));
+        var best = {{ScalarType}}.Min(box.DistanceSquaredTo(segment.Start), box.DistanceSquaredTo(segment.End));
 
-        best = ScalarMath.Min(best, SegmentRectangleDistanceSquared(segment, min, edgeY, edgeZ));
-        best = ScalarMath.Min(best, SegmentRectangleDistanceSquared(segment, new {{Vector3Type}}(max.X, min.Y, min.Z), edgeY, edgeZ));
-        best = ScalarMath.Min(best, SegmentRectangleDistanceSquared(segment, min, edgeX, edgeZ));
-        best = ScalarMath.Min(best, SegmentRectangleDistanceSquared(segment, new {{Vector3Type}}(min.X, max.Y, min.Z), edgeX, edgeZ));
-        best = ScalarMath.Min(best, SegmentRectangleDistanceSquared(segment, min, edgeX, edgeY));
-        return ScalarMath.Min(best, SegmentRectangleDistanceSquared(segment, new {{Vector3Type}}(min.X, min.Y, max.Z), edgeX, edgeY));
+        best = {{ScalarType}}.Min(best, SegmentRectangleDistanceSquared(segment, min, edgeY, edgeZ));
+        best = {{ScalarType}}.Min(best, SegmentRectangleDistanceSquared(segment, new {{Vector3Type}}(max.X, min.Y, min.Z), edgeY, edgeZ));
+        best = {{ScalarType}}.Min(best, SegmentRectangleDistanceSquared(segment, min, edgeX, edgeZ));
+        best = {{ScalarType}}.Min(best, SegmentRectangleDistanceSquared(segment, new {{Vector3Type}}(min.X, max.Y, min.Z), edgeX, edgeZ));
+        best = {{ScalarType}}.Min(best, SegmentRectangleDistanceSquared(segment, min, edgeX, edgeY));
+        return {{ScalarType}}.Min(best, SegmentRectangleDistanceSquared(segment, new {{Vector3Type}}(min.X, min.Y, max.Z), edgeX, edgeY));
     }
 
     /// <summary>Returns the squared distance between a finite segment and a finite rectangle.</summary>
@@ -398,16 +398,16 @@ public struct {{TypeName}}({{Segment3Type}} segment, {{ScalarType}} radius)
             }
         }
 
-        var best = ScalarMath.Min(
+        var best = {{ScalarType}}.Min(
             PointRectangleDistanceSquared(segment.Start, corner, edge0, edge1),
             PointRectangleDistanceSquared(segment.End, corner, edge0, edge1));
         var corner10 = corner + edge0;
         var corner01 = corner + edge1;
         var corner11 = corner10 + edge1;
-        best = ScalarMath.Min(best, SegmentDistanceSquared(segment, new {{Segment3Type}}(corner, corner10)));
-        best = ScalarMath.Min(best, SegmentDistanceSquared(segment, new {{Segment3Type}}(corner10, corner11)));
-        best = ScalarMath.Min(best, SegmentDistanceSquared(segment, new {{Segment3Type}}(corner01, corner11)));
-        return ScalarMath.Min(best, SegmentDistanceSquared(segment, new {{Segment3Type}}(corner, corner01)));
+        best = {{ScalarType}}.Min(best, SegmentDistanceSquared(segment, new {{Segment3Type}}(corner, corner10)));
+        best = {{ScalarType}}.Min(best, SegmentDistanceSquared(segment, new {{Segment3Type}}(corner10, corner11)));
+        best = {{ScalarType}}.Min(best, SegmentDistanceSquared(segment, new {{Segment3Type}}(corner01, corner11)));
+        return {{ScalarType}}.Min(best, SegmentDistanceSquared(segment, new {{Segment3Type}}(corner, corner01)));
     }
 
     /// <summary>Returns the squared distance between a point and a finite rectangle.</summary>

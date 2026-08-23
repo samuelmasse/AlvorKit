@@ -11,11 +11,11 @@ public sealed class VectorFloatToInt32SimdTest
         foreach (var value in Values3())
         {
             Assert.AreEqual(new Vec3i((int)value.X, (int)value.Y, (int)value.Z), value.TruncateToVec3i());
-            Assert.AreEqual(new Vec3i((int)ScalarMath.Floor(value.X), (int)ScalarMath.Floor(value.Y), (int)ScalarMath.Floor(value.Z)),
+            Assert.AreEqual(new Vec3i((int)float.Floor(value.X), (int)float.Floor(value.Y), (int)float.Floor(value.Z)),
                 value.FloorToVec3i());
-            Assert.AreEqual(new Vec3i((int)ScalarMath.Ceiling(value.X), (int)ScalarMath.Ceiling(value.Y), (int)ScalarMath.Ceiling(value.Z)),
+            Assert.AreEqual(new Vec3i((int)float.Ceiling(value.X), (int)float.Ceiling(value.Y), (int)float.Ceiling(value.Z)),
                 value.CeilingToVec3i());
-            Assert.AreEqual(new Vec3i((int)ScalarMath.Round(value.X), (int)ScalarMath.Round(value.Y), (int)ScalarMath.Round(value.Z)),
+            Assert.AreEqual(new Vec3i((int)float.Round(value.X), (int)float.Round(value.Y), (int)float.Round(value.Z)),
                 value.RoundToVec3i());
         }
     }
@@ -28,20 +28,20 @@ public sealed class VectorFloatToInt32SimdTest
         {
             Assert.AreEqual(new Vec4i((int)value.X, (int)value.Y, (int)value.Z, (int)value.W), value.TruncateToVec4i());
             Assert.AreEqual(new Vec4i(
-                (int)ScalarMath.Floor(value.X),
-                (int)ScalarMath.Floor(value.Y),
-                (int)ScalarMath.Floor(value.Z),
-                (int)ScalarMath.Floor(value.W)), value.FloorToVec4i());
+                (int)float.Floor(value.X),
+                (int)float.Floor(value.Y),
+                (int)float.Floor(value.Z),
+                (int)float.Floor(value.W)), value.FloorToVec4i());
             Assert.AreEqual(new Vec4i(
-                (int)ScalarMath.Ceiling(value.X),
-                (int)ScalarMath.Ceiling(value.Y),
-                (int)ScalarMath.Ceiling(value.Z),
-                (int)ScalarMath.Ceiling(value.W)), value.CeilingToVec4i());
+                (int)float.Ceiling(value.X),
+                (int)float.Ceiling(value.Y),
+                (int)float.Ceiling(value.Z),
+                (int)float.Ceiling(value.W)), value.CeilingToVec4i());
             Assert.AreEqual(new Vec4i(
-                (int)ScalarMath.Round(value.X),
-                (int)ScalarMath.Round(value.Y),
-                (int)ScalarMath.Round(value.Z),
-                (int)ScalarMath.Round(value.W)), value.RoundToVec4i());
+                (int)float.Round(value.X),
+                (int)float.Round(value.Y),
+                (int)float.Round(value.Z),
+                (int)float.Round(value.W)), value.RoundToVec4i());
         }
     }
 

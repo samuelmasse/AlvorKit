@@ -295,9 +295,9 @@ public sealed class MathsGeneratorTest
         AssertRounding(vec4, "Vec4", "Vector4");
         StringAssert.Contains(vec3d, $"public static Vec3d Truncate(Vec3d value) =>{Environment.NewLine}" +
             $"        new({Environment.NewLine}" +
-            $"            ScalarMath.Truncate(value.X),{Environment.NewLine}" +
-            $"            ScalarMath.Truncate(value.Y),{Environment.NewLine}" +
-            "            ScalarMath.Truncate(value.Z));");
+            $"            double.Truncate(value.X),{Environment.NewLine}" +
+            $"            double.Truncate(value.Y),{Environment.NewLine}" +
+            "            double.Truncate(value.Z));");
         Assert.IsFalse(vec3d.Contains("System.Numerics.Vector3.Round", StringComparison.Ordinal));
         Assert.IsFalse(vec3d.Contains("System.Numerics.Vector3.Truncate", StringComparison.Ordinal));
     }
@@ -338,9 +338,9 @@ public sealed class MathsGeneratorTest
         AssertSystemMinMaxClamp(vec4, "Vec4", "Vector4");
         StringAssert.Contains(vec3d, $"public static Vec3d Min(Vec3d left, Vec3d right) =>{Environment.NewLine}" +
             $"        new({Environment.NewLine}" +
-            $"            ScalarMath.Min(left.X, right.X),{Environment.NewLine}" +
-            $"            ScalarMath.Min(left.Y, right.Y),{Environment.NewLine}" +
-            "            ScalarMath.Min(left.Z, right.Z));");
+            $"            double.Min(left.X, right.X),{Environment.NewLine}" +
+            $"            double.Min(left.Y, right.Y),{Environment.NewLine}" +
+            "            double.Min(left.Z, right.Z));");
         Assert.IsFalse(vec3d.Contains("MinNative", StringComparison.Ordinal));
         Assert.IsFalse(vec3d.Contains("MaxNative", StringComparison.Ordinal));
     }
@@ -361,15 +361,15 @@ public sealed class MathsGeneratorTest
         StringAssert.Contains(vec3h,
             $"public static Vec3h FusedMultiplyAdd(Vec3h left, Vec3h right, Vec3h addend) =>{Environment.NewLine}" +
             $"        new({Environment.NewLine}" +
-            $"            (Half)(ScalarMath.FusedMultiplyAdd(left.X, right.X, addend.X)),{Environment.NewLine}" +
-            $"            (Half)(ScalarMath.FusedMultiplyAdd(left.Y, right.Y, addend.Y)),{Environment.NewLine}" +
-            "            (Half)(ScalarMath.FusedMultiplyAdd(left.Z, right.Z, addend.Z)));");
+            $"            (Half)(Half.FusedMultiplyAdd(left.X, right.X, addend.X)),{Environment.NewLine}" +
+            $"            (Half)(Half.FusedMultiplyAdd(left.Y, right.Y, addend.Y)),{Environment.NewLine}" +
+            "            (Half)(Half.FusedMultiplyAdd(left.Z, right.Z, addend.Z)));");
         StringAssert.Contains(vec3d,
             $"public static Vec3d FusedMultiplyAdd(Vec3d left, Vec3d right, Vec3d addend) =>{Environment.NewLine}" +
             $"        new({Environment.NewLine}" +
-            $"            ScalarMath.FusedMultiplyAdd(left.X, right.X, addend.X),{Environment.NewLine}" +
-            $"            ScalarMath.FusedMultiplyAdd(left.Y, right.Y, addend.Y),{Environment.NewLine}" +
-            "            ScalarMath.FusedMultiplyAdd(left.Z, right.Z, addend.Z));");
+            $"            double.FusedMultiplyAdd(left.X, right.X, addend.X),{Environment.NewLine}" +
+            $"            double.FusedMultiplyAdd(left.Y, right.Y, addend.Y),{Environment.NewLine}" +
+            "            double.FusedMultiplyAdd(left.Z, right.Z, addend.Z));");
         Assert.IsFalse(vec3h.Contains("System.Numerics.Vector3.FusedMultiplyAdd", StringComparison.Ordinal));
         Assert.IsFalse(vec3d.Contains("System.Numerics.Vector3.FusedMultiplyAdd", StringComparison.Ordinal));
     }
@@ -389,9 +389,9 @@ public sealed class MathsGeneratorTest
         AssertSquareRoots(vec4, "Vec4", "Vector4");
         StringAssert.Contains(vec3h, $"public static Vec3h Sqrt(Vec3h value) =>{Environment.NewLine}" +
             $"        new({Environment.NewLine}" +
-            $"            (Half)(ScalarMath.Sqrt(value.X)),{Environment.NewLine}" +
-            $"            (Half)(ScalarMath.Sqrt(value.Y)),{Environment.NewLine}" +
-            "            (Half)(ScalarMath.Sqrt(value.Z)));");
+            $"            (Half)(Half.Sqrt(value.X)),{Environment.NewLine}" +
+            $"            (Half)(Half.Sqrt(value.Y)),{Environment.NewLine}" +
+            "            (Half)(Half.Sqrt(value.Z)));");
         StringAssert.Contains(vec3h, $"public static Vec3h InverseSqrt(Vec3h value) =>{Environment.NewLine}" +
             $"        new({Environment.NewLine}" +
             $"            (Half)(ScalarMath.InverseSqrt(value.X)),{Environment.NewLine}" +
@@ -399,9 +399,9 @@ public sealed class MathsGeneratorTest
             "            (Half)(ScalarMath.InverseSqrt(value.Z)));");
         StringAssert.Contains(vec3d, $"public static Vec3d Sqrt(Vec3d value) =>{Environment.NewLine}" +
             $"        new({Environment.NewLine}" +
-            $"            ScalarMath.Sqrt(value.X),{Environment.NewLine}" +
-            $"            ScalarMath.Sqrt(value.Y),{Environment.NewLine}" +
-            "            ScalarMath.Sqrt(value.Z));");
+            $"            double.Sqrt(value.X),{Environment.NewLine}" +
+            $"            double.Sqrt(value.Y),{Environment.NewLine}" +
+            "            double.Sqrt(value.Z));");
         StringAssert.Contains(vec3d, $"public static Vec3d InverseSqrt(Vec3d value) =>{Environment.NewLine}" +
             $"        new({Environment.NewLine}" +
             $"            ScalarMath.InverseSqrt(value.X),{Environment.NewLine}" +

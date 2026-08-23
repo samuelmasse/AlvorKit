@@ -57,10 +57,10 @@ internal static class NumericFunctionsEmitter
     {
         members.Append(Method("Returns the component-wise minimum of two vectors.", "static", vector.TypeName, "Min",
             $"{vector.TypeName} left, {vector.TypeName} right", NativeOrComponentWise(vector, "MinNative",
-                ["left", "right"], c => $"ScalarMath.Min(left.{c}, right.{c})")));
+                ["left", "right"], c => ScalarCall.Function(vector.Scalar, "Min", $"left.{c}", $"right.{c}"))));
         members.Append(Method("Returns the component-wise maximum of two vectors.", "static", vector.TypeName, "Max",
             $"{vector.TypeName} left, {vector.TypeName} right", NativeOrComponentWise(vector, "MaxNative",
-                ["left", "right"], c => $"ScalarMath.Max(left.{c}, right.{c})")));
+                ["left", "right"], c => ScalarCall.Function(vector.Scalar, "Max", $"left.{c}", $"right.{c}"))));
         members.Append(Method("Constrains each component between matching minimum and maximum components.", "static", vector.TypeName, "Clamp",
             $"{vector.TypeName} value, {vector.TypeName} min, {vector.TypeName} max",
             NativeOrComponentWise(vector, "ClampNative", ["value", "min", "max"],
@@ -187,11 +187,11 @@ internal static class NumericFunctionsEmitter
     /// <summary>Returns a square-root expression for the scalar family.</summary>
     internal static string Sqrt(VectorSpec vector, string value) => vector.Scalar.Kind switch
     {
-        ScalarKind.Half => $"ScalarMath.Sqrt({value})",
+        ScalarKind.Half => $"Half.Sqrt({value})",
         ScalarKind.Float or ScalarKind.Int8 or ScalarKind.UInt8 or ScalarKind.Int16 or ScalarKind.UInt16 or ScalarKind.Int or ScalarKind.UInt =>
-            $"ScalarMath.Sqrt((float){value})",
-        ScalarKind.Double => $"ScalarMath.Sqrt({value})",
-        _ => $"ScalarMath.Sqrt((double){value})",
+            $"float.Sqrt((float){value})",
+        ScalarKind.Double => $"double.Sqrt({value})",
+        _ => $"double.Sqrt((double){value})",
     };
 
     /// <summary>Returns a constructor expression with generated component expressions.</summary>

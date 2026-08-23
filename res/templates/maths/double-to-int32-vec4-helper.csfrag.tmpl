@@ -6,20 +6,20 @@
             return mode switch
             {
                 1 => new(
-                    (int)ScalarMath.Floor(value.X),
-                    (int)ScalarMath.Floor(value.Y),
-                    (int)ScalarMath.Floor(value.Z),
-                    (int)ScalarMath.Floor(value.W)),
+                    (int)double.Floor(value.X),
+                    (int)double.Floor(value.Y),
+                    (int)double.Floor(value.Z),
+                    (int)double.Floor(value.W)),
                 2 => new(
-                    (int)ScalarMath.Ceiling(value.X),
-                    (int)ScalarMath.Ceiling(value.Y),
-                    (int)ScalarMath.Ceiling(value.Z),
-                    (int)ScalarMath.Ceiling(value.W)),
+                    (int)double.Ceiling(value.X),
+                    (int)double.Ceiling(value.Y),
+                    (int)double.Ceiling(value.Z),
+                    (int)double.Ceiling(value.W)),
                 3 => new(
-                    (int)ScalarMath.Round(value.X),
-                    (int)ScalarMath.Round(value.Y),
-                    (int)ScalarMath.Round(value.Z),
-                    (int)ScalarMath.Round(value.W)),
+                    (int)double.Round(value.X),
+                    (int)double.Round(value.Y),
+                    (int)double.Round(value.Z),
+                    (int)double.Round(value.W)),
                 _ => new((int)value.X, (int)value.Y, (int)value.Z, (int)value.W),
             };
         }

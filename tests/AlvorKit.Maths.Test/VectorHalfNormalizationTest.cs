@@ -33,19 +33,19 @@ public sealed class VectorHalfNormalizationTest
     private static Vec2h Expected(Vec2h value)
     {
         var lengthSquared = value.LengthSquared;
-        return value / ScalarMath.Sqrt(lengthSquared);
+        return value / Half.Sqrt(lengthSquared);
     }
 
     private static Vec3h Expected(Vec3h value)
     {
         var lengthSquared = value.LengthSquared;
-        return value / ScalarMath.Sqrt(lengthSquared);
+        return value / Half.Sqrt(lengthSquared);
     }
 
     private static Vec4h Expected(Vec4h value)
     {
         var lengthSquared = value.LengthSquared;
-        return value / ScalarMath.Sqrt(lengthSquared);
+        return value / Half.Sqrt(lengthSquared);
     }
 
     private static void AssertBits(Vec2h expected, Vec2h actual)

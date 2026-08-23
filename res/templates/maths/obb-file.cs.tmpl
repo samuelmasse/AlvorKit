@@ -392,8 +392,8 @@ public struct {{TypeName}}({{Vector3Type}} center, {{Vector3Type}} halfSize, {{Q
         for (var index = 1; index < corners.Length; index++)
         {
             var value = {{Vector3Type}}.Dot(axis, corners[index]);
-            min = ScalarMath.Min(min, value);
-            max = ScalarMath.Max(max, value);
+            min = {{ScalarType}}.Min(min, value);
+            max = {{ScalarType}}.Max(max, value);
         }
     }
 

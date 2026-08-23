@@ -49,16 +49,16 @@ public sealed class VectorDoubleSimdTest
         var left2 = new Vec2d(PositivePayloadNaN, 0d);
         var right2 = new Vec2d(4d, -0d);
         AssertSameBits(Vec2d.Min(left2, right2),
-            new(ScalarMath.Min(left2.X, right2.X), ScalarMath.Min(left2.Y, right2.Y)));
+            new(double.Min(left2.X, right2.X), double.Min(left2.Y, right2.Y)));
 
         var left4 = new Vec4d(NegativePayloadNaN, -0d, double.NegativeInfinity, SmallestSubnormal);
         var right4 = new Vec4d(7d, 0d, double.NegativeInfinity, -SmallestSubnormal);
         AssertSameBits(Vec4d.Max(left4, right4),
             new(
-                ScalarMath.Max(left4.X, right4.X),
-                ScalarMath.Max(left4.Y, right4.Y),
-                ScalarMath.Max(left4.Z, right4.Z),
-                ScalarMath.Max(left4.W, right4.W)));
+                double.Max(left4.X, right4.X),
+                double.Max(left4.Y, right4.Y),
+                double.Max(left4.Z, right4.Z),
+                double.Max(left4.W, right4.W)));
 
         var value = new Vec4d(PositivePayloadNaN, -0d, double.PositiveInfinity, double.NegativeInfinity);
         var min = new Vec4d(1d, 0d, double.NegativeInfinity, double.NegativeInfinity);
@@ -76,17 +76,17 @@ public sealed class VectorDoubleSimdTest
     public void Roots_MatchScalarBits()
     {
         var value2 = new Vec2d(-0d, SmallestSubnormal);
-        AssertSameBits(Vec2d.Sqrt(value2), new(ScalarMath.Sqrt(value2.X), ScalarMath.Sqrt(value2.Y)));
+        AssertSameBits(Vec2d.Sqrt(value2), new(double.Sqrt(value2.X), double.Sqrt(value2.Y)));
         AssertSameBits(Vec2d.InverseSqrt(value2),
             new(ScalarMath.InverseSqrt(value2.X), ScalarMath.InverseSqrt(value2.Y)));
 
         var value4 = new Vec4d(double.PositiveInfinity, -1d, PositivePayloadNaN, NegativePayloadNaN);
         AssertSameBits(Vec4d.Sqrt(value4),
             new(
-                ScalarMath.Sqrt(value4.X),
-                ScalarMath.Sqrt(value4.Y),
-                ScalarMath.Sqrt(value4.Z),
-                ScalarMath.Sqrt(value4.W)));
+                double.Sqrt(value4.X),
+                double.Sqrt(value4.Y),
+                double.Sqrt(value4.Z),
+                double.Sqrt(value4.W)));
         AssertSameBits(Vec4d.InverseSqrt(value4),
             new(
                 ScalarMath.InverseSqrt(value4.X),
@@ -102,17 +102,17 @@ public sealed class VectorDoubleSimdTest
         var value = new Vec4d(-0d, -1.75d, double.PositiveInfinity, PositivePayloadNaN);
         AssertSameBits(Vec4d.Truncate(value),
             new(
-                ScalarMath.Truncate(value.X),
-                ScalarMath.Truncate(value.Y),
-                ScalarMath.Truncate(value.Z),
-                ScalarMath.Truncate(value.W)));
+                double.Truncate(value.X),
+                double.Truncate(value.Y),
+                double.Truncate(value.Z),
+                double.Truncate(value.W)));
         var subnormal = new Vec4d(SmallestSubnormal, -SmallestSubnormal, double.NegativeInfinity, NegativePayloadNaN);
         AssertSameBits(Vec4d.Truncate(subnormal),
             new(
-                ScalarMath.Truncate(subnormal.X),
-                ScalarMath.Truncate(subnormal.Y),
-                ScalarMath.Truncate(subnormal.Z),
-                ScalarMath.Truncate(subnormal.W)));
+                double.Truncate(subnormal.X),
+                double.Truncate(subnormal.Y),
+                double.Truncate(subnormal.Z),
+                double.Truncate(subnormal.W)));
     }
 
     /// <summary>Normalization retains scalar ordered length calculation and gains only through selected division operators.</summary>
@@ -121,13 +121,13 @@ public sealed class VectorDoubleSimdTest
     {
         var value2 = new Vec2d(3d, -4d);
         var lengthSquared2 = (value2.X * value2.X) + (value2.Y * value2.Y);
-        var length2 = ScalarMath.Sqrt(lengthSquared2);
+        var length2 = double.Sqrt(lengthSquared2);
         AssertSameBits(Vec2d.Normalize(value2), new(value2.X / length2, value2.Y / length2));
 
         var value4 = new Vec4d(SmallestSubnormal, 2d, -3d, 6d);
         var lengthSquared4 =
             (value4.X * value4.X) + (value4.Y * value4.Y) + (value4.Z * value4.Z) + (value4.W * value4.W);
-        var length4 = ScalarMath.Sqrt(lengthSquared4);
+        var length4 = double.Sqrt(lengthSquared4);
         AssertSameBits(Vec4d.Normalize(value4),
             new(value4.X / length4, value4.Y / length4, value4.Z / length4, value4.W / length4));
     }

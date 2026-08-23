@@ -67,7 +67,7 @@ public struct {{TypeName}}({{ScalarType}} min, {{ScalarType}} max)
 
     /// <summary>Creates an interval that contains both endpoints regardless of their order.</summary>
     public static {{TypeName}} CreateFromEndpoints({{ScalarType}} first, {{ScalarType}} second) =>
-        new(ScalarMath.Min(first, second), ScalarMath.Max(first, second));
+        new({{ScalarType}}.Min(first, second), {{ScalarType}}.Max(first, second));
 
     /// <summary>Creates an interval from the first <see cref="ComponentCount" /> values in a span.</summary>
     public static {{TypeName}} Create(ReadOnlySpan<{{ScalarType}}> values) =>
@@ -149,7 +149,7 @@ public struct {{TypeName}}({{ScalarType}} min, {{ScalarType}} max)
         if (right.IsEmpty)
             return left;
 
-        return new(ScalarMath.Min(left.Min, right.Min), ScalarMath.Max(left.Max, right.Max));
+        return new({{ScalarType}}.Min(left.Min, right.Min), {{ScalarType}}.Max(left.Max, right.Max));
     }
 
     /// <summary>Returns the overlapping interval shared by both intervals.</summary>
@@ -158,8 +158,8 @@ public struct {{TypeName}}({{ScalarType}} min, {{ScalarType}} max)
         if (left.IsEmpty || right.IsEmpty)
             return Empty;
 
-        var min = ScalarMath.Max(left.Min, right.Min);
-        var max = ScalarMath.Min(left.Max, right.Max);
+        var min = {{ScalarType}}.Max(left.Min, right.Min);
+        var max = {{ScalarType}}.Min(left.Max, right.Max);
         return min <= max ? new {{TypeName}}(min, max) : Empty;
     }
 

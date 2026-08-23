@@ -135,7 +135,7 @@ public sealed class GeneratedSphereTest
         var intersects = IntersectsGeneric<Sphere3, float, Vec3, Box3>(sphere, new Sphere3(new Vec3(3f, 0f, 0f), 1f));
 
         Assert.AreEqual(new Sphere3(Vec3.Zero, 2f), sphere);
-        Assert.AreEqual(new Sphere3(Vec3.Zero, ScalarMath.Sqrt(3f)), fromBox);
+        Assert.AreEqual(new Sphere3(Vec3.Zero, float.Sqrt(3f)), fromBox);
         Assert.IsTrue(intersects);
         Assert.IsTrue(ContainsGeneric<Sphere3, float, Vec3, Box3>(sphere, Vec3.UnitX));
     }

@@ -83,14 +83,18 @@ the naming scheme, and the usage rules, and
 [MathsReference.md](../MathsReference.md) documents each family's
 members.
 
-Using the AlvorKit maths types and `ScalarMath` is mandatory, not stylistic.
+Using the AlvorKit maths types and published maths operations is mandatory,
+not stylistic.
 Represent positions, sizes, offsets, directions, extents, ranges, rotations,
-and transforms with the published maths types, and call the published vector,
-matrix, and `ScalarMath` functions instead of re-deriving them. Do not model
+and transforms with the published maths types, and call the published vector
+and matrix functions instead of re-deriving them. Use `Math`, `MathF`,
+concrete primitive static functions, and `BitOperations` directly for
+concrete scalar operations. Reserve `ScalarMath` for its distinct semantics
+and genuinely generic scalar code. Do not model
 a maths value as a scalar tuple such as `(int, int, int)`, parallel `x`/`y`/
 `z` parameters or fields, or a local vector, box, or range type, and do not
-hand-roll clamp, lerp, saturate, min/max, distance, power-of-two, or
-bit-count logic that the maths surface already provides. A project that
+hand-roll clamp, lerp, saturate, distance, power-of-two, or bit-count logic
+that the maths or BCL surface already provides. A project that
 needs a maths value but lacks the reference gains the `AlvorKit.Maths`
 reference; a missing reference is never a reason to invent a local shape.
 
