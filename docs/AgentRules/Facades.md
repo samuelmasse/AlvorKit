@@ -26,6 +26,14 @@ or created through another explicit production-owned composition path. Keep
 exact primary facade type, and declare its concise PascalCase type prefix
 without cataloging implementation details.
 
+Facade organization consumes the whole project boundary. Never embed a
+facade-shaped partial class, `Internal/` implementation layout, or secondary
+facade inside an ordinary game, demo, presentation, or composition project. If
+a capability warrants a facade, give it a dedicated project with a project-root
+`FACADE.md`; otherwise implement it as ordinary collaborating classes using the
+host project's normal layout. A class does not become a facade merely because
+it coordinates several collaborators.
+
 ### Established Public APIs — Facade Projects Only
 
 The approval requirement in this subsection applies only to a project that
@@ -107,7 +115,9 @@ adding compatibility overloads, aliases, adapters, or deprecation shims.
   internal partial files to organize implementation concerns.
 - Composition-owned implementation services, when present, and internal static
   classes live directly in `Internal/`. Injected services are the retained
-  singleton collaborators of an injector-composed facade.
+  singleton collaborators of an injector-composed facade. These services are
+  ordinary non-partial classes; the primary facade is the only partial class in
+  this layout unless generated or framework-owned code requires another.
 - Non-injected internal implementation types are grouped by kind:
   `Internal/Classes/`, `Internal/Structs/`, `Internal/Enums/`, and
   `Internal/Interfaces/`. `Internal/Classes/` is specifically for instantiated

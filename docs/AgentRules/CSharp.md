@@ -302,14 +302,13 @@ requirements but must not relax them.
   for helper composition; prefer internal top-level helper types when they are
   intentionally outside the public API. Game repositories override this and
   prefer public game-code types and collaborating members.
-- Declare repository-owned public behavioral classes as partial by default.
-  Keep the primary source file focused on the public contract, construction,
-  and lifetime surface. Put private fields, private implementation methods, and
-  implementation-only internal members in purpose-named partial declarations
-  directly under the project's `Internal/` folder. Public records, enums,
-  interfaces, delegates, and passive value structs do not need partial
-  declarations merely to satisfy this layout. Partial declarations also remain
-  appropriate for generated-code integration and framework/tooling contracts.
+- Reserve hand-authored partial behavioral classes primarily for a facade
+  project's primary facade as required by `Facades.md`. Partial declarations
+  also remain appropriate for generated-code integration and framework/tooling
+  contracts. Never declare an injected game service partial; split its concerns
+  into collaborating public classes instead. Do not copy a facade's
+  root-plus-`Internal/` partial layout into a project without a project-root
+  `FACADE.md`.
 - Avoid generic `Factory`, `Manager`, `Service`, and similarly broad suffixes
   when a constructor, static `Create`, delegate, or domain-specific type name is
   clearer. Generally avoid static helper types and methods in hand-authored

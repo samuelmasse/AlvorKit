@@ -24,12 +24,13 @@ stated. Repository invariants and approval gates remain in force.
 
 ### Accessibility
 
-- Prefer `public` over `internal` for game-code types and collaborating members.
-  Game projects are not curated library API surfaces; assembly boundaries
-  should not hide ordinary game systems, state, commands, or helpers.
+- Ordinary game-code types and collaborating members are public. Game projects
+  are not curated library API surfaces; do not use `internal` or an `Internal/`
+  directory as an implementation-hiding convention for game systems, state,
+  commands, presentation types, or helpers.
 - Keep details `private` when they are owned by one type. Use `internal` only
-  when a deliberately small, curated assembly API is a real design
-  requirement.
+  when an explicit framework, generated-code, or deliberately curated assembly
+  contract requires it.
 
 ### Services And Composition
 
@@ -37,6 +38,10 @@ stated. Repository invariants and approval gates remain in force.
   constructed primary facade governed by `Facades.md` may own its runtime
   behavior and ordinary private collaborators without introducing injection.
   A service should remain an instance even when it currently has no fields.
+- An injected game service is never partial. When its behavior has multiple
+  concerns, split it into public constructor-injected collaborators with one
+  class per file. Do not apply a facade's root-plus-`Internal/` partial layout
+  inside a game project.
 - Do not make a class or method static merely because it is stateless or
   because an analyzer recommends it.
 - Use constructor injection. Do not introduce service locators, ambient
