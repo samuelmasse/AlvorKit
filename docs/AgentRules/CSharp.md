@@ -303,12 +303,12 @@ requirements but must not relax them.
   intentionally outside the public API. Game repositories override this and
   prefer public game-code types and collaborating members.
 - Reserve hand-authored partial behavioral classes primarily for a facade
-  project's primary facade as required by `Facades.md`. Partial declarations
-  also remain appropriate for generated-code integration and framework/tooling
-  contracts. Never declare an injected game service partial; split its concerns
-  into collaborating public classes instead. Do not copy a facade's
-  root-plus-`Internal/` partial layout into a project without a project-root
-  `FACADE.md`.
+  project's declared primary facades as required by `Facades.md`. Partial
+  declarations also remain appropriate for generated-code integration and
+  framework/tooling contracts. Never declare an injected game service partial;
+  split its concerns into collaborating public classes instead. Do not copy a
+  facade's root-plus-`Internal/` partial layout into a project without a
+  project-root `FACADE.md`.
 - Avoid generic `Factory`, `Manager`, `Service`, and similarly broad suffixes
   when a constructor, static `Create`, delegate, or domain-specific type name is
   clearer. Generally avoid static helper types and methods in hand-authored

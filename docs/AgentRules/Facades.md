@@ -22,7 +22,7 @@ The facade is the project's primary public entry point: it presents a small
 public contract while hiding the implementation and retained state behind that
 contract. A facade may be directly constructed, dependency-injection composed,
 or created through another explicit production-owned composition path. Keep
-`FACADE.md` brief and stable: describe the business capability, identify the
+`FACADE.md` brief and stable: describe the business capability, identify each
 exact primary facade type, and declare its concise PascalCase type prefix
 without cataloging implementation details.
 
@@ -33,6 +33,30 @@ a capability warrants a facade, give it a dedicated project with a project-root
 `FACADE.md`; otherwise implement it as ordinary collaborating classes using the
 host project's normal layout. A class does not become a facade merely because
 it coordinates several collaborators.
+
+### Multi-Facade Projects
+
+A facade project may contain multiple primary facades only when they form one
+cohesive contract family over shared low-level representation or retained
+machinery. Its `FACADE.md` must explicitly call it a multi-facade project and
+list every exact primary facade type with its own type prefix. Do not use this
+exception to collect unrelated capabilities or avoid giving independently
+owned behavior a dedicated project.
+
+Each facade-owned public or internal top-level type uses its owning facade's
+declared prefix. A public contract type owned by one listed facade may also be
+used by another listed facade without changing its prefix. Genuinely shared
+implementation types used by at least two listed facades may instead use a
+concise role-based name, but they must remain internal and live under
+`Internal/`. This exception does not permit an unprefixed public type, a
+facade-specific unprefixed helper, or an undeclared secondary facade.
+
+Multi-facade projects may keep implementation types directly under `Internal/`
+when those types are shared across facade boundaries or their declared prefix
+already identifies the owning facade. They may still use the ordinary
+kind-based internal directories when that organization is clearer. Tests and
+the one project benchmark must cover every listed primary facade through its
+supported production construction path.
 
 ### Established Public APIs — Facade Projects Only
 
@@ -93,35 +117,39 @@ adding compatibility overloads, aliases, adapters, or deprecation shims.
 
 ### Layout, Composition, And Tests
 
-- Every public or internal top-level type owned by a facade project uses the
-  prefix declared in its `FACADE.md`, including public contract types,
-  composition-owned services, and internal machinery. Private nested
+- Every public or internal top-level type owned by an ordinary facade project
+  uses the prefix declared in its `FACADE.md`, including public contract types,
+  composition-owned services, and internal machinery. Multi-facade projects
+  use the ownership and shared-implementation rules above. Private nested
   implementation types need not repeat the prefix because their containing
   type already supplies that context. Types imported from another project
   retain the prefix of their owning project.
-- The primary facade class uses the exact domain name declared in `FACADE.md`.
-  It does not require a `Facade` suffix or a name derived mechanically from the
+- Each primary facade class uses the exact domain name declared in `FACADE.md`.
+  It does not require a `Facade` suffix or a name derived mechanically from its
   type prefix. A paired debug facade likewise declares its exact primary type
   and its own prefix rather than deriving its name from the core facade.
-- Exactly one primary facade class lives at the project root beside the project
-  file and `FACADE.md`. Its root source file presents the public contract and
-  construction or lifetime surface. Public static classes may live there at
-  the same level.
+- Every declared primary facade class lives at the project root beside the
+  project file and `FACADE.md`. An ordinary facade project declares exactly one;
+  a multi-facade project declares the exact cohesive set permitted above. Each
+  root source file presents that facade's public contract and construction or
+  lifetime surface. Public static classes may live there at the same level.
 - Other public instantiated classes, structs, enums, and interfaces live in
   `Classes/`, `Structs/`, `Enums/`, and `Interfaces/` respectively.
-- The primary facade is partial. Its implementation-only partial declarations
+- Each primary facade is partial. Its implementation-only partial declarations
   live directly in `Internal/`, following the shared C# public-class layout.
-  Keep the root file focused on the public surface and use purpose-named
+  Keep each root file focused on its public surface and use purpose-named
   internal partial files to organize implementation concerns.
 - Composition-owned implementation services, when present, and internal static
   classes live directly in `Internal/`. Injected services are the retained
   singleton collaborators of an injector-composed facade. These services are
-  ordinary non-partial classes; the primary facade is the only partial class in
-  this layout unless generated or framework-owned code requires another.
-- Non-injected internal implementation types are grouped by kind:
-  `Internal/Classes/`, `Internal/Structs/`, `Internal/Enums/`, and
-  `Internal/Interfaces/`. `Internal/Classes/` is specifically for instantiated
-  non-singleton helper objects, not injected services or static classes.
+  ordinary non-partial classes; the declared primary facades are the only
+  partial classes in this layout unless generated or framework-owned code
+  requires another.
+- Except for the multi-facade organization permitted above, non-injected
+  internal implementation types are grouped by kind: `Internal/Classes/`,
+  `Internal/Structs/`, `Internal/Enums/`, and `Internal/Interfaces/`.
+  `Internal/Classes/` is specifically for instantiated non-singleton helper
+  objects, not injected services or static classes.
 - Dependency injection is optional. When a facade or implementation service is
   injector-composed, injected collaborators enter only through constructor
   injection and the composition root publishes the resolved facade to its
