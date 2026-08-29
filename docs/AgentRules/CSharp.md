@@ -29,17 +29,16 @@ checks, which retain their existing 170-character failure threshold.
 These defaults are unconditional. A closer `AGENTS.md` may add stricter
 requirements but must not relax them.
 
-- Omit braces when an `if`, `else`, `for`, `foreach`, `while`, or similar
-  control-flow body contains exactly one statement and that complete statement
-  occupies one physical line. A statement split across multiple physical lines
-  requires braces even when it is syntactically one statement. This restriction
-  applies to control-flow bodies, not expression-bodied members, lambdas, or
-  other `=>` expressions. Braces are for multiline or multi-statement bodies,
-  not single-line bodies. An unbraced `else` with exactly one statement must put
-  that statement on the same physical line as `else`, as in
-  `else DoOtherThing();`. Placing that single statement on the following line
-  is banned. If the complete `else` statement cannot stay readable within the
-  line-length limit, use a braced body.
+- Use the compact form when an `if`, `else`, `for`, `foreach`, `while`, or similar
+  control-flow body occupies exactly one physical line. Put that line directly
+  beneath its control-flow header, except that a compact `else` must use
+  `else DoOtherThing();` on one line. Never put an unbraced `else` body on the
+  following line. A syntactically single statement that spans multiple physical
+  lines, including another control-flow statement, requires braces. Treat every
+  branch independently; a braced branch does not force braces onto another
+  branch whose body occupies one physical line. This restriction applies to
+  control-flow bodies, not expression-bodied members, lambdas, or other `=>`
+  expressions.
 
   ```csharp
   if (condition)
