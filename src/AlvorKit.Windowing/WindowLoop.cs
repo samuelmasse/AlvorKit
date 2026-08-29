@@ -34,6 +34,12 @@ public sealed class WindowLoop
     /// <summary>Raised when the loop should draw the current frame.</summary>
     public event Action? Render;
 
+    /// <summary>Raised immediately before the host swaps the front and back buffers.</summary>
+    public event Action? BeforeBufferSwap;
+
+    /// <summary>Raised immediately after the host swaps the front and back buffers.</summary>
+    public event Action? AfterBufferSwap;
+
     /// <summary>Raised once when the host requests close or the host loop ends.</summary>
     public event Action? Unload;
 
@@ -110,7 +116,7 @@ public sealed class WindowLoop
         Update?.Invoke(0);
         Render?.Invoke();
         FramebufferReady?.Invoke();
-        host.SwapBuffers();
+        SwapBuffers();
         return true;
     }
 
@@ -176,10 +182,17 @@ public sealed class WindowLoop
         {
             Render?.Invoke();
             FramebufferReady?.Invoke();
-            host.SwapBuffers();
+            SwapBuffers();
         }
 
         rendering = false;
+    }
+
+    private void SwapBuffers()
+    {
+        BeforeBufferSwap?.Invoke();
+        host.SwapBuffers();
+        AfterBufferSwap?.Invoke();
     }
 
     /// <summary>Clears held and transitional keyboard, mouse, text, and control state.</summary>

@@ -81,6 +81,42 @@ public class WindowLoopTest
         Assert.AreEqual(1, renderInvoked);
     }
 
+    /// <summary>Buffer-swap boundary events bracket both ordinary and resize-driven host swaps.</summary>
+    [TestMethod]
+    public void WindowLoop_BufferSwapEvents_BracketEveryHostSwap()
+    {
+        var (host, loop) = WindowingTestFactory.Create();
+        var beforeSwapCounts = new List<int>();
+        var afterSwapCounts = new List<int>();
+        loop.BeforeBufferSwap += () => beforeSwapCounts.Add(host.SwapBuffersCount);
+        loop.AfterBufferSwap += () => afterSwapCounts.Add(host.SwapBuffersCount);
+
+        host.RaiseRender();
+        host.RaiseResize((1, 1));
+
+        CollectionAssert.AreEqual(new[] { 0, 1 }, beforeSwapCounts);
+        CollectionAssert.AreEqual(new[] { 1, 2 }, afterSwapCounts);
+        Assert.AreEqual(2, host.SwapBuffersCount);
+    }
+
+    /// <summary>Minimized render frames do not publish buffer-swap boundary events because no host swap occurs.</summary>
+    [TestMethod]
+    public void WindowLoop_BufferSwapEvents_DoNotFireWhenMinimized()
+    {
+        var (host, loop) = WindowingTestFactory.Create();
+        var beforeInvoked = 0;
+        var afterInvoked = 0;
+        loop.BeforeBufferSwap += () => beforeInvoked++;
+        loop.AfterBufferSwap += () => afterInvoked++;
+        host.WindowState = WindowState.Minimized;
+
+        host.RaiseRender();
+
+        Assert.AreEqual(0, beforeInvoked);
+        Assert.AreEqual(0, afterInvoked);
+        Assert.AreEqual(0, host.SwapBuffersCount);
+    }
+
     /// <summary>Unfocused windows keep updating and rendering while VSync is forced only for the duration of lost focus.</summary>
     [TestMethod]
     public void WindowLoop_Unfocused_KeepsRunningWithTemporaryVSync()
