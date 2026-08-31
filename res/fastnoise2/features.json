@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "fastNoiseVersion": "1.1.1",
   "bindingVersion": "1.1.1.3",
   "purpose": "Curated agent knowledge over the complete FastNoise2 runtime metadata exposed by AlvorKit.",
@@ -28,6 +28,99 @@
     { "name": "Programmatic graph encoding", "available": false, "api": "Not present in FastNoise_C.h" },
     { "name": "Custom FastSIMD nodes", "available": false, "api": "C++ extension surface only" },
     { "name": "Node Editor IPC", "available": false, "api": "Separate upstream library, not packaged by AlvorKit" }
+  ],
+  "wrapperContract": {
+    "package": "AlvorKit.FastNoise2.Graph",
+    "namespace": "AlvorKit",
+    "ownership": "FnGraph retains one finalizable SafeHandle per created native root. FnGraphNode copies keep the graph alive without cloning nodes or duplicating native references.",
+    "configuration": "Create and connect the complete acyclic graph before sampling. Exact metadata, ownership, and cycle checks occur only during cold graph mutation.",
+    "hybridReplacement": "A node-backed hybrid may replace another node. FastNoise2 1.1.1 cannot detach it, so the wrapper rejects a later constant assignment.",
+    "sampling": "Batch sampling is managed-allocation-free and does not validate graph state. It retains only constant-time span bounds and overlap checks that protect native memory.",
+    "nodeLifetime": "SafeHandle finalizers call DeleteNodeRef after FnGraph and all of its FnGraphNode values become unreachable. FnGraph has no Clear or Dispose API.",
+    "encodedTrees": "CreateEncoded loads a complete version-coupled Base64 tree and exposes only its root. The binding cannot export trees.",
+    "numericBounds": "FastNoise metadata minimums and maximums are editor guidance and native setters do not generally enforce them.",
+    "enumOrdinals": "Except FnFeatureSet, managed enum integers are wrapper details, not native metadata IDs, native option indexes, or stable serialization values."
+  },
+  "managedMethods": [
+    { "owner": "FnGraph", "signature": "FnGraph(Fn fn)", "purpose": "Create a configuration context and request the fastest supported compiled SIMD implementation." },
+    { "owner": "FnGraph", "signature": "FnGraph(Fn fn, FnFeatureSet maximumFeatureSet)", "purpose": "Create a configuration context while limiting native SIMD dispatch." },
+    { "owner": "FnGraph", "signature": "FnGraphNode Create(FnNodeType type)", "purpose": "Create a graph-managed node from exact runtime metadata and retain its finalizable native reference." },
+    { "owner": "FnGraph", "signature": "FnGraphNode CreateEncoded(string encodedTree)", "purpose": "Load a complete encoded node tree and retain its root in a finalizable native handle." },
+    { "owner": "FnGraphNode", "signature": "FnGraphNode Float(FnFloatVariable variable, float value)", "purpose": "Set a float metadata variable." },
+    { "owner": "FnGraphNode", "signature": "FnGraphNode Integer(FnIntegerVariable variable, int value)", "purpose": "Set an integer metadata variable." },
+    { "owner": "FnGraphNode", "signature": "FnGraphNode DistanceFunction(FnDistanceFunction value)", "purpose": "Set Distance Function on point-distance or cellular nodes." },
+    { "owner": "FnGraphNode", "signature": "FnGraphNode CellularReturnType(FnCellularReturnType value)", "purpose": "Set CellularDistance Return Type." },
+    { "owner": "FnGraphNode", "signature": "FnGraphNode Interpolation(FnInterpolation value)", "purpose": "Set Fade interpolation." },
+    { "owner": "FnGraphNode", "signature": "FnGraphNode ClampOutput(bool value)", "purpose": "Set Remap output clamping." },
+    { "owner": "FnGraphNode", "signature": "FnGraphNode RemovedDimension(FnRemovedDimension value)", "purpose": "Set RemoveDimension's omitted axis." },
+    { "owner": "FnGraphNode", "signature": "FnGraphNode RotationType(FnRotationType value)", "purpose": "Set DomainRotatePlane's 3D plane preset." },
+    { "owner": "FnGraphNode", "signature": "FnGraphNode VectorizationScheme(FnVectorizationScheme value)", "purpose": "Set simplex domain-warp displacement-vector construction." },
+    { "owner": "FnGraphNode", "signature": "FnGraphNode Hybrid(FnHybrid hybrid, float value)", "purpose": "Set a hybrid constant when no node is connected." },
+    { "owner": "FnGraphNode", "signature": "FnGraphNode Hybrid(FnHybrid hybrid, FnGraphNode source)", "purpose": "Connect the active spatially varying value of a hybrid input." },
+    { "owner": "FnGraphNode", "signature": "FnGraphNode Source(FnSource source, FnGraphNode value)", "purpose": "Connect a required same-graph source while preserving acyclicity." },
+    { "owner": "FnGraphNode", "signature": "FnFeatureSet GetActiveFeatureSet()", "purpose": "Report the cumulative FastSIMD mask selected for the node." },
+    { "owner": "FnGraphNodeSampling", "signature": "GenUniformGrid2D/3D/4D(...)", "purpose": "Generate a regular row-major batch, with optional two-float min/max output." },
+    { "owner": "FnGraphNodeSampling", "signature": "GenPositionArray2D/3D/4D(...)", "purpose": "Generate one sample per structure-of-arrays position, with optional min/max output." },
+    { "owner": "FnGraphNodeSampling", "signature": "GenTileable2D(...)", "purpose": "Generate a seamless 2D tile through a 4D hypertorus, with optional min/max output." },
+    { "owner": "FnGraphNodeSampling", "signature": "GenSingle2D/3D/4D(...)", "purpose": "Generate one isolated sample; slow per sample because SIMD lanes are underused." }
+  ],
+  "managedEnums": [
+    {
+      "name": "FnNodeType",
+      "values": ["Constant", "White", "Checkerboard", "SineWave", "Gradient", "DistanceToPoint", "Simplex", "SuperSimplex", "Perlin", "Value", "CellularValue", "CellularDistance", "CellularLookup", "FractalFbm", "PingPong", "FractalRidged", "DomainWarpSimplex", "DomainWarpSuperSimplex", "DomainWarpGradient", "DomainWarpFractalProgressive", "DomainWarpFractalIndependent", "Add", "Subtract", "Multiply", "Divide", "Abs", "Min", "Max", "MinSmooth", "MaxSmooth", "SignedSquareRoot", "PowFloat", "PowInt", "DomainScale", "DomainOffset", "DomainRotate", "DomainAxisScale", "SeedOffset", "ConvertRgba8", "GeneratorCache", "Fade", "Remap", "Terrace", "AddDimension", "RemoveDimension", "Modulus", "DomainRotatePlane"],
+      "metadataNameExceptions": { "FractalFbm": "FractalFBm", "ConvertRgba8": "ConvertRGBA8" },
+      "details": "See nodes by matching managed name, applying metadataNameExceptions where present."
+    },
+    {
+      "name": "FnFloatVariable",
+      "values": ["AmplitudeScalingX", "AmplitudeScalingY", "AmplitudeScalingZ", "AmplitudeScalingW", "FeatureScale", "Lacunarity", "Maximum", "Minimum", "MultiplierX", "MultiplierY", "MultiplierZ", "MultiplierW", "OutputMaximum", "OutputMinimum", "Pitch", "Roll", "Scaling", "ScalingX", "ScalingY", "ScalingZ", "ScalingW", "StepCount", "Value", "Yaw"],
+      "metadataNames": ["Amplitude Scaling.X", "Amplitude Scaling.Y", "Amplitude Scaling.Z", "Amplitude Scaling.W", "Feature Scale", "Lacunarity", "Max", "Min", "Multiplier.X", "Multiplier.Y", "Multiplier.Z", "Multiplier.W", "Output Max", "Output Min", "Pitch", "Roll", "Scaling", "Scaling.X", "Scaling.Y", "Scaling.Z", "Scaling.W", "Step Count", "Value", "Yaw"]
+    },
+    {
+      "name": "FnIntegerVariable",
+      "values": ["SeedOffset", "ValueIndex", "DistanceIndex0", "DistanceIndex1", "Octaves", "Power"],
+      "metadataNames": ["Seed Offset", "Value Index", "Distance Index 0", "Distance Index 1", "Octaves", "Pow"]
+    },
+    {
+      "name": "FnHybrid",
+      "values": ["Fade", "FadeMaximum", "FadeMinimum", "FromMaximum", "FromMinimum", "Gain", "GridJitter", "Lhs", "MinkowskiP", "NewDimensionPosition", "OffsetX", "OffsetY", "OffsetZ", "OffsetW", "PingPongStrength", "PointX", "PointY", "PointZ", "PointW", "Power", "Rhs", "SizeJitter", "Smoothness", "ToMaximum", "ToMinimum", "Value", "WarpAmplitude", "WeightedStrength"],
+      "metadataNames": ["Fade", "Fade Max", "Fade Min", "From Max", "From Min", "Gain", "Grid Jitter", "LHS", "Minkowski P", "New Dimension Position", "Offset.X", "Offset.Y", "Offset.Z", "Offset.W", "Ping Pong Strength", "Point.X", "Point.Y", "Point.Z", "Point.W", "Pow", "RHS", "Size Jitter", "Smoothness", "To Max", "To Min", "Value", "Warp Amplitude", "Weighted Strength"]
+    },
+    {
+      "name": "FnSource",
+      "values": ["A", "B", "DomainWarpSource", "Lhs", "Lookup", "Source", "Value"],
+      "metadataNames": ["A", "B", "Domain Warp Source", "LHS", "Lookup", "Source", "Value"]
+    },
+    {
+      "name": "FnDistanceFunction",
+      "values": [
+        { "managed": "Euclidean", "metadata": "Euclidean", "meaning": "Square root of the sum of squared axis distances." },
+        { "managed": "EuclideanSquared", "metadata": "Euclidean Squared", "meaning": "Sum of squared axis distances; faster but differently scaled." },
+        { "managed": "Manhattan", "metadata": "Manhattan", "meaning": "Sum of absolute axis distances." },
+        { "managed": "Hybrid", "metadata": "Hybrid", "meaning": "Euclidean-squared plus Manhattan distance." },
+        { "managed": "MaximumAxis", "metadata": "Max Axis", "meaning": "Greatest absolute distance on any axis." },
+        { "managed": "Minkowski", "metadata": "Minkowski", "meaning": "Configurable p-norm using Minkowski P." }
+      ]
+    },
+    {
+      "name": "FnCellularReturnType",
+      "values": [
+        { "managed": "Index0", "metadata": "Index0", "meaning": "Selected distance rank 0." },
+        { "managed": "Index0Add1", "metadata": "Index0Add1", "meaning": "Selected distance rank 0 plus rank 1." },
+        { "managed": "Index0AbsoluteDifference1", "metadata": "Index0Sub1", "meaning": "Absolute difference between selected distance ranks." },
+        { "managed": "Index0Multiply1", "metadata": "Index0Mul1", "meaning": "Selected distance rank 0 multiplied by rank 1." },
+        { "managed": "Index0Divide1", "metadata": "Index0Div1", "meaning": "Selected distance rank 0 divided by rank 1." }
+      ]
+    },
+    { "name": "FnInterpolation", "values": [{ "managed": "Linear", "metadata": "Linear", "meaning": "Uncurved t." }, { "managed": "Hermite", "metadata": "Hermite", "meaning": "Cubic smoothstep." }, { "managed": "Quintic", "metadata": "Quintic", "meaning": "Quintic smootherstep." }] },
+    { "name": "FnRemovedDimension", "values": [{ "managed": "X", "metadata": "X" }, { "managed": "Y", "metadata": "Y" }, { "managed": "Z", "metadata": "Z" }, { "managed": "W", "metadata": "W" }] },
+    { "name": "FnRotationType", "values": [{ "managed": "ImproveXyPlanes", "metadata": "Improve XY Planes" }, { "managed": "ImproveXzPlanes", "metadata": "Improve XZ Planes" }] },
+    { "name": "FnVectorizationScheme", "values": [{ "managed": "OrthogonalGradientMatrix", "metadata": "Orthogonal Gradient Matrix" }, { "managed": "GradientOuterProduct", "metadata": "Gradient Outer Product" }], "warning": "This controls domain-warp vector construction, not CPU SIMD." },
+    {
+      "name": "FnFeatureSet",
+      "values": [{ "managed": "Scalar", "nativeMask": 1 }, { "managed": "Sse", "nativeMask": 6 }, { "managed": "Sse2", "nativeMask": 14 }, { "managed": "Sse3", "nativeMask": 30 }, { "managed": "Ssse3", "nativeMask": 62 }, { "managed": "Sse41", "nativeMask": 126 }, { "managed": "Sse42", "nativeMask": 254 }, { "managed": "Avx", "nativeMask": 510 }, { "managed": "Avx2", "nativeMask": 1022 }, { "managed": "Avx512", "nativeMask": 16382 }, { "managed": "Neon", "nativeMask": 49152 }, { "managed": "Aarch64", "nativeMask": 114688 }, { "managed": "WasmSimd", "nativeMask": 131072 }, { "managed": "Maximum", "nativeMask": 4294967295 }],
+      "warning": "These are cumulative native masks and can vary by native build and machine. They do not describe output quality."
+    }
   ],
   "nodes": [
     {
@@ -63,7 +156,7 @@
     {
       "name": "SineWave",
       "groups": ["Basic Generators"],
-      "purpose": "Periodic signal or mask with world-unit feature sizing.",
+      "purpose": "Product of sin(coordinate / Feature Scale) across active axes; each axis has period 2*pi*Feature Scale.",
       "variables": ["Feature Scale", "Output Min", "Output Max"],
       "lookups": [],
       "hybrids": [],
@@ -133,7 +226,7 @@
     {
       "name": "Value",
       "groups": ["Coherent Noise"],
-      "purpose": "Fast interpolated grid values for soft or intentionally blockier variation.",
+      "purpose": "Seeded pseudorandom lattice values blended with Hermite interpolation; not gradient noise.",
       "variables": ["Feature Scale", "Seed Offset", "Output Min", "Output Max"],
       "lookups": [],
       "hybrids": [],
@@ -159,7 +252,7 @@
     {
       "name": "CellularDistance",
       "groups": ["Coherent Noise"],
-      "purpose": "Nearest-cell distance or arithmetic combination of two nearest-cell distances.",
+      "purpose": "Remapped distance rank or combination of two selected ranks; Index0Sub1 is an absolute difference.",
       "variables": ["Feature Scale", "Seed Offset", "Output Min", "Output Max", "Distance Function", "Distance Index 0", "Distance Index 1", "Return Type"],
       "lookups": [],
       "hybrids": ["Minkowski P", "Grid Jitter", "Size Jitter"],
@@ -192,7 +285,7 @@
     {
       "name": "FractalFBm",
       "groups": ["Fractal"],
-      "purpose": "Layered natural detail for terrain, clouds, and organic textures.",
+      "purpose": "Unnormalized sum of source octaves for terrain, clouds, and organic textures.",
       "variables": ["Octaves", "Lacunarity"],
       "lookups": ["Source"],
       "hybrids": ["Gain", "Weighted Strength"],
@@ -206,7 +299,7 @@
     {
       "name": "PingPong",
       "groups": ["Modifiers"],
-      "purpose": "Reflects scaled input values between extremes for flowing contour-like patterns.",
+      "purpose": "Folds Source * Ping Pong Strength into a triangular waveform in [0,1].",
       "variables": [],
       "lookups": ["Source"],
       "hybrids": ["Ping Pong Strength"],
@@ -216,7 +309,7 @@
     {
       "name": "FractalRidged",
       "groups": ["Fractal"],
-      "purpose": "Layered sharp peaks, ridges, valleys, and canyon-like structure.",
+      "purpose": "Unnormalized sum of 1 - 2*abs(Source) octaves for ridges and canyons.",
       "variables": ["Octaves", "Lacunarity"],
       "lookups": ["Source"],
       "hybrids": ["Gain", "Weighted Strength"],
@@ -396,7 +489,7 @@
     {
       "name": "PowFloat",
       "groups": ["Blends"],
-      "purpose": "Raises absolute hybrid input magnitude to a constant or spatially varying float exponent.",
+      "purpose": "Computes pow(max(abs(Value), FLT_MIN), Pow), discarding sign and making zero inexact.",
       "variables": [],
       "lookups": [],
       "hybrids": ["Value", "Pow"],
@@ -436,7 +529,7 @@
     {
       "name": "DomainRotate",
       "groups": ["Domain Modifiers"],
-      "purpose": "Arbitrary yaw, pitch, and roll coordinate rotation before a source.",
+      "purpose": "Yaw/pitch/roll rotation in radians for 2D/3D; four-dimensional input passes through unrotated.",
       "variables": ["Yaw", "Pitch", "Roll"],
       "lookups": ["Source"],
       "hybrids": [],
@@ -476,7 +569,7 @@
     {
       "name": "GeneratorCache",
       "groups": ["Modifiers"],
-      "purpose": "Thread-local reuse when a complex child is evaluated repeatedly at identical coordinates and seed.",
+      "purpose": "Caches only the most recent SIMD batch per thread for identical source, coordinates, and seed.",
       "variables": [],
       "lookups": ["Source"],
       "hybrids": [],
@@ -524,7 +617,7 @@
     {
       "name": "AddDimension",
       "groups": ["Domain Modifiers"],
-      "purpose": "Appends a constant or spatially varying final coordinate to 2D or 3D input.",
+      "purpose": "Appends a hybrid final coordinate to 2D or 3D input; four-dimensional input passes through.",
       "variables": [],
       "lookups": ["Source"],
       "hybrids": ["New Dimension Position"],
@@ -534,7 +627,7 @@
     {
       "name": "RemoveDimension",
       "groups": ["Domain Modifiers"],
-      "purpose": "Drops a selected coordinate before evaluating a source from 3D or 4D input.",
+      "purpose": "Drops a selected coordinate from 3D or 4D input; two-dimensional input passes through.",
       "variables": ["Remove Dimension"],
       "lookups": ["Source"],
       "hybrids": [],
@@ -554,7 +647,7 @@
     {
       "name": "DomainRotatePlane",
       "groups": ["Domain Modifiers"],
-      "purpose": "Fast preset rotation that reduces axis artifacts in a selected 3D plane.",
+      "purpose": "Preset 3D rotation; 2D always promotes with XY mode, and 4D passes W through unchanged.",
       "variables": ["Rotation Type"],
       "lookups": ["Source"],
       "hybrids": [],

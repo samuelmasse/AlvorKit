@@ -1,11 +1,14 @@
 namespace AlvorKit;
 
-/// <summary>Shows the repeated raw metadata pattern that existing consumers had to implement themselves.</summary>
+/// <summary>Shows the low-level metadata pattern that existing consumers had to implement themselves.</summary>
+/// <param name="fn">The borrowed FastNoise2 binding used for construction, sampling, and release.</param>
+/// <remarks>This class exists only for comparison. New production code should use <see cref="FnGraph"/>.</remarks>
 internal class OldNoisePattern(Fn fn)
 {
     private const uint MaximumFeatureSet = uint.MaxValue;
 
     /// <summary>Builds, samples, and manually releases a FractalFBm-over-CellularValue graph.</summary>
+    /// <param name="output">Destination with at least 24 elements for the 4 x 3 x 2 grid.</param>
     public void Sample(Span<float> output)
     {
         FnNode source = default;
@@ -41,6 +44,7 @@ internal class OldNoisePattern(Fn fn)
         }
     }
 
+    /// <summary>Finds an exact metadata name and creates one raw native node reference.</summary>
     private FnNode CreateNode(string wantedName)
     {
         var count = fn.GetMetadataCount();
@@ -61,6 +65,7 @@ internal class OldNoisePattern(Fn fn)
         throw new InvalidOperationException($"FastNoise2 did not expose a creatable '{wantedName}' node.");
     }
 
+    /// <summary>Finds and sets a raw float variable by metadata name.</summary>
     private void SetFloat(FnNode node, string wantedName, float value)
     {
         var index = FindVariable(node, wantedName);
@@ -69,6 +74,7 @@ internal class OldNoisePattern(Fn fn)
             throw new InvalidOperationException($"FastNoise2 rejected float variable '{wantedName}'.");
     }
 
+    /// <summary>Finds and sets a raw integer variable by metadata name.</summary>
     private void SetInteger(FnNode node, string wantedName, int value)
     {
         var index = FindVariable(node, wantedName);
@@ -77,6 +83,7 @@ internal class OldNoisePattern(Fn fn)
             throw new InvalidOperationException($"FastNoise2 rejected integer variable '{wantedName}'.");
     }
 
+    /// <summary>Linearly resolves a raw variable index by exact metadata name.</summary>
     private int FindVariable(FnNode node, string wantedName)
     {
         var metadataId = fn.GetMetadataID(node);
@@ -93,6 +100,7 @@ internal class OldNoisePattern(Fn fn)
         throw new InvalidOperationException($"FastNoise2 node has no variable named '{wantedName}'.");
     }
 
+    /// <summary>Resolves and sets a raw enum variable and option by exact metadata names.</summary>
     private void SetEnum(FnNode node, string wantedName, string wantedValue)
     {
         var metadataId = fn.GetMetadataID(node);
@@ -113,6 +121,7 @@ internal class OldNoisePattern(Fn fn)
         throw new InvalidOperationException($"FastNoise2 rejected '{wantedName}' option '{wantedValue}'.");
     }
 
+    /// <summary>Finds a hybrid input by name and assigns its stored float constant.</summary>
     private void SetHybrid(FnNode node, string wantedName, float value)
     {
         var metadataId = fn.GetMetadataID(node);
@@ -132,6 +141,7 @@ internal class OldNoisePattern(Fn fn)
         throw new InvalidOperationException($"FastNoise2 rejected hybrid input '{wantedName}'.");
     }
 
+    /// <summary>Finds a required input by name and connects another raw node.</summary>
     private void SetSource(FnNode node, string wantedName, FnNode source)
     {
         var metadataId = fn.GetMetadataID(node);

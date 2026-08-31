@@ -1,12 +1,14 @@
 namespace AlvorKit;
 
-/// <summary>Shows the equivalent graph using typed members and graph-owned native lifetime.</summary>
+/// <summary>Shows the equivalent graph using typed members and finalizable managed node handles.</summary>
+/// <param name="fn">The borrowed FastNoise2 binding used by the graph wrapper.</param>
 internal class TypedNoisePattern(Fn fn)
 {
     /// <summary>Builds and samples the same FractalFBm-over-CellularValue graph through the helper package.</summary>
+    /// <param name="output">Destination with at least 24 elements for the 4 x 3 x 2 grid.</param>
     public void Sample(Span<float> output)
     {
-        using var graph = new FnGraph(fn);
+        var graph = new FnGraph(fn);
 
         var source = graph.Create(FnNodeType.CellularValue)
             .Float(FnFloatVariable.FeatureScale, 112f)

@@ -1,5 +1,6 @@
 namespace AlvorKit;
 
+/// <summary>Verifies every managed member and option mapping against pinned runtime metadata.</summary>
 [TestClass]
 public class FnGraphMetadataMapTest
 {
@@ -30,7 +31,7 @@ public class FnGraphMetadataMapTest
     public void TypedOptionsMatchRuntimeMetadata()
     {
         var fn = new FnBackend();
-        using var graph = new FnGraph(fn);
+        var graph = new FnGraph(fn);
         var distance = graph.Create(FnNodeType.DistanceToPoint);
         var cellular = graph.Create(FnNodeType.CellularDistance);
         var warp = graph.Create(FnNodeType.DomainWarpSimplex);

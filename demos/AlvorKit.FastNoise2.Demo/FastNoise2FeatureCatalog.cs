@@ -25,8 +25,26 @@ internal class FastNoise2FeatureDatabase
     public List<string> IntegerVariableNames { get; init; } = [];
     public List<FastNoise2SamplingCapability> SamplingCapabilities { get; init; } = [];
     public List<FastNoise2BindingCapability> BindingCapabilities { get; init; } = [];
+    public JsonElement WrapperContract { get; init; }
+    public List<FastNoise2ManagedMethod> ManagedMethods { get; init; } = [];
+    public List<FastNoise2ManagedEnum> ManagedEnums { get; init; } = [];
     public List<FastNoise2Feature> Nodes { get; init; } = [];
     public List<FastNoise2Recipe> Recipes { get; init; } = [];
+}
+
+/// <summary>One documented wrapper method or overload family.</summary>
+internal class FastNoise2ManagedMethod
+{
+    public string Owner { get; init; } = string.Empty;
+    public string Signature { get; init; } = string.Empty;
+    public string Purpose { get; init; } = string.Empty;
+}
+
+/// <summary>One managed enum and its structured value inventory.</summary>
+internal class FastNoise2ManagedEnum
+{
+    public string Name { get; init; } = string.Empty;
+    public List<JsonElement> Values { get; init; } = [];
 }
 
 /// <summary>One FastNoise2 generation entry point or batch-output capability.</summary>

@@ -1,5 +1,6 @@
 namespace AlvorKit;
 
+/// <summary>Verifies typed graph construction, ownership, and validation contracts.</summary>
 [TestClass]
 public class FnGraphTest
 {
@@ -9,14 +10,14 @@ public class FnGraphTest
     {
         var fn = new FnBackend();
         var types = Enum.GetValues<FnNodeType>();
-        using var graph = new FnGraph(fn);
+        var graph = new FnGraph(fn);
 
         Assert.HasCount(fn.GetMetadataCount(), types);
 
         foreach (var type in types)
         {
             var node = graph.Create(type);
-            Assert.AreNotEqual(0u, node.GetActiveFeatureSet(), $"{type} did not select a FastSIMD feature set.");
+            Assert.AreNotEqual(default, node.GetActiveFeatureSet(), $"{type} did not select a FastSIMD feature set.");
         }
     }
 
@@ -25,7 +26,7 @@ public class FnGraphTest
     public void TypedGraphGeneratesFiniteOutputAndRange()
     {
         var fn = new FnBackend();
-        using var graph = new FnGraph(fn);
+        var graph = new FnGraph(fn);
         var source = graph.Create(FnNodeType.CellularValue)
             .Float(FnFloatVariable.FeatureScale, 32f)
             .Integer(FnIntegerVariable.SeedOffset, 19)
@@ -49,38 +50,25 @@ public class FnGraphTest
         Assert.AreEqual(output.Max(), minMax[1], 0.00001f);
     }
 
-    /// <summary>Proves clearing a graph prevents stale native handles from being sampled.</summary>
-    [TestMethod]
-    public void ClearInvalidatesReturnedNodes()
-    {
-        var fn = new FnBackend();
-        using var graph = new FnGraph(fn);
-        var node = graph.Create(FnNodeType.Simplex);
-
-        graph.Clear();
-
-        Assert.ThrowsExactly<InvalidOperationException>(() => node.GenSingle2D((1f, 2f), 17));
-    }
-
     /// <summary>Proves graph wiring cannot accidentally connect nodes with independent native ownership.</summary>
     [TestMethod]
     public void SourceRejectsNodeOwnedByAnotherGraph()
     {
         var fn = new FnBackend();
-        using var sourceGraph = new FnGraph(fn);
-        using var rootGraph = new FnGraph(fn);
+        var sourceGraph = new FnGraph(fn);
+        var rootGraph = new FnGraph(fn);
         var source = sourceGraph.Create(FnNodeType.Simplex);
         var root = rootGraph.Create(FnNodeType.FractalFbm);
 
         Assert.ThrowsExactly<InvalidOperationException>(() => root.Source(FnSource.Source, source));
     }
 
-    /// <summary>Proves encoded node trees enter the same graph-owned lifetime and typed sampling surface.</summary>
+    /// <summary>Proves encoded node trees enter the same managed-handle lifetime and typed sampling surface.</summary>
     [TestMethod]
     public void EncodedTreeCreatesGraphOwnedNode()
     {
         var fn = new FnBackend();
-        using var graph = new FnGraph(fn);
+        var graph = new FnGraph(fn);
         var node = graph.CreateEncoded("DQkGDA==");
 
         Assert.IsTrue(float.IsFinite(node.GenSingle2D((1.25f, -7f), 1337)));
@@ -91,7 +79,7 @@ public class FnGraphTest
     public void VariableRejectsWrongNodeType()
     {
         var fn = new FnBackend();
-        using var graph = new FnGraph(fn);
+        var graph = new FnGraph(fn);
         var node = graph.Create(FnNodeType.Simplex);
 
         var exception = Assert.ThrowsExactly<InvalidOperationException>(
@@ -105,7 +93,7 @@ public class FnGraphTest
     public void SamplingRejectsUndersizedSpans()
     {
         var fn = new FnBackend();
-        using var graph = new FnGraph(fn);
+        var graph = new FnGraph(fn);
         var node = graph.Create(FnNodeType.Simplex);
         var shortOutput = new float[3];
         var output = new float[4];
@@ -118,5 +106,56 @@ public class FnGraphTest
             () => node.GenUniformGrid2D(output, (0f, 0f), (2, 2), (1f, 1f), 1, shortRange));
         Assert.ThrowsExactly<ArgumentException>(
             () => node.GenPositionArray2D(output, shortPositions, output, (0f, 0f), 1));
+    }
+
+    /// <summary>Proves connection-time validation prevents self-reference and longer dependency cycles.</summary>
+    [TestMethod]
+    public void ConnectionsRejectCycles()
+    {
+        var fn = new FnBackend();
+        var graph = new FnGraph(fn);
+        var first = graph.Create(FnNodeType.FractalFbm);
+        var second = graph.Create(FnNodeType.FractalRidged);
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => first.Source(FnSource.Source, first));
+
+        first.Source(FnSource.Source, second);
+        Assert.ThrowsExactly<InvalidOperationException>(() => second.Source(FnSource.Source, first));
+    }
+
+    /// <summary>Proves the wrapper exposes the pinned runtime's inability to detach a hybrid node connection.</summary>
+    [TestMethod]
+    public void HybridConstantRejectsExistingNodeConnection()
+    {
+        var fn = new FnBackend();
+        var graph = new FnGraph(fn);
+        var source = graph.Create(FnNodeType.Simplex);
+        var subtract = graph.Create(FnNodeType.Subtract).Hybrid(FnHybrid.Lhs, source);
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => subtract.Hybrid(FnHybrid.Lhs, 0.5f));
+    }
+
+    /// <summary>Proves native sampling never receives overlapping input, output, or range storage.</summary>
+    [TestMethod]
+    public void SamplingRejectsOverlappingSpans()
+    {
+        var fn = new FnBackend();
+        var graph = new FnGraph(fn);
+        var node = graph.Create(FnNodeType.Simplex);
+        var storage = new float[8];
+
+        Assert.ThrowsExactly<ArgumentException>(
+            () => node.GenPositionArray2D(storage.AsSpan(0, 4), storage.AsSpan(0, 4), storage.AsSpan(4, 4), (0f, 0f), 1));
+        Assert.ThrowsExactly<ArgumentException>(
+            () => node.GenUniformGrid2D(storage.AsSpan(0, 4), (0f, 0f), (2, 2), (1f, 1f), 1, storage.AsSpan(2, 2)));
+    }
+
+    /// <summary>Proves the feature-set ceiling is typed and rejects invented native masks.</summary>
+    [TestMethod]
+    public void FeatureSetRejectsUnknownMask()
+    {
+        var fn = new FnBackend();
+
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new FnGraph(fn, (FnFeatureSet)12345));
     }
 }

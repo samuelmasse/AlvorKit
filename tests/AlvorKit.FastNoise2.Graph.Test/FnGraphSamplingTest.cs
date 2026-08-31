@@ -1,5 +1,6 @@
 namespace AlvorKit;
 
+/// <summary>Verifies every typed sampling shape against the corresponding raw binding call.</summary>
 [TestClass]
 public class FnGraphSamplingTest
 {
@@ -10,13 +11,36 @@ public class FnGraphSamplingTest
     public void SamplingMethodsMatchRawBinding()
     {
         var fn = new FnBackend();
-        using var graph = new FnGraph(fn);
+        var graph = new FnGraph(fn);
         var node = graph.Create(FnNodeType.Simplex).Float(FnFloatVariable.FeatureScale, 37f);
 
         VerifyUniformGrids(fn, node);
         VerifyTileable(fn, node);
         VerifyPositionArrays(fn, node);
         VerifySingles(fn, node);
+    }
+
+    /// <summary>Proves repeated batch sampling creates no managed garbage after warmup.</summary>
+    [TestMethod]
+    public void BatchSamplingDoesNotAllocateManagedMemory()
+    {
+        var fn = new FnBackend();
+        var graph = new FnGraph(fn);
+        var node = graph.Create(FnNodeType.Simplex);
+        var output = new float[64 * 64];
+
+        SampleMany(node, output, 1);
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        SampleMany(node, output, 128);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.AreEqual(0L, allocated);
+    }
+
+    private static void SampleMany(FnGraphNode node, Span<float> output, int iterations)
+    {
+        for (var index = 0; index < iterations; index++)
+            node.GenUniformGrid2D(output, (-17f, 23f), (64, 64), (0.5f, 0.75f), Seed + index);
     }
 
     private static void VerifyUniformGrids(Fn fn, FnGraphNode node)

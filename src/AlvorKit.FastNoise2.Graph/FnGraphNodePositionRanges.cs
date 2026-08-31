@@ -8,7 +8,7 @@ namespace AlvorKit;
 public static class FnGraphNodePositionRanges
 {
     /// <summary>Samples two-dimensional positions and reports the generated range.</summary>
-    /// <param name="node">A live, complete graph root.</param>
+    /// <param name="node">A configured graph root.</param>
     /// <param name="output">Destination whose length is the sample count; every element is written.</param>
     /// <param name="x">X coordinates with at least <paramref name="output"/> length elements.</param>
     /// <param name="y">Y coordinates with at least <paramref name="output"/> length elements.</param>
@@ -18,8 +18,7 @@ public static class FnGraphNodePositionRanges
     /// <exception cref="ArgumentException">
     /// Output is empty; a position or range is too short; or any input and output storage overlaps.
     /// </exception>
-    /// <exception cref="InvalidOperationException">The node is invalid, stale, foreign, or incomplete.</exception>
-    /// <exception cref="ObjectDisposedException">The owning graph has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">The node is the default value.</exception>
     /// <remarks>
     /// Extra position and range elements are untouched. The range is not meaningful for packed RGBA8 output.
     /// </remarks>
@@ -32,17 +31,18 @@ public static class FnGraphNodePositionRanges
         int seed,
         Span<float> outputMinMax)
     {
-        var fn = node.Use();
+        var native = node.Borrow(out var fn);
         FnSampleValidation.Positions2(output, x, y);
         FnSampleValidation.MinMax(output, outputMinMax);
         FnSampleValidation.RequireNoOverlap(outputMinMax, x, nameof(x));
         FnSampleValidation.RequireNoOverlap(outputMinMax, y, nameof(y));
         fn.GenPositionArray2D(
-            node.Native, output, output.Length, x, y, offset.X, offset.Y, seed, outputMinMax);
+            native, output, output.Length, x, y, offset.X, offset.Y, seed, outputMinMax);
+        node.KeepAlive();
     }
 
     /// <summary>Samples three-dimensional positions and reports the generated range.</summary>
-    /// <param name="node">A live, complete graph root.</param>
+    /// <param name="node">A configured graph root.</param>
     /// <param name="output">Destination whose length is the sample count; every element is written.</param>
     /// <param name="x">X coordinates with at least <paramref name="output"/> length elements.</param>
     /// <param name="y">Y coordinates with at least <paramref name="output"/> length elements.</param>
@@ -53,8 +53,7 @@ public static class FnGraphNodePositionRanges
     /// <exception cref="ArgumentException">
     /// Output is empty; a position or range is too short; or any input and output storage overlaps.
     /// </exception>
-    /// <exception cref="InvalidOperationException">The node is invalid, stale, foreign, or incomplete.</exception>
-    /// <exception cref="ObjectDisposedException">The owning graph has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">The node is the default value.</exception>
     /// <remarks>
     /// Extra position and range elements are untouched. The range is not meaningful for packed RGBA8 output.
     /// </remarks>
@@ -68,18 +67,19 @@ public static class FnGraphNodePositionRanges
         int seed,
         Span<float> outputMinMax)
     {
-        var fn = node.Use();
+        var native = node.Borrow(out var fn);
         FnSampleValidation.Positions3(output, x, y, z);
         FnSampleValidation.MinMax(output, outputMinMax);
         FnSampleValidation.RequireNoOverlap(outputMinMax, x, nameof(x));
         FnSampleValidation.RequireNoOverlap(outputMinMax, y, nameof(y));
         FnSampleValidation.RequireNoOverlap(outputMinMax, z, nameof(z));
         fn.GenPositionArray3D(
-            node.Native, output, output.Length, x, y, z, offset.X, offset.Y, offset.Z, seed, outputMinMax);
+            native, output, output.Length, x, y, z, offset.X, offset.Y, offset.Z, seed, outputMinMax);
+        node.KeepAlive();
     }
 
     /// <summary>Samples four-dimensional positions and reports the generated range.</summary>
-    /// <param name="node">A live, complete graph root.</param>
+    /// <param name="node">A configured graph root.</param>
     /// <param name="output">Destination whose length is the sample count; every element is written.</param>
     /// <param name="x">X coordinates with at least <paramref name="output"/> length elements.</param>
     /// <param name="y">Y coordinates with at least <paramref name="output"/> length elements.</param>
@@ -91,8 +91,7 @@ public static class FnGraphNodePositionRanges
     /// <exception cref="ArgumentException">
     /// Output is empty; a position or range is too short; or any input and output storage overlaps.
     /// </exception>
-    /// <exception cref="InvalidOperationException">The node is invalid, stale, foreign, or incomplete.</exception>
-    /// <exception cref="ObjectDisposedException">The owning graph has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">The node is the default value.</exception>
     /// <remarks>
     /// Extra position and range elements are untouched. The range is not meaningful for packed RGBA8 output.
     /// </remarks>
@@ -107,7 +106,7 @@ public static class FnGraphNodePositionRanges
         int seed,
         Span<float> outputMinMax)
     {
-        var fn = node.Use();
+        var native = node.Borrow(out var fn);
         FnSampleValidation.Positions4(output, x, y, z, w);
         FnSampleValidation.MinMax(output, outputMinMax);
         FnSampleValidation.RequireNoOverlap(outputMinMax, x, nameof(x));
@@ -115,7 +114,8 @@ public static class FnGraphNodePositionRanges
         FnSampleValidation.RequireNoOverlap(outputMinMax, z, nameof(z));
         FnSampleValidation.RequireNoOverlap(outputMinMax, w, nameof(w));
         fn.GenPositionArray4D(
-            node.Native, output, output.Length, x, y, z, w,
+            native, output, output.Length, x, y, z, w,
             offset.X, offset.Y, offset.Z, offset.W, seed, outputMinMax);
+        node.KeepAlive();
     }
 }

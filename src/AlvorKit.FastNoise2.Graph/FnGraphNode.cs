@@ -1,26 +1,27 @@
 namespace AlvorKit;
 
-/// <summary>A non-owning value handle to a graph-owned FastNoise2 node.</summary>
+/// <summary>A value handle to one graph-managed native FastNoise2 node.</summary>
 /// <remarks>
-/// Copying this struct copies the handle; it does not clone the native node or create ownership. Fluent setters mutate
-/// that shared node and return another handle to it. A default value, or a handle invalidated by clear or disposal,
-/// cannot be configured or sampled. Finish all graph mutation before concurrent sampling begins.
+/// Copying this struct does not clone the native node or duplicate its native reference. Every copy keeps the graph and
+/// its finalizable native handles alive. Fluent setters mutate the shared node and return another value referring to it.
+/// Finish all graph mutation before concurrent sampling begins.
 /// </remarks>
 public readonly struct FnGraphNode
 {
     private readonly FnGraph? owner;
     private readonly FnNode native;
-    private readonly int generation;
 
+    /// <summary>Gets the graph that configures this managed handle.</summary>
     internal FnGraph? Owner => owner;
-    internal FnNode Native => native;
-    internal int Generation => generation;
 
-    internal FnGraphNode(FnGraph owner, FnNode native, int generation)
+    /// <summary>Gets the opaque native reference without changing ownership.</summary>
+    internal FnNode Native => native;
+
+    /// <summary>Creates a node value tied to the graph that owns its native reference.</summary>
+    internal FnGraphNode(FnGraph owner, FnNode native)
     {
         this.owner = owner;
         this.native = native;
-        this.generation = generation;
     }
 
     /// <summary>Sets a scalar float variable through native <c>fnSetVariableFloat</c>.</summary>
@@ -29,12 +30,13 @@ public readonly struct FnGraphNode
     /// <returns>This same node handle for fluent graph construction.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="variable"/> is not defined.</exception>
     /// <exception cref="InvalidOperationException">
-    /// The node is invalid, stale, or does not expose the selected float member, or FastNoise2 rejects the value.
+    /// The node is default or does not expose the selected float member, or FastNoise2 rejects the value.
     /// </exception>
     /// <remarks>Metadata minimums and maximums are editor guidance; the native setter does not generally enforce them.</remarks>
     public FnGraphNode Float(FnFloatVariable variable, float value)
     {
         OwnerOrThrow().SetFloat(this, variable, value);
+        KeepAlive();
         return this;
     }
 
@@ -44,12 +46,13 @@ public readonly struct FnGraphNode
     /// <returns>This same node handle for fluent graph construction.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="variable"/> is not defined.</exception>
     /// <exception cref="InvalidOperationException">
-    /// The node is invalid, stale, or does not expose the selected integer member, or FastNoise2 rejects the value.
+    /// The node is default or does not expose the selected integer member, or FastNoise2 rejects the value.
     /// </exception>
     /// <remarks>Metadata minimums and maximums are editor guidance; the native setter does not generally enforce them.</remarks>
     public FnGraphNode Integer(FnIntegerVariable variable, int value)
     {
         OwnerOrThrow().SetInteger(this, variable, value);
+        KeepAlive();
         return this;
     }
 
@@ -57,10 +60,11 @@ public readonly struct FnGraphNode
     /// <param name="value">The distance metric to use.</param>
     /// <returns>This same node handle.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is not defined.</exception>
-    /// <exception cref="InvalidOperationException">The node is invalid, stale, or has no Distance Function option.</exception>
+    /// <exception cref="InvalidOperationException">The node is default or has no Distance Function option.</exception>
     public FnGraphNode DistanceFunction(FnDistanceFunction value)
     {
         OwnerOrThrow().SetDistanceFunction(this, value);
+        KeepAlive();
         return this;
     }
 
@@ -68,10 +72,11 @@ public readonly struct FnGraphNode
     /// <param name="value">The operation applied to the two selected distance ranks.</param>
     /// <returns>This same node handle.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is not defined.</exception>
-    /// <exception cref="InvalidOperationException">The node is invalid, stale, or has no Return Type option.</exception>
+    /// <exception cref="InvalidOperationException">The node is default or has no Return Type option.</exception>
     public FnGraphNode CellularReturnType(FnCellularReturnType value)
     {
         OwnerOrThrow().SetCellularReturnType(this, value);
+        KeepAlive();
         return this;
     }
 
@@ -79,20 +84,22 @@ public readonly struct FnGraphNode
     /// <param name="value">The curve applied to the normalized fade input.</param>
     /// <returns>This same node handle.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is not defined.</exception>
-    /// <exception cref="InvalidOperationException">The node is invalid, stale, or has no Interpolation option.</exception>
+    /// <exception cref="InvalidOperationException">The node is default or has no Interpolation option.</exception>
     public FnGraphNode Interpolation(FnInterpolation value)
     {
         OwnerOrThrow().SetInterpolation(this, value);
+        KeepAlive();
         return this;
     }
 
     /// <summary>Sets Clamp Output on <see cref="FnNodeType.Remap"/>.</summary>
     /// <param name="value">Whether the remapped result is clamped to its output interval.</param>
     /// <returns>This same node handle.</returns>
-    /// <exception cref="InvalidOperationException">The node is invalid, stale, or has no Clamp Output option.</exception>
+    /// <exception cref="InvalidOperationException">The node is default or has no Clamp Output option.</exception>
     public FnGraphNode ClampOutput(bool value)
     {
         OwnerOrThrow().SetClampOutput(this, value);
+        KeepAlive();
         return this;
     }
 
@@ -100,10 +107,11 @@ public readonly struct FnGraphNode
     /// <param name="value">The coordinate to omit before source evaluation.</param>
     /// <returns>This same node handle.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is not defined.</exception>
-    /// <exception cref="InvalidOperationException">The node is invalid, stale, or has no Remove Dimension option.</exception>
+    /// <exception cref="InvalidOperationException">The node is default or has no Remove Dimension option.</exception>
     public FnGraphNode RemovedDimension(FnRemovedDimension value)
     {
         OwnerOrThrow().SetRemovedDimension(this, value);
+        KeepAlive();
         return this;
     }
 
@@ -111,10 +119,11 @@ public readonly struct FnGraphNode
     /// <param name="value">The three-dimensional plane the preset rotation should improve.</param>
     /// <returns>This same node handle.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is not defined.</exception>
-    /// <exception cref="InvalidOperationException">The node is invalid, stale, or has no Rotation Type option.</exception>
+    /// <exception cref="InvalidOperationException">The node is default or has no Rotation Type option.</exception>
     public FnGraphNode RotationType(FnRotationType value)
     {
         OwnerOrThrow().SetRotationType(this, value);
+        KeepAlive();
         return this;
     }
 
@@ -122,11 +131,12 @@ public readonly struct FnGraphNode
     /// <param name="value">The algorithm used to construct the displacement vector.</param>
     /// <returns>This same node handle.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is not defined.</exception>
-    /// <exception cref="InvalidOperationException">The node is invalid, stale, or has no Vectorization Scheme option.</exception>
+    /// <exception cref="InvalidOperationException">The node is default or has no Vectorization Scheme option.</exception>
     /// <remarks>This option is unrelated to the CPU feature set reported by <see cref="GetActiveFeatureSet"/>.</remarks>
     public FnGraphNode VectorizationScheme(FnVectorizationScheme value)
     {
         OwnerOrThrow().SetVectorizationScheme(this, value);
+        KeepAlive();
         return this;
     }
 
@@ -136,7 +146,7 @@ public readonly struct FnGraphNode
     /// <returns>This same node handle.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="hybrid"/> is not defined.</exception>
     /// <exception cref="InvalidOperationException">
-    /// The node is invalid, stale, lacks the input, rejects the value, or already has an active node connection.
+    /// The node is default, lacks the input, rejects the value, or already has an active node connection.
     /// </exception>
     /// <remarks>
     /// FastNoise2 1.1.1 cannot detach a connected hybrid node. This wrapper rejects a later constant assignment instead
@@ -145,6 +155,7 @@ public readonly struct FnGraphNode
     public FnGraphNode Hybrid(FnHybrid hybrid, float value)
     {
         OwnerOrThrow().SetHybrid(this, hybrid, value);
+        KeepAlive();
         return this;
     }
 
@@ -154,12 +165,14 @@ public readonly struct FnGraphNode
     /// <returns>This same node handle.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="hybrid"/> is not defined.</exception>
     /// <exception cref="InvalidOperationException">
-    /// Either node is invalid, stale, or foreign; the input is absent; FastNoise2 rejects it; or it creates a cycle.
+    /// Either node is default or foreign; the input is absent; FastNoise2 rejects it; or it creates a cycle.
     /// </exception>
     /// <remarks>The node connection takes priority over the stored constant and replaces an earlier node connection.</remarks>
     public FnGraphNode Hybrid(FnHybrid hybrid, FnGraphNode source)
     {
         OwnerOrThrow().SetHybrid(this, hybrid, source);
+        KeepAlive();
+        source.KeepAlive();
         return this;
     }
 
@@ -169,12 +182,14 @@ public readonly struct FnGraphNode
     /// <returns>This same node handle.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="source"/> is not defined.</exception>
     /// <exception cref="InvalidOperationException">
-    /// Either node is invalid, stale, or foreign; the input is absent; FastNoise2 rejects it; or it creates a cycle.
+    /// Either node is default or foreign; the input is absent; FastNoise2 rejects it; or it creates a cycle.
     /// </exception>
     /// <remarks>The target retains the source natively. A new connection replaces the previous connection in this slot.</remarks>
     public FnGraphNode Source(FnSource source, FnGraphNode value)
     {
         OwnerOrThrow().SetSource(this, source, value);
+        KeepAlive();
+        value.KeepAlive();
         return this;
     }
 
@@ -182,13 +197,27 @@ public readonly struct FnGraphNode
     /// <returns>
     /// The active compiled implementation. It can vary by CPU, architecture, runtime identifier, and native package build.
     /// </returns>
-    /// <exception cref="InvalidOperationException">The node is default, stale, or owned by another graph.</exception>
-    /// <exception cref="ObjectDisposedException">The owning graph has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">The node is the default value.</exception>
     /// <remarks>The value reports implementation capability, not output quality.</remarks>
-    public FnFeatureSet GetActiveFeatureSet() => OwnerOrThrow().GetActiveFeatureSet(this);
+    public FnFeatureSet GetActiveFeatureSet()
+    {
+        var result = OwnerOrThrow().GetActiveFeatureSet(this);
+        KeepAlive();
+        return result;
+    }
 
-    internal Fn Use() => OwnerOrThrow().UseForSampling(this);
+    /// <summary>Borrows the native value and its binding with one default-value check.</summary>
+    internal FnNode Borrow(out Fn binding)
+    {
+        var graph = OwnerOrThrow();
+        binding = graph.Binding;
+        return native;
+    }
 
+    /// <summary>Keeps the graph and all of its owning handles live until the current native call has returned.</summary>
+    internal void KeepAlive() => GC.KeepAlive(owner);
+
+    /// <summary>Gets the owner or rejects a default node value.</summary>
     private FnGraph OwnerOrThrow() =>
         owner ?? throw new InvalidOperationException("The default FastNoise2 graph node cannot be used.");
 }

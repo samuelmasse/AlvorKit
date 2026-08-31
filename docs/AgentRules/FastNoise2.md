@@ -11,7 +11,10 @@ This guide covers the FastNoise2 1.1.1 C API exposed by AlvorKit. The structured
 agent database is [`res/fastnoise2/features.json`](../../res/fastnoise2/features.json).
 The database is an executable coverage contract: the FastNoise2 demo compares
 its node, group, variable, enum, required-source, and hybrid-input inventory
-against runtime metadata.
+against runtime metadata. Schema 2 also inventories every wrapper enum/value,
+wrapper method family, ownership rule, and sampling contract. The package's
+canonical human-readable reference is
+[`src/AlvorKit.FastNoise2.Graph/README.md`](../../src/AlvorKit.FastNoise2.Graph/README.md).
 
 ## Required Mental Model
 
@@ -28,15 +31,19 @@ Every configurable member is one of three kinds:
   An unwired source is an invalid graph, not a request for a default value.
 - **Hybrid:** either a constant float or a node connection. Use the float form
   for a uniform parameter and the node form when the parameter should vary over
-  space. Connecting a node replaces the constant form.
+  space. Connecting a node makes it active instead of the stored constant.
+  FastNoise2 1.1.1 cannot detach it; the wrapper rejects a later constant
+  assignment instead of silently updating a dormant value.
 
 Use `AlvorKit.FastNoise2.Graph` for authored graph construction. Its enums keep
 node types, float variables, integer variables, enum choices, required sources,
 and hybrids out of application-owned string tables. It validates those semantic
-keys against exact runtime metadata and owns every native node reference.
+keys against exact runtime metadata and rejects cyclic wrapper-built graphs
+during cold configuration. The graph retains a finalizable handle per native
+root reference.
 
 ```csharp
-using var graph = new FnGraph(fn);
+var graph = new FnGraph(fn);
 
 var source = graph.Create(FnNodeType.CellularValue)
     .Float(FnFloatVariable.FeatureScale, 112f)
@@ -51,9 +58,12 @@ var root = graph.Create(FnNodeType.FractalFbm)
 
 The package uses `Vec2`/`Vec3`/`Vec4` offsets and steps, integer vectors for
 grid counts, caller-owned spans, and typed overloads for every generation
-shape. `FnGraph.Clear` and disposal release owned handles in reverse creation
-order and invalidate prior `FnGraphNode` values. Nodes from different graphs
-cannot be connected.
+shape. Every `FnGraphNode` value keeps its graph and retained `SafeHandle`s
+alive. Their finalizers release external native references after the graph and
+all node values become unreachable. `FnGraph` does not require clearing or
+disposal. Nodes from different graphs cannot be connected. Connect every
+required source before sampling: the hot generation path intentionally does
+not revalidate graph completeness or ownership.
 
 Use the raw `Fn` metadata surface only in bindings, exhaustive metadata
 verification, dynamic tooling that genuinely needs unknown runtime members, or
@@ -72,9 +82,10 @@ must release every handle obtained from `NewFromMetadata` or
 - Generation offsets choose the sampled world-space origin. Step sizes choose
   the distance between adjacent samples. Reuse these rather than rebuilding a
   graph to pan or change sampling density.
-- The generation seed changes the whole graph. A node's `Seed Offset` changes
-  only that node and does not propagate to its children. Use seed offsets to
-  decorrelate sibling sources under one global seed.
+- The generation seed changes the whole graph. A generator's `Seed Offset`
+  changes that generator without changing sibling seeds. The dedicated
+  `SeedOffset` modifier instead changes the seed passed through its complete
+  child graph. Use generator offsets to decorrelate sibling sources.
 - Coherent generators default to an output range of `[-1, 1]`. Their `Output
   Min` and `Output Max` variables rescale inside the SIMD graph. Fractals,
   operators, distance nodes, and modifiers can exceed that range.
@@ -88,7 +99,7 @@ must release every handle obtained from `NewFromMetadata` or
 | General natural terrain or masks | `Simplex` | Set `Feature Scale`; this is the default coherent source. |
 | Maximum smoothness and isotropy | `SuperSimplex` | Higher quality and slower than `Simplex`. |
 | Classic grid-gradient character | `Perlin` | Expect some grid-direction character. |
-| Soft, blockier variation | `Value` | Fast source with more visible grid structure. |
+| Smooth lattice-value variation | `Value` | Hermite-interpolated random values rather than gradient vectors. |
 | Independent per-position randomness | `White` | No spatial continuity; do not use as a terrain height field. |
 | Voronoi cell identities | `CellularValue` | Choose distance function, cell value index, and jitter. |
 | Borders, caves, and distance fields | `CellularDistance` | Choose distance indexes and how they combine. |
@@ -211,7 +222,8 @@ variables or connections while another thread is generating.
 - **Organic terrain:** `DomainWarpSimplex(Source = FractalFBm(Simplex))` when
   one warp scale is enough, or a domain-warp fractal whose warp node's source is
   the terrain graph when multi-scale distortion is required.
-- **Cell borders or caves:** `CellularDistance` with Index0Sub1, optionally
+- **Cell borders or caves:** `CellularDistance` with
+  `FnCellularReturnType.Index0AbsoluteDifference1` (upstream `Index0Sub1`), optionally
   transformed with `Abs`, `Remap`, `Terrace`, or a thresholding consumer.
 - **Biome blend:** `Fade(A, B, Fade = low-frequency Simplex)` with an explicit
   fade range and interpolation curve.
@@ -236,10 +248,10 @@ trees exported by the upstream Node Editor can still be loaded with
 or live-edit a graph unless the binding is deliberately extended.
 
 AlvorKit native packages build FastNoise2 with strict floating-point behavior
-for byte-stable output across compiled SIMD feature sets. `uint.MaxValue`
-requests the fastest supported compiled feature set; inspect
-`GetActiveFeatureSet` when diagnostics need the selected level. Do not pass an
-invented feature-set mask.
+for byte-stable output across compiled SIMD feature sets. `FnFeatureSet.Maximum`
+requests the fastest supported compiled feature set; pass a lower typed feature
+set only when a deterministic deployment contract requires it. Inspect
+`GetActiveFeatureSet` when diagnostics need the selected cumulative native mask.
 
 ## Verification And Maintenance
 
@@ -253,7 +265,8 @@ dotnet run --project demos/AlvorKit.FastNoise2.Demo --configuration Release -- -
 The verifier covers all 47 nodes, 93 variable entries, 11 enums and all 44 enum
 values, 32 required sources, 59 hybrids in both constant and node-backed form,
 all generation shapes, encoded loading, min/max reporting, active SIMD
-reporting, packed RGBA8 output, and concurrent generation.
+reporting, packed RGBA8 output, and concurrent generation. It also requires the
+schema-2 wrapper contract, 23 method entries, and all 12 managed enum inventories.
 
 When upgrading FastNoise2, regenerate only the FastNoise2 binding through the
 normal bindgen workflow, update the catalog from the new runtime metadata, and

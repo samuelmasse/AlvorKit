@@ -1,8 +1,9 @@
 namespace AlvorKit;
 
-/// <summary>Maps the typed package vocabulary to exact FastNoise2 runtime metadata names.</summary>
+/// <summary>Maps typed package vocabulary to exact FastNoise2 1.1.1 runtime metadata names.</summary>
 internal static class FnNames
 {
+    /// <summary>Maps a node type to its case-sensitive runtime metadata name.</summary>
     public static string Node(FnNodeType value) => value switch
     {
         FnNodeType.Constant => "Constant",
@@ -55,6 +56,7 @@ internal static class FnNames
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 
+    /// <summary>Maps a float variable to its case-sensitive name and component.</summary>
     public static FnMemberKey Float(FnFloatVariable value) => value switch
     {
         FnFloatVariable.AmplitudeScalingX => new("Amplitude Scaling", 0),
@@ -84,6 +86,7 @@ internal static class FnNames
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 
+    /// <summary>Maps an integer variable to its case-sensitive scalar name.</summary>
     public static FnMemberKey Integer(FnIntegerVariable value) => value switch
     {
         FnIntegerVariable.SeedOffset => FnMemberKey.Scalar("Seed Offset"),
@@ -95,6 +98,7 @@ internal static class FnNames
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 
+    /// <summary>Maps a hybrid input to its case-sensitive name and component.</summary>
     public static FnMemberKey Hybrid(FnHybrid value) => value switch
     {
         FnHybrid.Fade => FnMemberKey.Scalar("Fade"),
@@ -128,6 +132,7 @@ internal static class FnNames
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 
+    /// <summary>Maps a required input to its case-sensitive scalar name.</summary>
     public static FnMemberKey Source(FnSource value) => value switch
     {
         FnSource.A => FnMemberKey.Scalar("A"),
@@ -140,6 +145,7 @@ internal static class FnNames
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 
+    /// <summary>Maps a distance function to its case-sensitive runtime option label.</summary>
     public static string DistanceFunction(FnDistanceFunction value) => value switch
     {
         FnDistanceFunction.Euclidean => "Euclidean",
@@ -151,6 +157,7 @@ internal static class FnNames
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 
+    /// <summary>Maps a cellular return operation to its case-sensitive runtime option label.</summary>
     public static string CellularReturnType(FnCellularReturnType value) => value switch
     {
         FnCellularReturnType.Index0 => "Index0",
@@ -161,6 +168,7 @@ internal static class FnNames
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 
+    /// <summary>Maps a fade interpolation curve to its case-sensitive runtime option label.</summary>
     public static string Interpolation(FnInterpolation value) => value switch
     {
         FnInterpolation.Linear => "Linear",
@@ -169,6 +177,7 @@ internal static class FnNames
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 
+    /// <summary>Maps a removed coordinate to its case-sensitive runtime option label.</summary>
     public static string RemovedDimension(FnRemovedDimension value) => value switch
     {
         FnRemovedDimension.X => "X",
@@ -178,6 +187,7 @@ internal static class FnNames
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 
+    /// <summary>Maps a plane rotation preset to its case-sensitive runtime option label.</summary>
     public static string RotationType(FnRotationType value) => value switch
     {
         FnRotationType.ImproveXyPlanes => "Improve XY Planes",
@@ -185,6 +195,7 @@ internal static class FnNames
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 
+    /// <summary>Maps a domain-warp vector scheme to its case-sensitive runtime option label.</summary>
     public static string VectorizationScheme(FnVectorizationScheme value) => value switch
     {
         FnVectorizationScheme.OrthogonalGradientMatrix => "Orthogonal Gradient Matrix",

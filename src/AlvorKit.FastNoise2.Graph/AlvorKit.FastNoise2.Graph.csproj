@@ -6,10 +6,23 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <PackageDescription>Typed, validated, graph-owned construction and sampling for AlvorKit FastNoise2.</PackageDescription>
+        <Authors>AlvorKit</Authors>
+        <PackageDescription>Typed construction, managed node ownership, and allocation-free sampling for AlvorKit FastNoise2.</PackageDescription>
+        <PackageProjectUrl>https://github.com/alvorkit/alvorkit</PackageProjectUrl>
         <PackageTags>fastnoise2;noise;procedural-generation;simd;terrain</PackageTags>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/alvorkit/alvorkit</RepositoryUrl>
         <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Remove="..\..\README.md" />
+        <None Update="README.md" Pack="true" PackagePath="\" />
+        <None Include="..\..\res\fastnoise2\features.json"
+              Link="docs\fastnoise2-features.json"
+              Pack="true"
+              PackagePath="docs\fastnoise2-features.json" />
+    </ItemGroup>
 
     <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FastNoise2\AlvorKit.FastNoise2.csproj')">
         <PackageReference Include="AlvorKit.FastNoise2" Version="$(FastNoise2BindVer)" />

@@ -23,11 +23,17 @@ internal class FastNoise2FeatureVerifier(Fn fn, FastNoise2FeatureDatabase databa
 
     private void VerifyCatalog()
     {
-        Require(database.SchemaVersion == 1, $"Unsupported FastNoise2 feature database schema {database.SchemaVersion}.");
+        Require(database.SchemaVersion == 2, $"Unsupported FastNoise2 feature database schema {database.SchemaVersion}.");
         Require(database.FastNoiseVersion == "1.1.1", $"Unexpected FastNoise2 catalog version '{database.FastNoiseVersion}'.");
         Require(database.BindingVersion == "1.1.1.3", $"Unexpected binding catalog version '{database.BindingVersion}'.");
         Require(database.SamplingCapabilities.Count == 11, "The FastNoise2 sampling capability inventory is incomplete.");
         Require(database.BindingCapabilities.Count == 10, "The FastNoise2 binding capability inventory is incomplete.");
+        Require(database.WrapperContract.ValueKind == JsonValueKind.Object, "The wrapper contract is missing.");
+        Require(database.ManagedMethods.Count == 21, "The managed method inventory is incomplete.");
+        Require(database.ManagedEnums.Count == 12, "The managed enum inventory is incomplete.");
+        Require(
+            database.ManagedEnums.All(value => value.Name.Length > 0 && value.Values.Count > 0),
+            "A managed enum inventory entry is empty.");
         Require(database.Recipes.Count == 6, "The FastNoise2 recipe inventory is incomplete.");
         Require(database.Nodes.Count == fn.GetMetadataCount(), "The FastNoise2 node catalog count does not match runtime metadata.");
         VerifyIntegerVariableCatalog();

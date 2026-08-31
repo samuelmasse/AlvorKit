@@ -73,10 +73,13 @@ rules, and raw-API escape hatches.
 ## FastNoise2 graph helpers
 
 `AlvorKit.FastNoise2.Graph` provides typed node, variable, option, hybrid, and
-source enums over the generated FastNoise2 binding. `FnGraph` owns native node
-references, validates exact runtime metadata, and exposes span-based sampling
+source enums over the generated FastNoise2 binding. `FnGraph` validates exact
+runtime metadata and graph connections, while retained finalizable handles
+manage native references and node values expose allocation-free span sampling
 with AlvorKit maths vectors. See the
-[FastNoise2 capability guide](docs/AgentRules/FastNoise2.md) and the
+[package reference](src/AlvorKit.FastNoise2.Graph/README.md), the structured
+[agent feature database](res/fastnoise2/features.json), the
+[FastNoise2 capability guide](docs/AgentRules/FastNoise2.md), and the
 [raw-versus-typed demo](demos/AlvorKit.FastNoise2.Graph.Demo).
 
 ## Linting

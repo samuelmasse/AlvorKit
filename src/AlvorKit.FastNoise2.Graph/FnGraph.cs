@@ -1,131 +1,83 @@
 namespace AlvorKit;
 
-/// <summary>Creates, validates, and owns a graph of native FastNoise2 nodes.</summary>
-/// <param name="fn">The borrowed binding implementation. It must outlive this graph and every sampling call.</param>
+/// <summary>Creates and configures managed FastNoise2 graph nodes.</summary>
+/// <param name="fn">The binding implementation used to create, configure, sample, and release nodes.</param>
 /// <param name="maximumFeatureSet">The greatest FastSIMD implementation the native dispatcher may select.</param>
 /// <remarks>
 /// Graph construction is a cold configuration operation. The graph validates exact metadata members, graph ownership,
-/// required connections, and cycles. Sampling through a complete, immutable graph does not allocate managed memory.
+/// and cycles. It retains one independently finalizable native handle per created root. Sampling does not traverse or
+/// validate graph state and does not allocate managed memory.
 /// </remarks>
-public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet) : IDisposable
+/// <exception cref="ArgumentNullException"><paramref name="fn"/> is null.</exception>
+/// <exception cref="ArgumentOutOfRangeException"><paramref name="maximumFeatureSet"/> is not defined.</exception>
+public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet)
 {
-    private readonly FnMetadata metadata = new(fn);
-    private readonly List<FnNode> nodes = [];
+    private readonly FnMetadata metadata = new(RequireBinding(fn));
+    private readonly List<FnNodeHandle> handles = [];
     private readonly Dictionary<FnConnectionKey, FnNode> connections = [];
-    private readonly HashSet<FnNode> readyNodes = [];
-    private readonly HashSet<FnNode> encodedRoots = [];
     private readonly uint maximumFeatureSet = ValidateFeatureSet(maximumFeatureSet);
-    private int generation;
-    private bool disposed;
 
     /// <summary>Creates a graph that selects the fastest compiled FastSIMD implementation supported by the current CPU.</summary>
-    /// <param name="fn">The borrowed binding implementation. It must outlive this graph and every sampling call.</param>
+    /// <param name="fn">The binding implementation retained by this graph and its native handles.</param>
     public FnGraph(Fn fn) : this(fn, FnFeatureSet.Maximum)
     {
     }
 
-    /// <summary>Creates and retains a node of the requested typed kind.</summary>
+    /// <summary>Creates a managed node handle of the requested typed kind.</summary>
     /// <param name="type">The FastNoise2 1.1.1 metadata node to instantiate.</param>
-    /// <returns>A non-owning value handle to the new mutable node.</returns>
+    /// <returns>A value handle that keeps this graph and its new mutable node alive.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="type"/> is not a defined value.</exception>
     /// <exception cref="InvalidOperationException">The pinned metadata is absent or native construction fails.</exception>
-    /// <exception cref="ObjectDisposedException">This graph has been disposed.</exception>
     /// <remarks>
-    /// The native <c>fnNewFromMetadata</c> call constructs a node and this graph owns its returned reference. Metadata
-    /// names are resolved with ordinal, case-sensitive comparison. Required sources must be connected before sampling.
+    /// The native <c>fnNewFromMetadata</c> call constructs a node whose external reference is retained by this graph in
+    /// a finalizable handle. Metadata names are resolved with ordinal, case-sensitive comparison. Connect all required
+    /// sources before sampling; the sampling path deliberately does not revalidate the graph.
     /// </remarks>
     public FnGraphNode Create(FnNodeType type)
     {
         var name = FnNames.Node(type);
         var metadataId = metadata.FindNode(name);
-        ThrowIfDisposed();
         var node = fn.NewFromMetadata(metadataId, maximumFeatureSet);
 
         if (node == default)
             throw new InvalidOperationException($"FastNoise2 failed to create node '{name}'.");
 
-        nodes.Add(node);
-        RebuildReadyNodes();
-        return new(this, node, generation);
+        handles.Add(new FnNodeHandle(fn, node));
+        return new(this, node);
     }
 
-    /// <summary>Loads and retains a complete graph from FastNoise2's encoded Base64 node-tree format.</summary>
+    /// <summary>Loads a managed root handle from FastNoise2's encoded Base64 node-tree format.</summary>
     /// <param name="encodedTree">A complete tree copied from the upstream Node Editor.</param>
-    /// <returns>A non-owning handle to the decoded root node.</returns>
+    /// <returns>A value handle that keeps this graph and its decoded root alive.</returns>
     /// <exception cref="ArgumentException"><paramref name="encodedTree"/> is null, empty, or whitespace.</exception>
     /// <exception cref="InvalidOperationException">FastNoise2 rejects the encoded tree.</exception>
-    /// <exception cref="ObjectDisposedException">This graph has been disposed.</exception>
     /// <remarks>
     /// <c>fnNewFromEncodedNodeTree</c> returns only the root reference; native node connections retain all descendants.
     /// Encoded trees are version-coupled assets. This package loads them but does not expose an encoding operation.
     /// </remarks>
     public FnGraphNode CreateEncoded(string encodedTree)
     {
-        ThrowIfDisposed();
         ArgumentException.ThrowIfNullOrWhiteSpace(encodedTree);
         var node = fn.NewFromEncodedNodeTree(encodedTree, maximumFeatureSet);
 
         if (node == default)
             throw new InvalidOperationException("FastNoise2 rejected the encoded node tree.");
 
-        nodes.Add(node);
-        encodedRoots.Add(node);
-        readyNodes.Add(node);
-        return new(this, node, generation);
+        handles.Add(new FnNodeHandle(fn, node));
+        return new(this, node);
     }
 
-    /// <summary>Releases all owned native node references and invalidates every previously returned handle.</summary>
-    /// <exception cref="ObjectDisposedException">This graph has already been disposed.</exception>
-    /// <remarks>
-    /// References are released in reverse creation order through <c>fnDeleteNodeRef</c>. The operation is repeatable and
-    /// the graph remains reusable. Do not clear while another thread is configuring or sampling this graph.
-    /// </remarks>
-    public void Clear()
-    {
-        ThrowIfDisposed();
-        ReleaseNodes();
-    }
+    /// <summary>Gets the binding used by this graph.</summary>
+    internal Fn Binding => fn;
 
-    /// <summary>Releases all native node references and makes this graph permanently unusable.</summary>
-    /// <remarks>This operation is idempotent. It must not overlap configuration or sampling.</remarks>
-    public void Dispose()
-    {
-        if (disposed)
-            return;
-
-        ReleaseNodes();
-        disposed = true;
-    }
-
-    internal Fn UseForSampling(FnGraphNode node)
-    {
-        var native = RequireLive(node);
-
-        if (!readyNodes.Contains(native))
-            throw new InvalidOperationException(
-                $"FastNoise2 node '{metadata.Name(native)}' has an incomplete required-source graph.");
-
-        return fn;
-    }
-
+    /// <summary>Gets the native cumulative FastSIMD mask for a live node.</summary>
     internal FnFeatureSet GetActiveFeatureSet(FnGraphNode node) =>
-        (FnFeatureSet)fn.GetActiveFeatureSet(RequireLive(node));
+        (FnFeatureSet)fn.GetActiveFeatureSet(RequireOwned(node));
 
-    private void ReleaseNodes()
-    {
-        for (var index = nodes.Count - 1; index >= 0; index--)
-            fn.DeleteNodeRef(nodes[index]);
-
-        nodes.Clear();
-        connections.Clear();
-        readyNodes.Clear();
-        encodedRoots.Clear();
-        generation++;
-    }
-
+    /// <summary>Resolves and sets one exact float metadata member.</summary>
     internal void SetFloat(FnGraphNode target, FnFloatVariable variable, float value)
     {
-        var node = RequireLive(target);
+        var node = RequireOwned(target);
         var key = FnNames.Float(variable);
         var index = metadata.FindFloat(node, key);
 
@@ -133,9 +85,10 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet) : IDisposable
             throw metadata.Rejected(node, key, value);
     }
 
+    /// <summary>Resolves and sets one exact integer metadata member.</summary>
     internal void SetInteger(FnGraphNode target, FnIntegerVariable variable, int value)
     {
-        var node = RequireLive(target);
+        var node = RequireOwned(target);
         var key = FnNames.Integer(variable);
         var index = metadata.FindInteger(node, key);
 
@@ -143,30 +96,38 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet) : IDisposable
             throw metadata.Rejected(node, key, value);
     }
 
+    /// <summary>Resolves and sets the Distance Function enum option.</summary>
     internal void SetDistanceFunction(FnGraphNode target, FnDistanceFunction value) =>
         SetEnum(target, "Distance Function", FnNames.DistanceFunction(value));
 
+    /// <summary>Resolves and sets the cellular Return Type enum option.</summary>
     internal void SetCellularReturnType(FnGraphNode target, FnCellularReturnType value) =>
         SetEnum(target, "Return Type", FnNames.CellularReturnType(value));
 
+    /// <summary>Resolves and sets the Interpolation enum option.</summary>
     internal void SetInterpolation(FnGraphNode target, FnInterpolation value) =>
         SetEnum(target, "Interpolation", FnNames.Interpolation(value));
 
+    /// <summary>Resolves and sets the Remove Dimension enum option.</summary>
     internal void SetRemovedDimension(FnGraphNode target, FnRemovedDimension value) =>
         SetEnum(target, "Remove Dimension", FnNames.RemovedDimension(value));
 
+    /// <summary>Resolves and sets the Rotation Type enum option.</summary>
     internal void SetRotationType(FnGraphNode target, FnRotationType value) =>
         SetEnum(target, "Rotation Type", FnNames.RotationType(value));
 
+    /// <summary>Resolves and sets the Vectorization Scheme enum option.</summary>
     internal void SetVectorizationScheme(FnGraphNode target, FnVectorizationScheme value) =>
         SetEnum(target, "Vectorization Scheme", FnNames.VectorizationScheme(value));
 
+    /// <summary>Maps a Boolean to the exact Clamp Output enum option.</summary>
     internal void SetClampOutput(FnGraphNode target, bool value) =>
         SetEnum(target, "Clamp Output", value ? "True" : "False");
 
+    /// <summary>Sets a hybrid constant after proving no undetachable node is connected.</summary>
     internal void SetHybrid(FnGraphNode target, FnHybrid hybrid, float value)
     {
-        var node = RequireLive(target);
+        var node = RequireOwned(target);
         var key = FnNames.Hybrid(hybrid);
         var index = metadata.FindHybrid(node, key);
         var connectionKey = new FnConnectionKey(node, true, index);
@@ -182,10 +143,11 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet) : IDisposable
             throw metadata.Rejected(node, key, value);
     }
 
+    /// <summary>Connects an acyclic hybrid source.</summary>
     internal void SetHybrid(FnGraphNode target, FnHybrid hybrid, FnGraphNode source)
     {
-        var node = RequireLive(target);
-        var sourceNode = RequireLive(source);
+        var node = RequireOwned(target);
+        var sourceNode = RequireOwned(source);
         var key = FnNames.Hybrid(hybrid);
         var index = metadata.FindHybrid(node, key);
         var connectionKey = new FnConnectionKey(node, true, index);
@@ -196,13 +158,13 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet) : IDisposable
             throw metadata.Rejected(node, key, metadata.Name(sourceNode));
 
         connections[connectionKey] = sourceNode;
-        RebuildReadyNodes();
     }
 
+    /// <summary>Connects an acyclic required source.</summary>
     internal void SetSource(FnGraphNode target, FnSource source, FnGraphNode value)
     {
-        var node = RequireLive(target);
-        var sourceNode = RequireLive(value);
+        var node = RequireOwned(target);
+        var sourceNode = RequireOwned(value);
         var key = FnNames.Source(source);
         var index = metadata.FindSource(node, key);
         var connectionKey = new FnConnectionKey(node, false, index);
@@ -213,12 +175,12 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet) : IDisposable
             throw metadata.Rejected(node, key, metadata.Name(sourceNode));
 
         connections[connectionKey] = sourceNode;
-        RebuildReadyNodes();
     }
 
+    /// <summary>Resolves an exact enum member and option name before setting its runtime index.</summary>
     private void SetEnum(FnGraphNode target, string variableName, string optionName)
     {
-        var node = RequireLive(target);
+        var node = RequireOwned(target);
         var key = FnMemberKey.Scalar(variableName);
         var variableIndex = metadata.FindEnum(node, key);
         var optionIndex = metadata.FindEnumOption(node, variableIndex, key, optionName);
@@ -227,22 +189,23 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet) : IDisposable
             throw metadata.Rejected(node, key, optionName);
     }
 
-    private FnNode RequireLive(FnGraphNode node)
+    /// <summary>Returns a native handle only when it belongs to this configuration graph.</summary>
+    private FnNode RequireOwned(FnGraphNode node)
     {
-        ThrowIfDisposed();
-
-        if (!ReferenceEquals(node.Owner, this) || node.Generation != generation || node.Native == default)
-            throw new InvalidOperationException("The FastNoise2 node is default, belongs to another graph, or was released.");
+        if (!ReferenceEquals(node.Owner, this))
+            throw new InvalidOperationException("The FastNoise2 node is default or belongs to another graph.");
 
         return node.Native;
     }
 
+    /// <summary>Rejects a connection when its source already reaches its target.</summary>
     private void RequireAcyclicConnection(FnNode target, FnNode source)
     {
         if (target == source || CanReach(source, target, []))
             throw new InvalidOperationException("FastNoise2 node connections must form an acyclic graph.");
     }
 
+    /// <summary>Traverses tracked outgoing connections to find a target node.</summary>
     private bool CanReach(FnNode current, FnNode wanted, HashSet<FnNode> visited)
     {
         if (!visited.Add(current))
@@ -260,53 +223,7 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet) : IDisposable
         return false;
     }
 
-    private void RebuildReadyNodes()
-    {
-        readyNodes.Clear();
-        var incompleteNodes = new HashSet<FnNode>();
-
-        foreach (var node in nodes)
-            IsReady(node, incompleteNodes);
-    }
-
-    private bool IsReady(FnNode node, HashSet<FnNode> incompleteNodes)
-    {
-        if (encodedRoots.Contains(node) || readyNodes.Contains(node))
-            return true;
-
-        if (incompleteNodes.Contains(node))
-            return false;
-
-        var requiredCount = metadata.RequiredSourceCount(node);
-        var connectedRequiredCount = 0;
-
-        foreach (var connection in connections)
-        {
-            if (connection.Key.Target != node)
-                continue;
-
-            if (!connection.Key.IsHybrid)
-                connectedRequiredCount++;
-
-            if (!IsReady(connection.Value, incompleteNodes))
-            {
-                incompleteNodes.Add(node);
-                return false;
-            }
-        }
-
-        if (connectedRequiredCount != requiredCount)
-        {
-            incompleteNodes.Add(node);
-            return false;
-        }
-
-        readyNodes.Add(node);
-        return true;
-    }
-
-    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(disposed, this);
-
+    /// <summary>Rejects invented FastSIMD masks and returns a native ceiling.</summary>
     private static uint ValidateFeatureSet(FnFeatureSet featureSet)
     {
         if (!Enum.IsDefined(featureSet))
@@ -314,5 +231,8 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet) : IDisposable
 
         return (uint)featureSet;
     }
+
+    /// <summary>Rejects a null borrowed binding during field initialization.</summary>
+    private static Fn RequireBinding(Fn? value) => value ?? throw new ArgumentNullException("fn");
 
 }
