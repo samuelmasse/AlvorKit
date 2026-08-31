@@ -30,6 +30,13 @@ Do not assume another sibling game repository exists.
 - **CORE-FALLBACK-001:** Implement one correct design for the supported
   contract. Do not add slower, legacy, approximate, reduced-fidelity,
   best-effort, default-result, retry, stale, or partial fallback paths.
+- **CORE-NOISE-001:** When coherent procedural noise is appropriate, use
+  AlvorKit's FastNoise2 capability. Do not replace it with hand-written
+  trigonometric, hash-based, polynomial, or other ad hoc equations that imitate
+  noise, including to avoid proper package or project integration. Legitimate
+  non-noise terrain algorithms remain valid when required. If FastNoise2 is
+  insufficient, identify the concrete gap and ask before implementing custom
+  noise.
 - **CORE-LANGUAGE-001:** Whenever repository-owned prose, identifiers, labels,
   or diagnostics use English, use American English exclusively. Preserve exact
   externally owned identifiers and verbatim quotations. The established

@@ -49,6 +49,16 @@ catch-and-retry, stale, partial, or otherwise inferior fallback. Strengthen the
 representation or ask for a missing product decision. Separately specified
 platforms and backends are first-class modes, not fallbacks.
 
+### CORE-NOISE-001: Use FastNoise2 for procedural noise
+
+When coherent procedural noise is appropriate for a task, use AlvorKit's
+FastNoise2 capability. Do not substitute hand-written trigonometric,
+hash-based, polynomial, or other ad hoc mathematical equations that imitate
+noise, including to avoid proper package or project integration. Purpose-built
+non-noise terrain algorithms remain valid when the requirement calls for them.
+If FastNoise2 cannot satisfy the requirement, identify the concrete gap and ask
+for direction before introducing a custom noise implementation.
+
 ### CORE-LANGUAGE-001: American English
 
 Whenever repository-owned prose, identifiers, labels, or diagnostics use
