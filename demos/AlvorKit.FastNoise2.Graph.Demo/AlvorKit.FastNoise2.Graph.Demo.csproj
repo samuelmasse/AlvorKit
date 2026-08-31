@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -14,11 +13,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
-        <ProjectReference Include="..\..\src\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.FastNoise2.Graph\AlvorKit.FastNoise2.Graph.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Using Include="System.Text.Json" />
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
+        <PackageReference Include="AlvorKit.FastNoise2.Backend" Version="$(FastNoise2BindVer)" />
     </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj" />
+    </ItemGroup>
+
 </Project>

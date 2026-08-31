@@ -1,0 +1,573 @@
+{
+  "schemaVersion": 1,
+  "fastNoiseVersion": "1.1.1",
+  "bindingVersion": "1.1.1.3",
+  "purpose": "Curated agent knowledge over the complete FastNoise2 runtime metadata exposed by AlvorKit.",
+  "integerVariableNames": ["Seed Offset", "Value Index", "Distance Index 0", "Distance Index 1", "Octaves", "Pow"],
+  "samplingCapabilities": [
+    { "name": "GenUniformGrid2D", "dimensions": 2, "layout": "X then Y", "use": "Regular 2D textures and height fields." },
+    { "name": "GenUniformGrid3D", "dimensions": 3, "layout": "X then Y then Z", "use": "Volumes, voxels, and 3D slices." },
+    { "name": "GenUniformGrid4D", "dimensions": 4, "layout": "X then Y then Z then W", "use": "4D fields and animated 3D slices." },
+    { "name": "GenPositionArray2D", "dimensions": 2, "layout": "Caller position order", "use": "Arbitrary or reusable 2D sample positions." },
+    { "name": "GenPositionArray3D", "dimensions": 3, "layout": "Caller position order", "use": "Arbitrary or reusable 3D sample positions." },
+    { "name": "GenPositionArray4D", "dimensions": 4, "layout": "Caller position order", "use": "Arbitrary or reusable 4D sample positions." },
+    { "name": "GenTileable2D", "dimensions": 2, "layout": "X then Y", "use": "Seamless 2D output evaluated through a 4D hypertorus." },
+    { "name": "GenSingle2D", "dimensions": 2, "layout": "Single value", "use": "One isolated 2D sample; not bulk generation." },
+    { "name": "GenSingle3D", "dimensions": 3, "layout": "Single value", "use": "One isolated 3D sample; not bulk generation." },
+    { "name": "GenSingle4D", "dimensions": 4, "layout": "Single value", "use": "One isolated 4D sample; not bulk generation." },
+    { "name": "BatchMinMax", "dimensions": 0, "layout": "Two-float output span", "use": "Optional minimum and maximum for numeric batch output." }
+  ],
+  "bindingCapabilities": [
+    { "name": "Encoded tree loading", "available": true, "api": "NewFromEncodedNodeTree" },
+    { "name": "Runtime node metadata", "available": true, "api": "GetMetadata*" },
+    { "name": "Dynamic node construction", "available": true, "api": "NewFromMetadata" },
+    { "name": "Variable configuration", "available": true, "api": "SetVariableFloat and SetVariableIntEnum" },
+    { "name": "Required source connections", "available": true, "api": "SetNodeLookup" },
+    { "name": "Hybrid constant and node inputs", "available": true, "api": "SetHybridFloat and SetHybridNodeLookup" },
+    { "name": "SIMD selection and reporting", "available": true, "api": "maxFeatureSet and GetActiveFeatureSet" },
+    { "name": "Programmatic graph encoding", "available": false, "api": "Not present in FastNoise_C.h" },
+    { "name": "Custom FastSIMD nodes", "available": false, "api": "C++ extension surface only" },
+    { "name": "Node Editor IPC", "available": false, "api": "Separate upstream library, not packaged by AlvorKit" }
+  ],
+  "nodes": [
+    {
+      "name": "Constant",
+      "groups": ["Basic Generators"],
+      "purpose": "Uniform scalar source for masks, operands, and hybrid-equivalent wiring.",
+      "variables": ["Value"],
+      "lookups": [],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Value": 0.35 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "White",
+      "groups": ["Basic Generators"],
+      "purpose": "Independent seeded values without spatial continuity.",
+      "variables": ["Seed Offset", "Output Min", "Output Max"],
+      "lookups": [],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "Checkerboard",
+      "groups": ["Basic Generators"],
+      "purpose": "Alternating N-dimensional cells for grids and diagnostic patterns.",
+      "variables": ["Feature Scale", "Output Min", "Output Max"],
+      "lookups": [],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Feature Scale": 16.0 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "SineWave",
+      "groups": ["Basic Generators"],
+      "purpose": "Periodic signal or mask with world-unit feature sizing.",
+      "variables": ["Feature Scale", "Output Min", "Output Max"],
+      "lookups": [],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Feature Scale": 24.0 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "Gradient",
+      "groups": ["Basic Generators"],
+      "purpose": "Linear coordinate field assembled independently from X, Y, Z, and W.",
+      "variables": ["Multiplier.X", "Multiplier.Y", "Multiplier.Z", "Multiplier.W"],
+      "lookups": [],
+      "hybrids": ["Offset.X", "Offset.Y", "Offset.Z", "Offset.W"],
+      "enums": {},
+      "showcase": {
+        "variables": { "Multiplier.X": 0.015, "Multiplier.Y": 0.009 },
+        "hybrids": { "Offset.X": 0.0, "Offset.Y": 0.0 },
+        "enums": {}
+      }
+    },
+    {
+      "name": "DistanceToPoint",
+      "groups": ["Basic Generators"],
+      "purpose": "Distance field from a configurable point in the current, possibly modified domain.",
+      "variables": ["Distance Function"],
+      "lookups": [],
+      "hybrids": ["Point.X", "Point.Y", "Point.Z", "Point.W", "Minkowski P"],
+      "enums": {
+        "Distance Function": ["Euclidean", "Euclidean Squared", "Manhattan", "Hybrid", "Max Axis", "Minkowski"]
+      },
+      "showcase": {
+        "variables": {},
+        "hybrids": { "Point.X": 0.0, "Point.Y": 0.0, "Minkowski P": 1.5 },
+        "enums": { "Distance Function": "Euclidean" }
+      }
+    },
+    {
+      "name": "Simplex",
+      "groups": ["Coherent Noise"],
+      "purpose": "Recommended general coherent source with good speed, smoothness, and isotropy.",
+      "variables": ["Feature Scale", "Seed Offset", "Output Min", "Output Max"],
+      "lookups": [],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Feature Scale": 32.0 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "SuperSimplex",
+      "groups": ["Coherent Noise"],
+      "purpose": "Extra-smooth, highly isotropic coherent source at greater cost than Simplex.",
+      "variables": ["Feature Scale", "Seed Offset", "Output Min", "Output Max"],
+      "lookups": [],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Feature Scale": 32.0 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "Perlin",
+      "groups": ["Coherent Noise"],
+      "purpose": "Classic grid-gradient coherent noise with characteristic directional structure.",
+      "variables": ["Feature Scale", "Seed Offset", "Output Min", "Output Max"],
+      "lookups": [],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Feature Scale": 32.0 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "Value",
+      "groups": ["Coherent Noise"],
+      "purpose": "Fast interpolated grid values for soft or intentionally blockier variation.",
+      "variables": ["Feature Scale", "Seed Offset", "Output Min", "Output Max"],
+      "lookups": [],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Feature Scale": 32.0 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "CellularValue",
+      "groups": ["Coherent Noise"],
+      "purpose": "White-noise value associated with the selected nearest Voronoi cell.",
+      "variables": ["Feature Scale", "Seed Offset", "Output Min", "Output Max", "Distance Function", "Value Index"],
+      "lookups": [],
+      "hybrids": ["Minkowski P", "Grid Jitter", "Size Jitter"],
+      "enums": {
+        "Distance Function": ["Euclidean", "Euclidean Squared", "Manhattan", "Hybrid", "Max Axis", "Minkowski"]
+      },
+      "showcase": {
+        "variables": { "Feature Scale": 32.0, "Value Index": 0.0 },
+        "hybrids": { "Minkowski P": 1.5, "Grid Jitter": 1.0, "Size Jitter": 0.0 },
+        "enums": { "Distance Function": "Euclidean Squared" }
+      }
+    },
+    {
+      "name": "CellularDistance",
+      "groups": ["Coherent Noise"],
+      "purpose": "Nearest-cell distance or arithmetic combination of two nearest-cell distances.",
+      "variables": ["Feature Scale", "Seed Offset", "Output Min", "Output Max", "Distance Function", "Distance Index 0", "Distance Index 1", "Return Type"],
+      "lookups": [],
+      "hybrids": ["Minkowski P", "Grid Jitter", "Size Jitter"],
+      "enums": {
+        "Distance Function": ["Euclidean", "Euclidean Squared", "Manhattan", "Hybrid", "Max Axis", "Minkowski"],
+        "Return Type": ["Index0", "Index0Add1", "Index0Sub1", "Index0Mul1", "Index0Div1"]
+      },
+      "showcase": {
+        "variables": { "Feature Scale": 32.0, "Distance Index 0": 0.0, "Distance Index 1": 1.0 },
+        "hybrids": { "Minkowski P": 1.5, "Grid Jitter": 1.0, "Size Jitter": 0.0 },
+        "enums": { "Distance Function": "Euclidean", "Return Type": "Index0Sub1" }
+      }
+    },
+    {
+      "name": "CellularLookup",
+      "groups": ["Coherent Noise"],
+      "purpose": "Evaluates a required source at the nearest cell center for custom cell values.",
+      "variables": ["Feature Scale", "Seed Offset", "Distance Function"],
+      "lookups": ["Lookup"],
+      "hybrids": ["Minkowski P", "Grid Jitter", "Size Jitter"],
+      "enums": {
+        "Distance Function": ["Euclidean", "Euclidean Squared", "Manhattan", "Hybrid", "Max Axis", "Minkowski"]
+      },
+      "showcase": {
+        "variables": { "Feature Scale": 32.0 },
+        "hybrids": { "Minkowski P": 1.5, "Grid Jitter": 1.0, "Size Jitter": 0.0 },
+        "enums": { "Distance Function": "Euclidean Squared" }
+      }
+    },
+    {
+      "name": "FractalFBm",
+      "groups": ["Fractal"],
+      "purpose": "Layered natural detail for terrain, clouds, and organic textures.",
+      "variables": ["Octaves", "Lacunarity"],
+      "lookups": ["Source"],
+      "hybrids": ["Gain", "Weighted Strength"],
+      "enums": {},
+      "showcase": {
+        "variables": { "Octaves": 5.0, "Lacunarity": 2.0 },
+        "hybrids": { "Gain": 0.5, "Weighted Strength": 0.0 },
+        "enums": {}
+      }
+    },
+    {
+      "name": "PingPong",
+      "groups": ["Modifiers"],
+      "purpose": "Reflects scaled input values between extremes for flowing contour-like patterns.",
+      "variables": [],
+      "lookups": ["Source"],
+      "hybrids": ["Ping Pong Strength"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "Ping Pong Strength": 2.5 }, "enums": {} }
+    },
+    {
+      "name": "FractalRidged",
+      "groups": ["Fractal"],
+      "purpose": "Layered sharp peaks, ridges, valleys, and canyon-like structure.",
+      "variables": ["Octaves", "Lacunarity"],
+      "lookups": ["Source"],
+      "hybrids": ["Gain", "Weighted Strength"],
+      "enums": {},
+      "showcase": {
+        "variables": { "Octaves": 5.0, "Lacunarity": 2.0 },
+        "hybrids": { "Gain": 0.5, "Weighted Strength": 0.0 },
+        "enums": {}
+      }
+    },
+    {
+      "name": "DomainWarpSimplex",
+      "groups": ["Domain Warp"],
+      "purpose": "High-quality simplex coordinate distortion with configurable vector construction.",
+      "variables": ["Feature Scale", "Seed Offset", "Amplitude Scaling.X", "Amplitude Scaling.Y", "Amplitude Scaling.Z", "Amplitude Scaling.W", "Vectorization Scheme"],
+      "lookups": ["Source"],
+      "hybrids": ["Warp Amplitude"],
+      "enums": { "Vectorization Scheme": ["Orthogonal Gradient Matrix", "Gradient Outer Product"] },
+      "showcase": {
+        "variables": { "Feature Scale": 48.0 },
+        "hybrids": { "Warp Amplitude": 24.0 },
+        "enums": { "Vectorization Scheme": "Orthogonal Gradient Matrix" }
+      }
+    },
+    {
+      "name": "DomainWarpSuperSimplex",
+      "groups": ["Domain Warp"],
+      "purpose": "Smoothest built-in coordinate warp, at higher cost than simplex warp.",
+      "variables": ["Feature Scale", "Seed Offset", "Amplitude Scaling.X", "Amplitude Scaling.Y", "Amplitude Scaling.Z", "Amplitude Scaling.W", "Vectorization Scheme"],
+      "lookups": ["Source"],
+      "hybrids": ["Warp Amplitude"],
+      "enums": { "Vectorization Scheme": ["Orthogonal Gradient Matrix", "Gradient Outer Product"] },
+      "showcase": {
+        "variables": { "Feature Scale": 48.0 },
+        "hybrids": { "Warp Amplitude": 24.0 },
+        "enums": { "Vectorization Scheme": "Orthogonal Gradient Matrix" }
+      }
+    },
+    {
+      "name": "DomainWarpGradient",
+      "groups": ["Domain Warp"],
+      "purpose": "Fast gradient-grid coordinate distortion.",
+      "variables": ["Feature Scale", "Seed Offset", "Amplitude Scaling.X", "Amplitude Scaling.Y", "Amplitude Scaling.Z", "Amplitude Scaling.W"],
+      "lookups": ["Source"],
+      "hybrids": ["Warp Amplitude"],
+      "enums": {},
+      "showcase": { "variables": { "Feature Scale": 48.0 }, "hybrids": { "Warp Amplitude": 24.0 }, "enums": {} }
+    },
+    {
+      "name": "DomainWarpFractalProgressive",
+      "groups": ["Domain Warp", "Fractal"],
+      "purpose": "Multi-octave warp in which every octave receives the previously warped position.",
+      "variables": ["Octaves", "Lacunarity"],
+      "lookups": ["Domain Warp Source"],
+      "hybrids": ["Gain", "Weighted Strength"],
+      "enums": {},
+      "showcase": {
+        "variables": { "Octaves": 4.0, "Lacunarity": 2.0 },
+        "hybrids": { "Gain": 0.5, "Weighted Strength": 0.0 },
+        "enums": {}
+      }
+    },
+    {
+      "name": "DomainWarpFractalIndependent",
+      "groups": ["Domain Warp", "Fractal"],
+      "purpose": "Multi-octave warp whose octave offsets independently accumulate from the original position.",
+      "variables": ["Octaves", "Lacunarity"],
+      "lookups": ["Domain Warp Source"],
+      "hybrids": ["Gain", "Weighted Strength"],
+      "enums": {},
+      "showcase": {
+        "variables": { "Octaves": 4.0, "Lacunarity": 2.0 },
+        "hybrids": { "Gain": 0.5, "Weighted Strength": 0.0 },
+        "enums": {}
+      }
+    },
+    {
+      "name": "Add",
+      "groups": ["Operators"],
+      "purpose": "Adds a required field to a constant or spatially varying right operand.",
+      "variables": [],
+      "lookups": ["LHS"],
+      "hybrids": ["RHS"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "RHS": 0.25 }, "enums": {} }
+    },
+    {
+      "name": "Subtract",
+      "groups": ["Operators"],
+      "purpose": "Subtracts two constant or spatially varying hybrid operands.",
+      "variables": [],
+      "lookups": [],
+      "hybrids": ["LHS", "RHS"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "LHS": 0.5, "RHS": -0.5 }, "enums": {} }
+    },
+    {
+      "name": "Multiply",
+      "groups": ["Operators"],
+      "purpose": "Multiplies a required field by a constant or spatially varying mask.",
+      "variables": [],
+      "lookups": ["LHS"],
+      "hybrids": ["RHS"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "RHS": 0.65 }, "enums": {} }
+    },
+    {
+      "name": "Divide",
+      "groups": ["Operators"],
+      "purpose": "Divides one hybrid operand by another; the denominator must stay away from zero.",
+      "variables": [],
+      "lookups": [],
+      "hybrids": ["LHS", "RHS"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "LHS": 0.75, "RHS": 0.5 }, "enums": {} }
+    },
+    {
+      "name": "Abs",
+      "groups": ["Modifiers"],
+      "purpose": "Absolute magnitude of a required source.",
+      "variables": [],
+      "lookups": ["Source"],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "Min",
+      "groups": ["Blends"],
+      "purpose": "Hard minimum between a required field and a hybrid operand.",
+      "variables": [],
+      "lookups": ["LHS"],
+      "hybrids": ["RHS"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "RHS": 0.2 }, "enums": {} }
+    },
+    {
+      "name": "Max",
+      "groups": ["Blends"],
+      "purpose": "Hard maximum between a required field and a hybrid operand.",
+      "variables": [],
+      "lookups": ["LHS"],
+      "hybrids": ["RHS"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "RHS": -0.2 }, "enums": {} }
+    },
+    {
+      "name": "MinSmooth",
+      "groups": ["Blends"],
+      "purpose": "Quadratic smooth minimum for softly joining scalar fields.",
+      "variables": [],
+      "lookups": ["LHS"],
+      "hybrids": ["RHS", "Smoothness"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "RHS": 0.2, "Smoothness": 0.25 }, "enums": {} }
+    },
+    {
+      "name": "MaxSmooth",
+      "groups": ["Blends"],
+      "purpose": "Quadratic smooth maximum for softly joining scalar fields.",
+      "variables": [],
+      "lookups": ["LHS"],
+      "hybrids": ["RHS", "Smoothness"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "RHS": -0.2, "Smoothness": 0.25 }, "enums": {} }
+    },
+    {
+      "name": "SignedSquareRoot",
+      "groups": ["Modifiers"],
+      "purpose": "Compresses source magnitude with a square root while preserving sign.",
+      "variables": [],
+      "lookups": ["Source"],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "PowFloat",
+      "groups": ["Blends"],
+      "purpose": "Raises absolute hybrid input magnitude to a constant or spatially varying float exponent.",
+      "variables": [],
+      "lookups": [],
+      "hybrids": ["Value", "Pow"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "Value": 0.65, "Pow": 2.5 }, "enums": {} }
+    },
+    {
+      "name": "PowInt",
+      "groups": ["Blends"],
+      "purpose": "Fast integer power of a required source.",
+      "variables": ["Pow"],
+      "lookups": ["Value"],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Pow": 3.0 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "DomainScale",
+      "groups": ["Domain Modifiers"],
+      "purpose": "Uniform coordinate scaling before a required source.",
+      "variables": ["Scaling"],
+      "lookups": ["Source"],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Scaling": 1.7 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "DomainOffset",
+      "groups": ["Domain Modifiers"],
+      "purpose": "Constant or spatially varying per-axis coordinate translation.",
+      "variables": [],
+      "lookups": ["Source"],
+      "hybrids": ["Offset.X", "Offset.Y", "Offset.Z", "Offset.W"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "Offset.X": 13.0, "Offset.Y": -7.0 }, "enums": {} }
+    },
+    {
+      "name": "DomainRotate",
+      "groups": ["Domain Modifiers"],
+      "purpose": "Arbitrary yaw, pitch, and roll coordinate rotation before a source.",
+      "variables": ["Yaw", "Pitch", "Roll"],
+      "lookups": ["Source"],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Yaw": 0.7, "Pitch": 0.0, "Roll": 0.0 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "DomainAxisScale",
+      "groups": ["Domain Modifiers"],
+      "purpose": "Independent X, Y, Z, and W coordinate scaling for anisotropic features.",
+      "variables": ["Scaling.X", "Scaling.Y", "Scaling.Z", "Scaling.W"],
+      "lookups": ["Source"],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Scaling.X": 1.8, "Scaling.Y": 0.65 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "SeedOffset",
+      "groups": ["Modifiers"],
+      "purpose": "Offsets the seed passed into a complete child graph.",
+      "variables": ["Seed Offset"],
+      "lookups": ["Source"],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Seed Offset": 19.0 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "ConvertRGBA8",
+      "groups": ["Modifiers"],
+      "purpose": "Packs clamped grayscale bytes and alpha 255 into the bit pattern of each output float.",
+      "variables": ["Min", "Max"],
+      "lookups": ["Source"],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": { "Min": -1.0, "Max": 1.0 }, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "GeneratorCache",
+      "groups": ["Modifiers"],
+      "purpose": "Thread-local reuse when a complex child is evaluated repeatedly at identical coordinates and seed.",
+      "variables": [],
+      "lookups": ["Source"],
+      "hybrids": [],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": {}, "enums": {} }
+    },
+    {
+      "name": "Fade",
+      "groups": ["Blends"],
+      "purpose": "Interpolates between required A and B fields with a ranged fade signal and selectable easing.",
+      "variables": ["Interpolation"],
+      "lookups": ["A", "B"],
+      "hybrids": ["Fade", "Fade Min", "Fade Max"],
+      "enums": { "Interpolation": ["Linear", "Hermite", "Quintic"] },
+      "showcase": {
+        "variables": {},
+        "hybrids": { "Fade": 0.0, "Fade Min": -1.0, "Fade Max": 1.0 },
+        "enums": { "Interpolation": "Quintic" }
+      }
+    },
+    {
+      "name": "Remap",
+      "groups": ["Modifiers"],
+      "purpose": "Maps a required source between hybrid ranges with optional output clamping.",
+      "variables": ["Clamp Output"],
+      "lookups": ["Source"],
+      "hybrids": ["From Min", "From Max", "To Min", "To Max"],
+      "enums": { "Clamp Output": ["False", "True"] },
+      "showcase": {
+        "variables": {},
+        "hybrids": { "From Min": -1.0, "From Max": 1.0, "To Min": 0.0, "To Max": 1.0 },
+        "enums": { "Clamp Output": "True" }
+      }
+    },
+    {
+      "name": "Terrace",
+      "groups": ["Modifiers"],
+      "purpose": "Quantizes a source into steps with optional spatially varying transition smoothing.",
+      "variables": ["Step Count"],
+      "lookups": ["Source"],
+      "hybrids": ["Smoothness"],
+      "enums": {},
+      "showcase": { "variables": { "Step Count": 6.0 }, "hybrids": { "Smoothness": 0.25 }, "enums": {} }
+    },
+    {
+      "name": "AddDimension",
+      "groups": ["Domain Modifiers"],
+      "purpose": "Appends a constant or spatially varying final coordinate to 2D or 3D input.",
+      "variables": [],
+      "lookups": ["Source"],
+      "hybrids": ["New Dimension Position"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "New Dimension Position": 17.0 }, "enums": {} }
+    },
+    {
+      "name": "RemoveDimension",
+      "groups": ["Domain Modifiers"],
+      "purpose": "Drops a selected coordinate before evaluating a source from 3D or 4D input.",
+      "variables": ["Remove Dimension"],
+      "lookups": ["Source"],
+      "hybrids": [],
+      "enums": { "Remove Dimension": ["X", "Y", "Z", "W"] },
+      "showcase": { "variables": {}, "hybrids": {}, "enums": { "Remove Dimension": "Y" } }
+    },
+    {
+      "name": "Modulus",
+      "groups": ["Operators"],
+      "purpose": "Floating-point remainder of two hybrid operands; the divisor must stay away from zero.",
+      "variables": [],
+      "lookups": [],
+      "hybrids": ["LHS", "RHS"],
+      "enums": {},
+      "showcase": { "variables": {}, "hybrids": { "LHS": 0.75, "RHS": 0.35 }, "enums": {} }
+    },
+    {
+      "name": "DomainRotatePlane",
+      "groups": ["Domain Modifiers"],
+      "purpose": "Fast preset rotation that reduces axis artifacts in a selected 3D plane.",
+      "variables": ["Rotation Type"],
+      "lookups": ["Source"],
+      "hybrids": [],
+      "enums": { "Rotation Type": ["Improve XY Planes", "Improve XZ Planes"] },
+      "showcase": { "variables": {}, "hybrids": {}, "enums": { "Rotation Type": "Improve XY Planes" } }
+    }
+  ],
+  "recipes": [
+    { "name": "Natural height field", "graph": "FractalFBm(Source=Simplex)", "use": "Broad terrain and organic scalar fields." },
+    { "name": "Mountain ridges", "graph": "Terrace(Source=FractalRidged(Source=Simplex))", "use": "Peaks, ridges, and stepped elevation." },
+    { "name": "Organic warp", "graph": "DomainWarpSimplex(Source=FractalFBm(Source=Simplex))", "use": "Twisted terrain, clouds, and marbling." },
+    { "name": "Cell borders", "graph": "Abs(Source=CellularDistance(ReturnType=Index0Sub1))", "use": "Caves, cracks, and Voronoi borders." },
+    { "name": "Biome blend", "graph": "Fade(A=graphA,B=graphB,Fade=lowFrequencySimplex)", "use": "Spatially varying interpolation between complete graphs." },
+    { "name": "Animated slice", "graph": "AddDimension(Source=3DGraph,NewDimensionPosition=time)", "use": "Time-varying 2D output without translating the XY domain." }
+  ]
+}

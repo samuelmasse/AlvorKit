@@ -36,7 +36,8 @@ Do not assume another sibling game repository exists.
   noise, including to avoid proper package or project integration. Legitimate
   non-noise terrain algorithms remain valid when required. If FastNoise2 is
   insufficient, identify the concrete gap and ask before implementing custom
-  noise.
+  noise. Read `../AlvorKit/docs/AgentRules/FastNoise2.md` before choosing or
+  configuring noise nodes.
 - **CORE-LANGUAGE-001:** Whenever repository-owned prose, identifiers, labels,
   or diagnostics use English, use American English exclusively. Preserve exact
   externally owned identifiers and verbatim quotations. The established
@@ -85,6 +86,8 @@ Read all matching documents before design:
   paired debug facades, consumers, tests, and benchmarks.
 - `../AlvorKit/docs/AgentRules/Hashing.md`: any hash, checksum, fingerprint,
   deterministic procedural sampling, or table mapping.
+- `../AlvorKit/docs/AgentRules/FastNoise2.md`: procedural noise, FastNoise2
+  graphs, terrain, cellular fields, fractals, domain warping, or sampling.
 - `../AlvorKit/docs/AgentRules/ProjectsAndDependencies.md`: `.slnx` solution
   changes, project creation or reorganization, references, package roles,
   scopes, ECS, GL, maths, and menus.

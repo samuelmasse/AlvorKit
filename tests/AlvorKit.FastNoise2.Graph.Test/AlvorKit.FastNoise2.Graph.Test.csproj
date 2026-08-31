@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="..\..\AlvorKit.Packages.props" />
+
+    <PropertyGroup>
+        <FastNoise2NativePackageSource>$(AlvorKitRepositoryRoot)bin\AlvorKit.FastNoise2.Native\Release</FastNoise2NativePackageSource>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="Exists('$(FastNoise2NativePackageSource)')">
+        <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(FastNoise2NativePackageSource)</RestoreAdditionalProjectSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.FastNoise2.Graph\AlvorKit.FastNoise2.Graph.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
+        <PackageReference Include="AlvorKit.FastNoise2.Backend" Version="$(FastNoise2BindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj" />
+    </ItemGroup>
+
+</Project>

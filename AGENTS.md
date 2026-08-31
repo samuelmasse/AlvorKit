@@ -57,7 +57,9 @@ hash-based, polynomial, or other ad hoc mathematical equations that imitate
 noise, including to avoid proper package or project integration. Purpose-built
 non-noise terrain algorithms remain valid when the requirement calls for them.
 If FastNoise2 cannot satisfy the requirement, identify the concrete gap and ask
-for direction before introducing a custom noise implementation.
+for direction before introducing a custom noise implementation. Before choosing
+or configuring noise nodes, read `docs/AgentRules/FastNoise2.md` and its linked
+structured feature catalog.
 
 ### CORE-LANGUAGE-001: American English
 
@@ -114,6 +116,8 @@ Read these policies when any listed trigger matches:
   generated documentation, generated projects, or native test doubles.
 - `docs/AgentRules/Hashing.md`: hashes, checksums, fingerprints, deterministic
   sampling, table mapping, or cryptographic hashing.
+- `docs/AgentRules/FastNoise2.md`: procedural noise, FastNoise2 graphs, terrain,
+  cellular fields, fractals, domain warping, or noise sampling.
 - `docs/AgentRules/ProjectsAndDependencies.md`: `.slnx` solution changes, new
   or reorganized projects, package references, launchable projects, DI scopes,
   ECS, GL ownership, maths, or menus.

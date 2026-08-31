@@ -48,6 +48,12 @@
       "triggers": ["hash", "checksum", "fingerprint", "deterministic sampling", "table mapping"]
     },
     {
+      "id": "FASTNOISE2",
+      "path": "docs/AgentRules/FastNoise2.md",
+      "strength": "workflow",
+      "triggers": ["procedural noise", "FastNoise2", "terrain", "cellular", "fractal", "domain warp", "noise sampling"]
+    },
+    {
       "id": "PROJECTS",
       "path": "docs/AgentRules/ProjectsAndDependencies.md",
       "strength": "invariant",

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.FastNoise2.Graph.Test" />
+        <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <PackageDescription>Typed, validated, graph-owned construction and sampling for AlvorKit FastNoise2.</PackageDescription>
+        <PackageTags>fastnoise2;noise;procedural-generation;simd;terrain</PackageTags>
+        <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+    </PropertyGroup>
+
+    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FastNoise2\AlvorKit.FastNoise2.csproj')">
+        <PackageReference Include="AlvorKit.FastNoise2" Version="$(FastNoise2BindVer)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.FastNoise2\AlvorKit.FastNoise2.csproj')">
+        <ProjectReference Include="$(BindingsRoot)\AlvorKit.FastNoise2\AlvorKit.FastNoise2.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -11,6 +11,7 @@
         <Project Path="demos/AlvorKit.Engine.Demo.TextureCube/AlvorKit.Engine.Demo.TextureCube.csproj" />
         <Project Path="demos/AlvorKit.Engine.Demo.RawApis/AlvorKit.Engine.Demo.RawApis.csproj" />
         <Project Path="demos/AlvorKit.FastNoise2.Demo/AlvorKit.FastNoise2.Demo.csproj" />
+        <Project Path="demos/AlvorKit.FastNoise2.Graph.Demo/AlvorKit.FastNoise2.Graph.Demo.csproj" />
         <Project Path="demos/AlvorKit.FreeType.Demo/AlvorKit.FreeType.Demo.csproj" />
         <Project Path="demos/AlvorKit.Injection.Demo/AlvorKit.Injection.Demo.csproj" />
         <Project
@@ -99,6 +100,7 @@
     <Project Path="src/AlvorKit.Engine.Loop/AlvorKit.Engine.Loop.csproj" />
     <Project Path="src/AlvorKit.Engine.LiveCode/AlvorKit.Engine.LiveCode.csproj" />
     <Project Path="src/AlvorKit.Engine.SourceUpdate/AlvorKit.Engine.SourceUpdate.csproj" />
+    <Project Path="src/AlvorKit.FastNoise2.Graph/AlvorKit.FastNoise2.Graph.csproj" />
     <Project Path="src/AlvorKit.Graphics2D/AlvorKit.Graphics2D.csproj" />
     <Project Path="src/AlvorKit.Graphics2D.Fonts/AlvorKit.Graphics2D.Fonts.csproj" />
     <Project Path="src/AlvorKit.OpenGL.Maths/AlvorKit.OpenGL.Maths.csproj" />
@@ -139,6 +141,7 @@
         <Project Path="tests/AlvorKit.Hashing.Test/AlvorKit.Hashing.Test.csproj" />
         <Project Path="tests/AlvorKit.Ranges.Test/AlvorKit.Ranges.Test.csproj" />
         <Project Path="tests/AlvorKit.Engine.Test/AlvorKit.Engine.Test.csproj" />
+        <Project Path="tests/AlvorKit.FastNoise2.Graph.Test/AlvorKit.FastNoise2.Graph.Test.csproj" />
         <Project
             Path="tests/AlvorKit.Graphics2D.Test/AlvorKit.Graphics2D.Test.csproj" />
         <Project
