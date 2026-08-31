@@ -153,7 +153,6 @@
   ],
   "managedMethods": [
     { "owner": "FnGraph", "signature": "FnGraph(Fn fn)", "purpose": "Create a configuration context and request the fastest supported compiled SIMD implementation." },
-    { "owner": "FnGraph", "signature": "FnGraph(Fn fn, FnFeatureSet maximumFeatureSet)", "purpose": "Create a configuration context while limiting native SIMD dispatch." },
     { "owner": "FnGraph", "signature": "FnGraphNode Create(FnNodeType type)", "purpose": "Create a graph-managed node from exact runtime metadata and retain its finalizable native reference." },
     { "owner": "FnGraph", "signature": "FnGraphNode CreateEncoded(string encodedTree)", "purpose": "Load a complete encoded node tree and retain its root in a finalizable native handle." },
     { "owner": "FnGraphNode", "signature": "FnGraphNode Float(FnFloatVariable variable, float value)", "purpose": "Set a float metadata variable." },

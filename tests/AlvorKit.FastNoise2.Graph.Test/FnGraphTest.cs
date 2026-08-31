@@ -182,12 +182,4 @@ public class FnGraphTest
             () => node.GenUniformGrid2D(output, (0f, 0f), (int.MaxValue, 2), (1f, 1f), 1));
     }
 
-    /// <summary>Proves the feature-set ceiling is typed and rejects invented native masks.</summary>
-    [TestMethod]
-    public void FeatureSetRejectsUnknownMask()
-    {
-        var fn = new FnBackend();
-
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new FnGraph(fn, (FnFeatureSet)12345));
-    }
 }

@@ -50,7 +50,7 @@ internal class FastNoise2FeatureVerifier(Fn fn, FastNoise2FeatureDatabase databa
         Require(database.WrapperContract.ValueKind == JsonValueKind.Object, "The wrapper contract is missing.");
         Require(database.KnownUpstreamBehavior.ValueKind == JsonValueKind.Array, "Upstream behavior notes are missing.");
         Require(database.KnownUpstreamBehavior.GetArrayLength() == 9, "The upstream behavior inventory is incomplete.");
-        Require(database.ManagedMethods.Count == 34, "The managed method inventory is incomplete.");
+        Require(database.ManagedMethods.Count == 33, "The managed method inventory is incomplete.");
         Require(
             database.ManagedMethods.All(value => HasText(value.Owner) && HasText(value.Signature) && HasText(value.Purpose)),
             "A managed method is undocumented.");

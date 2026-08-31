@@ -38,16 +38,17 @@ Every configurable member is one of three kinds:
   float mutation on an encoded root because the C API cannot reveal that
   root's preexisting hybrid connections.
 
-Use `AlvorKit.FastNoise2.Graph` for authored graph construction. Its enums keep
-node types, float variables, integer variables, enum choices, required sources,
-and hybrids out of application-owned string tables. It validates those semantic
-keys against exact runtime metadata and rejects cyclic wrapper-built graphs
-during cold configuration. The graph retains a finalizable handle per
-`Create` or `CreateEncoded` result.
+Always use `AlvorKit.FastNoise2.Graph` for FastNoise2 work in application,
+engine, game, demo, and ordinary tooling code. Constructor-inject `FnGraph`
+where injection is available; do not inject or pass raw `Fn` into a consumer.
+The typed enums keep node types, float variables, integer variables, enum
+choices, required sources, and hybrids out of application-owned string tables.
+`FnGraph` validates those semantic keys against exact runtime metadata and
+rejects cyclic wrapper-built graphs during cold configuration. It retains a
+finalizable handle per `Create` or `CreateEncoded` result. Given a
+constructor-injected `graph`:
 
 ```csharp
-var graph = new FnGraph(fn);
-
 var source = graph.Create(FnNodeType.CellularValue)
     .Float(FnFloatVariable.FeatureScale, 112f)
     .DistanceFunction(FnDistanceFunction.EuclideanSquared)
@@ -68,14 +69,15 @@ disposal. Nodes from different graphs cannot be connected. Connect every
 required source before sampling: the hot generation path intentionally does
 not revalidate graph completeness or ownership.
 
-Use the raw `Fn` metadata surface only in bindings, exhaustive metadata
-verification, dynamic tooling that genuinely needs unknown runtime members, or
-the old-pattern half of
-[`AlvorKit.FastNoise2.Graph.Demo`](../../demos/AlvorKit.FastNoise2.Graph.Demo).
-Raw callers use `SetVariableIntEnum` for enum entries and the database's
-`integerVariableNames`, and `SetVariableFloat` for every other variable. They
-must release every handle obtained from `NewFromMetadata` or
-`NewFromEncodedNodeTree` with `Fn.DeleteNodeRef`.
+Do not call raw `Fn`, create or delete raw `FnNode` handles, use runtime metadata
+indexes or names, or maintain application-owned metadata tables in ordinary
+consumers. A missing typed operation is a wrapper gap to implement in
+`AlvorKit.FastNoise2.Graph`, not permission for a raw call or game-local adapter.
+Raw `Fn` is restricted to generated bindings and backends, the graph-wrapper
+implementation, exhaustive binding or native verification, and dedicated
+parity fixtures whose sole purpose is auditing the typed wrapper against the C
+API. Those infrastructure surfaces must release every raw handle obtained from
+`NewFromMetadata` or `NewFromEncodedNodeTree` with `Fn.DeleteNodeRef`.
 
 ## Coordinate, Scale, And Seed Rules
 
@@ -265,10 +267,9 @@ that default to 64 KiB. This is not 64 KiB per node. The C ABI has no pool-size
 control, and ordinary authored graphs do not need one.
 
 AlvorKit native packages build FastNoise2 with strict floating-point behavior
-for byte-stable output across compiled SIMD feature sets. `FnFeatureSet.Maximum`
-requests the fastest supported compiled feature set; pass a lower typed feature
-set only when a deterministic deployment contract requires it. Inspect
-`GetActiveFeatureSet` when diagnostics need the selected cumulative native mask.
+for byte-stable output across compiled SIMD feature sets. `FnGraph` always
+requests the fastest supported compiled feature set. Inspect `GetActiveFeatureSet`
+when diagnostics need the selected cumulative native mask.
 
 ## Verification And Maintenance
 
@@ -283,7 +284,7 @@ The verifier covers all 47 nodes, 93 variable entries, 11 enums and all 44 enum
 values, 32 required sources, 59 hybrids in both constant and node-backed form,
 all generation shapes, encoded loading, min/max reporting, active SIMD
 reporting, packed RGBA8 output, and concurrent generation. It also requires the
-schema-3 C-symbol/binding/behavior inventories, all 34 public managed signatures,
+schema-3 C-symbol/binding/behavior inventories, all 33 public managed signatures,
 and all 12 managed enum inventories. Wrapper tests additionally prove reverse
 coverage: every runtime node, variable, hybrid, required source, enum, and enum
 option has an exact typed representation.

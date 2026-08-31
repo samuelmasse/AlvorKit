@@ -2,27 +2,20 @@ namespace AlvorKit;
 
 /// <summary>Creates and configures managed FastNoise2 graph nodes.</summary>
 /// <param name="fn">The binding implementation used to create, configure, sample, and release nodes.</param>
-/// <param name="maximumFeatureSet">The greatest FastSIMD implementation the native dispatcher may select.</param>
 /// <remarks>
 /// Graph construction is a cold configuration operation. The graph validates exact metadata members, graph ownership,
 /// and cycles. It retains one independently finalizable native handle per creation result. Sampling does not traverse
 /// or validate graph state and does not allocate managed memory.
 /// </remarks>
 /// <exception cref="ArgumentNullException"><paramref name="fn"/> is null.</exception>
-/// <exception cref="ArgumentOutOfRangeException"><paramref name="maximumFeatureSet"/> is not defined.</exception>
-public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet)
+public class FnGraph(Fn fn)
 {
+    private const uint MaximumFeatureSet = (uint)FnFeatureSet.Maximum;
+
     private readonly FnMetadata metadata = new(RequireBinding(fn));
     private readonly List<FnNodeHandle> handles = [];
     private readonly Dictionary<FnConnectionKey, FnNode> connections = [];
     private readonly HashSet<FnNode> opaqueEncodedRoots = [];
-    private readonly uint maximumFeatureSet = ValidateFeatureSet(maximumFeatureSet);
-
-    /// <summary>Creates a graph that selects the fastest compiled FastSIMD implementation supported by the current CPU.</summary>
-    /// <param name="fn">The binding implementation retained by this graph and its native handles.</param>
-    public FnGraph(Fn fn) : this(fn, FnFeatureSet.Maximum)
-    {
-    }
 
     /// <summary>Creates a managed node handle of the requested typed kind.</summary>
     /// <param name="type">The FastNoise2 1.1.1 metadata node to instantiate.</param>
@@ -38,7 +31,7 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet)
     {
         var name = FnNames.Node(type);
         var metadataId = metadata.FindNode(name);
-        var node = fn.NewFromMetadata(metadataId, maximumFeatureSet);
+        var node = fn.NewFromMetadata(metadataId, MaximumFeatureSet);
 
         if (node == default)
             throw new InvalidOperationException($"FastNoise2 failed to create node '{name}'.");
@@ -61,7 +54,7 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet)
     public FnGraphNode CreateEncoded(string encodedTree)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(encodedTree);
-        var node = fn.NewFromEncodedNodeTree(encodedTree, maximumFeatureSet);
+        var node = fn.NewFromEncodedNodeTree(encodedTree, MaximumFeatureSet);
 
         if (node == default)
             throw new InvalidOperationException("FastNoise2 rejected the encoded node tree.");
@@ -232,15 +225,6 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet)
         }
 
         return false;
-    }
-
-    /// <summary>Rejects invented FastSIMD masks and returns a native ceiling.</summary>
-    private static uint ValidateFeatureSet(FnFeatureSet featureSet)
-    {
-        if (!Enum.IsDefined(featureSet))
-            throw new ArgumentOutOfRangeException(nameof(featureSet), featureSet, "Unknown FastSIMD feature set.");
-
-        return (uint)featureSet;
     }
 
     /// <summary>Rejects a null borrowed binding during field initialization.</summary>

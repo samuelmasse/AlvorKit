@@ -52,13 +52,16 @@ platforms and backends are first-class modes, not fallbacks.
 ### CORE-NOISE-001: Use FastNoise2 for procedural noise
 
 When coherent procedural noise is appropriate for a task, use AlvorKit's
-FastNoise2 capability. Do not substitute hand-written trigonometric,
-hash-based, polynomial, or other ad hoc mathematical equations that imitate
-noise, including to avoid proper package or project integration. Purpose-built
-non-noise terrain algorithms remain valid when the requirement calls for them.
-If FastNoise2 cannot satisfy the requirement, identify the concrete gap and ask
-for direction before introducing a custom noise implementation. Before choosing
-or configuring noise nodes, read `docs/AgentRules/FastNoise2.md` and its linked
+typed `FnGraph` capability. Application, engine, game, demo, and ordinary
+tooling code must use `FnGraph` and `FnGraphNode`; constructor-inject `FnGraph`
+where injection is available. Never inject, receive, store, or call the raw
+`Fn` binding or manage raw `FnNode` handles in those consumers. Raw `Fn` use is
+restricted to generated bindings and backends, the `AlvorKit.FastNoise2.Graph`
+implementation, and dedicated binding or parity verification. Do not substitute
+hand-written trigonometric, hash-based, polynomial, or other ad hoc mathematical
+equations that imitate noise. If `FnGraph` cannot satisfy the requirement,
+identify the concrete wrapper gap and ask for direction. Before choosing or
+configuring noise nodes, read `docs/AgentRules/FastNoise2.md` and its linked
 structured feature catalog.
 
 ### CORE-LANGUAGE-001: American English

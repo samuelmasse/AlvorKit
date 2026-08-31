@@ -22,8 +22,8 @@ dotnet add package AlvorKit.FastNoise2.Graph
 dotnet add package AlvorKit.FastNoise2.Backend
 ```
 
-Engine code that receives an `Fn` from dependency injection needs only the graph package directly. The backend package
-selects and loads the matching native runtime.
+Engine code should receive `FnGraph` from dependency injection and needs only the graph package directly. The host's
+backend package selects and loads the matching native runtime.
 
 ## Complete example
 
@@ -58,7 +58,6 @@ references after the graph and all of its node values become unreachable. Caller
 ## Graph contract
 
 - `FnGraph(Fn)` requests the fastest compiled FastSIMD implementation supported by the current CPU.
-- `FnGraph(Fn, FnFeatureSet)` caps native selection at a specific feature set.
 - `Create` resolves the exact, case-sensitive FastNoise2 metadata name and retains the returned native reference.
 - `CreateEncoded` loads a complete Base64 node tree exported by the upstream Node Editor and manages its root reference.
 - Every fluent setter resolves an exact metadata name, component, and member kind. Unsupported node/member combinations

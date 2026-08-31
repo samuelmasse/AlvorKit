@@ -31,13 +31,15 @@ Do not assume another sibling game repository exists.
   contract. Do not add slower, legacy, approximate, reduced-fidelity,
   best-effort, default-result, retry, stale, or partial fallback paths.
 - **CORE-NOISE-001:** When coherent procedural noise is appropriate, use
-  AlvorKit's FastNoise2 capability. Do not replace it with hand-written
-  trigonometric, hash-based, polynomial, or other ad hoc equations that imitate
-  noise, including to avoid proper package or project integration. Legitimate
-  non-noise terrain algorithms remain valid when required. If FastNoise2 is
-  insufficient, identify the concrete gap and ask before implementing custom
-  noise. Read `../AlvorKit/docs/AgentRules/FastNoise2.md` before choosing or
-  configuring noise nodes.
+  AlvorKit's typed `FnGraph` capability. Game code must constructor-inject and
+  use `FnGraph` and `FnGraphNode`; never inject, receive, store, or call raw
+  `Fn`, manage raw `FnNode` handles, or own runtime metadata tables. Raw `Fn`
+  is restricted to AlvorKit's generated bindings and backends, graph-wrapper
+  implementation, and dedicated binding or parity verification. Do not replace
+  FastNoise2 with hand-written equations that imitate noise. If `FnGraph` is
+  insufficient, identify the concrete wrapper gap and ask. Read
+  `../AlvorKit/docs/AgentRules/FastNoise2.md` before choosing or configuring
+  noise nodes.
 - **CORE-LANGUAGE-001:** Whenever repository-owned prose, identifiers, labels,
   or diagnostics use English, use American English exclusively. Preserve exact
   externally owned identifiers and verbatim quotations. The established
