@@ -16,6 +16,7 @@ internal class FastNoise2FeatureVerifier(Fn fn, FastNoise2FeatureDatabase databa
 
         Console.WriteLine(
             $"FastNoise2 {database.FastNoiseVersion} feature verification PASS: " +
+            $"{database.CApiSymbols.Count} C symbols, {database.ManagedMethods.Count} managed signatures, " +
             $"{database.Nodes.Count} nodes, {VariableCount()} variables, {LookupCount()} required sources, " +
             $"{HybridCount()} hybrids, {EnumCount()} enums/{EnumValueCount()} values, " +
             $"{database.SamplingCapabilities.Count} sampling capabilities, active SIMD 0x{activeFeatureSet:X}.");
@@ -23,25 +24,56 @@ internal class FastNoise2FeatureVerifier(Fn fn, FastNoise2FeatureDatabase databa
 
     private void VerifyCatalog()
     {
-        Require(database.SchemaVersion == 2, $"Unsupported FastNoise2 feature database schema {database.SchemaVersion}.");
+        Require(database.SchemaVersion == 3, $"Unsupported FastNoise2 feature database schema {database.SchemaVersion}.");
         Require(database.FastNoiseVersion == "1.1.1", $"Unexpected FastNoise2 catalog version '{database.FastNoiseVersion}'.");
         Require(database.BindingVersion == "1.1.1.3", $"Unexpected binding catalog version '{database.BindingVersion}'.");
+        Require(database.SourceRevision.ValueKind == JsonValueKind.Object, "The exact upstream source revision is missing.");
+        Require(
+            database.SourceRevision.GetProperty("commit").GetString() == "903c1f2d2f9d53ddce94cd223f32727d9ab3aeaa",
+            "The audited FastNoise2 source commit changed.");
+        Require(
+            database.SourceRevision.GetProperty("fastSimdCommit").GetString() ==
+                "16450dae9528727e500e7254f635a671f9c7ee2d",
+            "The audited FastSIMD source commit changed.");
+        Require(database.CApiSymbols.Count == 45, "The FastNoise2 C API symbol inventory is incomplete.");
+        Require(
+            database.CApiSymbols.Distinct(StringComparer.Ordinal).Count() == database.CApiSymbols.Count,
+            "The FastNoise2 C API symbol inventory contains duplicates.");
         Require(database.SamplingCapabilities.Count == 11, "The FastNoise2 sampling capability inventory is incomplete.");
-        Require(database.BindingCapabilities.Count == 10, "The FastNoise2 binding capability inventory is incomplete.");
+        Require(database.BindingCapabilities.Count == 17, "The FastNoise2 binding capability inventory is incomplete.");
+        Require(
+            database.SamplingCapabilities.All(value => HasText(value.Name) && HasText(value.Layout) && HasText(value.Use)),
+            "A sampling capability is undocumented.");
+        Require(
+            database.BindingCapabilities.All(value => HasText(value.Name) && HasText(value.Api)),
+            "A binding capability is undocumented.");
         Require(database.WrapperContract.ValueKind == JsonValueKind.Object, "The wrapper contract is missing.");
-        Require(database.ManagedMethods.Count == 21, "The managed method inventory is incomplete.");
+        Require(database.KnownUpstreamBehavior.ValueKind == JsonValueKind.Array, "Upstream behavior notes are missing.");
+        Require(database.KnownUpstreamBehavior.GetArrayLength() == 9, "The upstream behavior inventory is incomplete.");
+        Require(database.ManagedMethods.Count == 34, "The managed method inventory is incomplete.");
+        Require(
+            database.ManagedMethods.All(value => HasText(value.Owner) && HasText(value.Signature) && HasText(value.Purpose)),
+            "A managed method is undocumented.");
         Require(database.ManagedEnums.Count == 12, "The managed enum inventory is incomplete.");
         Require(
             database.ManagedEnums.All(value => value.Name.Length > 0 && value.Values.Count > 0),
             "A managed enum inventory entry is empty.");
+        VerifyManagedEnums();
         Require(database.Recipes.Count == 6, "The FastNoise2 recipe inventory is incomplete.");
+        Require(
+            database.Recipes.All(value => HasText(value.Name) && HasText(value.Graph) && HasText(value.Use)),
+            "A FastNoise2 recipe is undocumented.");
         Require(database.Nodes.Count == fn.GetMetadataCount(), "The FastNoise2 node catalog count does not match runtime metadata.");
+        VerifyBehaviorDocumentation();
+        VerifyRawBindingSurface();
+        VerifyManagedSurface();
         VerifyIntegerVariableCatalog();
 
         for (var metadataId = 0; metadataId < fn.GetMetadataCount(); metadataId++)
         {
             var feature = database.Nodes[metadataId];
             var runtimeName = metadata.Name(metadataId);
+            Require(HasText(feature.Purpose), $"Catalog node '{feature.Name}' has no curated purpose.");
             Require(
                 feature.Name == runtimeName,
                 $"Catalog node {metadataId} is '{feature.Name}', but runtime metadata is '{runtimeName}'.");
@@ -50,7 +82,154 @@ internal class FastNoise2FeatureVerifier(Fn fn, FastNoise2FeatureDatabase databa
             RequireSequence($"{runtimeName} required sources", feature.Lookups, metadata.LookupKeys(metadataId));
             RequireSequence($"{runtimeName} hybrids", feature.Hybrids, metadata.HybridKeys(metadataId));
             VerifyEnumCatalog(metadataId, feature);
+            VerifyMetadataDetails(metadataId, runtimeName);
         }
+    }
+
+    private void VerifyBehaviorDocumentation()
+    {
+        foreach (var behavior in database.KnownUpstreamBehavior.EnumerateArray())
+        {
+            Require(HasText(behavior.GetProperty("name").GetString()), "An upstream behavior note has no name.");
+            Require(HasText(behavior.GetProperty("behavior").GetString()), "An upstream behavior note has no behavior.");
+            Require(
+                HasText(behavior.GetProperty("managedResponse").GetString()),
+                "An upstream behavior note has no managed response.");
+        }
+    }
+
+    private void VerifyMetadataDetails(int metadataId, string nodeName)
+    {
+        fn.GetMetadataDescription(metadataId, out var description);
+        Require(description is not null, $"Runtime node description '{nodeName}' is null.");
+
+        for (var index = 0; index < fn.GetMetadataVariableCount(metadataId); index++)
+        {
+            fn.GetMetadataVariableDescription(metadataId, index, out var variableDescription);
+            Require(variableDescription is not null, $"Runtime variable description '{nodeName}[{index}]' is null.");
+
+            if (fn.GetMetadataVariableType(metadataId, index) != FastNoise2Metadata.VariableFloat)
+                continue;
+
+            Require(float.IsFinite(fn.GetMetadataVariableDefaultFloat(metadataId, index)), "A float default is non-finite.");
+            Require(float.IsFinite(fn.GetMetadataVariableMinFloat(metadataId, index)), "A float minimum is non-finite.");
+            Require(float.IsFinite(fn.GetMetadataVariableMaxFloat(metadataId, index)), "A float maximum is non-finite.");
+        }
+
+        for (var index = 0; index < fn.GetMetadataNodeLookupCount(metadataId); index++)
+        {
+            fn.GetMetadataNodeLookupDescription(metadataId, index, out var lookupDescription);
+            Require(lookupDescription is not null, $"Runtime source description '{nodeName}[{index}]' is null.");
+        }
+
+        for (var index = 0; index < fn.GetMetadataHybridCount(metadataId); index++)
+        {
+            fn.GetMetadataHybridDescription(metadataId, index, out var hybridDescription);
+            Require(hybridDescription is not null, $"Runtime hybrid description '{nodeName}[{index}]' is null.");
+            Require(float.IsFinite(fn.GetMetadataHybridDefault(metadataId, index)), "A hybrid default is non-finite.");
+        }
+    }
+
+    private void VerifyRawBindingSurface()
+    {
+        var methods = typeof(Fn).GetMethods().Select(method => method.Name).ToHashSet(StringComparer.Ordinal);
+
+        foreach (var symbol in database.CApiSymbols)
+        {
+            var managedName = symbol[2..];
+            Require(methods.Contains(managedName), $"Raw binding method '{managedName}' is missing for C symbol '{symbol}'.");
+        }
+    }
+
+    private void VerifyManagedSurface()
+    {
+        var actual = new Dictionary<string, int>(StringComparer.Ordinal);
+        var publicDeclared = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly;
+
+        var publicInstance = publicDeclared | System.Reflection.BindingFlags.Instance;
+        Increment(actual, "FnGraph.FnGraph", typeof(FnGraph).GetConstructors(publicInstance).Length);
+        AddMethods(actual, typeof(FnGraph), publicInstance);
+        AddMethods(actual, typeof(FnGraphNode), publicInstance);
+        AddMethods(actual, typeof(FnGraphNodeSampling), publicDeclared | System.Reflection.BindingFlags.Static);
+        AddMethods(actual, typeof(FnGraphNodePositionRanges), publicDeclared | System.Reflection.BindingFlags.Static);
+
+        var documented = database.ManagedMethods
+            .GroupBy(method => $"{method.Owner}.{SignatureName(method.Signature)}", StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
+        Require(actual.Count == documented.Count, "The managed API documentation has an unexpected method family.");
+
+        foreach (var entry in actual)
+        {
+            Require(
+                documented.TryGetValue(entry.Key, out var count) && count == entry.Value,
+                $"Managed API '{entry.Key}' has {entry.Value} public overloads but the catalog documents {count}.");
+        }
+    }
+
+    private void VerifyManagedEnums()
+    {
+        Type[] types =
+        [
+            typeof(FnNodeType),
+            typeof(FnFloatVariable),
+            typeof(FnIntegerVariable),
+            typeof(FnHybrid),
+            typeof(FnSource),
+            typeof(FnDistanceFunction),
+            typeof(FnCellularReturnType),
+            typeof(FnInterpolation),
+            typeof(FnRemovedDimension),
+            typeof(FnRotationType),
+            typeof(FnVectorizationScheme),
+            typeof(FnFeatureSet),
+        ];
+
+        foreach (var type in types)
+        {
+            var catalog = database.ManagedEnums.Single(value => value.Name == type.Name);
+            var managedNames = catalog.Values.Select(ManagedEnumName).ToArray();
+            RequireSequence($"{type.Name} managed values", managedNames, Enum.GetNames(type));
+
+            if (type == typeof(FnFeatureSet))
+                VerifyFeatureSetMasks(catalog);
+        }
+    }
+
+    private static string ManagedEnumName(JsonElement value) => value.ValueKind == JsonValueKind.String
+        ? value.GetString() ?? string.Empty
+        : value.GetProperty("managed").GetString() ?? string.Empty;
+
+    private static void VerifyFeatureSetMasks(FastNoise2ManagedEnum catalog)
+    {
+        foreach (var value in catalog.Values)
+        {
+            var name = ManagedEnumName(value);
+            var documented = value.GetProperty("nativeMask").GetUInt32();
+            var managed = Convert.ToUInt32(Enum.Parse<FnFeatureSet>(name));
+            Require(documented == managed, $"FnFeatureSet.{name} documents mask {documented} but uses {managed}.");
+        }
+    }
+
+    private static void AddMethods(
+        Dictionary<string, int> methods,
+        Type owner,
+        System.Reflection.BindingFlags flags)
+    {
+        foreach (var method in owner.GetMethods(flags))
+            Increment(methods, $"{owner.Name}.{method.Name}", 1);
+    }
+
+    private static void Increment(Dictionary<string, int> counts, string key, int amount)
+    {
+        counts.TryGetValue(key, out var current);
+        counts[key] = current + amount;
+    }
+
+    private static string SignatureName(string signature)
+    {
+        var beforeParameters = signature[..signature.IndexOf('(', StringComparison.Ordinal)];
+        var separator = beforeParameters.LastIndexOf(' ');
+        return beforeParameters[(separator + 1)..];
     }
 
     private void VerifyIntegerVariableCatalog()
@@ -400,4 +579,6 @@ internal class FastNoise2FeatureVerifier(Fn fn, FastNoise2FeatureDatabase databa
         if (!condition)
             throw new InvalidOperationException(message);
     }
+
+    private static bool HasText(string? value) => !string.IsNullOrWhiteSpace(value);
 }

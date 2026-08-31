@@ -11,8 +11,9 @@ This guide covers the FastNoise2 1.1.1 C API exposed by AlvorKit. The structured
 agent database is [`res/fastnoise2/features.json`](../../res/fastnoise2/features.json).
 The database is an executable coverage contract: the FastNoise2 demo compares
 its node, group, variable, enum, required-source, and hybrid-input inventory
-against runtime metadata. Schema 2 also inventories every wrapper enum/value,
-wrapper method family, ownership rule, and sampling contract. The package's
+against runtime metadata. Schema 3 also inventories all 45 C symbols, every
+wrapper enum/value and method family, binding boundaries, ownership rules,
+sampling contracts, and pinned upstream behavior that needs special care. The package's
 canonical human-readable reference is
 [`src/AlvorKit.FastNoise2.Graph/README.md`](../../src/AlvorKit.FastNoise2.Graph/README.md).
 
@@ -33,14 +34,16 @@ Every configurable member is one of three kinds:
   for a uniform parameter and the node form when the parameter should vary over
   space. Connecting a node makes it active instead of the stored constant.
   FastNoise2 1.1.1 cannot detach it; the wrapper rejects a later constant
-  assignment instead of silently updating a dormant value.
+  assignment instead of silently updating a dormant value. It also rejects
+  float mutation on an encoded root because the C API cannot reveal that
+  root's preexisting hybrid connections.
 
 Use `AlvorKit.FastNoise2.Graph` for authored graph construction. Its enums keep
 node types, float variables, integer variables, enum choices, required sources,
 and hybrids out of application-owned string tables. It validates those semantic
 keys against exact runtime metadata and rejects cyclic wrapper-built graphs
-during cold configuration. The graph retains a finalizable handle per native
-root reference.
+during cold configuration. The graph retains a finalizable handle per
+`Create` or `CreateEncoded` result.
 
 ```csharp
 var graph = new FnGraph(fn);
@@ -86,6 +89,10 @@ must release every handle obtained from `NewFromMetadata` or
   changes that generator without changing sibling seeds. The dedicated
   `SeedOffset` modifier instead changes the seed passed through its complete
   child graph. Use generator offsets to decorrelate sibling sources.
+- Keep `Seed Offset` at zero on domain-warp nodes unless pinned 1.1.1 behavior
+  is deliberate. Direct Simplex and Gradient warps apply it twice, direct
+  SuperSimplex applies it once, and fractal warp use applies it once for
+  Simplex/Gradient but not for SuperSimplex.
 - Coherent generators default to an output range of `[-1, 1]`. Their `Output
   Min` and `Output Max` variables rescale inside the SIMD graph. Fractals,
   operators, distance nodes, and modifiers can exceed that range.
@@ -103,7 +110,7 @@ must release every handle obtained from `NewFromMetadata` or
 | Independent per-position randomness | `White` | No spatial continuity; do not use as a terrain height field. |
 | Voronoi cell identities | `CellularValue` | Choose distance function, cell value index, and jitter. |
 | Borders, caves, and distance fields | `CellularDistance` | Choose distance indexes and how they combine. |
-| Custom value at each cell center | `CellularLookup` | Wire `Lookup`; the lookup is evaluated at cell centers. |
+| Custom value at each cell | `CellularLookup` | Wire `Lookup`; it is evaluated at the closest jittered cell position. |
 | Multiple spatial scales | `FractalFBm` or `FractalRidged` | Wire `Source`; set octaves, lacunarity, gain, and weighted strength. |
 | Organic coordinate distortion | A `DomainWarp*` node | Wire `Source`; set feature scale, warp amplitude, and axis amplitude scaling. |
 
@@ -138,7 +145,7 @@ structured database; the table below is the decision index.
 | `Value` | Interpolated grid values; fast, soft, and more grid-visible. |
 | `CellularValue` | Value of the Nth closest cell. Configure `Value Index`, distance function, and jitter. |
 | `CellularDistance` | Distance to or combination of two nearest-cell indexes. Five return modes are available. |
-| `CellularLookup` | Evaluates required `Lookup` source at the closest cell center. |
+| `CellularLookup` | Evaluates required `Lookup` at the closest jittered cell position, using the incoming seed + 1. |
 
 All cellular nodes expose `Minkowski P`, `Grid Jitter`, and `Size Jitter` as
 hybrids. `Grid Jitter = 0` produces a uniform grid; values above 1 can introduce
@@ -188,7 +195,7 @@ relationship to the original domain.
 | `DomainScale` | Uniformly scales coordinates before the required source. This changes apparent frequency, not output amplitude. |
 | `DomainAxisScale` | Per-axis X/Y/Z/W coordinate scale for stretching or compressing features. |
 | `DomainOffset` | Per-axis hybrid coordinate offsets without changing dimensionality. |
-| `DomainRotate` | Yaw/pitch/roll in radians. In 2D, yaw alone is a 2D rotation; 4D input is passed through unrotated. |
+| `DomainRotate` | Roll rotates X, pitch Y, and yaw Z, in radians. In 2D, yaw alone rotates; 4D passes through unrotated. |
 | `DomainRotatePlane` | Faster preset rotation for improving XY or XZ plane quality in 3D. A 2D call is promoted to a rotated 3D plane. |
 | `AddDimension` | Appends a hybrid coordinate to 2D or 3D input; 4D input remains 4D. Useful for slices and time parameters. |
 | `RemoveDimension` | Drops a selected axis from 3D/4D input; a 2D call remains 2D. |
@@ -204,10 +211,12 @@ relationship to the original domain.
 | `GenTileable2D` | Seamless 2D output by mapping the domain onto a 4D hypertorus. The root graph must behave correctly for 4D evaluation. |
 | `GenSingle2D/3D/4D` | A genuinely isolated sample only. Per sample, these are much slower because SIMD lanes are underused. |
 
-Batch methods can fill a two-float min/max span. Use it for normalization only
-when the graph returns numeric scalar values; it is not valid for
-`ConvertRGBA8`. Caller-owned spans must be large enough for the complete output
-and all position arrays must contain at least `count` entries.
+Batch methods can fill a two-float min/max span. The pinned native build computes
+that range on every batch call; omitting the span avoids only copying the two
+values. Use it for normalization only when the graph returns numeric scalar
+values; it is not valid for `ConvertRGBA8`. Caller-owned spans must be large
+enough for the complete output and all position arrays must contain at least
+`count` entries.
 
 All generation calls are thread-safe on an immutable node tree. The same tree
 may generate into independent output buffers concurrently. Do not change node
@@ -237,15 +246,23 @@ variables or connections while another thread is generating.
 
 ## Binding Boundaries
 
-AlvorKit's current C binding exposes graph loading, handle lifetime, all 11
-generation entry points, active SIMD reporting, all runtime metadata, dynamic
-node creation, variables, required sources, and both forms of hybrid input.
+AlvorKit's current C binding exposes all 45 symbols in `FastNoise_C.h`: graph
+loading, handle lifetime, all 10 generation functions and batch range output,
+active SIMD reporting, all runtime metadata, dynamic node creation, variables,
+required sources, and both forms of hybrid input.
 
 Upstream features not exposed by this binding are programmatic graph encoding,
-editable `NodeData`, custom C++/FastSIMD nodes, and Node Editor IPC. Encoded
-trees exported by the upstream Node Editor can still be loaded with
-`NewFromEncodedNodeTree`. Do not claim that a binding-only consumer can export
-or live-edit a graph unless the binding is deliberately extended.
+editable `NodeData`, current value/connection introspection, custom C++/FastSIMD
+nodes, `SmartNodeManager::SetMemoryPoolSize`, metadata display-name formatting,
+metadata UI drag-speed hints, SmartNode reference-count queries, and Node
+Editor IPC. Encoded trees exported by the upstream Node Editor can
+still be loaded with `NewFromEncodedNodeTree`. Do not claim that a binding-only
+consumer can export, inspect, or live-edit a graph unless the binding is
+deliberately extended.
+
+Native nodes are intrusive-reference-counted and allocated from shared pools
+that default to 64 KiB. This is not 64 KiB per node. The C ABI has no pool-size
+control, and ordinary authored graphs do not need one.
 
 AlvorKit native packages build FastNoise2 with strict floating-point behavior
 for byte-stable output across compiled SIMD feature sets. `FnFeatureSet.Maximum`
@@ -266,7 +283,10 @@ The verifier covers all 47 nodes, 93 variable entries, 11 enums and all 44 enum
 values, 32 required sources, 59 hybrids in both constant and node-backed form,
 all generation shapes, encoded loading, min/max reporting, active SIMD
 reporting, packed RGBA8 output, and concurrent generation. It also requires the
-schema-2 wrapper contract, 23 method entries, and all 12 managed enum inventories.
+schema-3 C-symbol/binding/behavior inventories, all 34 public managed signatures,
+and all 12 managed enum inventories. Wrapper tests additionally prove reverse
+coverage: every runtime node, variable, hybrid, required source, enum, and enum
+option has an exact typed representation.
 
 When upgrading FastNoise2, regenerate only the FastNoise2 binding through the
 normal bindgen workflow, update the catalog from the new runtime metadata, and

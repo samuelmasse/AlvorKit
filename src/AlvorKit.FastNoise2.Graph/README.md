@@ -10,6 +10,7 @@ The package is pinned to:
 
 - FastNoise2 runtime metadata 1.1.1.
 - AlvorKit FastNoise2 binding 1.1.1.3.
+- Audited upstream FastNoise2 commit `903c1f2d2f9d53ddce94cd223f32727d9ab3aeaa` and its pinned FastSIMD commit.
 - .NET 10 and the `AlvorKit` namespace.
 
 ## Installation
@@ -50,7 +51,7 @@ Span<float> minMax = stackalloc float[2];
 root.GenUniformGrid2D(output, (0f, 0f), (256, 256), (1f, 1f), 1337, minMax);
 ```
 
-`FnGraph` retains a finalizable managed handle for each created native reference. Copying `root` or `simplex` does not
+`FnGraph` retains a finalizable managed handle for every `Create` or `CreateEncoded` result. Copying `root` or `simplex` does not
 clone the native node or duplicate its native reference; every node value keeps its graph alive. FastNoise2 releases the
 references after the graph and all of its node values become unreachable. Callers do not clear or dispose the graph.
 
@@ -58,7 +59,7 @@ references after the graph and all of its node values become unreachable. Caller
 
 - `FnGraph(Fn)` requests the fastest compiled FastSIMD implementation supported by the current CPU.
 - `FnGraph(Fn, FnFeatureSet)` caps native selection at a specific feature set.
-- `Create` resolves the exact, case-sensitive FastNoise2 metadata name and retains its finalizable native reference.
+- `Create` resolves the exact, case-sensitive FastNoise2 metadata name and retains the returned native reference.
 - `CreateEncoded` loads a complete Base64 node tree exported by the upstream Node Editor and manages its root reference.
 - Every fluent setter resolves an exact metadata name, component, and member kind. Unsupported node/member combinations
   throw; no numeric metadata index is exposed.
@@ -91,7 +92,9 @@ prevent invalid native buffer access.
 
 A hybrid node connection takes priority over its stored constant. FastNoise2 1.1.1 cannot detach that connection, so
 the wrapper rejects a later constant assignment rather than silently updating a dormant constant. A node connection may
-be replaced with another node.
+be replaced with another node. The C API cannot report the connections already present in an encoded root, so the
+wrapper also rejects constant-valued hybrid mutation on that root. Required-source and node-valued hybrid replacement
+remain available.
 
 Metadata minimums and maximums are Node Editor guidance. Native setters do not generally enforce them. Use the ranges
 and hazards below as part of the application contract.
@@ -190,7 +193,7 @@ and `E` = typed enum/bool option. Upstream names that differ from managed names 
 | `Value` | Seeded pseudorandom lattice values with Hermite interpolation; not gradient noise. | Same as `Simplex` |
 | `CellularValue` | Hashed value of the selected nearest-distance rank, remapped to the output range. | F: `FeatureScale`, `OutputMinimum/Maximum`; I: `SeedOffset`, `ValueIndex`; E: `DistanceFunction`; H: `MinkowskiP`, `GridJitter`, `SizeJitter` |
 | `CellularDistance` | Remapped distance rank or arithmetic combination of two selected ranks. | F: `FeatureScale`, `OutputMinimum/Maximum`; I: `SeedOffset`, `DistanceIndex0/1`; E: `DistanceFunction`, `CellularReturnType`; H: `MinkowskiP`, `GridJitter`, `SizeJitter` |
-| `CellularLookup` | Evaluates `Lookup` at the closest jittered cell's world-space center with seed + 1. | F: `FeatureScale`; I: `SeedOffset`; E: `DistanceFunction`; H: `MinkowskiP`, `GridJitter`, `SizeJitter`; S: `Lookup` |
+| `CellularLookup` | Evaluates `Lookup` at the closest jittered feature position in world space with seed + 1. | F: `FeatureScale`; I: `SeedOffset`; E: `DistanceFunction`; H: `MinkowskiP`, `GridJitter`, `SizeJitter`; S: `Lookup` |
 
 Cellular indexes are clamped to 0 through 3. Grid jitter above 1 and nonzero size jitter can create search-grid artifacts.
 `DistanceToPoint` is constructed with Euclidean-squared distance even though its 1.1.1 metadata advertises Euclidean;
@@ -214,7 +217,7 @@ configure it explicitly when the distinction matters.
 | `Divide` | Hybrid LHS / hybrid RHS; zero is not guarded. | H: `Lhs`, `Rhs` |
 | `Modulus` | Floating-point remainder of hybrid LHS / RHS; zero is not guarded. | H: `Lhs`, `Rhs` |
 | `Min` / `Max` | Hard minimum or maximum. | S: `Lhs`; H: `Rhs` |
-| `MinSmooth` / `MaxSmooth` | Quadratic smooth min/max; absolute smoothness near zero becomes hard min/max. | S: `Lhs`; H: `Rhs`, `Smoothness` |
+| `MinSmooth` / `MaxSmooth` | Polynomial smooth min/max; absolute smoothness near zero becomes hard min/max. | S: `Lhs`; H: `Rhs`, `Smoothness` |
 | `PowFloat` | `pow(max(abs(Value), FLT_MIN), Power)`; discards sign and does not return exact zero for zero input. | H: `Value`, `Power` |
 | `PowInt` | Required value raised to an integer power; values below 2 still square in 1.1.1. | I: `Power`; S: `Value` |
 | `Fade` | Clamps and eases normalized Fade between its bounds, then interpolates A to B; equal bounds select 50/50. | S: `A`, `B`; H: `Fade`, `FadeMinimum/Maximum`; E: `Interpolation` |
@@ -229,7 +232,7 @@ configure it explicitly when the distinction matters.
 | `SignedSquareRoot` | `sign(Source) * sqrt(abs(Source))`. | S: `Source` |
 | `DomainScale` | Multiplies every active coordinate; values above 1 increase apparent frequency and zero collapses the domain. | F: `Scaling`; S: `Source` |
 | `DomainOffset` | Adds a constant or spatially generated offset to every active coordinate. | H: `OffsetX/Y/Z/W`; S: `Source` |
-| `DomainRotate` | Yaw/pitch/roll in radians. Yaw alone rotates 2D; pitch/roll promote 2D to 3D; 4D is unchanged. | F: `Yaw`, `Pitch`, `Roll`; S: `Source` |
+| `DomainRotate` | Roll rotates X, pitch Y, and yaw Z, in radians. Yaw alone rotates 2D; pitch/roll promote 2D to 3D; 4D is unchanged. | F: `Yaw`, `Pitch`, `Roll`; S: `Source` |
 | `DomainAxisScale` | Independently multiplies every active coordinate. | F: `ScalingX/Y/Z/W`; S: `Source` |
 | `SeedOffset` | Adds `SeedOffset` to the seed passed through the complete child graph. | I: `SeedOffset`; S: `Source` |
 | `ConvertRgba8` | Clamps source to Min/Max, scales to grayscale byte, sets alpha 255, and bit-casts packed RGBA8 into each float slot. Upstream name `ConvertRGBA8`. | F: `Minimum`, `Maximum`; S: `Source` |
@@ -260,10 +263,15 @@ default through setters, and metadata min/max fields are not validation rules.
 | `FadeMinimum`, `FadeMaximum`, `Fade` | -1, 1, 0 |
 | remap From range / To range | -1..1 / 0..1 |
 
+FastNoise2 1.1.1 has inconsistent domain-warp `SeedOffset` behavior. Direct Simplex and Gradient warps apply the offset
+twice, direct SuperSimplex applies it once, and fractal warp use applies it once for Simplex/Gradient but not for
+SuperSimplex. Leave this value at zero unless the pinned behavior is intentional.
+
 ## Sampling methods
 
 All batch methods have overloads with and without a final `Span<float> outputMinMax`. Index 0 receives minimum, index 1
-receives maximum, and later elements are untouched. The range covers exactly the samples written. It is meaningful only
+receives maximum, and later elements are untouched. The range covers exactly the samples written. FastNoise2 1.1.1
+computes it internally even when the span is omitted, so omission saves only the two-value copy. It is meaningful only
 for finite numeric output, not `ConvertRgba8` packed pixels.
 
 | API | Count and layout | Coordinate rule |
@@ -301,14 +309,24 @@ Use raw `Fn` only for binding work, metadata verification, or tooling that genui
 callers must resolve metadata IDs and exact names, distinguish float/integer/enum kinds, manage every `FnNode` reference,
 avoid incomplete and cyclic graphs, and pass the same SIMD ceiling to every node in a tree.
 
+The raw binding exposes every one of the 45 functions in FastNoise2 1.1.1's `FastNoise_C.h`. C++-only functionality is
+not available: graph serialization and editable `NodeData`, current configured-value/connection introspection, custom
+FastSIMD nodes, memory-pool tuning, SmartNode reference-count queries, metadata display-name/UI drag helpers, and Node
+Editor IPC. The exact boundary and C-symbol inventory are recorded in the agent-readable catalog.
+
+Native nodes use intrusive references and shared allocation pools that default to 64 KiB; FastNoise2 does not allocate
+one pool per node. The C ABI does not expose `SmartNodeManager::SetMemoryPoolSize`, and ordinary authored graphs should
+not need it.
+
 ## Agent-readable catalog and verification
 
 The NuGet package includes `docs/fastnoise2-features.json`. It contains:
 
 - Every managed enum and enum value, including exact upstream metadata spellings.
-- Every wrapper method group and its purpose.
+- Every public wrapper signature and its purpose.
 - Every one of the 47 runtime nodes with all variables, required sources, hybrids, enum options, and showcase values.
 - Every generation shape and exposed/unexposed binding capability.
+- Every C API symbol and pinned upstream behavior that requires a wrapper or documentation response.
 - Ownership, lifetime, hybrid-replacement, validation, sampling, and enum-ordinal contracts.
 
 The repository verifier cross-checks the catalog against runtime metadata:

@@ -4,7 +4,11 @@ namespace AlvorKit;
 /// <remarks>Managed numeric values are wrapper implementation details and are not native variable indexes.</remarks>
 public enum FnIntegerVariable
 {
-    /// <summary>Adds to the incoming seed before the node evaluates. Most generators default to 0; SeedOffset defaults to 1.</summary>
+    /// <summary>Adds to the incoming seed. Most generators default to 0; the SeedOffset modifier defaults to 1.</summary>
+    /// <remarks>
+    /// FastNoise2 1.1.1 applies this inconsistently on domain warps; leave it at zero there unless version-specific
+    /// output is intentional.
+    /// </remarks>
     SeedOffset,
 
     /// <summary>Selects the zero-based nearest cellular feature point whose random value is returned. The default is 0.</summary>
@@ -20,5 +24,6 @@ public enum FnIntegerVariable
     Octaves,
 
     /// <summary>Sets the integer exponent used by <see cref="FnNodeType.PowInt"/>. The default is 2.</summary>
+    /// <remarks>The pinned implementation squares for every value less than 2; use 2 or greater.</remarks>
     Power,
 }

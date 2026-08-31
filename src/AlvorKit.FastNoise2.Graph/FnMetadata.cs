@@ -144,5 +144,5 @@ internal class FnMetadata(Fn fn)
 
     /// <summary>Formats scalar or component-qualified metadata for diagnostics.</summary>
     internal static string Display(FnMemberKey key) =>
-        key.Dimension < 0 ? key.Name : $"{key.Name}.{(char)('X' + key.Dimension)}";
+        key.Dimension < 0 ? key.Name : $"{key.Name}.{"XYZW"[key.Dimension]}";
 }

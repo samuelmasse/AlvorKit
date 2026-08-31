@@ -5,6 +5,7 @@ namespace AlvorKit;
 /// Batch operations allocate no managed memory. Immutable node trees may be sampled concurrently into independent
 /// buffers. Do not configure a graph during sampling, and do not overlap input and output spans.
 /// Uniform-grid output is row-major with X as the innermost axis, followed by Y, Z, and W.
+/// The pinned native runtime computes batch minimum and maximum even when the overload does not expose them.
 /// </remarks>
 public static class FnGraphNodeSampling
 {

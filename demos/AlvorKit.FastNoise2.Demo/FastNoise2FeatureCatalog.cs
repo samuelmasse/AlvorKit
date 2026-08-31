@@ -21,11 +21,14 @@ internal class FastNoise2FeatureDatabase
     public int SchemaVersion { get; init; }
     public string FastNoiseVersion { get; init; } = string.Empty;
     public string BindingVersion { get; init; } = string.Empty;
+    public JsonElement SourceRevision { get; init; }
     public string Purpose { get; init; } = string.Empty;
     public List<string> IntegerVariableNames { get; init; } = [];
+    public List<string> CApiSymbols { get; init; } = [];
     public List<FastNoise2SamplingCapability> SamplingCapabilities { get; init; } = [];
     public List<FastNoise2BindingCapability> BindingCapabilities { get; init; } = [];
     public JsonElement WrapperContract { get; init; }
+    public JsonElement KnownUpstreamBehavior { get; init; }
     public List<FastNoise2ManagedMethod> ManagedMethods { get; init; } = [];
     public List<FastNoise2ManagedEnum> ManagedEnums { get; init; } = [];
     public List<FastNoise2Feature> Nodes { get; init; } = [];

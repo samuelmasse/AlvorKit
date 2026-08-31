@@ -150,7 +150,8 @@ public readonly struct FnGraphNode
     /// </exception>
     /// <remarks>
     /// FastNoise2 1.1.1 cannot detach a connected hybrid node. This wrapper rejects a later constant assignment instead
-    /// of updating a dormant constant while leaving the node active.
+    /// of updating a dormant constant while leaving the node active. It also rejects constant mutation on decoded roots
+    /// because the C API cannot reveal their preexisting hybrid connections.
     /// </remarks>
     public FnGraphNode Hybrid(FnHybrid hybrid, float value)
     {

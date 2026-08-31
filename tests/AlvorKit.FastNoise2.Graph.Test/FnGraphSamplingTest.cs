@@ -50,6 +50,12 @@ public class FnGraphSamplingTest
         node.GenUniformGrid2D(typed2, (-2f, 7f), (5, 3), (0.5f, 1.25f), Seed);
         fn.GenUniformGrid2D(node.Native, raw2, -2f, 7f, 5, 3, 0.5f, 1.25f, Seed);
         AssertEqual(typed2, raw2);
+        var typedRange2 = new float[2];
+        var rawRange2 = new float[2];
+        node.GenUniformGrid2D(typed2, (-2f, 7f), (5, 3), (0.5f, 1.25f), Seed, typedRange2);
+        fn.GenUniformGrid2D(node.Native, raw2, -2f, 7f, 5, 3, 0.5f, 1.25f, Seed, rawRange2);
+        AssertEqual(typed2, raw2);
+        AssertEqual(typedRange2, rawRange2);
 
         var typed3 = new float[4 * 3 * 2];
         var raw3 = new float[typed3.Length];
@@ -59,6 +65,9 @@ public class FnGraphSamplingTest
         fn.GenUniformGrid3D(node.Native, raw3, -2f, 7f, 11f, 4, 3, 2, 0.5f, 1.25f, 0.75f, Seed, rawRange3);
         AssertEqual(typed3, raw3);
         AssertEqual(typedRange3, rawRange3);
+        node.GenUniformGrid3D(typed3, (-2f, 7f, 11f), (4, 3, 2), (0.5f, 1.25f, 0.75f), Seed);
+        fn.GenUniformGrid3D(node.Native, raw3, -2f, 7f, 11f, 4, 3, 2, 0.5f, 1.25f, 0.75f, Seed);
+        AssertEqual(typed3, raw3);
 
         var typed4 = new float[3 * 2 * 2 * 2];
         var raw4 = new float[typed4.Length];
@@ -66,6 +75,14 @@ public class FnGraphSamplingTest
         fn.GenUniformGrid4D(
             node.Native, raw4, -2f, 7f, 11f, 3f, 3, 2, 2, 2, 0.5f, 1.25f, 0.75f, 2f, Seed);
         AssertEqual(typed4, raw4);
+        var typedRange4 = new float[2];
+        var rawRange4 = new float[2];
+        node.GenUniformGrid4D(
+            typed4, (-2f, 7f, 11f, 3f), (3, 2, 2, 2), (0.5f, 1.25f, 0.75f, 2f), Seed, typedRange4);
+        fn.GenUniformGrid4D(
+            node.Native, raw4, -2f, 7f, 11f, 3f, 3, 2, 2, 2, 0.5f, 1.25f, 0.75f, 2f, Seed, rawRange4);
+        AssertEqual(typed4, raw4);
+        AssertEqual(typedRange4, rawRange4);
     }
 
     private static void VerifyTileable(Fn fn, FnGraphNode node)
@@ -78,6 +95,9 @@ public class FnGraphSamplingTest
         fn.GenTileable2D(node.Native, raw, 7, 5, 0.75f, 1.5f, Seed, rawRange);
         AssertEqual(typed, raw);
         AssertEqual(typedRange, rawRange);
+        node.GenTileable2D(typed, (7, 5), (0.75f, 1.5f), Seed);
+        fn.GenTileable2D(node.Native, raw, 7, 5, 0.75f, 1.5f, Seed);
+        AssertEqual(typed, raw);
     }
 
     private static void VerifyPositionArrays(Fn fn, FnGraphNode node)
@@ -95,15 +115,25 @@ public class FnGraphSamplingTest
         fn.GenPositionArray2D(node.Native, raw, raw.Length, x, y, 1f, 2f, Seed, rawRange);
         AssertEqual(typed, raw);
         AssertEqual(typedRange, rawRange);
+        node.GenPositionArray2D(typed, x, y, (1f, 2f), Seed);
+        fn.GenPositionArray2D(node.Native, raw, raw.Length, x, y, 1f, 2f, Seed);
+        AssertEqual(typed, raw);
 
         node.GenPositionArray3D(typed, x, y, z, (1f, 2f, 3f), Seed);
         fn.GenPositionArray3D(node.Native, raw, raw.Length, x, y, z, 1f, 2f, 3f, Seed);
         AssertEqual(typed, raw);
+        node.GenPositionArray3D(typed, x, y, z, (1f, 2f, 3f), Seed, typedRange);
+        fn.GenPositionArray3D(node.Native, raw, raw.Length, x, y, z, 1f, 2f, 3f, Seed, rawRange);
+        AssertEqual(typed, raw);
+        AssertEqual(typedRange, rawRange);
 
         node.GenPositionArray4D(typed, x, y, z, w, (1f, 2f, 3f, 4f), Seed, typedRange);
         fn.GenPositionArray4D(node.Native, raw, raw.Length, x, y, z, w, 1f, 2f, 3f, 4f, Seed, rawRange);
         AssertEqual(typed, raw);
         AssertEqual(typedRange, rawRange);
+        node.GenPositionArray4D(typed, x, y, z, w, (1f, 2f, 3f, 4f), Seed);
+        fn.GenPositionArray4D(node.Native, raw, raw.Length, x, y, z, w, 1f, 2f, 3f, 4f, Seed);
+        AssertEqual(typed, raw);
     }
 
     private static void VerifySingles(Fn fn, FnGraphNode node)

@@ -15,7 +15,7 @@ public enum FnNodeType
     /// <summary>Returns an uncorrelated random value in the configured output range at every position.</summary>
     White,
 
-    /// <summary>Alternates between -1 and 1 in axis-aligned cells whose size is the feature scale.</summary>
+    /// <summary>Alternates between the configured output bounds in cells whose size is the feature scale.</summary>
     Checkerboard,
 
     /// <summary>Multiplies <c>sin(coordinate / FeatureScale)</c> across every active axis.</summary>
@@ -93,10 +93,10 @@ public enum FnNodeType
     /// <summary>Returns the larger of a required left source and a constant or node-valued right input.</summary>
     Max,
 
-    /// <summary>Returns a quadratic smooth minimum of a required left source and a hybrid right input.</summary>
+    /// <summary>Returns a polynomial smooth minimum of a required left source and a hybrid right input.</summary>
     MinSmooth,
 
-    /// <summary>Returns a quadratic smooth maximum of a required left source and a hybrid right input.</summary>
+    /// <summary>Returns a polynomial smooth maximum of a required left source and a hybrid right input.</summary>
     MaxSmooth,
 
     /// <summary>Returns the square root of a source's magnitude while preserving its sign.</summary>

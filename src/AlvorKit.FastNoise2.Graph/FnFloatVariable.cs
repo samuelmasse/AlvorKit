@@ -50,10 +50,10 @@ public enum FnFloatVariable
     /// <summary>Sets the lower remapped output bound of applicable coherent-noise nodes. The default is -1.</summary>
     OutputMinimum,
 
-    /// <summary>Sets the X-axis domain-rotation angle in radians. The default is 0.</summary>
+    /// <summary>Sets the Y-axis domain-rotation angle in radians. The default is 0.</summary>
     Pitch,
 
-    /// <summary>Sets the Z-axis domain-rotation angle in radians. The default is 0.</summary>
+    /// <summary>Sets the X-axis domain-rotation angle in radians. The default is 0.</summary>
     Roll,
 
     /// <summary>Sets the uniform coordinate multiplier used by <see cref="FnNodeType.DomainScale"/>. The default is 1.</summary>
@@ -77,6 +77,6 @@ public enum FnFloatVariable
     /// <summary>Sets the output returned by <see cref="FnNodeType.Constant"/>. The default is 1.</summary>
     Value,
 
-    /// <summary>Sets the Y-axis domain-rotation angle in radians. The default is 0.</summary>
+    /// <summary>Sets the Z-axis domain-rotation angle in radians and controls 2D rotation. The default is 0.</summary>
     Yaw,
 }

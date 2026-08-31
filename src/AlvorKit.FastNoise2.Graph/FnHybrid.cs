@@ -2,8 +2,9 @@ namespace AlvorKit;
 
 /// <summary>Identifies an input that accepts either a float constant or another node.</summary>
 /// <remarks>
-/// A hybrid configured with a node evaluates that node at every position. Configuring it with a float uses the
-/// constant at every position. Each node type accepts only its documented hybrid inputs.
+/// A hybrid configured with a node evaluates that node at every position and the node takes priority over its stored
+/// constant. FastNoise2 1.1.1 cannot detach that connection, so a float is active only before any node is connected.
+/// Each node type accepts only its documented hybrid inputs.
 /// Managed numeric values are wrapper implementation details and are not native hybrid indexes.
 /// </remarks>
 public enum FnHybrid
@@ -74,7 +75,7 @@ public enum FnHybrid
     /// <summary>Varies the size of cellular feature points. The default is 0.</summary>
     SizeJitter,
 
-    /// <summary>Controls transition smoothing on smooth min/max or terrace nodes.</summary>
+    /// <summary>Controls transition smoothing; the default is 0.1 on smooth min/max and 0 on Terrace.</summary>
     Smoothness,
 
     /// <summary>Sets the upper output bound of <see cref="FnNodeType.Remap"/>. The default is 1.</summary>

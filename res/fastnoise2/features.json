@@ -1,9 +1,63 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "fastNoiseVersion": "1.1.1",
   "bindingVersion": "1.1.1.3",
+  "sourceRevision": {
+    "repository": "https://github.com/Auburn/FastNoise2",
+    "tag": "v1.1.1",
+    "commit": "903c1f2d2f9d53ddce94cd223f32727d9ab3aeaa",
+    "fastSimdCommit": "16450dae9528727e500e7254f635a671f9c7ee2d",
+    "auditedSurface": "FastNoise_C.h and FastNoise_C.cpp, metadata and serialization, Generator sampling, SmartNode ownership and pools, every built-in generator header and implementation, and pinned FastSIMD feature masks."
+  },
   "purpose": "Curated agent knowledge over the complete FastNoise2 runtime metadata exposed by AlvorKit.",
   "integerVariableNames": ["Seed Offset", "Value Index", "Distance Index 0", "Distance Index 1", "Octaves", "Pow"],
+  "cApiSymbols": [
+    "fnNewFromEncodedNodeTree",
+    "fnDeleteNodeRef",
+    "fnGetActiveFeatureSet",
+    "fnGetMetadataID",
+    "fnGenUniformGrid2D",
+    "fnGenUniformGrid3D",
+    "fnGenUniformGrid4D",
+    "fnGenPositionArray2D",
+    "fnGenPositionArray3D",
+    "fnGenPositionArray4D",
+    "fnGenTileable2D",
+    "fnGenSingle2D",
+    "fnGenSingle3D",
+    "fnGenSingle4D",
+    "fnGetMetadataCount",
+    "fnGetMetadataName",
+    "fnNewFromMetadata",
+    "fnGetMetadataVariableCount",
+    "fnGetMetadataVariableName",
+    "fnGetMetadataVariableType",
+    "fnGetMetadataVariableDimensionIdx",
+    "fnGetMetadataEnumCount",
+    "fnGetMetadataEnumName",
+    "fnSetVariableFloat",
+    "fnSetVariableIntEnum",
+    "fnGetMetadataNodeLookupCount",
+    "fnGetMetadataNodeLookupName",
+    "fnGetMetadataNodeLookupDimensionIdx",
+    "fnSetNodeLookup",
+    "fnGetMetadataHybridCount",
+    "fnGetMetadataHybridName",
+    "fnGetMetadataHybridDimensionIdx",
+    "fnSetHybridNodeLookup",
+    "fnSetHybridFloat",
+    "fnGetMetadataDescription",
+    "fnGetMetadataGroupCount",
+    "fnGetMetadataGroupName",
+    "fnGetMetadataVariableDescription",
+    "fnGetMetadataVariableDefaultFloat",
+    "fnGetMetadataVariableDefaultIntEnum",
+    "fnGetMetadataVariableMinFloat",
+    "fnGetMetadataVariableMaxFloat",
+    "fnGetMetadataNodeLookupDescription",
+    "fnGetMetadataHybridDescription",
+    "fnGetMetadataHybridDefault"
+  ],
   "samplingCapabilities": [
     { "name": "GenUniformGrid2D", "dimensions": 2, "layout": "X then Y", "use": "Regular 2D textures and height fields." },
     { "name": "GenUniformGrid3D", "dimensions": 3, "layout": "X then Y then Z", "use": "Volumes, voxels, and 3D slices." },
@@ -15,10 +69,12 @@
     { "name": "GenSingle2D", "dimensions": 2, "layout": "Single value", "use": "One isolated 2D sample; not bulk generation." },
     { "name": "GenSingle3D", "dimensions": 3, "layout": "Single value", "use": "One isolated 3D sample; not bulk generation." },
     { "name": "GenSingle4D", "dimensions": 4, "layout": "Single value", "use": "One isolated 4D sample; not bulk generation." },
-    { "name": "BatchMinMax", "dimensions": 0, "layout": "Two-float output span", "use": "Optional minimum and maximum for numeric batch output." }
+    { "name": "BatchMinMax", "dimensions": 0, "layout": "Two-float output span", "use": "Expose the minimum and maximum FastNoise2 computes for every numeric batch." }
   ],
   "bindingCapabilities": [
     { "name": "Encoded tree loading", "available": true, "api": "NewFromEncodedNodeTree" },
+    { "name": "Native reference release", "available": true, "api": "DeleteNodeRef; owned by SafeHandle in the graph wrapper" },
+    { "name": "Batch and single generation", "available": true, "api": "All GenUniformGrid, GenPositionArray, GenTileable2D, and GenSingle C entries" },
     { "name": "Runtime node metadata", "available": true, "api": "GetMetadata*" },
     { "name": "Dynamic node construction", "available": true, "api": "NewFromMetadata" },
     { "name": "Variable configuration", "available": true, "api": "SetVariableFloat and SetVariableIntEnum" },
@@ -26,21 +82,75 @@
     { "name": "Hybrid constant and node inputs", "available": true, "api": "SetHybridFloat and SetHybridNodeLookup" },
     { "name": "SIMD selection and reporting", "available": true, "api": "maxFeatureSet and GetActiveFeatureSet" },
     { "name": "Programmatic graph encoding", "available": false, "api": "Not present in FastNoise_C.h" },
+    { "name": "Editable NodeData trees", "available": false, "api": "C++ Metadata::NodeData surface only" },
+    { "name": "Current values and connection introspection", "available": false, "api": "No C getter for configured variables, sources, or hybrids" },
     { "name": "Custom FastSIMD nodes", "available": false, "api": "C++ extension surface only" },
+    { "name": "SmartNode memory-pool tuning", "available": false, "api": "C++ SmartNodeManager::SetMemoryPoolSize only" },
+    { "name": "SmartNode reference-count inspection", "available": false, "api": "C++ SmartNode::use_count and unique only; managed ownership is automatic" },
+    { "name": "Metadata display formatting and UI drag hints", "available": false, "api": "C++ editor helpers and fields only; raw names, dimensions, descriptions, defaults, and ranges are available" },
     { "name": "Node Editor IPC", "available": false, "api": "Separate upstream library, not packaged by AlvorKit" }
   ],
   "wrapperContract": {
     "package": "AlvorKit.FastNoise2.Graph",
     "namespace": "AlvorKit",
-    "ownership": "FnGraph retains one finalizable SafeHandle per created native root. FnGraphNode copies keep the graph alive without cloning nodes or duplicating native references.",
+    "ownership": "FnGraph retains one finalizable SafeHandle per Create or CreateEncoded result. FnGraphNode copies keep the graph alive without cloning nodes or duplicating native references.",
     "configuration": "Create and connect the complete acyclic graph before sampling. Exact metadata, ownership, and cycle checks occur only during cold graph mutation.",
-    "hybridReplacement": "A node-backed hybrid may replace another node. FastNoise2 1.1.1 cannot detach it, so the wrapper rejects a later constant assignment.",
+    "hybridReplacement": "A node-backed hybrid may replace another node. FastNoise2 1.1.1 cannot detach it, so the wrapper rejects a later constant assignment. Constant mutation is also rejected on an encoded root because its existing connection state is opaque.",
     "sampling": "Batch sampling is managed-allocation-free and does not validate graph state. It retains only constant-time span bounds and overlap checks that protect native memory.",
+    "batchMinMax": "FastNoise2 1.1.1 computes batch minimum and maximum internally on every batch call. Omitting the managed outputMinMax span avoids only copying those two values.",
     "nodeLifetime": "SafeHandle finalizers call DeleteNodeRef after FnGraph and all of its FnGraphNode values become unreachable. FnGraph has no Clear or Dispose API.",
-    "encodedTrees": "CreateEncoded loads a complete version-coupled Base64 tree and exposes only its root. The binding cannot export trees.",
+    "nativeMemory": "Nodes use intrusive native references and 64 KiB pooled allocations by default; the pool is shared, not allocated once per node. Pool-size tuning is absent from the C ABI.",
+    "encodedTrees": "CreateEncoded loads a complete version-coupled Base64 tree and exposes only its root. The binding cannot export trees or inspect the decoded root's existing connections.",
     "numericBounds": "FastNoise metadata minimums and maximums are editor guidance and native setters do not generally enforce them.",
     "enumOrdinals": "Except FnFeatureSet, managed enum integers are wrapper details, not native metadata IDs, native option indexes, or stable serialization values."
   },
+  "knownUpstreamBehavior": [
+    {
+      "name": "Hybrid detachment",
+      "behavior": "FastNoise_C.h says a null node detaches a hybrid, but the 1.1.1 implementation rejects null and an active node continues to override its stored constant.",
+      "managedResponse": "FnGraph tracks wrapper-created connections and rejects misleading float replacement; encoded-root float mutation is rejected because connection state is opaque."
+    },
+    {
+      "name": "Null node deletion",
+      "behavior": "FastNoise_C.h describes fnDeleteNodeRef(NULL) as a no-op, but the 1.1.1 implementation dereferences the pointer.",
+      "managedResponse": "FnNodeHandle never invokes DeleteNodeRef for an invalid handle."
+    },
+    {
+      "name": "Incomplete required sources",
+      "behavior": "Generation assumes every required source has been connected and can assert or dereference null for an incomplete graph.",
+      "managedResponse": "Documentation requires complete graph construction; hot sampling deliberately performs no graph traversal."
+    },
+    {
+      "name": "DistanceToPoint default",
+      "behavior": "The constructed 1.1.1 C++ node uses Euclidean Squared although runtime metadata advertises Euclidean.",
+      "managedResponse": "Configure DistanceFunction explicitly when the distinction matters."
+    },
+    {
+      "name": "Metadata numeric bounds",
+      "behavior": "Metadata minimum and maximum values are Node Editor hints and most native setters do not enforce them.",
+      "managedResponse": "The wrapper forwards numeric values without hot or cold policy clamping."
+    },
+    {
+      "name": "Batch minimum and maximum",
+      "behavior": "The pinned native build calculates a range for every batch even when the C caller supplies no range pointer.",
+      "managedResponse": "The range overload exposes the already-computed values; omitting it saves only the two-float copy."
+    },
+    {
+      "name": "Raw grid count multiplication",
+      "behavior": "The C implementation multiplies signed 32-bit grid dimensions before forwarding the sample count.",
+      "managedResponse": "The wrapper requires positive dimensions and verifies their product fits Int32 before the native call."
+    },
+    {
+      "name": "Domain-warp Seed Offset",
+      "behavior": "In 1.1.1 direct Simplex and Gradient warps apply Seed Offset twice, direct SuperSimplex applies it once, and fractal warp use applies it once for Simplex/Gradient but not for SuperSimplex.",
+      "managedResponse": "The wrapper preserves upstream output exactly; leave warp Seed Offset at zero unless this version-specific behavior is intentional."
+    },
+    {
+      "name": "PowInt low exponents",
+      "behavior": "The 1.1.1 implementation squares the input when Pow is less than 2 instead of producing identity or reciprocal behavior.",
+      "managedResponse": "Use integer powers of 2 or greater."
+    }
+  ],
   "managedMethods": [
     { "owner": "FnGraph", "signature": "FnGraph(Fn fn)", "purpose": "Create a configuration context and request the fastest supported compiled SIMD implementation." },
     { "owner": "FnGraph", "signature": "FnGraph(Fn fn, FnFeatureSet maximumFeatureSet)", "purpose": "Create a configuration context while limiting native SIMD dispatch." },
@@ -59,10 +169,23 @@
     { "owner": "FnGraphNode", "signature": "FnGraphNode Hybrid(FnHybrid hybrid, FnGraphNode source)", "purpose": "Connect the active spatially varying value of a hybrid input." },
     { "owner": "FnGraphNode", "signature": "FnGraphNode Source(FnSource source, FnGraphNode value)", "purpose": "Connect a required same-graph source while preserving acyclicity." },
     { "owner": "FnGraphNode", "signature": "FnFeatureSet GetActiveFeatureSet()", "purpose": "Report the cumulative FastSIMD mask selected for the node." },
-    { "owner": "FnGraphNodeSampling", "signature": "GenUniformGrid2D/3D/4D(...)", "purpose": "Generate a regular row-major batch, with optional two-float min/max output." },
-    { "owner": "FnGraphNodeSampling", "signature": "GenPositionArray2D/3D/4D(...)", "purpose": "Generate one sample per structure-of-arrays position, with optional min/max output." },
-    { "owner": "FnGraphNodeSampling", "signature": "GenTileable2D(...)", "purpose": "Generate a seamless 2D tile through a 4D hypertorus, with optional min/max output." },
-    { "owner": "FnGraphNodeSampling", "signature": "GenSingle2D/3D/4D(...)", "purpose": "Generate one isolated sample; slow per sample because SIMD lanes are underused." }
+    { "owner": "FnGraphNodeSampling", "signature": "void GenUniformGrid2D(FnGraphNode node, Span<float> output, Vec2 offset, Vec2i count, Vec2 step, int seed)", "purpose": "Generate a row-major 2D grid." },
+    { "owner": "FnGraphNodeSampling", "signature": "void GenUniformGrid2D(FnGraphNode node, Span<float> output, Vec2 offset, Vec2i count, Vec2 step, int seed, Span<float> outputMinMax)", "purpose": "Generate a row-major 2D grid and copy its computed range." },
+    { "owner": "FnGraphNodeSampling", "signature": "void GenUniformGrid3D(FnGraphNode node, Span<float> output, Vec3 offset, Vec3i count, Vec3 step, int seed)", "purpose": "Generate an X/Y/Z-ordered 3D grid." },
+    { "owner": "FnGraphNodeSampling", "signature": "void GenUniformGrid3D(FnGraphNode node, Span<float> output, Vec3 offset, Vec3i count, Vec3 step, int seed, Span<float> outputMinMax)", "purpose": "Generate an X/Y/Z-ordered 3D grid and copy its computed range." },
+    { "owner": "FnGraphNodeSampling", "signature": "void GenUniformGrid4D(FnGraphNode node, Span<float> output, Vec4 offset, Vec4i count, Vec4 step, int seed)", "purpose": "Generate an X/Y/Z/W-ordered 4D grid." },
+    { "owner": "FnGraphNodeSampling", "signature": "void GenUniformGrid4D(FnGraphNode node, Span<float> output, Vec4 offset, Vec4i count, Vec4 step, int seed, Span<float> outputMinMax)", "purpose": "Generate an X/Y/Z/W-ordered 4D grid and copy its computed range." },
+    { "owner": "FnGraphNodeSampling", "signature": "void GenPositionArray2D(FnGraphNode node, Span<float> output, ReadOnlySpan<float> x, ReadOnlySpan<float> y, Vec2 offset, int seed)", "purpose": "Generate one 2D sample per structure-of-arrays position." },
+    { "owner": "FnGraphNodePositionRanges", "signature": "void GenPositionArray2D(FnGraphNode node, Span<float> output, ReadOnlySpan<float> x, ReadOnlySpan<float> y, Vec2 offset, int seed, Span<float> outputMinMax)", "purpose": "Generate arbitrary 2D positions and copy their computed range." },
+    { "owner": "FnGraphNodeSampling", "signature": "void GenPositionArray3D(FnGraphNode node, Span<float> output, ReadOnlySpan<float> x, ReadOnlySpan<float> y, ReadOnlySpan<float> z, Vec3 offset, int seed)", "purpose": "Generate one 3D sample per structure-of-arrays position." },
+    { "owner": "FnGraphNodePositionRanges", "signature": "void GenPositionArray3D(FnGraphNode node, Span<float> output, ReadOnlySpan<float> x, ReadOnlySpan<float> y, ReadOnlySpan<float> z, Vec3 offset, int seed, Span<float> outputMinMax)", "purpose": "Generate arbitrary 3D positions and copy their computed range." },
+    { "owner": "FnGraphNodeSampling", "signature": "void GenPositionArray4D(FnGraphNode node, Span<float> output, ReadOnlySpan<float> x, ReadOnlySpan<float> y, ReadOnlySpan<float> z, ReadOnlySpan<float> w, Vec4 offset, int seed)", "purpose": "Generate one 4D sample per structure-of-arrays position." },
+    { "owner": "FnGraphNodePositionRanges", "signature": "void GenPositionArray4D(FnGraphNode node, Span<float> output, ReadOnlySpan<float> x, ReadOnlySpan<float> y, ReadOnlySpan<float> z, ReadOnlySpan<float> w, Vec4 offset, int seed, Span<float> outputMinMax)", "purpose": "Generate arbitrary 4D positions and copy their computed range." },
+    { "owner": "FnGraphNodeSampling", "signature": "void GenTileable2D(FnGraphNode node, Span<float> output, Vec2i size, Vec2 step, int seed)", "purpose": "Generate a seamless 2D tile through a 4D hypertorus." },
+    { "owner": "FnGraphNodeSampling", "signature": "void GenTileable2D(FnGraphNode node, Span<float> output, Vec2i size, Vec2 step, int seed, Span<float> outputMinMax)", "purpose": "Generate a seamless 2D tile and copy its computed range." },
+    { "owner": "FnGraphNodeSampling", "signature": "float GenSingle2D(FnGraphNode node, Vec2 position, int seed)", "purpose": "Generate one isolated 2D sample; SIMD lanes are underused." },
+    { "owner": "FnGraphNodeSampling", "signature": "float GenSingle3D(FnGraphNode node, Vec3 position, int seed)", "purpose": "Generate one isolated 3D sample; SIMD lanes are underused." },
+    { "owner": "FnGraphNodeSampling", "signature": "float GenSingle4D(FnGraphNode node, Vec4 position, int seed)", "purpose": "Generate one isolated 4D sample; SIMD lanes are underused." }
   ],
   "managedEnums": [
     {
@@ -73,23 +196,90 @@
     },
     {
       "name": "FnFloatVariable",
-      "values": ["AmplitudeScalingX", "AmplitudeScalingY", "AmplitudeScalingZ", "AmplitudeScalingW", "FeatureScale", "Lacunarity", "Maximum", "Minimum", "MultiplierX", "MultiplierY", "MultiplierZ", "MultiplierW", "OutputMaximum", "OutputMinimum", "Pitch", "Roll", "Scaling", "ScalingX", "ScalingY", "ScalingZ", "ScalingW", "StepCount", "Value", "Yaw"],
-      "metadataNames": ["Amplitude Scaling.X", "Amplitude Scaling.Y", "Amplitude Scaling.Z", "Amplitude Scaling.W", "Feature Scale", "Lacunarity", "Max", "Min", "Multiplier.X", "Multiplier.Y", "Multiplier.Z", "Multiplier.W", "Output Max", "Output Min", "Pitch", "Roll", "Scaling", "Scaling.X", "Scaling.Y", "Scaling.Z", "Scaling.W", "Step Count", "Value", "Yaw"]
+      "values": [
+        { "managed": "AmplitudeScalingX", "metadata": "Amplitude Scaling.X", "default": 1.0, "meaning": "Scales X displacement produced by a domain warp; it does not scale input coordinates." },
+        { "managed": "AmplitudeScalingY", "metadata": "Amplitude Scaling.Y", "default": 1.0, "meaning": "Scales Y displacement produced by a domain warp; it does not scale input coordinates." },
+        { "managed": "AmplitudeScalingZ", "metadata": "Amplitude Scaling.Z", "default": 1.0, "meaning": "Scales Z displacement produced by a domain warp; it does not scale input coordinates." },
+        { "managed": "AmplitudeScalingW", "metadata": "Amplitude Scaling.W", "default": 1.0, "meaning": "Scales W displacement produced by a domain warp; it does not scale input coordinates." },
+        { "managed": "FeatureScale", "metadata": "Feature Scale", "default": 100.0, "meaning": "Feature size in domain units and the inverse of frequency. Zero is invalid because the runtime stores 1/value." },
+        { "managed": "Lacunarity", "metadata": "Lacunarity", "default": 2.0, "meaning": "Frequency multiplier between fractal octaves." },
+        { "managed": "Maximum", "metadata": "Max", "default": 1.0, "meaning": "Upper source bound used only by ConvertRGBA8." },
+        { "managed": "Minimum", "metadata": "Min", "default": -1.0, "meaning": "Lower source bound used only by ConvertRGBA8." },
+        { "managed": "MultiplierX", "metadata": "Multiplier.X", "default": 0.0, "meaning": "X coefficient in Gradient's coordinate sum." },
+        { "managed": "MultiplierY", "metadata": "Multiplier.Y", "default": 0.0, "meaning": "Y coefficient in Gradient's coordinate sum." },
+        { "managed": "MultiplierZ", "metadata": "Multiplier.Z", "default": 0.0, "meaning": "Z coefficient in Gradient's coordinate sum." },
+        { "managed": "MultiplierW", "metadata": "Multiplier.W", "default": 0.0, "meaning": "W coefficient in Gradient's coordinate sum." },
+        { "managed": "OutputMaximum", "metadata": "Output Max", "default": 1.0, "meaning": "Upper remapped output bound on applicable generators." },
+        { "managed": "OutputMinimum", "metadata": "Output Min", "default": -1.0, "meaning": "Lower remapped output bound on applicable generators." },
+        { "managed": "Pitch", "metadata": "Pitch", "default": 0.0, "meaning": "DomainRotate angle in radians around the Y axis." },
+        { "managed": "Roll", "metadata": "Roll", "default": 0.0, "meaning": "DomainRotate angle in radians around the X axis." },
+        { "managed": "Scaling", "metadata": "Scaling", "default": 1.0, "meaning": "Uniform coordinate multiplier on DomainScale." },
+        { "managed": "ScalingX", "metadata": "Scaling.X", "default": 1.0, "meaning": "X-coordinate multiplier on DomainAxisScale." },
+        { "managed": "ScalingY", "metadata": "Scaling.Y", "default": 1.0, "meaning": "Y-coordinate multiplier on DomainAxisScale." },
+        { "managed": "ScalingZ", "metadata": "Scaling.Z", "default": 1.0, "meaning": "Z-coordinate multiplier on DomainAxisScale." },
+        { "managed": "ScalingW", "metadata": "Scaling.W", "default": 1.0, "meaning": "W-coordinate multiplier on DomainAxisScale." },
+        { "managed": "StepCount", "metadata": "Step Count", "default": 1.0, "meaning": "Terrace intervals per source-value unit. It is a float; zero is invalid." },
+        { "managed": "Value", "metadata": "Value", "default": 1.0, "meaning": "Constant node output." },
+        { "managed": "Yaw", "metadata": "Yaw", "default": 0.0, "meaning": "DomainRotate angle in radians around the Z axis; it is the 2D rotation." }
+      ]
     },
     {
       "name": "FnIntegerVariable",
-      "values": ["SeedOffset", "ValueIndex", "DistanceIndex0", "DistanceIndex1", "Octaves", "Power"],
-      "metadataNames": ["Seed Offset", "Value Index", "Distance Index 0", "Distance Index 1", "Octaves", "Pow"]
+      "values": [
+        { "managed": "SeedOffset", "metadata": "Seed Offset", "default": "0 on generators; 1 on the SeedOffset modifier", "meaning": "Offsets a generator seed or the complete child seed of SeedOffset. Domain-warp behavior has a pinned 1.1.1 inconsistency recorded in knownUpstreamBehavior." },
+        { "managed": "ValueIndex", "metadata": "Value Index", "default": 0, "meaning": "CellularValue distance rank; native setter clamps to 0 through 3." },
+        { "managed": "DistanceIndex0", "metadata": "Distance Index 0", "default": 0, "meaning": "First CellularDistance rank; native setter clamps to 0 through 3." },
+        { "managed": "DistanceIndex1", "metadata": "Distance Index 1", "default": 1, "meaning": "Second CellularDistance rank; native setter clamps to 0 through 3." },
+        { "managed": "Octaves", "metadata": "Octaves", "default": 3, "meaning": "Fractal layer count. Metadata recommends 2 through 16, but the setter does not enforce it." },
+        { "managed": "Power", "metadata": "Pow", "default": 2, "meaning": "PowInt exponent. The pinned implementation squares for values below 2." }
+      ]
     },
     {
       "name": "FnHybrid",
-      "values": ["Fade", "FadeMaximum", "FadeMinimum", "FromMaximum", "FromMinimum", "Gain", "GridJitter", "Lhs", "MinkowskiP", "NewDimensionPosition", "OffsetX", "OffsetY", "OffsetZ", "OffsetW", "PingPongStrength", "PointX", "PointY", "PointZ", "PointW", "Power", "Rhs", "SizeJitter", "Smoothness", "ToMaximum", "ToMinimum", "Value", "WarpAmplitude", "WeightedStrength"],
-      "metadataNames": ["Fade", "Fade Max", "Fade Min", "From Max", "From Min", "Gain", "Grid Jitter", "LHS", "Minkowski P", "New Dimension Position", "Offset.X", "Offset.Y", "Offset.Z", "Offset.W", "Ping Pong Strength", "Point.X", "Point.Y", "Point.Z", "Point.W", "Pow", "RHS", "Size Jitter", "Smoothness", "To Max", "To Min", "Value", "Warp Amplitude", "Weighted Strength"]
+      "values": [
+        { "managed": "Fade", "metadata": "Fade", "default": 0.0, "meaning": "Fade's blend signal before normalization and interpolation." },
+        { "managed": "FadeMaximum", "metadata": "Fade Max", "default": 1.0, "meaning": "Fade value selecting 100 percent B." },
+        { "managed": "FadeMinimum", "metadata": "Fade Min", "default": -1.0, "meaning": "Fade value selecting 100 percent A." },
+        { "managed": "FromMaximum", "metadata": "From Max", "default": 1.0, "meaning": "Upper Remap input bound." },
+        { "managed": "FromMinimum", "metadata": "From Min", "default": -1.0, "meaning": "Lower Remap input bound." },
+        { "managed": "Gain", "metadata": "Gain", "default": 0.5, "meaning": "Fractal amplitude multiplier between octaves." },
+        { "managed": "GridJitter", "metadata": "Grid Jitter", "default": 1.0, "meaning": "Cellular feature-point displacement; values above 1 can produce search-grid artifacts." },
+        { "managed": "Lhs", "metadata": "LHS", "default": 0.0, "meaning": "Left hybrid operand on Subtract, Divide, and Modulus." },
+        { "managed": "MinkowskiP", "metadata": "Minkowski P", "default": 1.5, "meaning": "Exponent used only by Minkowski distance; 1 is Manhattan and 2 is Euclidean." },
+        { "managed": "NewDimensionPosition", "metadata": "New Dimension Position", "default": 0.0, "meaning": "Coordinate appended by AddDimension." },
+        { "managed": "OffsetX", "metadata": "Offset.X", "default": 0.0, "meaning": "X offset on Gradient or DomainOffset." },
+        { "managed": "OffsetY", "metadata": "Offset.Y", "default": 0.0, "meaning": "Y offset on Gradient or DomainOffset." },
+        { "managed": "OffsetZ", "metadata": "Offset.Z", "default": 0.0, "meaning": "Z offset on Gradient or DomainOffset." },
+        { "managed": "OffsetW", "metadata": "Offset.W", "default": 0.0, "meaning": "W offset on Gradient or DomainOffset." },
+        { "managed": "PingPongStrength", "metadata": "Ping Pong Strength", "default": 2.0, "meaning": "Multiplier applied before PingPong folds its source into a triangular wave." },
+        { "managed": "PointX", "metadata": "Point.X", "default": 0.0, "meaning": "X coordinate of DistanceToPoint's target." },
+        { "managed": "PointY", "metadata": "Point.Y", "default": 0.0, "meaning": "Y coordinate of DistanceToPoint's target." },
+        { "managed": "PointZ", "metadata": "Point.Z", "default": 0.0, "meaning": "Z coordinate of DistanceToPoint's target." },
+        { "managed": "PointW", "metadata": "Point.W", "default": 0.0, "meaning": "W coordinate of DistanceToPoint's target." },
+        { "managed": "Power", "metadata": "Pow", "default": 2.0, "meaning": "Floating-point exponent on PowFloat." },
+        { "managed": "Rhs", "metadata": "RHS", "default": 0.0, "meaning": "Right hybrid operand on arithmetic and min/max nodes." },
+        { "managed": "SizeJitter", "metadata": "Size Jitter", "default": 0.0, "meaning": "Random per-cell distance multiplier; nonzero values can produce search-grid artifacts." },
+        { "managed": "Smoothness", "metadata": "Smoothness", "default": "0.1 on MinSmooth/MaxSmooth; 0 on Terrace", "meaning": "Softens smooth min/max or Terrace transitions." },
+        { "managed": "ToMaximum", "metadata": "To Max", "default": 1.0, "meaning": "Upper Remap output bound." },
+        { "managed": "ToMinimum", "metadata": "To Min", "default": 0.0, "meaning": "Lower Remap output bound." },
+        { "managed": "Value", "metadata": "Value", "default": 2.0, "meaning": "Floating-point base on PowFloat; distinct from Constant's float Value and PowInt's required Value." },
+        { "managed": "WarpAmplitude", "metadata": "Warp Amplitude", "default": 50.0, "meaning": "Maximum domain displacement in world units before per-axis amplitude scaling." },
+        { "managed": "WeightedStrength", "metadata": "Weighted Strength", "default": 0.0, "meaning": "Feeds prior octave magnitude into later fractal amplitude; zero disables weighting." }
+      ],
+      "connectionRule": "A node connection overrides its stored float and cannot be detached in FastNoise2 1.1.1."
     },
     {
       "name": "FnSource",
-      "values": ["A", "B", "DomainWarpSource", "Lhs", "Lookup", "Source", "Value"],
-      "metadataNames": ["A", "B", "Domain Warp Source", "LHS", "Lookup", "Source", "Value"]
+      "values": [
+        { "managed": "A", "metadata": "A", "meaning": "Required first endpoint of Fade." },
+        { "managed": "B", "metadata": "B", "meaning": "Required second endpoint of Fade." },
+        { "managed": "DomainWarpSource", "metadata": "Domain Warp Source", "meaning": "Required DomainWarp-derived algorithm used by a domain-warp fractal; its own Source is the final field." },
+        { "managed": "Lhs", "metadata": "LHS", "meaning": "Required left operand on Add, Multiply, Min, Max, MinSmooth, and MaxSmooth." },
+        { "managed": "Lookup", "metadata": "Lookup", "meaning": "Required CellularLookup child evaluated at the closest jittered cell position with seed plus one." },
+        { "managed": "Source", "metadata": "Source", "meaning": "Primary required child on fractals, modifiers, warps, and unary nodes." },
+        { "managed": "Value", "metadata": "Value", "meaning": "Required PowInt base; distinct from Constant's float Value and PowFloat's hybrid Value." }
+      ],
+      "connectionRule": "Every required source must be connected before generation."
     },
     {
       "name": "FnDistanceFunction",
@@ -146,7 +336,7 @@
     {
       "name": "Checkerboard",
       "groups": ["Basic Generators"],
-      "purpose": "Alternating N-dimensional cells for grids and diagnostic patterns.",
+      "purpose": "Alternates the configured output bounds by N-dimensional cell parity.",
       "variables": ["Feature Scale", "Output Min", "Output Max"],
       "lookups": [],
       "hybrids": [],
@@ -236,7 +426,7 @@
     {
       "name": "CellularValue",
       "groups": ["Coherent Noise"],
-      "purpose": "White-noise value associated with the selected nearest Voronoi cell.",
+      "purpose": "White-noise value associated with the selected cellular distance rank.",
       "variables": ["Feature Scale", "Seed Offset", "Output Min", "Output Max", "Distance Function", "Value Index"],
       "lookups": [],
       "hybrids": ["Minkowski P", "Grid Jitter", "Size Jitter"],
@@ -269,7 +459,7 @@
     {
       "name": "CellularLookup",
       "groups": ["Coherent Noise"],
-      "purpose": "Evaluates a required source at the nearest cell center for custom cell values.",
+      "purpose": "Evaluates a required source at the closest jittered cell position with the incoming seed plus one.",
       "variables": ["Feature Scale", "Seed Offset", "Distance Function"],
       "lookups": ["Lookup"],
       "hybrids": ["Minkowski P", "Grid Jitter", "Size Jitter"],
@@ -459,7 +649,7 @@
     {
       "name": "MinSmooth",
       "groups": ["Blends"],
-      "purpose": "Quadratic smooth minimum for softly joining scalar fields.",
+      "purpose": "Polynomial smooth minimum for softly joining scalar fields.",
       "variables": [],
       "lookups": ["LHS"],
       "hybrids": ["RHS", "Smoothness"],
@@ -469,7 +659,7 @@
     {
       "name": "MaxSmooth",
       "groups": ["Blends"],
-      "purpose": "Quadratic smooth maximum for softly joining scalar fields.",
+      "purpose": "Polynomial smooth maximum for softly joining scalar fields.",
       "variables": [],
       "lookups": ["LHS"],
       "hybrids": ["RHS", "Smoothness"],
@@ -529,7 +719,7 @@
     {
       "name": "DomainRotate",
       "groups": ["Domain Modifiers"],
-      "purpose": "Yaw/pitch/roll rotation in radians for 2D/3D; four-dimensional input passes through unrotated.",
+      "purpose": "Roll rotates X, pitch Y, and yaw Z in 2D/3D; four-dimensional input passes through unrotated.",
       "variables": ["Yaw", "Pitch", "Roll"],
       "lookups": ["Source"],
       "hybrids": [],

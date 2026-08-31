@@ -135,6 +135,18 @@ public class FnGraphTest
         Assert.ThrowsExactly<InvalidOperationException>(() => subtract.Hybrid(FnHybrid.Lhs, 0.5f));
     }
 
+    /// <summary>Proves an opaque encoded hybrid connection cannot be mistaken for a replaceable constant.</summary>
+    [TestMethod]
+    public void HybridConstantRejectsEncodedRootState()
+    {
+        var fn = new FnBackend();
+        var graph = new FnGraph(fn);
+        var subtractWithConnectedLhs = graph.CreateEncoded("FgIADA==");
+
+        Assert.ThrowsExactly<InvalidOperationException>(
+            () => subtractWithConnectedLhs.Hybrid(FnHybrid.Lhs, 0.5f));
+    }
+
     /// <summary>Proves native sampling never receives overlapping input, output, or range storage.</summary>
     [TestMethod]
     public void SamplingRejectsOverlappingSpans()
@@ -146,8 +158,28 @@ public class FnGraphTest
 
         Assert.ThrowsExactly<ArgumentException>(
             () => node.GenPositionArray2D(storage.AsSpan(0, 4), storage.AsSpan(0, 4), storage.AsSpan(4, 4), (0f, 0f), 1));
+        Assert.ThrowsExactly<ArgumentException>(() => node.GenPositionArray3D(
+            storage.AsSpan(0, 2), storage.AsSpan(2, 2), storage.AsSpan(4, 2), storage.AsSpan(0, 2), (0f, 0f, 0f), 1));
+        Assert.ThrowsExactly<ArgumentException>(() => node.GenPositionArray4D(
+            storage.AsSpan(0, 2), storage.AsSpan(2, 2), storage.AsSpan(4, 2), storage.AsSpan(6, 2),
+            storage.AsSpan(0, 2), (0f, 0f, 0f, 0f), 1));
         Assert.ThrowsExactly<ArgumentException>(
             () => node.GenUniformGrid2D(storage.AsSpan(0, 4), (0f, 0f), (2, 2), (1f, 1f), 1, storage.AsSpan(2, 2)));
+    }
+
+    /// <summary>Proves native count multiplication cannot receive nonpositive or overflowing grid sizes.</summary>
+    [TestMethod]
+    public void SamplingRejectsInvalidGridCounts()
+    {
+        var fn = new FnBackend();
+        var graph = new FnGraph(fn);
+        var node = graph.Create(FnNodeType.Simplex);
+        var output = new float[1];
+
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            () => node.GenUniformGrid2D(output, (0f, 0f), (0, 1), (1f, 1f), 1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            () => node.GenUniformGrid2D(output, (0f, 0f), (int.MaxValue, 2), (1f, 1f), 1));
     }
 
     /// <summary>Proves the feature-set ceiling is typed and rejects invented native masks.</summary>

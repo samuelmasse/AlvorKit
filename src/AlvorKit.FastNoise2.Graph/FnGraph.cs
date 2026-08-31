@@ -5,8 +5,8 @@ namespace AlvorKit;
 /// <param name="maximumFeatureSet">The greatest FastSIMD implementation the native dispatcher may select.</param>
 /// <remarks>
 /// Graph construction is a cold configuration operation. The graph validates exact metadata members, graph ownership,
-/// and cycles. It retains one independently finalizable native handle per created root. Sampling does not traverse or
-/// validate graph state and does not allocate managed memory.
+/// and cycles. It retains one independently finalizable native handle per creation result. Sampling does not traverse
+/// or validate graph state and does not allocate managed memory.
 /// </remarks>
 /// <exception cref="ArgumentNullException"><paramref name="fn"/> is null.</exception>
 /// <exception cref="ArgumentOutOfRangeException"><paramref name="maximumFeatureSet"/> is not defined.</exception>
@@ -15,6 +15,7 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet)
     private readonly FnMetadata metadata = new(RequireBinding(fn));
     private readonly List<FnNodeHandle> handles = [];
     private readonly Dictionary<FnConnectionKey, FnNode> connections = [];
+    private readonly HashSet<FnNode> opaqueEncodedRoots = [];
     private readonly uint maximumFeatureSet = ValidateFeatureSet(maximumFeatureSet);
 
     /// <summary>Creates a graph that selects the fastest compiled FastSIMD implementation supported by the current CPU.</summary>
@@ -54,6 +55,8 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet)
     /// <remarks>
     /// <c>fnNewFromEncodedNodeTree</c> returns only the root reference; native node connections retain all descendants.
     /// Encoded trees are version-coupled assets. This package loads them but does not expose an encoding operation.
+    /// The C API also does not expose their existing connections, so constant-valued hybrid mutation is unavailable on
+    /// a decoded root; required-source and node-valued hybrid replacement remain available.
     /// </remarks>
     public FnGraphNode CreateEncoded(string encodedTree)
     {
@@ -64,6 +67,7 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet)
             throw new InvalidOperationException("FastNoise2 rejected the encoded node tree.");
 
         handles.Add(new FnNodeHandle(fn, node));
+        opaqueEncodedRoots.Add(node);
         return new(this, node);
     }
 
@@ -131,6 +135,13 @@ public class FnGraph(Fn fn, FnFeatureSet maximumFeatureSet)
         var key = FnNames.Hybrid(hybrid);
         var index = metadata.FindHybrid(node, key);
         var connectionKey = new FnConnectionKey(node, true, index);
+
+        if (opaqueEncodedRoots.Contains(node))
+        {
+            throw new InvalidOperationException(
+                $"FastNoise2 hybrid '{metadata.Name(node)}.{FnMetadata.Display(key)}' came from an encoded root; " +
+                "the pinned C API cannot report whether a node is already connected or detach that connection.");
+        }
 
         if (connections.ContainsKey(connectionKey))
         {

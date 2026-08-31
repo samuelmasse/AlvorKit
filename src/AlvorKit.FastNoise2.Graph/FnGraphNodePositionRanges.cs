@@ -4,6 +4,7 @@ namespace AlvorKit;
 /// <remarks>
 /// These extension methods complement <see cref="FnGraphNodeSampling"/>. They allocate no managed memory. Immutable
 /// trees may be sampled concurrently into independent buffers; input, output, and min/max spans must not overlap.
+/// FastNoise2 computes the batch range internally for range and non-range overloads; these methods copy it to the caller.
 /// </remarks>
 public static class FnGraphNodePositionRanges
 {
