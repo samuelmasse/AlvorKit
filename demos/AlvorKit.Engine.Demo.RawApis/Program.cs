@@ -24,7 +24,7 @@ namespace AlvorKit
         private const long XxHashSeed = 0xC0DE_51E5u;
         private const double TitleRefreshSeconds = 0.35;
 
-        /// <summary>Reuses one Simplex node whose lifetime belongs to the injected graph.</summary>
+        /// <summary>Owns one reusable Simplex node for this state's lifetime.</summary>
         private readonly FnGraphNode noise = graph.Create(FnNodeType.Simplex);
 
         private RawApiSnapshot snapshot = RawApiSnapshot.Empty;

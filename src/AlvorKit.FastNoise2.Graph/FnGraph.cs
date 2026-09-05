@@ -4,8 +4,8 @@ namespace AlvorKit;
 /// <param name="fn">The binding implementation used to create, configure, sample, and release nodes.</param>
 /// <remarks>
 /// Graph construction is a cold configuration operation. The graph validates exact metadata members, graph ownership,
-/// and cycles. It retains one independently finalizable native handle per creation result. Sampling does not traverse
-/// or validate graph state and does not allocate managed memory.
+/// and cycles. Each node owns its independently finalizable native handle and connected dependencies; this service
+/// does not retain created nodes. Sampling does not traverse or validate graph state and does not allocate managed memory.
 /// </remarks>
 /// <exception cref="ArgumentNullException"><paramref name="fn"/> is null.</exception>
 public class FnGraph(Fn fn)
@@ -13,17 +13,14 @@ public class FnGraph(Fn fn)
     private const uint MaximumFeatureSet = (uint)FnFeatureSet.Maximum;
 
     private readonly FnMetadata metadata = new(RequireBinding(fn));
-    private readonly List<FnNodeHandle> handles = [];
-    private readonly Dictionary<FnConnectionKey, FnNode> connections = [];
-    private readonly HashSet<FnNode> opaqueEncodedRoots = [];
 
     /// <summary>Creates a managed node handle of the requested typed kind.</summary>
     /// <param name="type">The FastNoise2 1.1.1 metadata node to instantiate.</param>
-    /// <returns>A value handle that keeps this graph and its new mutable node alive.</returns>
+    /// <returns>A value handle that independently owns the new mutable node and retains its configuration service.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="type"/> is not a defined value.</exception>
     /// <exception cref="InvalidOperationException">The pinned metadata is absent or native construction fails.</exception>
     /// <remarks>
-    /// The native <c>fnNewFromMetadata</c> call constructs a node whose external reference is retained by this graph in
+    /// The native <c>fnNewFromMetadata</c> call constructs a node whose external reference belongs to its managed state in
     /// a finalizable handle. Metadata names are resolved with ordinal, case-sensitive comparison. Connect all required
     /// sources before sampling; the sampling path deliberately does not revalidate the graph.
     /// </remarks>
@@ -36,13 +33,12 @@ public class FnGraph(Fn fn)
         if (node == default)
             throw new InvalidOperationException($"FastNoise2 failed to create node '{name}'.");
 
-        handles.Add(new FnNodeHandle(fn, node));
-        return new(this, node);
+        return new(new FnGraphNodeState(this, new FnNodeHandle(fn, node), false));
     }
 
     /// <summary>Loads a managed root handle from FastNoise2's encoded Base64 node-tree format.</summary>
     /// <param name="encodedTree">A complete tree copied from the upstream Node Editor.</param>
-    /// <returns>A value handle that keeps this graph and its decoded root alive.</returns>
+    /// <returns>A value handle that independently owns the decoded root and retains its configuration service.</returns>
     /// <exception cref="ArgumentException"><paramref name="encodedTree"/> is null, empty, or whitespace.</exception>
     /// <exception cref="InvalidOperationException">FastNoise2 rejects the encoded tree.</exception>
     /// <remarks>
@@ -59,9 +55,7 @@ public class FnGraph(Fn fn)
         if (node == default)
             throw new InvalidOperationException("FastNoise2 rejected the encoded node tree.");
 
-        handles.Add(new FnNodeHandle(fn, node));
-        opaqueEncodedRoots.Add(node);
-        return new(this, node);
+        return new(new FnGraphNodeState(this, new FnNodeHandle(fn, node), true));
     }
 
     /// <summary>Gets the binding used by this graph.</summary>
@@ -127,16 +121,16 @@ public class FnGraph(Fn fn)
         var node = RequireOwned(target);
         var key = FnNames.Hybrid(hybrid);
         var index = metadata.FindHybrid(node, key);
-        var connectionKey = new FnConnectionKey(node, true, index);
+        var connectionKey = new FnConnectionKey(true, index);
 
-        if (opaqueEncodedRoots.Contains(node))
+        if (target.State.IsEncoded)
         {
             throw new InvalidOperationException(
                 $"FastNoise2 hybrid '{metadata.Name(node)}.{FnMetadata.Display(key)}' came from an encoded root; " +
                 "the pinned C API cannot report whether a node is already connected or detach that connection.");
         }
 
-        if (connections.ContainsKey(connectionKey))
+        if (target.State.HasConnection(connectionKey))
         {
             throw new InvalidOperationException(
                 $"FastNoise2 hybrid '{metadata.Name(node)}.{FnMetadata.Display(key)}' already has a node connection; " +
@@ -154,14 +148,14 @@ public class FnGraph(Fn fn)
         var sourceNode = RequireOwned(source);
         var key = FnNames.Hybrid(hybrid);
         var index = metadata.FindHybrid(node, key);
-        var connectionKey = new FnConnectionKey(node, true, index);
+        var connectionKey = new FnConnectionKey(true, index);
 
-        RequireAcyclicConnection(node, sourceNode);
+        target.State.RequireAcyclicConnection(source.State);
 
         if (!fn.SetHybridNodeLookup(node, index, sourceNode))
             throw metadata.Rejected(node, key, metadata.Name(sourceNode));
 
-        connections[connectionKey] = sourceNode;
+        target.State.RetainConnection(connectionKey, source.State);
     }
 
     /// <summary>Connects an acyclic required source.</summary>
@@ -171,14 +165,14 @@ public class FnGraph(Fn fn)
         var sourceNode = RequireOwned(value);
         var key = FnNames.Source(source);
         var index = metadata.FindSource(node, key);
-        var connectionKey = new FnConnectionKey(node, false, index);
+        var connectionKey = new FnConnectionKey(false, index);
 
-        RequireAcyclicConnection(node, sourceNode);
+        target.State.RequireAcyclicConnection(value.State);
 
         if (!fn.SetNodeLookup(node, index, sourceNode))
             throw metadata.Rejected(node, key, metadata.Name(sourceNode));
 
-        connections[connectionKey] = sourceNode;
+        target.State.RetainConnection(connectionKey, value.State);
     }
 
     /// <summary>Resolves an exact enum member and option name before setting its runtime index.</summary>
@@ -200,31 +194,6 @@ public class FnGraph(Fn fn)
             throw new InvalidOperationException("The FastNoise2 node is default or belongs to another graph.");
 
         return node.Native;
-    }
-
-    /// <summary>Rejects a connection when its source already reaches its target.</summary>
-    private void RequireAcyclicConnection(FnNode target, FnNode source)
-    {
-        if (target == source || CanReach(source, target, []))
-            throw new InvalidOperationException("FastNoise2 node connections must form an acyclic graph.");
-    }
-
-    /// <summary>Traverses tracked outgoing connections to find a target node.</summary>
-    private bool CanReach(FnNode current, FnNode wanted, HashSet<FnNode> visited)
-    {
-        if (!visited.Add(current))
-            return false;
-
-        foreach (var connection in connections)
-        {
-            if (connection.Key.Target != current)
-                continue;
-
-            if (connection.Value == wanted || CanReach(connection.Value, wanted, visited))
-                return true;
-        }
-
-        return false;
     }
 
     /// <summary>Rejects a null borrowed binding during field initialization.</summary>

@@ -112,3 +112,21 @@ Before adding a project reference, preserve the role boundaries in
 menu, audio, or windowing packages. Frontend packages may depend on
 `AlvorKit.Engine`, but should not depend on `AlvorKit.Engine.Loop`; loop
 ownership belongs in an executable, menu, or another composition package.
+
+## Minimal Direct Dependencies
+
+Declare only the direct project references needed to supply a project's
+dependencies. If A references B and B already exposes C transitively, A must
+not also reference C, even when A uses C's types directly. Do not repeat
+transitive references for documentation or convenience.
+
+Check the evaluated dependency graph when adding or changing references. Keep
+it acyclic, remove redundant direct edges, and preserve role boundaries through
+the entire transitive graph. Never add a wrong-way dependency just to gain
+transitive access to a lower package.
+
+References with distinct build behavior are not interchangeable. For example,
+a required analyzer or source-generator reference that does not flow
+transitively is not supplied by an ordinary assembly reference. Keep a direct
+reference for such behavior only when it is actually required, and document
+the reason. Verify the resulting graph with a targeted build.

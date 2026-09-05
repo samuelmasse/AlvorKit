@@ -31,7 +31,7 @@ internal class FastNoise2DemoState(
         screen.IsVisible = true;
     }
 
-    /// <summary>Drops the preview; the injected graph and root GL layer own native resources.</summary>
+    /// <summary>Drops the preview; cached node values retain noise, and the root GL layer owns graphics resources.</summary>
     public override void Unload() => gallery = null;
 
     /// <summary>Handles feature, generation-shape, seed, fullscreen, and exit controls.</summary>

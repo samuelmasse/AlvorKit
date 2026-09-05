@@ -22,7 +22,7 @@ internal class FastNoise2GalleryGraphs(FnGraph graph)
         return root;
     }
 
-    /// <summary>Creates a graph-owned node and advances the current showcase's seed sequence.</summary>
+    /// <summary>Creates an independently owned node and advances the current showcase's seed sequence.</summary>
     private FnGraphNode Create(FnNodeType type)
     {
         nodeCount++;

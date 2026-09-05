@@ -3,7 +3,7 @@ namespace AlvorKit;
 /// <summary>Coordinates catalog selection, typed showcase graphs, generation modes, and the reusable preview texture.</summary>
 internal class FastNoise2Gallery
 {
-    /// <summary>Provides cached typed showcases owned by the injected graph scope.</summary>
+    /// <summary>Retains the bounded showcase cache and its independently managed roots.</summary>
     private readonly FastNoise2GalleryGraphs graphs;
     private readonly FastNoise2FeatureDatabase database;
     private readonly FastNoise2Preview preview;

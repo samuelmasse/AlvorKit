@@ -44,8 +44,8 @@ where injection is available; do not inject or pass raw `Fn` into a consumer.
 The typed enums keep node types, float variables, integer variables, enum
 choices, required sources, and hybrids out of application-owned string tables.
 `FnGraph` validates those semantic keys against exact runtime metadata and
-rejects cyclic wrapper-built graphs during cold configuration. It retains a
-finalizable handle per `Create` or `CreateEncoded` result. Given a
+rejects cyclic wrapper-built graphs during cold configuration. Each `Create`
+or `CreateEncoded` result owns an independently finalizable handle. Given a
 constructor-injected `graph`:
 
 ```csharp
@@ -62,10 +62,15 @@ var root = graph.Create(FnNodeType.FractalFbm)
 
 The package uses `Vec2`/`Vec3`/`Vec4` offsets and steps, integer vectors for
 grid counts, caller-owned spans, and typed overloads for every generation
-shape. Every `FnGraphNode` value keeps its graph and retained `SafeHandle`s
-alive. Their finalizers release external native references after the graph and
-all node values become unreachable. `FnGraph` does not require clearing or
-disposal. Nodes from different graphs cannot be connected. Connect every
+shape. Every `FnGraphNode` value retains its own managed state, native handle,
+and connected dependencies. Copies share that ownership. `FnGraph` does not
+retain created nodes and can remain injected for the application's lifetime.
+Keep sampled roots and disconnected nodes that will be reused. Replacing a
+connection releases its old dependency unless another node or caller retains
+it. On unload, stop workers and release the owning node values and caches;
+`SafeHandle` finalizers then release unreachable nodes' external native
+references during GC. Neither nodes nor `FnGraph` require clearing or disposal.
+Nodes from different graphs cannot be connected. Connect every
 required source before sampling: the hot generation path intentionally does
 not revalidate graph completeness or ownership.
 

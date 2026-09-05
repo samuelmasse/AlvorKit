@@ -93,12 +93,12 @@
   "wrapperContract": {
     "package": "AlvorKit.FastNoise2.Graph",
     "namespace": "AlvorKit",
-    "ownership": "FnGraph retains one finalizable SafeHandle per Create or CreateEncoded result. FnGraphNode copies keep the graph alive without cloning nodes or duplicating native references.",
+    "ownership": "Each Create or CreateEncoded result owns one SafeHandle and its outgoing managed connections. FnGraphNode copies share that state without cloning nodes or duplicating native references. FnGraph does not retain created nodes.",
     "configuration": "Create and connect the complete acyclic graph before sampling. Exact metadata, ownership, and cycle checks occur only during cold graph mutation.",
     "hybridReplacement": "A node-backed hybrid may replace another node. FastNoise2 1.1.1 cannot detach it, so the wrapper rejects a later constant assignment. Constant mutation is also rejected on an encoded root because its existing connection state is opaque.",
     "sampling": "Batch sampling is managed-allocation-free and does not validate graph state. It retains only constant-time span bounds and overlap checks that protect native memory.",
     "batchMinMax": "FastNoise2 1.1.1 computes batch minimum and maximum internally on every batch call. Omitting the managed outputMinMax span avoids only copying those two values.",
-    "nodeLifetime": "SafeHandle finalizers call DeleteNodeRef after FnGraph and all of its FnGraphNode values become unreachable. FnGraph has no Clear or Dispose API.",
+    "nodeLifetime": "SafeHandle finalizers call DeleteNodeRef when a node is no longer retained by callers or connected roots, even while FnGraph remains alive. Replacing a connection releases its old managed dependency unless it is still shared. Stop workers and drop owned roots and node caches on unload; cleanup occurs during GC. Nodes and FnGraph have no Clear or Dispose API.",
     "nativeMemory": "Nodes use intrusive native references and 64 KiB pooled allocations by default; the pool is shared, not allocated once per node. Pool-size tuning is absent from the C ABI.",
     "encodedTrees": "CreateEncoded loads a complete version-coupled Base64 tree and exposes only its root. The binding cannot export trees or inspect the decoded root's existing connections.",
     "numericBounds": "FastNoise metadata minimums and maximums are editor guidance and native setters do not generally enforce them.",
@@ -153,7 +153,7 @@
   ],
   "managedMethods": [
     { "owner": "FnGraph", "signature": "FnGraph(Fn fn)", "purpose": "Create a configuration context and request the fastest supported compiled SIMD implementation." },
-    { "owner": "FnGraph", "signature": "FnGraphNode Create(FnNodeType type)", "purpose": "Create a graph-managed node from exact runtime metadata and retain its finalizable native reference." },
+    { "owner": "FnGraph", "signature": "FnGraphNode Create(FnNodeType type)", "purpose": "Create an independently managed node from exact runtime metadata with its own finalizable native reference." },
     { "owner": "FnGraph", "signature": "FnGraphNode CreateEncoded(string encodedTree)", "purpose": "Load a complete encoded node tree and retain its root in a finalizable native handle." },
     { "owner": "FnGraphNode", "signature": "FnGraphNode Float(FnFloatVariable variable, float value)", "purpose": "Set a float metadata variable." },
     { "owner": "FnGraphNode", "signature": "FnGraphNode Integer(FnIntegerVariable variable, int value)", "purpose": "Set an integer metadata variable." },

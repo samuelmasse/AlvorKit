@@ -50,7 +50,7 @@ public class FnGraphTest
         Assert.AreEqual(output.Max(), minMax[1], 0.00001f);
     }
 
-    /// <summary>Proves graph wiring cannot accidentally connect nodes with independent native ownership.</summary>
+    /// <summary>Proves graph wiring cannot connect nodes created through different configuration services.</summary>
     [TestMethod]
     public void SourceRejectsNodeOwnedByAnotherGraph()
     {
@@ -65,7 +65,7 @@ public class FnGraphTest
 
     /// <summary>Proves encoded node trees enter the same managed-handle lifetime and typed sampling surface.</summary>
     [TestMethod]
-    public void EncodedTreeCreatesGraphOwnedNode()
+    public void EncodedTreeCreatesIndependentlyOwnedNode()
     {
         var fn = new FnBackend();
         var graph = new FnGraph(fn);
@@ -120,6 +120,23 @@ public class FnGraphTest
         Assert.ThrowsExactly<InvalidOperationException>(() => first.Source(FnSource.Source, first));
 
         first.Source(FnSource.Source, second);
+        Assert.ThrowsExactly<InvalidOperationException>(() => second.Source(FnSource.Source, first));
+    }
+
+    /// <summary>Proves cycle checks follow current required and hybrid inputs after a connection is replaced.</summary>
+    [TestMethod]
+    public void CycleValidationUsesCurrentDependencies()
+    {
+        var graph = new FnGraph(new FnBackend());
+        var constant = graph.Create(FnNodeType.Constant).Float(FnFloatVariable.Value, 3f);
+        var first = graph.Create(FnNodeType.Subtract).Hybrid(FnHybrid.Lhs, constant).Hybrid(FnHybrid.Rhs, 0f);
+        var second = graph.Create(FnNodeType.Abs).Source(FnSource.Source, first);
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => first.Hybrid(FnHybrid.Lhs, second));
+        second.Source(FnSource.Source, constant);
+        first.Hybrid(FnHybrid.Lhs, second);
+
+        Assert.AreEqual(3f, first.GenSingle2D((0f, 0f), 1));
         Assert.ThrowsExactly<InvalidOperationException>(() => second.Source(FnSource.Source, first));
     }
 

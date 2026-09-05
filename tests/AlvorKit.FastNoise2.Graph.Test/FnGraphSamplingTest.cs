@@ -18,6 +18,7 @@ public class FnGraphSamplingTest
         VerifyTileable(fn, node);
         VerifyPositionArrays(fn, node);
         VerifySingles(fn, node);
+        node.KeepAlive();
     }
 
     /// <summary>Proves repeated batch sampling creates no managed garbage after warmup.</summary>

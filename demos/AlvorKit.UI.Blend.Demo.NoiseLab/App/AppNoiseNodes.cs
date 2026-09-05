@@ -7,9 +7,9 @@ public class AppNoiseNodes
     /// <summary>Number of source choices with explicitly authored controls.</summary>
     private const int SourceCount = 6;
 
-    /// <summary>Retains the two reusable fractal roots owned by the injected graph.</summary>
+    /// <summary>Owns the two reusable fractal roots for this app's lifetime.</summary>
     private readonly FnGraphNode[] fractals;
-    /// <summary>Retains one graph-owned node per source choice.</summary>
+    /// <summary>Keeps every source choice alive, including choices currently disconnected from both roots.</summary>
     private readonly FnGraphNode[] sources;
     /// <summary>Labels matching the order of the reusable fractal roots.</summary>
     private readonly IReadOnlyList<BlendDropdownItem> fractalItems;

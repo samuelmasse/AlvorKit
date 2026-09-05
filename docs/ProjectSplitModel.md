@@ -33,6 +33,11 @@ Server executable
 Dependency direction is the important invariant. Higher packages may depend on
 lower packages. Lower packages must not depend on higher packages.
 
+Declare the minimal direct references under the
+[dependency policy](AgentRules/ProjectsAndDependencies.md#minimal-direct-dependencies).
+The graphs below rely on transitive access instead of repeating lower packages
+that another dependency already supplies.
+
 This must be enforced at the project-reference level. It is vitally important
 that a project does not take on a dirty dependency in its `.csproj` just to make
 a type convenient to reach. A pure project that references a frontend, menu,
@@ -60,7 +65,6 @@ Game
     -> Game.App.Frontend
     -> Game.Run.Frontend
       -> Game.Run
-    -> Game.App
 ```
 
 `Game.App` and `Game.Run` stay pure. They should not reference UI,
@@ -244,8 +248,6 @@ Game.Client
     -> Game.World.Frontend
     -> Game.Client.Runtime
     -> Game.Protocol
-    -> Game.App
-    -> Game.World
 
 Game.Server.Cli
   -> Game.Server
@@ -281,7 +283,6 @@ Game
     -> Game.App.Frontend
     -> Game.Run.Frontend
       -> Game.Run
-    -> Game.App
 ```
 
 Add a backend package only when there is enough persistence or background work

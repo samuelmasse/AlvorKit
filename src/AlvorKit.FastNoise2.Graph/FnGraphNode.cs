@@ -1,27 +1,29 @@
 namespace AlvorKit;
 
-/// <summary>A value handle to one graph-managed native FastNoise2 node.</summary>
+/// <summary>A value handle to one independently managed native FastNoise2 node.</summary>
 /// <remarks>
-/// Copying this struct does not clone the native node or duplicate its native reference. Every copy keeps the graph and
-/// its finalizable native handles alive. Fluent setters mutate the shared node and return another value referring to it.
+/// Copying this struct does not clone the native node or duplicate its native reference. Every copy keeps that node and
+/// its connected dependencies alive. Fluent setters mutate the shared node and return another value referring to it.
 /// Finish all graph mutation before concurrent sampling begins.
 /// </remarks>
 public readonly struct FnGraphNode
 {
-    private readonly FnGraph? owner;
-    private readonly FnNode native;
+    private readonly FnGraphNodeState? state;
 
     /// <summary>Gets the graph that configures this managed handle.</summary>
-    internal FnGraph? Owner => owner;
+    internal FnGraph? Owner => state?.Owner;
 
     /// <summary>Gets the opaque native reference without changing ownership.</summary>
-    internal FnNode Native => native;
+    internal FnNode Native => State.Native;
 
-    /// <summary>Creates a node value tied to the graph that owns its native reference.</summary>
-    internal FnGraphNode(FnGraph owner, FnNode native)
+    /// <summary>Gets the owning state or rejects a default node value.</summary>
+    internal FnGraphNodeState State =>
+        state ?? throw new InvalidOperationException("The default FastNoise2 graph node cannot be used.");
+
+    /// <summary>Creates a value sharing one node's independently managed native ownership.</summary>
+    internal FnGraphNode(FnGraphNodeState state)
     {
-        this.owner = owner;
-        this.native = native;
+        this.state = state;
     }
 
     /// <summary>Sets a scalar float variable through native <c>fnSetVariableFloat</c>.</summary>
@@ -162,7 +164,7 @@ public readonly struct FnGraphNode
 
     /// <summary>Connects a node as the active value of a hybrid input through native <c>fnSetHybridNodeLookup</c>.</summary>
     /// <param name="hybrid">The typed hybrid connection slot.</param>
-    /// <param name="source">A live source owned by the same graph.</param>
+    /// <param name="source">A live source created through the same graph service.</param>
     /// <returns>This same node handle.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="hybrid"/> is not defined.</exception>
     /// <exception cref="InvalidOperationException">
@@ -179,13 +181,15 @@ public readonly struct FnGraphNode
 
     /// <summary>Connects a node to a required source through native <c>fnSetNodeLookup</c>.</summary>
     /// <param name="source">The typed required connection slot.</param>
-    /// <param name="value">A live source node owned by the same graph.</param>
+    /// <param name="value">A live source node created through the same graph service.</param>
     /// <returns>This same node handle.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="source"/> is not defined.</exception>
     /// <exception cref="InvalidOperationException">
     /// Either node is default or foreign; the input is absent; FastNoise2 rejects it; or it creates a cycle.
     /// </exception>
-    /// <remarks>The target retains the source natively. A new connection replaces the previous connection in this slot.</remarks>
+    /// <remarks>
+    /// The target retains the source and its managed state. A new connection replaces the previous dependency in this slot.
+    /// </remarks>
     public FnGraphNode Source(FnSource source, FnGraphNode value)
     {
         OwnerOrThrow().SetSource(this, source, value);
@@ -210,15 +214,14 @@ public readonly struct FnGraphNode
     /// <summary>Borrows the native value and its binding with one default-value check.</summary>
     internal FnNode Borrow(out Fn binding)
     {
-        var graph = OwnerOrThrow();
-        binding = graph.Binding;
-        return native;
+        var node = State;
+        binding = node.Owner.Binding;
+        return node.Native;
     }
 
-    /// <summary>Keeps the graph and all of its owning handles live until the current native call has returned.</summary>
-    internal void KeepAlive() => GC.KeepAlive(owner);
+    /// <summary>Keeps this node and its dependencies live until the current native call has returned.</summary>
+    internal void KeepAlive() => GC.KeepAlive(state);
 
     /// <summary>Gets the owner or rejects a default node value.</summary>
-    private FnGraph OwnerOrThrow() =>
-        owner ?? throw new InvalidOperationException("The default FastNoise2 graph node cannot be used.");
+    private FnGraph OwnerOrThrow() => State.Owner;
 }

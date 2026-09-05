@@ -51,20 +51,27 @@ Span<float> minMax = stackalloc float[2];
 root.GenUniformGrid2D(output, (0f, 0f), (256, 256), (1f, 1f), 1337, minMax);
 ```
 
-`FnGraph` retains a finalizable managed handle for every `Create` or `CreateEncoded` result. Copying `root` or `simplex` does not
-clone the native node or duplicate its native reference; every node value keeps its graph alive. FastNoise2 releases the
-references after the graph and all of its node values become unreachable. Callers do not clear or dispose the graph.
+Each `Create` or `CreateEncoded` result owns one finalizable native handle through shared managed node state. Copying
+`root` or `simplex` does not clone the native node or duplicate its native reference. Keeping a root retains its connected
+sources, including their connection state, without retaining unrelated nodes created through the same `FnGraph`.
+
+`FnGraph` can live for the application's lifetime: it provides creation and configuration without retaining created nodes.
+Keep the roots you sample and any disconnected nodes you intend to reuse. Replacing a connection releases the previous
+managed dependency unless another node or caller still references it. When a world, dimension, or demo is unloaded, stop
+its workers and release its node values and node caches. Native references are then released by `SafeHandle` finalizers
+during garbage collection, not synchronously on unload. Callers do not clear or dispose `FnGraph` or individual nodes.
 
 ## Graph contract
 
 - `FnGraph(Fn)` requests the fastest compiled FastSIMD implementation supported by the current CPU.
-- `Create` resolves the exact, case-sensitive FastNoise2 metadata name and retains the returned native reference.
+- `Create` resolves the exact, case-sensitive FastNoise2 metadata name and gives the node its own native reference.
 - `CreateEncoded` loads a complete Base64 node tree exported by the upstream Node Editor and manages its root reference.
 - Every fluent setter resolves an exact metadata name, component, and member kind. Unsupported node/member combinations
   throw; no numeric metadata index is exposed.
 - `Source` and node-valued `Hybrid` connections must use nodes from the same graph and must remain acyclic.
 - Connect every required source before sampling. Sampling deliberately does not walk or revalidate the graph.
-- Native references are released by the retained `SafeHandle` finalizers; `FnGraph` has no disposal protocol.
+- Node state owns its `SafeHandle` and outgoing connections. The service has no registry that keeps unused nodes alive.
+- Native references are released by node-owned `SafeHandle` finalizers; `FnGraph` has no disposal protocol.
 
 Graph creation and configuration are cold operations and are not thread-safe. Once a graph is complete and immutable,
 the same root can be sampled concurrently into independent, nonoverlapping buffers. The hot path performs no metadata,
