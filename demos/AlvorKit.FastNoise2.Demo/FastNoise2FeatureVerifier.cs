@@ -12,6 +12,7 @@ internal class FastNoise2FeatureVerifier(Fn fn, FastNoise2FeatureDatabase databa
     {
         VerifyCatalog();
         VerifyEveryNode();
+        VerifyGalleryGraphs();
         var activeFeatureSet = VerifyGenerationSurface();
 
         Console.WriteLine(
@@ -21,6 +22,46 @@ internal class FastNoise2FeatureVerifier(Fn fn, FastNoise2FeatureDatabase databa
             $"{HybridCount()} hybrids, {EnumCount()} enums/{EnumValueCount()} values, " +
             $"{database.SamplingCapabilities.Count} sampling capabilities, active SIMD 0x{activeFeatureSet:X}.");
     }
+
+    /// <summary>Checks every typed gallery recipe against the raw verification graph in each preview shape.</summary>
+    private void VerifyGalleryGraphs()
+    {
+        var graphs = new FastNoise2GalleryGraphs(new FnGraph(fn));
+        using var raw = new FastNoise2Graph(fn, metadata);
+        Span<float> expected = stackalloc float[192];
+        Span<float> actual = stackalloc float[192];
+        Require(database.Nodes.Select(feature => feature.Type).Distinct().Count() == Enum.GetValues<FnNodeType>().Length,
+            "The gallery must cover every typed node exactly once.");
+
+        foreach (var feature in database.Nodes)
+        {
+            raw.Build(feature);
+            var node = graphs.Get(feature.Type);
+            fn.GenUniformGrid2D(raw.Root, expected[..48], -4f, -3f, 8, 6, 1f, 1f, Seed);
+            node.GenUniformGrid2D(actual[..48], (-4f, -3f), (8, 6), (1f, 1f), Seed);
+            RequireSameGallerySamples(feature, "2D", expected[..48], actual[..48]);
+
+            fn.GenUniformGrid3D(raw.Root, expected[..96], -4f, -3f, 37f, 8, 6, 2, 1f, 1f, 1f, Seed);
+            node.GenUniformGrid3D(actual[..96], (-4f, -3f, 37f), (8, 6, 2), Vec3.One, Seed);
+            RequireSameGallerySamples(feature, "3D", expected[..96], actual[..96]);
+
+            fn.GenUniformGrid4D(raw.Root, expected, -4f, -3f, 37f, 19f, 8, 6, 2, 2, 1f, 1f, 1f, 1f, Seed);
+            node.GenUniformGrid4D(actual, (-4f, -3f, 37f, 19f), (8, 6, 2, 2), Vec4.One, Seed);
+            RequireSameGallerySamples(feature, "4D", expected, actual);
+
+            fn.GenTileable2D(raw.Root, expected[..48], 8, 6, 1f, 1f, Seed);
+            node.GenTileable2D(actual[..48], (8, 6), (1f, 1f), Seed);
+            RequireSameGallerySamples(feature, "tileable", expected[..48], actual[..48]);
+        }
+
+        Console.WriteLine("Typed gallery parity PASS: every node and all four preview shapes are byte-identical.");
+    }
+
+    /// <summary>Compares sample bytes so packed RGBA output is verified without float interpretation.</summary>
+    private static void RequireSameGallerySamples(
+        FastNoise2Feature feature, string shape, ReadOnlySpan<float> expected, ReadOnlySpan<float> actual) =>
+        Require(MemoryMarshal.AsBytes(expected).SequenceEqual(MemoryMarshal.AsBytes(actual)),
+            $"Typed gallery {feature.Type} differs from the raw showcase in {shape} generation.");
 
     private void VerifyCatalog()
     {

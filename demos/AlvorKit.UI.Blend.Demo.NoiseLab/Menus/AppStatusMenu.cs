@@ -8,6 +8,7 @@ public class AppStatusMenu(
     AppStyle s,
     AppSession session)
 {
+    /// <summary>Mounts live readouts for the selected nodes, sampling, and session state.</summary>
     public void Create(EntMut root)
     {
         Node(root, out var status)
@@ -24,8 +25,8 @@ public class AppStatusMenu(
                 Item(items, false, () => session.Auto ? "auto" : session.Dirty ? "manual · dirty" : "manual");
                 Item(items, false, () => text.Format(
                     "{0}({1})",
-                    session.Field.Fractals[session.Field.FractalIndex].Text,
-                    session.Field.Sources[session.Field.SourceIndex].Text));
+                    session.Field.Nodes.Fractals[session.Field.Nodes.FractalIndex].Text,
+                    session.Field.Nodes.Sources[session.Field.Nodes.SourceIndex].Text));
                 Item(items, false, () => text.Format("seed {0}", session.Seed));
                 Item(items, false, () => text.Format("float32 · {0:N0} samples", session.Field.Width * session.Field.Height));
 

@@ -17,8 +17,11 @@ internal class FastNoise2Preview
     private readonly Vec4u8[] pixels;
     private readonly int width;
     private readonly int height;
+    /// <summary>Reusable preview texture owned by the root GL scope.</summary>
+    private readonly Texture2D texture;
 
-    public Texture2D Texture { get; }
+    /// <summary>Gets the current generated preview for sprite rendering.</summary>
+    public Texture2D Texture => texture;
 
     /// <summary>Allocates reusable buffers and a texture owned by the injected root GL layer.</summary>
     public FastNoise2Preview(RootGl gl, Vec2u size)
@@ -27,7 +30,7 @@ internal class FastNoise2Preview
         height = (int)size.Y;
         values = new float[width * height];
         pixels = new Vec4u8[values.Length];
-        Texture = new(gl, size)
+        texture = new(gl, size)
         {
             MinFilter = GlTextureMinFilter.Linear,
             MagFilter = GlTextureMagFilter.Linear,
@@ -37,37 +40,23 @@ internal class FastNoise2Preview
     }
 
     /// <summary>Generates the selected shape, converts its output contract to RGBA8, and uploads the preview.</summary>
-    public void Generate(Fn fn, FnNode root, FastNoise2PreviewMode mode, int seed, bool packedRgba8)
+    public void Generate(FnGraphNode root, FastNoise2PreviewMode mode, int seed, bool packedRgba8)
     {
         switch (mode)
         {
             case FastNoise2PreviewMode.Uniform2D:
-                fn.GenUniformGrid2D(root, values, -width * 0.5f, -height * 0.5f, width, height, 1f, 1f, seed, minMax);
+                root.GenUniformGrid2D(values, (-width * 0.5f, -height * 0.5f), (width, height), (1f, 1f), seed, minMax);
                 break;
             case FastNoise2PreviewMode.Uniform3DSlice:
-                fn.GenUniformGrid3D(root, values, -width * 0.5f, -height * 0.5f, 37f, width, height, 1, 1f, 1f, 1f, seed, minMax);
+                root.GenUniformGrid3D(
+                    values, (-width * 0.5f, -height * 0.5f, 37f), (width, height, 1), Vec3.One, seed, minMax);
                 break;
             case FastNoise2PreviewMode.Uniform4DSlice:
-                fn.GenUniformGrid4D(
-                    root,
-                    values,
-                    -width * 0.5f,
-                    -height * 0.5f,
-                    37f,
-                    19f,
-                    width,
-                    height,
-                    1,
-                    1,
-                    1f,
-                    1f,
-                    1f,
-                    1f,
-                    seed,
-                    minMax);
+                root.GenUniformGrid4D(
+                    values, (-width * 0.5f, -height * 0.5f, 37f, 19f), (width, height, 1, 1), Vec4.One, seed, minMax);
                 break;
             case FastNoise2PreviewMode.Tileable2D:
-                fn.GenTileable2D(root, values, width, height, 1f, 1f, seed, minMax);
+                root.GenTileable2D(values, (width, height), (1f, 1f), seed, minMax);
                 break;
         }
 

@@ -16,6 +16,7 @@
     <ItemGroup>
         <PackageReference Include="System.IO.Hashing" Version="10.0.5" />
         <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.FastNoise2.Graph\AlvorKit.FastNoise2.Graph.csproj" />
     </ItemGroup>
 
     <ItemGroup>

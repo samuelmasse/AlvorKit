@@ -9,7 +9,8 @@ of the FastNoise2 surface exposed by AlvorKit.
 dotnet run --project demos/AlvorKit.FastNoise2.Demo --configuration Release
 ```
 
-The window renders one representative graph for every runtime metadata node.
+The window renders one typed FnGraph showcase for every supported node. Graphs are
+created once on first selection and reused when navigating or reseeding.
 Its title identifies the FastNoise2 version, node index, metadata groups, node,
 generation mode, and seed.
 
@@ -34,7 +35,9 @@ runtime and exercises every node, variable setter, enum value, required source,
 and both forms of every hybrid. It also covers uniform, position-array,
 tileable, and single-value generation in every supported dimension; optional
 batch min/max; encoded graph loading; packed RGBA8 output; SIMD reporting; and
-concurrent use of one immutable graph.
+concurrent use of one immutable graph. It also compares every typed gallery recipe
+with its raw verification graph in all four preview shapes, requiring byte-identical
+samples. Raw metadata and node handles are confined to this verification path.
 
 See [`docs/AgentRules/FastNoise2.md`](../../docs/AgentRules/FastNoise2.md) for
 the agent-facing design guide and

@@ -90,7 +90,7 @@ public class AppSession(AppNoiseField field)
     /// <summary>Swaps the fractal node, resetting its parameters and rebuilding the dock.</summary>
     public void SelectFractal(int index)
     {
-        Field.SelectFractal(index);
+        Field.Nodes.SelectFractal(index);
         RebuildUi();
         MarkDirty();
     }
@@ -98,7 +98,7 @@ public class AppSession(AppNoiseField field)
     /// <summary>Swaps the source node, resetting its parameters and rebuilding the dock.</summary>
     public void SelectSource(int index)
     {
-        Field.SelectSource(index);
+        Field.Nodes.SelectSource(index);
         RebuildUi();
         MarkDirty();
     }

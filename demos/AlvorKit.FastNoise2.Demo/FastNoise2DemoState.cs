@@ -3,7 +3,7 @@ namespace AlvorKit;
 /// <summary>Runs the verified FastNoise2 node gallery through the RootLoop sprite pipeline.</summary>
 [Root]
 internal class FastNoise2DemoState(
-    Fn fn,
+    FastNoise2GalleryGraphs graphs,
     RootKeyboard keyboard,
     RootGl gl,
     RootScreen screen,
@@ -15,15 +15,14 @@ internal class FastNoise2DemoState(
 
     private FastNoise2Gallery? gallery;
 
-    /// <summary>Verifies every feature, creates the first gallery graph, and shows the demo window.</summary>
+    /// <summary>Creates the first typed gallery graph and shows the demo window.</summary>
     public override void Load()
     {
         screen.Title = "AlvorKit FastNoise2 feature gallery";
         screen.Size = InitialSize;
 
         var database = FastNoise2FeatureCatalog.Load();
-        new FastNoise2FeatureVerifier(fn, database).Verify();
-        gallery = new(fn, gl, InitialSize, database);
+        gallery = new(graphs, gl, InitialSize, database);
         UpdateTitle();
 
         Console.WriteLine(
@@ -32,12 +31,8 @@ internal class FastNoise2DemoState(
         screen.IsVisible = true;
     }
 
-    /// <summary>Releases caller-owned FastNoise2 handles.</summary>
-    public override void Unload()
-    {
-        gallery?.Clear();
-        gallery = null;
-    }
+    /// <summary>Drops the preview; the injected graph and root GL layer own native resources.</summary>
+    public override void Unload() => gallery = null;
 
     /// <summary>Handles feature, generation-shape, seed, fullscreen, and exit controls.</summary>
     public override void Update(double delta)

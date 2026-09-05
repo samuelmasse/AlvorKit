@@ -7,6 +7,7 @@ public class AppToolbarMenu(
     AppSession session,
     AppFields fields)
 {
+    /// <summary>Mounts the fractal selector and generation controls, rebinding them after selection changes.</summary>
     public void Create(EntMut root)
     {
         const int pendingRevision = -1;
@@ -43,7 +44,8 @@ public class AppToolbarMenu(
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("node");
 
-            fields.DropdownField(controls, string.Empty, session.Field.Fractals, () => session.Field.FractalIndex, session.SelectFractal)
+            fields.DropdownField(controls, string.Empty, session.Field.Nodes.Fractals,
+                () => session.Field.Nodes.FractalIndex, session.SelectFractal)
                 .Mutate()
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)

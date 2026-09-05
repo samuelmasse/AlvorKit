@@ -1,6 +1,6 @@
 namespace AlvorKit;
 
-/// <summary>Builds the metadata-driven parameter dock; rebuilds its sections when the node graph changes.</summary>
+/// <summary>Builds the typed parameter dock; rebuilds its sections when the node graph changes.</summary>
 [App]
 public class AppParamsMenu(
     AppStyle s,
@@ -8,6 +8,7 @@ public class AppParamsMenu(
     AppRamps ramps,
     AppFields fields)
 {
+    /// <summary>Mounts a parameter dock that rebuilds its typed controls when the node selection changes.</summary>
     public void Create(EntMut root)
     {
         const float dockWidth = 300f;
@@ -29,7 +30,7 @@ public class AppParamsMenu(
                 Node(title)
                     .Mutate(s.MutedCellLabel)
                     .TextAlignmentV(Alignment.Right | Alignment.Vertical)
-                    .TextV("from metadata");
+                    .TextV("editable");
             }
 
             var lastRevision = pendingRevision;
@@ -47,21 +48,22 @@ public class AppParamsMenu(
                 });
         }
 
+        // Bind sections to the selected nodes and the preview's display settings.
         void BuildSections(EntMut sections)
         {
             var field = session.Field;
 
-            Section(sections, field.Fractals[field.FractalIndex].Text, "root", rows =>
+            Section(sections, field.Nodes.Fractals[field.Nodes.FractalIndex].Text, "root", rows =>
             {
-                fields.DropdownField(rows, "Source", field.Sources, () => field.SourceIndex, session.SelectSource)
+                fields.DropdownField(rows, "Source", field.Nodes.Sources, () => field.Nodes.SourceIndex, session.SelectSource)
                     .Mutate()
                     .TooltipV("Source\nthe generator node feeding the fractal");
 
-                ParameterRows(rows, field.FractalParameters);
+                ParameterRows(rows, field.Nodes.FractalParameters);
             });
 
-            Section(sections, field.Sources[field.SourceIndex].Text, "source", rows =>
-                ParameterRows(rows, field.SourceParameters));
+            Section(sections, field.Nodes.Sources[field.Nodes.SourceIndex].Text, "source", rows =>
+                ParameterRows(rows, field.Nodes.SourceParameters));
 
             Section(sections, "Post", null, rows =>
             {
@@ -91,15 +93,17 @@ public class AppParamsMenu(
             });
         }
 
+        // Choose a Blend editor for each authored parameter kind.
         void ParameterRows(EntMut rows, IReadOnlyList<AppNoiseParameter> parameters)
         {
             foreach (var parameter in parameters)
             {
                 var p = parameter;
 
+                // Regenerate only after applying the edit to the typed node.
                 void Set(float value)
                 {
-                    session.Field.Apply(p, value);
+                    p.Set(value);
                     session.MarkDirty();
                 }
 

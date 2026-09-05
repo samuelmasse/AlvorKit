@@ -28,6 +28,7 @@ public class AppState(
         screen.IsVisible = true;
     }
 
+    /// <summary>Removes the UI and its script; the root scopes retain ownership of graph and GL resources.</summary>
     public override void Unload()
     {
         if (menuNode != default)
@@ -38,8 +39,6 @@ public class AppState(
             scripts.Remove(uiScript);
             uiScriptAdded = false;
         }
-
-        session.Field.Dispose();
     }
 
     public override void Update(double delta) => session.Update();

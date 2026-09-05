@@ -13,6 +13,7 @@ public class AppMenu(
     AppDropdownMenu dropdownMenu,
     AppTooltipMenu tooltipMenu)
 {
+    /// <summary>Mounts the lab panels and summaries of the selected typed controls.</summary>
     public void Create(EntMut root)
     {
         Node(root, out var shell)
@@ -68,7 +69,7 @@ public class AppMenu(
                     .SizeTextRelativeV((1, 0))
                     .TextAlignmentV(Alignment.Right | Alignment.Vertical)
                     .TextF(() => text.Format(
-                        "panel generated from FastNoise2 metadata — 2 nodes · {0} variables · {1} hybrids · 1 lookup",
+                        "noise controls — 2 nodes · {0} variables · {1} hybrids · 1 lookup",
                         VariableCount(),
                         HybridCount()));
             }
@@ -90,11 +91,13 @@ public class AppMenu(
         dropdownMenu.Create(root);
         tooltipMenu.Create(root);
 
+        // Count the currently displayed scalar and enum controls.
         int VariableCount() =>
-            CountKind(session.Field.FractalParameters, false) + CountKind(session.Field.SourceParameters, false);
+            CountKind(session.Field.Nodes.FractalParameters, false) + CountKind(session.Field.Nodes.SourceParameters, false);
 
+        // Count the currently displayed hybrid inputs.
         int HybridCount() =>
-            CountKind(session.Field.FractalParameters, true) + CountKind(session.Field.SourceParameters, true);
+            CountKind(session.Field.Nodes.FractalParameters, true) + CountKind(session.Field.Nodes.SourceParameters, true);
 
         static int CountKind(IReadOnlyList<AppNoiseParameter> parameters, bool hybrid)
         {

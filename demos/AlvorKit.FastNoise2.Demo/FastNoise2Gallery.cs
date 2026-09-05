@@ -1,13 +1,12 @@
 namespace AlvorKit;
 
-/// <summary>Coordinates catalog selection, native showcase graphs, generation modes, and the reusable preview texture.</summary>
+/// <summary>Coordinates catalog selection, typed showcase graphs, generation modes, and the reusable preview texture.</summary>
 internal class FastNoise2Gallery
 {
-    private readonly Fn fn;
+    /// <summary>Provides cached typed showcases owned by the injected graph scope.</summary>
+    private readonly FastNoise2GalleryGraphs graphs;
     private readonly FastNoise2FeatureDatabase database;
-    private readonly FastNoise2Metadata metadata;
     private readonly FastNoise2Preview preview;
-    private readonly FastNoise2Graph graph;
     private int nodeIndex;
     private FastNoise2PreviewMode mode;
     private int seed = 12345;
@@ -19,24 +18,22 @@ internal class FastNoise2Gallery
         $"{string.Join(" + ", Current.Groups)} | {Current.Name} | {mode} | seed {seed}";
 
     /// <summary>Creates the preview collaborators and generates the first catalog node.</summary>
-    public FastNoise2Gallery(Fn fn, RootGl gl, Vec2u size, FastNoise2FeatureDatabase database)
+    public FastNoise2Gallery(FastNoise2GalleryGraphs graphs, RootGl gl, Vec2u size, FastNoise2FeatureDatabase database)
     {
-        this.fn = fn;
+        this.graphs = graphs;
         this.database = database;
-        metadata = new(fn);
         preview = new(gl, size);
-        graph = new(fn, metadata);
         Generate();
     }
 
-    /// <summary>Selects the next catalog node and rebuilds its representative graph.</summary>
+    /// <summary>Selects the next catalog node and samples its cached typed graph.</summary>
     public void Next()
     {
         nodeIndex = (nodeIndex + 1) % database.Nodes.Count;
         Generate();
     }
 
-    /// <summary>Selects the previous catalog node and rebuilds its representative graph.</summary>
+    /// <summary>Selects the previous catalog node and samples its cached typed graph.</summary>
     public void Previous()
     {
         nodeIndex = nodeIndex == 0 ? database.Nodes.Count - 1 : nodeIndex - 1;
@@ -57,12 +54,9 @@ internal class FastNoise2Gallery
         GeneratePreview();
     }
 
-    /// <summary>Releases all native node handles; the root GL layer owns the texture lifetime.</summary>
-    public void Clear() => graph.Clear();
-
+    /// <summary>Refreshes the selected showcase and prints its catalog description.</summary>
     private void Generate()
     {
-        graph.Build(Current);
         GeneratePreview();
         Console.WriteLine(
             $"{Title}{Environment.NewLine}  {Current.Purpose}{Environment.NewLine}" +
@@ -71,7 +65,9 @@ internal class FastNoise2Gallery
             $"  Hybrids: {List(Current.Hybrids)}");
     }
 
-    private void GeneratePreview() => preview.Generate(fn, graph.Root, mode, seed, Current.Name == "ConvertRGBA8");
+    /// <summary>Samples the cached graph using the selected shape and seed.</summary>
+    private void GeneratePreview() =>
+        preview.Generate(graphs.Get(Current.Type), mode, seed, Current.Type == FnNodeType.ConvertRgba8);
 
     private static string List(IReadOnlyCollection<string> values) => values.Count == 0 ? "none" : string.Join(", ", values);
 }

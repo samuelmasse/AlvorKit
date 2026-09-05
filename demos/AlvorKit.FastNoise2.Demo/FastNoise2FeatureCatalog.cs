@@ -70,6 +70,9 @@ internal class FastNoise2BindingCapability
 /// <summary>Curated meaning, exact runtime member inventory, and representative values for one node.</summary>
 internal class FastNoise2Feature
 {
+    /// <summary>Maps the catalog spelling to its typed node identity; no native metadata ID is used.</summary>
+    public FnNodeType Type => Enum.Parse<FnNodeType>(Name, true);
+
     public string Name { get; init; } = string.Empty;
     public List<string> Groups { get; init; } = [];
     public string Purpose { get; init; } = string.Empty;

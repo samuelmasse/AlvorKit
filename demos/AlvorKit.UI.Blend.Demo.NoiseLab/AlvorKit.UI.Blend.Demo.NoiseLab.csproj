@@ -16,6 +16,7 @@
         <ProjectReference Include="..\..\src\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
             OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.FastNoise2.Graph\AlvorKit.FastNoise2.Graph.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.UI\AlvorKit.UI.csproj" />

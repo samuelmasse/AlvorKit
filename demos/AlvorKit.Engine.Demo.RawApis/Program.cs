@@ -4,12 +4,12 @@ namespace AlvorKit
 {
     /// <summary>Shows the native-style APIs that <see cref="RootLoop"/> seeds into the root injector.</summary>
     [Root]
-    internal sealed unsafe class RawApisState(
+    internal unsafe class RawApisState(
         Log log,
         Gl gl,
         Glfw glfw,
         GlfwWindow window,
-        Fn fn,
+        FnGraph graph,
         Ft ft,
         Ma ma,
         RootInput input,
@@ -23,6 +23,9 @@ namespace AlvorKit
         private static readonly Vec2u InitialSize = (1120u, 680u);
         private const long XxHashSeed = 0xC0DE_51E5u;
         private const double TitleRefreshSeconds = 0.35;
+
+        /// <summary>Reuses one Simplex node whose lifetime belongs to the injected graph.</summary>
+        private readonly FnGraphNode noise = graph.Create(FnNodeType.Simplex);
 
         private RawApiSnapshot snapshot = RawApiSnapshot.Empty;
         private Vec2i framebufferSize;
@@ -40,7 +43,7 @@ namespace AlvorKit
             screen.IsVisible = true;
 
             log.Info("AlvorKit.Engine.Demo.RawApis");
-            log.Info("RootLoop injected Gl, Glfw, GlfwWindow, Fn, Ft, and Ma directly into this state.");
+            log.Info("RootLoop injected Gl, Glfw, GlfwWindow, FnGraph, Ft, and Ma directly into this state.");
             log.Info("Esc exits. R re-runs the one-shot raw API probes.");
         }
 
@@ -82,15 +85,18 @@ namespace AlvorKit
             var lineHeight = font.Metrics.Height;
             var cursor = new Vec2(scale[24], scale[24]);
 
-            WriteLine(font, ref cursor, lineHeight, "Injected raw APIs in this RootLoop state");
+            WriteLine(font, ref cursor, lineHeight, "Injected APIs in this RootLoop state");
             WriteLine(font, ref cursor, lineHeight, "----------------------------------------");
             WriteLine(font, ref cursor, lineHeight, text.Format("Gl.GetString(Version): {0}", snapshot.OpenGlVersion));
-            WriteLine(font, ref cursor, lineHeight, text.Format("Gl.GetString(Renderer): {0}", snapshot.OpenGlRenderer));
+            WriteLine(font, ref cursor, lineHeight,
+                text.Format("Gl.GetString(Renderer): {0}", snapshot.OpenGlRenderer));
             WriteLine(font, ref cursor, lineHeight, text.Format("Glfw.GetVersion: {0}", snapshot.GlfwVersion));
             WriteLine(font, ref cursor, lineHeight, text.Format("GlfwWindow handle: 0x{0:X}", window.Handle));
-            WriteLine(font, ref cursor, lineHeight, text.Format("Glfw.GetFramebufferSize: {0} x {1}", framebufferSize.X, framebufferSize.Y));
+            WriteLine(font, ref cursor, lineHeight,
+                text.Format("Glfw.GetFramebufferSize: {0} x {1}", framebufferSize.X, framebufferSize.Y));
             WriteLine(font, ref cursor, lineHeight, text.Format("RootCanvas.Size: {0:0} x {1:0}", canvas.Size.X, canvas.Size.Y));
-            WriteLine(font, ref cursor, lineHeight, text.Format("Fn.GenUniformGrid3D(Simplex): {0:0.000000}", snapshot.NoiseSample));
+            WriteLine(font, ref cursor, lineHeight,
+                text.Format("FnGraphNode.GenSingle3D(Simplex): {0:0.000000}", snapshot.NoiseSample));
             WriteLine(font, ref cursor, lineHeight, text.Format("XxHash3.HashToUInt64(snapshot): 0x{0:X16}", snapshot.Hash));
             WriteLine(font, ref cursor, lineHeight, text.Format("Ft.LibraryVersion: {0}", snapshot.FreeTypeVersion));
             WriteLine(font, ref cursor, lineHeight, text.Format("Ma.VersionString: {0}", snapshot.MiniAudioVersion));
@@ -131,41 +137,8 @@ namespace AlvorKit
             clearColor = ColorFromHash(hash, noiseSample);
         }
 
-        /// <summary>Creates one FastNoise2 metadata node, samples a one-cell 3D grid, and releases the node.</summary>
-        private float SampleFastNoise()
-        {
-            var node = CreateFastNoiseNode("Simplex");
-            Span<float> sample = stackalloc float[1];
-            Span<float> minMax = stackalloc float[2];
-
-            try
-            {
-                fn.GenUniformGrid3D(node, sample, 18.75f, -4.5f, 60f, 1, 1, 1, 0.9f, 0.9f, 0.9f, 4242, minMax);
-                return sample[0];
-            }
-            finally
-            {
-                fn.DeleteNodeRef(node);
-            }
-        }
-
-        /// <summary>Finds a FastNoise2 metadata node by name and creates a native node reference.</summary>
-        private FnNode CreateFastNoiseNode(string metadataName)
-        {
-            var count = fn.GetMetadataCount();
-            for (var i = 0; i < count; i++)
-            {
-                fn.GetMetadataName(i, out var name);
-                if (!string.Equals(name, metadataName, StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                var node = fn.NewFromMetadata(i, uint.MaxValue);
-                if (node != default)
-                    return node;
-            }
-
-            throw new InvalidOperationException($"FastNoise2 did not expose a creatable {metadataName} node.");
-        }
+        /// <summary>Samples the reusable typed Simplex node at one isolated position.</summary>
+        private float SampleFastNoise() => noise.GenSingle3D((18.75f, -4.5f, 60f), 4242);
 
         /// <summary>Initializes FreeType only long enough to prove the injected raw Ft backend is callable.</summary>
         private string ProbeFreeTypeVersion()
@@ -231,7 +204,7 @@ namespace AlvorKit
     }
 
     /// <summary>Values captured through direct native-style API calls and displayed by the raw API demo.</summary>
-    internal sealed record RawApiSnapshot(
+    internal record RawApiSnapshot(
         string OpenGlVersion,
         string OpenGlRenderer,
         string GlfwVersion,
