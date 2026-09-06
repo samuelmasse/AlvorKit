@@ -4,7 +4,7 @@ namespace AlvorKit;
 /// Creates and owns an explicit lifetime graph above ordinary injector scopes.
 /// Scope creation and termination must flow through this object to appear in its authoritative graph.
 /// </summary>
-public sealed class InjectorScopeGraph : IInjectorInstanceObserver
+public class InjectorScopeGraph : IInjectorInstanceObserver
 {
     private readonly Lock gate = new();
     private readonly Dictionary<InjectorScope, InjectorScopeGraphNode> activeByScope =
