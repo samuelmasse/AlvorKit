@@ -11,7 +11,8 @@ public class RootEngine(
     RootText text,
     RootScripts scripts,
     RootShutdown shutdown,
-    RootBinEmptyer binEmptyer)
+    RootBinEmptyer binEmptyer,
+    RootUnload unload)
 {
     /// <summary>Starts metrics and prepares shutdown state before the host loop begins.</summary>
     public void Load()
@@ -20,16 +21,18 @@ public class RootEngine(
         shutdown.Register();
     }
 
-    /// <summary>Releases root-owned rendering and script resources after the host loop ends.</summary>
+    /// <summary>Unloads state, scripts, and registered scopes before releasing root graphics after the host loop ends.</summary>
     public void Unload()
     {
         state.Current = new();
-        graphics2D.Unload();
-        gl.Dispose();
-        metrics.Stop();
 
         foreach (var script in scripts.Span.ToArray().Reverse())
             scripts.Remove(script);
+
+        unload.Run();
+        graphics2D.Unload();
+        gl.Dispose();
+        metrics.Stop();
     }
 
     /// <summary>Runs update work unless shutdown has started.</summary>
