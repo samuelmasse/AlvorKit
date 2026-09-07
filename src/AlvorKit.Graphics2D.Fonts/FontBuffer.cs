@@ -1,24 +1,13 @@
 namespace AlvorKit;
 
 /// <summary>Owns a framebuffer and scratch tablet used during atlas repacking.</summary>
-internal sealed class FontBuffer : IDisposable
+internal class FontBuffer(GlLayer gl) : IDisposable
 {
-    /// <summary>The strict OpenGL layer that owns framebuffer resources.</summary>
-    private readonly GlLayer gl;
-
     /// <summary>The framebuffer used as a render target while repacking.</summary>
-    private readonly GlFramebufferHandle framebuffer;
+    private readonly GlFramebufferHandle framebuffer = gl.GenFramebuffer();
 
     /// <summary>The scratch tablet that receives a repacked atlas.</summary>
-    private FontTablet tablet;
-
-    /// <summary>Creates framebuffer and scratch texture resources.</summary>
-    internal FontBuffer(GlLayer gl)
-    {
-        this.gl = gl;
-        framebuffer = gl.GenFramebuffer();
-        tablet = new FontTablet(gl);
-    }
+    private FontTablet tablet = new(gl);
 
     /// <summary>Gets the framebuffer used as a render target while repacking.</summary>
     internal GlFramebufferHandle Framebuffer => framebuffer;

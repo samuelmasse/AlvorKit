@@ -2,8 +2,34 @@ namespace AlvorKit;
 
 /// <summary>Tests font construction, size caching, metrics, and empty packing paths.</summary>
 [TestClass]
-public sealed class FontTest
+public class FontTest
 {
+    /// <summary>Font disposal releases its face while its atlas remains alive until the GL layer is disposed.</summary>
+    [TestMethod]
+    public void Dispose_ReleasesFaceAndLeavesAtlasToLayer()
+    {
+        var (backend, driver, _, context) = FontsTestHarness.CreateContext();
+        var font = new Font(context, "Inter.ttf");
+        var texture = font.Textures[0].Id.Handle;
+        var deletedBeforeDispose = backend.Deleted.Count;
+
+        font.Dispose();
+
+        Assert.AreEqual(1, driver.DoneFaceCount);
+        Assert.AreEqual(0, driver.DoneFreeTypeCount);
+        Assert.AreEqual(deletedBeforeDispose, backend.Deleted.Count);
+
+        context.Dispose();
+
+        Assert.AreEqual(deletedBeforeDispose, backend.Deleted.Count);
+
+        context.GL.Dispose();
+
+        Assert.AreEqual(1, driver.DoneFreeTypeCount);
+        CollectionAssert.Contains(backend.Deleted, texture);
+        driver.Dispose();
+    }
+
     /// <summary>File, memory, and option constructors open faces and expose the initial atlas texture.</summary>
     [TestMethod]
     public void Constructors_OpenFacesAndExposeInitialTexture()

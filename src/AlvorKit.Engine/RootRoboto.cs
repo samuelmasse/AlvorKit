@@ -5,7 +5,7 @@ namespace AlvorKit;
 [ExcludeFromCodeCoverage]
 public class RootRoboto
 {
-    private const string ResourceName = "AlvorKit.Engine.Loop.res.fonts.RobotoMono-Regular.ttf";
+    private const string ResourceName = "AlvorKit.Engine.res.fonts.RobotoMono-Regular.ttf";
 
     private readonly Font font;
 

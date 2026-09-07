@@ -1,6 +1,6 @@
 namespace AlvorKit;
 
-internal sealed partial class FontAtlas
+internal partial class FontAtlas
 {
     /// <summary>Rebuilds the atlas in descending glyph-height order when that layout fits.</summary>
     internal void Pack()

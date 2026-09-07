@@ -1,6 +1,6 @@
 namespace AlvorKit;
 
-internal sealed partial class FontAtlas
+internal partial class FontAtlas
 {
     /// <summary>Finds the next skyline slot for a glyph without mutating the atlas.</summary>
     private (int X, int Y) NextSlot(FontGlyph glyph)

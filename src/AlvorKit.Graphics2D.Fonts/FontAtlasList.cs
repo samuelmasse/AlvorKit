@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Owns all atlas textures for one font and chooses a fitting atlas for new glyphs.</summary>
-internal sealed class FontAtlasList : IDisposable
+internal class FontAtlasList : IDisposable
 {
     /// <summary>The strict OpenGL layer used for new atlases.</summary>
     private readonly GlLayer gl;

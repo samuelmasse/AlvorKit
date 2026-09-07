@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Owns one square glyph atlas texture.</summary>
-internal sealed class FontTablet : IDisposable
+internal class FontTablet : IDisposable
 {
     /// <summary>The square atlas edge length in pixels.</summary>
     internal const int DefaultSize = 2048;

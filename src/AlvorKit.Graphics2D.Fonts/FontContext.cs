@@ -1,8 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Shares FreeType, OpenGL atlas staging, and sprite batching resources between fonts.</summary>
-/// <remarks>Creates a context with a caller-supplied FreeType binding.</remarks>
-public sealed class FontContext(GlLayer gl, Ft ft, SpriteBatch batch) : IDisposable
+public class FontContext(GlLayer gl, Ft ft, SpriteBatch batch) : IDisposable
 {
     /// <summary>The strict OpenGL layer used by font atlas resources.</summary>
     private readonly GlLayer gl = gl;
@@ -34,10 +33,6 @@ public sealed class FontContext(GlLayer gl, Ft ft, SpriteBatch batch) : IDisposa
     /// <summary>Gets the framebuffer and scratch texture used while repacking atlases.</summary>
     internal FontBuffer Buffer => buffer;
 
-    /// <summary>Releases shared FreeType and OpenGL staging resources.</summary>
-    public void Dispose()
-    {
-        library.Dispose();
-        buffer.Dispose();
-    }
+    /// <summary>Releases the FreeType library after its fonts are disposed; the GL layer owns staging resources.</summary>
+    public void Dispose() => library.Dispose();
 }

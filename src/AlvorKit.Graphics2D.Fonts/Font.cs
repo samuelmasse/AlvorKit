@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Owns a FreeType face and its glyph atlases for all requested sizes.</summary>
-public sealed class Font : IDisposable
+public class Font : IDisposable
 {
     /// <summary>The FreeType face lifetime owner.</summary>
     private readonly FontFace face;
@@ -52,10 +52,6 @@ public sealed class Font : IDisposable
     /// <summary>Repack every atlas with pending, unpacked placement.</summary>
     public void ForcePack() => atlases.ForcePack();
 
-    /// <summary>Deletes atlas textures and releases the FreeType face.</summary>
-    public void Dispose()
-    {
-        atlases.Dispose();
-        face.Dispose();
-    }
+    /// <summary>Releases the FreeType face; the GL layer retains ownership of atlas textures.</summary>
+    public void Dispose() => face.Dispose();
 }

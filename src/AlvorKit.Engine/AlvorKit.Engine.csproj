@@ -9,12 +9,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
+        <ProjectReference Include="..\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
         <ProjectReference Include="..\AlvorKit.Injection\AlvorKit.Injection.csproj" />
-        <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
-        <ProjectReference Include="..\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
         <ProjectReference Include="..\AlvorKit.Ranges\AlvorKit.Ranges.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="..\..\res\fonts\RobotoMono-Regular.ttf" Visible="false">
+            <LogicalName>AlvorKit.Engine.res.fonts.RobotoMono-Regular.ttf</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>

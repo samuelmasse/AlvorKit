@@ -12,14 +12,6 @@
         <PackageReference Include="AlvorKit.FastNoise2.Backend" Version="$(FastNoise2BindVer)" />
     </ItemGroup>
 
-    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj')">
-        <PackageReference Include="AlvorKit.FreeType.Backend" Version="$(FtBindVer)" />
-    </ItemGroup>
-
-    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
-        <PackageReference Include="AlvorKit.GLFW.Backend" Version="$(GlfwBindVer)" />
-    </ItemGroup>
-
     <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">
         <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="$(MaBindVer)" />
     </ItemGroup>
@@ -32,14 +24,6 @@
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj" />
     </ItemGroup>
 
-    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj')">
-        <ProjectReference Include="$(BindingsRoot)\AlvorKit.FreeType.Backend\AlvorKit.FreeType.Backend.csproj" />
-    </ItemGroup>
-
-    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj')">
-        <ProjectReference Include="$(BindingsRoot)\AlvorKit.GLFW.Backend\AlvorKit.GLFW.Backend.csproj" />
-    </ItemGroup>
-
     <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj" />
     </ItemGroup>
@@ -50,21 +34,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\AlvorKit.Engine\AlvorKit.Engine.csproj" />
-        <ProjectReference Include="..\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
-        <ProjectReference Include="..\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
-        <ProjectReference Include="..\AlvorKit.Injection\AlvorKit.Injection.csproj" />
         <ProjectReference Include="..\AlvorKit.Logging\AlvorKit.Logging.csproj" />
-        <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
-        <ProjectReference Include="..\AlvorKit.Text\AlvorKit.Text.csproj" />
-        <ProjectReference Include="..\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
-        <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing.Agent\AlvorKit.Windowing.Agent.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Include="..\..\res\fonts\RobotoMono-Regular.ttf" Visible="false">
-            <LogicalName>AlvorKit.Engine.Loop.res.fonts.RobotoMono-Regular.ttf</LogicalName>
-        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>

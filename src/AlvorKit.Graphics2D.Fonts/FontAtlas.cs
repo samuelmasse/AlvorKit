@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Packs glyph bitmaps into one atlas texture and can repack them through a sprite batch.</summary>
-internal sealed partial class FontAtlas : IDisposable
+internal partial class FontAtlas : IDisposable
 {
     /// <summary>The strict OpenGL layer used for atlas uploads and repacking.</summary>
     private readonly GlLayer gl;

@@ -2,22 +2,26 @@ namespace AlvorKit;
 
 /// <summary>Tests shared font context resource ownership.</summary>
 [TestClass]
-public sealed class FontContextTest
+public class FontContextTest
 {
-    /// <summary>Construction initializes FreeType and disposal releases context-owned resources.</summary>
+    /// <summary>Context disposal releases FreeType while GPU resources remain owned by the GL layer.</summary>
     [TestMethod]
     public void ConstructorAndDispose_InitializesAndReleasesResources()
     {
-        var (backend, driver, batch, context) = FontsTestHarness.CreateContext();
+        var (backend, driver, _, context) = FontsTestHarness.CreateContext();
 
         Assert.AreEqual(1, driver.InitFreeTypeCount);
         Assert.AreEqual(0, driver.DoneFreeTypeCount);
+        var deletedBeforeDispose = backend.Deleted.Count;
 
         context.Dispose();
-        batch.Dispose();
-        driver.Dispose();
 
         Assert.AreEqual(1, driver.DoneFreeTypeCount);
-        Assert.IsTrue(backend.Deleted.Count > 0);
+        Assert.AreEqual(deletedBeforeDispose, backend.Deleted.Count);
+
+        context.GL.Dispose();
+
+        Assert.IsTrue(backend.Deleted.Count > deletedBeforeDispose);
+        driver.Dispose();
     }
 }
