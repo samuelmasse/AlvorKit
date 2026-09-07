@@ -4,10 +4,14 @@ This document describes the preferred shape for AlvorKit UI menu code. It is
 based on the Craftdig menu style and should be used when creating or
 significantly changing classes that build UI with `AlvorKit.UI`.
 
+Menu code should read like the screen it builds. Optimize the declaration for
+readable layout, clear ownership, and cohesive regions rather than short
+methods or small files.
+
 ## Menu Class Shape
 
 A menu class is a UI composition object: it receives dependencies and builds a
-node subtree. Keep the class body intentionally tiny.
+node subtree. Keep its layout together in `Create`.
 
 - A class whose name ends in `Menu` must expose exactly one public method:
   `Create`.
@@ -24,6 +28,17 @@ node subtree. Keep the class body intentionally tiny.
   main application state itself as a prop.
 - Put all helper logic inside `Create` as local variables, local constants,
   anonymous callbacks, or local functions.
+- Return `void` unless a caller needs a result. `Create` may return the created
+  node or a handle when a caller uses it to manage the subtree, including
+  retaining or removing recursive child branches. Make that purpose apparent
+  at the consuming call sites; not every caller must consume the result.
+
+Declarative menu `Create` methods are explicitly exempt from the fifty-line
+method ceiling in [GameCodeDesign.md](AgentRules/GameCodeDesign.md). Keep
+related controls together even when the layout method is longer. Do not
+compress fluent chains or manufacture menu classes to satisfy that ceiling.
+Procedural callbacks and local functions remain focused and subject to the
+ordinary method limit. Source-file and line-width limits still apply.
 
 Child menus follow the same shape. Non-menu collaborators extracted from menus,
 such as geometry, tooltip text, or app command/state objects, may have normal
@@ -33,6 +48,10 @@ members, but they should not be named `Menu` unless they follow the menu rules.
 
 Write menu code so the source layout mirrors the visible UI tree.
 
+- Put `Node(...)` on its own line, followed by one indented fluent call per
+  line. Apply the same one-call-per-line shape to configuration chains on
+  existing nodes. Do this even when the whole chain fits within the preferred
+  C# line width.
 - Treat the `root` parameter as a mount parent owned by the caller. Do not
   mutate it for size, placement, color, layout, input, or styling.
 - Create a top-level child node for the menu's own surface, such as
@@ -40,9 +59,11 @@ Write menu code so the source layout mirrors the visible UI tree.
   children under it. This lets the caller size and place the menu anywhere.
 - If all visible children need to share one layout or surface, create that
   child container explicitly. Do not use the incoming `root` as that container.
-- Use braces after parent `Node(..., out var child)` calls to show ownership of
-  child nodes.
-- Keep sibling groups in screen order.
+- Use braces after parent `Node(..., out var child)` calls and indent their
+  contents to show ownership of child nodes.
+- Keep sibling groups in screen order, reading from top to bottom. Separate
+  sibling controls and groups with blank lines.
+- Give nodes descriptive names that identify their visible role.
 - Make node creation visible in the menu tree. Do not hide simple controls or
   repeated leaves behind local functions like `Button(parent, ...)`; declare
   `Node(parent)` at the call site and use `.Mutate(...)` to apply style,
@@ -52,9 +73,9 @@ Write menu code so the source layout mirrors the visible UI tree.
   with local sizing, placement, text, callbacks, or one-off overrides. Put
   `.Mutate(...)` later only when it intentionally depends on those local values
   or is applying a final override.
-- If a helper would need to create multiple nodes and the hidden subtree is a
-  meaningful UI region, extract a child menu or name a local region carefully
-  enough that the source still reads like the visible tree.
+- Keep small groups of nodes inline. Extract a subtree when its independent
+  behavior, reuse, or recursion justifies a separate menu; a visible region
+  alone does not require a class.
 - Prefer `childMenu.Create(parent)` for child menus when the child should
   contribute its own top-level node to the parent layout.
 - Create a caller-owned slot node only when the caller needs to size, align, or
@@ -101,7 +122,7 @@ Prefer the smallest readable scope.
 
 - Use anonymous methods or lambdas for callbacks that are used once, especially
   short `OnUpdateF`, `OnPressF`, `IsDisabledF`, `TextF`, `OffsetF`, and `SizeF`
-  logic.
+  logic. Place simple behavior beside the control it affects.
 - Use a named local function when the block is reused, the name explains a UI
   concept, or the callback is large enough that a name makes the tree easier to
   scan.
@@ -111,6 +132,8 @@ Prefer the smallest readable scope.
   of the menu.
 - Capture local state inside `Create` when the menu needs ephemeral UI state,
   such as a previous input flag or the last rendered revision.
+- Give local state and longer behavior clear names so readers can connect
+  controls to their effects without tracing unrelated code.
 
 Prefer:
 
@@ -152,6 +175,9 @@ Use style objects for visual language, not for every number.
   tooltip, or modal styling.
 - Local layout decisions belong in the menu that owns the layout. Give local
   numbers names, but keep them near the node or helper that uses them.
+- Keep one-off sizing, placement, and text visible in the layout. Extract style
+  recipes for repeated patterns; avoid one-use helpers that hide a few
+  straightforward node declarations.
 - If a measure is reused across several unrelated menus or is part of a shared
   component recipe, it can move into style.
 - If a number only describes one menu's geometry, animation, breakpoint, or
@@ -194,12 +220,14 @@ surfaces. Dispose app-owned surfaces when their owning state unloads.
 
 ## Splitting Menus
 
-Split a menu when the `Create` method stops reading like one coherent UI
-subtree.
+Keep related screen layout together. Split a menu when substantial independent
+behavior, actual reuse, or recursion makes the boundary useful. A recursive
+tree branch, a reusable picker, or a separate interactive dialog can justify a
+child menu.
 
-Good splits are usually visible UI regions:
-
-- header, toolbar, panel, timeline, modal, list, row, detail, overlay
+Do not automatically extract each header, footer, toolbar, or label group.
+Those regions often read better together in one screen declaration. Do not
+split solely to shorten a layout method or keep a file artificially small.
 
 Non-visual concerns should become collaborators rather than child menus:
 

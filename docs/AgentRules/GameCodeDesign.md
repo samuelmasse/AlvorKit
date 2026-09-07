@@ -66,10 +66,16 @@ stated. Repository invariants and approval gates remain in force.
   function must stay at or below fifty physical lines, counted from its
   declaration through its closing brace or expression-body semicolon; XML
   documentation and attributes above the declaration do not count. This is a
-  hard ceiling, including for flat checklists and component initializers. Aim
-  for fewer than twenty-five lines in ordinary methods, and split longer logic
-  into named stages behind a short orchestrator well before it reaches the
-  ceiling.
+  hard ceiling, including for flat checklists and component initializers,
+  except for declarative menu `Create` methods as specified in
+  [MenuAuthoring.md](../MenuAuthoring.md). Aim for fewer than twenty-five lines
+  in ordinary methods, and split longer logic into named stages behind a short
+  orchestrator well before it reaches the ceiling.
+- Declarative menu layout may exceed fifty lines to keep related controls
+  together and fluent calls on separate lines. Do not compress layout or
+  create extra menu classes to meet the ordinary method ceiling. Procedural
+  callbacks and local functions retain the ordinary limit; source-file and
+  line-width limits still apply.
 - Decompose a large subsystem into single-concern components of roughly one to
   two hundred lines driven by one orchestrator. Route cross-component effects
   through the orchestrator as return values, not as callbacks between

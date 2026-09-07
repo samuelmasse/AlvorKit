@@ -24,6 +24,12 @@ the hard maximum for agent-authored C# in both Working Mode and Commit Mode.
 No closer `AGENTS.md` may relax this rule. This does not change automated
 checks, which retain their existing 170-character failure threshold.
 
+Menu node configuration chains are an explicit exception to the preference
+for keeping a cohesive chain on one line. Follow
+[MenuAuthoring.md](../MenuAuthoring.md): put `Node(...)` on its own line and
+each fluent call on a separate indented line, even when the chain would fit
+within 120 characters. The 140-character hard maximum still applies.
+
 ## C# Defaults
 
 These defaults are unconditional. A closer `AGENTS.md` may add stricter
