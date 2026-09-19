@@ -6,10 +6,10 @@ public sealed class ProjectRootTest
 {
     /// <summary>Root discovery walks upward from nested directories.</summary>
     [TestMethod]
-    public void FindFrom_FindsSolutionRootFromNestedDirectory()
+    public void FindFrom_FindsMarkedRootFromNestedDirectory()
     {
         using var workspace = TempWorkspace.Create();
-        workspace.Write(ProjectRoot.SolutionFileName, "<Solution />");
+        workspace.Write(ProjectRoot.MarkerFileName, "<Solution />");
         var nested = Path.Combine(workspace.Root, "scripts", "tool", "bin");
         Directory.CreateDirectory(nested);
 
@@ -21,7 +21,7 @@ public sealed class ProjectRootTest
     public void FindFrom_AcceptsFilePath()
     {
         using var workspace = TempWorkspace.Create();
-        workspace.Write(ProjectRoot.SolutionFileName, "<Solution />");
+        workspace.Write(ProjectRoot.MarkerFileName, "<Solution />");
         var file = workspace.Write("scripts/tool/file.txt", "content");
 
         Assert.AreEqual(workspace.Root, ProjectRoot.FindFrom(file));
@@ -41,7 +41,7 @@ public sealed class ProjectRootTest
     public void FindFrom_RequiresResDirectoryWhenRequested()
     {
         using var workspace = TempWorkspace.Create();
-        workspace.Write(ProjectRoot.SolutionFileName, "<Solution />");
+        workspace.Write(ProjectRoot.MarkerFileName, "<Solution />");
 
         Assert.ThrowsException<InvalidOperationException>(() => ProjectRoot.FindFrom(workspace.Root, requireResDirectory: true));
 
@@ -56,7 +56,7 @@ public sealed class ProjectRootTest
     {
         using var missing = TempWorkspace.Create();
         using var workspace = TempWorkspace.Create();
-        workspace.Write(ProjectRoot.SolutionFileName, "<Solution />");
+        workspace.Write(ProjectRoot.MarkerFileName, "<Solution />");
 
         Assert.AreEqual(workspace.Root, ProjectRoot.FindFromCandidates(["", missing.Root, workspace.Root]));
     }
@@ -81,7 +81,7 @@ public sealed class ProjectRootTest
 
         var exception = Assert.ThrowsException<InvalidOperationException>(() => ProjectRoot.FindFromCandidates([workspace.Root]));
 
-        StringAssert.Contains(exception.Message, ProjectRoot.SolutionFileName);
+        StringAssert.Contains(exception.Message, ProjectRoot.MarkerFileName);
     }
 
     /// <summary>Missing repository markers fail with the marker name in the error message.</summary>
@@ -92,6 +92,6 @@ public sealed class ProjectRootTest
 
         var exception = Assert.ThrowsException<InvalidOperationException>(() => ProjectRoot.FindFrom(workspace.Root));
 
-        StringAssert.Contains(exception.Message, ProjectRoot.SolutionFileName);
+        StringAssert.Contains(exception.Message, ProjectRoot.MarkerFileName);
     }
 }

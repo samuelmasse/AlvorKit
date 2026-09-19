@@ -10,7 +10,7 @@ public sealed class ProjectRootCurrentProcessTest
     public void ResDirectory_ReturnsRootResourceDirectory()
     {
         using var workspace = TempWorkspace.Create();
-        workspace.Write(ProjectRoot.SolutionFileName, "<Solution />");
+        workspace.Write(ProjectRoot.MarkerFileName, "<Solution />");
         var resDirectory = Path.Combine(workspace.Root, "res");
         Directory.CreateDirectory(resDirectory);
 
@@ -22,7 +22,7 @@ public sealed class ProjectRootCurrentProcessTest
     public void FindFromCurrentProcess_UsesCurrentDirectory()
     {
         using var workspace = TempWorkspace.Create();
-        workspace.Write(ProjectRoot.SolutionFileName, "<Solution />");
+        workspace.Write(ProjectRoot.MarkerFileName, "<Solution />");
 
         WithCurrentDirectory(workspace.Root, () => Assert.AreEqual(workspace.Root, ProjectRoot.FindFromCurrentProcess()));
     }

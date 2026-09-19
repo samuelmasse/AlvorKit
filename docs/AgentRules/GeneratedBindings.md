@@ -29,6 +29,10 @@ Do not embed generated source, project files, scripts, or other multi-line
 output directly inside C# string literals. Put emitted text in a template under
 `res/templates/` and render it with the repository template helper.
 
+Repository solutions use structured XML serialization from the evaluated project
+graph, with no solution template or maintained project list. Follow
+[Solutions.md](../Solutions.md) when working on that generator.
+
 When doing generated-output checks, read the generated source and project-file
 diff carefully, use focused fixtures when full binding output is too large, and
 summarize meaningful generated-code changes before handoff. Delete disposable

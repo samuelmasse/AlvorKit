@@ -352,10 +352,10 @@
       "group": "build"
     },
     {
-      "label": "build AlvorKit.Script.DevSolution",
+      "label": "build AlvorKit.Script.Solution",
       "type": "process",
       "command": "dotnet",
-      "args": ["build", "${workspaceFolder}/scripts/AlvorKit.Script.DevSolution/AlvorKit.Script.DevSolution.csproj", "--configuration", "Release", "--nologo"],
+      "args": ["build", "${workspaceFolder}/scripts/AlvorKit.Script.Solution/AlvorKit.Script.Solution.csproj", "--configuration", "Release", "--nologo"],
       "problemMatcher": "$msCompile",
       "group": "build"
     },
@@ -420,14 +420,6 @@
       "type": "process",
       "command": "dotnet",
       "args": ["build", "${workspaceFolder}/scripts/AlvorKit.Script.TestTiming/AlvorKit.Script.TestTiming.csproj", "--configuration", "Release", "--nologo"],
-      "problemMatcher": "$msCompile",
-      "group": "build"
-    },
-    {
-      "label": "build AlvorKit.Script.ZoneSolution",
-      "type": "process",
-      "command": "dotnet",
-      "args": ["build", "${workspaceFolder}/scripts/AlvorKit.Script.ZoneSolution/AlvorKit.Script.ZoneSolution.csproj", "--configuration", "Release", "--nologo"],
       "problemMatcher": "$msCompile",
       "group": "build"
     },

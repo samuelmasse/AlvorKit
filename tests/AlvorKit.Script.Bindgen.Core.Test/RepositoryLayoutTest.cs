@@ -9,7 +9,7 @@ public sealed class RepositoryLayoutTest
     public void FindFrom_WalksUpToSolutionRoot()
     {
         using var workspace = TempWorkspace.Create();
-        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.Packages.props"), "");
         var nested = Path.Combine(workspace.Root, "a", "b", "c");
         Directory.CreateDirectory(nested);
 
@@ -28,7 +28,7 @@ public sealed class RepositoryLayoutTest
         var exception = Assert.ThrowsException<InvalidOperationException>(
             () => RepositoryLayout.FindFrom(Path.Combine(workspace.Root, "missing")));
 
-        StringAssert.Contains(exception.Message, "AlvorKit.slnx not found above");
+        StringAssert.Contains(exception.Message, "AlvorKit.Packages.props not found above");
     }
 
     /// <summary>Explicit library names are returned when they have bindgen metadata.</summary>
@@ -36,7 +36,7 @@ public sealed class RepositoryLayoutTest
     public void SelectedLibraries_ReturnsExplicitSelection()
     {
         using var workspace = TempWorkspace.Create();
-        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.Packages.props"), "");
         var native = Path.Combine(workspace.Root, "native", "glfw");
         var conf = Path.Combine(native, "conf");
         Directory.CreateDirectory(conf);
@@ -51,7 +51,7 @@ public sealed class RepositoryLayoutTest
     public void SelectedLibraries_RejectsUnknownSelection()
     {
         using var workspace = TempWorkspace.Create();
-        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.Packages.props"), "");
         var native = Path.Combine(workspace.Root, "native", "alpha");
         var conf = Path.Combine(native, "conf");
         Directory.CreateDirectory(conf);
@@ -69,7 +69,7 @@ public sealed class RepositoryLayoutTest
     public void SelectedLibraries_ReturnsSortedBindgenLibraries()
     {
         using var workspace = TempWorkspace.Create();
-        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.Packages.props"), "");
         var native = Path.Combine(workspace.Root, "native");
         Directory.CreateDirectory(Path.Combine(native, "zeta", "conf"));
         Directory.CreateDirectory(Path.Combine(native, "alpha", "conf"));
@@ -92,7 +92,7 @@ public sealed class RepositoryLayoutTest
     public void SelectedLibraries_ReturnsEmptyWhenNativeDirectoryIsMissing()
     {
         using var workspace = TempWorkspace.Create();
-        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.Packages.props"), "");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
 
         CollectionAssert.AreEqual(Array.Empty<string>(), layout.SelectedLibraries("all").ToArray());
@@ -103,7 +103,7 @@ public sealed class RepositoryLayoutTest
     public void ResolveGeneratedOutputRoot_DefaultsToGeneratedOutputDirectory()
     {
         using var workspace = TempWorkspace.Create();
-        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.Packages.props"), "");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
         var expected = Path.Combine(workspace.Root, "out", "generated", "bindgen");
 
@@ -116,7 +116,7 @@ public sealed class RepositoryLayoutTest
     public void ResolveGeneratedOutputRoot_AllowsOutDirectory()
     {
         using var workspace = TempWorkspace.Create();
-        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.Packages.props"), "");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
         var expected = Path.Combine(workspace.Root, "out", "bindgen-review", "after");
 
@@ -130,7 +130,7 @@ public sealed class RepositoryLayoutTest
     public void ResolveGeneratedOutputRoot_RejectsDirectoryOutsideOut()
     {
         using var workspace = TempWorkspace.Create();
-        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.Packages.props"), "");
         var layout = RepositoryLayout.FindFrom(workspace.Root);
 
         var exception = Assert.ThrowsException<InvalidOperationException>(

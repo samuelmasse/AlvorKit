@@ -115,13 +115,8 @@ internal static class RepositoryPolicy
     private static bool IsTypeDeclaration(SyntaxNode node) =>
         node is BaseTypeDeclarationSyntax or DelegateDeclarationSyntax;
 
-    /// <summary>Returns the root namespace declared by the repository's primary solution.</summary>
-    private static string? FindRepositoryNamespace(string repoRoot) =>
-        Directory.EnumerateFiles(repoRoot, "*.slnx", SearchOption.TopDirectoryOnly)
-            .Where(path => !path.EndsWith(".Dev.slnx", StringComparison.OrdinalIgnoreCase))
-            .Select(Path.GetFileNameWithoutExtension)
-            .Order(StringComparer.Ordinal)
-            .FirstOrDefault();
+    /// <summary>Returns the root namespace from authored project names, independently of solution generation.</summary>
+    private static string? FindRepositoryNamespace(string repoRoot) => RepositoryProjects.Namespace(repoRoot);
 
     /// <summary>Allows the two intentional external contracts that must use namespaces owned by their hosts.</summary>
     private static bool IsExternalNamespaceException(string file, string actualNamespace) =>

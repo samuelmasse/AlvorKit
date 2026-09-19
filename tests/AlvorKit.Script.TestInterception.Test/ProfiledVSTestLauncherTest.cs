@@ -189,7 +189,7 @@ public class ProfiledVSTestLauncherTest
             directory is not null;
             directory = directory.Parent)
         {
-            if (File.Exists(Path.Combine(directory.FullName, "AlvorKit.slnx")))
+            if (File.Exists(Path.Combine(directory.FullName, "AlvorKit.Packages.props")))
                 return directory.FullName;
         }
 

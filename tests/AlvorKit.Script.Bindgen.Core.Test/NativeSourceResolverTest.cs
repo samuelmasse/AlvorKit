@@ -63,7 +63,7 @@ public sealed class NativeSourceResolverTest
     /// <summary>Creates a binding with test-local work and source directories.</summary>
     private static NativeLibraryBinding CreateBinding(TempWorkspace workspace, Action<BindgenConfig>? configure = null)
     {
-        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.Packages.props"), "");
         var native = Path.Combine(workspace.Root, "native", "fixture");
         var conf = Path.Combine(native, "conf");
         var version = Path.Combine(native, "version");

@@ -6,7 +6,7 @@ internal sealed class TestTimingCommandParser
     /// <summary>Parses options using repository discovery for default paths.</summary>
     /// <param name="args">Command-line arguments supplied by the caller.</param>
     public TestTimingOptions Parse(IReadOnlyList<string> args) =>
-        Parse(args, SolutionRoot.FindPrimaryFromCurrentProcess(typeof(TestTimingCommandParser)));
+        Parse(args, RepositoryRoot.FindFromCurrentProcess(typeof(TestTimingCommandParser)));
 
     /// <summary>Parses options with an explicit repository root for deterministic tests.</summary>
     /// <param name="args">Command-line arguments supplied by the caller.</param>
@@ -40,7 +40,7 @@ internal sealed class TestTimingCommandParser
     /// <summary>Adds the solution path when callers provide only options for <c>dotnet test</c>.</summary>
     internal static IReadOnlyList<string> NormalizeDotNetArguments(IReadOnlyList<string> args)
     {
-        var repoRoot = SolutionRoot.FindPrimaryFromCurrentProcess(typeof(TestTimingCommandParser));
+        var repoRoot = RepositoryRoot.FindFromCurrentProcess(typeof(TestTimingCommandParser));
         return NormalizeDotNetArguments(repoRoot, args);
     }
 
@@ -51,7 +51,7 @@ internal sealed class TestTimingCommandParser
             return TestTimingOptions.DefaultDotNetTestArguments(repoRoot);
 
         return args[0].StartsWith("-", StringComparison.Ordinal)
-            ? [SolutionRoot.PrimarySolutionFileName(repoRoot), .. args]
+            ? [RepositoryProjects.RequireSolutionFileName(repoRoot), .. args]
             : args.ToArray();
     }
 

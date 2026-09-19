@@ -39,3 +39,14 @@ For visual automation, read `../AlvorKit/docs/AlvorSense.md` and run:
 ```powershell
 dotnet run --project ..\AlvorKit\scripts\AlvorKit.Script.AlvorSense -- start --id AlvorStarter --project src\AlvorStarter --workdir .
 ```
+
+## Repository solution
+
+Generate the gitignored solution before opening it:
+
+```powershell
+dotnet run --project ../AlvorKit/scripts/AlvorKit.Script.Solution -- --repo-root .
+```
+
+Add `--watch` for continuous updates. The output uses the checkout directory name.
+See [the solution workflow](../AlvorKit/docs/Solutions.md).

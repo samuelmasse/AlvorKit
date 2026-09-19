@@ -23,18 +23,12 @@ internal sealed class NewGameGenerator
             count++;
         }
 
-        WriteText(
-            options.OutputPath,
-            NewGameStarterProject.SolutionPath(options),
-            starterProject.RenderSolution(options));
-        count++;
-
         return new(options.OutputPath, count);
     }
 
     private static void EnsureAlvorKitRoot(string root)
     {
-        if (!File.Exists(Path.Combine(root, ProjectRoot.SolutionFileName)))
+        if (!File.Exists(Path.Combine(root, ProjectRoot.MarkerFileName)))
             throw new DirectoryNotFoundException($"AlvorKit repository root not found at '{root}'.");
     }
 
@@ -64,14 +58,5 @@ internal sealed class NewGameGenerator
             File.WriteAllText(path, starterProject.RenderText(file, options), Utf8NoBom);
         else
             File.WriteAllBytes(path, file.Bytes);
-    }
-
-    /// <summary>Writes generated text content under the target repository.</summary>
-    private static void WriteText(string outputRoot, string relativePath, string content)
-    {
-        var path = Path.Combine(outputRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
-        var directory = Path.GetDirectoryName(path) ?? outputRoot;
-        Directory.CreateDirectory(directory);
-        File.WriteAllText(path, content, Utf8NoBom);
     }
 }

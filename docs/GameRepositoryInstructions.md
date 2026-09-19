@@ -44,9 +44,11 @@ Do not assume another sibling game repository exists.
   or diagnostics use English, use American English exclusively. Preserve exact
   externally owned identifiers and verbatim quotations. The established
   AlvorKit `Maths` terminology is the sole repository-owned exception.
-- **SOLUTION-PAIR-001:** When a primary `<Name>.slnx` has an existing sibling
-  `<Name>.Dev.slnx`, make every solution change to both files in the same task.
-  Never modify only one member of the existing pair.
+- **SOLUTION-GENERATED-001:** Each repository has one buildable, gitignored
+  `<checkout-name>.slnx`. Generate it with `AlvorKit.Script.Solution`; never
+  hand-edit or commit solutions. Edit project files and references to change
+  membership, then regenerate before solution-based commands. Do not assume a
+  watcher is running. See `../AlvorKit/docs/Solutions.md`.
 - AlvorKit is owned source, not a fixed external dependency. Put engine, UI,
   injection, windowing, GL lifetime, maths, bindings, scripts, and reusable
   harness capability in AlvorKit rather than forcing a game-local workaround.
@@ -90,8 +92,8 @@ Read all matching documents before design:
   deterministic procedural sampling, or table mapping.
 - `../AlvorKit/docs/AgentRules/FastNoise2.md`: procedural noise, FastNoise2
   graphs, terrain, cellular fields, fractals, domain warping, or sampling.
-- `../AlvorKit/docs/AgentRules/ProjectsAndDependencies.md`: `.slnx` solution
-  changes, project creation or reorganization, references, package roles,
+- `../AlvorKit/docs/AgentRules/ProjectsAndDependencies.md`: solution generation,
+  project creation or reorganization, references, package roles,
   scopes, ECS, GL, maths, and menus.
 - `../AlvorKit/docs/AgentRules/GeneratedBindings.md`: generators, templates,
   generated output or documentation, bindings, and native test doubles.

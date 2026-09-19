@@ -13,6 +13,17 @@ verification solely because work is ending. Targeted builds, tests, visual
 checks, or generated-output checks are allowed when useful for the specific
 change or question.
 
+Before a solution-based check, generate the ignored solution after selecting
+the generated-source mode and changing project inputs. Do not assume a watcher
+is running. From AlvorKit:
+
+```powershell
+dotnet run --project scripts/AlvorKit.Script.Solution -- --repo-root .
+```
+
+See [Solutions.md](Solutions.md) for game commands and discovery. Commands below
+using `--no-build --no-restore` require a successful build first.
+
 ## Linting
 
 Do not run lint by default in Working Mode. Run the repository linter when the
@@ -50,7 +61,7 @@ dotnet format AlvorKit.slnx --verify-no-changes --verbosity minimal
 The failure looked like ordinary compiler errors rather than formatting errors:
 
 - `CS1503: Argument 1: cannot convert from 'method group' to
-  'System.Action<T>'`
+'System.Action<T>'`
 - `CS1503: Argument 1: cannot convert from 'T' to 'AlvorKit.EntMut'`
 
 The affected code used chained fluent UI calls produced by C# 14 extension

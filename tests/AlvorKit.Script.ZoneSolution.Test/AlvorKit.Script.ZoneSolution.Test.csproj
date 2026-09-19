@@ -1,7 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\scripts\AlvorKit.Script.ZoneSolution\AlvorKit.Script.ZoneSolution.csproj" />
-    </ItemGroup>
-
-</Project>

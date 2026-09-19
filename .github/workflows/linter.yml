@@ -28,5 +28,8 @@ jobs:
       - name: Build source generators
         run: dotnet build src/AlvorKit.ECS.Generator/AlvorKit.ECS.Generator.csproj
 
+      - name: Generate repository solution
+        run: dotnet run --project scripts/AlvorKit.Script.Solution -- --repo-root .
+
       - name: Run lint coordinator
         run: dotnet run --project scripts/AlvorKit.Script.Lint

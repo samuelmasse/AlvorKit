@@ -23,7 +23,7 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
         <PackageReference Include="MSTest" Version="3.8.2" />
         <PackageReference Include="coverlet.msbuild" Version="10.0.1" PrivateAssets="all" />
-        <ProjectReference Include="$(MSBuildThisFileDirectory)AlvorKit.Testing\AlvorKit.Testing.csproj" />
+        <ProjectReference Include="$(AlvorKitRepositoryRoot)src\AlvorKit.Testing\AlvorKit.Testing.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -115,7 +115,7 @@ public sealed class NativeLibraryBindingTest
     /// <summary>Creates a minimal repository layout that RepositoryLayout can discover.</summary>
     private static RepositoryLayout CreateRepository(TempWorkspace workspace)
     {
-        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.Packages.props"), "");
         Directory.CreateDirectory(Path.Combine(workspace.Root, "native"));
         return RepositoryLayout.FindFrom(workspace.Root);
     }

@@ -19,9 +19,9 @@ internal sealed class TestTimingOptions(
     public static readonly TimeSpan DefaultMaxDuration = TimeSpan.FromSeconds(1);
 
     /// <summary>Returns the default <c>dotnet test</c> arguments for a repository root.</summary>
-    /// <param name="repoRoot">Repository root containing the primary solution file.</param>
+    /// <param name="repoRoot">Repository root containing the generated solution file.</param>
     public static IReadOnlyList<string> DefaultDotNetTestArguments(string repoRoot) =>
-        [SolutionRoot.PrimarySolutionFileName(repoRoot), "--no-restore", "--verbosity", "minimal"];
+        [RepositoryProjects.RequireSolutionFileName(repoRoot), "--no-restore", "--verbosity", "minimal"];
 
     /// <summary>Repository root used as the <c>dotnet test</c> working directory.</summary>
     public string RepoRoot { get; } = repoRoot;

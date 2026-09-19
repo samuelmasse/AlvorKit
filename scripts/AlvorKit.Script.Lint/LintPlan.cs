@@ -33,7 +33,9 @@ internal static class LintPlan
 
     /// <summary>Creates a solution-wide dotnet format command for full repository linting.</summary>
     public static IReadOnlyList<CommandSpec> DotNetFormatCommands(string repoRoot, bool fix) =>
-        DotNetFormatCommands(SolutionRoot.PrimarySolutionFileName(repoRoot), repoRoot, fix);
+        DotNetFormatCommands(RepositoryProjects.RequireSolutionFileName(repoRoot), repoRoot, fix,
+            [.. RepositoryProjects.Areas.Select(area => Path.Combine(repoRoot, area)),
+                .. Directory.EnumerateFiles(repoRoot, "*.cs")]);
 
     /// <summary>Creates dotnet format commands for the scoped C# files grouped by owning project.</summary>
     public static IReadOnlyList<CommandSpec> DotNetFormatCommands(string repoRoot, bool fix, LintScope scope) =>
@@ -62,11 +64,15 @@ internal static class LintPlan
 
     /// <summary>Creates the EditorConfig checker command for repo-wide whitespace and line-length rules.</summary>
     public static CommandSpec EditorConfigCommand(string repoRoot) =>
-        new(ToolExecutable.Npx(), ["--yes", "editorconfig-checker@6.1.1", "-disable-indentation", "-format", "github-actions"], repoRoot, "editorconfig");
+        new(ToolExecutable.Npx(),
+            ["--yes", "editorconfig-checker@6.2.0", "-disable-indentation", "-format", "github-actions"],
+            repoRoot, "editorconfig");
 
     /// <summary>Creates the EditorConfig checker command for scoped whitespace and line-length rules.</summary>
     public static CommandSpec EditorConfigCommand(string repoRoot, IReadOnlyList<string> files) =>
-        new(ToolExecutable.Npx(), ["--yes", "editorconfig-checker@6.1.1", "-disable-indentation", "-format", "github-actions", .. files], repoRoot, "editorconfig");
+        new(ToolExecutable.Npx(),
+            ["--yes", "editorconfig-checker@6.2.0", "-disable-indentation", "-format", "github-actions", .. files],
+            repoRoot, "editorconfig");
 
     /// <summary>Creates scoped EditorConfig checker commands, batching file arguments for Windows command-line limits.</summary>
     public static IReadOnlyList<CommandSpec> EditorConfigCommands(string repoRoot, IReadOnlyList<string> files) =>

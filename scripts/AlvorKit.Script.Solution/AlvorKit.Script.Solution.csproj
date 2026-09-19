@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <InternalsVisibleTo Include="AlvorKit.Script.Solution.Test" />
+        <PackageReference Include="Microsoft.Build.Locator" Version="1.11.2" />
+        <PackageReference Include="System.CommandLine" Version="2.0.8" />
+        <ProjectReference Include="..\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
+        <Reference Include="Microsoft.Build" HintPath="$(MSBuildBinPath)/Microsoft.Build.dll" Private="false" />
+        <Reference Include="Microsoft.Build.Framework" HintPath="$(MSBuildBinPath)/Microsoft.Build.Framework.dll" Private="false" />
+    </ItemGroup>
+    <ItemGroup>
+        <Using Include="Microsoft.Build.Evaluation" />
+        <Using Include="Microsoft.Build.Graph" />
+        <Using Include="Microsoft.Build.Locator" />
+        <Using Include="System.CommandLine" />
+        <Using Include="System.Threading.Channels" />
+    </ItemGroup>
+</Project>

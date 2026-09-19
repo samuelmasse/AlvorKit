@@ -196,7 +196,7 @@ public sealed class SourceUpdateCompilerTest
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "AlvorKit.slnx")))
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "AlvorKit.Packages.props")))
             directory = directory.Parent;
         return directory?.FullName
             ?? throw new InvalidOperationException("Could not find the AlvorKit repository root.");

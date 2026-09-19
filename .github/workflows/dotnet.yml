@@ -28,6 +28,9 @@ jobs:
       - name: Generate bindings
         run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- all --strict --setup-local
 
+      - name: Generate repository solution
+        run: dotnet run --project scripts/AlvorKit.Script.Solution -- --repo-root .
+
       - name: Restore dependencies
         run: dotnet restore AlvorKit.slnx
 
@@ -71,6 +74,13 @@ jobs:
           }
 
           set +e
+
+          dotnet run --project scripts/AlvorKit.Script.Solution -- --repo-root .
+          generation_status=$?
+          if [ "$generation_status" -ne 0 ]; then
+              skip_build "Solution generation failed without local generated packages."
+              exit 0
+          fi
 
           dotnet restore AlvorKit.slnx
           restore_status=$?

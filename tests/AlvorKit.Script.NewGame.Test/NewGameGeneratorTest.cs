@@ -15,11 +15,11 @@ public class NewGameGeneratorTest
         var result = new NewGameGenerator().Generate(options);
 
         Assert.AreEqual(output, result.OutputPath);
-        Assert.AreEqual(21, result.FileCount);
+        Assert.AreEqual(20, result.FileCount);
         AssertFile(output, "AGENTS.md");
         StringAssert.Contains(Read(output, "AGENTS.md"), "../AlvorKit/docs/GameRepositoryInstructions.md");
         Assert.IsFalse(File.Exists(Path(output, "AGENTS.md.template")));
-        AssertFile(output, "HelloAlvor.slnx");
+        Assert.IsFalse(File.Exists(Path(output, "HelloAlvor.slnx")));
         AssertFile(output, "src/Directory.Build.props");
         AssertFile(output, "src/HelloAlvor/Program.cs");
         AssertFile(output, "src/HelloAlvor.App/HelloAlvor.App.csproj");
@@ -48,11 +48,6 @@ public class NewGameGeneratorTest
         var files = Directory.GetFiles(output, "*", SearchOption.AllDirectories);
         Assert.IsFalse(files.Select(File.ReadAllText).Any(text => text.Contains("{{", StringComparison.Ordinal)));
         Assert.IsFalse(files.Select(File.ReadAllText).Any(text => text.Contains("AlvorStarter", StringComparison.Ordinal)));
-        var solution = Read(output, "SampleGame.slnx");
-        StringAssert.Contains(solution, "<Project Path=\"src/SampleGame/SampleGame.csproj\" DefaultStartup=\"true\" />");
-        StringAssert.Contains(solution, "<Project Path=\"src/SampleGame.App/SampleGame.App.csproj\" />");
-        StringAssert.Contains(solution, "<Project Path=\"src/SampleGame.App.Frontend/SampleGame.App.Frontend.csproj\" />");
-        StringAssert.Contains(solution, "<Project Path=\"src/SampleGame.Menus/SampleGame.Menus.csproj\" />");
         StringAssert.Contains(Read(output, "src/SampleGame.App.Frontend/AppGlTriangle.cs"), "gl.DrawArrays");
         StringAssert.Contains(Read(output, "src/SampleGame.App.Frontend/AppSpriteScene.cs"), "sprites.Batch.Draw");
         var menu = Read(output, "src/SampleGame.Menus/AppMainMenu.cs");
@@ -114,7 +109,7 @@ public class NewGameGeneratorTest
         Assert.IsFalse(File.Exists(Path(root, "AlvorStarter.slnx")));
         Assert.IsFalse(File.Exists(Path(root, "AGENTS.md")));
         AssertFile(root, "AGENTS.md.template");
-        AssertFile(root, "AlvorStarter.slnx.template");
+        Assert.IsFalse(File.Exists(Path(root, "AlvorStarter.slnx.template")));
         AssertFile(root, "src/AlvorStarter/Program.cs");
         AssertFile(root, "src/AlvorStarter.App/AppScope.cs");
         AssertFile(root, "src/AlvorStarter.App/AppCounter.cs");
@@ -139,7 +134,7 @@ public class NewGameGeneratorTest
         Assert.IsFalse(Directory.Exists(Path(output, "bin")));
         Assert.IsFalse(Directory.Exists(Path(output, "obj")));
         StringAssert.Contains(Read(output, ".gitignore"), "tmp/");
-        Assert.AreEqual(21, Directory.GetFiles(output, "*", SearchOption.AllDirectories).Length);
+        Assert.AreEqual(20, Directory.GetFiles(output, "*", SearchOption.AllDirectories).Length);
     }
 
     /// <summary>Rejects names that cannot become a C# namespace and project name.</summary>

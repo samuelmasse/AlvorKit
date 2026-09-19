@@ -36,6 +36,7 @@ When staging or committing:
 - Identify the exact files or globs intended for staging.
 - Inspect status and diffs for those paths before staging.
 - Stage only the intended paths; avoid broad commands such as `git add .`.
+- Generated `.slnx` files are ignored output; never stage or commit them.
 - Recheck status and the staged diff before committing.
 - If unrelated or surprising changes appear in the same paths, pause and ask or
   clearly separate the requested changes.
@@ -68,7 +69,7 @@ it; reuse that id for `touch`, `check`, `conflict`, and `done`.
 
 Lease files are JSON at `out/agents/<agent-id>.json`. Use repository-relative
 paths and globs such as `src/Foo.cs`, `scripts/AlvorKit.Script.Lint/**`,
-`*.slnx`, `*`, or `repo-wide`. Keep path lists specific enough for overlap
+`*`, or `repo-wide`. Keep path lists specific enough for overlap
 checks to be useful. Valid modes are `write`, `generate`, `format`, `test`,
 `cleanup`, and `review`.
 

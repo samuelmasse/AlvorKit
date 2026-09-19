@@ -26,8 +26,11 @@ jobs:
       - name: Generate AlvorKit sources
         working-directory: AlvorKit
         run: |
-          dotnet run --project scripts/AlvorKit.Script.MathsGen
-          dotnet run --project scripts/AlvorKit.Script.Bindgen -- all --strict
+          dotnet run --project scripts/AlvorKit.Script.MathsGen -- --setup-local
+          dotnet run --project scripts/AlvorKit.Script.Bindgen -- all --strict --setup-local
+      - name: Generate repository solution
+        working-directory: AlvorKit
+        run: dotnet run --project scripts/AlvorKit.Script.Solution -- --repo-root ../AlvorStarter
       - name: Build
         run: |
           dotnet restore AlvorStarter/AlvorStarter.slnx

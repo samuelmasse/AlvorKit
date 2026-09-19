@@ -71,11 +71,13 @@ English, use American English exclusively. Preserve exact externally owned
 identifiers and verbatim quotations. The established `Maths` package, project,
 API, and documentation terminology is the sole repository-owned exception.
 
-### SOLUTION-PAIR-001: Paired solution files
+### SOLUTION-GENERATED-001: Generated repository solutions
 
-When a primary `<Name>.slnx` has an existing sibling `<Name>.Dev.slnx`, make
-every solution change to both files in the same task. Never modify only one
-member of the existing pair.
+Each repository, including AlvorKit, has one buildable, gitignored
+`<checkout-name>.slnx`. Generate it with `AlvorKit.Script.Solution`; never
+hand-edit or commit solutions.
+Edit project files and references to change membership, then regenerate before
+solution-based commands. Do not assume a watcher is running. See `docs/Solutions.md`.
 
 ## Approval And Authorization Gates
 
@@ -121,7 +123,7 @@ Read these policies when any listed trigger matches:
   sampling, table mapping, or cryptographic hashing.
 - `docs/AgentRules/FastNoise2.md`: procedural noise, FastNoise2 graphs, terrain,
   cellular fields, fractals, domain warping, or noise sampling.
-- `docs/AgentRules/ProjectsAndDependencies.md`: `.slnx` solution changes, new
+- `docs/AgentRules/ProjectsAndDependencies.md`: solution generation, new
   or reorganized projects, package references, launchable projects, DI scopes,
   ECS, GL ownership, maths, or menus.
 - `docs/AgentRules/Documentation.md`: public or generated documentation.

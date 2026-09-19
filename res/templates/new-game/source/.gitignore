@@ -4,4 +4,6 @@ bin/
 obj/
 out/
 tmp/
-*.Dev.slnx
+
+# Generated repository solution.
+/*.slnx

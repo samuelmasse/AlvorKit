@@ -36,8 +36,9 @@ the scoped defaults they name.
   `AlvorKit.Graphics2D.Demo.Lines`.
 - Keep `AlvorKit.Demo`. Use `AlvorKit.Engine.Demo.*` for engine scenarios, not
   `AlvorKit.Engine.Loop.Demo.*`.
-- When renaming, update the folder, `.csproj`, solution entry, namespaces,
-  titles, resource paths, and docs together.
+- When renaming, update the folder, `.csproj`, project references, namespaces,
+  titles, resource paths, and docs together, then regenerate the repository
+  solution with `AlvorKit.Script.Solution`.
 
 ## Visual Proof
 

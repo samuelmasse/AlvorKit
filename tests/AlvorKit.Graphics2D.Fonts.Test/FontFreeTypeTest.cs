@@ -52,12 +52,12 @@ public sealed class FontFreeTypeTest
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null)
         {
-            if (File.Exists(Path.Combine(directory.FullName, "AlvorKit.slnx")))
+            if (File.Exists(Path.Combine(directory.FullName, "AlvorKit.Packages.props")))
                 return directory.FullName;
 
             directory = directory.Parent;
         }
 
-        throw new InvalidOperationException("Could not find AlvorKit.slnx from the test output directory.");
+        throw new InvalidOperationException("Could not find AlvorKit.Packages.props from the test output directory.");
     }
 }

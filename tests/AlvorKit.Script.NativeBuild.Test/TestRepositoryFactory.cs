@@ -14,7 +14,7 @@ internal static class TestRepositoryFactory
         Directory.CreateDirectory(conf);
         Directory.CreateDirectory(version);
         Directory.CreateDirectory(src);
-        File.WriteAllText(Path.Combine(root, "AlvorKit.slnx"), "<Solution />");
+        File.WriteAllText(Path.Combine(root, "AlvorKit.Packages.props"), "<Solution />");
         File.WriteAllText(Path.Combine(version, "TAG"), "1.2.3");
         File.WriteAllText(Path.Combine(version, "REVISION"), revision);
         File.WriteAllText(Path.Combine(src, "shim.c"), "int test(void) { return 0; }");

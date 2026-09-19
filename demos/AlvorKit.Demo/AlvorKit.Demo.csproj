@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <WorkspaceStartup>true</WorkspaceStartup>
         <OutputType>Exe</OutputType>
         <!-- Required by the [LibraryImport] source generator in the GLFW backend source compiled below. -->
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

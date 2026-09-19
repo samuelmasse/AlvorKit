@@ -25,7 +25,7 @@ public sealed class TranslationUnitWriterTest
     /// <summary>Creates a minimal binding metadata fixture.</summary>
     private static NativeLibraryBinding CreateBinding(TempWorkspace workspace)
     {
-        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.slnx"), "");
+        File.WriteAllText(Path.Combine(workspace.Root, "AlvorKit.Packages.props"), "");
         var native = Path.Combine(workspace.Root, "native", "fixture");
         var conf = Path.Combine(native, "conf");
         var version = Path.Combine(native, "version");

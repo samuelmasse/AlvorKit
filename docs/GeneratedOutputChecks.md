@@ -63,6 +63,10 @@ Short identifiers, resource paths, and single-expression replacement values are
 fine in code. Full methods, declarations, XML/project fragments, or script
 bodies belong in templates.
 
+Repository solutions are serialized as structured XML from the evaluated project
+graph. They have no authored solution template or maintained project list; do not
+introduce either to satisfy the text-template rule. See [Solutions.md](Solutions.md).
+
 ## Bindgen Boundaries
 
 Do not wire bindgen into normal restore or build targets. Run bindgen for the

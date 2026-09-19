@@ -2,6 +2,18 @@
 
 AlvorKit is a C# game development kit
 
+## Repository solution
+
+Generate the local, gitignored solution before opening or building it:
+
+```powershell
+dotnet run --project scripts/AlvorKit.Script.Solution -- --repo-root .
+dotnet build AlvorKit.slnx
+```
+
+The solution contains discovered projects and their evaluated dependencies.
+[Solution workflow](docs/Solutions.md) covers continuous updates, games, and CI.
+
 ## Logging
 
 Standard engine-loop games receive an injectable application log automatically.
@@ -100,6 +112,7 @@ dotnet run --project scripts\AlvorKit.Script.Lint -- --fix --include "AGENTS.md"
 Run the full repository linter for broad changes or CI parity checks:
 
 ```powershell
+dotnet run --project scripts/AlvorKit.Script.Solution -- --repo-root .
 dotnet run --project scripts\AlvorKit.Script.Lint
 ```
 

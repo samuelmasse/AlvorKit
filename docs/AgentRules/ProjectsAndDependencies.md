@@ -2,7 +2,7 @@
 
 ## Scope
 
-Read this policy before editing a `.slnx` solution, creating or reorganizing
+Read this policy before changing solution generation, creating or reorganizing
 projects, changing project or package references, adding a launchable project,
 changing game scopes, or working with ECS, GL ownership, maths types, or menus.
 
@@ -12,15 +12,22 @@ changing game scopes, or working with ECS, GL ownership, maths types, or menus.
 builds or dependency installation. Those operations require an explicit user
 request and permission for that run.
 
-## Paired Solution Files
+## Generated Repository Solutions
 
-**SOLUTION-PAIR-001:** Treat a primary `<Name>.slnx` and an existing sibling
-`<Name>.Dev.slnx` as one solution-file pair. Apply every solution membership,
-folder, and structure change to both files in the same task. Never modify only
-one member of an existing pair. Before finishing, verify that the development
-solution mirrors every primary-solution change; its additional AlvorKit entries
-may remain development-only. This rule does not require creating a development
-solution when one does not exist.
+**SOLUTION-GENERATED-001:** Every repository, including AlvorKit, has one
+buildable, gitignored `<checkout-name>.slnx`. Generate it with
+`AlvorKit.Script.Solution`; never maintain solution membership by hand or commit
+solution files. Author projects in the documented source areas and express
+dependencies through MSBuild project references. Use `WorkspaceStartup` for an
+explicit startup executable and `WorkspaceProject=false` only for intentional
+root exclusions. See [Solutions.md](../Solutions.md) for discovery, watcher,
+configuration, and CI contracts. There are no solution templates or manifests.
+
+After creating, moving, renaming, or deleting a project, fix its authored
+references and paths, then run the generator before solution-based commands.
+Do not use IDE solution edits or `dotnet sln add/remove` to manage membership.
+The watcher is optional and does not repair project references; agents and CI
+must not assume it is installed or running.
 
 ## VS Code Launch Configurations
 

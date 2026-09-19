@@ -10,7 +10,7 @@ public sealed class ProjectDiscoveryTest
     {
         var root = RepositoryPaths.FindRoot();
 
-        Assert.IsTrue(File.Exists(Path.Combine(root, "AlvorKit.slnx")));
+        Assert.IsTrue(File.Exists(Path.Combine(root, "AlvorKit.Packages.props")));
     }
 
     /// <summary>Test project filters match project names and repository-relative paths.</summary>
@@ -28,13 +28,13 @@ public sealed class ProjectDiscoveryTest
         CollectionAssert.AreEqual(new[] { second }, byPath.ToArray());
     }
 
-    /// <summary>Shared helper projects under tests can opt out of coverage execution.</summary>
+    /// <summary>Explicitly disabled test projects are excluded from coverage execution.</summary>
     [TestMethod]
     public void TestProjects_SkipsProjectsMarkedNotTest()
     {
         using var workspace = TempWorkspace.Create();
         var test = workspace.WriteProject("tests", "Tool.Test", []);
-        workspace.WriteProject("tests", "AlvorKit.Testing", [], isTestProject: false);
+        workspace.WriteProject("tests", "Disabled.Test", [], isTestProject: false);
 
         var projects = ProjectDiscovery.TestProjects(workspace.Root, []);
 

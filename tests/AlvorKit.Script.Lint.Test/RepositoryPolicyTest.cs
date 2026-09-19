@@ -97,7 +97,7 @@ public sealed class RepositoryPolicyTest
     public void FindNamespaceViolationsEnforcesSingleRootNamespace()
     {
         using var workspace = TempWorkspace.Create();
-        workspace.Write("Game.slnx", "<Solution />");
+        workspace.Write("src/Game/Game.csproj", "<Project />");
         workspace.Write("src/Root.cs", "namespace Game; public sealed class Root;");
         workspace.Write("src/Nested.cs", "namespace Game.Feature; public sealed class Nested;");
         workspace.Write("src/Global.cs", "public sealed class Global;");
@@ -114,7 +114,7 @@ public sealed class RepositoryPolicyTest
     public void FindNamespaceViolationsAllowsTemplatesAndExternalContracts()
     {
         using var workspace = TempWorkspace.Create();
-        workspace.Write("AlvorKit.slnx", "<Solution />");
+        workspace.Write("src/AlvorKit/AlvorKit.csproj", "<Project />");
         workspace.Write("res/templates/new-game/source/src/Game.cs", "namespace AlvorStarter; public sealed class Game;");
         workspace.Write("src/Generator/IsExternalInit.cs", "namespace System.Runtime.CompilerServices; public sealed class IsExternalInit;");
         workspace.Write(

@@ -18,7 +18,6 @@ public sealed class TestTimingCommandParserTest
         Directory.CreateDirectory(OtherRepoRoot);
         File.WriteAllText(Path.Combine(RepoRoot, "AlvorKit.slnx"), "<Solution />");
         File.WriteAllText(Path.Combine(OtherRepoRoot, "Rombadil.slnx"), "<Solution />");
-        File.WriteAllText(Path.Combine(OtherRepoRoot, "Rombadil.Dev.slnx"), "<Solution />");
     }
 
     /// <summary>Parse-only calls leave generated help to the command-line app.</summary>

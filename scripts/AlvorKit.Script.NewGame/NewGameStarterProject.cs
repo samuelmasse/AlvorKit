@@ -7,8 +7,6 @@ internal sealed class NewGameStarterProject
     private const string SourceName = "AlvorStarter";
     /// <summary>Concrete display title used in the starter source tree.</summary>
     private const string SourceTitle = "Alvor Starter";
-    /// <summary>Non-solution reference file kept beside the starter source for humans, not copied into games.</summary>
-    private const string SourceSolutionTemplateFile = SourceName + ".slnx.template";
     /// <summary>Inert agent-instruction payload emitted with its active repository filename.</summary>
     private const string SourceAgentsTemplateFile = "AGENTS.md.template";
     /// <summary>Relative AlvorKit path used by the starter source when built in place.</summary>
@@ -76,30 +74,6 @@ internal sealed class NewGameStarterProject
             .Replace(SourceAlvorKitRelativePath, GeneratedAlvorKitRelativePath, StringComparison.Ordinal);
     }
 
-    /// <summary>Returns the generated repository solution file name.</summary>
-    public static string SolutionPath(NewGameOptions options) =>
-        options.Name.Identifier + ".slnx";
-
-    /// <summary>Generates a solution from the concrete starter project's current project files.</summary>
-    public string RenderSolution(NewGameOptions options)
-    {
-        var projects = SolutionProjects(options);
-        var builder = new StringBuilder();
-        builder.AppendLine("<Solution>");
-        foreach (var project in projects)
-        {
-            builder.Append("    <Project Path=\"");
-            builder.Append(project.Path);
-            builder.Append('"');
-            if (project.IsStartup)
-                builder.Append(" DefaultStartup=\"true\"");
-            builder.AppendLine(" />");
-        }
-
-        builder.AppendLine("</Solution>");
-        return builder.ToString();
-    }
-
     /// <summary>Resolves the concrete starter source directory under AlvorKit resources.</summary>
     private static string SourceRoot() =>
         Path.Combine(ProjectRoot.ResDirectory(typeof(NewGameStarterProject)), "templates", "new-game", "source");
@@ -110,7 +84,6 @@ internal sealed class NewGameStarterProject
 
     /// <summary>Filters local build and tooling output from a buildable starter project tree.</summary>
     private static bool IsSourceFile((string Path, string RelativePath) file) =>
-        file.RelativePath != SourceSolutionTemplateFile &&
         !file.RelativePath.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase) &&
         file.RelativePath.Split('/').All(segment => segment is not "bin" and not "obj" and not "out" and not ".git" and not ".vs");
 
@@ -120,35 +93,4 @@ internal sealed class NewGameStarterProject
         var fileName = Path.GetFileName(relativePath);
         return TextFileNames.Contains(fileName) || TextExtensions.Contains(Path.GetExtension(relativePath));
     }
-
-    /// <summary>Builds solution project entries from the current starter project files.</summary>
-    private IReadOnlyList<NewGameSolutionProject> SolutionProjects(NewGameOptions options)
-    {
-        var sourceRoot = SourceRoot();
-        var projects = Directory
-            .EnumerateFiles(sourceRoot, "*.csproj", SearchOption.AllDirectories)
-            .Select(path => (Path: path, RelativePath: RelativePath(sourceRoot, path)))
-            .Where(IsSourceFile)
-            .Select(file => new NewGameSolutionProject(
-                RenderPath(file.RelativePath, options),
-                IsStartupProject(file.Path)))
-            .OrderBy(project => !project.IsStartup)
-            .ThenBy(project => project.Path, StringComparer.Ordinal)
-            .ToArray();
-
-        var startupCount = projects.Count(project => project.IsStartup);
-        if (startupCount == 0)
-            throw new InvalidOperationException("Starter project must contain one executable project for generated solution startup.");
-        if (startupCount > 1)
-            throw new InvalidOperationException("Starter project must contain only one executable project for generated solution startup.");
-
-        return projects;
-    }
-
-    /// <summary>Detects the executable project that should become the generated solution startup project.</summary>
-    private static bool IsStartupProject(string projectPath) =>
-        File.ReadAllText(projectPath, Encoding.UTF8).Contains("<OutputType>Exe</OutputType>", StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>One generated solution project entry.</summary>
-    private sealed record NewGameSolutionProject(string Path, bool IsStartup);
 }

@@ -77,7 +77,7 @@ public sealed class AgentLeaseCommandParserTest
     {
         var command = AgentLeaseCommandParser.Parse(["list"]);
 
-        Assert.IsTrue(File.Exists(Path.Combine(command.RepoRoot, ProjectRoot.SolutionFileName)));
+        Assert.IsTrue(File.Exists(Path.Combine(command.RepoRoot, ProjectRoot.MarkerFileName)));
     }
 
     /// <summary>Command names map to the expected command kinds.</summary>

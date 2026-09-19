@@ -402,11 +402,11 @@
       "stopAtEntry": false
     },
     {
-      "name": "AlvorKit.Script.DevSolution",
+      "name": "AlvorKit.Script.Solution",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build AlvorKit.Script.DevSolution",
-      "program": "${workspaceFolder}/bin/AlvorKit.Script.DevSolution/Release/AlvorKit.Script.DevSolution.dll",
+      "preLaunchTask": "build AlvorKit.Script.Solution",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.Solution/Release/AlvorKit.Script.Solution.dll",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "stopAtEntry": false
@@ -487,16 +487,6 @@
       "request": "launch",
       "preLaunchTask": "build AlvorKit.Script.TestTiming",
       "program": "${workspaceFolder}/bin/AlvorKit.Script.TestTiming/Release/AlvorKit.Script.TestTiming.dll",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "stopAtEntry": false
-    },
-    {
-      "name": "AlvorKit.Script.ZoneSolution",
-      "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "build AlvorKit.Script.ZoneSolution",
-      "program": "${workspaceFolder}/bin/AlvorKit.Script.ZoneSolution/Release/AlvorKit.Script.ZoneSolution.dll",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "stopAtEntry": false

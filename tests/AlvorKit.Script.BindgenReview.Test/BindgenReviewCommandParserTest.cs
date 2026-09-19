@@ -59,7 +59,7 @@ public sealed class BindgenReviewCommandParserTest
     {
         var command = BindgenReviewCommandParser.Parse(["start", "freetype"]);
 
-        Assert.IsTrue(File.Exists(Path.Combine(command.RepoRoot, "AlvorKit.slnx")));
+        Assert.IsTrue(File.Exists(Path.Combine(command.RepoRoot, "AlvorKit.Packages.props")));
     }
 
     /// <summary>Command names map to the expected command kinds.</summary>

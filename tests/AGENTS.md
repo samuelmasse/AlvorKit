@@ -13,6 +13,7 @@ tree.
 
 ## Shared Test Code
 
+- Keep `tests/` for runnable test projects; shared helper libraries belong in `src/`.
 - Name runnable test projects with the `.Test` suffix so
   `Directory.Build.props` gives them MSTest, coverage, and the shared helper
   reference.
@@ -20,7 +21,7 @@ tree.
 - Use `AlvorKit.Testing` for cross-project fixtures such as temporary
   workspaces, disposable filesystem setup, and small repository/project writers.
 - When the same helper shape appears in more than one test project, move it to
-  `tests/AlvorKit.Testing` before adding the second copy.
+  `src/AlvorKit.Testing` before adding the second copy.
 - Keep project-specific harnesses local when they depend on one source
   project's internals or make sense only for that project.
 - Favor explicit fixture builders that remove repeated setup without hiding the

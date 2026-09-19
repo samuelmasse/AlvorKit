@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <IsTestProject>false</IsTestProject>
+        <IsPackable>false</IsPackable>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <!-- Shared fixtures remain outside production coverage gating after moving out of tests. -->
+        <IsCoverageSourceProject>false</IsCoverageSourceProject>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="System.Xml.Linq" />
+    </ItemGroup>
+
+</Project>

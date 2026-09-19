@@ -15,10 +15,14 @@ public sealed class LintPlanTest
 
         Assert.AreEqual(2, commands.Length);
         CollectionAssert.AreEqual(
-            new[] { "format", "AlvorKit.slnx", "--verify-no-changes", "--verbosity", "minimal" },
+            new[] { "format", "AlvorKit.slnx", "--verify-no-changes", "--verbosity", "minimal" }
+                .Concat(new[] { "--include", "src", "lib", "scripts", "tests", "demos", "bench" }
+                .Select((path, index) => index == 0 ? path : Path.Combine(workspace.Root, path))).ToArray(),
             commands[0].Arguments.ToArray());
         CollectionAssert.AreEqual(
-            new[] { "format", "style", "AlvorKit.slnx", "--verify-no-changes", "--severity", "info", "--verbosity", "minimal" },
+            new[] { "format", "style", "AlvorKit.slnx", "--verify-no-changes", "--severity", "info", "--verbosity", "minimal" }
+                .Concat(new[] { "--include", "src", "lib", "scripts", "tests", "demos", "bench" }
+                .Select((path, index) => index == 0 ? path : Path.Combine(workspace.Root, path))).ToArray(),
             commands[1].Arguments.ToArray());
         Assert.AreEqual(workspace.Root, commands[0].WorkingDirectory);
         Assert.AreEqual("dotnet format AlvorKit.slnx", commands[0].Label);
@@ -36,10 +40,14 @@ public sealed class LintPlanTest
 
         Assert.AreEqual(2, commands.Length);
         CollectionAssert.AreEqual(
-            new[] { "format", "AlvorKit.slnx", "--verbosity", "minimal" },
+            new[] { "format", "AlvorKit.slnx", "--verbosity", "minimal" }
+                .Concat(new[] { "--include", "src", "lib", "scripts", "tests", "demos", "bench" }
+                .Select((path, index) => index == 0 ? path : Path.Combine(workspace.Root, path))).ToArray(),
             commands[0].Arguments.ToArray());
         CollectionAssert.AreEqual(
-            new[] { "format", "style", "AlvorKit.slnx", "--severity", "info", "--verbosity", "minimal" },
+            new[] { "format", "style", "AlvorKit.slnx", "--severity", "info", "--verbosity", "minimal" }
+                .Concat(new[] { "--include", "src", "lib", "scripts", "tests", "demos", "bench" }
+                .Select((path, index) => index == 0 ? path : Path.Combine(workspace.Root, path))).ToArray(),
             commands[1].Arguments.ToArray());
     }
 
@@ -56,18 +64,15 @@ public sealed class LintPlanTest
         Assert.AreEqual("dotnet format style AlvorPong.slnx", commands[1].Label);
     }
 
-    /// <summary>Ignores generated development solutions when planning repository-wide format.</summary>
+    /// <summary>Rejects multiple root solutions instead of selecting one implicitly.</summary>
     [TestMethod]
-    public void DotNetFormatCommandsIgnoresGeneratedDevSolution()
+    public void DotNetFormatCommandsRejectsMultipleSolutions()
     {
         using var workspace = TempWorkspace.Create();
         workspace.Write("Rombadil.slnx", "<Solution />");
-        workspace.Write("Rombadil.Dev.slnx", "<Solution />");
+        workspace.Write("Other.slnx", "<Solution />");
 
-        var commands = LintPlan.DotNetFormatCommands(workspace.Root, fix: false).ToArray();
-
-        Assert.AreEqual("dotnet format Rombadil.slnx", commands[0].Label);
-        Assert.AreEqual("dotnet format style Rombadil.slnx", commands[1].Label);
+        Assert.ThrowsExactly<InvalidOperationException>(() => LintPlan.DotNetFormatCommands(workspace.Root, fix: false));
     }
 
     /// <summary>Fails clearly when the linted repository root has no solution file.</summary>
@@ -79,7 +84,7 @@ public sealed class LintPlanTest
         var exception = Assert.ThrowsExactly<InvalidOperationException>(
             () => LintPlan.DotNetFormatCommands(workspace.Root, fix: false));
 
-        StringAssert.Contains(exception.Message, "No primary solution file");
+        StringAssert.Contains(exception.Message, "AlvorKit.Script.Solution");
     }
 
     /// <summary>Plans dotnet format for scoped C# files under their owning project.</summary>
@@ -177,7 +182,7 @@ public sealed class LintPlanTest
         Assert.AreEqual("dotnet format AlvorKit.slnx", commands[0].Label);
         Assert.AreEqual("dotnet format style AlvorKit.slnx", commands[1].Label);
         CollectionAssert.Contains(commands[2].Arguments.ToArray(), "prettier@3");
-        CollectionAssert.Contains(commands[3].Arguments.ToArray(), "editorconfig-checker@6.1.1");
+        CollectionAssert.Contains(commands[3].Arguments.ToArray(), "editorconfig-checker@6.2.0");
     }
 
     /// <summary>Combines only the checks needed for scoped files before actionlint.</summary>
@@ -298,7 +303,7 @@ public sealed class LintPlanTest
     {
         var command = LintPlan.EditorConfigCommand("repo");
 
-        CollectionAssert.Contains(command.Arguments.ToArray(), "editorconfig-checker@6.1.1");
+        CollectionAssert.Contains(command.Arguments.ToArray(), "editorconfig-checker@6.2.0");
         CollectionAssert.Contains(command.Arguments.ToArray(), "-disable-indentation");
         CollectionAssert.Contains(command.Arguments.ToArray(), "github-actions");
     }
