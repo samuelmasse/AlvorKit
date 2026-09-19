@@ -9,10 +9,10 @@ public class SolutionOptionsTest
     public void DiscoversOnlyManagedCheckouts()
     {
         using var workspace = TempWorkspace.Create();
-        workspace.CreateDirectory("Game", ".git");
+        GitRepositoryFixture.Initialize(workspace.CreateDirectory("Game"));
         workspace.Write("Game/src/Game.csproj", "<Project />");
         workspace.Write("Archive/src/Archive.csproj", "<Project />");
-        workspace.CreateDirectory("Empty", ".git");
+        GitRepositoryFixture.Initialize(workspace.CreateDirectory("Empty"));
         var options = SolutionOptions.Create([], workspace.Root, false, false, true);
         CollectionAssert.AreEqual(new[] { Path.Combine(workspace.Root, "Game") }, options.DiscoverRepositories().ToArray());
     }

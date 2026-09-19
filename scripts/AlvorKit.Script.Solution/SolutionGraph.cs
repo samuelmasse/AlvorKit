@@ -7,17 +7,17 @@ internal static class SolutionGraph
     internal static IReadOnlyList<string> Configurations => ["Debug", "Release"];
 
     /// <summary>Registers MSBuild before entering any method whose types require its assemblies.</summary>
-    public static IReadOnlyList<SolutionProject> Read(string root)
+    public static IReadOnlyList<SolutionProject> Read(string root, SolutionWatchInputs? inputs)
     {
         if (!MSBuildLocator.IsRegistered)
             MSBuildLocator.RegisterDefaults();
 
-        return Evaluate(root);
+        return Evaluate(root, inputs);
     }
 
     /// <summary>Evaluates selected roots and their complete transitive graph for both build configurations.</summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static IReadOnlyList<SolutionProject> Evaluate(string root)
+    private static IReadOnlyList<SolutionProject> Evaluate(string root, SolutionWatchInputs? inputs)
     {
         var paths = RepositoryProjects.Discover(root);
 
@@ -29,15 +29,27 @@ internal static class SolutionGraph
         foreach (var configuration in Configurations)
         {
             using var collection = new ProjectCollection();
+
+            if (inputs is not null)
+            {
+                collection.ProjectAdded += (_, added) => inputs.ReadProject(
+                    added.ProjectRootElement.FullPath, added.ProjectRootElement.LastWriteTimeWhenRead.ToUniversalTime());
+            }
+
+            var context = inputs is null ? EvaluationContext.Create(EvaluationContext.SharingPolicy.Isolated)
+                : EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared, new SolutionEvaluationFiles(inputs));
             var properties = new Dictionary<string, string> { ["Configuration"] = configuration };
             var selected = paths.Where(path =>
-                !collection.LoadProject(path, properties, null).GetPropertyValue("WorkspaceProject")
+                !Load(path, properties, collection, context, inputs).GetPropertyValue("WorkspaceProject")
                     .Equals("false", StringComparison.OrdinalIgnoreCase)).ToArray();
 
             if (selected.Length == 0)
                 throw new InvalidOperationException($"No workspace projects are enabled for {configuration} in '{root}'.");
 
-            var graph = new ProjectGraph(selected, properties, collection);
+            var entries = selected.Select(path => new ProjectGraphEntryPoint(path, properties));
+            var graph = new ProjectGraph(entries, collection,
+                (path, globals, projects) => Load(path, globals, projects, context, inputs).CreateProjectInstance(),
+                1, CancellationToken.None);
 
             foreach (var node in graph.ProjectNodes)
             {
@@ -78,5 +90,31 @@ internal static class SolutionGraph
         }
 
         return result;
+    }
+
+    /// <summary>Uses the same filesystem observer for root selection and every transitive graph evaluation.</summary>
+    private static Project Load(string path, IDictionary<string, string> properties, ProjectCollection collection,
+        EvaluationContext context, SolutionWatchInputs? inputs)
+    {
+        inputs?.File(path);
+        var existing = collection.GetLoadedProjects(path).FirstOrDefault(project =>
+            project.GlobalProperties.Count == properties.Count && properties.All(pair =>
+                project.GlobalProperties.TryGetValue(pair.Key, out var value) && value == pair.Value));
+
+        try
+        {
+            return existing ?? Project.FromFile(path, new ProjectOptions
+            {
+                GlobalProperties = properties,
+                ProjectCollection = collection,
+                EvaluationContext = context,
+            });
+        }
+        catch (Microsoft.Build.Exceptions.InvalidProjectFileException exception)
+            when (exception.ErrorCode is "MSB4019" or "MSB4024")
+        {
+            // MSBuild reports the importing file, not the unresolved input path. Do not claim it is being watched.
+            throw new SolutionImportException(exception);
+        }
     }
 }

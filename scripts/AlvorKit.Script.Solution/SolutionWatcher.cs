@@ -1,162 +1,128 @@
 namespace AlvorKit;
 
-/// <summary>Serializes debounced filesystem reconciliation for a group of repository solutions.</summary>
+/// <summary>Regenerates only solutions whose discovery or evaluated inputs changed; performs no idle polling.</summary>
 internal class SolutionWatcher(SolutionOptions options) : IDisposable
 {
-    private readonly Channel<bool> changes = Channel.CreateBounded<bool>(new BoundedChannelOptions(1)
-    {
-        FullMode = BoundedChannelFullMode.DropWrite,
-        SingleReader = true,
-    });
-    private readonly List<FileSystemWatcher> watchers = [];
-    private readonly List<FileStream> locks = [];
-    private readonly HashSet<string> failures = new(SolutionPaths.Comparer);
-    private readonly HashSet<string> repositories = new(SolutionPaths.Comparer);
+    /// <summary>Serializes discovery and evaluation work from concurrent native callbacks.</summary>
+    private readonly SolutionWatchQueue queue = new();
+    /// <summary>Owns live checkout subscriptions and their writer leases.</summary>
+    private readonly Dictionary<string, SolutionRepositoryWatch> repositories = new(SolutionPaths.Comparer);
+    /// <summary>Prevents duplicate parent-directory hosts, including when no child checkout exists.</summary>
+    private FileStream? parentLease;
+    /// <summary>Observes checkout creation, removal, and movement above repository directories.</summary>
+    private SolutionWatchInputs? topology;
+    /// <summary>Shares native directory handles across all discovery and graph subscriptions.</summary>
+    private SolutionFileNotifications? notifications;
 
-    /// <summary>Registers notifications before the initial scan, then reconciles until cancellation.</summary>
+    /// <summary>Reports completed evaluation attempts for diagnostics and behavioral verification.</summary>
+    internal event Action<string>? Evaluated;
+
+    /// <summary>Registers notifications before initial discovery and consumes scoped invalidations until cancellation.</summary>
     public async Task RunAsync(CancellationToken cancellation)
     {
-        var roots = WatchRoots();
+        var roots = options.ParentDirectory is { } parent ? [parent] : options.RepositoryRoots;
+        var scopes = options.ParentDirectory is not null ? roots
+            : roots.Select(root => Directory.GetParent(root)?.FullName ?? root).Distinct(SolutionPaths.Comparer).ToArray();
+        notifications = new(scopes, queue.Fail);
 
-        foreach (var root in roots)
-        {
-            locks.Add(new FileStream(Path.Combine(root, ".alvorkit-solution-watch.lock"), FileMode.OpenOrCreate,
-                FileAccess.ReadWrite, FileShare.None, 1, FileOptions.DeleteOnClose));
-            Observe(root, false);
-            Observe(root, true);
-        }
-
-        changes.Writer.TryWrite(true);
-        Console.WriteLine($"Watching {string.Join(", ", roots)}. Press Ctrl+C to stop.");
-
-        using var timer = new Timer(_ => changes.Writer.TryWrite(true), null,
-            TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
-
-        while (await changes.Reader.WaitToReadAsync(cancellation))
-        {
-            changes.Reader.TryRead(out _);
-
-            // Bound debounce so continuous checkout activity cannot starve reconciliation.
-            for (var attempt = 0; attempt < 5; attempt++)
-            {
-                await Task.Delay(400, cancellation);
-
-                if (!changes.Reader.TryRead(out _))
-                    break;
-            }
-
-            Reconcile();
-        }
-    }
-
-    /// <summary>Separates directory events so deleting a dotted project directory remains observable.</summary>
-    private void Observe(string root, bool directory)
-    {
-        var watcher = new FileSystemWatcher(root)
-        {
-            IncludeSubdirectories = true,
-            NotifyFilter = directory ? NotifyFilters.DirectoryName : NotifyFilters.FileName | NotifyFilters.LastWrite,
-        };
-
-        if (!directory)
-        {
-            foreach (var filter in new[] { "*.csproj", "*.props", "*.targets", "*.proj", "*.xml", "*.json", "*.config", ".git" })
-                watcher.Filters.Add(filter);
-        }
-
-        watcher.Changed += (_, change) => Changed(root, change.FullPath, directory);
-        watcher.Created += (_, change) => Changed(root, change.FullPath, directory);
-        watcher.Deleted += (_, change) => Changed(root, change.FullPath, directory);
-        watcher.Renamed += (_, change) =>
-        {
-            Changed(root, change.OldFullPath, directory);
-            Changed(root, change.FullPath, directory);
-        };
-        watcher.Error += (_, error) =>
-        {
-            Console.Error.WriteLine($"Watcher invalidated: {error.GetException().Message}");
-
-            if (error.GetException() is InternalBufferOverflowException)
-                changes.Writer.TryWrite(true);
-            else changes.Writer.TryComplete(error.GetException());
-        };
-        watchers.Add(watcher);
-        watcher.EnableRaisingEvents = true;
-    }
-
-    /// <summary>Uses parent directories to observe repository moves and sibling dependency changes.</summary>
-    private IReadOnlyList<string> WatchRoots()
-    {
         if (options.ParentDirectory is not null)
-            return [options.ParentDirectory];
+            parentLease = SolutionWatchLease.Acquire(options.ParentDirectory);
 
-        var roots = options.RepositoryRoots.Select(root => Directory.GetParent(root)?.FullName ?? root)
-            .Distinct(SolutionPaths.Comparer).ToArray();
-        return roots.Where(root => !roots.Any(other => other != root && SolutionPaths.IsWithin(other, root))).ToArray();
-    }
+        Console.WriteLine($"Watching {string.Join(", ", roots)}. Press Ctrl+C to stop.");
+        queue.Add(new("", true));
 
-    /// <summary>Notifications invalidate the graph; they never directly mutate solution membership.</summary>
-    private void Changed(string root, string path, bool directory)
-    {
-        if (SolutionWatchInputs.Relevant(root, path, directory))
-            changes.Writer.TryWrite(true);
-    }
-
-    /// <summary>Reports invalid graphs explicitly and reevaluates them on the next filesystem change.</summary>
-    private void Reconcile()
-    {
-        try
+        while (true)
         {
-            var roots = options.DiscoverRepositories();
+            var batch = await queue.ReadAsync(cancellation);
+            var discover = batch.Where(request => request.Discovery).Select(request => request.Root)
+                .ToHashSet(SolutionPaths.Comparer);
+            var generate = batch.Where(request => !request.Discovery).Select(request => request.Root)
+                .ToHashSet(SolutionPaths.Comparer);
 
-            foreach (var removed in repositories.Except(roots, SolutionPaths.Comparer))
-            {
-                if (Directory.Exists(removed))
-                    SolutionGenerator.Invalidate(removed);
-            }
+            if (discover.Remove(""))
+                discover.UnionWith(RefreshRepositories());
 
-            repositories.Clear();
-            repositories.UnionWith(roots);
-            failures.IntersectWith(roots);
-            var elapsed = Stopwatch.StartNew();
-
-            foreach (var root in roots)
+            foreach (var root in discover.Where(repositories.ContainsKey))
             {
                 try
                 {
-                    SolutionGenerator.Generate(root, false);
-
-                    if (failures.Remove(root))
-                        Console.WriteLine($"Recovered solution for {root}.");
+                    if (repositories[root].Discover())
+                        generate.Add(root);
                 }
-                catch (Exception exception)
-                {
-                    SolutionGenerator.Invalidate(root);
-
-                    if (failures.Add(root))
-                        Console.Error.WriteLine($"INVALID solution for {root}: {exception.Message}");
-                }
+                catch (Exception exception) { repositories[root].Invalidate(exception); }
             }
 
-            Console.WriteLine($"Reconciled {roots.Count} repositories ({failures.Count} invalid) in {elapsed.Elapsed.TotalSeconds:F1}s.");
-        }
-        catch (Exception exception)
-        {
-            Console.Error.WriteLine($"Repository discovery failed: {exception.Message}");
+            foreach (var root in generate.Where(repositories.ContainsKey).Order(StringComparer.Ordinal))
+            {
+                cancellation.ThrowIfCancellationRequested();
+                queue.ThrowIfFailed();
+                var elapsed = Stopwatch.StartNew();
+
+                try
+                {
+                    if (!repositories[root].Generate())
+                        continue;
+                }
+                catch (Exception exception) { repositories[root].Invalidate(exception); }
+
+                Console.WriteLine($"Evaluated {root} in {elapsed.Elapsed.TotalSeconds:F1}s.");
+                Evaluated?.Invoke(root);
+            }
         }
     }
 
-    /// <summary>Releases native notifications when the watcher exits.</summary>
+    /// <summary>Checks checkout topology without rescanning unchanged repositories or evaluating their graphs.</summary>
+    private IReadOnlyList<string> RefreshRepositories()
+    {
+        var next = new SolutionWatchInputs(notifications!, () => queue.Add(new("", true)));
+        var roots = options.RepositoryRoots;
+
+        if (options.ParentDirectory is { } parent)
+        {
+            next.Glob(parent, "*", false, false);
+            var children = Directory.GetDirectories(parent);
+
+            roots = children;
+        }
+
+        foreach (var root in roots)
+            next.File(Path.Combine(root, ".git"));
+
+        roots = roots.Where(root => File.Exists(Path.Combine(root, ".git")) || Directory.Exists(Path.Combine(root, ".git")))
+            .ToArray();
+
+        var added = roots.Except(repositories.Keys, SolutionPaths.Comparer).ToArray();
+
+        foreach (var removed in repositories.Keys.Except(roots, SolutionPaths.Comparer).ToArray())
+        {
+            repositories[removed].Dispose();
+            repositories.Remove(removed);
+
+            if (Directory.Exists(removed))
+                SolutionGenerator.Invalidate(removed);
+        }
+
+        foreach (var root in added)
+            repositories.Add(root, new(root, queue, notifications!));
+
+        topology?.Dispose();
+        topology = next;
+        return added;
+    }
+
+    /// <summary>Releases subscriptions and singleton locks when the process exits.</summary>
     public void Dispose()
     {
-        foreach (var watcher in watchers)
-            watcher.Dispose();
+        topology?.Dispose();
+        topology = null;
 
-        foreach (var file in locks)
-            file.Dispose();
+        foreach (var repository in repositories.Values)
+            repository.Dispose();
 
-        watchers.Clear();
-        locks.Clear();
-        changes.Writer.TryComplete();
+        parentLease?.Dispose();
+        parentLease = null;
+        notifications?.Dispose();
+        notifications = null;
+        repositories.Clear();
     }
 }

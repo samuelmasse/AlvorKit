@@ -25,6 +25,8 @@ public class RepositoryRootTest
     public void DiscoveryExcludesOutputAndTemplates()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
+        workspace.Write(".gitignore", "obj/\nout/\n");
         var project = workspace.Write("src/Game/Game.csproj", "<Project />");
         workspace.Write("src/Game/obj/Hidden.csproj", "<Project />");
         workspace.Write("out/bindgen/Generated.csproj", "<Project />");

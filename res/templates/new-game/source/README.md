@@ -42,9 +42,10 @@ dotnet run --project ..\AlvorKit\scripts\AlvorKit.Script.AlvorSense -- start --i
 
 ## Repository solution
 
-Generate the gitignored solution before opening it:
+Initialize the new Git repository, then generate the gitignored solution before opening it:
 
 ```powershell
+git init
 dotnet run --project ../AlvorKit/scripts/AlvorKit.Script.Solution -- --repo-root .
 ```
 

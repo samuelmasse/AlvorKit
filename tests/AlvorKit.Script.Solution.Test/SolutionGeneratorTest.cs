@@ -11,6 +11,7 @@ public class SolutionGeneratorTest
     {
         using var workspace = TempWorkspace.Create();
         var root = workspace.CreateDirectory("Game");
+        GitRepositoryFixture.Initialize(root);
         workspace.Write("Game/src/Game/Game.csproj", Project("""
             <Import Project="../../References.props" />
             <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
@@ -25,18 +26,18 @@ public class SolutionGeneratorTest
             """));
         workspace.Write("AlvorKit/out/bindgen/Binding.csproj", Project(""));
         workspace.Write("AlvorKit/demos/Unrelated.csproj", Project(""));
-        var projects = SolutionGraph.Read(root);
+        var projects = SolutionGraph.Read(root, null);
         Assert.AreEqual(3, projects.Count);
         Assert.IsTrue(projects.Single(project => project.Path.EndsWith("Game.csproj")).Startup);
         Assert.IsFalse(projects.Single(project => project.Path.EndsWith("Binding.csproj")).Configurations.Contains("Release"));
-        Assert.IsTrue(SolutionGenerator.Generate(root, false));
+        Assert.IsTrue(SolutionGenerator.Generate(root, false, null));
         var solution = RepositoryProjects.SolutionPath(root);
         var document = XDocument.Load(solution);
         Assert.AreEqual(3, document.Descendants("Project").Count());
         Assert.AreEqual(2, document.Descendants("Build").Count());
         var written = File.GetLastWriteTimeUtc(solution);
-        Assert.IsTrue(SolutionGenerator.Generate(root, true));
-        Assert.IsTrue(SolutionGenerator.Generate(root, false));
+        Assert.IsTrue(SolutionGenerator.Generate(root, true, null));
+        Assert.IsTrue(SolutionGenerator.Generate(root, false, null));
         Assert.AreEqual(written, File.GetLastWriteTimeUtc(solution));
     }
 
@@ -46,16 +47,17 @@ public class SolutionGeneratorTest
     {
         using var workspace = TempWorkspace.Create();
         var root = workspace.CreateDirectory("Game");
+        GitRepositoryFixture.Initialize(root);
         workspace.Write("Game/src/Game/Game.csproj", Project(""));
-        Assert.IsFalse(SolutionGenerator.Generate(root, true));
+        Assert.IsFalse(SolutionGenerator.Generate(root, true, null));
         Assert.IsFalse(File.Exists(RepositoryProjects.SolutionPath(root)));
-        SolutionGenerator.Generate(root, false);
+        SolutionGenerator.Generate(root, false, null);
         workspace.Write("Game/src/Game/Game.csproj", Project("""
             <ItemGroup><ProjectReference Include="Missing.csproj" /></ItemGroup>
             """));
-        Assert.Throws<Exception>(() => SolutionGenerator.Generate(root, true));
+        Assert.Throws<Exception>(() => SolutionGenerator.Generate(root, true, null));
         Assert.IsTrue(File.Exists(RepositoryProjects.SolutionPath(root)));
-        Assert.Throws<Exception>(() => SolutionGenerator.Generate(root, false));
+        Assert.Throws<Exception>(() => SolutionGenerator.Generate(root, false, null));
         Assert.IsFalse(File.Exists(RepositoryProjects.SolutionPath(root)));
     }
 
@@ -64,6 +66,7 @@ public class SolutionGeneratorTest
     public void ExclusionsApplyOnlyToRootSelection()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
         workspace.Write("src/Game/Game.csproj", Project("""
             <ItemGroup><ProjectReference Include="../Required/Required.csproj" /></ItemGroup>
             """));
@@ -73,7 +76,26 @@ public class SolutionGeneratorTest
         workspace.Write("scripts/Hidden/Hidden.csproj", Project("""
             <PropertyGroup><WorkspaceProject>false</WorkspaceProject></PropertyGroup>
             """));
-        Assert.AreEqual(2, SolutionGraph.Read(workspace.Root).Count);
+        Assert.AreEqual(2, SolutionGraph.Read(workspace.Root, null).Count);
+    }
+
+    /// <summary>Ignored generated projects enter through references, while unrelated ignored projects stay outside the graph.</summary>
+    [TestMethod]
+    public void IncludesReferencedIgnoredProjectsOnly()
+    {
+        using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
+        workspace.Write(".gitignore", "src/Generated/\n");
+        workspace.Write("src/Game/Game.csproj", Project("""
+            <ItemGroup><ProjectReference Include="../Generated/Binding.csproj" /></ItemGroup>
+            """));
+        workspace.Write("src/Generated/Binding.csproj", Project(""));
+        workspace.Write("src/Generated/Unused.csproj", "not a project");
+
+        var projects = SolutionGraph.Read(workspace.Root, null);
+
+        CollectionAssert.AreEquivalent(new[] { "Game.csproj", "Binding.csproj" },
+            projects.Select(project => Path.GetFileName(project.Path)).ToArray());
     }
 
     /// <summary>Rejects contradictory startup selection instead of silently picking an executable.</summary>
@@ -81,12 +103,13 @@ public class SolutionGeneratorTest
     public void RejectsAmbiguousStartup()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
         var executable = Project("""
             <PropertyGroup><OutputType>Exe</OutputType><WorkspaceStartup>true</WorkspaceStartup></PropertyGroup>
             """);
         workspace.Write("src/One/One.csproj", executable);
         workspace.Write("src/Two/Two.csproj", executable);
-        Assert.ThrowsExactly<InvalidOperationException>(() => SolutionGraph.Read(workspace.Root));
+        Assert.ThrowsExactly<InvalidOperationException>(() => SolutionGraph.Read(workspace.Root, null));
     }
 
     /// <summary>Creates SDK fixtures without importing repository build configuration.</summary>
@@ -100,12 +123,13 @@ public class SolutionGeneratorTest
     {
         using var workspace = TempWorkspace.Create();
         var oldRoot = workspace.CreateDirectory("OldName");
+        GitRepositoryFixture.Initialize(oldRoot);
         workspace.Write("OldName/src/Game/Game.csproj", Project(""));
-        SolutionGenerator.Generate(oldRoot, false);
+        SolutionGenerator.Generate(oldRoot, false, null);
         var newRoot = Path.Combine(workspace.Root, "NewName");
         Directory.Move(oldRoot, newRoot);
-        Assert.IsFalse(SolutionGenerator.Generate(newRoot, true));
-        SolutionGenerator.Generate(newRoot, false);
+        Assert.IsFalse(SolutionGenerator.Generate(newRoot, true, null));
+        SolutionGenerator.Generate(newRoot, false, null);
         CollectionAssert.AreEqual(new[] { "NewName.slnx" },
             Directory.GetFiles(newRoot, "*.slnx").Select(Path.GetFileName).ToArray());
     }
@@ -117,7 +141,7 @@ public class SolutionGeneratorTest
         using var workspace = TempWorkspace.Create();
         workspace.Write("src/Game/Game.csproj", Project(""));
         var authored = workspace.Write("Game.slnx", "<Solution />");
-        Assert.ThrowsExactly<InvalidOperationException>(() => SolutionGenerator.Generate(workspace.Root, false));
+        Assert.ThrowsExactly<InvalidOperationException>(() => SolutionGenerator.Generate(workspace.Root, false, null));
         Assert.AreEqual("<Solution />", File.ReadAllText(authored));
     }
 }

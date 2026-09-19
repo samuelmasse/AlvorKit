@@ -11,7 +11,7 @@ public class SolutionWatcherTest
     {
         using var workspace = TempWorkspace.Create();
         var root = workspace.CreateDirectory("Game");
-        workspace.CreateDirectory("Game", ".git");
+        GitRepositoryFixture.Initialize(root);
         workspace.Write("Game/src/Game/Game.csproj", SolutionGeneratorTest.Project(""));
         using var cancellation = new CancellationTokenSource();
         using var watcher = new SolutionWatcher(new([], workspace.Root, true, false, false));
@@ -21,6 +21,10 @@ public class SolutionWatcherTest
         {
             await WaitFor(root, "Game.csproj", true);
             workspace.Write("Game/src/Game.Extra/Game.Extra.csproj", SolutionGeneratorTest.Project(""));
+            await WaitFor(root, "src/Game.Extra/Game.Extra.csproj", true);
+            workspace.Write("Game/.gitignore", "src/Game.Extra/\n");
+            await WaitFor(root, "src/Game.Extra/Game.Extra.csproj", false);
+            workspace.Write("Game/.gitignore", "");
             await WaitFor(root, "src/Game.Extra/Game.Extra.csproj", true);
             Directory.Move(Path.Combine(root, "src/Game.Extra"), Path.Combine(root, "src/Game.Moved"));
             await WaitFor(root, "src/Game.Moved/Game.Extra.csproj", true);
@@ -40,7 +44,12 @@ public class SolutionWatcherTest
             await WaitForExistence(root, false);
             workspace.Write("Game/src/Game/Game.csproj", SolutionGeneratorTest.Project(""));
             await WaitFor(root, "Game.csproj", true);
-            Directory.Delete(Path.Combine(root, ".git"));
+            var renamed = Path.Combine(workspace.Root, "Renamed");
+            Directory.Move(root, renamed);
+            root = renamed;
+            await WaitFor(root, "Game.csproj", true);
+            Assert.IsFalse(File.Exists(Path.Combine(root, "Game.slnx")));
+            Directory.Delete(Path.Combine(root, ".git"), recursive: true);
             await WaitForExistence(root, false);
         }
         finally
@@ -68,16 +77,24 @@ public class SolutionWatcherTest
         Assert.Fail($"Solution existence did not become {exists}.");
     }
 
-    /// <summary>Output churn is ignored, while dotted directory removals and generated project inputs invalidate.</summary>
+    /// <summary>Existence reads ignore content edits, while missing imports and directory moves remain observable.</summary>
     [TestMethod]
-    public void FiltersInputsWithoutDependingOnPathExistence()
+    public void MatchesFilesystemReadSemantics()
     {
         var root = Path.GetFullPath("watch-inputs");
-        Assert.IsTrue(SolutionWatchInputs.Relevant(root, Path.Combine(root, "Game/src/Game.Moved"), true));
-        Assert.IsTrue(SolutionWatchInputs.Relevant(root, Path.Combine(root, "AlvorKit/out/bindgen/Binding.csproj"), false));
-        Assert.IsTrue(SolutionWatchInputs.Relevant(root, Path.Combine(root, "Game/.git"), true));
-        Assert.IsFalse(SolutionWatchInputs.Relevant(root, Path.Combine(root, "Game/obj/Build.props"), false));
-        Assert.IsFalse(SolutionWatchInputs.Relevant(root, Path.Combine(root, "Game/Game.slnx"), false));
+        var path = Path.Combine(root, "Shared/References.props");
+        var existence = new SolutionWatchInput(path, null, false, false);
+        var content = new SolutionWatchInput(path, null, false, true);
+        Assert.IsFalse(existence.Matches(path, false, WatcherChangeTypes.Changed));
+        Assert.IsTrue(existence.Matches(path, false, WatcherChangeTypes.Created));
+        Assert.IsTrue(content.Matches(path, false, WatcherChangeTypes.Changed));
+        Assert.IsTrue(content.Matches(Path.Combine(root, "Shared"), true, WatcherChangeTypes.Renamed));
+        Assert.IsFalse(content.Matches(Path.Combine(root, "Shared/Other.props"), false, WatcherChangeTypes.Changed));
+        var glob = new SolutionWatchInput(root, "*.csproj", true, false);
+        Assert.IsTrue(glob.Matches(Path.Combine(root, "src/New/New.csproj"), false, WatcherChangeTypes.Created));
+        Assert.IsTrue(glob.Matches(Path.Combine(root, "src/New"), true, WatcherChangeTypes.Renamed));
+        Assert.IsFalse(glob.Matches(Path.Combine(root, "src/New/Code.cs"), false, WatcherChangeTypes.Created));
+        Assert.IsFalse(glob.Matches(Path.Combine(root, "src/New/New.csproj"), false, WatcherChangeTypes.Changed));
     }
 
     /// <summary>Waits for observable serialized membership with a bounded timeout.</summary>

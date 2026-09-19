@@ -50,7 +50,7 @@ internal static class Program
         var success = true;
 
         foreach (var root in options.DiscoverRepositories())
-            success &= SolutionGenerator.Generate(root, options.Check);
+            success &= SolutionGenerator.Generate(root, options.Check, null);
 
         return success ? 0 : 1;
     }

@@ -38,7 +38,7 @@ public class SolutionCommandTest
             options.DiscoverRepositories().ToArray());
     }
 
-    /// <summary>Explicit source archives work without Git, but missing directories fail before evaluation.</summary>
+    /// <summary>Explicit roots must exist before project discovery validates their Git metadata.</summary>
     [TestMethod]
     public void ValidatesExplicitDirectoryExistence()
     {

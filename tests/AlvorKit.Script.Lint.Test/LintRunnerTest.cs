@@ -9,6 +9,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncLimitsCommandConcurrencyAndSerializesDotNetFormat()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
         workspace.Write("AlvorKit.slnx", "<Solution />");
         var processRunner = new BlockingProcessRunner(expectedStarts: 2);
         var actionlintTool = new FakeActionlintTool("actionlint");
@@ -37,6 +38,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncReturnsFailureAfterRunningAllCommands()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
         workspace.Write("AlvorKit.slnx", "<Solution />");
         var processRunner = new FakeProcessRunner(new Queue<int>([0, 9, 0, 0, 0]));
         var actionlintTool = new FakeActionlintTool("actionlint");
@@ -54,6 +56,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncReturnsFailureWhenActionlintSetupFails()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
         workspace.Write("AlvorKit.slnx", "<Solution />");
         var processRunner = new FakeProcessRunner(new Queue<int>([0, 0, 0, 0]));
         var actionlintTool = new FailingActionlintTool();
@@ -70,6 +73,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncReturnsFailureWhenProcessRunnerThrows()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
         workspace.Write("AlvorKit.slnx", "<Solution />");
         var processRunner = new ThrowingProcessRunner();
         var actionlintTool = new FakeActionlintTool("actionlint");
@@ -86,6 +90,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncSkipsActionlintForNonWorkflowScope()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
         workspace.Write("scripts/Tool/Tool.csproj", "<Project />");
         workspace.Write("scripts/Tool/A.cs", "namespace Tool;");
         var processRunner = new FakeProcessRunner(new Queue<int>([0, 0, 0]));
@@ -107,6 +112,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncSucceedsWhenScopedFilesAreMissing()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
         var processRunner = new FakeProcessRunner(new Queue<int>());
         var actionlintTool = new FakeActionlintTool("actionlint");
         var runner = new LintRunner(
@@ -126,6 +132,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncRejectsAssemblyInfoFiles()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
         workspace.Write("AlvorKit.slnx", "<Solution />");
         workspace.Write("src/Game/AssemblyInfo.cs", "public sealed class GameAssemblyInfo;");
         var processRunner = new FakeProcessRunner(new Queue<int>());
@@ -144,6 +151,7 @@ public sealed class LintRunnerTest
     public async Task RunAsyncRejectsCheckedKeyword()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
         var keyword = "check" + "ed";
         workspace.Write("AlvorKit.slnx", "<Solution />");
         workspace.Write("src/Game/Game.cs", $"var value = {keyword}(1 + 1);");
@@ -163,6 +171,7 @@ public sealed class LintRunnerTest
     public void ConstructorRejectsNegativeParallelism()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
 
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(
             () => new LintRunner(

@@ -6,21 +6,26 @@ public static class RepositoryProjects
     /// <summary>Repository areas that own ordinary managed build projects.</summary>
     public static IReadOnlyList<string> Areas => ["src", "lib", "scripts", "tests", "demos", "bench"];
 
-    /// <summary>Returns projects in conventional source areas, including newly created untracked projects.</summary>
+    /// <summary>Returns existing tracked and non-ignored untracked projects in the repository's source areas.</summary>
     public static IReadOnlyList<string> Discover(string root)
     {
         var fullRoot = Path.GetFullPath(root);
-        var projects = new List<string>(Directory.EnumerateFiles(fullRoot, "*.csproj"));
+        var marker = Path.Combine(fullRoot, ".git");
 
-        foreach (var area in Areas)
+        if (!Directory.Exists(marker) && !File.Exists(marker))
         {
-            var directory = Path.Combine(fullRoot, area);
-
-            if (Directory.Exists(directory) && (File.GetAttributes(directory) & FileAttributes.ReparsePoint) == 0)
-                Collect(directory, projects);
+            throw new InvalidOperationException(
+                $"Project discovery requires a Git checkout root: {fullRoot}. Run git init for a new repository.");
         }
 
-        return projects.Order(StringComparer.Ordinal).ToArray();
+        var output = RepositoryGit.Read(fullRoot, "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", "*.csproj");
+        return output.Split('\0', StringSplitOptions.RemoveEmptyEntries)
+            .Where(IsSourceProject)
+            .Select(path => Path.GetFullPath(path, fullRoot))
+            .Where(File.Exists)
+            .Where(path => (File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0)
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal).ToArray();
     }
 
     /// <summary>Names the one generated solution after its checkout directory.</summary>
@@ -58,25 +63,10 @@ public static class RepositoryProjects
         };
     }
 
-    /// <summary>Excludes tooling output and dependency trees from authored project discovery.</summary>
-    public static bool IsExcludedDirectory(string name) => name.ToLowerInvariant() is
-        ".git" or ".vs" or "bin" or "obj" or "out" or "tmp" or "dist" or "node_modules" or "packages";
-
-    /// <summary>Enumerates one source tree without following directory links out of the repository.</summary>
-    private static void Collect(string directory, ICollection<string> projects)
+    /// <summary>Keeps authored source areas separate from tracked templates and native build inputs.</summary>
+    private static bool IsSourceProject(string path)
     {
-        foreach (var project in Directory.EnumerateFiles(directory, "*.csproj"))
-            projects.Add(project);
-
-        foreach (var child in Directory.EnumerateDirectories(directory))
-        {
-            if (IsExcludedDirectory(Path.GetFileName(child)))
-                continue;
-
-            if ((File.GetAttributes(child) & FileAttributes.ReparsePoint) != 0)
-                continue;
-
-            Collect(child, projects);
-        }
+        var separator = path.IndexOf('/');
+        return separator < 0 || Areas.Contains(path[..separator], StringComparer.Ordinal);
     }
 }

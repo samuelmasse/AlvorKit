@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 /// <summary>Tests repository-wide file policy discovery.</summary>
 [TestClass]
-public sealed class RepositoryPolicyTest
+public class RepositoryPolicyTest
 {
     /// <summary>Minimal valid manifest used by agent-policy graph tests.</summary>
     private const string ValidAgentPolicyManifest = """
@@ -97,6 +97,7 @@ public sealed class RepositoryPolicyTest
     public void FindNamespaceViolationsEnforcesSingleRootNamespace()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
         workspace.Write("src/Game/Game.csproj", "<Project />");
         workspace.Write("src/Root.cs", "namespace Game; public sealed class Root;");
         workspace.Write("src/Nested.cs", "namespace Game.Feature; public sealed class Nested;");
@@ -114,9 +115,11 @@ public sealed class RepositoryPolicyTest
     public void FindNamespaceViolationsAllowsTemplatesAndExternalContracts()
     {
         using var workspace = TempWorkspace.Create();
+        GitRepositoryFixture.Initialize(workspace.Root);
         workspace.Write("src/AlvorKit/AlvorKit.csproj", "<Project />");
         workspace.Write("res/templates/new-game/source/src/Game.cs", "namespace AlvorStarter; public sealed class Game;");
-        workspace.Write("src/Generator/IsExternalInit.cs", "namespace System.Runtime.CompilerServices; public sealed class IsExternalInit;");
+        workspace.Write("src/Generator/IsExternalInit.cs",
+            "namespace System.Runtime.CompilerServices; public sealed class IsExternalInit;");
         workspace.Write(
             "demos/AlvorKit.Engine.LiveCode.Demo/Submissions/Command.cs",
             "namespace AgentSubmissions; public sealed class Command;");
