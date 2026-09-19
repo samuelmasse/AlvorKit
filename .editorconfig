@@ -11,6 +11,10 @@ max_line_length = 170
 [*.{cs.tmpl,csfrag.tmpl,csproj.tmpl,props.tmpl,ps1.tmpl,txt.tmpl}]
 max_line_length = 170
 
+# The capability catalog contains prose and API signatures in indivisible JSON strings.
+[res/fastnoise2/features.json]
+max_line_length = off
+
 [*.{cs,csproj}]
 indent_style = space
 indent_size = 4
