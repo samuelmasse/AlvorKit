@@ -32,4 +32,6 @@ jobs:
         run: dotnet run --project scripts/AlvorKit.Script.Solution -- --repo-root .
 
       - name: Run lint coordinator
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: dotnet run --project scripts/AlvorKit.Script.Lint
