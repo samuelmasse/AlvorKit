@@ -35,6 +35,14 @@ within 120 characters. The 140-character hard maximum still applies.
 These defaults are unconditional. A closer `AGENTS.md` may add stricter
 requirements but must not relax them.
 
+- Prefer familiar, direct syntax. An extra name, abstraction, or optimization
+  should explain meaning, remove repetition, clarify ownership, or address a
+  concrete performance constraint. Do not add structure solely to make simple
+  code look more formal.
+- Inline a one-use expression when its local variable merely repeats the type
+  or parameter name, such as `.With(new DimensionEnt(ent))`. Keep a local when
+  it explains a domain concept, supports reuse, simplifies a complex
+  expression, or makes evaluation order or lifetime clearer.
 - Use the compact form when an `if`, `else`, `for`, `foreach`, `while`, or similar
   control-flow body occupies exactly one physical line. Put that line directly
   beneath its control-flow header, except that a compact `else` must use
@@ -183,9 +191,13 @@ requirements but must not relax them.
   such values directly on a deliberately small contract, or define a
   standalone collaboration or snapshot type at the narrowest required
   accessibility and expose the cohesive group as one member.
-- Default parameter values are banned. Every caller must supply every argument;
-  use a distinctly named method or overload only when it represents a genuinely
-  different operation rather than recreating an implicit default.
+- Default parameter values are banned. Use explicit overloads for supported
+  call shapes, such as labeled/unlabeled operations or operations with/without
+  a cleanup callback. Require non-null labels and callbacks in overloads that
+  accept them; do not force callers to pass positional `null` placeholders.
+  Keep callbacks last, with labels and other operation data before them, so
+  multiline lambdas remain easy to read. Use distinct method names when the
+  operations themselves differ. Do not add overloads as compatibility shims.
 - In every multiline declaration parameter list, put the closing `)` directly
   after the final parameter. A closing parenthesis on its own line is banned.
   This applies to methods, constructors, primary constructors, records,
@@ -288,6 +300,11 @@ requirements but must not relax them.
 - Prefer `== null` and `!= null` for ordinary null checks instead of `is null`
   and `is not null`. Pattern matching remains appropriate for type or property
   matches and null checks that must bypass overloaded equality operators.
+- When only dictionary values are needed, prefer `foreach (var value in
+  dictionary.Values)` over discarding the key through deconstruction or
+  repeatedly accessing `entry.Value`. Evaluate any first-access wrapper
+  allocation using the actual execution path and the cold-path guidance in
+  [RuntimePerformance.md](RuntimePerformance.md).
 - Prefer file-scoped namespaces, nullable-aware code, collection expressions,
   and the style already enforced by `.editorconfig`. Avoid new production
   dependencies unless the task clearly needs them and the tradeoff is explained.

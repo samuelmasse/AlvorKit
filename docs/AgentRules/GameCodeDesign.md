@@ -172,6 +172,11 @@ Game-specific additions:
 
 - Every mutable resource should have an obvious owner and one understandable
   allocation, replacement, clearing, and teardown path.
+- Inspect actual construction and teardown paths before simplifying lazy
+  initialization. An unloader may be the first code to resolve an unused
+  service; its constructor should not allocate expensive resources merely to
+  dispose them. Keep lazy resource creation when it prevents that work, rather
+  than adding or removing laziness as a blanket style preference.
 - Express lifecycle with domain operations such as `Load`, `Clear`, `Fill`,
   `Stop`, or `Unload` when those names describe the real operation.
 - Use `IDisposable` only for types that participate in a genuine disposal
@@ -216,3 +221,7 @@ Game-specific additions:
   invalidation machinery.
 - An abstraction must remove duplication that already exists. Prefer a small
   toolkit that keeps call sites explicit over a framework that hides them.
+- Start repeated local setup and cleanup with a focused private helper. A new
+  service or framework should earn its boundary through independent ownership,
+  behavior, or actual reuse. Extracting three repeated overlay mounts does not
+  by itself justify an overlay service framework.

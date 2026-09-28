@@ -12,6 +12,16 @@ Runtime deletion, disposal, unload, and scope teardown are allocation-sensitive.
 Genuinely cold final process-shutdown orchestration may allocate only when the
 cost is intentional and does not define a reusable runtime API.
 
+Assess the actual callers, frequency, and allocation size before trading away
+readability. Small, bounded, one-time allocations are acceptable for clarity on
+verified final application shutdown paths. For example, prefer iterating
+`dictionary.Values` there even if its cached collection wrapper is created on
+first access. This does not copy the values or allocate per element. Do not
+replace clear code with discarded-key deconstruction or extra retained state
+just to avoid that wrapper. Repeated world unloads, streaming cleanup, and hot
+loops retain their allocation discipline; a method name such as `Unload` alone
+does not establish which case applies.
+
 ### Hot-Path Data Layout
 
 - Never cache, precompute, or retain a value that is obtainable through a
