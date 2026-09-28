@@ -16,6 +16,7 @@ public class InjectorScopeGraphTest
 
         var snapshot = graph.Snapshot();
         Assert.HasCount(3, snapshot.Nodes);
+        Assert.AreEqual("Demo", snapshot.Nodes[0].Label);
         Assert.AreEqual(graph.RootId, snapshot.Nodes[1].ParentId);
         Assert.AreEqual(graph.RootId, snapshot.Nodes[2].ParentId);
         Assert.AreEqual("Ember", snapshot.Nodes[1].Label);
@@ -36,8 +37,21 @@ public class InjectorScopeGraphTest
         var scope = graph.Scope<TestScope>(injector);
         var id = graph.Snapshot().Nodes[1].Id;
         TestScope? observed = null;
+        var notified = false;
 
-        graph.End(scope, ending => observed = ending);
+        graph.ScopeEnding += ending =>
+        {
+            Assert.AreSame(scope, ending.Scope);
+            Assert.IsNull(observed);
+            notified = true;
+        };
+
+        graph.End(scope, ending =>
+        {
+            Assert.IsTrue(notified);
+            Assert.AreEqual(InjectorScopeLifecycle.Ending, graph.Snapshot().Nodes[1].Lifecycle);
+            observed = ending;
+        });
 
         Assert.AreSame(scope, observed);
         Assert.IsFalse(graph.TryGetActiveScope(id, out _));
@@ -71,6 +85,62 @@ public class InjectorScopeGraphTest
 
         var child = graph.Snapshot(includeEnded: true).Nodes[1];
         Assert.AreEqual(InjectorScopeLifecycle.Ended, child.Lifecycle);
+    }
+
+    /// <summary>Both run overloads expose an active child during work and retain only metadata afterward.</summary>
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void RunTracksScopeForDurationOfAction(bool labeled)
+    {
+        var injector = new Injector();
+        var graph = new InjectorScopeGraph(injector);
+        InjectorScopeId childId = default;
+        Action<TestScope> action = scope =>
+        {
+            childId = graph.GetId(scope);
+            var child = graph.Snapshot().Nodes[1];
+            Assert.AreEqual(graph.RootId, child.ParentId);
+            Assert.AreEqual(labeled ? "Load" : null, child.Label);
+            Assert.AreEqual(InjectorScopeLifecycle.Active, child.Lifecycle);
+            Assert.AreSame(scope, Active(graph, childId));
+        };
+
+        if (labeled)
+            graph.Run(injector, "Load", action);
+        else graph.Run(injector, action);
+
+        Assert.HasCount(1, graph.Snapshot().Nodes);
+        Assert.IsFalse(graph.TryGetActiveScope(childId, out _));
+        var ended = graph.Snapshot(includeEnded: true).Nodes[1];
+        Assert.AreEqual(childId, ended.Id);
+        Assert.AreEqual(InjectorScopeLifecycle.Ended, ended.Lifecycle);
+    }
+
+    /// <summary>Labels can be set and removed without changing the scope's identity or lifetime.</summary>
+    [TestMethod]
+    public void LabelChangesPreserveScopeIdentity()
+    {
+        var injector = new Injector();
+        var graph = new InjectorScopeGraph(injector);
+        var scope = graph.Scope<TestScope>(injector);
+        var before = graph.Snapshot();
+        Assert.IsNull(before.Nodes[0].Label);
+        Assert.IsNull(before.Nodes[1].Label);
+
+        graph.Label(scope, "Surface");
+
+        var labeled = graph.Snapshot();
+        Assert.AreEqual("Surface", labeled.Nodes[1].Label);
+        Assert.IsTrue(labeled.Revision > before.Revision);
+
+        graph.ClearLabel(scope);
+
+        var cleared = graph.Snapshot();
+        Assert.IsNull(cleared.Nodes[1].Label);
+        Assert.AreEqual(before.Nodes[1].Id, cleared.Nodes[1].Id);
+        Assert.AreEqual(InjectorScopeLifecycle.Active, cleared.Nodes[1].Lifecycle);
+        Assert.IsTrue(cleared.Revision > labeled.Revision);
     }
 
     /// <summary>Constructed, added, and bound references retain exact owning-scope provenance.</summary>

@@ -11,25 +11,12 @@ public class InjectorScopeGraph : IInjectorInstanceObserver
         new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<InjectorScopeId, InjectorScopeGraphNode> nodes = [];
     private readonly ConditionalWeakTable<object, InjectorScopeGraphInstanceOwner> instanceOwners = [];
+    private readonly InjectorScopeId rootId;
     private long nextId;
     private long revision;
 
-    /// <summary>Creates a graph whose root is an existing injector or injector scope.</summary>
-    public InjectorScopeGraph(InjectorScope root, string? label = null)
-    {
-        var node = AddNode(null, root, label);
-        RootId = node.Id;
-        root.Observe(this);
-    }
-
-    /// <summary>
-    /// Raised synchronously after a node becomes <see cref="InjectorScopeLifecycle.Ending"/>
-    /// and before caller teardown begins.
-    /// </summary>
-    public event Action<InjectorScopeEnding>? ScopeEnding;
-
     /// <summary>Gets the root node identifier.</summary>
-    public InjectorScopeId RootId { get; }
+    public InjectorScopeId RootId => rootId;
 
     /// <summary>Gets the latest graph revision.</summary>
     public long Revision
@@ -41,74 +28,55 @@ public class InjectorScopeGraph : IInjectorInstanceObserver
         }
     }
 
-    /// <summary>Creates and tracks a child injector scope owned by <paramref name="parent"/>.</summary>
-    public T Scope<T>(InjectorScope parent, string? label = null) where T : InjectorScope
+    /// <summary>Creates a graph with an unlabeled existing root scope and observes its owned instances.</summary>
+    public InjectorScopeGraph(InjectorScope root)
     {
-        lock (gate)
-        {
-            var parentNode = RequireActive(parent);
-            var child = parent.Scope<T>();
-            AddNode(parentNode.Id, child, label);
-            return child;
-        }
+        var node = AddNode(null, root, null);
+        rootId = node.Id;
+        root.Observe(this);
     }
 
-    /// <summary>Runs an operation in a temporary tracked child scope and always ends that scope afterward.</summary>
-    public void Run<T>(InjectorScope parent, Action<T> action, string? label = null) where T : InjectorScope
+    /// <summary>Creates a graph with a labeled existing root scope and observes its owned instances.</summary>
+    public InjectorScopeGraph(InjectorScope root, string label)
     {
-        var scope = Scope<T>(parent, label);
-        try
-        {
-            action(scope);
-        }
-        finally
-        {
-            End(scope);
-        }
+        var node = AddNode(null, root, label);
+        rootId = node.Id;
+        root.Observe(this);
     }
+
+    /// <summary>
+    /// Raised synchronously after a node becomes <see cref="InjectorScopeLifecycle.Ending"/>
+    /// and before caller teardown begins.
+    /// </summary>
+    public event Action<InjectorScopeEnding>? ScopeEnding;
+
+    /// <summary>Creates and tracks an unlabeled child scope owned by <paramref name="parent"/>.</summary>
+    public T Scope<T>(InjectorScope parent) where T : InjectorScope => CreateScope<T>(parent, null);
+
+    /// <summary>Creates and tracks a labeled child scope owned by <paramref name="parent"/>.</summary>
+    public T Scope<T>(InjectorScope parent, string label) where T : InjectorScope => CreateScope<T>(parent, label);
+
+    /// <summary>Runs work in an unlabeled temporary child scope and ends it even if the action throws.</summary>
+    public void Run<T>(InjectorScope parent, Action<T> action) where T : InjectorScope => RunScope(Scope<T>(parent), action);
+
+    /// <summary>Runs work in a labeled temporary child scope and ends it even if the action throws.</summary>
+    public void Run<T>(InjectorScope parent, string label, Action<T> action) where T : InjectorScope =>
+        RunScope(Scope<T>(parent, label), action);
 
     /// <summary>Changes the diagnostic label for an active tracked scope.</summary>
-    public void Label(InjectorScope scope, string? label)
-    {
-        lock (gate)
-        {
-            var node = RequireActive(scope);
-            node.Label = label;
-            node.ChangedRevision = ++revision;
-        }
-    }
+    public void Label(InjectorScope scope, string label) => ChangeLabel(scope, label);
+
+    /// <summary>Removes the diagnostic label from an active tracked scope.</summary>
+    public void ClearLabel(InjectorScope scope) => ChangeLabel(scope, null);
+
+    /// <summary>Announces scope ending and releases its reference after the caller has performed cleanup.</summary>
+    public void End(InjectorScope scope) => EndScope<InjectorScope>(scope, null);
 
     /// <summary>
     /// Marks a scope as ending, runs its explicit teardown, and releases the graph's reference.
     /// Active tracked children must be ended first.
     /// </summary>
-    public void End<T>(T scope, Action<T>? teardown = null) where T : InjectorScope
-    {
-        InjectorScopeGraphNode node;
-        lock (gate)
-        {
-            node = RequireActive(scope);
-            RequireNoActiveChildren(node);
-            node.Lifecycle = InjectorScopeLifecycle.Ending;
-            node.ChangedRevision = ++revision;
-        }
-
-        try
-        {
-            ScopeEnding?.Invoke(new(node.Id, node.ParentId, scope));
-            teardown?.Invoke(scope);
-        }
-        finally
-        {
-            lock (gate)
-            {
-                node.Lifecycle = InjectorScopeLifecycle.Ended;
-                node.Scope = null;
-                node.ChangedRevision = ++revision;
-                activeByScope.Remove(scope);
-            }
-        }
-    }
+    public void End<T>(T scope, Action<T> teardown) where T : InjectorScope => EndScope(scope, teardown);
 
     /// <summary>Resolves an active scope by graph identifier without creating anything.</summary>
     public bool TryGetActiveScope(InjectorScopeId id, [NotNullWhen(true)] out InjectorScope? scope)
@@ -198,8 +166,11 @@ public class InjectorScopeGraph : IInjectorInstanceObserver
         instanceOwners.Add(instance, new(ownerId));
     }
 
-    /// <summary>Captures graph metadata without resolving or constructing injector services.</summary>
-    public InjectorScopeGraphSnapshot Snapshot(bool includeEnded = false)
+    /// <summary>Captures metadata for scopes that have not ended without resolving services.</summary>
+    public InjectorScopeGraphSnapshot Snapshot() => Snapshot(false);
+
+    /// <summary>Captures metadata, optionally including ended scopes, without resolving services.</summary>
+    public InjectorScopeGraphSnapshot Snapshot(bool includeEnded)
     {
         lock (gate)
         {
@@ -209,6 +180,68 @@ public class InjectorScopeGraph : IInjectorInstanceObserver
                 .Select(x => x.Snapshot())
                 .ToArray();
             return new(revision, RootId, snapshots);
+        }
+    }
+
+    private T CreateScope<T>(InjectorScope parent, string? label) where T : InjectorScope
+    {
+        lock (gate)
+        {
+            var parentNode = RequireActive(parent);
+            var child = parent.Scope<T>();
+            AddNode(parentNode.Id, child, label);
+            return child;
+        }
+    }
+
+    private void RunScope<T>(T scope, Action<T> action) where T : InjectorScope
+    {
+        try
+        {
+            action(scope);
+        }
+        finally
+        {
+            End(scope);
+        }
+    }
+
+    private void ChangeLabel(InjectorScope scope, string? label)
+    {
+        lock (gate)
+        {
+            var node = RequireActive(scope);
+            node.Label = label;
+            node.ChangedRevision = ++revision;
+        }
+    }
+
+    private void EndScope<T>(T scope, Action<T>? teardown) where T : InjectorScope
+    {
+        InjectorScopeGraphNode node;
+
+        lock (gate)
+        {
+            node = RequireActive(scope);
+            RequireNoActiveChildren(node);
+            node.Lifecycle = InjectorScopeLifecycle.Ending;
+            node.ChangedRevision = ++revision;
+        }
+
+        try
+        {
+            ScopeEnding?.Invoke(new(node.Id, node.ParentId, scope));
+            teardown?.Invoke(scope);
+        }
+        finally
+        {
+            lock (gate)
+            {
+                node.Lifecycle = InjectorScopeLifecycle.Ended;
+                node.Scope = null;
+                node.ChangedRevision = ++revision;
+                activeByScope.Remove(scope);
+            }
         }
     }
 

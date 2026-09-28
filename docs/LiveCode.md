@@ -167,8 +167,8 @@ Use `Run` for temporary scopes whose work is synchronous:
 ```csharp
 scopes.Run<ColonyLoaderScope>(
     colony,
-    loader => loader.Get<ColonyLoader>().Run(),
-    "Initial colony load");
+    "Initial colony load",
+    loader => loader.Get<ColonyLoader>().Run());
 ```
 
 End long-lived scopes explicitly after their tracked children have ended:

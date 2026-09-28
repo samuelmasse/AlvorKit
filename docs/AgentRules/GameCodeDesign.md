@@ -106,10 +106,11 @@ Game-specific additions:
 - Reserve static members for operators, extension methods, framework-required
   entry points, compile-time values, and pure value operations that are
   unambiguously owned by the type.
-- Magic numbers are banned. Give representation widths, shifts, masks,
-  sentinels, domain bounds, algorithmic costs, fixed capacities, and other
-  meaningful numeric values descriptive constants on the type that owns their
-  meaning.
+- Use named constants when a number encodes a non-obvious domain or
+  representation rule, or when multiple uses must stay consistent. Examples
+  include representation widths, masks, sentinels, and domain bounds. Do not
+  extract a literal merely because it is numeric; the name must make the code
+  easier to understand or maintain.
 - Define one canonical origin for related constants and derive the others from
   it. For example, derive a size and mask from one shift, a maximum from one
   bit width, or a first valid identifier from its empty sentinel. Do not repeat
@@ -118,6 +119,11 @@ Game-specific additions:
   self-explanatory local values, such as zeroing a counter, incrementing by one,
   loop origins, or the `-1`, `0`, and `1` components of an explicitly named
   direction delta.
+- In menu and UI composition code, prefer inline values for local sizing,
+  spacing, placement, colors, and draw order when their meaning is clear from
+  the call. Do not add one-use constants that merely repeat the menu or
+  parameter name. Extract a value when its name explains a non-obvious choice
+  or when related uses need one shared definition.
 - Do not promote one-off literals or runtime policy to global constants. Use
   injected configuration or instance state for values that can vary by runtime
   or composition.

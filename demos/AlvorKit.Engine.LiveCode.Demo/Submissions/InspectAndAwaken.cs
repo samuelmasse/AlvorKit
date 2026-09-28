@@ -19,8 +19,8 @@ public sealed class InspectAndAwaken(
 
         graph.Run<ProbeScope>(
             scope,
-            probe => output.Value("nestedProbe", probe.Get<ProbeTelemetry>().Read()),
-            "Agent diagnostic probe");
+            "Agent diagnostic probe",
+            probe => output.Value("nestedProbe", probe.Get<ProbeTelemetry>().Read()));
 
         garden.Primary = (1f, 0.16f, 0.82f, 1f);
         garden.Secondary = (0.15f, 1f, 0.88f, 1f);

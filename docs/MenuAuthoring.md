@@ -173,8 +173,12 @@ Use style objects for visual language, not for every number.
 - `AppStyle` or an equivalent style class should own reusable colors, fonts,
   spacing tokens, and component recipes such as panel, button, label, swatch,
   tooltip, or modal styling.
-- Local layout decisions belong in the menu that owns the layout. Give local
-  numbers names, but keep them near the node or helper that uses them.
+- Local layout decisions belong in the menu that owns the layout. Prefer
+  inline values for sizing, spacing, placement, colors, and draw order when
+  the call makes their meaning clear. Do not introduce one-use constants just
+  to name those numbers, such as `fpsOrder` for `CreateOverlay(5)`.
+- Use a local constant when its name explains a non-obvious choice or keeps
+  related values consistent. Keep it near the nodes or helpers that use it.
 - Keep one-off sizing, placement, and text visible in the layout. Extract style
   recipes for repeated patterns; avoid one-use helpers that hide a few
   straightforward node declarations.
