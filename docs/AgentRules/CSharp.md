@@ -39,6 +39,11 @@ requirements but must not relax them.
   should explain meaning, remove repetition, clarify ownership, or address a
   concrete performance constraint. Do not add structure solely to make simple
   code look more formal.
+- Use standard API defaults when they already express the intended behavior.
+  Do not explicitly restate them just to document intent. For example, use `[]`
+  for a `Dictionary<string, T>` instead of `new(StringComparer.Ordinal)` when
+  ordinary case-sensitive string equality is intended. Supply a comparer or
+  other configuration when it changes behavior or is required by the contract.
 - Inline a one-use expression when its local variable merely repeats the type
   or parameter name, such as `.With(new DimensionEnt(ent))`. Keep a local when
   it explains a domain concept, supports reuse, simplifies a complex
