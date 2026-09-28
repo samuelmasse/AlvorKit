@@ -313,6 +313,16 @@ requirements but must not relax them.
 - Prefer file-scoped namespaces, nullable-aware code, collection expressions,
   and the style already enforced by `.editorconfig`. Avoid new production
   dependencies unless the task clearly needs them and the tradeoff is explained.
+- Prefer collection expressions such as `[.. source]` for straightforward
+  copies when the target type is already clear, such as an array field
+  initializer. Keep `.ToArray()` when it naturally completes a LINQ pipeline.
+  Readability takes precedence: do not introduce temporary variables, casts,
+  or awkward formatting solely to use a collection expression.
+- When a type owns a copied sequence, prefer accepting `ReadOnlySpan<T>` and
+  copying into its private storage with a collection expression. A small copy during
+  initialization is acceptable; do not widen a span-returning API to
+  `ReadOnlyMemory<T>` solely to avoid it. Use read-only memory when retaining
+  shared storage is itself part of the intended contract.
 - Prefer functional style where it improves clarity: pure helpers, immutable
   values, small transformations, explicit inputs and outputs, and minimal shared
   mutable state.
