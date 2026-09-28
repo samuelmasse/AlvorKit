@@ -285,6 +285,9 @@ requirements but must not relax them.
   post-disposal behavior is an explicit contract.
 - Trust nullable reference type analysis for non-null contracts. Do not add
   manual null guards or asserts just to recheck a non-nullable value.
+- Prefer `== null` and `!= null` for ordinary null checks instead of `is null`
+  and `is not null`. Pattern matching remains appropriate for type or property
+  matches and null checks that must bypass overloaded equality operators.
 - Prefer file-scoped namespaces, nullable-aware code, collection expressions,
   and the style already enforced by `.editorconfig`. Avoid new production
   dependencies unless the task clearly needs them and the tradeoff is explained.
