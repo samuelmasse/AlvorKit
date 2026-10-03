@@ -17,6 +17,7 @@ public class RootUiScript(
     /// </summary>
     public override void Update(double delta)
     {
+        update.Advance(delta);
         surfaces.PrepareAll();
         mouse.Hover(surfaces);
         mouse.Update(surfaces);

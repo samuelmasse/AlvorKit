@@ -56,7 +56,8 @@ public class EntIdxContextBuilder
 
     internal static void ValidateComponent<T, N>() where N : IComponent
     {
-        var component = N.Component;
+        var component = GetSparseComponent<N>();
+
         if (component.ValueType != typeof(T))
             throw new EntIdxRegistrationException(
                 $"Component {typeof(N).FullName} stores {component.ValueType.FullName}, not {typeof(T).FullName}.");
@@ -64,10 +65,23 @@ public class EntIdxContextBuilder
 
     internal static void ValidateBool<N>(string role) where N : IComponent
     {
-        var component = N.Component;
+        var component = GetSparseComponent<N>();
+
         if (component.ValueType != typeof(bool))
             throw new EntIdxRegistrationException(
                 $"Bag {role} {typeof(N).FullName} must be a bool component, not {component.ValueType.FullName}.");
+    }
+
+    /// <summary>Rejects unobserved storage at registration time without adding checks to component access.</summary>
+    private static EntComponent GetSparseComponent<N>() where N : IComponent
+    {
+        var component = N.Component;
+
+        if (component.IsArchetypal)
+            throw new EntIdxRegistrationException(
+                $"Archetypal component {typeof(N).FullName} cannot register Indexed hooks or bags.");
+
+        return component;
     }
 
     private void ThrowIfBagRegistered<TBagIndex>() where TBagIndex : IComponent

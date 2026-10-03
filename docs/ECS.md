@@ -240,6 +240,12 @@ immediately maintain any derived game state, including:
 - persistence or replication state; or
 - whole-Ent teardown callbacks.
 
+Indexed component hooks and bag markers/gates require sparse components.
+Registering an archetypal component throws `EntIdxRegistrationException` during
+registration. Archetypal access deliberately remains unobserved for speed,
+including through Indexed handles; sparse and archetypal components may coexist
+on one Ent. Whole-Ent pre-dispose hooks can inspect both storage kinds.
+
 Once a scope uses Indexed ECS, allocate its game Ents from its
 `EntIdxArena` and mutate them through `EntPtrIdx` or `EntMutIdx`. Do not allocate
 some Ents from a raw `EntArena` or convert the same scope to raw mutation to
@@ -441,7 +447,8 @@ depends on multiple components or must happen before component clearing begins.
 Individual Indexed disposal maintains derived state:
 
 1. Pre-dispose hooks run while the Ent is intact.
-2. Present components are cleared through their Indexed unset pipelines.
+2. Archetypal components are removed without component hooks, then present
+   sparse components are cleared through their Indexed unset pipelines.
 3. Bags and component-local indexes observe those unsets.
 4. The underlying allocation is released.
 

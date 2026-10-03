@@ -8,4 +8,8 @@ internal interface IUiNodesComponents
     internal long UiToken { get; set; }
     internal NodeArray UiNodes { get; set; }
     internal NodeArray UiNodeStack { get; set; }
+    internal EntMut UiParent { get; set; }
+    internal EntMut UiStackEntry { get; set; }
+    internal bool UiRefreshActive { get; set; }
+    internal double UiRefreshTime { get; set; }
 }

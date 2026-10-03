@@ -184,6 +184,9 @@ public class RootUiMouse(RootMouse mouse, RootUiFocus focus, RootUiClipping clip
         if (e.IsFocusableFV.Resolve() || e.IsSilentFocusableFV.Resolve())
             focus.Focus(e, false);
 
+        if (!InputEnabled(e))
+            return;
+
         e.IsPressedR = true;
         e.OnPressFV.Resolve()?.Invoke();
     }
@@ -226,7 +229,7 @@ public class RootUiMouse(RootMouse mouse, RootUiFocus focus, RootUiClipping clip
         e.OnSecondaryClickFV.Resolve()?.Invoke();
     }
 
-    private bool InputEnabled(EntMut n) => !n.IsInputDisabledFV.Resolve();
+    private bool InputEnabled(EntMut n) => UiTree.IsActive(n) && !n.IsInputDisabledFV.Resolve();
 
     private bool CursorGrabbed() => mouse.CursorMode is CursorMode.Disabled or CursorMode.Captured;
 

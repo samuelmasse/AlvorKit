@@ -110,15 +110,15 @@ public class RootUiTraverse
 
         foreach (var entry in NodeStack(n))
         {
-            var companion = entry.CompanionFV.Resolve();
-            if (companion != default && !companion.IsDisabledFV.Resolve())
+            var companion = UiTree.Companion(n, entry);
+            if (companion != default && !companion.IsDisabledFV.Resolve() && !companion.IsDeletedFV.Resolve())
             {
                 AddToBuffer(root, companion);
                 count++;
             }
         }
 
-        if (NodeStackTryPeek(n, out var top))
+        if (NodeStackTryPeek(n, out var top) && !top.IsDisabledFV.Resolve() && !top.IsDeletedFV.Resolve())
         {
             AddToBuffer(root, top);
             count++;

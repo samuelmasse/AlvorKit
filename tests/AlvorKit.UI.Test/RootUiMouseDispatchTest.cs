@@ -274,4 +274,69 @@ public class RootUiMouseDispatchTest
 
         Assert.AreEqual(new Vec2(0, 1), scrolled);
     }
+
+    /// <summary>A focus callback can remove its node before the same pointer event attempts to press it.</summary>
+    [TestMethod]
+    public void Press_FocusRemovesTarget_SkipsPressCallback()
+    {
+        var h = new UiTestHarness();
+        var focuses = 0;
+        var presses = 0;
+        Node(h.Ui, out var button)
+            .SizeRelativeV((0, 0))
+            .SizeV((100, 50))
+            .IsSelectableV(true)
+            .IsFocusableV(true)
+            .OnFocusF(() =>
+            {
+                focuses++;
+                NodesRemove(h.Ui, button);
+            })
+            .OnPressF(() => presses++);
+        h.MoveMouse((50, 25));
+        h.Update();
+
+        h.Host.RaiseMouseDown(MouseButton.Left);
+        h.Update();
+
+        Assert.AreEqual(1, focuses);
+        Assert.AreEqual(0, presses);
+        Assert.IsFalse(button.IsPressedR);
+        Assert.AreEqual(0, NodesCount(h.Ui));
+    }
+
+    /// <summary>Scroll handling that detaches the hovered node prevents later press and click dispatch in that tick.</summary>
+    [TestMethod]
+    public void Scroll_RemovesHoveredTarget_SkipsPressAndClick()
+    {
+        var h = new UiTestHarness();
+        var scrolls = 0;
+        var presses = 0;
+        var clicks = 0;
+        Node(h.Ui, out var button)
+            .SizeRelativeV((0, 0))
+            .SizeV((100, 50))
+            .IsSelectableV(true)
+            .IsScrollableV(true)
+            .OnScrollF(offset =>
+            {
+                scrolls++;
+                NodesRemove(h.Ui, button);
+            })
+            .OnPressF(() => presses++)
+            .OnClickF(() => clicks++);
+        h.MoveMouse((50, 25));
+        h.Update();
+
+        h.Host.RaiseMouseWheel((0, 1));
+        h.Host.RaiseMouseDown(MouseButton.Left);
+        h.Update();
+        h.Host.RaiseMouseUp(MouseButton.Left);
+        h.Update();
+
+        Assert.AreEqual(1, scrolls);
+        Assert.AreEqual(0, presses);
+        Assert.AreEqual(0, clicks);
+        Assert.IsFalse(button.IsPressedR);
+    }
 }

@@ -9,14 +9,12 @@ public class BlendDropdownHandle
     private Action<int>? onPick;
     private int selectedIndex;
     private int highlightIndex;
-    private long revision;
     private bool openedThisUpdate;
 
     internal EntMut Anchor => anchor;
     internal IReadOnlyList<BlendDropdownItem> Items => items!;
     internal int SelectedIndex => selectedIndex;
     internal int HighlightIndex => highlightIndex;
-    internal long Revision => revision;
 
     /// <summary>Gets whether this popup is open.</summary>
     public bool IsOpen => items != null;
@@ -34,10 +32,9 @@ public class BlendDropdownHandle
         this.onPick = onPick;
         this.selectedIndex = selectedIndex;
         highlightIndex = selectedIndex;
-        revision++;
         openedThisUpdate = true;
         panel.Mutate()
-            .AheadUpdateCountV(1);
+            .RefreshCountV(1);
     }
 
     /// <summary>Closes this popup without choosing an option.</summary>

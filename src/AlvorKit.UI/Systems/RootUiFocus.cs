@@ -12,6 +12,9 @@ public class RootUiFocus(RootKeyboard keyboard)
 
     public void Focus(EntMut ent, bool tab)
     {
+        if (ent != default && !UiTree.IsActive(ent))
+            return;
+
         tabMode = tab;
 
         var defer = ent.DeferFocusFV.Resolve();
@@ -31,11 +34,15 @@ public class RootUiFocus(RootKeyboard keyboard)
         else RemoveSelect(ent);
 
         ent.IsSelectedR = true;
-        ent.OnFocusFV.Resolve()?.Invoke();
+        if (UiTree.IsActive(ent))
+            ent.OnFocusFV.Resolve()?.Invoke();
     }
 
     private bool DeferFocus(EntMut ent)
     {
+        if (!UiTree.IsActive(ent))
+            return false;
+
         if (ent == focused)
             return true;
 
@@ -50,6 +57,9 @@ public class RootUiFocus(RootKeyboard keyboard)
 
     private void RemoveSelect(EntMut ent)
     {
+        if (!UiTree.IsActive(ent))
+            return;
+
         if (ent.IsSelectedR)
         {
             ent.IsSelectedR = false;
@@ -168,6 +178,9 @@ public class RootUiFocus(RootKeyboard keyboard)
         bool inputDisabled,
         UiSurface surface)
     {
+        if (!UiTree.IsActive(n))
+            return;
+
         var isFocusable = n.IsFocusableFV.Resolve();
         inputDisabled |= n.IsInputDisabledFV.Resolve();
 
@@ -186,13 +199,17 @@ public class RootUiFocus(RootKeyboard keyboard)
 
     private void UnselectUnselectables(EntMut n)
     {
+        if (!UiTree.IsActive(n))
+            return;
+
         if (n.SelectedR != default)
         {
             var selected = n.SelectedR;
             if (!HasChild(n, selected))
             {
                 selected.IsSelectedR = false;
-                selected.OnUnselectFV.Resolve()?.Invoke();
+                if (UiTree.IsActive(selected))
+                    selected.OnUnselectFV.Resolve()?.Invoke();
                 n.SelectedR = default;
             }
         }
@@ -203,6 +220,9 @@ public class RootUiFocus(RootKeyboard keyboard)
 
     private bool HasChild(EntMut n, EntMut child)
     {
+        if (!UiTree.IsActive(n))
+            return false;
+
         if (n == child)
             return true;
 
@@ -217,6 +237,9 @@ public class RootUiFocus(RootKeyboard keyboard)
 
     private EntMut FindSelected(EntMut ent)
     {
+        if (!UiTree.IsActive(ent))
+            return default;
+
         if (ent.IsSelectedR)
             return ent;
 

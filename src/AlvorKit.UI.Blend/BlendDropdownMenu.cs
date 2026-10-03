@@ -8,8 +8,10 @@ public class BlendDropdownMenu(Keyboard keyboard, BlendStyle s)
     {
         Node(root, out var layer);
         Node(layer, out var panel);
+        Node(panel, out var options)
+            .SizeRelativeV((1, 1))
+            .InnerLayoutV(InnerLayout.VerticalList);
         var popup = new BlendDropdownHandle(panel);
-        var builtRevision = 0L;
 
         layer.Mutate()
             .SizeRelativeV((1, 1))
@@ -42,7 +44,6 @@ public class BlendDropdownMenu(Keyboard keyboard, BlendStyle s)
                 .IsFloatingV(true)
                 .SizeRelativeV((0, 0))
                 .SizeF(() => (popup.Anchor.SizeR.X, PanelHeight()))
-                .InnerLayoutV(InnerLayout.VerticalList)
                 .InnerSpacingV(0)
                 .ColorV(s.Palette.Raised)
                 .PaddingV((
@@ -65,20 +66,16 @@ public class BlendDropdownMenu(Keyboard keyboard, BlendStyle s)
                     return (x, below);
                 })
                 .Mutate(s.StrongBorder)
-                .OnUpdateF(() =>
+                .OnRefreshF(() =>
                 {
-                    if (builtRevision == popup.Revision || !popup.IsOpen)
-                        return;
-
-                    builtRevision = popup.Revision;
-                    NodesClear(panel);
+                    NodesClear(options);
 
                     for (var i = 0; i < popup.Items.Count; i++)
                     {
                         var index = i;
                         var item = popup.Items[i];
 
-                        Node(panel, out var row)
+                        Node(options, out var row)
                             .Mutate(s.Board)
                             .SizeRelativeV((1, 0))
                             .SizeV((0, s.Metrics.DropdownOptionHeight))

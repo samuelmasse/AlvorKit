@@ -12,9 +12,21 @@ This document is the detailed Indexed API and mutation-contract reference.
 The base `AlvorKit.ECS` package owns storage, handles, generated components,
 and arena lifetime, and stays zero-overhead. `AlvorKit.ECS.Indexed` adds:
 
-- typed pre-set, post-set, and pre-dispose hooks per component
+- typed pre-set and post-set hooks for sparse components, plus whole-Ent
+  pre-dispose hooks
 - dense marker bags maintained automatically from component changes
 - an indexed arena and indexed handles that drive the hook pipeline
+
+Archetypal components deliberately remain unobserved for direct storage access
+and iteration. `AddPre`, `AddPost`, `AddBag`, and `AddGatedBag` throw
+`EntIdxRegistrationException` when the component, marker, or gate is
+archetypal. Validation uses generated component metadata at registration time;
+it adds no checks to archetypal reads, writes, rows, or spans.
+
+An Indexed Ent may still contain both sparse and archetypal components.
+Generated archetypal accessors work through Indexed handles without running
+component hooks. Whole-Ent pre-dispose hooks can read that data before cleanup.
+Use sparse components for state whose writes must maintain Indexed hooks or bags.
 
 `AlvorKit.ECS.Indexed` does not depend on injection, scopes, UI, rendering, or
 persistence. Games bind its types into scopes. It is not a scheduler, a query
@@ -188,7 +200,8 @@ part of its lifetime contract.
 public class EntIdxRegistrationException : Exception;
 ```
 
-Thrown at registration time (load time) for: a marker or gate whose generated
+Thrown at registration time (load time) for: an archetypal component, marker, or
+gate in a component-hook or bag registration, a marker or gate whose generated
 value type is not `bool` in `AddBag`/`AddGatedBag`, a `(T, N)` pair where
 `N.Component.ValueType != typeof(T)` in `AddPre`/`AddPost`, and a duplicate bag
 registration for the same marker+gate identity on the same context. All checks
@@ -246,7 +259,7 @@ observe the honest final state with `Has == false`.
 Dispose():
     if not IsAlive: return                    // idempotent
     run pre-dispose hooks                     // entity fully intact
-    Clear()                                   // per-component unset pipeline
+    Clear()                                   // archetypal cleanup, sparse unset pipelines
     base Dispose()                            // generation bump, slot return
 ```
 
@@ -255,18 +268,20 @@ dispose could re-fire pre-dispose hooks and re-run `Clear` even though the base
 `EntPtr.Dispose` had already rejected the dead handle.
 
 Pre-dispose hooks run while every component is still readable — this is where
-persistence erase and network teardown belong. `Clear` then fires the full
-unset pipeline per present component, in page-field registration order, which
-is effectively arbitrary; hooks must not assume cross-component invariants
-during dispose. Cleanup that needs the whole entity goes in pre-dispose;
+persistence erase and network teardown belong. `Clear` then removes archetypal
+components without hooks and fires the full unset pipeline per present sparse
+component, in page-field registration order, which is effectively arbitrary;
+hooks must not assume cross-component invariants during dispose. Cleanup that
+needs the whole Ent goes in pre-dispose;
 cleanup keyed to one component goes in that component's hooks.
 
-### Clear Fires Hooks — A Hard Contract
+### Clear Fires Sparse Component Hooks — A Hard Contract
 
 `EntMutate.Clear()` from the base package dispatches `field.Unset(ent)`
 through the `IEntMut` constraint, which lands on `EntPtrIdx.Unset` and runs
-the hook pipeline for every present component. The indexed layer depends on
-this for correctness, twice over:
+the hook pipeline for every present sparse component. Archetypal components are
+removed before that pipeline and do not support component hooks. The indexed
+layer depends on this for correctness, twice over:
 
 - key indexes clean up on dispose only because unsetting `Id` fires the pre
   hook with `default`, which removes the old dictionary key

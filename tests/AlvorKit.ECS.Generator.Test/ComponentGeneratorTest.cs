@@ -42,6 +42,7 @@ public sealed class ComponentGeneratorTest
 
         StringAssert.Contains(source, "namespace Fixture;");
         StringAssert.Contains(source, "public abstract class ActorComponents : IComponentGroup");
+        StringAssert.Contains(source, "public static EntComponent Component => new(typeof(int), typeof(Health), false);");
         StringAssert.Contains(source, "public bool HasHealth => ent.Has<int, ActorComponents.Health>();");
         StringAssert.Contains(source, "public int Health");
         StringAssert.Contains(source, "public EntMutator<T> Health(in int value)");
@@ -145,6 +146,8 @@ public sealed class ComponentGeneratorTest
         StringAssert.Contains(source, "WithPosition<S>(");
         StringAssert.Contains(source, "internal const string EntArchGetAccess = \"public\";");
         StringAssert.Contains(source, "internal const string EntArchSetAccess = \"public\";");
+        StringAssert.Contains(source,
+            "public static EntComponent Component => new(typeof(Fixture.Position), typeof(Position), true);");
     }
 
     /// <summary>SkipBuilder suppresses builder-style mutator extensions while keeping normal accessors.</summary>

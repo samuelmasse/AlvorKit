@@ -13,6 +13,9 @@ internal sealed class UiMouseHitSearch(RootUiClipping clipping)
 
     private EntMut FindHovered(Vec2 position, Box2? clip, EntMut node, bool inputDisabled)
     {
+        if (!UiTree.IsActive(node))
+            return default;
+
         var box = clipping.IntersectClips(clip, new Box2(node.PositionR, node.PositionR + node.SizeR));
         inputDisabled |= node.IsInputDisabledFV.Resolve();
 
@@ -32,6 +35,9 @@ internal sealed class UiMouseHitSearch(RootUiClipping clipping)
 
     private EntMut FindScrolled(Vec2 position, Box2? clip, EntMut node, bool inputDisabled)
     {
+        if (!UiTree.IsActive(node))
+            return default;
+
         var box = clipping.IntersectClips(clip, new Box2(node.PositionR, node.PositionR + node.SizeR));
         inputDisabled |= node.IsInputDisabledFV.Resolve();
 

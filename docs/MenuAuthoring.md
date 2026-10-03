@@ -130,7 +130,7 @@ Prefer the smallest readable scope.
 - Avoid hoisting values to the top of `Create` unless they are shared by most
   of the menu.
 - Capture local state inside `Create` when the menu needs ephemeral UI state,
-  such as a previous input flag or the last rendered revision.
+  such as expansion, selection, or a previous input flag.
 - Give local state and longer behavior clear names so readers can connect
   controls to their effects without tracing unrelated code.
 
@@ -150,28 +150,55 @@ button.Mutate()
 
 over a one-use local function whose name only repeats the callback registration.
 
-When an update callback prepares state or child nodes needed by the first
-layout, request that work through the node's integer counter:
+Use `OnRefreshF` for data and child structure needed before layout:
 
 ```csharp
-branch.Mutate()
-    .AheadUpdateCountV(1)
-    .OnUpdateF(() =>
-    {
-        // Prepare this branch's state and children here.
-    });
+var tree = branchMenu.Create(content, 0);
+content.Mutate()
+    .RefreshIntervalV(TimeSpan.FromMilliseconds(200))
+    .OnRefreshF(() => tree.Set(diagnostics.Sample()));
 ```
 
-Do not also invoke the callback manually during construction. The UI consumes
-positive counts before layout, decrementing before each callback, and prepares
-newly created children in the same phase. Disabled nodes retain pending counts
-until enabled; removed or deleted nodes are excluded. The normal tick update
-still runs separately, so ahead callbacks must be suitable for extra calls.
-Keep input-edge handling on a separate node when repeating it could trigger
-an action twice. Set `node.AheadUpdateCountFV = 1` to request another refresh,
-for example when reopening an overlay. Ahead updates run before current
-geometry is resolved; callbacks that need current layout belong in the normal
-update phase.
+Refresh runs automatically before the first visible layout and when the node
+or an ancestor becomes enabled again. A positive interval repeats the work
+while visible, measured in UI update time. Zero disables periodic refreshes.
+Preparation and drawing do not advance that clock. A long update causes one
+refresh, without replaying missed intervals.
+
+Set `node.RefreshCountFV = 1` to request an additional refresh, such as when
+replacing an open popup's options. Counts are decremented before each call.
+A pending count coalesces with first-visibility or periodic work; larger counts
+request additional passes. Newly created descendants and requests on earlier
+nodes are prepared before layout completes. Hidden nodes retain requests until
+visible again. Do not invoke refresh callbacks manually during construction.
+
+`OnUpdateF` remains the once-per-tick callback for input and behavior that needs
+resolved geometry. Refresh never invokes it. Detached, deleted, or disabled
+subtrees are ineligible for later update or input callbacks, even if the last
+layout still contains them. Mount and remove children through `UiSyntax` so
+attachment tracking stays current; direct span edits may reorder siblings but
+must not replace the tree's membership.
+
+For a changing collection, use a dedicated child container and keyed views:
+
+```csharp
+var children = NodesFor<AllocLayer, AppAllocationRow>(
+    childrenRoot, row => row.Layer, parent => Create(parent, depth + 1));
+
+return new UiView<AppAllocationRow>(branch, next =>
+{
+    allocation = next;
+    children.Set(next.Children);
+});
+```
+
+`UiView<T>` is an ordinary mounted handle with `Root` and `Set(T)`, not an
+injected service. Its setter applies initial or replacement data synchronously.
+`NodesFor` retains the same view for each surviving key, updates its data,
+orders the existing nodes, and detaches removed keys. Expansion and other
+captured interaction state survive changes. The parent must contain only the
+collection's children, and keys must be unique within each `Set`. Storage is
+reused once capacity is sufficient; a new key creates a new view.
 
 ## State And Dependencies
 
@@ -191,12 +218,15 @@ Menus are not application state. Keep the boundary crisp.
   mounted subtree's expansion, visibility, selection, and refresh state in
   `Create` locals captured by callbacks.
 - When a menu needs sampled or derived data, let an injected collaborator
-  gather it and expose plain values or immutable snapshots. Keep sampling,
+  gather it and expose plain values. Data needed only by the UI belongs with
+  the UI and is sampled by its refresh lifecycle. Keep sampling,
   formatting, and interaction state separate; do not create a mutable object
   per row that owns all three just to back a label or tree branch.
 - Preserve surviving row nodes when a dynamic collection changes so local
   interaction state survives additions and removals. Respect the toolkit's
-  traversal and removal timing when refreshing those rows.
+  keyed child collection for this instead of implementing reconciliation in
+  each menu. Borrowed sample spans must be consumed synchronously during Set,
+  before the next sample; retain scalar values for text callbacks.
 
 ## Dynamic Text And Refresh
 

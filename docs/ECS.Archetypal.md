@@ -53,6 +53,13 @@ public interface IMotionComponents
 reads are part of `IEnt`; archetypal mutation is part of `IEntMut`, so every Ent
 wrapper supports the generated accessors consistently.
 
+Archetypal storage deliberately bypasses Indexed component hooks, including
+when accessed through an Indexed handle. Indexed component-hook and bag
+registrations reject archetypal components, markers, and gates with
+`EntIdxRegistrationException`. Keep components sparse when their writes must
+maintain observed state. Mixed sparse/archetypal Ents remain supported, and
+whole-Ent pre-dispose hooks can inspect archetypal values before cleanup.
+
 ## Lifecycle Integration
 
 Each alloc records the archetype groups it has used. `Clear` asks those groups

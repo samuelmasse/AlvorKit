@@ -3,85 +3,124 @@ namespace AlvorKit;
 [Root]
 public class RootUiUpdate
 {
-    internal void Ahead(EntMut root)
+    private double time;
+
+    internal void Advance(double delta) => time += delta;
+
+    internal void Refresh(EntMut root)
     {
-        // A callback may request another update on a node visited earlier in the tree.
-        while (RunAhead(root))
+        // A refresh can request another pass on a node visited earlier in the tree.
+        while (RunRefresh(root))
         {
         }
     }
 
     internal void Update(EntMut n)
     {
+        if (!UiTree.IsActive(n))
+            return;
+
         n.OnUpdateFV.Resolve()?.Invoke();
 
-        foreach (var c in n.NodesR.Span)
-            Update(c);
+        foreach (var child in n.NodesR.Span)
+            Update(child);
     }
 
-    private bool RunAhead(EntMut n)
+    private bool RunRefresh(EntMut n)
     {
-        if (n.IsDeletedFV.Resolve() || n.IsDisabledFV.Resolve())
-            return false;
-
-        var updated = false;
-        var remaining = n.AheadUpdateCountFV.Resolve();
-
-        while (remaining > 0)
+        if (!UiTree.IsActive(n))
         {
-            n.AheadUpdateCountFV = remaining - 1;
-            n.OnUpdateFV.Resolve()?.Invoke();
-            updated = true;
-
-            if (n.IsDeletedFV.Resolve() || n.IsDisabledFV.Resolve())
-                return updated;
-
-            remaining = n.AheadUpdateCountFV.Resolve();
+            Deactivate(n);
+            return false;
         }
 
-        updated |= AheadChildren(n);
-        updated |= AheadStack(n);
-        return updated;
+        var interval = n.RefreshIntervalFV.Resolve().TotalSeconds;
+        var due = !n.UiRefreshActive || (interval > 0 && time - n.UiRefreshTime >= interval);
+        n.UiRefreshActive = true;
+        var refreshed = false;
+
+        while (due || n.RefreshCountFV.Resolve() > 0)
+        {
+            var remaining = n.RefreshCountFV.Resolve();
+            if (remaining > 0)
+                n.RefreshCountFV = remaining - 1;
+
+            n.UiRefreshTime = time;
+            n.OnRefreshFV.Resolve()?.Invoke();
+            refreshed = true;
+            due = false;
+
+            if (!UiTree.IsActive(n))
+            {
+                Deactivate(n);
+                return refreshed;
+            }
+        }
+
+        refreshed |= RefreshChildren(n);
+        refreshed |= RefreshStack(n);
+        return refreshed;
     }
 
-    private bool AheadChildren(EntMut n)
+    private bool RefreshChildren(EntMut n)
     {
-        var updated = false;
+        var refreshed = false;
         var index = 0;
 
-        while (index < NodesCount(n))
+        while (UiTree.IsActive(n) && index < NodesCount(n))
         {
             var child = Nodes(n)[index];
-            updated |= RunAhead(child);
+            refreshed |= RunRefresh(child);
 
-            // Read live storage again: the callback may have added or removed siblings.
+            // Callbacks may replace child storage or remove the current node and its siblings.
             if (index < NodesCount(n) && Nodes(n)[index] == child)
                 index++;
         }
 
-        return updated;
+        return refreshed;
     }
 
-    private bool AheadStack(EntMut n)
+    private bool RefreshStack(EntMut n)
     {
-        var updated = false;
+        var refreshed = false;
         var index = 0;
 
-        while (index < NodeStackCount(n))
+        while (UiTree.IsActive(n) && index < NodeStackCount(n))
         {
             var entry = NodeStack(n)[index];
-            var companion = entry.CompanionFV.Resolve();
-
+            var companion = UiTree.Companion(n, entry);
             if (companion != default)
-                updated |= RunAhead(companion);
+                refreshed |= RunRefresh(companion);
+
+            if (!NodeStackTryPeek(n, out var top) || top != entry)
+                Deactivate(entry);
 
             if (index < NodeStackCount(n) && NodeStack(n)[index] == entry)
                 index++;
         }
 
-        if (NodeStackTryPeek(n, out var top))
-            updated |= RunAhead(top);
+        if (UiTree.IsActive(n) && NodeStackTryPeek(n, out var current))
+            refreshed |= RunRefresh(current);
 
-        return updated;
+        return refreshed;
+    }
+
+    private void Deactivate(EntMut n)
+    {
+        if (!n.UiRefreshActive)
+            return;
+
+        n.UiRefreshActive = false;
+        foreach (var child in Nodes(n))
+            Deactivate(child);
+
+        foreach (var entry in NodeStack(n))
+        {
+            var companion = entry.CompanionFV.Resolve();
+            if (companion != default)
+                Deactivate(companion);
+
+            Deactivate(entry);
+        }
     }
 }

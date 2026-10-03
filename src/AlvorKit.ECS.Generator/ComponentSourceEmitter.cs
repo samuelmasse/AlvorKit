@@ -32,6 +32,7 @@ internal static class ComponentSourceEmitter
         ("Access", ComponentAccess.WiderAccess(property.GetAccess, property.SetAccess)),
         ("Name", property.Name),
         ("ValueType", property.ValueType),
+        ("IsArchetypal", property.Archetypal ? "true" : "false"),
         ("ArchetypalAccess", ArchetypalAccess(property)));
 
     private static string ArchetypalAccess(PropertyModel property) =>

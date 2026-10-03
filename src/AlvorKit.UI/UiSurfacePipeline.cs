@@ -23,7 +23,7 @@ internal sealed class UiSurfacePipeline(
 
             do
             {
-                update.Ahead(root);
+                update.Refresh(root);
                 traverse.Traverse(root, null, 0);
                 size.Size(root.SizeR, root);
                 position.Position(root.SizeR, default, root);

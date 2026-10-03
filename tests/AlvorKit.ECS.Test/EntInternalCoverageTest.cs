@@ -79,7 +79,7 @@ public sealed class EntInternalCoverageTest
     [TestMethod]
     public void MetadataTypes_ReportConfiguredValues()
     {
-        var component = new EntComponent(typeof(int), typeof(FirstComponent));
+        var component = new EntComponent(typeof(int), typeof(FirstComponent), false);
         Assert.AreEqual(typeof(int), component.ValueType);
         Assert.AreEqual(typeof(FirstComponent), component.NameType);
         Assert.AreEqual("Int32 FirstComponent", component.ToString());

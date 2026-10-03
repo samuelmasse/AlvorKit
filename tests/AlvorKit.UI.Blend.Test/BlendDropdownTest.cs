@@ -10,7 +10,7 @@ public class BlendDropdownTest
     {
         using var h = new BlendTestHarness();
         var picks = 0;
-        var (popup, layer, panel, field) = Mount(h, index => picks++);
+        var (popup, layer, options, field) = Mount(h, index => picks++);
         h.Draw();
         h.Host.RaiseKeyDown(Keys.Enter);
         h.Root.Get<RootUiFocus>().Focus(field, true);
@@ -19,8 +19,8 @@ public class BlendDropdownTest
 
         h.Draw();
 
-        Assert.AreEqual(2, UiSyntax.NodesCount(panel));
-        Assert.AreEqual("First", UiSyntax.Nodes(UiSyntax.Nodes(panel)[0])[0].TextFV.Resolve().ToString());
+        Assert.AreEqual(2, UiSyntax.NodesCount(options));
+        Assert.AreEqual("First", UiSyntax.Nodes(UiSyntax.Nodes(options)[0])[0].TextFV.Resolve().ToString());
         Assert.AreEqual(0, picks);
         Assert.IsFalse(layer.IsDisabledFV.Resolve());
         h.Tick();
@@ -38,7 +38,7 @@ public class BlendDropdownTest
     {
         using var h = new BlendTestHarness();
         var selected = -1;
-        var (popup, layer, panel, field) = Mount(h, index => selected = index);
+        var (popup, layer, options, field) = Mount(h, index => selected = index);
         h.Draw();
         field.OnPressFV.Resolve()!();
         h.Tick();
@@ -64,7 +64,7 @@ public class BlendDropdownTest
     {
         using var h = new BlendTestHarness();
         var picks = 0;
-        var (popup, layer, panel, field) = Mount(h, index => picks++);
+        var (popup, layer, options, field) = Mount(h, index => picks++);
         h.Draw();
         field.OnPressFV.Resolve()!();
         h.Tick();
@@ -89,20 +89,20 @@ public class BlendDropdownTest
         using var h = new BlendTestHarness();
         var firstPicks = 0;
         var secondPicked = -1;
-        var (popup, layer, panel, first) = Mount(h, index => firstPicks++);
+        var (popup, layer, options, first) = Mount(h, index => firstPicks++);
         var second = h.Blend.Fields.DropdownField(h.Ui, popup, "Other", [new("Other")], () => 0,
             index => secondPicked = index);
         h.Draw();
         first.OnPressFV.Resolve()!();
         h.Draw();
-        Assert.AreEqual(2, UiSyntax.NodesCount(panel));
+        Assert.AreEqual(2, UiSyntax.NodesCount(options));
         second.OnPressFV.Resolve()!();
         h.Draw();
 
         Assert.IsFalse(popup.IsOpenFor(first));
         Assert.IsTrue(popup.IsOpenFor(second));
-        Assert.AreEqual(1, UiSyntax.NodesCount(panel));
-        UiSyntax.Nodes(panel)[0].OnPressFV.Resolve()!();
+        Assert.AreEqual(1, UiSyntax.NodesCount(options));
+        UiSyntax.Nodes(options)[0].OnPressFV.Resolve()!();
         Assert.AreEqual(0, firstPicks);
         Assert.AreEqual(0, secondPicked);
         Assert.IsFalse(popup.IsOpen);
@@ -115,8 +115,8 @@ public class BlendDropdownTest
         using var h = new BlendTestHarness();
         var firstPicked = -1;
         var secondPicked = -1;
-        var (first, firstLayer, firstPanel, firstField) = Mount(h, index => firstPicked = index);
-        var (second, secondLayer, secondPanel, secondField) = Mount(h, index => secondPicked = index);
+        var (first, firstLayer, firstOptions, firstField) = Mount(h, index => firstPicked = index);
+        var (second, secondLayer, secondOptions, secondField) = Mount(h, index => secondPicked = index);
         h.Draw();
         firstField.OnPressFV.Resolve()!();
         secondField.OnPressFV.Resolve()!();
@@ -125,12 +125,34 @@ public class BlendDropdownTest
         Assert.AreNotSame(first, second);
         Assert.IsTrue(first.IsOpenFor(firstField));
         Assert.IsTrue(second.IsOpenFor(secondField));
-        UiSyntax.Nodes(firstPanel)[1].OnPressFV.Resolve()!();
+        UiSyntax.Nodes(firstOptions)[1].OnPressFV.Resolve()!();
         Assert.AreEqual(1, firstPicked);
         Assert.AreEqual(-1, secondPicked);
         Assert.IsTrue(second.IsOpen);
-        UiSyntax.Nodes(secondPanel)[0].OnPressFV.Resolve()!();
+        UiSyntax.Nodes(secondOptions)[0].OnPressFV.Resolve()!();
         Assert.AreEqual(0, secondPicked);
+    }
+
+    /// <summary>Replacing options retains the popup's decorative border and prepares the new row geometry.</summary>
+    [TestMethod]
+    public void Refresh_PreservesBorderAndPreparesReplacementOptions()
+    {
+        using var h = new BlendTestHarness();
+        var (popup, layer, options, field) = Mount(h, index => { });
+        h.Draw();
+        field.OnPressFV.Resolve()!();
+        h.Draw();
+        var panel = UiSyntax.Nodes(layer)[0];
+        var border = UiSyntax.Nodes(panel)[1..].ToArray();
+        Assert.AreEqual(4, border.Length);
+
+        popup.Open(field, [new("Replacement")], 0, index => { });
+        h.Draw();
+
+        CollectionAssert.AreEqual(border, UiSyntax.Nodes(panel)[1..].ToArray());
+        Assert.AreEqual(1, UiSyntax.NodesCount(options));
+        Assert.AreEqual(h.Blend.S.Metrics.DropdownOptionHeight, UiSyntax.Nodes(options)[0].SizeR.Y);
+        Assert.AreEqual("Replacement", UiSyntax.Nodes(UiSyntax.Nodes(options)[0])[0].TextFV.Resolve().ToString());
     }
 
     /// <summary>A popup under an offset mount still appears beneath its anchor in the root's coordinate space.</summary>
@@ -161,7 +183,7 @@ public class BlendDropdownTest
         Assert.AreEqual(field.PositionR.Y + field.SizeR.Y + h.Blend.S.Metrics.DropdownPopupGap, panel.PositionR.Y);
     }
 
-    private static (BlendDropdownHandle Popup, EntMut Layer, EntMut Panel, EntMut Field) Mount(
+    private static (BlendDropdownHandle Popup, EntMut Layer, EntMut Options, EntMut Field) Mount(
         BlendTestHarness h, Action<int> pick)
     {
         UiSyntax.Node(h.Ui, out var content)
@@ -175,6 +197,6 @@ public class BlendDropdownTest
             .SizeV((120, 22))
             .OffsetV((20, 20));
         var layer = UiSyntax.Nodes(popupMount)[0];
-        return (popup, layer, UiSyntax.Nodes(layer)[0], field);
+        return (popup, layer, UiSyntax.Nodes(UiSyntax.Nodes(layer)[0])[0], field);
     }
 }

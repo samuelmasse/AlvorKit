@@ -7,32 +7,48 @@ public static class UiSyntax
     public static EntMutator<EntMut> Node(EntMut parent)
     {
         var val = parent.UiRoot.Alloc();
-        parent.UiNodes = Append(parent.UiRoot.Allocator, parent.UiNodes, val);
+        NodesAdd(parent, val);
         return val.Mutate();
     }
 
     public static EntMutator<EntMut> Node(EntMut parent, out EntMut val)
     {
         val = parent.UiRoot.Alloc();
-        parent.UiNodes = Append(parent.UiRoot.Allocator, parent.UiNodes, val);
+        NodesAdd(parent, val);
         return val.Mutate();
     }
 
     public static EntMutator<EntMut> NodeS(EntMut parent)
     {
         var val = parent.UiRoot.Alloc();
+        val.UiParent = parent;
+        val.UiStackEntry = val;
         parent.UiNodeStack = Append(parent.UiRoot.Allocator, parent.UiNodeStack, val);
         return val.Mutate();
     }
 
     public static Span<EntMut> Nodes(EntMut parent) => Used(parent.UiRoot.Allocator, parent.UiNodes);
 
-    public static void NodesClear(EntMut parent) => parent.UiNodes = parent.UiNodes with { Count = 0 };
+    public static void NodesClear(EntMut parent)
+    {
+        foreach (ref var child in Nodes(parent))
+            child.UiParent = default;
+
+        parent.UiNodes = parent.UiNodes with { Count = 0 };
+    }
 
     public static int NodesCount(EntMut parent) => parent.UiNodes.Count;
 
-    public static void NodesAdd(EntMut parent, EntMut child) =>
+    public static void NodesAdd(EntMut parent, EntMut child)
+    {
+        child.UiParent = parent;
+        child.UiStackEntry = default;
         parent.UiNodes = Append(parent.UiRoot.Allocator, parent.UiNodes, child);
+    }
+
+    /// <summary>Retains keyed views under a parent dedicated exclusively to this collection's children.</summary>
+    public static UiChildren<TKey, T> NodesFor<TKey, T>(
+        EntMut parent, Func<T, TKey> key, Func<EntMut, UiView<T>> create) where TKey : notnull => new(parent, key, create);
 
     public static bool NodesRemove(EntMut parent, EntMut child)
     {
@@ -43,11 +59,16 @@ public static class UiSyntax
             return false;
 
         parent.UiNodes = RemoveAt(parent.UiRoot.Allocator, slot, index);
+        child.UiParent = default;
 
         return true;
     }
 
-    public static void NodesRemoveAt(EntMut parent, int index) => parent.UiNodes = RemoveAt(parent.UiRoot.Allocator, parent.UiNodes, index);
+    public static void NodesRemoveAt(EntMut parent, int index)
+    {
+        Nodes(parent)[index].UiParent = default;
+        parent.UiNodes = RemoveAt(parent.UiRoot.Allocator, parent.UiNodes, index);
+    }
 
     public static Span<EntMut> NodeStack(EntMut parent) => Used(parent.UiRoot.Allocator, parent.UiNodeStack);
 
@@ -60,6 +81,7 @@ public static class UiSyntax
         var span = parent.UiRoot.Allocator.Span(slot);
 
         var val = span[lastIndex];
+        val.UiParent = default;
         span[lastIndex] = default;
         parent.UiNodeStack = slot with { Count = lastIndex };
 
