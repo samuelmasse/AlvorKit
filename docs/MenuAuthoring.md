@@ -121,9 +121,10 @@ Prefer the smallest readable scope.
 - Use anonymous methods or lambdas for callbacks that are used once, especially
   short `OnUpdateF`, `OnPressF`, `IsDisabledF`, `TextF`, `OffsetF`, and `SizeF`
   logic. Place simple behavior beside the control it affects.
-- Use a named local function when the block is reused, the name explains a UI
-  concept, or the callback is large enough that a name makes the tree easier to
-  scan.
+- Use a named local function for actual reuse or a distinct operation whose
+  meaningful name improves the layout. Do not extract a single-use callback
+  merely because its body is long or multiline, or name it `Update` or
+  `Refresh` just to repeat what the callback registration already says.
 - Declare local constants and local variables close to the node or helper that
   uses them.
 - Avoid hoisting values to the top of `Create` unless they are shared by most
@@ -154,11 +155,14 @@ layout, request that work through the node's integer counter:
 
 ```csharp
 branch.Mutate()
-    .OnUpdateF(Update)
-    .AheadUpdateCountV(1);
+    .AheadUpdateCountV(1)
+    .OnUpdateF(() =>
+    {
+        // Prepare this branch's state and children here.
+    });
 ```
 
-Do not also call `Update()` manually during construction. The UI consumes
+Do not also invoke the callback manually during construction. The UI consumes
 positive counts before layout, decrementing before each callback, and prepares
 newly created children in the same phase. Disabled nodes retain pending counts
 until enabled; removed or deleted nodes are excluded. The normal tick update
