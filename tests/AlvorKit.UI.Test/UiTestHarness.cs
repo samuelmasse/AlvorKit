@@ -17,6 +17,7 @@ internal sealed class UiTestHarness
         var gl = new RootGl(new UiTestGl());
         var sprites = new RootSprites(new SpriteBatch(gl));
         var traverse = new RootUiTraverse();
+        var update = new RootUiUpdate();
         var clipping = new RootUiClipping();
         var size = new RootUiSize(sprites, Scale);
         var position = new RootUiPosition(sprites, Scale);
@@ -33,11 +34,12 @@ internal sealed class UiTestHarness
             Ui,
             Scale,
             Context,
+            update,
             traverse,
             size,
             position,
             draw);
-        Script = new RootUiScript(Surfaces, UiMouse, Focus, new RootUiUpdate());
+        Script = new RootUiScript(Surfaces, UiMouse, Focus, update);
 
         Window.Update += Script.Update;
     }

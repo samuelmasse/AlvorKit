@@ -4,6 +4,7 @@ namespace AlvorKit;
 internal sealed class UiSurfacePipeline(
     RootUiSurfaces owner,
     RootUiContext context,
+    RootUiUpdate update,
     RootUiTraverse traverse,
     RootUiSize size,
     RootUiPosition position,
@@ -22,6 +23,7 @@ internal sealed class UiSurfacePipeline(
 
             do
             {
+                update.Ahead(root);
                 traverse.Traverse(root, null, 0);
                 size.Size(root.SizeR, root);
                 position.Position(root.SizeR, default, root);

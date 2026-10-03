@@ -149,6 +149,26 @@ button.Mutate()
 
 over a one-use local function whose name only repeats the callback registration.
 
+When an update callback prepares state or child nodes needed by the first
+layout, request that work through the node's integer counter:
+
+```csharp
+branch.Mutate()
+    .OnUpdateF(Update)
+    .AheadUpdateCountV(1);
+```
+
+Do not also call `Update()` manually during construction. The UI consumes
+positive counts before layout, decrementing before each callback, and prepares
+newly created children in the same phase. Disabled nodes retain pending counts
+until enabled; removed or deleted nodes are excluded. The normal tick update
+still runs separately, so ahead callbacks must be suitable for extra calls.
+Keep input-edge handling on a separate node when repeating it could trigger
+an action twice. Set `node.AheadUpdateCountFV = 1` to request another refresh,
+for example when reopening an overlay. Ahead updates run before current
+geometry is resolved; callbacks that need current layout belong in the normal
+update phase.
+
 ## State And Dependencies
 
 Menus are not application state. Keep the boundary crisp.
@@ -185,9 +205,10 @@ Menus are not application state. Keep the boundary crisp.
   Repeated sampling should reuse collection storage once capacity is
   sufficient. Choose a refresh cadence that fits the display rather than
   recomputing the underlying data each time a text callback runs.
-- Keep formatting used by one menu in that menu. Inline simple expressions in
-  callbacks; use a local function inside `Create` for longer formatting, such
-  as a multiline tooltip.
+- Keep single-use formatting at the relevant `TextF` or `TooltipF` callback,
+  including straightforward multiline formatting. Several lines alone do not
+  justify a local function. Extract one for actual reuse or substantial logic
+  when the name and separation make the menu easier to read.
 - Extract a formatting collaborator when it removes actual shared logic
   across menus. One shared method can justify a small collaborator; method
   count or tooltip length alone does not. Accept plain data and return

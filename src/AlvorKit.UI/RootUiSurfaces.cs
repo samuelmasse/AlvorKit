@@ -21,6 +21,7 @@ public sealed class RootUiSurfaces
         RootUi ui,
         RootUiScale scale,
         RootUiContext context,
+        RootUiUpdate update,
         RootUiTraverse traverse,
         RootUiSize size,
         RootUiPosition position,
@@ -33,6 +34,7 @@ public sealed class RootUiSurfaces
         pipeline = new(
             this,
             context,
+            update,
             traverse,
             size,
             position,
