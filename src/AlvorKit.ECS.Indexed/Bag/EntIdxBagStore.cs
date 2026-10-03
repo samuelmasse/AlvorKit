@@ -13,7 +13,12 @@ internal struct EntIdxBagStore<TIndex> where TIndex : IComponent
 
     internal readonly int Count => count - 1;
 
-    internal readonly bool Contains(EntMutIdx ent) => ent.Get<int, TIndex>() > 0;
+    /// <summary>Checks the indexed slot and handle so bags sharing a component key remain independent.</summary>
+    internal readonly bool Contains(EntMutIdx ent)
+    {
+        int index = ent.Get<int, TIndex>();
+        return index > 0 && index < count && ents[index] == ent;
+    }
 
     internal void Add(EntMutIdx ent)
     {

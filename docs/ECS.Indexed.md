@@ -345,7 +345,11 @@ internal struct EntIdxBagStore<TIndex> where TIndex : IComponent
 
     public ReadOnlySpan<EntMutIdx> Ents => new(ents, 1, count - 1);
     public int Count => count - 1;
-    public bool Contains(EntMutIdx ent) => ent.Get<int, TIndex>() > 0;
+    public bool Contains(EntMutIdx ent)
+    {
+        int index = ent.Get<int, TIndex>();
+        return index > 0 && index < count && ents[index] == ent;
+    }
 
     internal void Add(EntMutIdx ent)
     {
@@ -373,6 +377,12 @@ internal struct EntIdxBagStore<TIndex> where TIndex : IComponent
 
 `EntIdxBagMut<N>` and `EntIdxGatedBagMut<N, TGate>` are thin public wrappers
 over this store with different index key types.
+
+`Contains` checks membership in the receiving bag. It accepts handles from any
+context and returns false for nonmembers, including default and disposed
+handles. The back-index must address an occupied slot in this bag, and that
+slot must contain the supplied handle. This check is O(1) and allocation-free;
+the mutable and read wrappers use the same check.
 
 Slot 0 is reserved so `0` (the unset default of the internal
 `EntIdxBagIndex<...>` int component) means "never in this bag". Removal writes
@@ -409,8 +419,10 @@ registrations would share `EntIdxGatedBagIndex<N, TGate>` and duplicate the same
 derived state. The duplicate registration throws `EntIdxRegistrationException`
 (detected by the backstop hook already existing for that bag index component on
 the context). Different gates over the same marker use different index
-components and are valid. Two contexts may use the same marker and gate freely —
-entities belong to one context, so their index ints never collide.
+components and are valid. Two contexts may use the same marker and gate freely.
+Their bags share the back-index component key and may reuse the same slot
+numbers. `Contains` compares the stored handle to distinguish membership in
+those separate bags. Each Indexed Ent still belongs to one context.
 
 ### Iteration Semantics
 
