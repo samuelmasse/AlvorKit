@@ -24,7 +24,7 @@ node subtree. Keep its layout together in `Create`.
   type. Prefer `AppStyle s` and `.Mutate(s.EmphasisLabel)` over longer names
   such as `style`.
 - `Create` may accept explicit props, like `Create(EntMut root,
-  AppInventoryView view)`. Do not pass the owner, parent state object, or the
+  AppInventoryRow row)`. Do not pass the owner, parent state object, or the
   main application state itself as a prop.
 - Put all helper logic inside `Create` as local variables, local constants,
   anonymous callbacks, or local functions.
@@ -96,14 +96,12 @@ public class AppExampleMenu(
 {
     public void Create(EntMut root, AppExampleView view)
     {
-        const float headerHeight = 40f;
-
         Node(root, out var panel)
             .Mutate(s.PanelList);
         {
             Node(panel, out var header)
                 .SizeWeightTypeV(SizeWeightType.Self)
-                .SizeV((0, headerHeight));
+                .SizeV((0, 40));
             {
                 Node(header)
                     .Mutate(s.Heading)
@@ -165,6 +163,42 @@ Menus are not application state. Keep the boundary crisp.
   state, menus, UI roots, and shortcuts.
 - Avoid passing "something above" into a menu. Prefer explicit props or an
   injected command/session collaborator.
+- Reuse the injected menu composer to create multiple subtrees. Keep each
+  mounted subtree's expansion, visibility, selection, and refresh state in
+  `Create` locals captured by callbacks.
+- When a menu needs sampled or derived data, let an injected collaborator
+  gather it and expose plain values or immutable snapshots. Keep sampling,
+  formatting, and interaction state separate; do not create a mutable object
+  per row that owns all three just to back a label or tree branch.
+- Preserve surviving row nodes when a dynamic collection changes so local
+  interaction state survives additions and removals. Respect the toolkit's
+  traversal and removal timing when refreshing those rows.
+
+## Dynamic Text And Refresh
+
+- Format changing text through `RootText` inside `TextF` and `TooltipF`
+  callbacks. Use `TextV` for literals and existing stable strings.
+- Consume returned `ReadOnlySpan<char>` values immediately. Never retain a
+  `RootText` span across callbacks or frames, or turn it into a string just to
+  feed it back to the UI.
+- Keep numeric values in sampled data instead of cached display strings.
+  Repeated sampling should reuse collection storage once capacity is
+  sufficient. Choose a refresh cadence that fits the display rather than
+  recomputing the underlying data each time a text callback runs.
+- Keep formatting used by one menu in that menu. Inline simple expressions in
+  callbacks; use a local function inside `Create` for longer formatting, such
+  as a multiline tooltip.
+- Extract a formatting collaborator when it removes actual shared logic
+  across menus. One shared method can justify a small collaborator; method
+  count or tooltip length alone does not. Accept plain data and return
+  transient text, and keep single-use formatting local even when a shared
+  formatter already exists.
+
+```csharp
+Node(panel)
+    .Mutate(s.Label)
+    .TextF(() => text.Format("{0:N0} items", inventory.Count));
+```
 
 ## Styling And Measures
 
@@ -173,6 +207,10 @@ Use style objects for visual language, not for every number.
 - `AppStyle` or an equivalent style class should own reusable colors, fonts,
   spacing tokens, and component recipes such as panel, button, label, swatch,
   tooltip, or modal styling.
+- Menus use one style surface, injected as `s`. Put feature-specific recipes
+  on that style with clear names, such as `s.AllocationRow` and
+  `s.AllocationNumberCell`. Do not introduce another injected style wrapper
+  merely to group a feature's recipes.
 - Local layout decisions belong in the menu that owns the layout. Prefer
   inline values for sizing, spacing, placement, colors, and draw order when
   the call makes their meaning clear. Do not introduce one-use constants just
@@ -233,13 +271,14 @@ Do not automatically extract each header, footer, toolbar, or label group.
 Those regions often read better together in one screen declaration. Do not
 split solely to shorten a layout method or keep a file artificially small.
 
-Non-visual concerns should become collaborators rather than child menus:
+Non-visual concerns with independent ownership or actual reuse belong in
+collaborators rather than child menus:
 
 - geometry calculations
-- tooltip text
+- formatting shared by menus
 - domain view/projection objects
 - command/session state
-- reusable styling
+- reusable styling on the app's style surface
 
 After a split, the parent menu should mostly describe layout and child menu
 placement. The child menu should still have one public `Create` method and no
