@@ -2,34 +2,34 @@ namespace AlvorKit;
 
 [App]
 public class AppAnimationMenu(
-    AppStyle s,
+    BlendUi bl,
     AppLayout layout,
     AppSession session)
 {
     public void Create(EntMut root)
     {
         Node(root, out var panel)
-            .Mutate(s.PanelFillList);
+            .Mutate(bl.S.PanelFillList);
         {
             Node(panel, out var header)
-                .Mutate(s.HeaderStrip)
+                .Mutate(bl.S.HeaderStrip)
                 .SizeV((0, layout.RailHeaderHeight))
-                .InnerSpacingV(s.Metrics.ToolbarSpacing);
+                .InnerSpacingV(bl.S.Metrics.ToolbarSpacing);
             {
                 Node(header)
-                    .Mutate(s.EmphasisLabel)
+                    .Mutate(bl.S.EmphasisLabel)
                     .AlignmentV(Alignment.Vertical)
                     .TextV("Animations");
 
                 Node(header)
-                    .Mutate(s.ToolbarButton)
+                    .Mutate(bl.S.ToolbarButton)
                     .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .TextV("Prev")
                     .OnClickF(session.SelectPreviousAnimation);
 
                 Node(header)
-                    .Mutate(s.ActiveToolbarButton)
+                    .Mutate(bl.S.ActiveToolbarButton)
                     .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .TextV("Next")
@@ -37,33 +37,33 @@ public class AppAnimationMenu(
             }
 
             Node(panel, out var list)
-                .Mutate(s.ListBody);
+                .Mutate(bl.S.ListBody);
             {
                 for (var index = 0; index < session.AnimationLineCount; index++)
                 {
                     var animationIndex = index;
                     Node(list, out var row)
-                        .Mutate(s.SelectableListRow)
+                        .Mutate(bl.S.SelectableListRow)
                         .ColorF(() => animationIndex == session.SelectedAnimationIndex
-                            ? s.Palette.ActiveSurface
-                            : row.IsFocusedR || row.IsHoveredR ? s.Palette.Hover : default)
+                            ? bl.S.Palette.ActiveSurface
+                            : row.IsFocusedR || row.IsHoveredR ? bl.S.Palette.Hover : default)
                         .OnClickF(() => session.SelectAnimation(animationIndex));
                     {
                         Node(row)
                             .SizeWeightTypeV(SizeWeightType.Self)
                             .SizeRelativeV((0, 1))
                             .SizeV((layout.AnimationAccentWidth, 0))
-                            .ColorF(() => animationIndex == session.SelectedAnimationIndex ? s.Palette.Accent : default);
+                            .ColorF(() => animationIndex == session.SelectedAnimationIndex ? bl.S.Palette.Accent : default);
 
                         Node(row)
-                            .Mutate(s.CellLabel)
+                            .Mutate(bl.S.CellLabel)
                             .TextV(session.AnimationLabelAt(animationIndex))
                             .TextColorF(() => animationIndex == session.SelectedAnimationIndex
-                                ? s.Palette.Text
-                                : s.Palette.MutedText);
+                                ? bl.S.Palette.Text
+                                : bl.S.Palette.MutedText);
 
                         Node(row)
-                            .Mutate(s.MutedCellLabel)
+                            .Mutate(bl.S.MutedCellLabel)
                             .SizeWeightTypeV(SizeWeightType.Self)
                             .SizeRelativeV((0, 1))
                             .SizeTextRelativeV((1, 0))

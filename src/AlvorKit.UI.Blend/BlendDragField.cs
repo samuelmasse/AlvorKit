@@ -7,8 +7,8 @@ namespace AlvorKit;
 /// closures so the per-frame callbacks stay allocation-free; int-backed fields use the native int
 /// accessors for display, arrow steps, and commits, because the float core cannot represent large ints.
 /// </summary>
-internal sealed class BlendDragField(
-    BlendStyle style,
+internal class BlendDragField(
+    BlendStyle s,
     BlendFieldChrome chrome,
     RootUiMouse uiMouse,
     Keyboard keyboard)
@@ -71,7 +71,7 @@ internal sealed class BlendDragField(
                     .OffsetV((1, 1))
                     .SizeRelativeV((0, 0))
                     .SizeF(() => ((field.SizeR.X - 2) * Fraction(), field.SizeR.Y - 2))
-                    .ColorF(() => Scrubbing() ? style.Palette.ActiveSurface : style.Palette.Selection)
+                    .ColorF(() => Scrubbing() ? s.Palette.ActiveSurface : s.Palette.Selection)
                     .IsDisabledF(() => edit.IsActive);
             }
 
@@ -81,7 +81,7 @@ internal sealed class BlendDragField(
             // Editing happens in place: the text stays right-aligned where the value sits, and the
             // label and arrows stay put, so entering edit mode never reflows the field.
             Node(field)
-                .Mutate(style.CellLabel)
+                .Mutate(s.CellLabel)
                 .IsFloatingV(true)
                 .TextAlignmentV(Alignment.Right | Alignment.Vertical)
                 .TextPaddingV((0, 0, chrome.LabelInset(true), 0))
@@ -200,7 +200,7 @@ internal sealed class BlendDragField(
                 return;
 
             var dx = uiMouse.Position.X - pressPosition.X;
-            if (!dragging && MathF.Abs(dx) > style.Metrics.DragDeadzone)
+            if (!dragging && MathF.Abs(dx) > s.Metrics.DragDeadzone)
                 dragging = true;
             if (!dragging)
                 return;
@@ -208,7 +208,7 @@ internal sealed class BlendDragField(
             var fine = keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift) ? 0.1f : 1f;
             var value = slider
                 ? startValue + (dx / MathF.Max(field.SizeR.X, 1f) * (max - min) * fine)
-                : startValue + (dx / style.Metrics.DragPixelsPerStep * step * fine);
+                : startValue + (dx / s.Metrics.DragPixelsPerStep * step * fine);
 
             if (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl))
                 value = MathF.Round(value / step) * step;

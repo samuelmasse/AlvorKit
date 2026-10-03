@@ -20,9 +20,9 @@ node subtree. Keep its layout together in `Create`.
 - Constructor injection is allowed. Prefer primary constructors for injected
   collaborators such as style, app/session command surfaces, text formatting,
   input roots, or child menus.
-- Name an injected style collaborator `s`, regardless of the concrete style
-  type. Prefer `AppStyle s` and `.Mutate(s.EmphasisLabel)` over longer names
-  such as `style`.
+- Name an injected app style collaborator `s`, regardless of the concrete
+  style type. Inject the Blend toolkit as `BlendUi bl`; use `bl.S`
+  for its standard recipes and `s` for app-specific recipes.
 - `Create` may accept explicit props, like `Create(EntMut root,
   AppInventoryRow row)`. Do not pass the owner, parent state object, or the
   main application state itself as a prop.
@@ -232,9 +232,11 @@ Use style objects for visual language, not for every number.
 - `AppStyle` or an equivalent style class should own reusable colors, fonts,
   spacing tokens, and component recipes such as panel, button, label, swatch,
   tooltip, or modal styling.
-- Menus use one style surface, injected as `s`. Put feature-specific recipes
-  on that style with clear names, such as `s.AllocationRow` and
-  `s.AllocationNumberCell`. Do not introduce another injected style wrapper
+- Menus use one app-specific style surface, injected as `s`. Put
+  feature-specific recipes on that style with clear names, such as
+  `s.AllocationRow` and `s.AllocationNumberCell`. With Blend, standard recipes
+  come from `bl.S`; the app style composes those recipes rather than
+  inheriting `BlendStyle`. Do not introduce another injected style wrapper
   merely to group a feature's recipes.
 - Local layout decisions belong in the menu that owns the layout. Prefer
   inline values for sizing, spacing, placement, colors, and draw order when
@@ -249,6 +251,66 @@ Use style objects for visual language, not for every number.
   component recipe, it can move into style.
 - If a number only describes one menu's geometry, animation, breakpoint, or
   label fit rule, keep it local.
+
+## Blend Integration
+
+Construct one `BlendUi` in the scope that owns its UI resources and register
+the completed instance before resolving its menus or app style:
+
+```csharp
+app.Add(new BlendUi(root.Get<RootBlend>(), app.Get<AppGl>()));
+```
+
+`RootBlend` provides the shared Inter fonts, UI scale, sprite batch, keyboard,
+and UI mouse. It does not retain toolkits or mounted UI. The supplied graphics
+node owns the toolkit's generated control textures. Inter font faces and glyph
+atlases retain their existing root lifetime.
+
+Use the explicit appearance overload when the app customizes toolkit-wide
+colors or metrics:
+
+```csharp
+app.Add(new BlendUi(
+    root.Get<RootBlend>(),
+    app.Get<AppGl>(),
+    BlendPalette.Default,
+    new BlendMetrics { ChipFontSize = 12 }));
+```
+
+The toolkit constructs one style and its reusable builders. Keep app-specific
+recipes in a separate injected collaborator:
+
+```csharp
+[App]
+public class AppStyle(BlendUi bl)
+{
+    public void AllocationRow(EntMut node) => node.Mutate()
+        .Mutate(bl.S.HorizontalRow)
+        .SizeWeightTypeV(SizeWeightType.Self)
+        .SizeV((0, 34));
+}
+```
+
+Menus inject `BlendUi bl` and, when needed, `AppStyle s`. Use
+`bl.ScrollView.Create`, `bl.Fields`, `bl.Dropdown.Create`, and
+`bl.Tooltip.Create` directly. Do not add app subclasses that only forward
+the library builders' constructor parameters, or construct builders inside
+menu layout.
+
+Each created control owns its mounted state. A dropdown popup returns a
+`BlendDropdownHandle`, which is an ordinary UI object passed through child
+menus' `Create` parameters:
+
+```csharp
+var popup = bl.Dropdown.Create(popupLayer);
+settingsMenu.Create(content, popup);
+bl.Tooltip.Create(tooltipLayer);
+```
+
+The child passes that handle to `bl.Fields.DropdownField`. Fields sharing
+a handle share one open popup; separate handles have independent state. Keep
+the popup layer above content and the tooltip layer above the popup in the UI
+tree. Do not store mounted popup state on the injected toolkit or app style.
 
 ## UI Surfaces And Scaling
 

@@ -4,27 +4,27 @@ namespace AlvorKit;
 [App]
 public class AppMetricsMenu(
     RootText text,
-    AppStyle s,
+    BlendUi bl,
     AppLayout layout,
     AppSession session)
 {
     public void Create(EntMut root)
     {
         Node(root, out var dock)
-            .Mutate(s.Dock)
-            .Mutate(s.RightRule)
+            .Mutate(bl.S.Dock)
+            .Mutate(bl.S.RightRule)
             .SizeV((layout.MetricsDockWidth, 0));
         {
             Node(dock, out var title)
-                .Mutate(s.PanelTitle)
-                .SizeV((0, s.Metrics.ViewportHeaderHeight))
+                .Mutate(bl.S.PanelTitle)
+                .SizeV((0, bl.S.Metrics.ViewportHeaderHeight))
                 .InnerLayoutV(InnerLayout.HorizontalList)
                 .InnerSizingV(InnerSizing.HorizontalWeight)
-                .InnerSpacingV(s.Metrics.LooseSpacing)
-                .PaddingV(s.Metrics.PanelTitlePadding);
+                .InnerSpacingV(bl.S.Metrics.LooseSpacing)
+                .PaddingV(bl.S.Metrics.PanelTitlePadding);
             {
                 Node(title)
-                    .Mutate(s.EmphasisText)
+                    .Mutate(bl.S.EmphasisText)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .SizeRelativeV((0, 1))
                     .SizeTextRelativeV((1, 0))
@@ -34,19 +34,19 @@ public class AppMetricsMenu(
                     .ColorV(default);
 
                 Node(title)
-                    .Mutate(s.MutedText)
+                    .Mutate(bl.S.MutedText)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .SizeRelativeV((0, 1))
                     .SizeTextRelativeV((1, 0))
                     .TextAlignmentV(Alignment.Right | Alignment.Vertical)
-                    .TextPaddingV((0, 0, s.Metrics.RightGlyphPadding, 0))
+                    .TextPaddingV((0, 0, bl.S.Metrics.RightGlyphPadding, 0))
                     .TextF(() => text.Format("{0}", session.Runner.LastCommand.Kind));
             }
 
             Node(dock, out var body)
-                .Mutate(s.Panel)
+                .Mutate(bl.S.Panel)
                 .SizeRelativeV((1, 1))
-                .PaddingV(s.Metrics.InsetPanelPadding)
+                .PaddingV(bl.S.Metrics.InsetPanelPadding)
                 .InnerLayoutV(InnerLayout.VerticalList)
                 .InnerSpacingV(0);
             {
@@ -169,17 +169,17 @@ public class AppMetricsMenu(
         void Metric(EntMut parent, string name, string tooltip, Func<ReadOnlySpan<char>> value)
         {
             Node(parent, out var row)
-                .Mutate(s.MetricRow)
+                .Mutate(bl.S.MetricRow)
                 .IsSelectableV(true)
                 .TooltipV(tooltip);
             {
                 Node(row)
-                    .Mutate(s.MutedLabel)
+                    .Mutate(bl.S.MutedLabel)
                     .AlignmentV(Alignment.Left | Alignment.Vertical)
                     .TextV(name);
 
                 Node(row)
-                    .Mutate(s.Label)
+                    .Mutate(bl.S.Label)
                     .AlignmentV(Alignment.Left | Alignment.Vertical)
                     .OffsetV((layout.MetricValueOffsetX, 0))
                     .TextF(value);
@@ -191,7 +191,7 @@ public class AppMetricsMenu(
             gap.Mutate()
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((1, 0))
-                .SizeV((0, s.Metrics.LooseSpacing));
+                .SizeV((0, bl.S.Metrics.LooseSpacing));
         }
 
         ReadOnlySpan<char> TouchedValue<T>(Func<AllocatorRangeVisual, T> value)

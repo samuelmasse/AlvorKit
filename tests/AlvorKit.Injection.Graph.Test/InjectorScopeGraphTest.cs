@@ -96,7 +96,17 @@ public class InjectorScopeGraphTest
         var injector = new Injector();
         var graph = new InjectorScopeGraph(injector);
         InjectorScopeId childId = default;
-        Action<TestScope> action = scope =>
+        if (labeled)
+            graph.Run<TestScope>(injector, "Load", AssertActiveScope);
+        else graph.Run<TestScope>(injector, AssertActiveScope);
+
+        Assert.HasCount(1, graph.Snapshot().Nodes);
+        Assert.IsFalse(graph.TryGetActiveScope(childId, out _));
+        var ended = graph.Snapshot(includeEnded: true).Nodes[1];
+        Assert.AreEqual(childId, ended.Id);
+        Assert.AreEqual(InjectorScopeLifecycle.Ended, ended.Lifecycle);
+
+        void AssertActiveScope(TestScope scope)
         {
             childId = graph.GetId(scope);
             var child = graph.Snapshot().Nodes[1];
@@ -104,17 +114,7 @@ public class InjectorScopeGraphTest
             Assert.AreEqual(labeled ? "Load" : null, child.Label);
             Assert.AreEqual(InjectorScopeLifecycle.Active, child.Lifecycle);
             Assert.AreSame(scope, Active(graph, childId));
-        };
-
-        if (labeled)
-            graph.Run(injector, "Load", action);
-        else graph.Run(injector, action);
-
-        Assert.HasCount(1, graph.Snapshot().Nodes);
-        Assert.IsFalse(graph.TryGetActiveScope(childId, out _));
-        var ended = graph.Snapshot(includeEnded: true).Nodes[1];
-        Assert.AreEqual(childId, ended.Id);
-        Assert.AreEqual(InjectorScopeLifecycle.Ended, ended.Lifecycle);
+        }
     }
 
     /// <summary>Labels can be set and removed without changing the scope's identity or lifetime.</summary>
@@ -188,6 +188,31 @@ public class InjectorScopeGraphTest
         Assert.IsFalse(graph.TryGetOwner(service, out _));
     }
 
+    /// <summary>A supplied unmarked instance retains its registering scope's lifetime when requested from a child.</summary>
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void SuppliedUnmarkedInstanceBelongsToRegisteringScope(bool typed)
+    {
+        var injector = new Injector();
+        var graph = new InjectorScopeGraph(injector);
+        var scope = graph.Scope<TestScope>(injector);
+        var child = graph.Scope<NestedScope>(scope);
+        var instance = new TestUnmarkedService();
+
+        if (typed)
+            scope.Add(instance);
+        else scope.Add((object)instance);
+
+        Assert.AreSame(instance, child.Get<TestUnmarkedService>());
+        AssertOwner(graph, instance, graph.GetId(scope));
+
+        graph.End(child);
+        AssertOwner(graph, instance, graph.GetId(scope));
+        graph.End(scope);
+        Assert.IsFalse(graph.TryGetOwner(instance, out _));
+    }
+
     private static InjectorScope Active(InjectorScopeGraph graph, InjectorScopeId id)
     {
         Assert.IsTrue(graph.TryGetActiveScope(id, out var scope));
@@ -234,3 +259,6 @@ public interface ITestBoundService;
 /// <summary>Bound service used by ownership tests.</summary>
 [Test]
 public sealed class TestBoundService : ITestBoundService;
+
+/// <summary>Unmarked library object supplied by an attributed scope.</summary>
+public class TestUnmarkedService;

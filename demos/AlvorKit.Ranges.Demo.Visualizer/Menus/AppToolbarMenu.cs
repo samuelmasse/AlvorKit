@@ -4,7 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppToolbarMenu(
     RootText text,
-    AppStyle s,
+    BlendUi bl,
     AppSession session,
     AppUiScale uiScale)
 {
@@ -13,15 +13,15 @@ public class AppToolbarMenu(
         const int pendingRevision = -1;
 
         Node(root, out var toolbar)
-            .Mutate(s.Toolbar)
-            .PaddingV(s.Metrics.ToolbarPadding);
+            .Mutate(bl.S.Toolbar)
+            .PaddingV(bl.S.Metrics.ToolbarPadding);
         {
             var lastRevision = pendingRevision;
             Node(toolbar, out var controls)
                 .SizeRelativeV((1, 1))
                 .InnerLayoutV(InnerLayout.HorizontalList)
                 .InnerSizingV(InnerSizing.HorizontalWeight)
-                .InnerSpacingV(s.Metrics.ToolbarSpacing)
+                .InnerSpacingV(bl.S.Metrics.ToolbarSpacing)
                 .OnUpdateF(() =>
                 {
                     if (lastRevision == session.UiRevision)
@@ -36,7 +36,7 @@ public class AppToolbarMenu(
         void BuildControls(EntMut controls)
         {
             Node(controls)
-                .Mutate(session.Playing ? s.ActiveToolbarButton : s.ToolbarButton)
+                .Mutate(session.Playing ? bl.S.ActiveToolbarButton : bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV(session.Playing ? "Pause" : "Play")
@@ -46,7 +46,7 @@ public class AppToolbarMenu(
                 .OnPressF(session.TogglePlayback);
 
             Node(controls)
-                .Mutate(s.ToolbarButton)
+                .Mutate(bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("Back")
@@ -54,7 +54,7 @@ public class AppToolbarMenu(
                 .OnPressF(session.StepBackward);
 
             Node(controls)
-                .Mutate(s.ToolbarButton)
+                .Mutate(bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("Step")
@@ -62,7 +62,7 @@ public class AppToolbarMenu(
                 .OnPressF(session.StepForward);
 
             Node(controls)
-                .Mutate(s.ToolbarButton)
+                .Mutate(bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("Reset")
@@ -71,7 +71,7 @@ public class AppToolbarMenu(
 
             Separator(controls);
             Node(controls)
-                .Mutate(s.ToolbarButton)
+                .Mutate(bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("Prev")
@@ -79,7 +79,7 @@ public class AppToolbarMenu(
                 .OnPressF(session.PreviousScenario);
 
             Node(controls)
-                .Mutate(s.ToolbarButton)
+                .Mutate(bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("Next")
@@ -87,7 +87,7 @@ public class AppToolbarMenu(
                 .OnPressF(session.NextScenario);
 
             Node(controls)
-                .Mutate(s.ToolbarButton)
+                .Mutate(bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("Pack")
@@ -98,7 +98,7 @@ public class AppToolbarMenu(
             SpeedGroup(controls);
             Separator(controls);
             Node(controls)
-                .Mutate(session.ShowLabels ? s.ActiveToolbarButton : s.ToolbarButton)
+                .Mutate(session.ShowLabels ? bl.S.ActiveToolbarButton : bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("Labels")
@@ -106,7 +106,7 @@ public class AppToolbarMenu(
                 .OnPressF(session.ToggleLabels);
 
             Node(controls)
-                .Mutate(session.ShowPadding ? s.ActiveToolbarButton : s.ToolbarButton)
+                .Mutate(session.ShowPadding ? bl.S.ActiveToolbarButton : bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("Padding")
@@ -122,13 +122,13 @@ public class AppToolbarMenu(
         void SpeedGroup(EntMut controls)
         {
             Node(controls)
-                .Mutate(s.MutedLabel)
+                .Mutate(bl.S.MutedLabel)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("speed");
 
             Node(controls)
-                .Mutate(s.ToolbarButton)
+                .Mutate(bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("-")
@@ -138,7 +138,7 @@ public class AppToolbarMenu(
             Readout(controls, "playback speed\ncommands per second multiplier", () => text.Format("{0:0.##}x", session.Speed));
 
             Node(controls)
-                .Mutate(s.ToolbarButton)
+                .Mutate(bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("+")
@@ -149,13 +149,13 @@ public class AppToolbarMenu(
         void UiScaleGroup(EntMut controls)
         {
             Node(controls)
-                .Mutate(s.MutedLabel)
+                .Mutate(bl.S.MutedLabel)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("ui");
 
             Node(controls)
-                .Mutate(s.ToolbarButton)
+                .Mutate(bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("-")
@@ -165,7 +165,7 @@ public class AppToolbarMenu(
             Readout(controls, "ui scale\nlogical to physical pixel multiplier", () => text.Format("{0:F2}x", uiScale.Scale));
 
             Node(controls)
-                .Mutate(s.ToolbarButton)
+                .Mutate(bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("+")
@@ -178,11 +178,11 @@ public class AppToolbarMenu(
             const float readoutWidth = 48f;
 
             Node(controls)
-                .Mutate(s.Text)
+                .Mutate(bl.S.Text)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 0))
-                .SizeV((readoutWidth, s.Metrics.ToolbarButtonHeight))
+                .SizeV((readoutWidth, bl.S.Metrics.ToolbarButtonHeight))
                 .TextAlignmentV(Alignment.Center)
                 .TextF(value)
                 .IsSelectableV(true)
@@ -196,9 +196,9 @@ public class AppToolbarMenu(
             Node(controls)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 1))
-                .SizeV((s.Metrics.Hairline, 0))
-                .MarginV((s.Metrics.CompactSpacing, separatorInsetY, s.Metrics.CompactSpacing, separatorInsetY))
-                .ColorV(s.Palette.Border);
+                .SizeV((bl.S.Metrics.Hairline, 0))
+                .MarginV((bl.S.Metrics.CompactSpacing, separatorInsetY, bl.S.Metrics.CompactSpacing, separatorInsetY))
+                .ColorV(bl.S.Palette.Border);
         }
     }
 }

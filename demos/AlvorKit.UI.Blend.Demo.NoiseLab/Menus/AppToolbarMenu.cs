@@ -3,25 +3,24 @@ namespace AlvorKit;
 /// <summary>Builds the node/seed/generate tool strip; rebuilds its controls when the session UI revision changes.</summary>
 [App]
 public class AppToolbarMenu(
-    AppStyle s,
-    AppSession session,
-    AppFields fields)
+    BlendUi bl,
+    AppSession session)
 {
     /// <summary>Mounts the fractal selector and generation controls, rebinding them after selection changes.</summary>
-    public void Create(EntMut root)
+    public void Create(EntMut root, BlendDropdownHandle popup)
     {
         const int pendingRevision = -1;
 
         Node(root, out var toolbar)
-            .Mutate(s.Toolbar)
-            .PaddingV(s.Metrics.ToolbarPadding);
+            .Mutate(bl.S.Toolbar)
+            .PaddingV(bl.S.Metrics.ToolbarPadding);
         {
             var lastRevision = pendingRevision;
             Node(toolbar, out var controls)
                 .SizeRelativeV((1, 1))
                 .InnerLayoutV(InnerLayout.HorizontalList)
                 .InnerSizingV(InnerSizing.HorizontalWeight)
-                .InnerSpacingV(s.Metrics.ToolbarSpacing)
+                .InnerSpacingV(bl.S.Metrics.ToolbarSpacing)
                 .OnUpdateF(() =>
                 {
                     if (lastRevision == session.UiRevision)
@@ -39,29 +38,29 @@ public class AppToolbarMenu(
             const float seedFieldWidth = 96f;
 
             Node(controls)
-                .Mutate(s.MutedLabel)
+                .Mutate(bl.S.MutedLabel)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("node");
 
-            fields.DropdownField(controls, string.Empty, session.Field.Nodes.Fractals,
+            bl.Fields.DropdownField(controls, popup, string.Empty, session.Field.Nodes.Fractals,
                 () => session.Field.Nodes.FractalIndex, session.SelectFractal)
                 .Mutate()
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 0))
-                .SizeV((nodeFieldWidth, s.Metrics.FieldHeight))
+                .SizeV((nodeFieldWidth, bl.S.Metrics.FieldHeight))
                 .TooltipV("fractal node\nthe root FastNoise2 node the panel edits");
 
             Separator(controls);
 
             Node(controls)
-                .Mutate(s.MutedLabel)
+                .Mutate(bl.S.MutedLabel)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("seed");
 
-            fields.IntField(controls, new()
+            bl.Fields.IntField(controls, new()
             {
                 Label = string.Empty,
                 Get = () => session.Seed,
@@ -71,11 +70,11 @@ public class AppToolbarMenu(
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 0))
-                .SizeV((seedFieldWidth, s.Metrics.FieldHeight))
+                .SizeV((seedFieldWidth, bl.S.Metrics.FieldHeight))
                 .TooltipV("seed\ndrag scrubs, click types a value");
 
             Node(controls)
-                .Mutate(s.SquareButton)
+                .Mutate(bl.S.SquareButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("R")
@@ -85,7 +84,7 @@ public class AppToolbarMenu(
             Separator(controls);
 
             Node(controls)
-                .Mutate(session.Auto ? s.ActiveToolbarButton : s.ToolbarButton)
+                .Mutate(session.Auto ? bl.S.ActiveToolbarButton : bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("Auto")
@@ -93,7 +92,7 @@ public class AppToolbarMenu(
                 .OnClickF(session.ToggleAuto);
 
             Node(controls)
-                .Mutate(s.ToolbarButton)
+                .Mutate(bl.S.ToolbarButton)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV("Regenerate")
@@ -110,9 +109,9 @@ public class AppToolbarMenu(
             Node(controls)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 1))
-                .SizeV((s.Metrics.Hairline, 0))
-                .MarginV((s.Metrics.CompactSpacing, separatorInsetY, s.Metrics.CompactSpacing, separatorInsetY))
-                .ColorV(s.Palette.Border);
+                .SizeV((bl.S.Metrics.Hairline, 0))
+                .MarginV((bl.S.Metrics.CompactSpacing, separatorInsetY, bl.S.Metrics.CompactSpacing, separatorInsetY))
+                .ColorV(bl.S.Palette.Border);
         }
     }
 }

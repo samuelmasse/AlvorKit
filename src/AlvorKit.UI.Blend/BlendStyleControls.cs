@@ -1,10 +1,10 @@
 namespace AlvorKit;
 
 /// <summary>Implements Blend button, chip, field, and keyboard-activation recipes.</summary>
-internal sealed class BlendStyleControls
+internal class BlendStyleControls
 {
     /// <summary>Style façade supplying current palette, metrics, and shared recipes.</summary>
-    private readonly BlendStyle style;
+    private readonly BlendStyle s;
 
     /// <summary>Regular Inter face used to measure control labels.</summary>
     private readonly Font font;
@@ -16,72 +16,72 @@ internal sealed class BlendStyleControls
     private readonly BlendStyleControlSurface surface;
 
     /// <summary>Creates control recipes over the owning style and runtime collaborators.</summary>
-    internal BlendStyleControls(BlendStyle style, Font font, GlLayer gl, RootUiScale scale, RootKeyboard keyboard)
+    internal BlendStyleControls(BlendStyle s, Font font, GlLayer gl, RootUiScale scale, RootKeyboard keyboard)
     {
-        this.style = style;
+        this.s = s;
         this.font = font;
         this.keyboard = keyboard;
-        surface = new(style, new(gl, scale));
+        surface = new(s, new(gl, scale));
     }
 
     /// <summary>Builds a compact rounded button using the standard Blend button font size.</summary>
     internal void Button(EntMut ent) =>
-        Button(ent, style.Metrics.ButtonHeight, style.Metrics.ButtonFontSize, style.Metrics.ButtonTextPadding, false);
+        Button(ent, s.Metrics.ButtonHeight, s.Metrics.ButtonFontSize, s.Metrics.ButtonTextPadding, false);
 
     /// <summary>Builds an active compact rounded button using the standard Blend button font size.</summary>
     internal void ActiveButton(EntMut ent) =>
-        Button(ent, style.Metrics.ButtonHeight, style.Metrics.ButtonFontSize, style.Metrics.ButtonTextPadding, true);
+        Button(ent, s.Metrics.ButtonHeight, s.Metrics.ButtonFontSize, s.Metrics.ButtonTextPadding, true);
 
     /// <summary>Builds a compact rounded button sized for title rows and toolbar strips.</summary>
     internal void ToolbarButton(EntMut ent)
     {
-        Button(ent, style.Metrics.ToolbarButtonHeight, style.Metrics.ButtonFontSize, style.Metrics.ButtonTextPadding, false);
-        ent.Mutate().OffsetV((0, -style.Metrics.Hairline));
+        Button(ent, s.Metrics.ToolbarButtonHeight, s.Metrics.ButtonFontSize, s.Metrics.ButtonTextPadding, false);
+        ent.Mutate().OffsetV((0, -s.Metrics.Hairline));
     }
 
     /// <summary>Builds an active compact rounded button sized for title rows and toolbar strips.</summary>
     internal void ActiveToolbarButton(EntMut ent)
     {
-        Button(ent, style.Metrics.ToolbarButtonHeight, style.Metrics.ButtonFontSize, style.Metrics.ButtonTextPadding, true);
-        ent.Mutate().OffsetV((0, -style.Metrics.Hairline));
+        Button(ent, s.Metrics.ToolbarButtonHeight, s.Metrics.ButtonFontSize, s.Metrics.ButtonTextPadding, true);
+        ent.Mutate().OffsetV((0, -s.Metrics.Hairline));
     }
 
     /// <summary>Builds a compact square button using the standard Blend square-button font size.</summary>
     internal void SquareButton(EntMut ent) =>
-        FixedButton(ent, (style.Metrics.SquareButtonSize, style.Metrics.SquareButtonSize), style.Metrics.SquareButtonFontSize, false);
+        FixedButton(ent, (s.Metrics.SquareButtonSize, s.Metrics.SquareButtonSize), s.Metrics.SquareButtonFontSize, false);
 
     /// <summary>Builds an active compact square button using the standard Blend square-button font size.</summary>
     internal void ActiveSquareButton(EntMut ent) =>
-        FixedButton(ent, (style.Metrics.SquareButtonSize, style.Metrics.SquareButtonSize), style.Metrics.SquareButtonFontSize, true);
+        FixedButton(ent, (s.Metrics.SquareButtonSize, s.Metrics.SquareButtonSize), s.Metrics.SquareButtonFontSize, true);
 
     /// <summary>Applies a smaller toolbar chip.</summary>
     internal void Chip(EntMut ent) =>
-        Button(ent, style.Metrics.ChipHeight, style.Metrics.ChipFontSize, style.Metrics.ChipTextPadding, false);
+        Button(ent, s.Metrics.ChipHeight, s.Metrics.ChipFontSize, s.Metrics.ChipTextPadding, false);
 
     /// <summary>Applies a non-interactive readout chip that remains hoverable for tooltips.</summary>
     internal void ReadoutChip(EntMut ent) => ent.Mutate()
-        .Mutate(style.Board)
+        .Mutate(s.Board)
         .SizeRelativeV((0, 0))
         .SizeTextRelativeV((1, 0))
-        .SizeV((0, style.Metrics.ChipHeight))
+        .SizeV((0, s.Metrics.ChipHeight))
         .FontV(font)
-        .FontSizeV(style.Metrics.ChipFontSize)
-        .TextPaddingV((style.Metrics.ChipTextPadding, 0, style.Metrics.ChipTextPadding, 0))
+        .FontSizeV(s.Metrics.ChipFontSize)
+        .TextPaddingV((s.Metrics.ChipTextPadding, 0, s.Metrics.ChipTextPadding, 0))
         .TextAlignmentV(Alignment.Center)
-        .TextColorV(style.Palette.MutedText)
-        .ColorV(style.Palette.Panel)
+        .TextColorV(s.Palette.MutedText)
+        .ColorV(s.Palette.Panel)
         .IsSelectableV(true)
-        .Mutate(style.Border);
+        .Mutate(s.Border);
 
     /// <summary>Applies a static field-like surface.</summary>
     internal void Field(EntMut ent) => ent.Mutate()
-        .Mutate(style.Text)
+        .Mutate(s.Text)
         .SizeRelativeV((1, 0))
-        .SizeV((0, style.Metrics.FieldHeight))
-        .TextPaddingV((style.Metrics.FieldTextPadding, 0, style.Metrics.FieldTextPadding, 0))
-        .TextColorV(style.Palette.MutedText)
-        .ColorV(style.Palette.AppBackground)
-        .Mutate(style.Border);
+        .SizeV((0, s.Metrics.FieldHeight))
+        .TextPaddingV((s.Metrics.FieldTextPadding, 0, s.Metrics.FieldTextPadding, 0))
+        .TextColorV(s.Palette.MutedText)
+        .ColorV(s.Palette.AppBackground)
+        .Mutate(s.Border);
 
     /// <summary>Runs the node's click or press callback when it is focused and Enter is pressed.</summary>
     internal void ActivateOnEnter(EntMut ent)
@@ -120,17 +120,17 @@ internal sealed class BlendStyleControls
 
     /// <summary>Applies common focus and pointer behavior to a fixed-size button.</summary>
     private void ButtonFrame(EntMut ent, Vec2 size) => ent.Mutate()
-        .Mutate(style.Board)
+        .Mutate(s.Board)
         .SizeRelativeV((0, 0))
         .SizeV(size)
         .IsSelectableV(true)
         .IsFocusableV(true)
         .CursorF(() => CursorShape.Hand)
-        .Mutate(style.ActivateOnEnter);
+        .Mutate(s.ActivateOnEnter);
 
     /// <summary>Applies common focus and pointer behavior to a text-measured button.</summary>
     private void MeasuredButtonFrame(EntMut ent, float height, int fontSize, float horizontalPadding) => ent.Mutate()
-        .Mutate(style.Board)
+        .Mutate(s.Board)
         .SizeRelativeV((0, 0))
         .SizeTextRelativeV((1, 0))
         .SizeV((0, height))
@@ -141,5 +141,5 @@ internal sealed class BlendStyleControls
         .IsSelectableV(true)
         .IsFocusableV(true)
         .CursorF(() => CursorShape.Hand)
-        .Mutate(style.ActivateOnEnter);
+        .Mutate(s.ActivateOnEnter);
 }

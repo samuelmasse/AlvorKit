@@ -8,7 +8,7 @@ public class EditorShellState(
     RootScripts scripts,
     RootUi ui,
     RootUiScript uiScript,
-    EditorShellStyle s,
+    BlendUi bl,
     EditorShellMenu menu) : State
 {
     private EntMut menuNode;
@@ -40,5 +40,5 @@ public class EditorShellState(
         }
     }
 
-    public override void Render() => backbuffer.Clear(s.Palette.AppBackground);
+    public override void Render() => backbuffer.Clear(bl.S.Palette.AppBackground);
 }

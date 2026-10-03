@@ -8,7 +8,7 @@ public class AppState(
     RootScripts scripts,
     RootUi ui,
     RootUiScript uiScript,
-    AppStyle s,
+    BlendUi bl,
     AppSession session,
     AppMenu menu) : State
 {
@@ -43,5 +43,5 @@ public class AppState(
 
     public override void Update(double delta) => session.Update();
 
-    public override void Render() => backbuffer.Clear(s.Palette.AppBackground);
+    public override void Render() => backbuffer.Clear(bl.S.Palette.AppBackground);
 }

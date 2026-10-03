@@ -2,15 +2,15 @@ namespace AlvorKit;
 
 /// <summary>Builds the stripped Blender-like editor shell demo using layout primitives.</summary>
 [App]
-public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
+public class EditorShellMenu(BlendUi bl, EditorShellLayout layout)
 {
     public void Create(EntMut root)
     {
-        var palette = s.Palette;
-        var metrics = s.Metrics;
+        var palette = bl.S.Palette;
+        var metrics = bl.S.Metrics;
 
         Node(root, out var shell)
-            .Mutate(s.Root);
+            .Mutate(bl.S.Root);
         {
             MenuBar(shell);
             Toolbar(shell);
@@ -20,7 +20,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
 
         void MenuBar(EntMut parent)
         {
-            Node(parent, out var menuBar).Mutate(s.MenuBar);
+            Node(parent, out var menuBar).Mutate(bl.S.MenuBar);
             {
                 menuBar.Mutate()
                     .InnerLayoutV(InnerLayout.HorizontalList)
@@ -42,7 +42,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void Brand(EntMut parent)
         {
             Node(parent, out var brand)
-                .Mutate(s.RightRule)
+                .Mutate(bl.S.RightRule)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 1))
                 .SizeV((layout.BrandAreaWidth, 0))
@@ -100,7 +100,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
 
         void Toolbar(EntMut parent)
         {
-            Node(parent, out var toolbar).Mutate(s.Toolbar);
+            Node(parent, out var toolbar).Mutate(bl.S.Toolbar);
             {
                 toolbar.Mutate()
                     .InnerLayoutV(InnerLayout.HorizontalList)
@@ -120,7 +120,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void TransformTools(EntMut parent)
         {
             Node(parent, out var group)
-                .Mutate(s.RightRule)
+                .Mutate(bl.S.RightRule)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 0))
                 .SizeV((0, metrics.SquareButtonSize))
@@ -159,7 +159,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void DockPanel(EntMut parent, float width, string leftTitle, string rightTitle)
         {
             Node(parent, out var panel)
-                .Mutate(s.Dock)
+                .Mutate(bl.S.Dock)
                 .SizeV((width, 0));
             {
                 PanelTitle(panel, leftTitle, rightTitle);
@@ -170,7 +170,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void CenterDock(EntMut parent)
         {
             Node(parent, out var center)
-                .Mutate(s.Board)
+                .Mutate(bl.S.Board)
                 .InnerLayoutV(InnerLayout.VerticalList)
                 .InnerSizingV(InnerSizing.VerticalWeight)
                 .ColorV(palette.AppBackground);
@@ -178,7 +178,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
                 ViewportPanel(center);
                 BottomDock(center);
 
-                s.BottomRule(center);
+                bl.S.BottomRule(center);
             }
         }
 
@@ -197,7 +197,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
                     .ColorV(palette.AppBackground);
                 {
                     Node(viewport)
-                        .Mutate(s.Border)
+                        .Mutate(bl.S.Border)
                         .IsFloatingV(true)
                         .AlignmentV(Alignment.Bottom | Alignment.Right)
                         .OffsetV((-layout.AxisWidgetInset, -layout.AxisWidgetInset))
@@ -211,7 +211,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void ViewportHeader(EntMut parent)
         {
             Node(parent, out var header)
-                .Mutate(s.BottomRule)
+                .Mutate(bl.S.BottomRule)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((1, 0))
                 .SizeV((0, metrics.ViewportHeaderHeight))
@@ -236,7 +236,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void BottomDock(EntMut parent)
         {
             Node(parent, out var panel)
-                .Mutate(s.TopRule)
+                .Mutate(bl.S.TopRule)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((1, 0))
                 .SizeV((0, layout.BottomDockHeight))
@@ -254,7 +254,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void TabStrip(EntMut parent)
         {
             Node(parent, out var tabs)
-                .Mutate(s.TabStrip)
+                .Mutate(bl.S.TabStrip)
                 .MarginV((0, layout.BottomDockTopInset, 0, 0));
             {
                 Tab(tabs, "Assets", true);
@@ -263,7 +263,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
                 Tab(tabs, "Timeline", false);
 
                 Node(tabs)
-                    .Mutate(s.TabFiller);
+                    .Mutate(bl.S.TabFiller);
             }
         }
 
@@ -277,7 +277,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
                     .InnerSizingV(InnerSizing.HorizontalWeight);
 
                 Node(body)
-                    .Mutate(s.RightRule)
+                    .Mutate(bl.S.RightRule)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .SizeRelativeV((0, 1))
                     .SizeV((layout.AssetFolderWidth, 0))
@@ -299,7 +299,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void AssetToolbar(EntMut parent)
         {
             Node(parent, out var toolbar)
-                .Mutate(s.BottomRule)
+                .Mutate(bl.S.BottomRule)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((1, 0))
                 .SizeV((0, metrics.AssetToolbarHeight))
@@ -324,7 +324,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
 
         void StatusBar(EntMut parent)
         {
-            Node(parent, out var status).Mutate(s.StatusBar);
+            Node(parent, out var status).Mutate(bl.S.StatusBar);
             {
                 status.Mutate()
                     .InnerLayoutV(InnerLayout.HorizontalList)
@@ -344,7 +344,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void PanelTitle(EntMut parent, string left, string right)
         {
             Node(parent, out var title)
-                .Mutate(s.PanelTitle);
+                .Mutate(bl.S.PanelTitle);
             {
                 title.Mutate()
                     .InnerLayoutV(InnerLayout.HorizontalList)
@@ -365,7 +365,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void MenuItem(EntMut parent, string text)
         {
             Node(parent)
-                .Mutate(s.MenuItem)
+                .Mutate(bl.S.MenuItem)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 0))
                 .SizeTextRelativeV((1, 0))
@@ -376,7 +376,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void TextLabel(EntMut parent, string text, float height, bool strong, bool rightAligned)
         {
             Node(parent, out var label)
-                .Mutate(strong ? s.EmphasisText : s.MutedText)
+                .Mutate(strong ? bl.S.EmphasisText : bl.S.MutedText)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .SizeRelativeV((0, 0))
                 .SizeTextRelativeV((1, 0))
@@ -392,7 +392,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void Button(EntMut parent, string text, bool active)
         {
             Node(parent)
-                .Mutate(active ? s.ActiveButton : s.Button)
+                .Mutate(active ? bl.S.ActiveButton : bl.S.Button)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV(text);
         }
@@ -400,7 +400,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void SquareButton(EntMut parent, string text, bool active)
         {
             Node(parent)
-                .Mutate(active ? s.ActiveSquareButton : s.SquareButton)
+                .Mutate(active ? bl.S.ActiveSquareButton : bl.S.SquareButton)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV(text);
         }
@@ -408,7 +408,7 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void Chip(EntMut parent, string text)
         {
             Node(parent)
-                .Mutate(s.Chip)
+                .Mutate(bl.S.Chip)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV(text);
         }
@@ -416,19 +416,19 @@ public class EditorShellMenu(EditorShellStyle s, EditorShellLayout layout)
         void Tab(EntMut parent, string text, bool active)
         {
             Node(parent, out var tab)
-                .Mutate(active ? s.ActiveTab : s.Tab)
+                .Mutate(active ? bl.S.ActiveTab : bl.S.Tab)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextV(text);
             {
                 if (active)
-                    s.ActiveTabAccent(tab);
+                    bl.S.ActiveTabAccent(tab);
             }
         }
 
         void Splitter(EntMut parent, float width)
         {
             Node(parent)
-                .Mutate(s.Splitter)
+                .Mutate(bl.S.Splitter)
                 .SizeV((width, 0));
         }
 

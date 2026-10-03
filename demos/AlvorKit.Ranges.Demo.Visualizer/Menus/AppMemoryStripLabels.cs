@@ -4,6 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppMemoryStripLabels(
     RootText text,
+    BlendUi bl,
     AppStyle s,
     AppSession session,
     AppMemoryStripGeometry geometry)
@@ -27,7 +28,7 @@ public class AppMemoryStripLabels(
                     continue;
 
                 Node(strip)
-                    .Mutate(s.EmphasisText)
+                    .Mutate(bl.S.EmphasisText)
                     .FontSizeV(s.FontSizeSmall)
                     .TextColorV(s.BlockLabelColor)
                     .TextAlignmentV(Alignment.Center)
@@ -51,7 +52,7 @@ public class AppMemoryStripLabels(
 
             var tail = span.Index + span.Size == snapshot.Size;
             Node(strip)
-                .Mutate(s.EmphasisText)
+                .Mutate(bl.S.EmphasisText)
                 .FontSizeV(s.FontSizeSmall)
                 .TextColorV(s.FreeLabelColor)
                 .TextAlignmentV(Alignment.Center)

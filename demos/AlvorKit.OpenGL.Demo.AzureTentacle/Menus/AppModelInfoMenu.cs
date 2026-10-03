@@ -2,52 +2,52 @@ namespace AlvorKit;
 
 [App]
 public class AppModelInfoMenu(
-    AppStyle s,
+    BlendUi bl,
     AppLayout layout,
     AppSession session)
 {
     public void Create(EntMut root)
     {
         Node(root, out var panel)
-            .Mutate(s.PanelFitList);
+            .Mutate(bl.S.PanelFitList);
         {
             Node(panel, out var header)
-                .Mutate(s.HeaderStrip)
+                .Mutate(bl.S.HeaderStrip)
                 .SizeV((0, layout.RailHeaderHeight))
-                .InnerSpacingV(s.Metrics.LooseSpacing);
+                .InnerSpacingV(bl.S.Metrics.LooseSpacing);
             {
                 Node(header)
-                    .Mutate(s.EmphasisLabel)
+                    .Mutate(bl.S.EmphasisLabel)
                     .AlignmentV(Alignment.Vertical)
                     .TextV("Azure Tentacle");
 
                 Node(header)
-                    .Mutate(s.MutedLabel)
+                    .Mutate(bl.S.MutedLabel)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .AlignmentV(Alignment.Vertical)
                     .TextV("GLB");
             }
 
             Node(panel, out var summary)
-                .Mutate(s.InsetPanelList)
+                .Mutate(bl.S.InsetPanelList)
                 .InnerSpacingV(7f);
             {
                 for (var index = 0; index < session.ModelStatCount; index++)
                 {
                     Node(summary, out var row)
-                        .Mutate(s.HorizontalRow)
+                        .Mutate(bl.S.HorizontalRow)
                         .SizeV((0, 22f))
                         .InnerSpacingV(8f);
                     {
                         Node(row)
-                            .Mutate(s.MutedCellLabel)
+                            .Mutate(bl.S.MutedCellLabel)
                             .SizeWeightTypeV(SizeWeightType.Self)
                             .SizeRelativeV((0, 1))
                             .SizeV((layout.ModelStatLabelWidth, 0))
                             .TextV(session.ModelStatLabelAt(index));
 
                         Node(row)
-                            .Mutate(s.EmphasisCellLabel)
+                            .Mutate(bl.S.EmphasisCellLabel)
                             .TextV(session.ModelStatValueAt(index));
                     }
                 }

@@ -104,7 +104,8 @@ public abstract partial class InjectorScope
     }
 
     /// <summary>
-    /// Registers an already-created instance in this scope.
+    /// Registers an already-created instance in this scope. Unmarked types take the registering scope's lifetime;
+    /// types with an injector attribute must match the scope.
     /// </summary>
     public void Add(object instance)
     {
@@ -139,6 +140,6 @@ public abstract partial class InjectorScope
 }
 
 /// <summary>
-/// Base class for scopes whose services must be marked with <typeparamref name="T"/>.
+/// Base class for scopes that construct services marked with <typeparamref name="T"/> and accept supplied unmarked instances.
 /// </summary>
 public class InjectorScope<T> : InjectorScope where T : InjectorAttribute;

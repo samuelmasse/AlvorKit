@@ -4,7 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppTimelinePanelMenu(
     RootText text,
-    AppStyle s,
+    BlendUi bl,
     AppLayout layout,
     AppSession session,
     AppTimelineMenu timelineMenu)
@@ -14,17 +14,17 @@ public class AppTimelinePanelMenu(
         const int pendingRevision = -1;
 
         Node(root, out var dock)
-            .Mutate(s.TopRule)
+            .Mutate(bl.S.TopRule)
             .SizeWeightTypeV(SizeWeightType.Self)
             .SizeRelativeV((1, 0))
             .SizeV((0, layout.TimelineDockHeight))
-            .ColorV(s.Palette.Panel)
+            .ColorV(bl.S.Palette.Panel)
             .InnerLayoutV(InnerLayout.VerticalList)
             .InnerSizingV(InnerSizing.VerticalWeight)
             .InnerSpacingV(0);
         {
             Node(dock, out var tabs)
-                .Mutate(s.TabStrip);
+                .Mutate(bl.S.TabStrip);
             {
                 var lastRevision = pendingRevision;
                 Node(tabs, out var tabRow)
@@ -43,18 +43,19 @@ public class AppTimelinePanelMenu(
                     });
             }
 
+            var metrics = bl.S.Metrics;
             Node(dock, out var caption)
-                .Mutate(s.HorizontalRow)
+                .Mutate(bl.S.HorizontalRow)
                 .SizeWeightTypeV(SizeWeightType.Self)
-                .SizeV((0, s.Metrics.MetricRowHeight + s.Metrics.CompactSpacing))
-                .PaddingV((s.Metrics.LooseSpacing, s.Metrics.CompactSpacing, s.Metrics.LooseSpacing, 0));
+                .SizeV((0, metrics.MetricRowHeight + metrics.CompactSpacing))
+                .PaddingV((metrics.LooseSpacing, metrics.CompactSpacing, metrics.LooseSpacing, 0));
             {
                 Node(caption)
-                    .Mutate(s.MutedCellLabel)
+                    .Mutate(bl.S.MutedCellLabel)
                     .TextF(() => text.Format("last call: {0}", session.Runner.LastCallText));
 
                 Node(caption)
-                    .Mutate(s.MutedCellLabel)
+                    .Mutate(bl.S.MutedCellLabel)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .SizeRelativeV((0, 1))
                     .SizeTextRelativeV((1, 0))
@@ -63,7 +64,7 @@ public class AppTimelinePanelMenu(
             }
 
             Node(dock, out var laneSlot)
-                .PaddingV((s.Metrics.LooseSpacing, s.Metrics.CompactSpacing, s.Metrics.LooseSpacing, s.Metrics.LooseSpacing));
+                .PaddingV((metrics.LooseSpacing, metrics.CompactSpacing, metrics.LooseSpacing, metrics.LooseSpacing));
             {
                 timelineMenu.Create(laneSlot);
             }
@@ -98,14 +99,14 @@ public class AppTimelinePanelMenu(
                 "events overlay\nmarks pack compactions and store resizes");
 
             Node(tabRow)
-                .Mutate(s.TabFiller);
+                .Mutate(bl.S.TabFiller);
         }
 
         void Tab(EntMut parent, AppTimelineOverlayMode mode, string label, string tooltip)
         {
             var active = session.TimelineOverlayMode == mode;
             Node(parent, out var tab)
-                .Mutate(active ? s.ActiveTab : s.Tab)
+                .Mutate(active ? bl.S.ActiveTab : bl.S.Tab)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .IsSelectableV(true)
                 .IsFocusableV(true)
@@ -115,7 +116,7 @@ public class AppTimelinePanelMenu(
                 .OnPressF(() => session.SelectTimelineOverlayMode(mode));
             {
                 if (active)
-                    s.ActiveTabAccent(tab);
+                    bl.S.ActiveTabAccent(tab);
             }
         }
     }

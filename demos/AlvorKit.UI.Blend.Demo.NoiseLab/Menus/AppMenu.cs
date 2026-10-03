@@ -4,92 +4,107 @@ namespace AlvorKit;
 [App]
 public class AppMenu(
     RootText text,
-    AppStyle s,
+    BlendUi bl,
     AppSession session,
     AppToolbarMenu toolbarMenu,
     AppParamsMenu paramsMenu,
     AppViewportMenu viewportMenu,
-    AppStatusMenu statusMenu,
-    AppDropdownMenu dropdownMenu,
-    AppTooltipMenu tooltipMenu)
+    AppStatusMenu statusMenu)
 {
     /// <summary>Mounts the lab panels and summaries of the selected typed controls.</summary>
     public void Create(EntMut root)
     {
-        Node(root, out var shell)
-            .Mutate(s.Root);
+        Node(root, out var layers)
+            .SizeRelativeV((1, 1))
+            .IsOrderedV(true);
         {
-            Node(shell, out var menuBar)
-                .Mutate(s.MenuBar)
-                .PaddingV(s.Metrics.MenuBarPadding);
-            {
-                const float brandWidth = 176f;
+            Node(layers, out var popupLayer)
+                .SizeRelativeV((1, 1))
+                .OrderValueV(1);
+            var popup = bl.Dropdown.Create(popupLayer);
 
-                Node(menuBar, out var menuRow)
+            Node(layers, out var shell)
+                .Mutate(bl.S.Root)
+                .OrderValueV(0);
+            {
+                Node(shell, out var menuBar)
+                    .Mutate(bl.S.MenuBar)
+                    .PaddingV(bl.S.Metrics.MenuBarPadding);
+                {
+                    const float brandWidth = 176f;
+
+                    Node(menuBar, out var menuRow)
+                        .SizeRelativeV((1, 1))
+                        .InnerLayoutV(InnerLayout.HorizontalList)
+                        .InnerSizingV(InnerSizing.HorizontalWeight);
+
+                    Node(menuRow, out var brand)
+                        .Mutate(bl.S.Board)
+                        .SizeWeightTypeV(SizeWeightType.Self)
+                        .SizeRelativeV((0, 1))
+                        .SizeV((brandWidth, 0))
+                        .Mutate(bl.S.RightRule);
+                    {
+                        const float markSize = 13f;
+                        var brandInset = bl.S.Metrics.BrandPadding.X;
+
+                        Node(brand, out var mark)
+                            .IsFloatingV(true)
+                            .AlignmentV(Alignment.Left | Alignment.Vertical)
+                            .OffsetV((brandInset, 0))
+                            .SizeRelativeV((0, 0))
+                            .SizeV((markSize, markSize))
+                            .ColorV(bl.S.Palette.ActiveSurface);
+                        var hairline = bl.S.Metrics.Hairline;
+                        var accent = bl.S.Palette.Accent;
+                        BlendStyle.Rule(mark, Alignment.Top | Alignment.Left, (1, 0), (0, hairline), accent);
+                        BlendStyle.Rule(mark, Alignment.Bottom | Alignment.Left, (1, 0), (0, hairline), accent);
+                        BlendStyle.Rule(mark, Alignment.Top | Alignment.Left, (0, 1), (hairline, 0), accent);
+                        BlendStyle.Rule(mark, Alignment.Top | Alignment.Right, (0, 1), (hairline, 0), accent);
+
+                        Node(brand)
+                            .Mutate(bl.S.EmphasisCellLabel)
+                            .IsFloatingV(true)
+                            .TextAlignmentV(Alignment.Left | Alignment.Vertical)
+                            .TextPaddingV((brandInset + markSize + bl.S.Metrics.LooseSpacing, 0, 0, 0))
+                            .TextV("Noise Lab");
+                    }
+
+                    Node(menuRow);
+
+                    Node(menuRow)
+                        .Mutate(bl.S.MutedCellLabel)
+                        .SizeWeightTypeV(SizeWeightType.Self)
+                        .SizeRelativeV((0, 1))
+                        .SizeTextRelativeV((1, 0))
+                        .TextAlignmentV(Alignment.Right | Alignment.Vertical)
+                        .TextF(() => text.Format(
+                            "noise controls — 2 nodes · {0} variables · {1} hybrids · 1 lookup",
+                            VariableCount(),
+                            HybridCount()));
+                }
+
+                toolbarMenu.Create(shell, popup);
+
+                Node(shell, out var work)
                     .SizeRelativeV((1, 1))
                     .InnerLayoutV(InnerLayout.HorizontalList)
                     .InnerSizingV(InnerSizing.HorizontalWeight);
-
-                Node(menuRow, out var brand)
-                    .Mutate(s.Board)
-                    .SizeWeightTypeV(SizeWeightType.Self)
-                    .SizeRelativeV((0, 1))
-                    .SizeV((brandWidth, 0))
-                    .Mutate(s.RightRule);
                 {
-                    const float markSize = 13f;
-                    var brandInset = s.Metrics.BrandPadding.X;
-
-                    Node(brand, out var mark)
-                        .IsFloatingV(true)
-                        .AlignmentV(Alignment.Left | Alignment.Vertical)
-                        .OffsetV((brandInset, 0))
-                        .SizeRelativeV((0, 0))
-                        .SizeV((markSize, markSize))
-                        .ColorV(s.Palette.ActiveSurface);
-                    BlendStyle.Rule(mark, Alignment.Top | Alignment.Left, (1, 0), (0, s.Metrics.Hairline), s.Palette.Accent);
-                    BlendStyle.Rule(mark, Alignment.Bottom | Alignment.Left, (1, 0), (0, s.Metrics.Hairline), s.Palette.Accent);
-                    BlendStyle.Rule(mark, Alignment.Top | Alignment.Left, (0, 1), (s.Metrics.Hairline, 0), s.Palette.Accent);
-                    BlendStyle.Rule(mark, Alignment.Top | Alignment.Right, (0, 1), (s.Metrics.Hairline, 0), s.Palette.Accent);
-
-                    Node(brand)
-                        .Mutate(s.EmphasisCellLabel)
-                        .IsFloatingV(true)
-                        .TextAlignmentV(Alignment.Left | Alignment.Vertical)
-                        .TextPaddingV((brandInset + markSize + s.Metrics.LooseSpacing, 0, 0, 0))
-                        .TextV("Noise Lab");
+                    paramsMenu.Create(work, popup);
+                    viewportMenu.Create(work);
                 }
 
-                Node(menuRow);
-
-                Node(menuRow)
-                    .Mutate(s.MutedCellLabel)
-                    .SizeWeightTypeV(SizeWeightType.Self)
-                    .SizeRelativeV((0, 1))
-                    .SizeTextRelativeV((1, 0))
-                    .TextAlignmentV(Alignment.Right | Alignment.Vertical)
-                    .TextF(() => text.Format(
-                        "noise controls — 2 nodes · {0} variables · {1} hybrids · 1 lookup",
-                        VariableCount(),
-                        HybridCount()));
+                statusMenu.Create(shell);
             }
 
-            toolbarMenu.Create(shell);
-
-            Node(shell, out var work)
+            Node(layers, out var tooltipLayer)
                 .SizeRelativeV((1, 1))
-                .InnerLayoutV(InnerLayout.HorizontalList)
-                .InnerSizingV(InnerSizing.HorizontalWeight);
+                .OrderValueV(2);
             {
-                paramsMenu.Create(work);
-                viewportMenu.Create(work);
+                bl.Tooltip.Create(tooltipLayer);
             }
-
-            statusMenu.Create(shell);
         }
-
-        dropdownMenu.Create(root);
-        tooltipMenu.Create(root);
 
         // Count the currently displayed scalar and enum controls.
         int VariableCount() =>

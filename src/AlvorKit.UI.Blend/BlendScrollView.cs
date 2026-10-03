@@ -4,18 +4,22 @@ namespace AlvorKit;
 /// Builds a clipped vertical viewport, content list, wheel behavior, and a proportional scrollbar.
 /// Callers remain responsible for styling and populating the returned viewport and content nodes.
 /// </summary>
-public class BlendScrollView(BlendStyle style)
+public class BlendScrollView(BlendStyle s)
 {
     private const float DefaultWheelStep = 48f;
     private const float ScrollbarWidth = 5f;
     private const float MinimumThumbHeight = 18f;
 
     /// <summary>Builds a vertical scroll view and returns its independently resettable state.</summary>
-    public BlendScrollHandle Vertical(
+    public BlendScrollHandle Create(EntMut parent, out EntMut viewport, out EntMut content) =>
+        Create(parent, out viewport, out content, DefaultWheelStep);
+
+    /// <summary>Builds a vertical scroll view with an explicit distance per wheel step.</summary>
+    public BlendScrollHandle Create(
         EntMut parent,
         out EntMut viewport,
         out EntMut content,
-        float wheelStep = DefaultWheelStep)
+        float wheelStep)
     {
         BlendScrollHandle handle = new();
 
@@ -54,7 +58,7 @@ public class BlendScrollView(BlendStyle style)
                 .AlignmentV(Alignment.Right)
                 .SizeRelativeV((0, 1))
                 .SizeV((ScrollbarWidth, 0))
-                .ColorF(() => style.Palette.AppBackground)
+                .ColorF(() => s.Palette.AppBackground)
                 .IsDisabledF(() => Maximum() <= 0);
             {
                 Node(track)
@@ -63,7 +67,7 @@ public class BlendScrollView(BlendStyle style)
                     .SizeRelativeV((1, 0))
                     .SizeF(() => (0, ThumbHeight()))
                     .OffsetF(() => (0, ThumbOffset()))
-                    .ColorF(() => style.Palette.Accent);
+                    .ColorF(() => s.Palette.Accent);
             }
         }
 

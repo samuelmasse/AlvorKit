@@ -6,7 +6,7 @@ public class AppViewportMenu(
     RootText text,
     RootUiMouse uiMouse,
     RootKeyboard keyboard,
-    AppStyle s,
+    BlendUi bl,
     AppSession session)
 {
     public void Create(EntMut root)
@@ -16,13 +16,13 @@ public class AppViewportMenu(
         const float zWheelStep = 2f;
 
         Node(root, out var viewport)
-            .Mutate(s.PanelFillList);
+            .Mutate(bl.S.PanelFillList);
         {
             Node(viewport, out var header)
-                .Mutate(s.HeaderStrip)
-                .SizeV((0, s.Metrics.ViewportHeaderHeight))
-                .PaddingV(s.Metrics.ViewportHeaderPadding)
-                .InnerSpacingV(s.Metrics.ToolbarSpacing);
+                .Mutate(bl.S.HeaderStrip)
+                .SizeV((0, bl.S.Metrics.ViewportHeaderHeight))
+                .PaddingV(bl.S.Metrics.ViewportHeaderPadding)
+                .InnerSpacingV(bl.S.Metrics.ToolbarSpacing);
             {
                 Readout(header, "slice depth\nShift-wheel over the preview steps z", () => text.Format("z {0:0.0}", session.Z));
 
@@ -34,15 +34,15 @@ public class AppViewportMenu(
             }
 
             Node(viewport, out var body)
-                .ColorV(s.Palette.AppBackground)
+                .ColorV(bl.S.Palette.AppBackground)
                 .SizeRelativeV((1, 1))
                 .InnerLayoutV(InnerLayout.VerticalList)
                 .InnerSizingV(InnerSizing.VerticalWeight)
                 .PaddingV((14, 12, 14, 12))
-                .InnerSpacingV(s.Metrics.CompactSpacing);
+                .InnerSpacingV(bl.S.Metrics.CompactSpacing);
             {
                 Node(body)
-                    .Mutate(s.MutedLabel)
+                    .Mutate(bl.S.MutedLabel)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .TextF(() => text.Format(
                         "2D slice at z = {0:0.0} — drag pans · wheel zooms · Shift-wheel steps z · hover probes the sample",
@@ -55,7 +55,7 @@ public class AppViewportMenu(
                 // therefore always draws texel-accurate. Sprite UVs are y-inverted against uploaded rows,
                 // so an unflipped draw would mirror the buffer vertically (and invert vertical panning).
                 Node(body, out var view)
-                    .Mutate(s.Board)
+                    .Mutate(bl.S.Board)
                     .SizeRelativeV((1, 1))
                     .TextureF(() => session.Field.Texture)
                     .TextureFlipV(SpriteBatchFlip.Vertical)
@@ -63,7 +63,7 @@ public class AppViewportMenu(
                     .IsSilentFocusableV(true)
                     .IsScrollableV(true)
                     .CursorF(() => CursorShape.Crosshair)
-                    .Mutate(s.Border)
+                    .Mutate(bl.S.Border)
                     .OnPressF(() =>
                     {
                         panStart = uiMouse.Position;
@@ -127,7 +127,7 @@ public class AppViewportMenu(
         void Readout(EntMut header, string tooltip, Func<ReadOnlySpan<char>> value)
         {
             Node(header)
-                .Mutate(s.ReadoutChip)
+                .Mutate(bl.S.ReadoutChip)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextF(value)

@@ -104,7 +104,7 @@ public partial record InjectorScopeState(
     }
 
     /// <summary>
-    /// Adds an existing <paramref name="instance"/> to this scope's cache after validating its type and scope.
+    /// Adds an existing instance; unmarked types take this scope's ownership while marked types must match it.
     /// </summary>
     public void Add(object instance, InjectorPath? path = null)
     {
@@ -115,9 +115,9 @@ public partial record InjectorScopeState(
         {
             ValidateCircularDependency(type, path);
             ValidateDoesNotAlreadyExist(instance, type, path);
-            ValidateIncluded(type, path);
-            ValidateInjectorAttributeType(type, path);
+            ValidateAddedInstanceType(type, path);
             instances[type] = instance;
+            BindUnmarkedInstance(type, instance, path);
             Root.NotifyInstanceOwned(Owner, instance);
         }
         finally

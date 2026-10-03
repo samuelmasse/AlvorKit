@@ -18,24 +18,29 @@ public class BlendStyle
     /// <summary>Panel, separator, and overlay recipes backing the public style façade.</summary>
     private readonly BlendStyleSurfaces surfaces;
 
-    /// <summary>Creates the style from embedded fonts, graphics ownership, UI scale, and keyboard input.</summary>
-    public BlendStyle(RootInter inter, GlLayer gl, RootUiScale scale, RootKeyboard keyboard)
-    {
-        font = inter.Regular;
-        layout = new(this);
-        typography = new(this, font, inter.SemiBold);
-        controls = new(this, font, gl, scale, keyboard);
-        surfaces = new(this);
-    }
+    private readonly BlendPalette palette;
+    private readonly BlendMetrics metrics;
 
-    /// <summary>Gets the active color palette.</summary>
-    public virtual BlendPalette Palette => BlendPalette.Default;
+    /// <summary>Gets the construction-time color palette shared by the toolkit.</summary>
+    public BlendPalette Palette => palette;
 
-    /// <summary>Gets the active layout metrics.</summary>
-    public virtual BlendMetrics Metrics { get; } = new();
+    /// <summary>Gets the construction-time layout metrics shared by the toolkit.</summary>
+    public BlendMetrics Metrics => metrics;
 
     /// <summary>Gets the regular text font face, for collaborators that measure text.</summary>
     public Font TextFont => font;
+
+    /// <summary>Creates toolkit recipes using root-owned fonts and the chosen control-texture owner.</summary>
+    internal BlendStyle(RootBlend root, GlLayer gl, BlendPalette palette, BlendMetrics metrics)
+    {
+        this.palette = palette;
+        this.metrics = metrics;
+        font = root.Inter.Regular;
+        layout = new(this);
+        typography = new(this, font, root.Inter.SemiBold);
+        controls = new(this, font, gl, root.Scale, root.Keyboard);
+        surfaces = new(this);
+    }
 
     /// <summary>Applies the full-window vertical root layout with editor-shell click-away semantics.</summary>
     public void Root(EntMut ent) => layout.Root(ent);

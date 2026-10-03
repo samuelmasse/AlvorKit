@@ -8,13 +8,12 @@ public class AppState(
     RootScripts scripts,
     RootUi ui,
     RootUiScript uiScript,
-    AppStyle s,
+    BlendUi bl,
     AppSession session,
     AppShortcuts shortcuts,
     AppMenu visualizerMenu,
     AppScenarioPickerMenu scenarioPickerMenu,
-    AppUiScaleMenu uiScaleMenu,
-    AppTooltipMenu tooltipMenu) : State
+    AppUiScaleMenu uiScaleMenu) : State
 {
     private EntMut dashboardNode;
     private EntMut pickerNode;
@@ -53,7 +52,7 @@ public class AppState(
             .OrderValueV(3)
             .SizeRelativeV((1, 1));
         {
-            tooltipMenu.Create(tooltipNode);
+            bl.Tooltip.Create(tooltipNode);
         }
         screen.IsVisible = true;
     }
@@ -88,5 +87,5 @@ public class AppState(
     }
 
     /// <summary>Clears the OpenGL backbuffer before the UI draws.</summary>
-    public override void Render() => backbuffer.Clear(s.Palette.AppBackground);
+    public override void Render() => backbuffer.Clear(bl.S.Palette.AppBackground);
 }

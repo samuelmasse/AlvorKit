@@ -47,7 +47,7 @@ public partial record InjectorScopeState
         var implementationType = instance.GetType();
 
         ValidateServiceType(serviceType, path);
-        ValidateImplementationType(implementationType, path);
+        ValidateAddedInstanceType(implementationType, path);
 
         if (!serviceType.IsAssignableFrom(implementationType))
             throw new InjectorException(path, $"Instance type '{implementationType.FullName}' cannot be registered as " +

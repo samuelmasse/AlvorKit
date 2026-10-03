@@ -1,18 +1,14 @@
 namespace AlvorKit;
 
-/// <summary>Blend-backed UI style plus the allocator data-visualization palette.</summary>
+/// <summary>App-specific allocator data-visualization colors and measures.</summary>
 [App]
-public class AppStyle(
-    RootInter inter,
-    RootGl gl,
-    RootUiScale scale,
-    RootKeyboard keyboard) : BlendStyle(inter, gl, scale, keyboard)
+public class AppStyle(BlendUi bl)
 {
     /// <summary>Gets the backdrop color behind memory strips and the timeline lane.</summary>
-    public Vec4 PanelInsetColor => Palette.AppBackground;
+    public Vec4 PanelInsetColor => bl.S.Palette.AppBackground;
 
     /// <summary>Gets the strip outline thickness used by the data visualizations.</summary>
-    public float RuleWidth => Metrics.Hairline;
+    public float RuleWidth => bl.S.Metrics.Hairline;
 
     /// <summary>Gets the small font size used by in-strip block labels.</summary>
     public int FontSizeSmall => 10;
@@ -69,7 +65,7 @@ public class AppStyle(
         AllocatorCommandKind.Realloc => (0.55f, 0.9f, 0.42f, 1f),
         AllocatorCommandKind.Free => (0.95f, 0.34f, 0.36f, 1f),
         AllocatorCommandKind.Pack => (0.78f, 0.56f, 1f, 1f),
-        _ => Palette.Text,
+        _ => bl.S.Palette.Text,
     };
 
     public Vec4 Dim(Vec4 color, float factor) => (color.X * factor, color.Y * factor, color.Z * factor, color.W);

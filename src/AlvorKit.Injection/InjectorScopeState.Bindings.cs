@@ -122,6 +122,16 @@ public partial record InjectorScopeState
         CacheAlias(serviceType, instance, path);
         CacheAlias(instance.GetType(), instance, path);
         bindings[serviceType] = new InjectorInstanceBinding(serviceType, this, instance);
+        BindUnmarkedInstance(instance.GetType(), instance, path);
+    }
+
+    /// <summary>
+    /// Makes an unmarked instance supplied to an attributed scope visible to descendant constructor requests.
+    /// </summary>
+    private void BindUnmarkedInstance(Type type, object instance, InjectorPath path)
+    {
+        if (AttributeType != null && GetInjectorAttributeType(type, path) == null)
+            bindings[type] = new InjectorInstanceBinding(type, this, instance);
     }
 
     /// <summary>

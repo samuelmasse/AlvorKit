@@ -9,10 +9,10 @@ public class AppStarterState(
     RootScripts scripts,
     RootUi ui,
     RootUiScript uiScript,
+    BlendUi bl,
     AppGlTriangle triangle,
     AppSpriteScene spriteScene,
-    AppMainMenu menu,
-    AppStyle s) : State
+    AppMainMenu menu) : State
 {
     private EntMut menuNode;
 
@@ -52,7 +52,7 @@ public class AppStarterState(
     /// <summary>Clears the frame and draws the raw GL triangle.</summary>
     public override void Render()
     {
-        backbuffer.Clear(s.Palette.AppBackground);
+        backbuffer.Clear(bl.S.Palette.AppBackground);
         triangle.Render();
     }
 

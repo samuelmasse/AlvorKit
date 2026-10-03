@@ -1,18 +1,18 @@
 namespace AlvorKit;
 
 /// <summary>Builds rounded Blend control geometry and resolves its reactive colors.</summary>
-internal sealed class BlendStyleControlSurface
+internal class BlendStyleControlSurface
 {
     /// <summary>Style façade supplying current palette, metrics, and text recipes.</summary>
-    private readonly BlendStyle style;
+    private readonly BlendStyle s;
 
     /// <summary>Generated rounded-cap texture cache.</summary>
     private readonly BlendControlChrome chrome;
 
     /// <summary>Creates rounded control rendering over the owning style and cap cache.</summary>
-    internal BlendStyleControlSurface(BlendStyle style, BlendControlChrome chrome)
+    internal BlendStyleControlSurface(BlendStyle s, BlendControlChrome chrome)
     {
-        this.style = style;
+        this.s = s;
         this.chrome = chrome;
     }
 
@@ -27,33 +27,33 @@ internal sealed class BlendStyleControlSurface
     private Vec4 ButtonFill(EntMut ent, bool active)
     {
         if (ent.IsInputDisabledFV.Resolve())
-            return style.Palette.AppBackground;
+            return s.Palette.AppBackground;
         if (active)
-            return style.Palette.ActiveSurface;
+            return s.Palette.ActiveSurface;
         if (ent.IsPressedR)
-            return style.Palette.Selection;
+            return s.Palette.Selection;
         if (ent.IsHoveredR)
-            return style.Palette.Hover;
-        return style.Palette.Panel;
+            return s.Palette.Hover;
+        return s.Palette.Panel;
     }
 
     /// <summary>Resolves the control border from disabled, active, hover, and focus state.</summary>
     private Vec4 ButtonBorder(EntMut ent, bool active)
     {
         if (ent.IsInputDisabledFV.Resolve())
-            return style.Palette.Border;
+            return s.Palette.Border;
         if (active)
-            return style.Palette.Accent;
+            return s.Palette.Accent;
         if (ent.IsHoveredR || ent.IsFocusedR)
-            return style.Palette.StrongBorder;
-        return style.Palette.Border;
+            return s.Palette.StrongBorder;
+        return s.Palette.Border;
     }
 
     /// <summary>Adds left and right caps plus the three-piece center fill.</summary>
     private void RoundedControlSurface(EntMut ent, Vec2 size, bool active)
     {
-        var capWidth = style.Metrics.ControlRadius;
-        var borderWidth = style.Metrics.ControlBorderWidth;
+        var capWidth = s.Metrics.ControlRadius;
+        var borderWidth = s.Metrics.ControlBorderWidth;
         var middleWidth = -(capWidth * 2f);
 
         Node(ent)
@@ -97,8 +97,8 @@ internal sealed class BlendStyleControlSurface
     private Texture2D ControlCap(EntMut ent, float height, bool active) =>
         chrome.Cap(
             height,
-            style.Metrics.ControlRadius,
-            style.Metrics.ControlBorderWidth,
+            s.Metrics.ControlRadius,
+            s.Metrics.ControlBorderWidth,
             ButtonFill(ent, active),
             ButtonBorder(ent, active));
 
@@ -107,20 +107,20 @@ internal sealed class BlendStyleControlSurface
         Node(ent)
             .IsFloatingV(true)
             .SizeRelativeV((1, 1))
-            .Mutate(style.CenterText)
+            .Mutate(s.CenterText)
             .FontSizeV(fontSize)
             .TextColorF(() =>
             {
                 if (ent.IsInputDisabledFV.Resolve())
-                    return style.Palette.WithAlpha(style.Palette.MutedText, 0.45f);
+                    return s.Palette.WithAlpha(s.Palette.MutedText, 0.45f);
 
                 var requested = ent.TextColorFV.Resolve();
                 if (requested.W > 0f)
                     return requested;
 
                 return active
-                    ? style.Palette.Text
-                    : style.Palette.MutedText;
+                    ? s.Palette.Text
+                    : s.Palette.MutedText;
             })
             .TextF(() => ent.TextFV.Resolve());
 }

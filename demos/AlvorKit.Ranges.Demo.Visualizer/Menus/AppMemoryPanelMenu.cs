@@ -4,7 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppMemoryPanelMenu(
     RootText text,
-    AppStyle s,
+    BlendUi bl,
     AppSession session,
     AppMemoryLegend legend,
     AppMemoryStats stats,
@@ -15,16 +15,16 @@ public class AppMemoryPanelMenu(
         const int legendEntryCount = 5;
 
         Node(root, out var viewport)
-            .Mutate(s.PanelFillList);
+            .Mutate(bl.S.PanelFillList);
         {
             Node(viewport, out var header)
-                .Mutate(s.HeaderStrip)
-                .SizeV((0, s.Metrics.ViewportHeaderHeight))
-                .InnerSpacingV(s.Metrics.ToolbarSpacing)
-                .PaddingV(s.Metrics.ViewportHeaderPadding);
+                .Mutate(bl.S.HeaderStrip)
+                .SizeV((0, bl.S.Metrics.ViewportHeaderHeight))
+                .InnerSpacingV(bl.S.Metrics.ToolbarSpacing)
+                .PaddingV(bl.S.Metrics.ViewportHeaderPadding);
             {
                 Node(header)
-                    .Mutate(s.Chip)
+                    .Mutate(bl.S.Chip)
                     .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .TextF(() => text.Format("memory: {0}", legend.ModeName()))
@@ -38,7 +38,7 @@ public class AppMemoryPanelMenu(
                     .ColorV(default);
 
                 Node(header)
-                    .Mutate(s.MutedLabel)
+                    .Mutate(bl.S.MutedLabel)
                     .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .IsSelectableV(true)
@@ -46,7 +46,7 @@ public class AppMemoryPanelMenu(
                     .TextF(() => text.Format("used {0:0.0}%", stats.UsedRatio() * 100));
 
                 Node(header)
-                    .Mutate(s.MutedLabel)
+                    .Mutate(bl.S.MutedLabel)
                     .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .IsSelectableV(true)
@@ -54,7 +54,7 @@ public class AppMemoryPanelMenu(
                     .TextF(() => text.Format("frag {0:0.0}%", stats.ExternalFragmentationRatio() * 100));
 
                 Node(header)
-                    .Mutate(s.MutedLabel)
+                    .Mutate(bl.S.MutedLabel)
                     .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .IsSelectableV(true)
@@ -62,7 +62,7 @@ public class AppMemoryPanelMenu(
                     .TextF(() => text.Format("largest free {0}", stats.LargestFreeSpan()));
 
                 Node(header)
-                    .Mutate(s.MutedLabel)
+                    .Mutate(bl.S.MutedLabel)
                     .AlignmentV(Alignment.Vertical)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .IsSelectableV(true)
@@ -71,7 +71,7 @@ public class AppMemoryPanelMenu(
             }
 
             Node(viewport, out var charts)
-                .ColorV(s.Palette.AppBackground);
+                .ColorV(bl.S.Palette.AppBackground);
             {
                 memoryChartsMenu.Create(charts);
             }
@@ -80,20 +80,20 @@ public class AppMemoryPanelMenu(
         void LegendItem(EntMut parent, int index)
         {
             Node(parent, out var item)
-                .Mutate(s.HorizontalList)
+                .Mutate(bl.S.HorizontalList)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
-                .InnerSpacingV(s.Metrics.CompactSpacing)
+                .InnerSpacingV(bl.S.Metrics.CompactSpacing)
                 .IsSelectableV(true)
                 .TooltipF(() => legend.EntryTooltip(index))
                 .TooltipColorF(() => legend.EntryColor(index));
             {
                 Node(item)
-                    .Mutate(s.Swatch)
+                    .Mutate(bl.S.Swatch)
                     .ColorF(() => legend.EntryColor(index));
 
                 Node(item)
-                    .Mutate(s.MutedLabel)
+                    .Mutate(bl.S.MutedLabel)
                     .AlignmentV(Alignment.Vertical)
                     .TextF(() => legend.EntryLabel(index));
             }

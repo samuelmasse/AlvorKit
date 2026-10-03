@@ -73,7 +73,7 @@ public abstract partial class InjectorScope
     }
 
     /// <summary>
-    /// Registers <paramref name="instance"/> as <typeparamref name="TService"/> in this scope.
+    /// Registers an instance and its concrete alias in this scope. An unmarked instance takes this scope's lifetime.
     /// </summary>
     /// <typeparam name="TService">Service type requested by constructors or callers.</typeparam>
     /// <param name="instance">Existing instance returned for service requests.</param>
@@ -87,7 +87,7 @@ public abstract partial class InjectorScope
     }
 
     /// <summary>
-    /// Registers <paramref name="instance"/> as <paramref name="serviceType"/> in this scope.
+    /// Registers an instance and its concrete alias in this scope. An unmarked instance takes this scope's lifetime.
     /// </summary>
     /// <param name="serviceType">Service type requested by constructors or callers.</param>
     /// <param name="instance">Existing instance returned for service requests.</param>

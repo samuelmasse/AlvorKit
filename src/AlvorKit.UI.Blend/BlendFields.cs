@@ -8,26 +8,23 @@ namespace AlvorKit;
 /// </summary>
 public class BlendFields
 {
-    private readonly BlendStyle style;
+    private readonly BlendStyle s;
     private readonly Keyboard keyboard;
-    private readonly BlendDropdownMenu dropdown;
     private readonly BlendFieldChrome chrome;
     private readonly BlendDragField dragField;
 
-    /// <summary>Creates the builders over the shared style, input roots, and dropdown popup.</summary>
+    /// <summary>Creates the builders over the shared style and input roots.</summary>
     public BlendFields(
-        BlendStyle style,
+        BlendStyle s,
         RootUiScale uiScale,
         RootSprites sprites,
         RootUiMouse uiMouse,
-        Keyboard keyboard,
-        BlendDropdownMenu dropdown)
+        Keyboard keyboard)
     {
-        this.style = style;
+        this.s = s;
         this.keyboard = keyboard;
-        this.dropdown = dropdown;
-        chrome = new(style, uiScale, sprites);
-        dragField = new(style, chrome, uiMouse, keyboard);
+        chrome = new(s, uiScale, sprites);
+        dragField = new(s, chrome, uiMouse, keyboard);
     }
 
     /// <summary>Builds an unbounded float field: drag scrubs by step, arrows step, click or Enter edits inline.</summary>
@@ -54,44 +51,50 @@ public class BlendFields
             o.Get,
             o.Set);
 
-    /// <summary>Builds a dropdown field that opens the shared <see cref="BlendDropdownMenu"/> popup under itself.</summary>
-    public EntMut DropdownField(EntMut parent, string label, IReadOnlyList<BlendDropdownItem> items, Func<int> get, Action<int> pick)
+    /// <summary>Builds a dropdown field that opens its explicitly supplied popup under itself.</summary>
+    public EntMut DropdownField(
+        EntMut parent,
+        BlendDropdownHandle popup,
+        string label,
+        IReadOnlyList<BlendDropdownItem> items,
+        Func<int> get,
+        Action<int> pick)
     {
         Node(parent, out var field)
             .Mutate(chrome.Surface)
             .CursorF(() => CursorShape.Hand)
-            .OnPressF(() => dropdown.Open(field, items, get(), pick))
+            .OnPressF(() => popup.Open(field, items, get(), pick))
             .OnUpdateF(() =>
             {
-                if (field.IsFocusedR && !dropdown.IsOpen && keyboard.IsKeyPressed(Keys.Enter))
-                    dropdown.Open(field, items, get(), pick);
+                if (field.IsFocusedR && !popup.IsOpen && keyboard.IsKeyPressed(Keys.Enter))
+                    popup.Open(field, items, get(), pick);
             })
-            .ColorF(() => dropdown.IsOpenFor(field) ? style.Palette.Hover : style.Palette.AppBackground);
+            .ColorF(() => popup.IsOpenFor(field) ? s.Palette.Hover : s.Palette.AppBackground);
         {
             BlendDropdownItem Current() => items[Math.Clamp(get(), 0, items.Count - 1)];
 
             chrome.Label(field, label, () => false, () => false);
 
-            var caretInset = style.Metrics.FieldTextPadding + style.Metrics.RightGlyphPadding;
-            var valueInset = caretInset + style.Metrics.FieldTextPadding + style.Metrics.CompactSpacing;
+            var caretInset = s.Metrics.FieldTextPadding + s.Metrics.RightGlyphPadding;
+            var valueInset = caretInset + s.Metrics.FieldTextPadding + s.Metrics.CompactSpacing;
 
             Node(field)
-                .Mutate(style.CellLabel)
+                .Mutate(s.CellLabel)
                 .IsFloatingV(true)
                 .TextAlignmentV(Alignment.Right | Alignment.Vertical)
                 .TextPaddingV((0, 0, valueInset, 0))
                 .TextF(() => Current().Text);
 
             Node(field)
-                .Mutate(style.Swatch)
+                .Mutate(s.Swatch)
                 .IsFloatingV(true)
                 .AlignmentV(Alignment.Right | Alignment.Vertical)
-                .OffsetF(() => (-(valueInset + chrome.MeasureUi(Current().Text) + style.Metrics.CompactSpacing + style.Metrics.SwatchWidth), 0))
+                .OffsetF(() => (-(valueInset + chrome.MeasureUi(Current().Text) + s.Metrics.CompactSpacing + s.Metrics.SwatchWidth), 0))
                 .ColorF(() => Current().Swatch)
                 .IsDisabledF(() => Current().Swatch.W == 0);
 
             chrome.DownCaret(field, caretInset);
-            chrome.Border(field, () => dropdown.IsOpenFor(field), () => field.IsHoveredR);
+            chrome.Border(field, () => popup.IsOpenFor(field), () => field.IsHoveredR);
         }
 
         return field;
@@ -149,11 +152,11 @@ public class BlendFields
             chrome.EditSelection(field, edit, chrome.TextLeft);
 
             Node(field)
-                .Mutate(style.CellLabel)
+                .Mutate(s.CellLabel)
                 .IsFloatingV(true)
                 .TextAlignmentV(Alignment.Left | Alignment.Vertical)
-                .TextPaddingV((style.Metrics.FieldTextPadding, 0, style.Metrics.FieldTextPadding, 0))
-                .TextColorF(() => Placeholding() ? style.Palette.MutedText : style.Palette.Text)
+                .TextPaddingV((s.Metrics.FieldTextPadding, 0, s.Metrics.FieldTextPadding, 0))
+                .TextColorF(() => Placeholding() ? s.Palette.MutedText : s.Palette.Text)
                 .TextF(() => edit.IsActive ? edit.Span : Placeholding() ? o.Placeholder : o.Get());
 
             chrome.EditCaret(field, edit, chrome.TextLeft);
@@ -191,31 +194,31 @@ public class BlendFields
     public EntMut Checkbox(EntMut parent, string label, Func<bool> get, Action toggle)
     {
         Node(parent, out var row)
-            .Mutate(style.Board)
+            .Mutate(s.Board)
             .SizeWeightTypeV(SizeWeightType.Self)
             .SizeRelativeV((1, 0))
-            .SizeV((0, style.Metrics.FieldHeight))
+            .SizeV((0, s.Metrics.FieldHeight))
             .IsSelectableV(true)
             .IsFocusableV(true)
             .CursorF(() => CursorShape.Hand)
             .OnClickF(toggle)
-            .Mutate(style.ActivateOnEnter);
+            .Mutate(s.ActivateOnEnter);
         {
-            var box = style.Metrics.CheckboxSize;
+            var box = s.Metrics.CheckboxSize;
 
             Node(row, out var boxNode)
                 .IsFloatingV(true)
                 .AlignmentV(Alignment.Left | Alignment.Vertical)
                 .SizeRelativeV((0, 0))
                 .SizeV((box, box))
-                .ColorF(() => get() ? style.Palette.ActiveSurface : style.Palette.AppBackground);
+                .ColorF(() => get() ? s.Palette.ActiveSurface : s.Palette.AppBackground);
             {
                 Node(boxNode)
                     .IsFloatingV(true)
                     .SizeRelativeV((1, 1))
-                    .Mutate(style.CenterText)
-                    .FontSizeV(style.Metrics.CheckGlyphFontSize)
-                    .TextColorV(style.Palette.Accent)
+                    .Mutate(s.CenterText)
+                    .FontSizeV(s.Metrics.CheckGlyphFontSize)
+                    .TextColorV(s.Palette.Accent)
                     .TextV("✓")
                     .IsDisabledF(() => !get());
 
@@ -223,10 +226,10 @@ public class BlendFields
             }
 
             Node(row)
-                .Mutate(style.CellLabel)
+                .Mutate(s.CellLabel)
                 .IsFloatingV(true)
                 .TextAlignmentV(Alignment.Left | Alignment.Vertical)
-                .TextPaddingV((box + style.Metrics.LooseSpacing, 0, 0, 0))
+                .TextPaddingV((box + s.Metrics.LooseSpacing, 0, 0, 0))
                 .TextV(label);
         }
 

@@ -4,6 +4,7 @@ namespace AlvorKit;
 public class AppStatusMenu(
     RootText text,
     RootMetrics metrics,
+    BlendUi bl,
     AppStyle s,
     AppLayout layout,
     AppSession session)
@@ -18,19 +19,19 @@ public class AppStatusMenu(
             .InnerSpacingV(layout.StatusItemSpacing);
         {
             Node(status)
-                .Mutate(s.EmphasisLabel)
+                .Mutate(bl.S.EmphasisLabel)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .AlignmentV(Alignment.Vertical)
                 .TextF(() => text.Format("{0} FPS", metrics.FrameWindow.Ticks));
 
             Node(status)
-                .Mutate(s.MutedLabel)
+                .Mutate(bl.S.MutedLabel)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .AlignmentV(Alignment.Vertical)
                 .TextF(() => text.Format("Camera: {0}", session.CameraCaptured ? "mouse look" : "menu mode"));
 
             Node(status)
-                .Mutate(s.EmphasisLabel)
+                .Mutate(bl.S.EmphasisLabel)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .AlignmentV(Alignment.Vertical)
                 .TextF(() => text.Format("Active: {0}", session.ActiveAnimationName));

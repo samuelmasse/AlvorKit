@@ -4,15 +4,15 @@ namespace AlvorKit;
 /// Shared visual plumbing for Blend form fields: the field surface, reactive border rules, the edit-mode
 /// selection/caret overlay, and UI-space text measurement that mirrors the draw system's scaling.
 /// </summary>
-internal sealed class BlendFieldChrome(BlendStyle style, RootUiScale uiScale, RootSprites sprites)
+internal class BlendFieldChrome(BlendStyle s, RootUiScale uiScale, RootSprites sprites)
 {
     /// <summary>Applies the label-inside field surface: full-width FieldHeight board over AppBackground.</summary>
     internal void Surface(EntMut ent) => ent.Mutate()
-        .Mutate(style.Board)
+        .Mutate(s.Board)
         .SizeWeightTypeV(SizeWeightType.Self)
         .SizeRelativeV((1, 0))
-        .SizeV((0, style.Metrics.FieldHeight))
-        .ColorV(style.Palette.AppBackground)
+        .SizeV((0, s.Metrics.FieldHeight))
+        .ColorV(s.Palette.AppBackground)
         .IsSelectableV(true)
         .IsFocusableV(true);
 
@@ -20,10 +20,10 @@ internal sealed class BlendFieldChrome(BlendStyle style, RootUiScale uiScale, Ro
     internal void Border(EntMut ent, Func<bool> accent, Func<bool> hot)
     {
         Vec4 Color() => accent()
-            ? style.Palette.Accent
-            : hot() || ent.IsFocusedR ? style.Palette.StrongBorder : style.Palette.Border;
+            ? s.Palette.Accent
+            : hot() || ent.IsFocusedR ? s.Palette.StrongBorder : s.Palette.Border;
 
-        var hairline = style.Metrics.Hairline;
+        var hairline = s.Metrics.Hairline;
         BlendStyle.Rule(ent, Alignment.Top | Alignment.Left, (1, 0), (0, hairline), Color);
         BlendStyle.Rule(ent, Alignment.Bottom | Alignment.Left, (1, 0), (0, hairline), Color);
         BlendStyle.Rule(ent, Alignment.Top | Alignment.Left, (0, 1), (hairline, 0), Color);
@@ -34,7 +34,7 @@ internal sealed class BlendFieldChrome(BlendStyle style, RootUiScale uiScale, Ro
     internal void Label(EntMut field, string label, Func<bool> editing, Func<bool> inset)
     {
         Node(field)
-            .Mutate(style.MutedCellLabel)
+            .Mutate(s.MutedCellLabel)
             .IsFloatingV(true)
             .TextAlignmentV(Alignment.Left | Alignment.Vertical)
             .TextPaddingF(() => (LabelInset(inset()), 0, 0, 0))
@@ -47,10 +47,10 @@ internal sealed class BlendFieldChrome(BlendStyle style, RootUiScale uiScale, Ro
         Node(field)
             .IsFloatingV(true)
             .AlignmentV(Alignment.Left | Alignment.Vertical)
-            .ColorV(style.Palette.Selection)
+            .ColorV(s.Palette.Selection)
             .SizeRelativeV((0, 0))
             .OffsetF(() => (textStart() + MeasureUi(edit.Span[..edit.Selection.Start]), 0))
-            .SizeF(() => (MeasureUi(edit.Span[edit.Selection.Start..edit.Selection.End]), style.Metrics.CaretHeight))
+            .SizeF(() => (MeasureUi(edit.Span[edit.Selection.Start..edit.Selection.End]), s.Metrics.CaretHeight))
             .IsDisabledF(() => !edit.IsActive || !edit.HasSelection);
 
     /// <summary>Adds the blinking caret for an edit session; declare it after the text node so it draws over glyphs.</summary>
@@ -58,9 +58,9 @@ internal sealed class BlendFieldChrome(BlendStyle style, RootUiScale uiScale, Ro
         Node(field)
             .IsFloatingV(true)
             .AlignmentV(Alignment.Left | Alignment.Vertical)
-            .ColorF(() => edit.IsCaretVisible ? style.Palette.Text : default)
+            .ColorF(() => edit.IsCaretVisible ? s.Palette.Text : default)
             .SizeRelativeV((0, 0))
-            .SizeV((style.Metrics.CaretWidth, style.Metrics.CaretHeight))
+            .SizeV((s.Metrics.CaretWidth, s.Metrics.CaretHeight))
             .OffsetF(() => (textStart() + MeasureUi(edit.Span[..edit.Caret]), 0))
             .IsDisabledF(() => !edit.IsActive);
 
@@ -84,7 +84,7 @@ internal sealed class BlendFieldChrome(BlendStyle style, RootUiScale uiScale, Ro
                 .OffsetV((0, row))
                 .SizeRelativeV((0, 0))
                 .SizeV((caretWidth - (row * 2), 1))
-                .ColorV(style.Palette.MutedText);
+                .ColorV(s.Palette.MutedText);
         }
     }
 
@@ -108,16 +108,16 @@ internal sealed class BlendFieldChrome(BlendStyle style, RootUiScale uiScale, Ro
                 .OffsetV((column, 0))
                 .SizeRelativeV((0, 0))
                 .SizeV((1, height))
-                .ColorV(style.Palette.MutedText);
+                .ColorV(s.Palette.MutedText);
         }
     }
 
     /// <summary>Gets the left inset of edit-mode text inside a field.</summary>
-    internal float TextLeft() => style.Metrics.FieldTextPadding;
+    internal float TextLeft() => s.Metrics.FieldTextPadding;
 
     /// <summary>Gets the label inset, widened while hover arrows are visible.</summary>
     internal float LabelInset(bool arrows) =>
-        style.Metrics.FieldTextPadding + (arrows ? style.Metrics.FieldArrowInset : 0);
+        s.Metrics.FieldTextPadding + (arrows ? s.Metrics.FieldArrowInset : 0);
 
     /// <summary>Measures text width in UI units the same way the draw system does: at the scaled pixel size, divided back.</summary>
     internal float MeasureUi(ReadOnlySpan<char> text)
@@ -125,10 +125,10 @@ internal sealed class BlendFieldChrome(BlendStyle style, RootUiScale uiScale, Ro
         if (text.IsEmpty)
             return 0;
 
-        var fontSize = (int)(style.Metrics.TextFontSize * uiScale.Scale);
+        var fontSize = (int)(s.Metrics.TextFontSize * uiScale.Scale);
         if (fontSize <= 0)
             return 0;
 
-        return sprites.Batch.Measure(style.TextFont.Size(fontSize), text) / uiScale.Scale;
+        return sprites.Batch.Measure(s.TextFont.Size(fontSize), text) / uiScale.Scale;
     }
 }

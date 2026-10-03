@@ -3,7 +3,7 @@ namespace AlvorKit;
 /// <summary>Builds the editor shell: menu bar, toolbar, workspace docks, and status bar.</summary>
 [App]
 public class AppMenu(
-    AppStyle s,
+    BlendUi bl,
     AppLayout layout,
     AppSession session,
     AppToolbarMenu toolbarMenu,
@@ -15,13 +15,13 @@ public class AppMenu(
     public void Create(EntMut root)
     {
         Node(root, out var shell)
-            .Mutate(s.Root);
+            .Mutate(bl.S.Root);
         {
             MenuBar(shell);
             toolbarMenu.Create(shell);
 
             Node(shell, out var workspace)
-                .ColorV(s.Palette.AppBackground)
+                .ColorV(bl.S.Palette.AppBackground)
                 .InnerLayoutV(InnerLayout.HorizontalList)
                 .InnerSizingV(InnerSizing.HorizontalWeight)
                 .InnerSpacingV(0);
@@ -45,41 +45,41 @@ public class AppMenu(
         void MenuBar(EntMut parent)
         {
             Node(parent, out var menuBar)
-                .Mutate(s.MenuBar)
+                .Mutate(bl.S.MenuBar)
                 .InnerLayoutV(InnerLayout.HorizontalList)
                 .InnerSizingV(InnerSizing.HorizontalWeight)
                 .InnerSpacingV(0)
-                .PaddingV(s.Metrics.MenuBarPadding);
+                .PaddingV(bl.S.Metrics.MenuBarPadding);
             {
                 Node(menuBar, out var brand)
-                    .Mutate(s.RightRule)
+                    .Mutate(bl.S.RightRule)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .SizeRelativeV((0, 1))
                     .SizeInnerSumRelativeV((1, 0))
-                    .PaddingV(s.Metrics.BrandPadding)
+                    .PaddingV(bl.S.Metrics.BrandPadding)
                     .InnerLayoutV(InnerLayout.HorizontalList)
-                    .InnerSpacingV(s.Metrics.LooseSpacing);
+                    .InnerSpacingV(bl.S.Metrics.LooseSpacing);
                 {
                     Node(brand)
                         .AlignmentV(Alignment.Vertical)
                         .SizeRelativeV((0, 0))
                         .SizeV((layout.BrandMarkSize, layout.BrandMarkSize))
-                        .ColorV(s.Palette.Accent);
+                        .ColorV(bl.S.Palette.Accent);
 
                     Node(brand)
-                        .Mutate(s.EmphasisText)
+                        .Mutate(bl.S.EmphasisText)
                         .SizeRelativeV((0, 1))
                         .SizeTextRelativeV((1, 0))
-                        .TextPaddingV((0, 0, s.Metrics.RightGlyphPadding, 0))
+                        .TextPaddingV((0, 0, bl.S.Metrics.RightGlyphPadding, 0))
                         .TextV("Ranges Visualizer");
                 }
 
                 Node(menuBar)
-                    .Mutate(s.MenuItem)
+                    .Mutate(bl.S.MenuItem)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .SizeRelativeV((0, 0))
                     .SizeTextRelativeV((1, 0))
-                    .SizeV((0, s.Metrics.MenuBarHeight))
+                    .SizeV((0, bl.S.Metrics.MenuBarHeight))
                     .TextF(() => session.Runner.Scenario.Name)
                     .TooltipV("active scenario\nclick to open the scenario picker\ntab or mouse wheel also switch")
                     .OnPressF(session.OpenScenarioPicker);
@@ -88,12 +88,12 @@ public class AppMenu(
                     .ColorV(default);
 
                 Node(menuBar)
-                    .Mutate(s.MutedText)
+                    .Mutate(bl.S.MutedText)
                     .SizeWeightTypeV(SizeWeightType.Self)
                     .SizeRelativeV((0, 1))
                     .SizeTextRelativeV((1, 0))
                     .TextAlignmentV(Alignment.Right | Alignment.Vertical)
-                    .TextPaddingV((0, 0, s.Metrics.RightGlyphPadding, 0))
+                    .TextPaddingV((0, 0, bl.S.Metrics.RightGlyphPadding, 0))
                     .TextF(() => session.Runner.Scenario.Description);
             }
         }

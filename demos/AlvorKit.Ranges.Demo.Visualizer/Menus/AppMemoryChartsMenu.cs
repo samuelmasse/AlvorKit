@@ -4,6 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppMemoryChartsMenu(
     RootText text,
+    BlendUi bl,
     AppStyle s,
     AppSession session,
     AppMemoryStripMenu stripMenu)
@@ -32,7 +33,7 @@ public class AppMemoryChartsMenu(
             var detailEnd = DetailEnd(snapshot, out var tailOmitted);
 
             Node(root)
-                .Mutate(s.MutedLabel)
+                .Mutate(bl.S.MutedLabel)
                 .TextV("full backing store")
                 .OffsetF(() => MemoryLayout(root).OverviewLabel);
 
@@ -48,7 +49,7 @@ public class AppMemoryChartsMenu(
             }
 
             Node(root)
-                .Mutate(s.MutedLabel)
+                .Mutate(bl.S.MutedLabel)
                 .TextF(() => DetailLabel(detailEnd, tailOmitted))
                 .OffsetF(() => MemoryLayout(root).DetailLabel);
 
@@ -94,8 +95,8 @@ public class AppMemoryChartsMenu(
             const float compressedMinimumDetailHeight = 36f;
             const float detailLabelGap = 12f;
 
-            var inset = s.Metrics.LooseSpacing;
-            var labelHeight = s.Metrics.MetricRowHeight;
+            var inset = bl.S.Metrics.LooseSpacing;
+            var labelHeight = bl.S.Metrics.MetricRowHeight;
             var width = Math.Max(0, root.SizeR.X - inset - inset);
             var height = Math.Max(0, root.SizeR.Y - inset - inset);
             var detailHeight = Math.Min(maximumDetailHeight, Math.Max(minimumDetailHeight, height * detailHeightRatio));

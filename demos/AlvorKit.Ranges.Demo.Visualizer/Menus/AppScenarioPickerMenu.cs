@@ -4,7 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppScenarioPickerMenu(
     RootText text,
-    AppStyle s,
+    BlendUi bl,
     AppSession session)
 {
     public void Create(EntMut root)
@@ -14,24 +14,24 @@ public class AppScenarioPickerMenu(
         const float modalSnapUnit = 2f;
 
         Node(root, out var layer)
-            .Mutate(s.ModalLayer)
+            .Mutate(bl.S.ModalLayer)
             .OnPressF(session.CloseScenarioPicker)
             .IsDisabledF(() => !session.ScenarioPickerOpen);
         {
             Node(layer, out var modal)
-                .Mutate(s.ModalPanel)
+                .Mutate(bl.S.ModalPanel)
                 .SizeAlignmentSnapV(modalSnapUnit)
                 .SizeF(() => PickerModalSize(layer));
             {
                 Node(modal, out var title)
-                    .Mutate(s.PanelTitle)
+                    .Mutate(bl.S.PanelTitle)
                     .InnerLayoutV(InnerLayout.HorizontalList)
                     .InnerSizingV(InnerSizing.HorizontalWeight)
-                    .InnerSpacingV(s.Metrics.LooseSpacing)
-                    .PaddingV(s.Metrics.PanelTitlePadding);
+                    .InnerSpacingV(bl.S.Metrics.LooseSpacing)
+                    .PaddingV(bl.S.Metrics.PanelTitlePadding);
                 {
                     Node(title)
-                        .Mutate(s.EmphasisText)
+                        .Mutate(bl.S.EmphasisText)
                         .SizeWeightTypeV(SizeWeightType.Self)
                         .SizeRelativeV((0, 1))
                         .SizeTextRelativeV((1, 0))
@@ -41,27 +41,27 @@ public class AppScenarioPickerMenu(
                         .ColorV(default);
 
                     Node(title)
-                        .Mutate(s.MutedText)
+                        .Mutate(bl.S.MutedText)
                         .SizeWeightTypeV(SizeWeightType.Self)
                         .SizeRelativeV((0, 1))
                         .SizeTextRelativeV((1, 0))
                         .TextAlignmentV(Alignment.Right | Alignment.Vertical)
-                        .TextPaddingV((0, 0, s.Metrics.RightGlyphPadding, 0))
+                        .TextPaddingV((0, 0, bl.S.Metrics.RightGlyphPadding, 0))
                         .TextF(() => text.Format("{0} scenarios", session.ScenarioCount));
                 }
 
                 Node(modal, out var content)
-                    .Mutate(s.ModalContent)
-                    .InnerSpacingV(s.Metrics.LooseSpacing);
+                    .Mutate(bl.S.ModalContent)
+                    .InnerSpacingV(bl.S.Metrics.LooseSpacing);
                 {
                     Node(content)
-                        .Mutate(s.MutedLabel)
+                        .Mutate(bl.S.MutedLabel)
                         .TextV("choose an allocator script to inspect")
                         .SizeWeightTypeV(SizeWeightType.Self);
 
                     Node(content, out var columns)
-                        .Mutate(s.HorizontalList)
-                        .InnerSpacingV(s.Metrics.LooseSpacing)
+                        .Mutate(bl.S.HorizontalList)
+                        .InnerSpacingV(bl.S.Metrics.LooseSpacing)
                         .SizeWeightTypeV(SizeWeightType.Self)
                         .SizeRelativeV((1, 0))
                         .SizeV((0, PickerColumnHeight()));
@@ -70,8 +70,8 @@ public class AppScenarioPickerMenu(
                         for (var columnIndex = 0; columnIndex < columnCount; columnIndex++)
                         {
                             Node(columns, out var column)
-                                .Mutate(s.VerticalList)
-                                .InnerSpacingV(s.Metrics.CompactSpacing)
+                                .Mutate(bl.S.VerticalList)
+                                .InnerSpacingV(bl.S.Metrics.CompactSpacing)
                                 .SizeInnerMaxRelativeV((0, 0))
                                 .SizeWeightTypeV(SizeWeightType.Self)
                                 .SizeF(() => PickerColumnSize(columns));
@@ -97,7 +97,7 @@ public class AppScenarioPickerMenu(
             const float nameOffsetY = 8f;
             const float descriptionOffsetY = 26f;
 
-            var textOffsetX = s.Metrics.LooseSpacing + accentBarWidth;
+            var textOffsetX = bl.S.Metrics.LooseSpacing + accentBarWidth;
             var scenario = session.ScenarioAt(scenarioIndex);
             Node(parent, out var option)
                 .SizeRelativeV((1, 0))
@@ -112,17 +112,17 @@ public class AppScenarioPickerMenu(
                 Node(option)
                     .SizeRelativeV((0, 1))
                     .SizeV((accentBarWidth, 0))
-                    .ColorV(s.Palette.Accent)
+                    .ColorV(bl.S.Palette.Accent)
                     .IsDisabledF(() => scenarioIndex != session.ScenarioIndex);
 
                 Node(option)
-                    .Mutate(s.Label)
+                    .Mutate(bl.S.Label)
                     .TextV(scenario.Name)
                     .OffsetV((textOffsetX, nameOffsetY))
                     .AlignmentV(Alignment.Left | Alignment.Top);
 
                 Node(option)
-                    .Mutate(s.MutedLabel)
+                    .Mutate(bl.S.MutedLabel)
                     .TextV(scenario.Description)
                     .OffsetV((textOffsetX, descriptionOffsetY))
                     .AlignmentV(Alignment.Left | Alignment.Top);
@@ -132,23 +132,23 @@ public class AppScenarioPickerMenu(
         Vec4 OptionFill(EntMut option, bool selected)
         {
             if (selected)
-                return s.Palette.ActiveSurface;
+                return bl.S.Palette.ActiveSurface;
 
             if (option.IsPressedR)
-                return s.Palette.Selection;
+                return bl.S.Palette.Selection;
 
             if (option.IsHoveredR)
-                return s.Palette.Hover;
+                return bl.S.Palette.Hover;
 
-            return s.Palette.AppBackground;
+            return bl.S.Palette.AppBackground;
         }
 
         void OptionBorder(EntMut option, int scenarioIndex)
         {
-            OptionRule(option, Alignment.Top | Alignment.Left, (1, 0), (0, s.Metrics.Hairline), scenarioIndex);
-            OptionRule(option, Alignment.Bottom | Alignment.Left, (1, 0), (0, s.Metrics.Hairline), scenarioIndex);
-            OptionRule(option, Alignment.Top | Alignment.Left, (0, 1), (s.Metrics.Hairline, 0), scenarioIndex);
-            OptionRule(option, Alignment.Top | Alignment.Right, (0, 1), (s.Metrics.Hairline, 0), scenarioIndex);
+            OptionRule(option, Alignment.Top | Alignment.Left, (1, 0), (0, bl.S.Metrics.Hairline), scenarioIndex);
+            OptionRule(option, Alignment.Bottom | Alignment.Left, (1, 0), (0, bl.S.Metrics.Hairline), scenarioIndex);
+            OptionRule(option, Alignment.Top | Alignment.Left, (0, 1), (bl.S.Metrics.Hairline, 0), scenarioIndex);
+            OptionRule(option, Alignment.Top | Alignment.Right, (0, 1), (bl.S.Metrics.Hairline, 0), scenarioIndex);
         }
 
         void OptionRule(EntMut option, Alignment alignment, Vec2 relativeSize, Vec2 size, int scenarioIndex)
@@ -165,12 +165,12 @@ public class AppScenarioPickerMenu(
         Vec4 OptionBorderColor(EntMut option, bool selected)
         {
             if (selected)
-                return s.Palette.Accent;
+                return bl.S.Palette.Accent;
 
             if (option.IsFocusedR || option.IsHoveredR)
-                return s.Palette.StrongBorder;
+                return bl.S.Palette.StrongBorder;
 
-            return s.Palette.Border;
+            return bl.S.Palette.Border;
         }
 
         Vec2 PickerModalSize(EntMut layer)
@@ -192,25 +192,25 @@ public class AppScenarioPickerMenu(
         {
             const float subtitleHeight = 18f;
 
-            var padding = s.Metrics.ModalContentPadding;
-            return s.Metrics.PanelTitleHeight
+            var padding = bl.S.Metrics.ModalContentPadding;
+            return bl.S.Metrics.PanelTitleHeight
                 + padding.Y + padding.W
                 + subtitleHeight
-                + s.Metrics.LooseSpacing
+                + bl.S.Metrics.LooseSpacing
                 + PickerColumnHeight();
         }
 
         float PickerColumnHeight()
         {
             var rows = PickerRowCount();
-            return rows * optionHeight + Math.Max(0, rows - 1) * s.Metrics.CompactSpacing;
+            return rows * optionHeight + Math.Max(0, rows - 1) * bl.S.Metrics.CompactSpacing;
         }
 
         int PickerRowCount() =>
             (session.ScenarioCount + columnCount - 1) / columnCount;
 
         Vec2 PickerColumnSize(EntMut columns) =>
-            (MathF.Floor(Math.Max(0f, columns.SizeR.X - s.Metrics.LooseSpacing) / columnCount), columns.SizeR.Y);
+            (MathF.Floor(Math.Max(0f, columns.SizeR.X - bl.S.Metrics.LooseSpacing) / columnCount), columns.SizeR.Y);
 
         float SnapFloor(float value) =>
             MathF.Floor(Math.Max(0f, value) / modalSnapUnit) * modalSnapUnit;

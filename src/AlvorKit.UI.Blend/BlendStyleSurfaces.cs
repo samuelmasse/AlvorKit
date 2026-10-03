@@ -1,31 +1,31 @@
 namespace AlvorKit;
 
 /// <summary>Implements Blend tab, dock, rule, modal, tooltip, and swatch surfaces.</summary>
-internal sealed class BlendStyleSurfaces
+internal class BlendStyleSurfaces
 {
     /// <summary>Style façade supplying current palette, metrics, and shared recipes.</summary>
-    private readonly BlendStyle style;
+    private readonly BlendStyle s;
 
     /// <summary>Creates surface recipes over the owning style.</summary>
-    internal BlendStyleSurfaces(BlendStyle style) =>
-        this.style = style;
+    internal BlendStyleSurfaces(BlendStyle s) =>
+        this.s = s;
 
     /// <summary>Adds the accent bar that marks an active tab, sparing the tab's right separator.</summary>
     internal void ActiveTabAccent(EntMut ent) =>
         Node(ent)
             .IsFloatingV(true)
             .AlignmentV(Alignment.Top | Alignment.Left)
-            .OffsetV((0, style.Metrics.ActiveTabAccentOffset))
+            .OffsetV((0, s.Metrics.ActiveTabAccentOffset))
             .SizeRelativeV((1, 0))
-            .SizeV((-style.Metrics.Hairline, style.Metrics.ActiveTabAccentHeight))
-            .ColorV(style.Palette.Accent);
+            .SizeV((-s.Metrics.Hairline, s.Metrics.ActiveTabAccentHeight))
+            .ColorV(s.Palette.Accent);
 
     /// <summary>Applies a raised tab strip surface.</summary>
     internal void TabStrip(EntMut ent) => ent.Mutate()
         .SizeWeightTypeV(SizeWeightType.Self)
         .SizeRelativeV((1, 0))
-        .SizeV((0, style.Metrics.TabStripHeight))
-        .ColorV(style.Palette.Raised)
+        .SizeV((0, s.Metrics.TabStripHeight))
+        .ColorV(s.Palette.Raised)
         .InnerLayoutV(InnerLayout.HorizontalList)
         .InnerSizingV(InnerSizing.HorizontalWeight)
         .InnerSpacingV(0);
@@ -33,16 +33,16 @@ internal sealed class BlendStyleSurfaces
     /// <summary>Fills the tab strip after the last tab and carries its bottom rule.</summary>
     internal void TabFiller(EntMut ent) => ent.Mutate()
         .ColorV(default)
-        .Mutate(style.BottomRule);
+        .Mutate(s.BottomRule);
 
     /// <summary>Applies a vertical dock panel surface with a bottom separator.</summary>
     internal void Dock(EntMut ent) => ent.Mutate()
         .SizeWeightTypeV(SizeWeightType.Self)
         .SizeRelativeV((0, 1))
-        .ColorV(style.Palette.Panel)
+        .ColorV(s.Palette.Panel)
         .InnerLayoutV(InnerLayout.VerticalList)
         .InnerSizingV(InnerSizing.VerticalWeight)
-        .Mutate(style.BottomRule);
+        .Mutate(s.BottomRule);
 
     /// <summary>Applies a thin vertical splitter between docks.</summary>
     internal void Splitter(EntMut ent)
@@ -50,7 +50,7 @@ internal sealed class BlendStyleSurfaces
         ent.Mutate()
             .SizeWeightTypeV(SizeWeightType.Self)
             .SizeRelativeV((0, 1))
-            .ColorV(style.Palette.AppBackground);
+            .ColorV(s.Palette.AppBackground);
         LeftRule(ent);
         RightRule(ent);
     }
@@ -67,39 +67,39 @@ internal sealed class BlendStyleSurfaces
     /// <summary>Adds a one-pixel strong border around a node.</summary>
     internal void StrongBorder(EntMut ent)
     {
-        BlendStyle.Rule(ent, Alignment.Top | Alignment.Left, (1, 0), (0, style.Metrics.Hairline), style.Palette.StrongBorder);
-        BlendStyle.Rule(ent, Alignment.Bottom | Alignment.Left, (1, 0), (0, style.Metrics.Hairline), style.Palette.StrongBorder);
-        BlendStyle.Rule(ent, Alignment.Top | Alignment.Left, (0, 1), (style.Metrics.Hairline, 0), style.Palette.StrongBorder);
-        BlendStyle.Rule(ent, Alignment.Top | Alignment.Right, (0, 1), (style.Metrics.Hairline, 0), style.Palette.StrongBorder);
+        BlendStyle.Rule(ent, Alignment.Top | Alignment.Left, (1, 0), (0, s.Metrics.Hairline), s.Palette.StrongBorder);
+        BlendStyle.Rule(ent, Alignment.Bottom | Alignment.Left, (1, 0), (0, s.Metrics.Hairline), s.Palette.StrongBorder);
+        BlendStyle.Rule(ent, Alignment.Top | Alignment.Left, (0, 1), (s.Metrics.Hairline, 0), s.Palette.StrongBorder);
+        BlendStyle.Rule(ent, Alignment.Top | Alignment.Right, (0, 1), (s.Metrics.Hairline, 0), s.Palette.StrongBorder);
     }
 
     /// <summary>Adds a top hairline rule.</summary>
     internal void TopRule(EntMut ent) =>
-        BlendStyle.Rule(ent, Alignment.Top | Alignment.Left, (1, 0), (0, style.Metrics.Hairline), style.Palette.Border);
+        BlendStyle.Rule(ent, Alignment.Top | Alignment.Left, (1, 0), (0, s.Metrics.Hairline), s.Palette.Border);
 
     /// <summary>Adds a bottom hairline rule.</summary>
     internal void BottomRule(EntMut ent) =>
-        BlendStyle.Rule(ent, Alignment.Bottom | Alignment.Left, (1, 0), (0, style.Metrics.Hairline), style.Palette.Border);
+        BlendStyle.Rule(ent, Alignment.Bottom | Alignment.Left, (1, 0), (0, s.Metrics.Hairline), s.Palette.Border);
 
     /// <summary>Adds a left hairline rule.</summary>
     internal void LeftRule(EntMut ent) =>
-        BlendStyle.Rule(ent, Alignment.Top | Alignment.Left, (0, 1), (style.Metrics.Hairline, 0), style.Palette.Border);
+        BlendStyle.Rule(ent, Alignment.Top | Alignment.Left, (0, 1), (s.Metrics.Hairline, 0), s.Palette.Border);
 
     /// <summary>Adds a right hairline rule.</summary>
     internal void RightRule(EntMut ent) =>
-        BlendStyle.Rule(ent, Alignment.Top | Alignment.Right, (0, 1), (style.Metrics.Hairline, 0), style.Palette.Border);
+        BlendStyle.Rule(ent, Alignment.Top | Alignment.Right, (0, 1), (s.Metrics.Hairline, 0), s.Palette.Border);
 
     /// <summary>Applies the full-screen tinted layer behind a modal dialog.</summary>
     internal void ModalLayer(EntMut ent) => ent.Mutate()
         .SizeRelativeV((1, 1))
         .InnerAlignmentSnapV(1f)
-        .ColorV(style.Palette.Scrim)
+        .ColorV(s.Palette.Scrim)
         .IsSelectableV(true)
         .IsSilentFocusableV(true);
 
     /// <summary>Applies a centered modal dialog panel.</summary>
     internal void ModalPanel(EntMut ent) => ent.Mutate()
-        .ColorV(style.Palette.Panel)
+        .ColorV(s.Palette.Panel)
         .SizeRelativeV((0, 0))
         .AlignmentV(Alignment.Horizontal | Alignment.Vertical)
         .AlignmentSnapV(1f)
@@ -108,26 +108,26 @@ internal sealed class BlendStyleSurfaces
         .InnerSizingV(InnerSizing.VerticalWeight)
         .IsSelectableV(true)
         .IsSilentFocusableV(true)
-        .Mutate(style.StrongBorder);
+        .Mutate(s.StrongBorder);
 
     /// <summary>Applies a modal dialog's padded content area.</summary>
     internal void ModalContent(EntMut ent) => ent.Mutate()
         .SizeRelativeV((1, 1))
-        .PaddingV(style.Metrics.ModalContentPadding)
+        .PaddingV(s.Metrics.ModalContentPadding)
         .InnerLayoutV(InnerLayout.VerticalList)
         .InnerAlignmentSnapV(1f);
 
     /// <summary>Applies a floating tooltip surface that sizes to its line children.</summary>
     internal void Tooltip(EntMut ent) => ent.Mutate()
-        .Mutate(style.VerticalList)
-        .InnerSpacingV(style.Metrics.TooltipLineSpacing)
-        .PaddingV(style.Metrics.TooltipPadding)
-        .ColorV(style.Palette.Raised)
-        .Mutate(style.StrongBorder);
+        .Mutate(s.VerticalList)
+        .InnerSpacingV(s.Metrics.TooltipLineSpacing)
+        .PaddingV(s.Metrics.TooltipPadding)
+        .ColorV(s.Palette.Raised)
+        .Mutate(s.StrongBorder);
 
     /// <summary>Applies a small legend swatch; set the color at the call site.</summary>
     internal void Swatch(EntMut ent) => ent.Mutate()
         .SizeRelativeV((0, 0))
-        .SizeV((style.Metrics.SwatchWidth, style.Metrics.SwatchHeight))
+        .SizeV((s.Metrics.SwatchWidth, s.Metrics.SwatchHeight))
         .AlignmentV(Alignment.Vertical);
 }

@@ -14,6 +14,11 @@ The project split follows `../AlvorKit/docs/ProjectSplitModel.md`:
 - `AlvorStarter.Menus`: menu UI, menu styling, and state glue,
 - `AlvorStarter`: executable startup and engine loop ownership.
 
+`RootLoadState` creates one `BlendUi` using the shared `RootBlend` resources and
+the existing `RootGl`, then registers it in the app scope. Menus inject it as
+`BlendUi bl` and use `bl.S` for standard recipes. Add an `AppStyle s`
+collaborator that composes those recipes when the game needs custom styling.
+
 The engine loop registers an `AlvorKit.Logging.Log` before the root state loads,
 so any app scope can inject the same application log. See
 `../AlvorKit/docs/Logging.md` for custom and headless hosting.

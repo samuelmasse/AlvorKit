@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Builds a mouse-following tooltip layer that renders hovered-node tooltip text as a title plus muted detail lines.</summary>
-public class BlendTooltipMenu(RootUiMouse uiMouse, BlendStyle style)
+public class BlendTooltipMenu(RootUiMouse uiMouse, BlendStyle s)
 {
     public void Create(EntMut root)
     {
@@ -11,8 +11,8 @@ public class BlendTooltipMenu(RootUiMouse uiMouse, BlendStyle style)
         const float shadowOffsetY = 4f;
         const int bodyLineCount = 3;
 
-        var inset = style.Metrics.LooseSpacing;
-        var shadowColor = style.Palette.WithAlpha(default, 0.35f);
+        var inset = s.Metrics.LooseSpacing;
+        var shadowColor = s.Palette.WithAlpha(default, 0.35f);
         Node(root, out var layer)
             .SizeRelativeV((1, 1))
             .IsDisabledF(() => Value().Length == 0);
@@ -22,20 +22,20 @@ public class BlendTooltipMenu(RootUiMouse uiMouse, BlendStyle style)
                 .ColorV(shadowColor);
 
             Node(layer, out var tooltip)
-                .Mutate(style.Tooltip)
+                .Mutate(s.Tooltip)
                 .OffsetF(() => TooltipOffset(layer, tooltip));
             {
                 Node(tooltip, out var titleRow)
-                    .Mutate(style.HorizontalList)
-                    .InnerSpacingV(style.Metrics.LooseSpacing);
+                    .Mutate(s.HorizontalList)
+                    .InnerSpacingV(s.Metrics.LooseSpacing);
                 {
                     Node(titleRow)
-                        .Mutate(style.Swatch)
+                        .Mutate(s.Swatch)
                         .ColorF(Swatch)
                         .IsDisabledF(() => Swatch().W == 0);
 
                     Node(titleRow)
-                        .Mutate(style.TooltipTitle)
+                        .Mutate(s.TooltipTitle)
                         .TextF(() => Line(0));
                 }
 
@@ -43,7 +43,7 @@ public class BlendTooltipMenu(RootUiMouse uiMouse, BlendStyle style)
                 {
                     var lineIndex = i;
                     Node(tooltip)
-                        .Mutate(style.TooltipLine)
+                        .Mutate(s.TooltipLine)
                         .TextF(() => Line(lineIndex))
                         .IsDisabledF(() => Line(lineIndex).Length == 0);
                 }

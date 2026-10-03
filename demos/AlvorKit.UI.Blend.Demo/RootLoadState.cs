@@ -4,6 +4,10 @@ namespace AlvorKit;
 [Root]
 public class RootLoadState(RootState state, RootScope scope) : State
 {
-    public override void Load() =>
-        state.Current = scope.Scope<AppScope>().New<EditorShellState>();
+    public override void Load()
+    {
+        var app = scope.Scope<AppScope>();
+        app.Add(new BlendUi(scope.Get<RootBlend>(), scope.Get<RootGl>()));
+        state.Current = app.New<EditorShellState>();
+    }
 }

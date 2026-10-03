@@ -3,39 +3,38 @@ namespace AlvorKit;
 /// <summary>Builds the typed parameter dock; rebuilds its sections when the node graph changes.</summary>
 [App]
 public class AppParamsMenu(
-    AppStyle s,
+    BlendUi bl,
     AppSession session,
-    AppRamps ramps,
-    AppFields fields)
+    AppRamps ramps)
 {
     /// <summary>Mounts a parameter dock that rebuilds its typed controls when the node selection changes.</summary>
-    public void Create(EntMut root)
+    public void Create(EntMut root, BlendDropdownHandle popup)
     {
         const float dockWidth = 300f;
         const int pendingRevision = -1;
 
         Node(root, out var dock)
-            .Mutate(s.Dock)
+            .Mutate(bl.S.Dock)
             .SizeV((dockWidth, 0))
-            .Mutate(s.RightRule);
+            .Mutate(bl.S.RightRule);
         {
             Node(dock, out var title)
-                .Mutate(s.PanelTitle)
-                .PaddingV(s.Metrics.PanelTitlePadding);
+                .Mutate(bl.S.PanelTitle)
+                .PaddingV(bl.S.Metrics.PanelTitlePadding);
             {
                 Node(title)
-                    .Mutate(s.EmphasisCellLabel)
+                    .Mutate(bl.S.EmphasisCellLabel)
                     .TextV("Node Parameters");
 
                 Node(title)
-                    .Mutate(s.MutedCellLabel)
+                    .Mutate(bl.S.MutedCellLabel)
                     .TextAlignmentV(Alignment.Right | Alignment.Vertical)
                     .TextV("editable");
             }
 
             var lastRevision = pendingRevision;
             Node(dock, out var sections)
-                .Mutate(s.PanelFillList)
+                .Mutate(bl.S.PanelFillList)
                 .InnerSizingV(InnerSizing.None)
                 .OnUpdateF(() =>
                 {
@@ -55,7 +54,8 @@ public class AppParamsMenu(
 
             Section(sections, field.Nodes.Fractals[field.Nodes.FractalIndex].Text, "root", rows =>
             {
-                fields.DropdownField(rows, "Source", field.Nodes.Sources, () => field.Nodes.SourceIndex, session.SelectSource)
+                bl.Fields.DropdownField(
+                    rows, popup, "Source", field.Nodes.Sources, () => field.Nodes.SourceIndex, session.SelectSource)
                     .Mutate()
                     .TooltipV("Source\nthe generator node feeding the fractal");
 
@@ -67,7 +67,7 @@ public class AppParamsMenu(
 
             Section(sections, "Post", null, rows =>
             {
-                fields.Checkbox(rows, "Normalize output", () => session.Normalize, () =>
+                bl.Fields.Checkbox(rows, "Normalize output", () => session.Normalize, () =>
                 {
                     session.Normalize = !session.Normalize;
                     session.MarkDirty();
@@ -75,7 +75,7 @@ public class AppParamsMenu(
                     .Mutate()
                     .TooltipV("normalize output\nmaps the generated min/max to the full ramp\ninstead of the fixed [-1, 1] range");
 
-                fields.Checkbox(rows, "Invert", () => session.Invert, () =>
+                bl.Fields.Checkbox(rows, "Invert", () => session.Invert, () =>
                 {
                     session.Invert = !session.Invert;
                     session.MarkDirty();
@@ -83,7 +83,7 @@ public class AppParamsMenu(
                     .Mutate()
                     .TooltipV("invert\nflips the ramp before mapping");
 
-                fields.DropdownField(rows, "Ramp", ramps.Items, () => session.RampIndex, index =>
+                bl.Fields.DropdownField(rows, popup, "Ramp", ramps.Items, () => session.RampIndex, index =>
                 {
                     session.RampIndex = index;
                     session.MarkDirty();
@@ -109,13 +109,14 @@ public class AppParamsMenu(
 
                 var node = p.Kind switch
                 {
-                    AppNoiseParameterKind.Enum => fields.DropdownField(
+                    AppNoiseParameterKind.Enum => bl.Fields.DropdownField(
                         rows,
+                        popup,
                         p.Name,
                         p.EnumItems,
                         () => (int)p.Value,
                         index => Set(index)),
-                    AppNoiseParameterKind.Int => fields.IntField(rows, new()
+                    AppNoiseParameterKind.Int => bl.Fields.IntField(rows, new()
                     {
                         Label = p.Name,
                         Get = () => (int)p.Value,
@@ -123,7 +124,7 @@ public class AppParamsMenu(
                         Min = p.HasRange ? (int)p.Min : int.MinValue,
                         Max = p.HasRange ? (int)p.Max : int.MaxValue,
                     }),
-                    AppNoiseParameterKind.Float when p.HasRange => fields.SliderField(rows, new()
+                    AppNoiseParameterKind.Float when p.HasRange => bl.Fields.SliderField(rows, new()
                     {
                         Label = p.Name,
                         Get = () => p.Value,
@@ -132,7 +133,7 @@ public class AppParamsMenu(
                         Max = p.Max,
                         Step = (p.Max - p.Min) / 200f,
                     }),
-                    _ => fields.NumberField(rows, new()
+                    _ => bl.Fields.NumberField(rows, new()
                     {
                         Label = p.Name,
                         Get = () => p.Value,
@@ -149,22 +150,22 @@ public class AppParamsMenu(
         void Section(EntMut sections, string name, string? role, Action<EntMut> build)
         {
             Node(sections, out var section)
-                .Mutate(s.InsetPanelList)
-                .PaddingV((s.Metrics.LooseSpacing, 0, s.Metrics.LooseSpacing, s.Metrics.LooseSpacing))
-                .InnerSpacingV(s.Metrics.CompactSpacing);
+                .Mutate(bl.S.InsetPanelList)
+                .PaddingV((bl.S.Metrics.LooseSpacing, 0, bl.S.Metrics.LooseSpacing, bl.S.Metrics.LooseSpacing))
+                .InnerSpacingV(bl.S.Metrics.CompactSpacing);
             {
                 Node(section, out var header)
-                    .Mutate(s.HorizontalRow)
-                    .SizeV((0, s.Metrics.FieldHeight));
+                    .Mutate(bl.S.HorizontalRow)
+                    .SizeV((0, bl.S.Metrics.FieldHeight));
                 {
                     Node(header)
-                        .Mutate(s.EmphasisCellLabel)
+                        .Mutate(bl.S.EmphasisCellLabel)
                         .TextV(name);
 
                     if (role != null)
                     {
                         Node(header)
-                            .Mutate(s.MutedCellLabel)
+                            .Mutate(bl.S.MutedCellLabel)
                             .TextAlignmentV(Alignment.Right | Alignment.Vertical)
                             .TextV(role);
                     }

@@ -15,7 +15,7 @@ public class NewGameGeneratorTest
         var result = new NewGameGenerator().Generate(options);
 
         Assert.AreEqual(output, result.OutputPath);
-        Assert.AreEqual(20, result.FileCount);
+        Assert.AreEqual(19, result.FileCount);
         AssertFile(output, "AGENTS.md");
         StringAssert.Contains(Read(output, "AGENTS.md"), "../AlvorKit/docs/GameRepositoryInstructions.md");
         Assert.IsFalse(File.Exists(Path(output, "AGENTS.md.template")));
@@ -29,7 +29,7 @@ public class NewGameGeneratorTest
         AssertFile(output, "src/HelloAlvor.App.Frontend/AppGlTriangle.cs");
         AssertFile(output, "src/HelloAlvor.App.Frontend/AppSpriteScene.cs");
         AssertFile(output, "src/HelloAlvor.Menus/HelloAlvor.Menus.csproj");
-        AssertFile(output, "src/HelloAlvor.Menus/AppStyle.cs");
+        AssertFile(output, "src/HelloAlvor/RootLoadState.cs");
         AssertFile(output, "src/HelloAlvor.Menus/AppMainMenu.cs");
         Assert.IsFalse(File.Exists(Path(output, "AlvorStarter.slnx.template")));
         StringAssert.Contains(Read(output, "src/HelloAlvor.Menus/AppMainMenu.cs"), "Hello Alvor");
@@ -51,6 +51,10 @@ public class NewGameGeneratorTest
         StringAssert.Contains(Read(output, "src/SampleGame.App.Frontend/AppGlTriangle.cs"), "gl.DrawArrays");
         StringAssert.Contains(Read(output, "src/SampleGame.App.Frontend/AppSpriteScene.cs"), "sprites.Batch.Draw");
         var menu = Read(output, "src/SampleGame.Menus/AppMainMenu.cs");
+        StringAssert.Contains(Read(output, "src/SampleGame/RootLoadState.cs"),
+            "app.Add(new BlendUi(scope.Get<RootBlend>(), scope.Get<RootGl>()))");
+        StringAssert.Contains(menu, "BlendUi bl");
+        StringAssert.Contains(menu, "bl.S.Button");
         StringAssert.Contains(menu, "OnClickF(counter.Increment)");
         Assert.IsFalse(menu.Contains("ActiveButton", StringComparison.Ordinal));
     }
@@ -116,7 +120,7 @@ public class NewGameGeneratorTest
         AssertFile(root, "src/AlvorStarter.App.Frontend/AppGlTriangle.cs");
         AssertFile(root, "src/AlvorStarter.App.Frontend/AppSpriteScene.cs");
         AssertFile(root, "src/AlvorStarter.Menus/AppStarterState.cs");
-        AssertFile(root, "src/AlvorStarter.Menus/AppStyle.cs");
+        AssertFile(root, "src/AlvorStarter/RootLoadState.cs");
         AssertFile(root, "src/AlvorStarter.Menus/AppMainMenu.cs");
         StringAssert.Contains(Read(root, "src/AlvorStarter.Menus/AppStarterState.cs"), "namespace AlvorStarter;");
     }
@@ -134,7 +138,7 @@ public class NewGameGeneratorTest
         Assert.IsFalse(Directory.Exists(Path(output, "bin")));
         Assert.IsFalse(Directory.Exists(Path(output, "obj")));
         StringAssert.Contains(Read(output, ".gitignore"), "tmp/");
-        Assert.AreEqual(20, Directory.GetFiles(output, "*", SearchOption.AllDirectories).Length);
+        Assert.AreEqual(19, Directory.GetFiles(output, "*", SearchOption.AllDirectories).Length);
     }
 
     /// <summary>Rejects names that cannot become a C# namespace and project name.</summary>

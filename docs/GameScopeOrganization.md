@@ -331,6 +331,30 @@ the new scope. This keeps dynamic choices local to the scope being initialized.
 
 ## Service Bindings
 
+An ordinary library object can be constructed explicitly and added to an
+attributed scope without defining a game-specific subclass or scope attribute:
+
+```csharp
+app.Add(new BlendUi(root.Get<RootBlend>(), app.Get<AppGl>()));
+```
+
+The registering scope owns the supplied instance. Constructors in that scope
+and descendants receive the same object; sibling scopes can register their own
+instances. `Add(object)`, `Add<TService>(instance)`, `Add(Type, instance)`, and
+`With(instance)` support this explicit ownership. Typed registrations also
+expose the concrete instance type, and unmarked service aliases must still be
+registered explicitly. Existing scope attributes remain constraints: an
+attributed instance must match the registering scope, and an attributed service
+alias must match its provider.
+
+Only the supplied object is registered. Its implementation objects and
+dependencies are not inspected, registered, or reconstructed. Library
+composition should own those objects itself. `New<T>()` rejects these
+instance bindings; it cannot recreate the caller's explicit construction.
+Unregistered unmarked constructor parameters keep their existing root
+resolution behavior. `Bind<TImplementation>()` and injector construction in
+attributed scopes still require the matching scope attribute.
+
 Use `Bind<TImplementation>()` when a scope-specific implementation should
 provide one or more marked interfaces or abstract base classes. This is useful
 for extension points where the constructor should depend on the public contract,

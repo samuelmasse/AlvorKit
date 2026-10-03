@@ -42,6 +42,17 @@ public partial record InjectorScopeState
     }
 
     /// <summary>
+    /// Accepts unmarked supplied instances while preserving inclusion, marked-type, and scope-object constraints.
+    /// </summary>
+    private void ValidateAddedInstanceType(Type type, InjectorPath path)
+    {
+        ValidateIncluded(type, path);
+
+        if (GetInjectorAttributeType(type, path) != null || typeof(InjectorScope).IsAssignableFrom(type))
+            ValidateInjectorAttributeType(type, path);
+    }
+
+    /// <summary>
     /// Rejects dependency types whose injector attribute does not match this scope.
     /// </summary>
     private void ValidateInjectorAttributeType(Type type, InjectorPath path)

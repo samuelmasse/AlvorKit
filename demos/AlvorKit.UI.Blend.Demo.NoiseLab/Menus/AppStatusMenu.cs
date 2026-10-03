@@ -5,21 +5,21 @@ namespace AlvorKit;
 public class AppStatusMenu(
     RootText text,
     RootMetrics metrics,
-    AppStyle s,
+    BlendUi bl,
     AppSession session)
 {
     /// <summary>Mounts live readouts for the selected nodes, sampling, and session state.</summary>
     public void Create(EntMut root)
     {
         Node(root, out var status)
-            .Mutate(s.StatusBar)
-            .PaddingV(s.Metrics.StatusBarPadding);
+            .Mutate(bl.S.StatusBar)
+            .PaddingV(bl.S.Metrics.StatusBarPadding);
         {
             Node(status, out var items)
                 .SizeRelativeV((1, 1))
                 .InnerLayoutV(InnerLayout.HorizontalList)
                 .InnerSizingV(InnerSizing.HorizontalWeight)
-                .InnerSpacingV(s.Metrics.StatusSpacing);
+                .InnerSpacingV(bl.S.Metrics.StatusSpacing);
             {
                 Item(items, true, () => text.Format("{0} FPS", metrics.FrameWindow.Ticks));
                 Item(items, false, () => session.Auto ? "auto" : session.Dirty ? "manual · dirty" : "manual");
@@ -39,7 +39,7 @@ public class AppStatusMenu(
         void Item(EntMut items, bool emphasis, Func<ReadOnlySpan<char>> value)
         {
             Node(items)
-                .Mutate(emphasis ? s.EmphasisLabel : s.MutedLabel)
+                .Mutate(emphasis ? bl.S.EmphasisLabel : bl.S.MutedLabel)
                 .AlignmentV(Alignment.Vertical)
                 .SizeWeightTypeV(SizeWeightType.Self)
                 .TextF(value);
