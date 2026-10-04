@@ -1,32 +1,43 @@
 namespace AlvorKit;
 
-/// <summary>Builds an alloc-scoped archetypal span query.</summary>
+/// <summary>Builds an archetypal span query bound to its originating arena's lifetime.</summary>
 public readonly struct EntArchQuery<A>
 {
-    private readonly int allocId;
+    /// <summary>Retains the original allocator ID and generation without extending its lifetime.</summary>
+    private readonly EntArena arena;
 
-    internal EntArchQuery(int allocId) => this.allocId = allocId;
+    /// <summary>Captures the arena lifetime before any component selection is added.</summary>
+    internal EntArchQuery(EntArena arena) => this.arena = arena;
 
     /// <summary>Requires component <typeparamref name="N"/> with value type <typeparamref name="T"/>.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public EntArchQuery<A, EntArchSelect<T, N, A>> With<T, N>() => new(allocId);
+    public EntArchQuery<A, EntArchSelect<T, N, A>> With<T, N>() => new(arena);
 }
 
 /// <summary>Enumerates active alloc-local archs matching a compile-time component selection.</summary>
 public readonly struct EntArchQuery<A, TSelect>
     where TSelect : struct, IEntArchSelect<A>
 {
-    private readonly int allocId;
+    /// <summary>Preserves the original arena generation through selection and descriptor copies.</summary>
+    private readonly EntArena arena;
 
-    internal EntArchQuery(int allocId) => this.allocId = allocId;
+    /// <summary>Retains the originating arena for validation when enumeration begins.</summary>
+    internal EntArchQuery(EntArena arena) => this.arena = arena;
 
     /// <summary>Adds another required component to this query.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public EntArchQuery<A, EntArchSelect<T, N, A, TSelect>> With<T, N>() => new(allocId);
+    public EntArchQuery<A, EntArchSelect<T, N, A, TSelect>> With<T, N>() => new(arena);
 
-    /// <summary>Creates an allocation-free chunk enumerator.</summary>
+    /// <summary>Validates the originating arena's lifetime once and creates an allocation-free chunk enumerator.</summary>
+    /// <exception cref="EntArenaDisposedException">The descriptor is default or its originating arena was disposed.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Enumerator GetEnumerator() => new(allocId);
+    public Enumerator GetEnumerator()
+    {
+        if (!arena.IsAlive)
+            throw new EntArenaDisposedException();
+
+        return new(arena.Index);
+    }
 
     /// <summary>Walks the smaller of cached matching archs and alloc-local active row sets.</summary>
     public ref struct Enumerator

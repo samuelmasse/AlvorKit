@@ -172,15 +172,22 @@ The project containing the `Rows()` call must reference
 provided by another project. This lets the generator specialize the exact
 closed query shape used by that consumer.
 
-A query descriptor may be stored and enumerated repeatedly. Structural changes
-are allowed after one enumeration has completely ended and before another
-begins. While a chunk, span, row enumerator, row value, or returned component
-ref is live, do not add, remove, clear, compact, grow, or dispose rows in the
-same `(alloc, A)`. Writes to existing component values are allowed.
+A query descriptor may be stored and enumerated repeatedly while its originating
+arena is alive. It retains that arena's ID and generation; it does not extend
+the arena's lifetime. Starting chunk enumeration or calling `Rows()` on a
+default descriptor or after arena disposal throws `EntArenaDisposedException`,
+even if another arena has reused the allocator ID. Validation runs once at
+enumeration entry, with no per-row lifetime checks.
+
+Structural changes are allowed after one enumeration has completely ended and
+before another begins. Calling `Rows()` already creates an enumerator. While a
+query enumerator, chunk, span, row value, or returned component ref is live, do
+not add, remove, clear, compact, grow, or dispose rows in the same `(alloc, A)`.
+Writes to existing component values are allowed.
 
 One thread owns reads, writes, queries, and structural changes for a particular
 `(alloc, A)`. Different threads may concurrently operate on the same `A` when
-they own different allocs. Query and row hot paths add no locking, volatile
+they own different allocs. Per-row access adds no locking, volatile
 access, or ownership checks.
 
 For the low-level storage and query contract, read

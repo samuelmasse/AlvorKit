@@ -53,7 +53,7 @@ public readonly struct EntArena : IDisposable
         if (!IsAlive)
             throw new EntArenaDisposedException();
 
-        return new(index);
+        return new(this);
     }
 
     public void Dispose()

@@ -133,9 +133,15 @@ contract is the caller's responsibility.
 ## Span Queries
 
 Span queries are rooted in one `EntArena`, which is the alloc ownership
-boundary. Repeated `With<T, N>()` calls build an unbounded compile-time
-selection chain without descriptor arrays, `params`, boxing, or setup
-allocation:
+boundary. Descriptors retain its ID and generation through every `With<T, N>()`
+selection. Starting enumeration validates the original arena and throws
+`EntArenaDisposedException` for a default descriptor or disposed arena,
+including after allocator-ID reuse. Generated `Rows()` performs this validation
+when called. Retained descriptors do not extend the arena's lifetime, and no
+lifetime checks are added to per-row access.
+
+Repeated `With<T, N>()` calls build an unbounded compile-time selection chain
+without descriptor arrays, `params`, boxing, or setup allocation:
 
 ```csharp
 var query = arena
