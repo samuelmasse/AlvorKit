@@ -86,9 +86,6 @@ public readonly partial record struct EntMut
             return;
 
         int allocId = EntReg.PageAllocators[PageIndex];
-        EntAllocator alloc = EntReg.Allocators[allocId];
-        alloc.DrainPendingArchetypal();
-        loc = Get<EntArchLoc, A>();
         int srcArchId = loc.ArchId;
 
         int fieldId = EntArchColumn<T, N, A>.FieldId;
@@ -124,8 +121,6 @@ public readonly partial record struct EntMut
             return false;
 
         int allocId = EntReg.PageAllocators[PageIndex];
-        EntReg.Allocators[allocId].DrainPendingArchetypal();
-        loc = Get<EntArchLoc, A>();
         int srcArchId = loc.ArchId;
 
         if (EntArchGraph<A>.IsSingleton(srcArchId))

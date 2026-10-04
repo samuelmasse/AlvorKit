@@ -23,7 +23,7 @@ public readonly struct EntArena : IDisposable
             lock (EntReg.Allocators)
             {
                 index = EntReg.Allocators.Count;
-                EntReg.Allocators.Add(new(index, false));
+                EntReg.Allocators.Add(new(index));
             }
         }
 
@@ -53,7 +53,6 @@ public readonly struct EntArena : IDisposable
         if (!IsAlive)
             throw new EntArenaDisposedException();
 
-        Allocator.DrainPendingArchetypal();
         return new(index);
     }
 

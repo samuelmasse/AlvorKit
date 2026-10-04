@@ -7,15 +7,13 @@ public class EntToStringTest
     [TestMethod]
     public void Ent_ToString_Works()
     {
-        var entObj = new EntObj();
         using var entPtr = new EntPtr();
 
-        IEntMut[] entMuts = [entObj, entPtr];
+        IEntMut[] entMuts = [entPtr, (EntMut)entPtr];
 
         IEnt[] ents =
         [
-            entObj, (Ent)entObj, (EntMut)entObj, (EntRef)entObj, (EntRefMut)entObj,
-            entPtr, (Ent)entPtr, (EntMut)entPtr, (EntRef)entPtr, (EntRefMut)entPtr,
+            entPtr, (Ent)entPtr, (EntMut)entPtr,
         ];
 
         foreach (var ent in ents)
@@ -49,11 +47,11 @@ public class EntToStringTest
     [TestMethod]
     public void Ent_ToString_HandlesCycles()
     {
-        var ent1 = new EntObj();
-        var ent2 = new EntObj();
+        using var ent1 = new EntPtr();
+        using var ent2 = new EntPtr();
 
-        ent1.MyEnt = ent2;
-        ent2.MyEnt = ent1;
+        ent1.Mutate().MyEnt(ent2);
+        ent2.Mutate().MyEnt(ent1);
 
         Assert.AreEqual("Ent { MyEnt = Ent { MyEnt = Ent { ... } } }", ent1.ToString());
     }

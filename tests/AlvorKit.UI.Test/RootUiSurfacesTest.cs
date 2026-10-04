@@ -8,7 +8,7 @@ public sealed class RootUiSurfacesTest
     [TestMethod]
     public void DefaultSurface_UsesExistingRootAndScale()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         h.Scale.Scale = 2f;
         Node(h.Ui, out var fill)
             .SizeRelativeV((1, 1));
@@ -26,7 +26,7 @@ public sealed class RootUiSurfacesTest
     [TestMethod]
     public void CreateOverloads_ResolveViewportScaleAndOrder()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var viewport = new Box2((100, 50), (500, 250));
         var scale = 2f;
         using var fullFixed = h.Surfaces.Create(
@@ -63,7 +63,7 @@ public sealed class RootUiSurfacesTest
     [TestMethod]
     public void Create_InvalidArguments_Throws()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var viewport = new Box2((100, 50), (500, 250));
 
         Assert.ThrowsException<ArgumentNullException>(
@@ -84,7 +84,7 @@ public sealed class RootUiSurfacesTest
     [TestMethod]
     public void DynamicScale_RelayoutsExistingSurfaceTree()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var scale = 2f;
         using var surface = h.Surfaces.Create(
             new Box2((100, 50), (500, 250)),
@@ -107,7 +107,7 @@ public sealed class RootUiSurfacesTest
     [TestMethod]
     public void UpdateCallback_ObservesActiveSurfaceContext()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var viewport = new Box2((120, 80), (520, 280));
         using var surface = h.Surfaces.Create(
             viewport,
@@ -134,7 +134,7 @@ public sealed class RootUiSurfacesTest
     [TestMethod]
     public void DynamicScale_InvalidValue_RestoresSurfaceContext()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         using var surface = h.Surfaces.Create(
             new Box2((100, 50), (500, 250)),
             () => 0f,
@@ -154,7 +154,7 @@ public sealed class RootUiSurfacesTest
     [TestMethod]
     public void MouseDispatch_UsesSurfaceCoordinatesAndFallsThroughTransparentSpace()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var viewport = new Box2((100, 50), (500, 250));
         using var lower = h.Surfaces.Create(viewport, scale: 2f, order: 10f);
         using var upper = h.Surfaces.Create(viewport, scale: 2f, order: 20f);
@@ -192,7 +192,7 @@ public sealed class RootUiSurfacesTest
     [TestMethod]
     public void Dispose_RemovesSurfaceAndDrawScript()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var surface = h.Surfaces.Create(
             new Box2((0, 0), (100, 100)),
             order: 10f);
@@ -217,7 +217,7 @@ public sealed class RootUiSurfacesTest
     [TestMethod]
     public void DefaultSurface_Dispose_Throws()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
 
         Assert.ThrowsException<InvalidOperationException>(
             h.Surfaces.Default.Dispose);
@@ -228,7 +228,7 @@ public sealed class RootUiSurfacesTest
     [TestMethod]
     public void BelowDefaultSurface_Draw_PreparesLayout()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         using var surface = h.Surfaces.Create(
             new Box2((50, 25), (250, 125)),
             scale: 2f,

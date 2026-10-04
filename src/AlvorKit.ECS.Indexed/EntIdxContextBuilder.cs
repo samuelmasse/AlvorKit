@@ -1,10 +1,15 @@
 namespace AlvorKit;
 
-public class EntIdxContextBuilder
+/// <summary>Owns Indexed hooks. Dispose after every arena and handle that uses this context.</summary>
+public class EntIdxContextBuilder : IDisposable
 {
-    private readonly EntObj ent = new();
+    private readonly EntPtr ent = new();
 
-    public EntObj Ent => ent;
+    /// <summary>Gets the borrowed context handle; this builder owns its lifetime.</summary>
+    public Ent Ent => ent;
+
+    /// <summary>Invalidates the context and releases its hooks and captured references.</summary>
+    public void Dispose() => ent.Dispose();
 
     public void AddPre<T, N>(EntIdxPreHook<T> hook) where N : IComponent
     {
@@ -47,6 +52,7 @@ public class EntIdxContextBuilder
 
     protected void Add<P, PT>(PT hook)
     {
+        ObjectDisposedException.ThrowIf(!ent.IsAlive, this);
         ReadOnlyMemory<PT> hooks = ent.Get<ReadOnlyMemory<PT>, P>();
         var next = new PT[hooks.Length + 1];
         hooks.Span.CopyTo(next);

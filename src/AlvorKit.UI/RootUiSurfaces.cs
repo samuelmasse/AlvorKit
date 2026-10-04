@@ -5,7 +5,7 @@ namespace AlvorKit;
 /// Existing <see cref="RootUi"/> trees automatically remain on <see cref="Default"/>.
 /// </summary>
 [Root]
-public sealed class RootUiSurfaces
+public class RootUiSurfaces : IDisposable
 {
     private readonly RootCanvas canvas;
     private readonly RootScripts scripts;
@@ -14,10 +14,12 @@ public sealed class RootUiSurfaces
     private readonly UiSurfacePipeline pipeline;
     private readonly List<UiSurface> surfaces = [];
     private readonly Dictionary<UiSurface, UiSurfaceScript> drawScripts = [];
+    private readonly UiSurface defaultSurface;
 
     public RootUiSurfaces(
         RootCanvas canvas,
         RootScripts scripts,
+        RootUnload unload,
         RootUi ui,
         RootUiScale scale,
         RootUiContext context,
@@ -39,7 +41,7 @@ public sealed class RootUiSurfaces
             size,
             position,
             draw);
-        Default = new(
+        defaultSurface = new(
             this,
             ui,
             null,
@@ -50,13 +52,14 @@ public sealed class RootUiSurfaces
             true,
             true);
         surfaces.Add(Default);
+        unload.Add(Dispose);
     }
 
     /// <summary>
     /// Gets the full-window surface used by the existing <see cref="RootUi"/>,
     /// <see cref="RootUiScale"/>, and <see cref="RootUiScript"/> API.
     /// </summary>
-    public UiSurface Default { get; }
+    public UiSurface Default => defaultSurface;
 
     /// <summary>Gets all surfaces in ascending draw and input order without copying.</summary>
     public ReadOnlySpan<UiSurface> Span => CollectionsMarshal.AsSpan(surfaces);
@@ -203,7 +206,23 @@ public sealed class RootUiSurfaces
         surfaces.RemoveAt(index);
         if (drawScripts.TryGetValue(surface, out var script))
             scripts.Remove(script);
+        surface.Root.Dispose();
         surface.MarkDisposed();
+    }
+
+    /// <summary>Releases all UI trees after states and scripts have unloaded during root shutdown.</summary>
+    public void Dispose()
+    {
+        for (int index = surfaces.Count - 1; index >= 0; index--)
+        {
+            var surface = surfaces[index];
+            if (drawScripts.TryGetValue(surface, out var script))
+                scripts.Remove(script);
+            surface.Root.Dispose();
+            surface.MarkDisposed();
+        }
+        surfaces.Clear();
+        drawScripts.Clear();
     }
 
     internal void RemoveDrawScript(UiSurface surface) =>
@@ -217,6 +236,7 @@ public sealed class RootUiSurfaces
         float order,
         bool usesDefaultViewport)
     {
+        ObjectDisposedException.ThrowIf(!Default.Root.IsAlive, this);
         if (scale is null && (!float.IsFinite(fixedScale) || fixedScale <= 0f))
             throw new ArgumentOutOfRangeException(nameof(fixedScale));
         if (!float.IsFinite(order))

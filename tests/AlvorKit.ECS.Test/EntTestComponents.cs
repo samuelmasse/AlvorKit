@@ -11,6 +11,6 @@ public interface IEntTestComponents
     [ComponentToString] public int First { get; set; }
     public int Second { get; set; }
     [ComponentToString] public string? Third { get; set; }
-    [ComponentToString] public EntObj MyEnt { get; set; }
+    [ComponentToString] public Ent MyEnt { get; set; }
 }
 

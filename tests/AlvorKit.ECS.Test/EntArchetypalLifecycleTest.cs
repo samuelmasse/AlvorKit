@@ -93,36 +93,21 @@ public sealed class EntArchetypalLifecycleTest
         Assert.AreEqual("new", replacement.GetArchetypal<PooledReference, SecondField, ArenaDisposeArch>()?.Value);
     }
 
-    /// <summary>EntObj finalization defers row compaction until the alloc owner performs structural work.</summary>
+    /// <summary>Individually owned Ents compact their global-allocator rows synchronously on disposal.</summary>
     [TestMethod]
-    public void ArchetypalLifecycle_EntObjFinalizer_DefersCleanupToAllocOwner()
+    public void ArchetypalLifecycle_StandaloneDispose_ImmediatelyCompactsPeers()
     {
-        WeakReference doomed = CreateFinalizableEnt(out EntObj survivor);
+        using var first = new EntPtr();
+        using var survivor = new EntPtr();
+        first.SetArchetypal<int, FirstField, StandaloneDisposeArch>(10);
+        survivor.SetArchetypal<int, FirstField, StandaloneDisposeArch>(20);
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
+        first.Dispose();
 
-        Assert.IsFalse(doomed.IsAlive);
-
-        EntMut survivorMut = (EntMut)survivor;
-        survivorMut.SetArchetypal<long, SecondField, ObjFinalizeArch>(30);
-
-        Assert.AreEqual(1, EntArchDiagnostics<ObjFinalizeArch>.Capture().ActiveRowCount);
-        Assert.AreEqual(20, survivorMut.GetArchetypal<int, FirstField, ObjFinalizeArch>());
-        Assert.AreEqual(30L, survivorMut.GetArchetypal<long, SecondField, ObjFinalizeArch>());
-        survivor.Clear();
-        GC.KeepAlive(survivor);
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference CreateFinalizableEnt(out EntObj survivor)
-    {
-        var doomed = new EntObj();
-        survivor = new EntObj();
-        ((EntMut)doomed).SetArchetypal<int, FirstField, ObjFinalizeArch>(10);
-        ((EntMut)survivor).SetArchetypal<int, FirstField, ObjFinalizeArch>(20);
-        return new(doomed);
+        Assert.IsFalse(first.IsAlive);
+        Assert.AreEqual(1, EntArchDiagnostics<StandaloneDisposeArch>.Capture().ActiveRowCount);
+        Assert.AreEqual(20, survivor.GetArchetypal<int, FirstField, StandaloneDisposeArch>());
+        Assert.AreEqual(0, survivor.Get<EntArchLoc, StandaloneDisposeArch>().Row);
     }
 
     private readonly record struct SparseField;
@@ -132,6 +117,6 @@ public sealed class EntArchetypalLifecycleTest
     private readonly record struct OtherClearArch;
     private readonly record struct PtrDisposeArch;
     private readonly record struct ArenaDisposeArch;
-    private readonly record struct ObjFinalizeArch;
+    private readonly record struct StandaloneDisposeArch;
     private sealed record PooledReference(string Value);
 }

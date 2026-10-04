@@ -7,7 +7,7 @@ public class EntIdxRegistrationTest
     [TestMethod]
     public void EntIdxRegistration_MismatchedHookType_Throws()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
 
         Assert.ThrowsExactly<EntIdxRegistrationException>(
             () => context.AddPre<string, EntIdxTestComponents.Value>(
@@ -21,7 +21,7 @@ public class EntIdxRegistrationTest
     [TestMethod]
     public void EntIdxRegistration_NonBoolBagMarkerOrGate_Throws()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
 
         Assert.ThrowsExactly<EntIdxRegistrationException>(
             () => context.AddBag(new EntIdxBagMut<EntIdxTestComponents.Value>()));
@@ -34,7 +34,7 @@ public class EntIdxRegistrationTest
     [TestMethod]
     public void EntIdxRegistration_DuplicatePlainBagOnOneContext_Throws()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
 
         context.AddBag(new EntIdxBagMut<EntIdxTestComponents.IsThing>());
 
@@ -46,7 +46,7 @@ public class EntIdxRegistrationTest
     [TestMethod]
     public void EntIdxRegistration_DuplicateGatedBagOnOneContext_Throws()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
 
         context.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(
             new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>());
@@ -60,8 +60,8 @@ public class EntIdxRegistrationTest
     [TestMethod]
     public void EntIdxRegistration_SameBagIdentityOnSeparateContexts_Works()
     {
-        var first = new EntIdxContextBuilder();
-        var second = new EntIdxContextBuilder();
+        using var first = new EntIdxContextBuilder();
+        using var second = new EntIdxContextBuilder();
 
         first.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(
             new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>());
@@ -73,7 +73,7 @@ public class EntIdxRegistrationTest
     [TestMethod]
     public void EntIdxRegistration_GatedBag_UsesMarkerAndGate()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var bag = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         context.AddGatedBag(bag);
 

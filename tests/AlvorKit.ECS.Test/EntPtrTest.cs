@@ -25,13 +25,9 @@ public class EntPtrTest
 
         Ent ent = entPtr;
         EntMut entMut = entPtr;
-        EntRef entRef = entPtr;
-        EntRefMut entRefMut = entPtr;
 
         Assert.IsTrue(entPtr == ent);
         Assert.IsTrue(entPtr == entMut);
-        Assert.IsTrue(entPtr == entRef);
-        Assert.IsTrue(entPtr == entRefMut);
     }
 
     /// <summary>Verifies EntPtr GetSetUnsetHasClear Works.</summary>
@@ -71,22 +67,32 @@ public class EntPtrTest
         ent.Dispose();
         Assert.IsFalse(ent.HasFirst);
 
-        EntPtr ent2 = default;
-        for (int i = 0; i < 9000; i++)
+        var allocated = new List<EntPtr>();
+        try
         {
-            ent2 = new EntPtr();
-            if (ent.Index == ent2.Index)
-                break;
+            EntPtr ent2 = default;
+            for (int i = 0; i < 9000; i++)
+            {
+                ent2 = new EntPtr();
+                allocated.Add(ent2);
+                if (ent.Index == ent2.Index)
+                    break;
+            }
+
+            Assert.AreEqual(ent2.Index, ent.Index); // index got reused
+            Assert.IsFalse(ent2 == ent); // but they are not equal
+
+            ent2.First = 36; // using new generation is allowed
+            Assert.AreEqual(36, ent2.First);
+
+            ent.Second = 25; // but old generation cannot be used
+            Assert.AreEqual(0, ent.Second); // has no effect
         }
-
-        Assert.AreEqual(ent2.Index, ent.Index); // index got reused
-        Assert.IsFalse(ent2 == ent); // but they are not equal
-
-        ent2.First = 36; // using new generation is allowed
-        Assert.AreEqual(36, ent2.First);
-
-        ent.Second = 25; // but old generation cannot be used
-        Assert.AreEqual(0, ent.Second); // has no effect
+        finally
+        {
+            foreach (var ptr in allocated)
+                ptr.Dispose();
+        }
     }
 
     /// <summary>Verifies EntPtr Default Does Not Throw.</summary>

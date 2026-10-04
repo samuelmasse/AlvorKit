@@ -15,28 +15,10 @@ public sealed class EntInternalCoverageTest
 
             Ent ent = ptr;
             EntMut mut = ptr;
-            EntRef reference = ptr;
-            EntRefMut mutableReference = ptr;
-            var obj = new EntObj();
 
             AssertHandleView(ptr.Index, ptr.Generation, ptr.PageIndex, ptr.SubIndex, ptr.Allocator, ptr.Registry);
             AssertHandleView(ent.Index, ent.Generation, ent.PageIndex, ent.SubIndex, ent.Allocator, ent.Registry);
             AssertHandleView(mut.Index, mut.Generation, mut.PageIndex, mut.SubIndex, mut.Allocator, mut.Registry);
-            AssertHandleView(
-                reference.Index,
-                reference.Generation,
-                reference.PageIndex,
-                reference.SubIndex,
-                reference.Allocator,
-                reference.Registry);
-            AssertHandleView(
-                mutableReference.Index,
-                mutableReference.Generation,
-                mutableReference.PageIndex,
-                mutableReference.SubIndex,
-                mutableReference.Allocator,
-                mutableReference.Registry);
-            AssertHandleView(obj.Index, obj.Generation, obj.PageIndex, obj.SubIndex, obj.Allocator, obj.Registry);
         }
         finally
         {

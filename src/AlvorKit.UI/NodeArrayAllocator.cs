@@ -47,4 +47,14 @@ internal class NodeArrayAllocator
     }
 
     public int BlockSize(int rank) => 1 << (rank + 1);
+
+    internal void Clear()
+    {
+        for (int rank = 0; rank < MaxRank; rank++)
+        {
+            data[rank] = [];
+            counts[rank] = 0;
+            free[rank].Clear();
+        }
+    }
 }

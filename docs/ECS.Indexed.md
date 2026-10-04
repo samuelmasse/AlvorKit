@@ -80,9 +80,11 @@ method groups without adapters.
 ### Context Builder
 
 ```csharp
-public class EntIdxContextBuilder
+public class EntIdxContextBuilder : IDisposable
 {
-    public EntObj Ent { get; }
+    public Ent Ent { get; }
+
+    public void Dispose();                       // releases the context and all hook captures
 
     public void AddPre<T, N>(EntIdxPreHook<T> hook) where N : IComponent;
     public void AddPost<T, N>(EntIdxPostHook hook) where N : IComponent;
@@ -115,12 +117,17 @@ The bag parameter type carries the gating semantics; the static type of a
 builder reference must never decide whether a bag is plain or gated.
 
 Hook lists are stored as `ReadOnlyMemory<delegate>` components on the
-builder's `EntObj` context entity, keyed by internal marker types
+builder's explicitly owned context Ent, keyed by internal marker types
 (`EntIdxPre<T, N>`, `EntIdxPost<T, N>`, `EntIdxPreDispose`). This is
 intentional: it gives O(1) per `(context, T, N)` hook lookup with no
 dictionaries, per-context isolation for free, and reference cleanup through
-the existing `PageRefFields` machinery when the context entity dies. The
+the existing `PageRefFields` machinery when the context is disposed. The
 marker types are internal engine implementation details.
+
+The builder owns its context through an `EntPtr`. `Ent` exposes a borrowed read
+handle. Dispose the builder only after all arenas and indexed handles using it
+have finished. Disposal is idempotent; registering hooks afterward throws
+`ObjectDisposedException`.
 
 ### Bags
 
@@ -175,7 +182,7 @@ registers, the read type is what systems inject.
 ```csharp
 public class EntIdxArena : IDisposable
 {
-    public EntIdxArena(EntObj context);
+    public EntIdxArena(Ent context);
 
     public int Allocated { get; }
     public bool IsAlive { get; }
@@ -185,12 +192,10 @@ public class EntIdxArena : IDisposable
 }
 ```
 
-The arena holds the context `EntObj` in a strong field. This is a required
-invariant, not a convenience: handles only carry the value-typed `Ent` view of
-the context, which does not keep the `EntObj` alive. If nothing referenced it,
-the finalizer would recycle the context entity and every hook in the scope
-would silently stop firing. The arena therefore owns that strong reference as
-part of its lifetime contract.
+The arena and its handles borrow the context's generational `Ent` handle.
+They do not own or dispose the context. Its owner must keep it alive until all
+dependent arenas and handles are finished, then explicitly dispose the builder.
+Multiple arenas may share a context when they obey that lifetime ordering.
 
 `EntIdxArena` implements `IDisposable` and exposes `IsAlive`.
 
@@ -508,12 +513,18 @@ need:
 
 ```csharp
 [Run]
-public sealed class RunEntIdxContextBuilder :
+public class RunEntIdxContextBuilder :
     EntIdxContextBuilder;
 
 [Run]
-public sealed class RunEntArena(RunEntIdxContextBuilder context) :
-    EntIdxArena(context.Ent);
+public class RunEntArena(RunEntIdxContextBuilder context) : EntIdxArena(context.Ent)
+{
+    public override void Dispose()
+    {
+        base.Dispose();
+        context.Dispose();
+    }
+}
 
 [Run]
 public sealed class RunProjectileBagMut :
@@ -528,6 +539,7 @@ Scopes use `EntIdxContextBuilder` with plain `AddBag` or gated `AddGatedBag`.
 Scope hierarchies reuse loader code by subclassing builders
 (`DimensionEntIdxContextBuilder : WorldEntIdxContextBuilder`); each scope
 instance has its own context entity, so hooks never leak between scopes.
+The scope unloader disposes its domain arena, which then disposes the context.
 
 ### Loader Registration
 

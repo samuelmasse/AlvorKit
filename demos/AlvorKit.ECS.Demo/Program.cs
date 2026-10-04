@@ -3,8 +3,8 @@ Console.WriteLine("AlvorKit ECS generated archetypal components");
 var arena = new EntArena();
 EntPtr scoutPtr = arena.Alloc();
 EntPtr guardPtr = arena.Alloc();
-EntRefMut scout = scoutPtr;
-EntRefMut guard = guardPtr;
+EntMut scout = scoutPtr;
+EntMut guard = guardPtr;
 
 // Name and Team are sparse, while Health, Position, and Velocity share the generated CombatComponents archetype group.
 scout.Name = "Scout";

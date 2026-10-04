@@ -11,8 +11,8 @@ public class EntIdxBagMembershipTest
     [DataRow(1, 3)]
     public void Contains_PlainBag_RejectsForeignMember(int localCount, int foreignCount)
     {
-        var localContext = new EntIdxContextBuilder();
-        var foreignContext = new EntIdxContextBuilder();
+        using var localContext = new EntIdxContextBuilder();
+        using var foreignContext = new EntIdxContextBuilder();
         var localBag = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
         var foreignBag = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
         var read = new EntIdxBag<EntIdxTestComponents.IsThing>(localBag);
@@ -43,8 +43,8 @@ public class EntIdxBagMembershipTest
     [DataRow(1, 3)]
     public void Contains_GatedBag_RejectsForeignMember(int localCount, int foreignCount)
     {
-        var localContext = new EntIdxContextBuilder();
-        var foreignContext = new EntIdxContextBuilder();
+        using var localContext = new EntIdxContextBuilder();
+        using var foreignContext = new EntIdxContextBuilder();
         var localBag = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         var foreignBag = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         var read = new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(localBag);
@@ -71,7 +71,7 @@ public class EntIdxBagMembershipTest
     [TestMethod]
     public void Contains_UnregisteredBags_RejectRegisteredMember()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var plain = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
         var gated = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         context.AddBag(plain);
@@ -89,7 +89,7 @@ public class EntIdxBagMembershipTest
     [TestMethod]
     public void Contains_RejectsDefaultRemovedAndDisposedHandles()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var plain = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
         var gated = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         context.AddBag(plain);
@@ -118,7 +118,7 @@ public class EntIdxBagMembershipTest
     [TestMethod]
     public void Contains_AllWrappers_DoesNotAllocate()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var plain = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
         var gated = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         var readPlain = new EntIdxBag<EntIdxTestComponents.IsThing>(plain);

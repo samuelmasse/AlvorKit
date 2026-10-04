@@ -11,20 +11,16 @@ public sealed class EntArchetypalApiTest
         EntPtr ptr = arena.Alloc();
         EntMut mut = ptr;
         Ent value = mut;
-        EntRef readRef = ptr;
-        EntRefMut mutRef = ptr;
 
         ptr.SetArchetypal<int, ValueField, ApiArch>(10);
         Assert.IsTrue(ptr.HasArchetypal<int, ValueField, ApiArch>());
         Assert.AreEqual(10, value.GetArchetypal<int, ValueField, ApiArch>());
         Assert.IsTrue(value.HasArchetypal<int, ValueField, ApiArch>());
-        Assert.AreEqual(10, readRef.GetArchetypal<int, ValueField, ApiArch>());
-        Assert.IsTrue(readRef.HasArchetypal<int, ValueField, ApiArch>());
 
-        mutRef.SetArchetypal<int, ValueField, ApiArch>(20);
-        Assert.AreEqual(20, mutRef.GetArchetypal<int, ValueField, ApiArch>());
-        Assert.IsTrue(mutRef.HasArchetypal<int, ValueField, ApiArch>());
-        Assert.IsTrue(mutRef.UnsetArchetypal<int, ValueField, ApiArch>());
+        mut.SetArchetypal<int, ValueField, ApiArch>(20);
+        Assert.AreEqual(20, mut.GetArchetypal<int, ValueField, ApiArch>());
+        Assert.IsTrue(mut.HasArchetypal<int, ValueField, ApiArch>());
+        Assert.IsTrue(mut.UnsetArchetypal<int, ValueField, ApiArch>());
 
         IEntMut mutAdapter = new EntMutAdapter(ptr.Handle);
         mutAdapter.SetArchetypal<int, ValueField, ApiArch>(30);
@@ -33,12 +29,6 @@ public sealed class EntArchetypalApiTest
         Assert.IsTrue(readAdapter.HasArchetypal<int, ValueField, ApiArch>());
         Assert.IsTrue(mutAdapter.UnsetArchetypal<int, ValueField, ApiArch>());
 
-        var obj = new EntObj();
-        obj.SetArchetypal<int, ValueField, ObjApiArch>(40);
-        Assert.AreEqual(40, obj.GetArchetypal<int, ValueField, ObjApiArch>());
-        Assert.IsTrue(obj.HasArchetypal<int, ValueField, ObjApiArch>());
-        Assert.IsTrue(obj.UnsetArchetypal<int, ValueField, ObjApiArch>());
-        GC.KeepAlive(obj);
     }
 
     private readonly record struct EntReadAdapter(EntHandle Handle) : IEnt
@@ -63,5 +53,4 @@ public sealed class EntArchetypalApiTest
 
     private readonly record struct ValueField;
     private readonly record struct ApiArch;
-    private readonly record struct ObjApiArch;
 }

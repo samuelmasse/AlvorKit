@@ -1,12 +1,11 @@
 namespace AlvorKit;
 
-internal class EntAllocator(int allocatorIndex, bool exclusive)
+internal class EntAllocator(int allocatorIndex)
 {
     private readonly List<int> pages = [];
     private readonly ConcurrentBag<int> free = [];
-    // The alloc owner is the sole reader and writer. Finalizers publish only through pendingArchCleanup.
+    // The alloc owner is the sole reader and writer of archetypal rows.
     private readonly List<EntArchGroupOps> archGroups = [];
-    private readonly ConcurrentQueue<EntMut> pendingArchCleanup = [];
 
     private int nextIndex;
     private int limitIndex;
@@ -40,7 +39,7 @@ internal class EntAllocator(int allocatorIndex, bool exclusive)
 
     private int AllocFromNewPage()
     {
-        if (!exclusive && EntReg.FreePages.TryTake(out int nextPage))
+        if (EntReg.FreePages.TryTake(out int nextPage))
             EntReg.PageAllocators[nextPage] = allocatorIndex;
         else nextPage = CreateNewPage();
 
@@ -98,27 +97,10 @@ internal class EntAllocator(int allocatorIndex, bool exclusive)
     {
         foreach (EntArchGroupOps group in archGroups)
             group.Remove(ent);
-
-        DrainPendingArchetypal();
-    }
-
-    internal void QueueArchetypalCleanup(EntMut ent) => pendingArchCleanup.Enqueue(ent);
-
-    internal void DrainPendingArchetypal()
-    {
-        if (pendingArchCleanup.IsEmpty)
-            return;
-
-        while (pendingArchCleanup.TryDequeue(out EntMut ent))
-        {
-            foreach (EntArchGroupOps group in archGroups)
-                group.Remove(ent);
-        }
     }
 
     internal void ClearArchetypal()
     {
-        while (pendingArchCleanup.TryDequeue(out _)) { }
         foreach (EntArchGroupOps group in archGroups)
             group.ClearAlloc(allocatorIndex);
         archGroups.Clear();
@@ -129,7 +111,6 @@ internal class EntAllocator(int allocatorIndex, bool exclusive)
         pages.Clear();
         free.Clear();
         archGroups.Clear();
-        while (pendingArchCleanup.TryDequeue(out _)) { }
         nextIndex = 0;
         limitIndex = 0;
     }

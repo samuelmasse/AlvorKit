@@ -6,7 +6,7 @@ public class RootUiTraverse
     internal void Traverse(EntMut n, float? snap, int depth)
     {
         if (depth == 0)
-            n.UiRoot.TraverseBufferIndex = 0;
+            n.UiRoot.Traversal.Index = 0;
 
         n.SnapR = n.AlignmentSnapFV.Resolve() ?? snap ?? 0;
 
@@ -56,17 +56,17 @@ public class RootUiTraverse
         if (!ordered)
             return;
 
-        var root = n.UiRoot;
+        ref var traversal = ref n.UiRoot.Traversal;
         var nodes = Nodes(n);
-        if (root.OrderBufferKeys.Length <= nodes.Length)
+        if (traversal.OrderKeys.Length <= nodes.Length)
         {
             var newSize = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)nodes.Length);
-            Array.Resize(ref root.OrderBufferKeys, newSize);
-            Array.Resize(ref root.OrderBufferValues, newSize);
+            Array.Resize(ref traversal.OrderKeys, newSize);
+            Array.Resize(ref traversal.OrderValues, newSize);
         }
 
-        var keys = root.OrderBufferKeys.AsSpan()[..nodes.Length];
-        var vals = root.OrderBufferValues.AsSpan()[..nodes.Length];
+        var keys = traversal.OrderKeys.AsSpan()[..nodes.Length];
+        var vals = traversal.OrderValues.AsSpan()[..nodes.Length];
 
         for (int i = 0; i < nodes.Length; i++)
         {
@@ -95,7 +95,7 @@ public class RootUiTraverse
     private void CompileNodes(EntMut n)
     {
         var root = n.UiRoot;
-        int start = root.TraverseBufferIndex;
+        int start = root.Traversal.Index;
         int count = 0;
 
         foreach (var c in Nodes(n))
@@ -124,15 +124,16 @@ public class RootUiTraverse
             count++;
         }
 
-        n.NodesR = root.TraverseBuffer.AsMemory().Slice(start, count);
+        n.NodesR = root.Traversal.Nodes.AsMemory().Slice(start, count);
     }
 
     private static void AddToBuffer(
         RootUi root,
         EntMut n)
     {
-        if (root.TraverseBufferIndex == root.TraverseBuffer.Length)
-            Array.Resize(ref root.TraverseBuffer, root.TraverseBuffer.Length * 2);
-        root.TraverseBuffer[root.TraverseBufferIndex++] = n;
+        ref var traversal = ref root.Traversal;
+        if (traversal.Index == traversal.Nodes.Length)
+            Array.Resize(ref traversal.Nodes, traversal.Nodes.Length * 2);
+        traversal.Nodes[traversal.Index++] = n;
     }
 }

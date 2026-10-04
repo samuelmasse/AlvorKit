@@ -377,6 +377,13 @@ surface scale changed. Higher-order surfaces draw later and receive the first
 chance to handle input, while transparent space falls through to lower
 surfaces. Dispose app-owned surfaces when their owning state unloads.
 
+Surface disposal invalidates its root and all child Ents, including detached
+nodes, and releases retained callbacks. `RootUiSurfaces` registers shutdown
+cleanup with `RootUnload`, which runs after the active state and scripts have
+unloaded. It disposes the default tree and any remaining surfaces. A directly
+constructed `RootUi` outside that composition must be explicitly disposed by
+its caller.
+
 ## Splitting Menus
 
 Keep related screen layout together. Split a menu when substantial independent

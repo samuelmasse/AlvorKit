@@ -26,7 +26,7 @@ public sealed class EntArchetypalGeneratedTest
     {
         using var arena = new EntArena();
         EntPtr ptr = arena.Alloc();
-        EntRefMut ent = ptr;
+        EntMut ent = ptr;
 
         ent.SparseValue = 3;
         ent.Health = 10;

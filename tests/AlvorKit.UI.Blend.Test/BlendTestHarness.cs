@@ -57,6 +57,8 @@ internal class BlendTestHarness : IDisposable
 
     public void Dispose()
     {
+        script.Unload();
+        root.Get<RootUnload>().Run();
         graphics.Unload();
         root.Get<RootGl>().Dispose();
     }

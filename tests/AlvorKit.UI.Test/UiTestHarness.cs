@@ -1,8 +1,10 @@
 namespace AlvorKit;
 
 /// <summary>Drives <see cref="RootUiScript"/> frames over fake windowing, GL, and input roots, mirroring the RootLoop wiring.</summary>
-internal sealed class UiTestHarness
+internal class UiTestHarness : IDisposable
 {
+    private readonly RootUnload unload = new();
+
     /// <summary>Creates the windowing roots, UI systems, and script exactly as the root loop wires them.</summary>
     internal UiTestHarness()
     {
@@ -31,6 +33,7 @@ internal sealed class UiTestHarness
         Surfaces = new RootUiSurfaces(
             canvas,
             Scripts,
+            unload,
             Ui,
             Scale,
             Context,
@@ -89,6 +92,12 @@ internal sealed class UiTestHarness
 
     /// <summary>Runs only the logical update phase, like agent gesture updates that render later.</summary>
     internal void Update() => Host.RaiseUpdate();
+
+    public void Dispose()
+    {
+        Script.Unload();
+        unload.Run();
+    }
 
     /// <summary>Moves the cursor to a window-space position before the next frame.</summary>
     internal void MoveMouse(Vec2 position)

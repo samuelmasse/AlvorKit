@@ -8,7 +8,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void Counter_CoalescesInitialRefreshAndPreservesTickUpdates()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         List<int> counts = [];
         var updates = 0;
         Node(h.Ui, out var node)
@@ -41,7 +41,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void CreatedDescendants_RefreshBeforeFirstLayout()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var leaf = default(EntMut);
         Node(h.Ui, out var parent)
             .OnRefreshF(() =>
@@ -57,7 +57,7 @@ public class RootUiRefreshTest
 
         h.Script.Draw();
 
-        Assert.AreNotEqual(default(EntMut), leaf);
+        Assert.AreNotEqual(default, leaf);
         Assert.AreEqual(new Vec2(73, 29), leaf.SizeR);
         Assert.AreEqual(0, leaf.RefreshCountFV.Resolve());
     }
@@ -66,7 +66,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void RequestOnEarlierNode_DrainsBeforeLayout()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var firstCalls = 0;
         var laterCalls = 0;
         Node(h.Ui, out var first)
@@ -91,7 +91,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void RefreshRemoval_UsesLiveChildren()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var removedCalls = 0;
         var survivorCalls = 0;
         Node(h.Ui, out var remover);
@@ -117,7 +117,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void Interval_UsesElapsedUiTimeAndCoalescesRequests()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var calls = 0;
         var updates = 0;
         Node(h.Ui, out var node)
@@ -151,7 +151,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void DisabledAncestors_DeferRequestsAndRefreshOnReenable()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var calls = 0;
         Node(h.Ui, out var hidden)
             .IsDisabledV(true);
@@ -184,7 +184,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void Stack_RefreshesCompanionsAndRevealedMenus()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var companionCalls = 0;
         var coveredCalls = 0;
         var topCalls = 0;
@@ -221,7 +221,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void Stack_DisabledTopWaitsForRefreshBeforeLayout()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var prepared = false;
         var layouts = 0;
         var companionCalls = 0;
@@ -256,7 +256,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void Refresh_UsesOwningSurfaceContext()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var viewport = new Box2((100, 50), (500, 250));
         using var surface = h.Surfaces.Create(viewport, 2f, 1f);
         var observedScale = 0f;
@@ -279,7 +279,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void RepeatedRequests_DoNotAllocateAfterWarmup()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var calls = 0;
         Node(h.Ui, out var node)
             .OnRefreshF(() => calls++);
@@ -306,7 +306,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void Tick_RemovedAncestorSkipsRemainingDescendants()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var removedCalls = 0;
         var survivorCalls = 0;
         Node(h.Ui, out var group);
@@ -327,7 +327,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void Tick_DisabledAncestorSkipsRemainingDescendants()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var disabledCalls = 0;
         var survivorCalls = 0;
         Node(h.Ui, out var group);
@@ -348,7 +348,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void Tick_ReordersAndSelfRemovalVisitEachSurvivorOnce()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var firstCalls = 0;
         var secondCalls = 0;
         var thirdCalls = 0;
@@ -377,7 +377,7 @@ public class RootUiRefreshTest
     [TestMethod]
     public void Tick_NewChildrenWaitForFirstPreparation()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var created = false;
         var refreshes = 0;
         var updates = 0;

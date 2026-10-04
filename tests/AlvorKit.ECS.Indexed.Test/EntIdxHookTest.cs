@@ -7,7 +7,7 @@ public class EntIdxHookTest
     [TestMethod]
     public void EntIdxHooks_Set_RunsInOrderAndObservesState()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var events = new List<string>();
 
         context.AddPre<int, EntIdxTestComponents.Value>(
@@ -41,7 +41,7 @@ public class EntIdxHookTest
     [TestMethod]
     public void EntIdxHooks_UnsetAbsent_IsNoOp()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var events = new List<string>();
 
         context.AddPre<int, EntIdxTestComponents.Value>(
@@ -61,7 +61,7 @@ public class EntIdxHookTest
     [TestMethod]
     public void EntIdxHooks_UnsetPresent_ObservesOldThenAbsentState()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var events = new List<string>();
 
         context.AddPre<int, EntIdxTestComponents.Value>(
@@ -90,7 +90,7 @@ public class EntIdxHookTest
     [TestMethod]
     public void EntIdxHooks_DeadHandleMutation_IsInert()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var events = new List<string>();
         var index = new Dictionary<Guid, EntMutIdx>();
 
@@ -124,7 +124,7 @@ public class EntIdxHookTest
     [TestMethod]
     public void EntIdxHooks_Dispose_IsIdempotentAndClearsThroughHooks()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var events = new List<string>();
 
         context.AddPreDispose(ent => events.Add($"dispose value={ent.Value} has={ent.HasValue}"));
@@ -158,8 +158,8 @@ public class EntIdxHookTest
     [TestMethod]
     public void EntIdxHooks_Contexts_DoNotShareHooks()
     {
-        var firstContext = new EntIdxContextBuilder();
-        var secondContext = new EntIdxContextBuilder();
+        using var firstContext = new EntIdxContextBuilder();
+        using var secondContext = new EntIdxContextBuilder();
         var events = new List<string>();
 
         firstContext.AddPost<int, EntIdxTestComponents.Value>(
@@ -183,7 +183,7 @@ public class EntIdxHookTest
     [TestMethod]
     public void EntIdxHooks_KeyIndex_TracksSetUnsetAndDispose()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var index = new Dictionary<Guid, EntMutIdx>();
 
         context.AddPre<Guid, EntIdxTestComponents.Id>(

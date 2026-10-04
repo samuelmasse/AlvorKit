@@ -7,7 +7,7 @@ public class EntIdxBagTest
     [TestMethod]
     public void EntIdxBag_PlainMembership_FollowsMarkerOnly()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var bag = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
         context.AddBag(bag);
 
@@ -36,7 +36,7 @@ public class EntIdxBagTest
     [TestMethod]
     public void EntIdxBag_GatedMembership_FollowsMarkerAndGateTransitions()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var bag = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         context.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(bag);
 
@@ -82,7 +82,7 @@ public class EntIdxBagTest
     [TestMethod]
     public void EntIdxBag_GatedMembership_AllowsGateBeforeMarker()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var bag = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         context.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(bag);
 
@@ -101,7 +101,7 @@ public class EntIdxBagTest
     [TestMethod]
     public void EntIdxBag_DifferentGatesOverSameMarker_Coexist()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var plain = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
         var gateA = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsGateA>();
         var gateB = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsGateB>();
@@ -134,7 +134,7 @@ public class EntIdxBagTest
     [TestMethod]
     public void EntIdxBag_Dispose_RemovesWhenMarkerUnsetsBeforeIndex()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var bag = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
         context.AddBag(bag);
 
@@ -153,7 +153,7 @@ public class EntIdxBagTest
     [TestMethod]
     public void EntIdxBag_Clear_RemovesBagEntryThroughUnsetPipeline()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var bag = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
         context.AddBag(bag);
 
@@ -174,7 +174,7 @@ public class EntIdxBagTest
     [TestMethod]
     public void EntIdxBag_Dispose_RemovesWhenIndexUnsetsBeforeMarker()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         using var arena = new EntIdxArena(context.Ent);
         var dummy = arena.Alloc();
         dummy.Set<int, EntIdxBagIndex<EntIdxTestComponents.IsThing>>(42);
@@ -195,7 +195,7 @@ public class EntIdxBagTest
     [TestMethod]
     public void EntIdxBag_Dispose_RemovesGatedBagWhenIndexUnsetsBeforeMarker()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         using var arena = new EntIdxArena(context.Ent);
         var dummy = arena.Alloc();
         dummy.Set<int, EntIdxGatedBagIndex<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>>(42);
@@ -217,7 +217,7 @@ public class EntIdxBagTest
     [TestMethod]
     public void EntIdxBag_Dispose_SwapRemoveKeepsSurvivorIndexed()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var bag = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
         context.AddBag(bag);
 
@@ -241,7 +241,7 @@ public class EntIdxBagTest
     [TestMethod]
     public void EntIdxBag_ArenaDispose_LeavesStaleInvalidBagView()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var bag = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
         context.AddBag(bag);
 

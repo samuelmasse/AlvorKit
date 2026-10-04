@@ -8,7 +8,7 @@ public class EntIdxSurfaceTest
     [TestMethod]
     public void EntIdxSurface_ReadOnlyBags_DelegateToMutableBags()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var plainMut = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
         var gatedMut = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         var plain = new EntIdxBag<EntIdxTestComponents.IsThing>(plainMut);
@@ -40,7 +40,7 @@ public class EntIdxSurfaceTest
     [TestMethod]
     public void EntIdxSurface_Handles_ForwardSmallSurface()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         using var arena = new EntIdxArena(context.Ent);
         var entity = arena.Alloc();
         EntMutIdx mut = entity;

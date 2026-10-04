@@ -9,12 +9,6 @@ public readonly record struct EntPtr : IDisposable, IEntMut
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static implicit operator EntMut(EntPtr a) => new(a.ent.Index, a.ent.Generation);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static implicit operator EntRef(EntPtr a) => new(null, a.ent.Index, a.ent.Generation);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static implicit operator EntRefMut(EntPtr a) => new(null, a.ent.Index, a.ent.Generation);
-
     private readonly EntMut ent;
 
     public EntHandle Handle => ent.Handle;
@@ -28,7 +22,7 @@ public readonly record struct EntPtr : IDisposable, IEntMut
     internal EntRegView Registry => EntReg.View;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public EntPtr() : this(1) { }
+    public EntPtr() : this(0) { }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     internal EntPtr(int allocatorIndex)

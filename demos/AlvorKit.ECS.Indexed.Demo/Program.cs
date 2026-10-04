@@ -1,4 +1,4 @@
-var context = new EntIdxContextBuilder();
+using var context = new EntIdxContextBuilder();
 var projectiles = new EntIdxGatedBagMut<IndexedDemoComponents.IsProjectile, IndexedDemoComponents.IsReady>();
 var scratched = new EntIdxBagMut<IndexedDemoComponents.IsScratched>();
 var ids = new DemoIdIndex();

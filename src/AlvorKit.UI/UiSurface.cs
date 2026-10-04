@@ -3,7 +3,7 @@ namespace AlvorKit;
 /// <summary>
 /// Owns an independent UI tree whose layout, text, clipping, input, and drawing share one scale and viewport.
 /// </summary>
-public sealed class UiSurface : IDisposable
+public class UiSurface : IDisposable
 {
     private readonly RootUiSurfaces owner;
     private readonly Func<Box2>? viewport;
@@ -36,7 +36,7 @@ public sealed class UiSurface : IDisposable
         this.usesDefaultScale = usesDefaultScale;
     }
 
-    /// <summary>Gets the entity root on which this surface's ordinary UI tree is mounted.</summary>
+    /// <summary>Gets the Ent root on which this surface's ordinary UI tree is mounted.</summary>
     public RootUi Root { get; }
 
     /// <summary>Gets the order used for drawing and hit testing; higher surfaces are drawn and hit tested later.</summary>
@@ -51,7 +51,7 @@ public sealed class UiSurface : IDisposable
     /// <summary>Gets the currently resolved logical size.</summary>
     public Vec2 Size => CurrentViewport.Size / CurrentScale;
 
-    /// <summary>Removes the surface and its drawing script. The default surface cannot be disposed.</summary>
+    /// <summary>Removes the drawing script and disposes the whole UI tree. The default surface is owned by root shutdown.</summary>
     public void Dispose()
     {
         if (isDisposed)

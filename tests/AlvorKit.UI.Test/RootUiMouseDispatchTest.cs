@@ -8,7 +8,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Hover_OverSelectableNode_MarksHovered()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         Node(h.Ui, out var button)
             .SizeRelativeV((0, 0))
             .SizeV((100, 50))
@@ -27,7 +27,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Press_OverSelectableNode_RunsPressCallback()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var presses = 0;
         Node(h.Ui, out var button)
             .SizeRelativeV((0, 0))
@@ -49,7 +49,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Click_PressAndReleaseOverNode_RunsClickCallback()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var clicks = 0;
         Node(h.Ui, out var button)
             .SizeRelativeV((0, 0))
@@ -73,7 +73,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Press_OverFocusableNode_FocusesNode()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         Node(h.Ui, out var button)
             .SizeRelativeV((0, 0))
             .SizeV((100, 50))
@@ -93,7 +93,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Click_ReleaseOffNode_DoesNotRunClickCallback()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var clicks = 0;
         Node(h.Ui, out _)
             .SizeRelativeV((0, 0))
@@ -120,7 +120,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Press_CursorLeavesWhileHeld_KeepsPressedState()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         Node(h.Ui, out var button)
             .SizeRelativeV((0, 0))
             .SizeV((100, 50))
@@ -147,7 +147,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Press_OnSilentFocusableNode_BlursFocusedNode()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         Node(h.Ui, out var button)
             .SizeRelativeV((0, 0))
             .SizeV((100, 50))
@@ -180,7 +180,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Press_OnNonFocusableNode_KeepsFocus()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         Node(h.Ui, out var button)
             .SizeRelativeV((0, 0))
             .SizeV((100, 50))
@@ -212,7 +212,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Click_AgentGestureWithoutRenders_RunsPressAndClickCallbacks()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var presses = 0;
         var clicks = 0;
         Node(h.Ui, out _)
@@ -238,7 +238,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Unload_WhileHoveringHandCursorNode_ResetsCursorShape()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         Node(h.Ui, out _)
             .SizeRelativeV((0, 0))
             .SizeV((100, 50))
@@ -258,7 +258,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Scroll_OverScrollableNode_RunsScrollCallback()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         Vec2 scrolled = default;
         Node(h.Ui, out _)
             .SizeRelativeV((0, 0))
@@ -279,7 +279,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Press_FocusRemovesTarget_SkipsPressCallback()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var focuses = 0;
         var presses = 0;
         Node(h.Ui, out var button)
@@ -309,7 +309,7 @@ public class RootUiMouseDispatchTest
     [TestMethod]
     public void Scroll_RemovesHoveredTarget_SkipsPressAndClick()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var scrolls = 0;
         var presses = 0;
         var clicks = 0;

@@ -28,8 +28,7 @@ used by consuming compilations.
 Generated component interfaces may mark individual properties with
 `[Archetypal]`. Marked properties use the generated component-group type as `A`;
 unmarked properties retain ordinary sparse storage. `Clear`, `EntPtr.Dispose`,
-`EntObj` finalization, and `EntArena.Dispose` all participate in archetypal
-lifecycle.
+and `EntArena.Dispose` all participate in archetypal lifecycle.
 
 ## Generated Declaration
 
@@ -68,9 +67,8 @@ dense row, repairs the moved Ent's loc, and clears the removed loc.
 
 `EntPtr.Dispose` removes the claimed generation before returning its index.
 `EntArena.Dispose` bulk-releases all alloc-local row and component arrays before
-recycling pages and the allocator ID. `EntObj` finalization queues archetypal
-cleanup because the finalizer thread is not the alloc owner; the owner drains
-that cleanup before later structural operations.
+recycling pages and the allocator ID. Cleanup runs synchronously on the alloc
+owner's thread. Ent storage has no finalizer or deferred finalizer cleanup.
 
 The debugger and `EntHandle.ToString` enumerate a shared component-view registry
 containing ordinary fields and registered archetypal column operations. Internal

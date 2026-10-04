@@ -8,7 +8,7 @@ public class UiChildrenTest
     [TestMethod]
     public void Set_SuppliesDataBeforeLayoutWithoutRunningCallbacks()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var updates = 0;
         var presses = 0;
         Node(h.Ui, out var parent);
@@ -43,7 +43,7 @@ public class UiChildrenTest
     [TestMethod]
     public void Set_PreservesIdentityAndLocalStateAcrossChanges()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var created = 0;
         Node(h.Ui, out var parent);
         var children = NodesFor<int, Row>(parent, row => row.Key, mount =>
@@ -87,7 +87,7 @@ public class UiChildrenTest
     [TestMethod]
     public void EmptySet_DetachesAndReclaimsSubtrees()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         Node(h.Ui, out var parent);
         var children = NodesFor<int, Row>(parent, row => row.Key, mount =>
         {
@@ -115,7 +115,7 @@ public class UiChildrenTest
     [TestMethod]
     public void NestedViews_RetainChildrenWhenParentsMove()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         Node(h.Ui, out var parent);
         var branches = NodesFor<int, Branch>(parent, branch => branch.Key, mount =>
         {
@@ -153,7 +153,7 @@ public class UiChildrenTest
     [TestMethod]
     public void RepeatedSets_DoNotAllocateAfterWarmup()
     {
-        var h = new UiTestHarness();
+        using var h = new UiTestHarness();
         var created = 0;
         Node(h.Ui, out var parent);
         var children = NodesFor<int, Row>(parent, row => row.Key, mount =>

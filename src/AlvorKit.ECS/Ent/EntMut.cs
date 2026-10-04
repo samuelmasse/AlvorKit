@@ -122,9 +122,6 @@ public readonly partial record struct EntMut : IEntMut
     internal void ResetArchetypal() =>
         EntReg.Allocators[EntReg.PageAllocators[PageIndex]].RemoveArchetypal(this);
 
-    internal void QueueArchetypalCleanup() =>
-        EntReg.Allocators[EntReg.PageAllocators[PageIndex]].QueueArchetypalCleanup(this);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     internal void Reset<T, N>()
     {

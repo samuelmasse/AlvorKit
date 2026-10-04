@@ -1,6 +1,7 @@
 namespace AlvorKit;
 
-public class EntIdxArena(EntObj context) : IDisposable
+/// <summary>Owns Indexed Ents and borrows a context that must remain alive until this arena is disposed.</summary>
+public class EntIdxArena(Ent context) : IDisposable
 {
     private readonly EntArena arena = new();
 
@@ -8,7 +9,7 @@ public class EntIdxArena(EntObj context) : IDisposable
 
     public bool IsAlive => arena.IsAlive;
 
-    public virtual EntPtrIdx Alloc() => new(arena.Alloc(), (Ent)context);
+    public virtual EntPtrIdx Alloc() => new(arena.Alloc(), context);
 
     public virtual void Dispose() => arena.Dispose();
 }

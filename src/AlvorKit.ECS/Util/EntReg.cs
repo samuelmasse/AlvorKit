@@ -16,7 +16,8 @@ internal static class EntReg
     internal static int NextPage = 1;
     internal static readonly ConcurrentBag<int> FreePages = [];
 
-    internal static readonly List<EntAllocator> Allocators = [new(0, true), new(1, false)];
+    // Allocator zero owns individually disposed EntPtrs; scoped arenas start at index one.
+    internal static readonly List<EntAllocator> Allocators = [new(0)];
     internal static readonly ConcurrentBag<int> FreeAllocators = [];
 
     internal static readonly List<int> PageAllocators = [-1];

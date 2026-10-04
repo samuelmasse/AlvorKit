@@ -213,7 +213,6 @@ Use the narrowest handle that expresses ownership:
 | `EntPtr` | Owning base handle; can mutate and individually dispose the Ent. |
 | `EntMut` | Non-owning mutable base handle. |
 | `Ent` | Non-owning read handle. |
-| `EntObj` | Garbage-collected owner, mainly for object-lifetime state such as an Indexed context. |
 | `EntPtrIdx` | Owning Indexed handle; mutations and disposal run the context hook pipeline. |
 | `EntMutIdx` | Non-owning mutable Indexed handle stored in bags and passed to hooks. |
 
@@ -225,6 +224,9 @@ systems and indexes that only observe or mutate the Ent.
 `EntArena.Dispose()` is bulk scope teardown. It invalidates every allocation in
 the arena. Use individual `EntPtr.Dispose()` when per-Ent ownership ends
 before the arena does.
+
+All Ent ownership is explicit. Dispose standalone owning pointers and arenas;
+garbage collection does not release their component storage.
 
 ## When To Use Indexed ECS
 
@@ -259,11 +261,17 @@ and bind them to the same game scope:
 
 ```csharp
 [World]
-public sealed class WorldEntIdxContextBuilder : EntIdxContextBuilder;
+public class WorldEntIdxContextBuilder : EntIdxContextBuilder;
 
 [World]
-public sealed class WorldEntArena(WorldEntIdxContextBuilder context) :
-    EntIdxArena(context.Ent);
+public class WorldEntArena(WorldEntIdxContextBuilder context) : EntIdxArena(context.Ent)
+{
+    public override void Dispose()
+    {
+        base.Dispose();
+        context.Dispose();
+    }
+}
 
 [World]
 public sealed class WorldProjectileBagMut :
@@ -455,8 +463,11 @@ Individual Indexed disposal maintains derived state:
 `EntIdxArena.Dispose()` is intentionally different. It bulk-invalidates the
 arena without running per-Ent hooks. Bags and game-owned indexes may still
 contain dead handles and must be treated as invalid after arena disposal. Keep
-the context, arena, bags, and indexes in one scope lifetime so they all become
-unreachable together.
+the context, arena, bags, and indexes in one scope lifetime. Dispose every arena
+before disposing its context builder; context disposal clears registered hooks
+and their captured objects. The domain arena above owns that final context
+cleanup. The base `EntIdxArena` only borrows its context, so callers sharing one
+context across multiple arenas must dispose it after the last arena ends.
 
 If teardown needs persistence erasure, network messages, or maintained indexes,
 dispose the relevant `EntPtrIdx` allocations individually before disposing the
@@ -478,7 +489,7 @@ For game Ents:
 7. Do not mutate a bag's membership while iterating its span; stage the work.
 8. Keep owning pointers until individual disposal is complete.
 9. Keep the Indexed context, arena, bags, and indexes in the same scope
-   lifetime.
+   lifetime; explicitly dispose arenas before their context.
 10. Treat arena disposal as bulk invalidation, not per-Ent cleanup.
 
 For detailed hook ordering, reentrancy, bag storage, registration validation,

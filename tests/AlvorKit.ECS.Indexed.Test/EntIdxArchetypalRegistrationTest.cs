@@ -8,7 +8,7 @@ public class EntIdxArchetypalRegistrationTest
     [TestMethod]
     public void ArchetypalHooks_ThrowBeforeRegistration()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var pre = Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
             context.AddPre<int, EntIdxTestComponents.ArchValue>((ent, in value) => Assert.Fail()));
         var post = Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
@@ -24,7 +24,7 @@ public class EntIdxArchetypalRegistrationTest
     [TestMethod]
     public void ArchetypalBagMarker_ThrowsBeforeRegistration()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var bag = new EntIdxBagMut<EntIdxTestComponents.IsArchThing>();
 
         Assert.ThrowsExactly<EntIdxRegistrationException>(() => context.AddBag(bag));
@@ -36,7 +36,7 @@ public class EntIdxArchetypalRegistrationTest
     [TestMethod]
     public void ArchetypalGatedBagMarker_ThrowsBeforeRegistration()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var bag = new EntIdxGatedBagMut<EntIdxTestComponents.IsArchThing, EntIdxTestComponents.IsReady>();
 
         Assert.ThrowsExactly<EntIdxRegistrationException>(() => context.AddGatedBag(bag));
@@ -48,7 +48,7 @@ public class EntIdxArchetypalRegistrationTest
     [TestMethod]
     public void ArchetypalBagGate_ThrowsBeforeRegistration()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         var bag = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsArchThing>();
 
         Assert.ThrowsExactly<EntIdxRegistrationException>(() => context.AddGatedBag(bag));
@@ -60,7 +60,7 @@ public class EntIdxArchetypalRegistrationTest
     [TestMethod]
     public void MixedEnt_SparseHooksAndWholeEntDisposalRemainSupported()
     {
-        var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContextBuilder();
         int sparseWrites = 0;
         int valueAtDisposal = 0;
         context.AddPost<int, EntIdxTestComponents.Value>(ent => sparseWrites++);
