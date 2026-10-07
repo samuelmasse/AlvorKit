@@ -47,11 +47,6 @@ internal static class Program
             return 0;
         }
 
-        var success = true;
-
-        foreach (var root in options.DiscoverRepositories())
-            success &= SolutionGenerator.Generate(root, options.Check, null);
-
-        return success ? 0 : 1;
+        return SolutionGenerator.Generate(options) ? 0 : 1;
     }
 }

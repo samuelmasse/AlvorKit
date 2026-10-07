@@ -26,11 +26,15 @@ internal class SolutionWatchFixture : IAsyncDisposable
 
     /// <summary>Starts one watcher after the initial fixture has been authored.</summary>
     public void Start()
-        => Start(new([], PathFor("Repos"), true, false, false));
+        => Start(new([], PathFor("Repos"), true, false, false, null));
 
     /// <summary>Exercises explicit checkout ownership with the same observable harness.</summary>
     public void StartForRepository(string root)
-        => Start(new([root], null, true, false, false));
+        => Start(new([root], null, true, false, false, null));
+
+    /// <summary>Generates a combined solution while exercising the same event-driven repository subscriptions.</summary>
+    public void StartWithAggregate()
+        => Start(new([], PathFor("Repos"), true, false, false, PathFor("Repos/Workspace.slnx")));
 
     /// <summary>Subscribes to evaluation diagnostics before starting the selected watch mode.</summary>
     private void Start(SolutionOptions options)

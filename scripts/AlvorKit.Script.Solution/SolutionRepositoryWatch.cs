@@ -9,10 +9,14 @@ internal class SolutionRepositoryWatch(string root, SolutionWatchQueue queue, So
     private SolutionWatchInputs? discovery;
     /// <summary>Retains the latest known graph inputs until replacement subscriptions are established.</summary>
     private SolutionWatchInputs? graph;
-    /// <summary>Compares discovered membership without reevaluating unchanged roots.</summary>
-    private IReadOnlyList<string> projects = [];
-    /// <summary>Requires regeneration after invalidation even when membership is unchanged.</summary>
-    private bool invalid;
+    /// <summary>Keeps discovery membership and its latest complete evaluated graph together.</summary>
+    private Snapshot snapshot = new() { Projects = [] };
+
+    /// <summary>Exposes only a complete graph whose checkout has not changed since evaluation.</summary>
+    internal SolutionGeneration? Generation
+        => checkout.Ready && checkout.Revision == snapshot.Revision ? snapshot.Generation : null;
+    /// <summary>Blocks aggregate publication while a participating checkout is pending or invalid.</summary>
+    internal bool Pending => snapshot.Invalid || (snapshot.Projects.Count > 0 && Generation == null);
 
     /// <summary>Queries Git after discovery events; unchanged membership does not reevaluate MSBuild.</summary>
     public bool Discover()
@@ -29,9 +33,23 @@ internal class SolutionRepositoryWatch(string root, SolutionWatchQueue queue, So
         {
             SolutionDiscovery.Observe(root, next);
             var paths = RepositoryProjects.Discover(root);
-            var changed = !projects.SequenceEqual(paths, SolutionPaths.Comparer);
-            projects = paths;
-            return changed || invalid || (graph is null && SolutionGenerator.HasGeneratedSolution(root));
+            var changed = !snapshot.Projects.SequenceEqual(paths, SolutionPaths.Comparer);
+            snapshot.Projects = paths;
+
+            if (paths.Count == 0)
+            {
+                snapshot.Generation = null;
+                snapshot.Invalid = false;
+                SolutionGenerator.Invalidate(root);
+                graph?.Dispose();
+                graph = null;
+                return false;
+            }
+
+            if (!changed && !snapshot.Invalid)
+                snapshot.Revision = checkout.Revision;
+
+            return changed || snapshot.Invalid || graph == null;
         }
         finally
         {
@@ -43,6 +61,9 @@ internal class SolutionRepositoryWatch(string root, SolutionWatchQueue queue, So
     /// <summary>Replaces subscriptions only after evaluation, keeping notifications active throughout the transition.</summary>
     public bool Generate()
     {
+        if (snapshot.Projects.Count == 0 && !snapshot.Invalid)
+            return false;
+
         if (!checkout.Ready)
         {
             Defer();
@@ -64,10 +85,12 @@ internal class SolutionRepositoryWatch(string root, SolutionWatchQueue queue, So
 
             SolutionGenerator.Publish(generation, false);
 
-            if (invalid)
+            if (snapshot.Invalid)
                 Console.WriteLine($"Recovered solution for {root}.");
 
-            invalid = false;
+            snapshot.Invalid = false;
+            snapshot.Generation = generation;
+            snapshot.Revision = revision;
             return true;
         }
         catch (Exception exception)
@@ -99,17 +122,19 @@ internal class SolutionRepositoryWatch(string root, SolutionWatchQueue queue, So
     /// <summary>Leaves an incomplete checkout pending until its metadata changes; never publishes its partial graph.</summary>
     private void Defer()
     {
-        if (!invalid)
+        if (!snapshot.Invalid)
             Console.WriteLine($"Waiting for Git checkout: {root}");
 
-        invalid = true;
+        snapshot.Invalid = true;
+        snapshot.Generation = null;
         SolutionGenerator.Invalidate(root);
     }
 
     /// <summary>Reports a failed graph and removes output rather than publishing stale membership.</summary>
     public void Invalidate(Exception exception)
     {
-        invalid = true;
+        snapshot.Invalid = true;
+        snapshot.Generation = null;
 
         if (Directory.Exists(root))
             SolutionGenerator.Invalidate(root);
@@ -125,5 +150,18 @@ internal class SolutionRepositoryWatch(string root, SolutionWatchQueue queue, So
         checkout.Dispose();
         discovery = null;
         graph = null;
+    }
+
+    /// <summary>Retains repository membership, validity, and the checkout revision represented by its evaluated document.</summary>
+    private struct Snapshot
+    {
+        /// <summary>Tracks the last discovered independent project roots.</summary>
+        public IReadOnlyList<string> Projects;
+        /// <summary>Retains the last valid evaluated graph, or no graph after invalidation.</summary>
+        public SolutionGeneration? Generation;
+        /// <summary>Identifies the Git state represented by the retained graph.</summary>
+        public long Revision;
+        /// <summary>Requires evaluation after a pending checkout or invalid graph recovers.</summary>
+        public bool Invalid;
     }
 }

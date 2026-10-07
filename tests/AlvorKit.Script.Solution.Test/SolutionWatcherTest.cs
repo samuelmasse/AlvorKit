@@ -14,7 +14,7 @@ public class SolutionWatcherTest
         GitRepositoryFixture.Initialize(root);
         workspace.Write("Game/src/Game/Game.csproj", SolutionGeneratorTest.Project(""));
         using var cancellation = new CancellationTokenSource();
-        using var watcher = new SolutionWatcher(new([], workspace.Root, true, false, false));
+        using var watcher = new SolutionWatcher(new([], workspace.Root, true, false, false, null));
         var task = watcher.RunAsync(cancellation.Token);
 
         try
@@ -83,18 +83,21 @@ public class SolutionWatcherTest
     {
         var root = Path.GetFullPath("watch-inputs");
         var path = Path.Combine(root, "Shared/References.props");
-        var existence = new SolutionWatchInput(path, null, false, false);
-        var content = new SolutionWatchInput(path, null, false, true);
+        var existence = new SolutionWatchInput(path, null, false, false, false);
+        var content = new SolutionWatchInput(path, null, false, true, false);
         Assert.IsFalse(existence.Matches(path, false, WatcherChangeTypes.Changed));
         Assert.IsTrue(existence.Matches(path, false, WatcherChangeTypes.Created));
         Assert.IsTrue(content.Matches(path, false, WatcherChangeTypes.Changed));
         Assert.IsTrue(content.Matches(Path.Combine(root, "Shared"), true, WatcherChangeTypes.Renamed));
         Assert.IsFalse(content.Matches(Path.Combine(root, "Shared/Other.props"), false, WatcherChangeTypes.Changed));
-        var glob = new SolutionWatchInput(root, "*.csproj", true, false);
+        var glob = new SolutionWatchInput(root, "*.csproj", true, false, false);
         Assert.IsTrue(glob.Matches(Path.Combine(root, "src/New/New.csproj"), false, WatcherChangeTypes.Created));
         Assert.IsTrue(glob.Matches(Path.Combine(root, "src/New"), true, WatcherChangeTypes.Renamed));
         Assert.IsFalse(glob.Matches(Path.Combine(root, "src/New/Code.cs"), false, WatcherChangeTypes.Created));
         Assert.IsFalse(glob.Matches(Path.Combine(root, "src/New/New.csproj"), false, WatcherChangeTypes.Changed));
+        var directories = new SolutionWatchInput(root, "*", false, false, true);
+        Assert.IsTrue(directories.Matches(Path.Combine(root, "New"), true, WatcherChangeTypes.Created));
+        Assert.IsFalse(directories.Matches(Path.Combine(root, "Workspace.slnx"), false, WatcherChangeTypes.Created));
     }
 
     /// <summary>Waits for observable serialized membership with a bounded timeout.</summary>

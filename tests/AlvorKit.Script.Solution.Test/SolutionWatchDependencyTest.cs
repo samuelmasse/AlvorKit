@@ -76,7 +76,7 @@ public class SolutionWatchDependencyTest
         using var workspace = TempWorkspace.Create();
         GitRepositoryFixture.Initialize(workspace.Root);
         workspace.Write("src/Game/Game.csproj", SolutionGeneratorTest.Project("<Import Project=\"missing.custom\" />"));
-        using var watcher = new SolutionWatcher(new([workspace.Root], null, true, false, false));
+        using var watcher = new SolutionWatcher(new([workspace.Root], null, true, false, false, null));
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(15));
         var exception = await Assert.ThrowsExactlyAsync<SolutionImportException>(() => watcher.RunAsync(cancellation.Token));
         StringAssert.Contains(exception.Message, "Fix the import and restart");

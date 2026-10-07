@@ -2,7 +2,8 @@
 
 Every repository, including AlvorKit, has one generated, gitignored
 `<checkout-name>.slnx` at its root. Project files are the source of truth. There
-is no checked-in solution, template, project-list manifest, or aggregate solution.
+is no checked-in solution, template, or project-list manifest. An optional
+aggregate solution can combine multiple repositories for local development.
 
 ## Generate and build
 
@@ -91,7 +92,33 @@ dotnet run --project AlvorKit/scripts/AlvorKit.Script.Solution -- --parent-direc
 ```
 
 Parent discovery includes immediate Git checkouts containing managed projects;
-it creates a separate solution inside each one. No aggregate file is created.
+it creates a separate solution inside each one. To also generate a combined
+solution, add an explicit output path outside the selected repositories:
+
+```powershell
+dotnet run --project AlvorKit/scripts/AlvorKit.Script.Solution -- --parent-directory . --aggregate-solution Workspace.slnx
+```
+
+The aggregate uses the union of the evaluated graphs, with shared projects
+included once and Debug/Release membership combined. Projects appear under their
+owning checkout's folder; dependencies outside the selected checkouts appear
+under `Dependencies`. Selected checkout names must be distinct. If the graphs
+select multiple startup projects, the aggregate leaves startup selection to the
+IDE. Individual repository startup choices remain intact.
+
+The output directory must already exist. Like repository solutions, aggregate
+solutions are local generated output: keep them ignored if their location is
+inside a Git checkout, and never edit or commit them. The generator rejects an
+authored file at the requested output path. `--aggregate-solution` also works
+with explicit `--repo-root` selections, `--check`, and `--watch`. `--list-only`
+still only lists repositories and writes nothing.
+
+In watch mode, the aggregate is updated from the retained repository graphs
+after changes are reconciled; unchanged repositories are not reevaluated. An
+invalid or pending checkout removes aggregate output until its graph is valid.
+Repository removal drops its graph from the aggregate; an empty selection
+produces an empty solution. Aggregate output has its own watcher lease.
+
 Repository additions, deletions, and directory moves trigger discovery. Explicit
 `--repo-root` watches also survive deleting and recreating that path. Git ignore rules
 and index updates refresh the affected repository's Git project list. An

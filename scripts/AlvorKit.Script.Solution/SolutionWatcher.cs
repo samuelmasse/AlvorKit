@@ -9,6 +9,8 @@ internal class SolutionWatcher(SolutionOptions options) : IDisposable
     private readonly Dictionary<string, SolutionRepositoryWatch> repositories = new(SolutionPaths.Comparer);
     /// <summary>Prevents duplicate parent-directory hosts, including when no child checkout exists.</summary>
     private FileStream? parentLease;
+    /// <summary>Prevents separate watcher selections from publishing to the same aggregate output.</summary>
+    private FileStream? aggregateLease;
     /// <summary>Observes checkout creation, removal, and movement above repository directories.</summary>
     private SolutionWatchInputs? topology;
     /// <summary>Shares native directory handles across all discovery and graph subscriptions.</summary>
@@ -19,6 +21,27 @@ internal class SolutionWatcher(SolutionOptions options) : IDisposable
 
     /// <summary>Registers notifications before initial discovery and consumes scoped invalidations until cancellation.</summary>
     public async Task RunAsync(CancellationToken cancellation)
+    {
+        if (options.AggregateSolution != null)
+        {
+            options.ValidateAggregateLocation();
+            SolutionOutput.Validate(options.AggregateSolution);
+            aggregateLease = SolutionWatchLease.Acquire(options.AggregateSolution);
+        }
+
+        try { await WatchAsync(cancellation); }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { throw; }
+        catch
+        {
+            if (options.AggregateSolution != null)
+                SolutionOutput.Invalidate(options.AggregateSolution);
+
+            throw;
+        }
+    }
+
+    /// <summary>Consumes native events and publishes the aggregate only after all selected graphs are current.</summary>
+    private async Task WatchAsync(CancellationToken cancellation)
     {
         var roots = options.ParentDirectory is { } parent ? [parent] : options.RepositoryRoots;
         var scopes = options.ParentDirectory is not null ? roots
@@ -68,7 +91,30 @@ internal class SolutionWatcher(SolutionOptions options) : IDisposable
                 Console.WriteLine($"Evaluated {root} in {elapsed.Elapsed.TotalSeconds:F1}s.");
                 Evaluated?.Invoke(root);
             }
+
+            PublishAggregate();
         }
+    }
+
+    /// <summary>Reuses unchanged graphs and removes aggregate output while any checkout cannot contribute a valid graph.</summary>
+    private void PublishAggregate()
+    {
+        if (options.AggregateSolution == null)
+            return;
+
+        queue.ThrowIfFailed();
+
+        if (queue.HasPending || repositories.Values.Any(repository => repository.Pending))
+        {
+            SolutionOutput.Invalidate(options.AggregateSolution);
+            return;
+        }
+
+        var generations = repositories.Values.Select(repository => repository.Generation).OfType<SolutionGeneration>().ToArray();
+        SolutionAggregate.Publish(options.AggregateSolution, generations, false);
+
+        if (queue.HasPending || repositories.Values.Any(repository => repository.Pending))
+            SolutionOutput.Invalidate(options.AggregateSolution);
     }
 
     /// <summary>Checks checkout topology without rescanning unchanged repositories or evaluating their graphs.</summary>
@@ -79,7 +125,7 @@ internal class SolutionWatcher(SolutionOptions options) : IDisposable
 
         if (options.ParentDirectory is { } parent)
         {
-            next.Glob(parent, "*", false, false);
+            next.Directories(parent);
             var children = Directory.GetDirectories(parent);
 
             roots = children;
@@ -90,6 +136,7 @@ internal class SolutionWatcher(SolutionOptions options) : IDisposable
 
         roots = roots.Where(root => File.Exists(Path.Combine(root, ".git")) || Directory.Exists(Path.Combine(root, ".git")))
             .ToArray();
+        options.ValidateAggregate(roots);
 
         var added = roots.Except(repositories.Keys, SolutionPaths.Comparer).ToArray();
 
@@ -121,6 +168,8 @@ internal class SolutionWatcher(SolutionOptions options) : IDisposable
 
         parentLease?.Dispose();
         parentLease = null;
+        aggregateLease?.Dispose();
+        aggregateLease = null;
         notifications?.Dispose();
         notifications = null;
         repositories.Clear();

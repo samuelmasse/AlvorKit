@@ -9,7 +9,7 @@ internal class SolutionWatchInputs(SolutionFileNotifications notifications, Acti
     private readonly HashSet<SolutionWatchInput> inputs = [];
 
     /// <summary>Observes file contents, replacement, deletion, and creation when the file is absent.</summary>
-    public void File(string path) => Add(new(Path.GetFullPath(path), null, false, true));
+    public void File(string path) => Add(new(Path.GetFullPath(path), null, false, true, false));
 
     /// <summary>Watches XML loaded by MSBuild's separate cache and detects changes during subscription setup.</summary>
     public void ReadProject(string path, DateTime readTime)
@@ -36,11 +36,14 @@ internal class SolutionWatchInputs(SolutionFileNotifications notifications, Acti
     }
 
     /// <summary>Observes existence without treating ordinary content writes as graph changes.</summary>
-    public void Exists(string path) => Add(new(Path.GetFullPath(path), null, false, false));
+    public void Exists(string path) => Add(new(Path.GetFullPath(path), null, false, false, false));
+
+    /// <summary>Observes immediate directory membership without reacting to generated files in the parent directory.</summary>
+    public void Directories(string path) => Add(new(Path.GetFullPath(path), "*", false, false, true));
 
     /// <summary>Observes a directory query and any rename that changes its matching members.</summary>
     public void Glob(string path, string pattern, bool recursive, bool contents) =>
-        Add(new(Path.GetFullPath(path), pattern, recursive, contents));
+        Add(new(Path.GetFullPath(path), pattern, recursive, contents, false));
 
     /// <summary>Installs each distinct read before the caller evaluates its value.</summary>
     private void Add(SolutionWatchInput input)

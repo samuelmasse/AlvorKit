@@ -4,6 +4,28 @@ namespace AlvorKit;
 [TestClass]
 public class SolutionCommandTest
 {
+    /// <summary>The CLI carries an explicit aggregate path through every operating mode, including discovery-only mode.</summary>
+    [TestMethod]
+    [DataRow("--check")]
+    [DataRow("--watch")]
+    [DataRow("--list-only")]
+    public async Task RoutesAggregateOutput(string mode)
+    {
+        using var workspace = TempWorkspace.Create();
+        var output = Path.Combine(workspace.Root, "Workspace.slnx");
+        SolutionOptions? selected = null;
+        var command = SolutionOptions.Command(options =>
+        {
+            selected = options;
+            return Task.FromResult(0);
+        });
+        var result = await command.Parse(["--parent-directory", workspace.Root, "--aggregate-solution", output, mode]).InvokeAsync();
+        Assert.AreEqual(0, result);
+        Assert.IsNotNull(selected);
+        Assert.AreEqual(output, selected.AggregateSolution);
+        Assert.IsFalse(File.Exists(output));
+    }
+
     /// <summary>Repeated roots are normalized once and the requested operating mode reaches execution.</summary>
     [TestMethod]
     [DataRow("--check")]
@@ -33,7 +55,7 @@ public class SolutionCommandTest
     [TestMethod]
     public void DefaultRootUsesCurrentCheckout()
     {
-        var options = SolutionOptions.Create([], null, false, false, false);
+        var options = SolutionOptions.Create([], null, false, false, false, null);
         CollectionAssert.AreEqual(new[] { RepositoryRoot.FindFrom(Environment.CurrentDirectory) },
             options.DiscoverRepositories().ToArray());
     }
@@ -43,10 +65,10 @@ public class SolutionCommandTest
     public void ValidatesExplicitDirectoryExistence()
     {
         using var workspace = TempWorkspace.Create();
-        var options = SolutionOptions.Create([workspace.Root], null, false, false, false);
+        var options = SolutionOptions.Create([workspace.Root], null, false, false, false, null);
         CollectionAssert.AreEqual(new[] { workspace.Root }, options.DiscoverRepositories().ToArray());
 
-        var missing = SolutionOptions.Create([Path.Combine(workspace.Root, "Missing")], null, false, false, false);
+        var missing = SolutionOptions.Create([Path.Combine(workspace.Root, "Missing")], null, false, false, false, null);
         Assert.ThrowsExactly<DirectoryNotFoundException>(() => missing.DiscoverRepositories());
     }
 }

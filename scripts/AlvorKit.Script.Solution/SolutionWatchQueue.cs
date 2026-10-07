@@ -14,6 +14,9 @@ internal class SolutionWatchQueue
     /// <summary>Preserves the first terminal notification failure for the consumer.</summary>
     private Exception? failure;
 
+    /// <summary>Prevents aggregate publication while input changes still need reconciliation.</summary>
+    internal bool HasPending => !pending.IsEmpty;
+
     /// <summary>Records the affected owner before signaling the single evaluation consumer.</summary>
     public void Add(SolutionWatchRequest request)
     {

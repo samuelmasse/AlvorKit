@@ -96,7 +96,7 @@ public class SolutionWatchLifecycleTest
             root = fixture.Repository("Game", "");
             fixture.Start();
             await fixture.Membership(root, "Game.csproj", true);
-            using var other = new SolutionWatcher(new([root], null, true, false, false));
+            using var other = new SolutionWatcher(new([root], null, true, false, false, null));
             using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(15));
             var exception = await Assert.ThrowsExactlyAsync<IOException>(() => other.RunAsync(cancellation.Token));
             StringAssert.Contains(exception.Message, "watcher lease");
