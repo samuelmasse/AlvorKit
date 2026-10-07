@@ -24,18 +24,18 @@
       "group": "build"
     },
     {
-      "label": "build AlvorKit.ECS.Demo.Bench",
+      "label": "build AlvorKit.ECS.Bench.Archetypal",
       "type": "process",
       "command": "dotnet",
-      "args": ["build", "${workspaceFolder}/demos/AlvorKit.ECS.Demo.Bench/AlvorKit.ECS.Demo.Bench.csproj", "--configuration", "Release", "--nologo"],
+      "args": ["build", "${workspaceFolder}/bench/AlvorKit.ECS.Bench.Archetypal/AlvorKit.ECS.Bench.Archetypal.csproj", "--configuration", "Release", "--nologo"],
       "problemMatcher": "$msCompile",
       "group": "build"
     },
     {
-      "label": "build AlvorKit.ECS.Demo.QueryBench",
+      "label": "build AlvorKit.ECS.Bench.Query",
       "type": "process",
       "command": "dotnet",
-      "args": ["build", "${workspaceFolder}/demos/AlvorKit.ECS.Demo.QueryBench/AlvorKit.ECS.Demo.QueryBench.csproj", "--configuration", "Release", "--nologo"],
+      "args": ["build", "${workspaceFolder}/bench/AlvorKit.ECS.Bench.Query/AlvorKit.ECS.Bench.Query.csproj", "--configuration", "Release", "--nologo"],
       "problemMatcher": "$msCompile",
       "group": "build"
     },
@@ -166,10 +166,10 @@
       "group": "build"
     },
     {
-      "label": "build AlvorKit.Maths.Demo.Bench",
+      "label": "build AlvorKit.Maths.Bench",
       "type": "process",
       "command": "dotnet",
-      "args": ["build", "${workspaceFolder}/demos/AlvorKit.Maths.Demo.Bench/AlvorKit.Maths.Demo.Bench.csproj", "--configuration", "Release", "--nologo"],
+      "args": ["build", "${workspaceFolder}/bench/AlvorKit.Maths.Bench/AlvorKit.Maths.Bench.csproj", "--configuration", "Release", "--nologo"],
       "problemMatcher": "$msCompile",
       "group": "build"
     },
@@ -242,18 +242,18 @@
       "group": "build"
     },
     {
-      "label": "build AlvorKit.Hashing.Demo.Bench",
+      "label": "build AlvorKit.Hashing.Bench",
       "type": "process",
       "command": "dotnet",
-      "args": ["build", "${workspaceFolder}/demos/AlvorKit.Hashing.Demo.Bench/AlvorKit.Hashing.Demo.Bench.csproj", "--configuration", "Release", "--nologo"],
+      "args": ["build", "${workspaceFolder}/bench/AlvorKit.Hashing.Bench/AlvorKit.Hashing.Bench.csproj", "--configuration", "Release", "--nologo"],
       "problemMatcher": "$msCompile",
       "group": "build"
     },
     {
-      "label": "build AlvorKit.Ranges.Demo.Bench",
+      "label": "build AlvorKit.Ranges.Bench",
       "type": "process",
       "command": "dotnet",
-      "args": ["build", "${workspaceFolder}/demos/AlvorKit.Ranges.Demo.Bench/AlvorKit.Ranges.Demo.Bench.csproj", "--configuration", "Release", "--nologo"],
+      "args": ["build", "${workspaceFolder}/bench/AlvorKit.Ranges.Bench/AlvorKit.Ranges.Bench.csproj", "--configuration", "Release", "--nologo"],
       "problemMatcher": "$msCompile",
       "group": "build"
     },

@@ -1,10 +1,11 @@
 namespace AlvorKit;
 
 [Bench]
-public class CoreBenchmarks(CoreMeasurements measurements) : IBenchSuiteProvider
+public class CoreBenchmarks(CoreMeasurements measurements, LifetimeBenchmarks lifetime) : IBenchSuiteProvider
 {
     public BenchSuite Create() => new("AlvorKit.ECS.Bench",
     [
+        lifetime.Create(),
         BenchNode.Measure("SparseSet", "sparse Set on prepared handles", measurements.SparseSet),
         BenchNode.Measure("Handles", "three archetypal components through handles", measurements.Handles),
         BenchNode.Measure("Rows", "three archetypal components through rows", measurements.Rows),

@@ -2,7 +2,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.ECS.Indexed" />
-        <InternalsVisibleTo Include="AlvorKit.ECS.Demo.Bench" />
+        <InternalsVisibleTo Include="AlvorKit.ECS.Bench.Archetypal" />
         <InternalsVisibleTo Include="AlvorKit.ECS.Test" />
     </ItemGroup>
 

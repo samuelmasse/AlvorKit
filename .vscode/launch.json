@@ -12,21 +12,21 @@
       "stopAtEntry": false
     },
     {
-      "name": "AlvorKit.ECS.Demo.Bench",
+      "name": "AlvorKit.ECS.Bench.Archetypal",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build AlvorKit.ECS.Demo.Bench",
-      "program": "${workspaceFolder}/bin/AlvorKit.ECS.Demo.Bench/Release/AlvorKit.ECS.Demo.Bench.dll",
+      "preLaunchTask": "build AlvorKit.ECS.Bench.Archetypal",
+      "program": "${workspaceFolder}/bin/AlvorKit.ECS.Bench.Archetypal/Release/AlvorKit.ECS.Bench.Archetypal.dll",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "stopAtEntry": false
     },
     {
-      "name": "AlvorKit.ECS.Demo.QueryBench",
+      "name": "AlvorKit.ECS.Bench.Query",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build AlvorKit.ECS.Demo.QueryBench",
-      "program": "${workspaceFolder}/bin/AlvorKit.ECS.Demo.QueryBench/Release/AlvorKit.ECS.Demo.QueryBench.dll",
+      "preLaunchTask": "build AlvorKit.ECS.Bench.Query",
+      "program": "${workspaceFolder}/bin/AlvorKit.ECS.Bench.Query/Release/AlvorKit.ECS.Bench.Query.dll",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "stopAtEntry": false
@@ -192,11 +192,11 @@
       }
     },
     {
-      "name": "AlvorKit.Maths.Demo.Bench",
+      "name": "AlvorKit.Maths.Bench",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build AlvorKit.Maths.Demo.Bench",
-      "program": "${workspaceFolder}/bin/AlvorKit.Maths.Demo.Bench/Release/AlvorKit.Maths.Demo.Bench.dll",
+      "preLaunchTask": "build AlvorKit.Maths.Bench",
+      "program": "${workspaceFolder}/bin/AlvorKit.Maths.Bench/Release/AlvorKit.Maths.Bench.dll",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "stopAtEntry": false
@@ -272,21 +272,21 @@
       "stopAtEntry": false
     },
     {
-      "name": "AlvorKit.Hashing.Demo.Bench",
+      "name": "AlvorKit.Hashing.Bench",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build AlvorKit.Hashing.Demo.Bench",
-      "program": "${workspaceFolder}/bin/AlvorKit.Hashing.Demo.Bench/Release/AlvorKit.Hashing.Demo.Bench.dll",
+      "preLaunchTask": "build AlvorKit.Hashing.Bench",
+      "program": "${workspaceFolder}/bin/AlvorKit.Hashing.Bench/Release/AlvorKit.Hashing.Bench.dll",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "stopAtEntry": false
     },
     {
-      "name": "AlvorKit.Ranges.Demo.Bench",
+      "name": "AlvorKit.Ranges.Bench",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build AlvorKit.Ranges.Demo.Bench",
-      "program": "${workspaceFolder}/bin/AlvorKit.Ranges.Demo.Bench/Release/AlvorKit.Ranges.Demo.Bench.dll",
+      "preLaunchTask": "build AlvorKit.Ranges.Bench",
+      "program": "${workspaceFolder}/bin/AlvorKit.Ranges.Bench/Release/AlvorKit.Ranges.Bench.dll",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "stopAtEntry": false

@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="../../src/AlvorKit.Bench/AlvorKit.Bench.csproj" />
+        <ProjectReference Include="../../src/AlvorKit.Maths/AlvorKit.Maths.csproj" />
+        <Using Include="System.Runtime.Intrinsics" />
+        <Using Include="System.Runtime.Intrinsics.X86" />
+    </ItemGroup>
+</Project>

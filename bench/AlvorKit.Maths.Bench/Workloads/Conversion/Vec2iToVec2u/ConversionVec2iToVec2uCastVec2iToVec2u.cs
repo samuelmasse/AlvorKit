@@ -1,0 +1,14 @@
+namespace AlvorKit;
+
+internal static class ConversionVec2iToVec2uCastVec2iToVec2u
+{
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    internal static void Run(Vec2i[] ints, Vec2u[] uintOutput, int passes)
+    {
+        for (var pass = 0; pass < passes; pass++)
+        {
+            for (var i = 0; i < 4096; i++)
+                uintOutput[i] = (Vec2u)ints[i];
+        }
+    }
+}

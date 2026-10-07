@@ -33,8 +33,38 @@ only JSON. `--memory-tree` prints supplied native allocation trees.
   deliberately keep their unconditional marker writes for comparison with the
   original hooks. Craftdig persistence already coalesces its marker; replication
   now does so as well. These fixtures are not an exact persistence measurement.
-- Existing ECS diagnostic demos retain their specialized structural, concurrency,
-  and storage-footprint studies. Their CLI and result format are separate.
+- `AlvorKit.ECS.Bench.Query` compares ordered and shuffled sparse/archetypal
+  access, one/two/eight-column rows and spans, and discovery through 2,047
+  materialized archetypes with one active match.
+- `AlvorKit.ECS.Bench.Archetypal` contains point access at five signature widths,
+  concrete/generic class/struct call sites, membership kernels, structural
+  changes, and concurrent arena owners. Cold catalog and growth cases run each
+  sample in a fresh child process. Child startup is outside the reported time;
+  JIT preparation uses a separate archetype group. Other cases use the runner's
+  ordinary in-process warmups. The ideal-direct membership case is a synthetic
+  precomputed-table bound, not an alternative production ECS implementation.
+- `AlvorKit.Hashing.Bench` compares the approved table-hash and additive-checksum
+  helpers with assembly-local implementations of the same algorithms. It also
+  compares 32/64-bit epoch indexes with retained dictionaries at three sizes.
+  One epoch operation is a complete clear/fill/read cycle, not one lookup.
+- `AlvorKit.Maths.Bench` compares vectors, matrices, quaternions, and planes with
+  System.Numerics and includes conversions, equality, swizzles, and JIT hints.
+  See its [guide](AlvorKit.Maths.Bench/README.md) for comparisons and diagnostics.
+- `AlvorKit.Ranges.Bench` covers all 13 allocator scenarios at small and large
+  input sizes: churn, growth, handle reuse, fragmentation, and packing. Packing
+  samples batch independent prepared fixtures (64 for shrink packing, eight
+  for fragmented packing); their operation counts include every fixture.
+  Existing-handle reuse repeats 32 passes over the prepared handle.
+  The simulated-copy case visits relocation metadata and sums logical byte
+  counts; it does not copy payload bytes or measure memory bandwidth.
+
+The seven sparse component/lifetime cases formerly in the ECS demo also live
+under `Lifetime` in `AlvorKit.ECS.Bench`. Allocation/disposal cycles include
+those operations; existing-component cases exclude fixture setup and cleanup.
+All benchmark executables live under `bench/` and share `list`, `run`, filters,
+warmups, samples, and schema-9 JSON. The former demo CLIs and BenchmarkDotNet
+dependencies have been removed. Range output uses the common timing/allocation
+columns instead of the former allocator-specific counters.
 
 ## Allocation boundaries
 
@@ -43,6 +73,12 @@ It captures elapsed time first and then current-thread managed allocation bytes.
 `WorkloadAllocatedBytes` excludes fixture preparation, observation, and disposal.
 A missing value means unmeasured, not zero. Cross-thread allocations need a
 separate measurement; this counter covers synchronous workloads only.
+Concurrent archetypal cases explicitly leave this counter unmeasured. For
+isolated cases the workload counter comes from the child, while the complete
+measurement allocation counter describes the parent process driver, including
+process/JSON overhead. It is not a child-fixture allocation measurement.
+The concurrent cases' complete measurement counter also excludes allocations
+performed on owner threads; it describes the calling thread only.
 
 The runner also captures `AllocatedBytes` for the complete measurement method,
 including fixture preparation and cleanup. Optional CoreCLR profiler object counts
@@ -69,6 +105,15 @@ dotnet run --project bench/AlvorKit.ECS.Indexed.Bench -c Release -- --footprint
 It reports handle size/reference content and the managed heap delta for a warmed
 131,072-Ent fixture. This is a process-level heap estimate, not exact object
 ownership accounting. Run it separately from timing.
+
+The archetypal suite has separate low/high-occupancy storage snapshots. Run each
+in a fresh process; these include the internal catalog/storage counters and a
+managed-heap delta, not just logical component payload bytes:
+
+```powershell
+dotnet run --project bench/AlvorKit.ECS.Bench.Archetypal -c Release -- --footprint low
+dotnet run --project bench/AlvorKit.ECS.Bench.Archetypal -c Release -- --footprint high
+```
 
 ## Comparisons
 

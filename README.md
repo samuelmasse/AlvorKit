@@ -30,7 +30,7 @@ used by AlvorKit game repositories.
 ## Benchmarks
 
 The [benchmark guide](bench/README.md) covers the shared `AlvorKit.Bench` runner,
-raw ECS and Indexed suites, allocation boundaries, and reproducible comparisons.
+ECS, hashing, maths, and range suites, allocation boundaries, and reproducible comparisons.
 
 ## Binding development mode
 
