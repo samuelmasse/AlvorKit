@@ -119,6 +119,9 @@ public readonly partial record struct EntMut : IEntMut
             field.Reset(this);
     }
 
+    /// <summary>Removes all components while retaining this allocation.</summary>
+    public void Clear() => EntMutate.ClearComponents(this);
+
     internal void ResetArchetypal() =>
         EntReg.Allocators[EntReg.PageAllocators[PageIndex]].RemoveArchetypal(this);
 

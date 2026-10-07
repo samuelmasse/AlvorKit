@@ -1,570 +1,298 @@
 # ECS.Indexed
 
-`AlvorKit.ECS.Indexed` is the engine package for observed mutation and
-maintained indexes on top of `AlvorKit.ECS`. It provides the engine-owned
-contracts for hooks, maintained bags, indexed handles, and scoped arena
-lifetime.
+`AlvorKit.ECS.Indexed` adds synchronous sparse write reactions, maintained
+indexes, and explicit Ent teardown to `AlvorKit.ECS`. Start with
+[ECS.md](ECS.md) for generated components, scope composition, and ownership.
 
-Start with the game-facing [`ECS.md`](ECS.md) guide for component declaration,
-arena ownership, scoped composition, registration, iteration, and teardown.
-This document is the detailed Indexed API and mutation-contract reference.
-
-The base `AlvorKit.ECS` package owns storage, handles, generated components,
-and arena lifetime, and stays zero-overhead. `AlvorKit.ECS.Indexed` adds:
-
-- typed pre-set and post-set hooks for sparse components, plus whole-Ent
-  pre-dispose hooks
-- dense marker bags maintained automatically from component changes
-- an indexed arena and indexed handles that drive the hook pipeline
-
-Archetypal components deliberately remain unobserved for direct storage access
-and iteration. `AddPre`, `AddPost`, `AddBag`, and `AddGatedBag` throw
-`EntIdxRegistrationException` when the component, marker, or gate is
-archetypal. Validation uses generated component metadata at registration time;
-it adds no checks to archetypal reads, writes, rows, or spans.
-
-An Indexed Ent may still contain both sparse and archetypal components.
-Generated archetypal accessors work through Indexed handles without running
-component hooks. Whole-Ent pre-dispose hooks can read that data before cleanup.
-Use sparse components for state whose writes must maintain Indexed hooks or bags.
-
-`AlvorKit.ECS.Indexed` does not depend on injection, scopes, UI, rendering, or
-persistence. Games bind its types into scopes. It is not a scheduler, a query
-language, or a persistence framework; the goal is that scopes maintain named
-active sets and indexes automatically when components change.
-
-## Public API
-
-### Handles
+## Registration
 
 ```csharp
-public readonly record struct EntPtrIdx : IEntMut, IDisposable
-{
-    public static implicit operator EntMutIdx(EntPtrIdx a);
-    public static implicit operator Ent(EntPtrIdx a);
+using var context = new EntIdxContext();
 
-    public bool IsAlive { get; }
-    public EntHandle Handle { get; }
+// Reactions may update other components or other Ents.
+context.OnChange<int, RunComponents.Health>(TrackHealth);
 
-    public void Set<T, N>(in T value);   // hook pipeline, see contracts
-    public bool Unset<T, N>();           // hook pipeline, see contracts
-    public T? Get<T, N>();
-    public bool Has<T, N>();
-    public void Dispose();               // hook pipeline, see contracts
-}
+// Mutable arrays publish even when the same reference is assigned again.
+context.OnWrite<int[], RunComponents.Tiles>(MarkTilesDirty);
 
-public readonly record struct EntMutIdx : IEntMut
-{
-    public static implicit operator Ent(EntMutIdx a);
-    // wraps an EntPtrIdx; identical Set/Unset/Get/Has behavior, no Dispose
-}
+// Index callbacks update external index state, before reactions.
+context.AddIndex(ids.Remove)
+    .OnChange<Guid, RunComponents.Id>(ids.Update);
+
+// One removal callback can cover several inputs of the same index.
+context.AddIndex(spatial.Remove)
+    .OnChange<Vec3, RunComponents.Position>(spatial.UpdatePosition)
+    .OnChange<bool, RunComponents.IsRigid>(spatial.UpdateRigid);
+
+// Lifecycle callbacks read intact data before index removal.
+context.OnClearing(CaptureReset);
+context.OnDisposing(CaptureDeletion);
+
+context.AddBag(scratched);
+context.AddGatedBag(projectiles);
+
+using var arena = new EntIdxArena(context);
+var ent = arena.Alloc();
 ```
 
-Both handles carry the context entity, so hooks travel with the handle from its
-`Alloc` site. `EntMutIdx` is what hooks receive and what bags store; it cannot
-dispose the entity. Both keep the `EntDebugView` debugger proxy.
+An `EntIdxContext` owns its callbacks and captured references. An
+`EntIdxArena` borrows the context and owns its allocations. Dispose all
+arenas before their context. Context disposal rejects live arenas and active
+callbacks, clears captures, and is repeatable. Registration and new arena
+construction after context disposal throw `ObjectDisposedException`.
 
-### Hook Delegates
+`EntPtrIdx` and `EntMutIdx` remain unmanaged handles. They carry a borrowed
+context identity, keeping native storage and generic `unmanaged` consumers usable.
+
+Only components with an `OnChange` subscriber compare values and capture a
+snapshot. Notification-only components commit and notify directly. Unobserved
+writes and suppressed changes do not push dispatch frames, but still validate
+active operations. Handles remain 16-byte unmanaged values. See the
+[Indexed benchmarks](../bench/README.md) for timing and allocation boundaries.
+
+Arena construction leaves registration open. The first allocation from any
+arena using the context closes registration permanently. Late registration
+throws `EntIdxRegistrationException`; there is no retroactive indexing.
+Finish every loader's registrations before loading or spawning Ents. A loader
+must not poll for newly registered observers during runtime.
+
+Registrations validate the component's exact value type and require sparse
+storage. Bags require boolean markers and gates. Each index may watch a
+component once. Callbacks within each phase run in registration order.
+
+The Indexed layer is single-threaded. One thread owns a context's registration,
+mutation, reads, and teardown. Callbacks are synchronous.
+
+## Write And Change Reactions
 
 ```csharp
-public delegate void EntIdxPreHook<T>(EntMutIdx ent, in T value);
-public delegate void EntIdxPostHook(EntMutIdx ent);
-public delegate void EntIdxPreDisposeHook(EntMutIdx ent);
+// Every Set and present Unset, including equal values and reused references.
+public delegate void EntWriteHandler(EntMutIdx ent);
+
+// Only changes in value or presence.
+// EntChange<T> is a readonly ref struct, valid during synchronous delivery.
+// Before/After return ref readonly T?; WasPresent/IsPresent return bool.
+public delegate void EntChangeHandler<T>(EntMutIdx ent, in EntChange<T> change);
 ```
 
-Pre hooks take the new value by `in` to avoid copying large component structs
-per hook per call. The dedicated delegate types are public API, so their
-signatures are explicit and stable. Post and dispose hooks accept ordinary
-method groups without adapters.
-
-### Context Builder
+`context.OnWrite<T, N>(reaction)` publishes every ordinary `Set` and every
+removal of a present component. Read the committed value and presence through
+the supplied handle. This subscription needs no before/after snapshot and
+performs no equality comparison unless the same component also has a change
+subscriber. Use it for mutable arrays, buffers, and explicit publications:
 
 ```csharp
-public class EntIdxContextBuilder : IDisposable
-{
-    public Ent Ent { get; }
-
-    public void Dispose();                       // releases the context and all hook captures
-
-    public void AddPre<T, N>(EntIdxPreHook<T> hook) where N : IComponent;
-    public void AddPost<T, N>(EntIdxPostHook hook) where N : IComponent;
-    public void AddPreDispose(EntIdxPreDisposeHook hook);
-
-    public void AddBag<N>(EntIdxBagMut<N> bag)
-        where N : IComponent;                     // membership = marker
-    public void AddGatedBag<N, TGate>(EntIdxGatedBagMut<N, TGate> bag)
-        where N : IComponent where TGate : IComponent;  // marker && gate
-
-    protected void Add<P, PT>(PT hook);           // internal machinery
-}
+context.OnWrite<int[], RunComponents.Tiles>(ent => dirty.MarkTiles(ent));
 ```
 
-Naming is deliberate and truthful:
-
-- `AddBag<N>` — plain marker bag. Contains every live entity whose marker is
-  true, regardless of any separate loaded or ready state.
-- `AddGatedBag<N, TGate>` — the general primitive: marker && gate. Any bool marker
-  can gate a bag (`IsReady`, `IsActive`, ...). `TGate` is not inferrable from
-  every call shape, but named bag wrapper types usually infer cleanly.
-
-The bag identity is the marker plus its gate. `AddBag<N>` owns the plain
-marker-only identity, while `AddGatedBag<N, TGate>` owns
-separate gated identities. This means a scope may maintain `all monsters`,
-`ready monsters`, and `visible monsters` as distinct bags over the same marker;
-only an exact duplicate `(marker, gate)` registration is rejected.
-
-The bag parameter type carries the gating semantics; the static type of a
-builder reference must never decide whether a bag is plain or gated.
-
-Hook lists are stored as `ReadOnlyMemory<delegate>` components on the
-builder's explicitly owned context Ent, keyed by internal marker types
-(`EntIdxPre<T, N>`, `EntIdxPost<T, N>`, `EntIdxPreDispose`). This is
-intentional: it gives O(1) per `(context, T, N)` hook lookup with no
-dictionaries, per-context isolation for free, and reference cleanup through
-the existing `PageRefFields` machinery when the context is disposed. The
-marker types are internal engine implementation details.
-
-The builder owns its context through an `EntPtr`. `Ent` exposes a borrowed read
-handle. Dispose the builder only after all arenas and indexed handles using it
-have finished. Disposal is idempotent; registering hooks afterward throws
-`ObjectDisposedException`.
-
-### Bags
+`context.OnChange<T, N>(reaction)` observes changes in presence or changes
+according to `EqualityComparer<T>.Default`. Comparison happens once per write,
+shared by all change subscribers. Equality implementations must be pure: they
+must not mutate ECS state or invoke callbacks. Their own allocation behavior
+remains part of the component's cost; implement efficient equality for hot
+value types.
 
 ```csharp
-public class EntIdxBagMut<N> where N : IComponent
+context.OnChange<int, RunComponents.Health>(TrackHealth);
+
+private void TrackHealth(EntMutIdx ent, in EntChange<int> change)
 {
-    public ReadOnlySpan<EntMutIdx> Ents { get; }
-    public int Count { get; }
-    public bool Contains(EntMutIdx ent);
-
-    internal void Add(EntMutIdx ent);
-    internal void Remove(EntMutIdx ent);
-}
-
-public class EntIdxGatedBagMut<N, TGate>
-    where N : IComponent
-    where TGate : IComponent
-{
-    public ReadOnlySpan<EntMutIdx> Ents { get; }
-    public int Count { get; }
-    public bool Contains(EntMutIdx ent);
-
-    internal void Add(EntMutIdx ent);
-    internal void Remove(EntMutIdx ent);
-}
-
-public class EntIdxBag<N>(EntIdxBagMut<N> bag) where N : IComponent
-{
-    public ReadOnlySpan<EntMutIdx> Ents { get; }
-    public int Count { get; }
-    public bool Contains(EntMutIdx ent);
-}
-
-public class EntIdxGatedBag<N, TGate>(EntIdxGatedBagMut<N, TGate> bag)
-    where N : IComponent
-    where TGate : IComponent
-{
-    public ReadOnlySpan<EntMutIdx> Ents { get; }
-    public int Count { get; }
-    public bool Contains(EntMutIdx ent);
+    dirty.MarkHealth(ent);
 }
 ```
 
-`Add`/`Remove` are `internal`: bag membership is derived state, maintained
-only by the interceptors that registration installs. The engine enforces this
-at compile time so a bag cannot be mutated independently of its marker. The
-`Mut`/read split follows AlvorKit style: the `Mut` type is what a loader
-registers, the read type is what systems inject.
+Both subscription kinds follow the same sequence:
 
-### Arena
+1. Validate mutation against active callbacks.
+2. Resolve component storage once; compare and capture only if needed.
+3. Commit the write, even if the new value compares equal.
+4. Deliver the applicable index callbacks.
+5. Deliver the applicable ordinary reactions.
+
+All affected indexes finish before the first reaction, regardless of relative
+registration order. Within each phase, write and change subscribers preserve
+their combined registration order. On an equal write, only write subscribers
+run. Index callbacks see committed data; they should maintain their own state
+without depending on a later index in that phase.
+
+Setting a default or null value makes the component present. Absence is distinct
+from a present default or null, so adding or removing either is a change.
+`Unset` on an absent component is silent. Dead handles are inert. Equal writes
+still replace storage, including distinct objects that compare equal.
+
+`EntChange<T>` is a scoped view passed by `in`: it captures the old value once
+and borrows the committed value through a read-only reference. Mutation guards
+keep that component and its allocation stable throughout synchronous delivery.
+Copy `Before` and `After` explicitly if values must be retained beyond delivery.
+The values are shallow; arrays and mutable objects are not cloned. `OnChange`
+cannot detect earlier in-place mutation of the same reference; use `OnWrite`
+to publish those mutations. A callback must not mutate objects reachable
+through the view.
+
+Reactions may synchronously write other components or other Ents, including in
+another context. Nested writes complete both phases before returning. Revisiting
+an active `(Ent, T, N)` pair throws before commit, even if the attempted write is
+equal or the attempted Unset is absent. Clear and Dispose of an Ent with active
+delivery also throw. Perform those lifetime operations after delivery returns.
+
+## Maintained Indexes
+
+`context.AddIndex(remove)` returns an `EntIdxIndex`. Chain
+`OnChange<T, N>(update)` for value-based inputs, or `OnWrite<T, N>(update)` for explicit publications. The removal callback
+runs once per explicit Clear or individual Dispose, regardless of the number
+of watched components or their presence.
 
 ```csharp
-public class EntIdxArena : IDisposable
+public class RunIds
 {
-    public EntIdxArena(Ent context);
+    private readonly Dictionary<Guid, EntMutIdx> ids = [];
 
-    public int Allocated { get; }
-    public bool IsAlive { get; }
-
-    public virtual EntPtrIdx Alloc();
-    public virtual void Dispose();
-}
-```
-
-The arena and its handles borrow the context's generational `Ent` handle.
-They do not own or dispose the context. Its owner must keep it alive until all
-dependent arenas and handles are finished, then explicitly dispose the builder.
-Multiple arenas may share a context when they obey that lifetime ordering.
-
-`EntIdxArena` implements `IDisposable` and exposes `IsAlive`.
-
-### Registration Errors
-
-```csharp
-public class EntIdxRegistrationException : Exception;
-```
-
-Thrown at registration time (load time) for: an archetypal component, marker, or
-gate in a component-hook or bag registration, a marker or gate whose generated
-value type is not `bool` in `AddBag`/`AddGatedBag`, a `(T, N)` pair where
-`N.Component.ValueType != typeof(T)` in `AddPre`/`AddPost`, and a duplicate bag
-registration for the same marker+gate identity on the same context. All checks
-read the `IComponent.Component` static metadata, so they cost nothing after
-loading.
-
-Without these checks the failures are silent: a mistyped `(T, N)` pair
-registers hooks that no write ever fires, and a non-bool gate makes a bag
-permanently empty.
-
-## Mutation Contracts
-
-These are normative. Tests in `AlvorKit.ECS.Indexed.Test` pin each one.
-
-### Set
-
-```
-Set<T, N>(in value):
-    if not IsAlive: return                    // no hooks on dead handles
-    run pre hooks for (T, N) with value       // old value still readable
-    base Set<T, N>(value)
-    run post hooks for (T, N)                 // observe current state
-```
-
-The liveness guard prevents hooks from running when the base write will no-op.
-Without it, a `Set<Guid, Id>` on a dead handle could insert a permanently stale
-entry into a GUID index: the pre hook would read the old id as `default`, skip
-the remove, and add the dead handle under the new id. Dead handles are inert
-end to end.
-
-Set does not perform change detection; hooks that need it compare against
-`ent.Get<T, N>()` themselves (the dirty-tracker pattern). Equality is not free
-or definable for every `T`, and most hooks early-out cheaper than the pipeline
-could.
-
-### Unset
-
-```
-Unset<T, N>():
-    if not IsAlive or not Has<T, N>: return false
-    run pre hooks for (T, N) with default(T)  // old value still readable
-    base Unset<T, N>
-    run post hooks for (T, N)                 // observe absent state
-    return true
-```
-
-Unset is a direct operation rather than `Set(default)` followed by a raw unset.
-Composing those operations would momentarily create an absent component, return
-the wrong result for a no-op unset, and fire hooks unnecessarily. Post hooks
-observe the honest final state with `Has == false`.
-
-### Dispose
-
-```
-Dispose():
-    if not IsAlive: return                    // idempotent
-    run pre-dispose hooks                     // entity fully intact
-    Clear()                                   // archetypal cleanup, sparse unset pipelines
-    base Dispose()                            // generation bump, slot return
-```
-
-The liveness guard makes Indexed disposal idempotent. Without it, a double
-dispose could re-fire pre-dispose hooks and re-run `Clear` even though the base
-`EntPtr.Dispose` had already rejected the dead handle.
-
-Pre-dispose hooks run while every component is still readable — this is where
-persistence erase and network teardown belong. `Clear` then removes archetypal
-components without hooks and fires the full unset pipeline per present sparse
-component, in page-field registration order, which is effectively arbitrary;
-hooks must not assume cross-component invariants during dispose. Cleanup that
-needs the whole Ent goes in pre-dispose;
-cleanup keyed to one component goes in that component's hooks.
-
-### Clear Fires Sparse Component Hooks — A Hard Contract
-
-`EntMutate.Clear()` from the base package dispatches `field.Unset(ent)`
-through the `IEntMut` constraint, which lands on `EntPtrIdx.Unset` and runs
-the hook pipeline for every present sparse component. Archetypal components are
-removed before that pipeline and do not support component hooks. The indexed
-layer depends on this for correctness, twice over:
-
-- key indexes clean up on dispose only because unsetting `Id` fires the pre
-  hook with `default`, which removes the old dictionary key
-- bags clean up on dispose through the marker unset and the bag-index unset
-  (see the backstop analysis below)
-
-Any future change to `Clear` or to the `EntField.Unset` dispatch must preserve
-constrained dispatch through the handle. A test locks this in.
-
-### Arena Dispose
-
-Disposing an `EntIdxArena` ends the owning scope: bulk page release,
-generation bumps, no per-entity hooks. It is also the performance escape hatch
-for mass teardown — per-entity dispose costs one unset pipeline per component,
-arena dispose costs none.
-
-Consequence to state plainly: arena dispose invalidates the scope's indexed
-views instead of maintaining them. Bags and game-side indexes still hold
-now-dead handles; they are not reset, and `Count`/`Ents` are no longer meaningful
-after the owning arena is disposed. This is harmless only under the intended
-lifecycle: bag and index instances die with the same scope. Consumers that
-outlive the arena must check `IsAlive`. If a game needs delete semantics such
-as persistence erasure or index removal, it disposes the individual
-`EntPtrIdx` handles before tearing the scope down.
-
-### Hook Rules
-
-- **Order.** Hooks run in registration order. Loaders therefore control
-  ordering: register trackers before or after indexes deliberately.
-- **Reentrancy is supported.** Hooks may set other components; the nested
-  write runs its own full pipeline. Dirty trackers may set a dirty marker, and
-  bag removal nests an index write inside the unset pipeline. A pre hook that
-  sets its own `(T, N)` recurses without bound — that is a bug in the hook,
-  not something the engine detects.
-- **Hooks must not throw.** There is no rollback: a pre-hook throw skips the
-  write and all post hooks; a post-hook throw leaves earlier post hooks
-  applied. A throw leaves indexes and storage inconsistent by design.
-- **Single-threaded mutation.** The base ECS tolerates some concurrency; the
-  indexed layer does not. All mutation through indexed handles and all
-  registration for one context happen on one thread.
-- **Registration is load-time.** Hooks registered after entities were
-  allocated and mutated do not see the past; there is no retroactive scan.
-  Register in loaders, before systems allocate.
-- **Lazy-init getters fire hooks.** A `[ComponentLazyInitialize]` getter can
-  issue a `Set` from a read path on an indexed handle. Avoid lazy-init
-  components on hot hooked components.
-
-### Bag Semantics
-
-The dense bag uses a slot layout whose back-index key is per bag identity. The
-storage mechanics live in one internal
-`EntIdxBagStore<TIndex>`; plain bags instantiate it with `EntIdxBagIndex<N>`,
-and gated bags instantiate it with `EntIdxGatedBagIndex<N, TGate>` so different
-gates over one marker do not collide:
-
-```csharp
-internal struct EntIdxBagStore<TIndex> where TIndex : IComponent
-{
-    private EntMutIdx[] ents = [default, default];
-    private int count = 1;
-
-    public ReadOnlySpan<EntMutIdx> Ents => new(ents, 1, count - 1);
-    public int Count => count - 1;
-    public bool Contains(EntMutIdx ent)
+    public void Update(EntMutIdx ent, in EntChange<Guid> change)
     {
-        int index = ent.Get<int, TIndex>();
-        return index > 0 && index < count && ents[index] == ent;
-    }
-
-    internal void Add(EntMutIdx ent)
-    {
-        ent.Set<int, TIndex>(count);
-        if (count >= ents.Length)
-            Array.Resize(ref ents, ents.Length * 2);
-        ents[count++] = ent;
-    }
-
-    internal void Remove(EntMutIdx ent)
-    {
-        if (!Contains(ent))
+        if (change.Before == change.After)
             return;
 
-        int index = ent.Get<int, TIndex>();
-        ref var last = ref ents[count - 1];
-        ents[index] = last;
-        last.Set<int, TIndex>(index);
-        last = default;
-        ent.Set<int, TIndex>(-1);
-        count--;
+        if (change.Before != Guid.Empty)
+            ids.Remove(change.Before);
+
+        if (change.After != Guid.Empty)
+            ids.Add(change.After, ent);
+    }
+
+    public void Remove(EntMutIdx ent)
+    {
+        if (ent.Id != Guid.Empty)
+            ids.Remove(ent.Id);
     }
 }
 ```
 
-`EntIdxBagMut<N>` and `EntIdxGatedBagMut<N, TGate>` are thin public wrappers
-over this store with different index key types.
+Index callbacks maintain external collections. They cannot write, clear,
+dispose, or allocate Indexed Ents, including through captured handles or another
+context. Scope teardown is also prohibited during index maintenance. Engine
+bag maintenance alone writes its private back-index components directly.
 
-`Contains` checks membership in the receiving bag. It accepts handles from any
-context and returns false for nonmembers, including default and disposed
-handles. The back-index must address an occupied slot in this bag, and that
-slot must contain the supplied handle. This check is O(1) and allocation-free;
-the mutable and read wrappers use the same check.
+Register every component on which membership depends. Dependencies through
+references to other Ents require an explicit game-owned relationship; the
+engine does not discover them automatically. A copied handle or a different
+callback parameter does not bypass the mutation guards.
 
-Slot 0 is reserved so `0` (the unset default of the internal
-`EntIdxBagIndex<...>` int component) means "never in this bag". Removal writes
-`-1`, not `0` — the `-1` sentinel is the reentrancy brake: the backstop pre
-hook below removes on `0` only, so the bag's own internal writes never
-re-trigger removal.
+## Clear And Individual Dispose
 
-`AddGatedBag<N, TGate>` registers three hooks:
+`EntPtrIdx` and `EntMutIdx` both support `Clear()`. Only the owning
+`EntPtrIdx` supports `Dispose()`. Generic `IEntMut` Clear dispatches through
+the handle's lifecycle implementation.
 
-1. post on `(bool, N)` — recompute membership when the marker changes
-2. post on `(bool, TGate)` — recompute membership when the gate changes
-3. pre on `(int, EntIdxGatedBagIndex<N, TGate>)` — the **index backstop**: remove
-   from the bag when the index component is unset (pre hook receives
-   `default` = 0 while the old index is still readable)
+Both operations:
 
-`AddBag<N>` registers 1 and the corresponding `EntIdxBagIndex<N>` backstop.
-The interceptors are `internal`.
+1. Enter teardown and reject Indexed mutation of the target.
+2. Notify `OnClearing` or `OnDisposing` while all components remain readable.
+3. Remove the Ent from every registered index, including bags.
+4. Clear component storage directly or release the underlying allocation.
 
-The backstop is load-bearing, not defensive. `Clear` unsets components in
-arbitrary order. If the bag index is unset before the marker, the later
-marker hook sees `Contains == false` (the index is already gone) and never
-removes — without the backstop the bag would keep a dead handle in a slot that
-`Contains` can no longer find, with `count` permanently wrong. With the
-backstop, both orders converge; tests exercise both.
+They never synthesize per-component write reactions. Dirty trackers,
+replication trackers, and derived-component reactions therefore cannot recreate
+components while storage is being removed. Cleanup does not depend on sparse
+page-field creation order.
 
-The internal index writes intentionally run the normal hook pipeline. The cost
-is two empty hook-span fetches plus one no-op backstop invocation per
-add/remove — noise. Bypassing the pipeline for internal writes is not worth an
-`InternalsVisibleTo` into the base package, and suppressing the unset-time
-backstop would reintroduce the ordering bug.
+`Clear` preserves the allocation and invokes only `OnClearing`.
+Every explicit Clear of a live Ent notifies, even if it is already empty.
+`Dispose` invokes only `OnDisposing`, then invalidates the allocation.
+Repeated disposal and Clear of a dead handle are inert.
 
-One bag per marker+gate identity per context, enforced: two `AddGatedBag<N, TGate>`
-registrations would share `EntIdxGatedBagIndex<N, TGate>` and duplicate the same
-derived state. The duplicate registration throws `EntIdxRegistrationException`
-(detected by the backstop hook already existing for that bag index component on
-the context). Different gates over the same marker use different index
-components and are valid. Two contexts may use the same marker and gate freely.
-Their bags share the back-index component key and may reuse the same slot
-numbers. `Contains` compares the stored handle to distinguish membership in
-those separate bags. Each Indexed Ent still belongs to one context.
+Lifecycle callbacks may operate on other Ents. They must treat the target's
+data as read-only, including mutable objects reachable through components.
+Lazy initialization is a write: use a borrowed `Ent` read handle when reading
+a lazy component must not initialize it.
 
-### Iteration Semantics
+Persisted-record erasure and network deletion belong in lifecycle callbacks.
+They must capture or use the existing component values without resetting
+components on the target themselves. Register the cleanup for both lifecycle
+operations when explicit Clear also needs those external effects.
 
-`Ents` is a span over live storage whose **length is captured at the property
-call**. Three concrete behaviors follow when membership changes while a
-captured span is being walked:
-
-1. Removing an entity swap-fills its slot from the tail and writes `default`
-   into the tail slot — a captured span still covers that tail slot, so the
-   walk encounters `default` handles (`IsAlive == false`, all reads default).
-2. The entity swapped backward into the removed slot may already have been
-   passed by the cursor — it is skipped this pass.
-3. Adding can grow the array — the captured span still points at the old
-   array and sees none of the changes.
-
-The contract is therefore: do not mutate a bag's own membership (its marker,
-its gate, or entity dispose) while iterating its span. Stage the work:
+## Bags
 
 ```csharp
-private readonly List<EntMutIdx> scratch = [];
-
-public void Stream()
+public class EntIdxBag<N> where N : IComponent
 {
-    foreach (var ent in scratchedBag.Ents)
-        scratch.Add(ent);
+    public ReadOnlySpan<EntMutIdx> Ents { get; }
+    public int Count { get; }
+    public bool Contains(EntMutIdx ent);
+}
 
-    foreach (var ent in scratch)
-        ent.IsScratched = false;
-
-    scratch.Clear();
+public class EntIdxGatedBag<N, TGate> where N : IComponent where TGate : IComponent
+{
+    public ReadOnlySpan<EntMutIdx> Ents { get; }
+    public int Count { get; }
+    public bool Contains(EntMutIdx ent);
 }
 ```
 
-Mutating *other* components during iteration is fine and is the normal system
-shape, such as mutating `Position` and `Velocity` while walking a rigid-body
-bag.
+A plain bag contains an Ent when its marker is true. A gated bag requires both
+marker and gate to be true. The bag is one publicly read-only object shared by
+registration and systems; it needs no mutable wrapper or paired injected service.
 
-## Package Setup
+One bag identity may be registered once per context. A plain marker and its
+different marker/gate pairs are separate identities. A bag instance belongs
+to exactly one registration. Other contexts can use separate bag instances
+with the same marker and gate.
 
-```xml
-<ItemGroup>
-    <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.ECS\AlvorKit.ECS.csproj" />
-    <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.ECS.Indexed\AlvorKit.ECS.Indexed.csproj" />
-    <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
-        OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-</ItemGroup>
+Membership checks validate the occupied slot and stored handle, so foreign,
+default, removed, and disposed handles are not members. Removal swap-fills
+the slot from the tail and repairs the survivor's back-index. Explicit index
+removal during teardown eliminates component-unset backstops and sentinels.
 
-<ItemGroup>
-    <Using Include="AlvorKit" />
-</ItemGroup>
-```
+`Ents` is a span over live storage with a captured length. Do not change that
+bag's marker, gate, or Ent lifetime while iterating it. Stage membership-changing
+work in a reusable buffer. Mutating unrelated components is allowed unless
+their reactions also change that bag's membership.
 
-## Usage
+## Bulk Scope Teardown
 
-### Component Shape
+`EntIdxArena.Dispose()` releases its pages without per-Ent callbacks.
+Registered bags and external indexes become invalid views and may contain
+dead handles. Their `Count` and `Ents` must not be used afterward.
 
-Ordinary generated components. Bool markers define bag membership:
+Keep the arena, context, and derived views in one scope lifetime. Context
+sharing across arenas is supported, but bulk-invalidating one arena also
+invalidates any shared views containing its Ents. Stop using those views.
+Use individual Dispose when external cleanup or continued index use is required.
 
-```csharp
-namespace MyGame.Run;
+Disposing an arena or context during its active callbacks is rejected. This
+prevents invalidating handles or callback storage in the middle of delivery.
 
-[Components]
-public interface IRunComponents
-{
-    Guid Id { get; set; }
-    [ComponentToString] RunEntityKind Kind { get; set; }
-    [ComponentToString] bool IsReady { get; set; }
-    [ComponentToString] bool IsProjectile { get; set; }
-    bool IsEnemy { get; set; }
-    Vec2 Position { get; set; }
-    Vec2 Velocity { get; set; }
-    float Ttl { get; set; }
-}
-```
+## Failure, Storage, And Cost
 
-Generated marker types (`RunComponents.IsProjectile`) are the generic keys.
-They implement `IComponent`, which is what registration validates against.
+Callbacks must not throw. There is no rollback: storage commits before callback
+delivery, so a failure can leave derived state incomplete. Dispatch guards unwind
+on exceptions to avoid retaining stack pointers; this does not make failed
+callback delivery recoverable.
 
-### Scope Setup
+Registration builds ordered callback chains once and records whether each
+component needs equality and change snapshots. Typed plan arrays use compact
+context slots, avoiding a sparse ECS page per observed component. Each context
+owns a linked chain of its plans and clears every table entry before releasing
+its slot. Context ownership makes repeated context-liveness checks unnecessary
+while a borrowed arena still has live Ents. Lifecycle callbacks and bag registration
+identities use the context's private ECS storage.
 
-A scope owns one context builder, one indexed arena, and the bags its systems
-need:
+The write path resolves one component slot for presence, optional old-value
+capture, and commit. Dispatch frames live on the stack; their fields are
+initialized directly, and `finally` restores the active frame on exceptions.
+No per-write managed frame, event, or snapshot object is created. Notification
+and change paths retain the same index and reentrancy guards.
 
-```csharp
-[Run]
-public class RunEntIdxContextBuilder :
-    EntIdxContextBuilder;
+Built-in bags consume the changed boolean value directly. Equal marker writes
+skip membership maintenance while still reaching ordinary write subscribers.
+Transitions into membership add directly; removal validates the occupied slot
+before repairing its survivor. Private back-index writes reuse those established
+lifetime and membership guarantees.
+Component page creation, bag capacity growth, equality implementations, and
+consumer-owned callbacks and collections retain their normal allocation costs.
 
-[Run]
-public class RunEntArena(RunEntIdxContextBuilder context) : EntIdxArena(context.Ent)
-{
-    public override void Dispose()
-    {
-        base.Dispose();
-        context.Dispose();
-    }
-}
-
-[Run]
-public sealed class RunProjectileBagMut :
-    EntIdxGatedBagMut<RunComponents.IsProjectile, RunComponents.IsReady>;
-
-[Run]
-public sealed class RunProjectileBag(RunProjectileBagMut bag) :
-    EntIdxGatedBag<RunComponents.IsProjectile, RunComponents.IsReady>(bag);
-```
-
-Scopes use `EntIdxContextBuilder` with plain `AddBag` or gated `AddGatedBag`.
-Scope hierarchies reuse loader code by subclassing builders
-(`DimensionEntIdxContextBuilder : WorldEntIdxContextBuilder`); each scope
-instance has its own context entity, so hooks never leak between scopes.
-The scope unloader disposes its domain arena, which then disposes the context.
-
-### Loader Registration
-
-```csharp
-[RunLoader]
-public sealed class RunLoader(
-    RunEntIdxContextBuilder context,
-    RunProjectileBagMut projectileBag,
-    RunSeerBagMut seerBag,
-    RunSpatialIndex spatialIndex,
-    RunEntIndex entIndex,
-    RunDisposeTracker disposeTracker)
-{
-    public void Run()
-    {
-        context.AddGatedBag(projectileBag);
-        context.AddBag(seerBag);
-        context.Add…1100 tokens truncated…eTracker(WorldEntPersister persister)
-{
-    public void InterceptDispose(EntMutIdx ent)
-    {
-        if (ent.Ploc != null)
-            persister.Erase(ent);
-    }
-}
-
-context.AddPreDispose(disposeTracker.InterceptDispose);
-```
+Archetypal reads, writes, queries, rows, and spans deliberately remain
+unobserved. Sparse and archetypal components may coexist on one Ent, and
+lifecycle callbacks can read both. Raw storage mutation and mutation through
+retained refs or mutable component objects bypass Indexed interception and are
+outside its guards. Use the supported Indexed sparse operations for observed
+state and follow the archetypal ownership rules in [ECS.Archetypal.md](ECS.Archetypal.md).

@@ -76,7 +76,7 @@ generator creates component marker types, Ent accessors, presence checks,
 unset methods, and fluent mutation methods:
 
 ```csharp
-namespace MyGame.World;
+namespace MyGame;
 
 [Components]
 public interface IWorldComponents
@@ -253,7 +253,7 @@ Indexed component hooks and bag markers/gates require sparse components.
 Registering an archetypal component throws `EntIdxRegistrationException` during
 registration. Archetypal access deliberately remains unobserved for speed,
 including through Indexed handles; sparse and archetypal components may coexist
-on one Ent. Whole-Ent pre-dispose hooks can inspect both storage kinds.
+on one Ent. Whole-Ent lifecycle callbacks can inspect both storage kinds.
 
 Once a scope uses Indexed ECS, allocate its game Ents from its
 `EntIdxArena` and mutate them through `EntPtrIdx` or `EntMutIdx`. Do not allocate
@@ -262,16 +262,16 @@ bypass hooks. That leaves bags and indexes inconsistent.
 
 ## Scoped Indexed ECS
 
-An Indexed game Ent scope owns one context builder, one Indexed arena, and
-the bags and indexes registered on that context. Give these types domain names
-and bind them to the same game scope:
+An Indexed game Ent scope owns one context, its arenas, and the bags and
+indexes registered on that context. Give these types domain names and bind
+them to the same game scope:
 
 ```csharp
 [World]
-public class WorldEntIdxContextBuilder : EntIdxContextBuilder;
+public class WorldEntIdxContext : EntIdxContext;
 
 [World]
-public class WorldEntArena(WorldEntIdxContextBuilder context) : EntIdxArena(context.Ent)
+public class WorldEntArena(WorldEntIdxContext context) : EntIdxArena(context)
 {
     public override void Dispose()
     {
@@ -281,81 +281,81 @@ public class WorldEntArena(WorldEntIdxContextBuilder context) : EntIdxArena(cont
 }
 
 [World]
-public sealed class WorldProjectileBagMut :
-    EntIdxGatedBagMut<WorldComponents.IsProjectile, WorldComponents.IsLoaded>;
+public class WorldProjectileBag :
+    EntIdxGatedBag<WorldComponents.IsProjectile, WorldComponents.IsLoaded>;
 
 [World]
-public sealed class WorldProjectileBag(WorldProjectileBagMut bag) :
-    EntIdxGatedBag<WorldComponents.IsProjectile, WorldComponents.IsLoaded>(bag);
-
-[World]
-public sealed class WorldScratchedBagMut :
-    EntIdxBagMut<WorldComponents.IsScratched>;
-
-[World]
-public sealed class WorldScratchedBag(WorldScratchedBagMut bag) :
-    EntIdxBag<WorldComponents.IsScratched>(bag);
+public class WorldScratchedBag : EntIdxBag<WorldComponents.IsScratched>;
 ```
 
-`[World]` is the example game's scope attribute, not an ECS requirement. Use the
-scope name that owns the Ents. Read
-[`GameScopeOrganization.md`](GameScopeOrganization.md) before creating or
-reorganizing game scopes and loader scopes.
-
-The mutable bag type is registration state owned by loaders. Runtime systems
-should depend on the read wrapper unless they specifically participate in
-registration.
-
-Builders may inherit when a child Ent scope intentionally carries the
-parent scope's registrations. Each builder instance still owns a separate
-context Ent, so hooks do not leak between scope instances.
+`[World]` is the example game's scope attribute, not an ECS requirement.
+Read [GameScopeOrganization.md](GameScopeOrganization.md) for composition.
+Each bag is one publicly read-only object used by loaders and runtime systems.
+Contexts may inherit to share loader contracts; each instance owns separate
+registrations. Indexed handles remain unmanaged values carrying a borrowed
+context identity.
 
 ## Register Before Allocating
 
-Register every bag and hook in loader code before any system allocates or
-mutates Ents for the scope:
+Complete every loader's registrations before loading or spawning Ents:
 
 ```csharp
 [WorldLoader]
-public sealed class WorldLoader(
-    WorldEntIdxContextBuilder context,
-    WorldProjectileBagMut projectiles,
-    WorldScratchedBagMut scratched,
+public class WorldLoader(
+    WorldEntIdxContext context,
+    WorldProjectileBag projectiles,
+    WorldScratchedBag scratched,
     WorldEntIndex ids,
-    WorldSpatialIndex spatial,
+    WorldDirtyTracker dirty,
     WorldEntDisposeTracker disposals)
 {
     public void Run()
     {
         context.AddGatedBag(projectiles);
         context.AddBag(scratched);
-        context.AddPre<Guid, WorldComponents.Id>(ids.Intercept);
-        context.AddPost<Position, WorldComponents.Position>(spatial.Intercept);
-        context.AddPreDispose(disposals.Intercept);
+        context.AddIndex(ids.Remove).OnChange<Guid, WorldComponents.Id>(ids.Update);
+        context.OnChange<int, WorldComponents.Health>(dirty.Track);
+        context.OnDisposing(disposals.Capture);
     }
 }
 ```
 
-Registration is not retroactive. A bag or hook added after Ents have
-already changed does not scan or reconstruct earlier state.
+Constructing an arena leaves registration open. Its first allocation closes
+registration for the context permanently; late registration throws
+`EntIdxRegistrationException`. Registration never scans existing Ents.
 
-Use the registrations according to their observable timing:
+- `OnWrite<T, N>` observes every committed Set and present Unset after index
+  maintenance. Its callback receives the Ent and requires no value snapshot.
+  Use it to publish mutable arrays or buffers, including the same reference.
+- `OnChange<T, N>` compares with `EqualityComparer<T>.Default` and observes
+  changes in value or presence. Its `EntChange<T>` payload contains `Before`,
+  `After`, `WasPresent`, and `IsPresent`. Use it for value-based persistence,
+  replication, and derived state.
+- `AddIndex(remove).OnChange<T, N>(update)` maintains an external index and
+  removes membership during Clear and individual Dispose. Use its `OnWrite`
+  registration when an index needs every publication. One index can watch
+  several components and receives one removal callback.
+- `OnClearing` and `OnDisposing` observe their respective lifetime operation
+  while all components remain readable and the target cannot be mutated.
+- `AddBag` maintains membership while one boolean marker is true.
+- `AddGatedBag` requires both its boolean marker and gate to be true.
 
-- `AddPre<T, N>` runs before the write. The old component value is still
-  readable, and the hook receives the requested new value. Use it for key
-  indexes and dirty comparisons.
-- `AddPost<T, N>` runs after the write. Current component state is final. Use it
-  for spatial or other derived membership.
-- `AddPreDispose` runs before any component is cleared. Use it when cleanup
-  needs the whole intact Ent.
-- `AddBag` maintains membership when one boolean marker is true.
-- `AddGatedBag` maintains membership only while both its boolean marker and
-  boolean gate are true.
+`Set` always commits and notifies write subscribers; equal values suppress only
+change subscribers. Absent `Unset` is silent. A present default or null value
+is distinct from absence. Change payloads are scoped views: one shallow copy
+of the old value and a read-only reference to the committed value. Copy values
+explicitly to retain them beyond delivery. Mutable array contents are not copied.
+Equality implementations must be pure. Both callback kinds preserve registration
+order within their phase; indexes always finish before reactions.
 
-Hooks run in registration order and may trigger writes to other components.
-They must not throw: the pipeline has no rollback, so an exception can leave
-component storage and derived state inconsistent. Indexed registration and
-mutation for one context are single-threaded.
+Index callbacks cannot mutate Indexed Ents. Reactions may synchronously write
+other components or other Ents, but revisiting an active Ent/component pair
+throws before the nested write. Clear and Dispose of an Ent with active write
+delivery also throw. Every index update precedes the first ordinary reaction,
+regardless of their relative registration order.
+
+Callbacks must not throw: storage and earlier callbacks are not rolled back.
+Indexed registration, reads, mutation, and teardown are single-threaded.
 
 ## Initialize Data Before Publishing Membership
 
@@ -363,7 +363,7 @@ Bag maintenance is immediate. Initialize all Ent data before setting the
 marker and gate that publish it to systems:
 
 ```csharp
-public sealed class WorldProjectileSpawner(WorldEntArena arena)
+public class WorldProjectileSpawner(WorldEntArena arena)
 {
     public EntPtrIdx Spawn(Guid id, Position position)
     {
@@ -392,7 +392,7 @@ disposal. Convert it to `EntMutIdx` when a non-owning mutable handle is needed.
 Bag iteration is dense and allocation-free:
 
 ```csharp
-public sealed class WorldProjectileTick(WorldProjectileBag projectiles)
+public class WorldProjectileTick(WorldProjectileBag projectiles)
 {
     public void Tick()
     {
@@ -427,58 +427,77 @@ tick.
 
 ## Maintain A Custom Key Index
 
-A pre-set hook can remove the old key while it is still readable and add the
-new key:
+Register an index's write inputs and its whole-Ent removal together:
 
 ```csharp
+context.AddIndex(ids.Remove).OnChange<Guid, WorldComponents.Id>(ids.Update);
+
 [World]
-public sealed class WorldEntIndex
+public class WorldEntIndex
 {
     private readonly Dictionary<Guid, EntMutIdx> ents = [];
 
     public EntMutIdx this[Guid id] => ents[id];
 
-    public void Intercept(EntMutIdx ent, in Guid value)
+    public void Update(EntMutIdx ent, in EntChange<Guid> write)
     {
-        if (ent.Id == value)
+        if (write.Before == write.After)
             return;
 
-        if (ent.Id != default)
-            ents.Remove(ent.Id);
+        if (write.Before != Guid.Empty)
+            ents.Remove(write.Before);
 
-        if (value != default)
-            ents.Add(value, ent);
+        if (write.After != Guid.Empty)
+            ents.Add(write.After, ent);
+    }
+
+    public void Remove(EntMutIdx ent)
+    {
+        if (ent.Id != Guid.Empty)
+            ents.Remove(ent.Id);
     }
 }
 ```
 
-An ordinary `UnsetId()` runs the same pre-hook with the default `Guid`, so the
-old key is removed. Individual `EntPtrIdx.Dispose()` clears components through
-their Indexed unset pipelines. Use a pre-dispose hook as well when cleanup
-depends on multiple components or must happen before component clearing begins.
+Ordinary `UnsetId()` supplies the old ID and an absent new value to `Update`.
+Clear and individual Dispose call `Remove` while the ID remains readable.
+They never call the ordinary write reactions.
 
-## Disposal And Scope Teardown
+## Clear, Disposal, And Scope Teardown
 
-Individual Indexed disposal maintains derived state:
+Individual Indexed lifetime operations:
 
-1. Pre-dispose hooks run while the Ent is intact.
-2. Archetypal components are removed without component hooks, then present
-   sparse components are cleared through their Indexed unset pipelines.
-3. Bags and component-local indexes observe those unsets.
-4. The underlying allocation is released.
+1. Reject further Indexed mutation of the target, including through copied handles.
+2. Run the corresponding Clear or Dispose notification with intact components.
+3. Remove the Ent from every registered index and bag.
+4. Clear storage or release the allocation directly, without write reactions.
 
-`EntIdxArena.Dispose()` is intentionally different. It bulk-invalidates the
-arena without running per-Ent hooks. Bags and game-owned indexes may still
-contain dead handles and must be treated as invalid after arena disposal. Keep
-the context, arena, bags, and indexes in one scope lifetime. Dispose every arena
-before disposing its context builder; context disposal clears registered hooks
-and their captured objects. The domain arena above owns that final context
-cleanup. The base `EntIdxArena` only borrows its context, so callers sharing one
-context across multiple arenas must dispose it after the last arena ends.
+`Clear()` preserves the allocation. It invokes `OnClearing` on every explicit
+call for a live Ent, including an empty one. `Dispose()` invokes only
+`OnDisposing`; repeated disposal is inert. Generic `IEntMut` Clear calls obey
+the same Indexed lifetime contract. Archetypal and sparse components are both
+readable during lifecycle notifications and both removed afterward.
 
-If teardown needs persistence erasure, network messages, or maintained indexes,
-dispose the relevant `EntPtrIdx` allocations individually before disposing the
-arena. Use arena disposal for final bulk scope teardown.
+Use lifecycle callbacks for external effects such as erasing a persisted
+record or capturing a network deletion. Do not reset components on the target
+inside those callbacks. Register both notifications when Clear needs the same
+external cleanup. Ordinary dirty reactions cannot recreate components during
+teardown, and component visitation order no longer controls index correctness.
+
+`EntIdxArena.Dispose()` bulk-invalidates its allocations without per-Ent
+callbacks. Bags and game-owned indexes may still contain dead handles and are
+invalid views afterward. Use individual Dispose when external cleanup or
+continued use of maintained indexes is required.
+
+Keep the context, arenas, bags, and indexes in one scope lifetime. Dispose
+every arena before its context; the context rejects disposal while an arena
+is alive. Sharing a context across arenas is supported, but bulk teardown of
+one arena invalidates any shared views containing its Ents. Arena and context
+disposal during their active callbacks are rejected.
+
+Archetypal access, raw storage mutation, and writes through retained references
+remain outside sparse observation and its guards. Follow their explicit
+ownership and lifetime contracts.
 
 ## Required Game Ent Rules
 

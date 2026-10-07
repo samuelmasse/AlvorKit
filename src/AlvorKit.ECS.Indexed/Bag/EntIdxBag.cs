@@ -1,21 +1,25 @@
 namespace AlvorKit;
 
-public class EntIdxBag<N>(EntIdxBagMut<N> bag) where N : IComponent
+/// <summary>A dense, publicly read-only bag maintained by one context's sparse boolean marker.</summary>
+public class EntIdxBag<N> where N : IComponent
 {
-    public ReadOnlySpan<EntMutIdx> Ents => bag.Ents;
+    /// <summary>Owns dense membership and private backindexes for this bag.</summary>
+    private EntIdxBagStore<EntIdxBagIndex<N>> store = new();
 
-    public int Count => bag.Count;
+    /// <summary>Borrowed membership span, invalidated by membership changes.</summary>
+    public ReadOnlySpan<EntMutIdx> Ents => store.Ents;
+    /// <summary>Current number of maintained members.</summary>
+    public int Count => store.Count;
 
-    public bool Contains(EntMutIdx ent) => bag.Contains(ent);
-}
+    /// <summary>Validates the private backindex and Ent identity.</summary>
+    public bool Contains(EntMutIdx ent) => store.Contains(ent);
 
-public class EntIdxGatedBag<N, TGate>(EntIdxGatedBagMut<N, TGate> bag)
-    where N : IComponent
-    where TGate : IComponent
-{
-    public ReadOnlySpan<EntMutIdx> Ents => bag.Ents;
+    /// <summary>Claims this bag for exactly one context registration.</summary>
+    internal void Bind(EntIdxContextKey context) => store.Bind(context);
 
-    public int Count => bag.Count;
+    /// <summary>Applies a changed marker value after the component commit.</summary>
+    internal void Update(EntMutIdx ent, in EntChange<bool> change) => store.Update(ent, change.After);
 
-    public bool Contains(EntMutIdx ent) => bag.Contains(ent);
+    /// <summary>Detaches membership during clear or individual disposal.</summary>
+    internal void Remove(EntMutIdx ent) => store.Remove(ent);
 }

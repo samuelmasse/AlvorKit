@@ -3,220 +3,209 @@ namespace AlvorKit;
 [TestClass]
 public class EntIdxHookTest
 {
-    /// <summary>Verifies pre and post hooks run in registration order and observe the expected component state.</summary>
+    /// <summary>All indexes precede reactions regardless of registration order, and storage is already committed.</summary>
     [TestMethod]
-    public void EntIdxHooks_Set_RunsInOrderAndObservesState()
+    public void Write_IndexesPrecedeReactions()
     {
-        using var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContext();
         var events = new List<string>();
+        context.OnWrite<int, EntIdxTestComponents.Value>(ent => events.Add($"reaction1 {ent.Value}"));
+        context.AddIndex(ent => { }).OnChange<int, EntIdxTestComponents.Value>(
+            (ent, in change) => events.Add($"index1 {change.Before}->{change.After} {ent.Value}"));
+        context.OnWrite<int, EntIdxTestComponents.Value>(ent => events.Add($"reaction2 {ent.Value}"));
+        context.AddIndex(ent => { }).OnWrite<int, EntIdxTestComponents.Value>(
+            ent => events.Add($"index2 {ent.Value}"));
 
-        context.AddPre<int, EntIdxTestComponents.Value>(
-            (ent, in value) => events.Add($"pre1 old={ent.Value} new={value}"));
-        context.AddPre<int, EntIdxTestComponents.Value>(
-            (ent, in value) => events.Add($"pre2 old={ent.Value} new={value}"));
-        context.AddPost<int, EntIdxTestComponents.Value>(
-            ent => events.Add($"post1 current={ent.Value}"));
-        context.AddPost<int, EntIdxTestComponents.Value>(
-            ent => events.Add($"post2 current={ent.Value}"));
-
-        using var arena = new EntIdxArena(context.Ent);
-        var entity = arena.Alloc();
-
-        entity.Value = 10;
+        using var arena = new EntIdxArena(context);
+        var ent = arena.Alloc();
+        ent.Value = 10;
         events.Clear();
-        entity.Value = 20;
+        ent.Value = 20;
 
-        CollectionAssert.AreEqual(
-            new[]
-            {
-                "pre1 old=10 new=20",
-                "pre2 old=10 new=20",
-                "post1 current=20",
-                "post2 current=20",
-            },
-            events);
+        CollectionAssert.AreEqual(new[] { "index1 10->20 20", "index2 20", "reaction1 20", "reaction2 20" }, events);
     }
 
-    /// <summary>Verifies unsetting an absent component is a no-op with no hook invocations.</summary>
+    /// <summary>Presence distinguishes absent, present default, equal writes, and removal; absent Unset is silent.</summary>
     [TestMethod]
-    public void EntIdxHooks_UnsetAbsent_IsNoOp()
+    public void Write_ReportsValuesAndPresence()
     {
-        using var context = new EntIdxContextBuilder();
-        var events = new List<string>();
+        using var context = new EntIdxContext();
+        var writes = new List<(int Before, int After, bool WasPresent, bool IsPresent)>();
+        int notifications = 0;
+        context.OnChange<int, EntIdxTestComponents.Value>((ent, in change) =>
+            writes.Add((change.Before, change.After, change.WasPresent, change.IsPresent)));
+        context.OnWrite<int, EntIdxTestComponents.Value>(ent => notifications++);
+        using var arena = new EntIdxArena(context);
+        var ent = arena.Alloc();
 
-        context.AddPre<int, EntIdxTestComponents.Value>(
-            (ent, in value) => events.Add($"pre has={ent.HasValue} value={value}"));
-        context.AddPost<int, EntIdxTestComponents.Value>(
-            ent => events.Add($"post has={ent.HasValue}"));
+        Assert.IsFalse(ent.UnsetValue());
+        ent.Value = 0;
+        ent.Value = 0;
+        ent.Value = 12;
+        Assert.IsTrue(ent.UnsetValue());
+        Assert.IsFalse(ent.UnsetValue());
 
-        using var arena = new EntIdxArena(context.Ent);
-        var entity = arena.Alloc();
-
-        Assert.IsFalse(entity.UnsetValue());
-        Assert.IsFalse(entity.HasValue);
-        Assert.AreEqual(0, events.Count);
+        CollectionAssert.AreEqual(new[]
+        {
+            (0, 0, false, true),
+            (0, 12, true, true),
+            (12, 0, true, false),
+        }, writes);
+        Assert.AreEqual(4, notifications);
     }
 
-    /// <summary>Verifies unsetting a present component fires hooks around the actual removal.</summary>
+    /// <summary>Same-reference array publications and present null values remain observable.</summary>
     [TestMethod]
-    public void EntIdxHooks_UnsetPresent_ObservesOldThenAbsentState()
+    public void Write_PublishesSameReferenceAndNull()
     {
-        using var context = new EntIdxContextBuilder();
-        var events = new List<string>();
+        using var context = new EntIdxContext();
+        var writes = new List<(int[]? Value, bool Present)>();
+        var changes = new List<(int[]? Before, int[]? After, bool WasPresent, bool IsPresent)>();
+        context.OnWrite<int[]?, EntIdxTestComponents.Values>(ent => writes.Add((ent.Values, ent.HasValues)));
+        context.OnChange<int[]?, EntIdxTestComponents.Values>((ent, in change) =>
+            changes.Add((change.Before, change.After, change.WasPresent, change.IsPresent)));
+        using var arena = new EntIdxArena(context);
+        var ent = arena.Alloc();
+        int[] values = [1];
+        ent.Values = values;
+        values[0] = 2;
+        ent.Values = values;
+        ent.Values = null;
+        ent.UnsetValues();
 
-        context.AddPre<int, EntIdxTestComponents.Value>(
-            (ent, in value) => events.Add($"pre old={ent.Value} incoming={value} has={ent.HasValue}"));
-        context.AddPost<int, EntIdxTestComponents.Value>(
-            ent => events.Add($"post value={ent.Value} has={ent.HasValue}"));
-
-        using var arena = new EntIdxArena(context.Ent);
-        var entity = arena.Alloc();
-
-        entity.Value = 12;
-        events.Clear();
-
-        Assert.IsTrue(entity.UnsetValue());
-
-        CollectionAssert.AreEqual(
-            new[]
-            {
-                "pre old=12 incoming=0 has=True",
-                "post value=0 has=False",
-            },
-            events);
+        Assert.AreEqual(4, writes.Count);
+        Assert.AreSame(values, writes[1].Value);
+        Assert.AreEqual(2, writes[1].Value![0]);
+        Assert.IsTrue(writes[2].Present);
+        Assert.IsNull(writes[2].Value);
+        Assert.IsFalse(writes[3].Present);
+        Assert.AreEqual(3, changes.Count);
+        Assert.AreSame(values, changes[1].Before);
+        Assert.IsTrue(changes[2].WasPresent);
+        Assert.IsFalse(changes[2].IsPresent);
     }
 
-    /// <summary>Verifies mutations through dead indexed handles fire no hooks and do not alter indexed state.</summary>
+    /// <summary>Clear and Dispose notify separately with intact state, then remove each grouped index exactly once.</summary>
     [TestMethod]
-    public void EntIdxHooks_DeadHandleMutation_IsInert()
+    public void Teardown_SeparatesLifecycleFromWrites()
     {
-        using var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContext();
         var events = new List<string>();
-        var index = new Dictionary<Guid, EntMutIdx>();
-
-        context.AddPre<int, EntIdxTestComponents.Value>(
-            (ent, in value) => events.Add($"value {value}"));
-        context.AddPre<Guid, EntIdxTestComponents.Id>(
-            (ent, in value) =>
-            {
-                if (value != default)
-                    index.Add(value, ent);
-            });
-
-        using var arena = new EntIdxArena(context.Ent);
-        var entity = arena.Alloc();
-
-        entity.Value = 3;
-        entity.Dispose();
-        events.Clear();
-        var id = Guid.NewGuid();
-
-        entity.Value = 4;
-        entity.Id = id;
-        Assert.IsFalse(entity.UnsetValue());
-
-        Assert.AreEqual(0, events.Count);
-        Assert.IsFalse(index.ContainsKey(id));
-        Assert.AreEqual(0, entity.Value);
-    }
-
-    /// <summary>Verifies per-entity dispose is idempotent and clears components through the indexed unset pipeline.</summary>
-    [TestMethod]
-    public void EntIdxHooks_Dispose_IsIdempotentAndClearsThroughHooks()
-    {
-        using var context = new EntIdxContextBuilder();
-        var events = new List<string>();
-
-        context.AddPreDispose(ent => events.Add($"dispose value={ent.Value} has={ent.HasValue}"));
-        context.AddPre<int, EntIdxTestComponents.Value>(
-            (ent, in value) => events.Add($"pre value={value} old={ent.Value}"));
-        context.AddPost<int, EntIdxTestComponents.Value>(
-            ent => events.Add($"post has={ent.HasValue}"));
-
-        using var arena = new EntIdxArena(context.Ent);
-        var entity = arena.Alloc();
-
-        entity.Value = 33;
+        context.OnClearing(ent => events.Add($"clear {ent.Value}"));
+        context.OnDisposing(ent => events.Add($"dispose {ent.Value}"));
+        context.AddIndex(ent => events.Add($"remove {ent.Value}"))
+            .OnWrite<int, EntIdxTestComponents.Value>(ent => events.Add("index"))
+            .OnWrite<bool, EntIdxTestComponents.IsThing>(ent => events.Add("index"));
+        context.OnWrite<int, EntIdxTestComponents.Value>(ent => events.Add("reaction"));
+        using var arena = new EntIdxArena(context);
+        var ent = arena.Alloc();
+        ent.Value = 33;
+        ent.IsThing = true;
         events.Clear();
 
-        entity.Dispose();
-        entity.Dispose();
+        ent.Clear();
+        Assert.IsTrue(ent.IsAlive);
+        Assert.IsFalse(ent.HasValue);
+        CollectionAssert.AreEqual(new[] { "clear 33", "remove 33" }, events);
+        events.Clear();
+        ent.Clear();
+        CollectionAssert.AreEqual(new[] { "clear 0", "remove 0" }, events);
+        ent.Value = 44;
+        events.Clear();
+        ent.Dispose();
+        ent.Dispose();
+        ent.Clear();
+        ent.Value = 55;
 
-        CollectionAssert.AreEqual(
-            new[]
-            {
-                "dispose value=33 has=True",
-                "pre value=0 old=33",
-                "post has=False",
-            },
-            events);
-        Assert.IsFalse(entity.IsAlive);
+        CollectionAssert.AreEqual(new[] { "dispose 44", "remove 44" }, events);
+        Assert.IsFalse(ent.IsAlive);
+        Assert.IsFalse(ent.UnsetValue());
         Assert.AreEqual(0, arena.Allocated);
     }
 
-    /// <summary>Verifies hook lists are isolated by context entity.</summary>
+    /// <summary>A key index handles Set, reassignment, Unset, generic Clear, and Dispose.</summary>
     [TestMethod]
-    public void EntIdxHooks_Contexts_DoNotShareHooks()
+    public void Index_TracksAllSupportedLifetimeOperations()
     {
-        using var firstContext = new EntIdxContextBuilder();
-        using var secondContext = new EntIdxContextBuilder();
-        var events = new List<string>();
+        using var context = new EntIdxContext();
+        var ids = new Dictionary<Guid, EntMutIdx>();
+        context.AddIndex(ent =>
+        {
+            if (ent.Id != Guid.Empty)
+                ids.Remove(ent.Id);
+        }).OnChange<Guid, EntIdxTestComponents.Id>((ent, in write) =>
+        {
+            if (write.Before == write.After)
+                return;
 
-        firstContext.AddPost<int, EntIdxTestComponents.Value>(
-            ent => events.Add($"first {ent.Value}"));
-        secondContext.AddPost<int, EntIdxTestComponents.Value>(
-            ent => events.Add($"second {ent.Value}"));
+            if (write.Before != Guid.Empty)
+                ids.Remove(write.Before);
 
-        using var firstArena = new EntIdxArena(firstContext.Ent);
-        using var secondArena = new EntIdxArena(secondContext.Ent);
-
-        var firstEntity = firstArena.Alloc();
-        var secondEntity = secondArena.Alloc();
-
-        firstEntity.Value = 1;
-        secondEntity.Value = 2;
-
-        CollectionAssert.AreEqual(new[] { "first 1", "second 2" }, events);
+            if (write.After != Guid.Empty)
+                ids.Add(write.After, ent);
+        });
+        using var arena = new EntIdxArena(context);
+        var ent = arena.Alloc();
+        Guid first = Guid.NewGuid();
+        Guid second = Guid.NewGuid();
+        ent.Id = first;
+        Assert.AreEqual((EntMutIdx)ent, ids[first]);
+        ent.Id = second;
+        Assert.IsFalse(ids.ContainsKey(first));
+        Assert.AreEqual((EntMutIdx)ent, ids[second]);
+        ent.UnsetId();
+        Assert.AreEqual(0, ids.Count);
+        ent.Id = first;
+        ClearGeneric((EntMutIdx)ent);
+        Assert.AreEqual(0, ids.Count);
+        Assert.IsTrue(ent.IsAlive);
+        ent.Id = second;
+        ent.Dispose();
+        Assert.AreEqual(0, ids.Count);
     }
 
-    /// <summary>Verifies a pre hook can maintain a key index across set, reassignment, unset, and dispose.</summary>
+    /// <summary>Reactions can synchronously update other components and another context's Ent.</summary>
     [TestMethod]
-    public void EntIdxHooks_KeyIndex_TracksSetUnsetAndDispose()
+    public void Reactions_CanWriteOtherComponentsAndContexts()
     {
-        using var context = new EntIdxContextBuilder();
-        var index = new Dictionary<Guid, EntMutIdx>();
+        using var world = new EntIdxContext();
+        using var dimension = new EntIdxContext();
+        var calls = new List<int>();
+        world.OnWrite<int, EntIdxTestComponents.Value>(ent => calls.Add(ent.Value));
+        using var worldArena = new EntIdxArena(world);
+        var profile = worldArena.Alloc();
+        dimension.OnWrite<int, EntIdxTestComponents.Value>(ent =>
+        {
+            ent.IsOther = true;
+            profile.Value = ent.Value;
+        });
+        using var dimensionArena = new EntIdxArena(dimension);
+        var player = dimensionArena.Alloc();
+        player.Value = 7;
 
-        context.AddPre<Guid, EntIdxTestComponents.Id>(
-            (ent, in value) =>
-            {
-                if (ent.Id == value)
-                    return;
-
-                if (ent.Id != default)
-                    index.Remove(ent.Id);
-
-                if (value != default)
-                    index.Add(value, ent);
-            });
-
-        using var arena = new EntIdxArena(context.Ent);
-        var entity = arena.Alloc();
-        EntMutIdx mut = entity;
-        var first = Guid.NewGuid();
-        var second = Guid.NewGuid();
-
-        entity.Id = first;
-        Assert.AreEqual(mut, index[first]);
-
-        entity.Id = second;
-        Assert.IsFalse(index.ContainsKey(first));
-        Assert.AreEqual(mut, index[second]);
-
-        Assert.IsTrue(entity.UnsetId());
-        Assert.AreEqual(0, index.Count);
-
-        entity.Id = first;
-        entity.Dispose();
-        Assert.AreEqual(0, index.Count);
+        Assert.IsTrue(player.IsOther);
+        Assert.AreEqual(7, profile.Value);
+        CollectionAssert.AreEqual(new[] { 7 }, calls);
     }
+
+    /// <summary>Bulk arena teardown invalidates handles without write, lifecycle, or index-removal callbacks.</summary>
+    [TestMethod]
+    public void ArenaDispose_DoesNotNotify()
+    {
+        using var context = new EntIdxContext();
+        int calls = 0;
+        context.OnClearing(ent => calls++);
+        context.OnDisposing(ent => calls++);
+        context.AddIndex(ent => calls++);
+        context.OnWrite<int, EntIdxTestComponents.Value>(ent => calls++);
+        using var arena = new EntIdxArena(context);
+        var ent = arena.Alloc();
+        ent.Value = 1;
+        calls = 0;
+        arena.Dispose();
+        Assert.IsFalse(ent.IsAlive);
+        Assert.AreEqual(0, calls);
+    }
+
+    private static void ClearGeneric<T>(T ent) where T : IEntMut => ent.Clear();
 }

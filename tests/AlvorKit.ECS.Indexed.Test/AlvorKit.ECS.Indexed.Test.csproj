@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <Using Include="System.Runtime.CompilerServices" />
+    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"

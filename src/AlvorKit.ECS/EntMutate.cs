@@ -8,20 +8,24 @@ public static class EntMutate
 
         public EntMutator<T> Mutate(Action<T> action) => new EntMutator<T>(ent).Mutate(action);
 
+        /// <summary>Dispatches to the handle's lifetime-aware Clear contract, including Indexed notifications.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public void Clear()
+        public void Clear() => ent.Clear();
+    }
+
+    /// <summary>Clears raw storage; Indexed teardown calls this only after its lifecycle and index phases.</summary>
+    internal static void ClearComponents<T>(T ent) where T : IEntMut
+    {
+        if (!ent.IsAlive)
+            return;
+
+        var handle = ent.Handle;
+        new EntMut(handle.Index, handle.Generation).ResetArchetypal();
+
+        foreach (var field in EntReg.PageFields.Fields(handle.PageIndex))
         {
-            if (!ent.IsAlive)
-                return;
-
-            var handle = ent.Handle;
-            new EntMut(handle.Index, handle.Generation).ResetArchetypal();
-
-            foreach (var field in EntReg.PageFields.Fields(ent.Handle.PageIndex))
-            {
-                if (field.Has(ent))
-                    field.Unset(ent);
-            }
+            if (field.Has(ent))
+                field.Unset(ent);
         }
     }
 }

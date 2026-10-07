@@ -3,87 +3,114 @@ namespace AlvorKit;
 [TestClass]
 public class EntIdxRegistrationTest
 {
-    /// <summary>Verifies hook registration rejects mismatched component value and marker types.</summary>
+    /// <summary>Reaction and index registration validate the component's declared value type.</summary>
     [TestMethod]
-    public void EntIdxRegistration_MismatchedHookType_Throws()
+    public void Registration_RejectsMismatchedValueTypes()
     {
-        using var context = new EntIdxContextBuilder();
-
-        Assert.ThrowsExactly<EntIdxRegistrationException>(
-            () => context.AddPre<string, EntIdxTestComponents.Value>(
-                (ent, in value) => _ = value));
-        Assert.ThrowsExactly<EntIdxRegistrationException>(
-            () => context.AddPost<string, EntIdxTestComponents.Value>(
-                ent => _ = ent));
+        using var context = new EntIdxContext();
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
+            context.OnWrite<string, EntIdxTestComponents.Value>(ent => { }));
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
+            context.OnChange<string, EntIdxTestComponents.Value>((ent, in change) => { }));
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
+            context.AddIndex(ent => { }).OnWrite<string, EntIdxTestComponents.Value>(ent => { }));
     }
 
-    /// <summary>Verifies bag registration rejects non-bool markers and gates.</summary>
+    /// <summary>Bag markers and gates must be sparse booleans.</summary>
     [TestMethod]
-    public void EntIdxRegistration_NonBoolBagMarkerOrGate_Throws()
+    public void Registration_RejectsNonBooleanBags()
     {
-        using var context = new EntIdxContextBuilder();
-
-        Assert.ThrowsExactly<EntIdxRegistrationException>(
-            () => context.AddBag(new EntIdxBagMut<EntIdxTestComponents.Value>()));
-        Assert.ThrowsExactly<EntIdxRegistrationException>(
-            () => context.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.Value>(
-                new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.Value>()));
+        using var context = new EntIdxContext();
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
+            context.AddBag(new EntIdxBag<EntIdxTestComponents.Value>()));
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
+            context.AddGatedBag(new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.Value>()));
     }
 
-    /// <summary>Verifies duplicate plain bag registration on one context is rejected.</summary>
+    /// <summary>One bag identity per context and one context per bag instance prevent shared back-index corruption.</summary>
     [TestMethod]
-    public void EntIdxRegistration_DuplicatePlainBagOnOneContext_Throws()
+    public void Registration_RejectsDuplicateBagsAndSharedInstances()
     {
-        using var context = new EntIdxContextBuilder();
+        using var first = new EntIdxContext();
+        using var second = new EntIdxContext();
+        var bag = new EntIdxBag<EntIdxTestComponents.IsThing>();
+        first.AddBag(bag);
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
+            first.AddBag(new EntIdxBag<EntIdxTestComponents.IsThing>()));
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() => second.AddBag(bag));
 
-        context.AddBag(new EntIdxBagMut<EntIdxTestComponents.IsThing>());
-
-        Assert.ThrowsExactly<EntIdxRegistrationException>(
-            () => context.AddBag(new EntIdxBagMut<EntIdxTestComponents.IsThing>()));
+        var gated = new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
+        first.AddGatedBag(gated);
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
+            first.AddGatedBag(new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>()));
     }
 
-    /// <summary>Verifies duplicate marker and gate bag registration on one context is rejected.</summary>
+    /// <summary>Registration stays open during arena construction and closes permanently on the first allocation.</summary>
     [TestMethod]
-    public void EntIdxRegistration_DuplicateGatedBagOnOneContext_Throws()
+    public void Registration_FreezesOnFirstAllocation()
     {
-        using var context = new EntIdxContextBuilder();
+        using var context = new EntIdxContext();
+        using var arena = new EntIdxArena(context);
+        var index = context.AddIndex(ent => { });
+        context.OnWrite<int, EntIdxTestComponents.Value>(ent => { });
+        context.OnClearing(ent => { });
+        context.OnDisposing(ent => { });
+        var ent = arena.Alloc();
+        ent.Dispose();
 
-        context.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(
-            new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>());
-
-        Assert.ThrowsExactly<EntIdxRegistrationException>(
-            () => context.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(
-                new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>()));
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
+            context.OnWrite<int, EntIdxTestComponents.Value>(target => { }));
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
+            index.OnWrite<int, EntIdxTestComponents.Value>(target => { }));
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() => context.AddIndex(target => { }));
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() => context.OnClearing(target => { }));
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() => context.OnDisposing(target => { }));
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() => context.AddBag(new EntIdxBag<EntIdxTestComponents.IsThing>()));
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
+            context.AddGatedBag(new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>()));
     }
 
-    /// <summary>Verifies the same marker and gate bag identity can be registered on separate contexts.</summary>
+    /// <summary>An index cannot accidentally register the same input twice.</summary>
     [TestMethod]
-    public void EntIdxRegistration_SameBagIdentityOnSeparateContexts_Works()
+    public void Registration_RejectsDuplicateIndexInput()
     {
-        using var first = new EntIdxContextBuilder();
-        using var second = new EntIdxContextBuilder();
-
-        first.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(
-            new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>());
-        second.AddGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(
-            new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>());
+        using var context = new EntIdxContext();
+        var index = context.AddIndex(ent => { }).OnWrite<int, EntIdxTestComponents.Value>(ent => { });
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
+            index.OnWrite<int, EntIdxTestComponents.Value>(ent => { }));
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() =>
+            index.OnChange<int, EntIdxTestComponents.Value>((ent, in change) => { }));
     }
 
-    /// <summary>Verifies a gated bag uses both its marker and gate components.</summary>
+    /// <summary>A gate identical to the marker is registered once and behaves like a plain bag.</summary>
     [TestMethod]
-    public void EntIdxRegistration_GatedBag_UsesMarkerAndGate()
+    public void GatedBag_AllowsIdenticalMarkerAndGate()
     {
-        using var context = new EntIdxContextBuilder();
-        var bag = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
+        using var context = new EntIdxContext();
+        var bag = new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsThing>();
         context.AddGatedBag(bag);
-
-        using var arena = new EntIdxArena(context.Ent);
-        var entity = arena.Alloc();
-
-        entity.IsThing = true;
-        Assert.AreEqual(0, bag.Count);
-
-        entity.IsReady = true;
+        using var arena = new EntIdxArena(context);
+        var ent = arena.Alloc();
+        ent.IsThing = true;
         Assert.AreEqual(1, bag.Count);
+        ent.Dispose();
+        Assert.AreEqual(0, bag.Count);
+    }
+
+    /// <summary>A failed attempt to borrow an already-bound bag leaves the other context's identity available.</summary>
+    [TestMethod]
+    public void Registration_FailedBindDoesNotReserveIdentity()
+    {
+        using var first = new EntIdxContext();
+        using var second = new EntIdxContext();
+        var shared = new EntIdxBag<EntIdxTestComponents.IsThing>();
+        first.AddBag(shared);
+        Assert.ThrowsExactly<EntIdxRegistrationException>(() => second.AddBag(shared));
+        var own = new EntIdxBag<EntIdxTestComponents.IsThing>();
+        second.AddBag(own);
+        using var arena = new EntIdxArena(second);
+        arena.Alloc().Mutate().IsThing(true);
+        Assert.AreEqual(1, own.Count);
+        Assert.AreEqual(0, shared.Count);
     }
 }

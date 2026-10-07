@@ -27,6 +27,11 @@ AlvorKit games use the AlvorKit ECS for game Ents. Start with the
 ownership, and the Indexed context, hook, bag, iteration, and teardown pattern
 used by AlvorKit game repositories.
 
+## Benchmarks
+
+The [benchmark guide](bench/README.md) covers the shared `AlvorKit.Bench` runner,
+raw ECS and Indexed suites, allocation boundaries, and reproducible comparisons.
+
 ## Binding development mode
 
 Projects use published binding packages by default. When an exact generated

@@ -49,6 +49,9 @@ public readonly record struct EntPtr : IDisposable, IEntMut
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool Unset<T, N>() => ent.Unset<T, N>();
 
+    /// <summary>Removes all components while retaining this allocation.</summary>
+    public void Clear() => ent.Clear();
+
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void Set<T, N>(in T value) => ent.Set<T, N>(value);
 

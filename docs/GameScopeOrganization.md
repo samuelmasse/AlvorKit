@@ -275,7 +275,7 @@ var world = content.Scope<WorldScope>()
 ```
 
 Loader services can depend on their parent scope services. A `LevelLoader` can
-consume `LevelChunks`, `LevelPlayerBagMut`, or other `[Level]` services while
+consume `LevelChunks`, `LevelPlayerBag`, or other `[Level]` services while
 itself being cached in `LevelLoaderScope`.
 
 Game Ents, Ent contexts, arenas, and bags must follow the ownership and
@@ -285,9 +285,9 @@ objects; its loader scope only performs their ordered registration and setup.
 ```csharp
 [LevelLoader]
 public class LevelLoader(
-    LevelEntityContext context,
-    LevelChunkBagMut chunkBag,
-    LevelPlayerBagMut playerBag)
+    LevelEntContext context,
+    LevelChunkBag chunkBag,
+    LevelPlayerBag playerBag)
 {
     public void Run()
     {

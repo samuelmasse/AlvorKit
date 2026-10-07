@@ -11,28 +11,25 @@ public class EntIdxBagMembershipTest
     [DataRow(1, 3)]
     public void Contains_PlainBag_RejectsForeignMember(int localCount, int foreignCount)
     {
-        using var localContext = new EntIdxContextBuilder();
-        using var foreignContext = new EntIdxContextBuilder();
-        var localBag = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
-        var foreignBag = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
-        var read = new EntIdxBag<EntIdxTestComponents.IsThing>(localBag);
+        using var localContext = new EntIdxContext();
+        using var foreignContext = new EntIdxContext();
+        var localBag = new EntIdxBag<EntIdxTestComponents.IsThing>();
+        var foreignBag = new EntIdxBag<EntIdxTestComponents.IsThing>();
         localContext.AddBag(localBag);
         foreignContext.AddBag(foreignBag);
 
-        using var localArena = new EntIdxArena(localContext.Ent);
-        using var foreignArena = new EntIdxArena(foreignContext.Ent);
+        using var localArena = new EntIdxArena(localContext);
+        using var foreignArena = new EntIdxArena(foreignContext);
         var local = AllocateMembers(localArena, localCount);
         var foreign = AllocateMembers(foreignArena, foreignCount);
 
         Assert.AreEqual(localCount, localBag.Count);
-        Assert.AreEqual(localCount, read.Ents.Length);
+        Assert.AreEqual(localCount, localBag.Ents.Length);
         Assert.AreEqual(foreignCount, foreignBag.Count);
         Assert.IsTrue(foreignBag.Contains(foreign));
         Assert.IsFalse(localBag.Ents.Contains((EntMutIdx)foreign));
         Assert.IsFalse(localBag.Contains(foreign));
-        Assert.IsFalse(read.Contains(foreign));
         Assert.AreEqual(localCount > 0, localBag.Contains(local));
-        Assert.AreEqual(localCount > 0, read.Contains(local));
     }
 
     /// <summary>Rejects another context's gated-bag member even when both bags use the same marker and gate.</summary>
@@ -43,59 +40,56 @@ public class EntIdxBagMembershipTest
     [DataRow(1, 3)]
     public void Contains_GatedBag_RejectsForeignMember(int localCount, int foreignCount)
     {
-        using var localContext = new EntIdxContextBuilder();
-        using var foreignContext = new EntIdxContextBuilder();
-        var localBag = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
-        var foreignBag = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
-        var read = new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(localBag);
+        using var localContext = new EntIdxContext();
+        using var foreignContext = new EntIdxContext();
+        var localBag = new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
+        var foreignBag = new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         localContext.AddGatedBag(localBag);
         foreignContext.AddGatedBag(foreignBag);
 
-        using var localArena = new EntIdxArena(localContext.Ent);
-        using var foreignArena = new EntIdxArena(foreignContext.Ent);
+        using var localArena = new EntIdxArena(localContext);
+        using var foreignArena = new EntIdxArena(foreignContext);
         var local = AllocateMembers(localArena, localCount);
         var foreign = AllocateMembers(foreignArena, foreignCount);
 
         Assert.AreEqual(localCount, localBag.Count);
-        Assert.AreEqual(localCount, read.Ents.Length);
+        Assert.AreEqual(localCount, localBag.Ents.Length);
         Assert.AreEqual(foreignCount, foreignBag.Count);
         Assert.IsTrue(foreignBag.Contains(foreign));
         Assert.IsFalse(localBag.Ents.Contains((EntMutIdx)foreign));
         Assert.IsFalse(localBag.Contains(foreign));
-        Assert.IsFalse(read.Contains(foreign));
         Assert.AreEqual(localCount > 0, localBag.Contains(local));
-        Assert.AreEqual(localCount > 0, read.Contains(local));
     }
 
     /// <summary>Unregistered bags cannot claim members of registered bags with the same component keys.</summary>
     [TestMethod]
     public void Contains_UnregisteredBags_RejectRegisteredMember()
     {
-        using var context = new EntIdxContextBuilder();
-        var plain = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
-        var gated = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
+        using var context = new EntIdxContext();
+        var plain = new EntIdxBag<EntIdxTestComponents.IsThing>();
+        var gated = new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         context.AddBag(plain);
         context.AddGatedBag(gated);
 
-        using var arena = new EntIdxArena(context.Ent);
+        using var arena = new EntIdxArena(context);
         var ent = AllocateMembers(arena, 1);
         Assert.IsTrue(plain.Contains(ent));
         Assert.IsTrue(gated.Contains(ent));
-        Assert.IsFalse(new EntIdxBagMut<EntIdxTestComponents.IsThing>().Contains(ent));
-        Assert.IsFalse(new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>().Contains(ent));
+        Assert.IsFalse(new EntIdxBag<EntIdxTestComponents.IsThing>().Contains(ent));
+        Assert.IsFalse(new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>().Contains(ent));
     }
 
     /// <summary>Default, removed, and disposed handles remain nonmembers while surviving handles remain indexed.</summary>
     [TestMethod]
     public void Contains_RejectsDefaultRemovedAndDisposedHandles()
     {
-        using var context = new EntIdxContextBuilder();
-        var plain = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
-        var gated = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
+        using var context = new EntIdxContext();
+        var plain = new EntIdxBag<EntIdxTestComponents.IsThing>();
+        var gated = new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         context.AddBag(plain);
         context.AddGatedBag(gated);
 
-        using var arena = new EntIdxArena(context.Ent);
+        using var arena = new EntIdxArena(context);
         var removed = AllocateMembers(arena, 1);
         var disposed = AllocateMembers(arena, 1);
         var survivor = AllocateMembers(arena, 1);
@@ -114,27 +108,23 @@ public class EntIdxBagMembershipTest
         Assert.AreEqual(1, gated.Count);
     }
 
-    /// <summary>Membership checks through mutable and read wrappers allocate nothing after warmup.</summary>
+    /// <summary>Plain and gated membership checks allocate nothing after warmup.</summary>
     [TestMethod]
-    public void Contains_AllWrappers_DoesNotAllocate()
+    public void Contains_Bags_DoNotAllocate()
     {
-        using var context = new EntIdxContextBuilder();
-        var plain = new EntIdxBagMut<EntIdxTestComponents.IsThing>();
-        var gated = new EntIdxGatedBagMut<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
-        var readPlain = new EntIdxBag<EntIdxTestComponents.IsThing>(plain);
-        var readGated = new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>(gated);
+        using var context = new EntIdxContext();
+        var plain = new EntIdxBag<EntIdxTestComponents.IsThing>();
+        var gated = new EntIdxGatedBag<EntIdxTestComponents.IsThing, EntIdxTestComponents.IsReady>();
         context.AddBag(plain);
         context.AddGatedBag(gated);
 
-        using var arena = new EntIdxArena(context.Ent);
+        using var arena = new EntIdxArena(context);
         EntMutIdx ent = AllocateMembers(arena, 1);
 
         for (int i = 0; i < 16; i++)
         {
             plain.Contains(ent);
             gated.Contains(ent);
-            readPlain.Contains(ent);
-            readGated.Contains(ent);
         }
 
         int matches = 0;
@@ -148,15 +138,10 @@ public class EntIdxBagMembershipTest
             if (gated.Contains(ent))
                 matches++;
 
-            if (readPlain.Contains(ent))
-                matches++;
-
-            if (readGated.Contains(ent))
-                matches++;
         }
 
         long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-        Assert.AreEqual(16384, matches);
+        Assert.AreEqual(8192, matches);
         Assert.AreEqual(0L, allocated);
     }
 

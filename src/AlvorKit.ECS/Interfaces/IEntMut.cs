@@ -8,6 +8,9 @@ public interface IEntMut : IEnt
 
     bool Unset<T, N>();
 
+    /// <summary>Clears this Ent through the handle's lifetime contract without releasing its allocation.</summary>
+    void Clear() => EntMutate.ClearComponents(this);
+
     /// <summary>Overwrites or structurally adds an archetypal component.</summary>
     void SetArchetypal<T, N, A>(in T value)
     {

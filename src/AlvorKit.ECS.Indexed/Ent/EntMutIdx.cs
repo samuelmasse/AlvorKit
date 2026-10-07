@@ -1,5 +1,6 @@
 namespace AlvorKit;
 
+/// <summary>Borrowed mutable Indexed handle; its arena owns allocation and disposal.</summary>
 [DebuggerTypeProxy(typeof(EntDebugView))]
 public readonly record struct EntMutIdx : IEntMut
 {
@@ -20,6 +21,15 @@ public readonly record struct EntMutIdx : IEntMut
     public void Set<T, N>(in T value) => ent.Set<T, N>(value);
 
     public bool Unset<T, N>() => ent.Unset<T, N>();
+
+    /// <summary>Runs Clear notifications and index removal without ordinary write reactions.</summary>
+    public void Clear() => ent.Clear();
+
+    /// <summary>Publishes a private backindex during already-validated bag maintenance.</summary>
+    internal void SetBagIndex<TIndex>(int index) => ent.SetBagIndex<TIndex>(index);
+
+    /// <summary>Clears a private backindex after occupied membership has been validated.</summary>
+    internal void UnsetBagIndex<TIndex>() => ent.UnsetBagIndex<TIndex>();
 
     public override string ToString() => ent.ToString();
 }

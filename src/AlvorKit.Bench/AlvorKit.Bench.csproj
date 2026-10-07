@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="../AlvorKit.Injection/AlvorKit.Injection.csproj" />
+        <ProjectReference Include="../AlvorKit.Interception.CoreClr/AlvorKit.Interception.CoreClr.csproj" />
+        <PackageReference Include="System.CommandLine" Version="2.0.10" />
+        <InternalsVisibleTo Include="AlvorKit.Bench.Test" />
+        <Using Include="System.CommandLine" />
+        <Using Include="System.Runtime" />
+        <Using Include="System.Text.Json" />
+    </ItemGroup>
+</Project>

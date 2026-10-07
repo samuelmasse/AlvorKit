@@ -16,8 +16,8 @@ public interface IEntIdxTestComponents
     public Guid Id { get; set; }
     public int Value { get; set; }
     public string? Name { get; set; }
+    public int[]? Values { get; set; }
 
     [Archetypal] public int ArchValue { get; set; }
     [Archetypal] public bool IsArchThing { get; set; }
 }
-
