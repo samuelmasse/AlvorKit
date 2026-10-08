@@ -48,7 +48,7 @@ internal class SolutionWatcher(SolutionOptions options) : IDisposable
             : roots.Select(root => Directory.GetParent(root)?.FullName ?? root).Distinct(SolutionPaths.Comparer).ToArray();
         notifications = new(scopes, queue.Fail);
 
-        if (options.ParentDirectory is not null)
+        if (options.ParentDirectory is not null && !options.IncludeParent)
             parentLease = SolutionWatchLease.Acquire(options.ParentDirectory);
 
         Console.WriteLine($"Watching {string.Join(", ", roots)}. Press Ctrl+C to stop.");
@@ -128,7 +128,7 @@ internal class SolutionWatcher(SolutionOptions options) : IDisposable
             next.Directories(parent);
             var children = Directory.GetDirectories(parent);
 
-            roots = children;
+            roots = options.IncludeParent ? [parent, .. children] : children;
         }
 
         foreach (var root in roots)
@@ -150,7 +150,7 @@ internal class SolutionWatcher(SolutionOptions options) : IDisposable
         }
 
         foreach (var root in added)
-            repositories.Add(root, new(root, queue, notifications!));
+            repositories.Add(root, new(root, queue, notifications!, !options.IsAggregateOwner(root)));
 
         topology?.Dispose();
         topology = next;

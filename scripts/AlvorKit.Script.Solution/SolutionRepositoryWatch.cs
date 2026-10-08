@@ -1,7 +1,8 @@
 namespace AlvorKit;
 
 /// <summary>Owns one repository's discovery snapshot and evaluated filesystem subscriptions.</summary>
-internal class SolutionRepositoryWatch(string root, SolutionWatchQueue queue, SolutionFileNotifications notifications) : IDisposable
+internal class SolutionRepositoryWatch(string root, SolutionWatchQueue queue,
+    SolutionFileNotifications notifications, bool publishSolution) : IDisposable
 {
     /// <summary>Owns checkout readiness, transaction observations, and the external writer lease.</summary>
     private readonly SolutionCheckout checkout = new(root, notifications, () => queue.Add(new(root, true)));
@@ -83,7 +84,8 @@ internal class SolutionRepositoryWatch(string root, SolutionWatchQueue queue, So
                 return false;
             }
 
-            SolutionGenerator.Publish(generation, false);
+            if (publishSolution)
+                SolutionGenerator.Publish(generation, false);
 
             if (snapshot.Invalid)
                 Console.WriteLine($"Recovered solution for {root}.");

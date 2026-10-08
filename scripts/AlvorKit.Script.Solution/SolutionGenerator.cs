@@ -22,7 +22,10 @@ internal static class SolutionGenerator
                 try
                 {
                     var generation = Prepare(root, null);
-                    success &= Publish(generation, options.Check);
+
+                    if (!options.IsAggregateOwner(root))
+                        success &= Publish(generation, options.Check);
+
                     generations.Add(generation);
                 }
                 catch

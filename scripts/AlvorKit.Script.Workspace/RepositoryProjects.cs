@@ -63,10 +63,15 @@ public static class RepositoryProjects
         };
     }
 
-    /// <summary>Keeps authored source areas separate from tracked templates and native build inputs.</summary>
+    /// <summary>Accepts source areas and direct project-named folders, excluding templates and native build inputs.</summary>
     private static bool IsSourceProject(string path)
     {
         var separator = path.IndexOf('/');
-        return separator < 0 || Areas.Contains(path[..separator], StringComparer.Ordinal);
+
+        if (separator < 0 || Areas.Contains(path[..separator], StringComparer.Ordinal))
+            return true;
+
+        var parts = path.Split('/');
+        return parts.Length == 2 && parts[0] == Path.GetFileNameWithoutExtension(parts[1]);
     }
 }

@@ -9,6 +9,13 @@ internal static class SolutionDiscovery
         inputs.File(Path.Combine(root, ".git"));
         inputs.File(Path.Combine(root, ".gitignore"));
         inputs.Glob(root, "*.csproj", false, false);
+        inputs.Directories(root);
+
+        foreach (var directory in Directory.EnumerateDirectories(root))
+        {
+            inputs.File(Path.Combine(directory, Path.GetFileName(directory) + ".csproj"));
+            inputs.File(Path.Combine(directory, ".gitignore"));
+        }
 
         foreach (var area in RepositoryProjects.Areas)
         {

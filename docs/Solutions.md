@@ -61,7 +61,8 @@ Root projects come from `git ls-files --cached --others --exclude-standard`:
 tracked files and non-ignored untracked files that still exist on disk.
 This honors nested `.gitignore`, `.git/info/exclude`, and global ignore rules;
 tracked files remain included even when an ignore rule matches them.
-Eligible `.csproj` files are at the repository root or under
+Eligible `.csproj` files are at the repository root, directly inside a matching
+project-named folder (`Tool/Tool.csproj`), or under
 `src`, `lib`, `scripts`, `tests`, `demos`, and `bench`. Project symlinks are skipped.
 Native packaging projects and scaffold resources are outside these source areas.
 
@@ -103,6 +104,20 @@ solution, add an explicit output path outside the selected repositories:
 ```powershell
 dotnet run --project AlvorKit/scripts/AlvorKit.Script.Solution -- --parent-directory . --aggregate-solution Workspace.slnx
 ```
+
+When the parent directory is itself a Git checkout with managed projects, add
+`--include-parent` to include its graph too. This requires `--parent-directory`
+and an aggregate path equal to the parent's `<checkout-name>.slnx`. For example,
+from a parent checkout named `Workspace`:
+
+```powershell
+dotnet run --project AlvorKit/scripts/AlvorKit.Script.Solution -- --parent-directory . --aggregate-solution Workspace.slnx --include-parent
+```
+
+The aggregate is the parent's sole solution; children retain their own solutions.
+Git discovery keeps ignored nested checkouts out of the parent's root projects.
+The same ownership applies with `--check` and `--watch`, including watching the
+parent's project and Git inputs.
 
 The aggregate uses the union of the evaluated graphs, with shared projects
 included once and Debug/Release membership combined. Projects appear under their
