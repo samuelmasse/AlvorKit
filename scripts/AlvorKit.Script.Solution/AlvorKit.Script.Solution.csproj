@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <IsSolutionGenerator>true</IsSolutionGenerator>
+    </PropertyGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="AlvorKit.Script.Solution.Test" />
         <PackageReference Include="Microsoft.Build.Locator" Version="1.11.2" />

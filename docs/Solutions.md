@@ -27,6 +27,11 @@ metadata; run `git init` first in a newly scaffolded directory or source archive
 The generator requires Git and the .NET 10 SDK and bootstraps from its own project.
 It evaluates MSBuild without running build targets or native builds.
 
+The generator project declares `<IsSolutionGenerator>true</IsSolutionGenerator>`
+in an unconditional property group. Tools can discover that capability in
+Git-visible project files without assuming a checkout, directory, or project
+name. Query MSBuild for `AssemblyName` when locating the published executable.
+
 Generate after selecting the local binding and maths mode. Existing active
 projects under `out/bindgen` and `out/mathgen` enter the evaluated graph through
 references. Without those projects, consumers use their declared packages.
