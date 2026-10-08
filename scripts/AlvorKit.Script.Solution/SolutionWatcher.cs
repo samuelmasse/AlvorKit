@@ -46,7 +46,8 @@ internal class SolutionWatcher(SolutionOptions options) : IDisposable
         var roots = options.ParentDirectory is { } parent ? [parent] : options.RepositoryRoots;
         var scopes = options.ParentDirectory is not null ? roots
             : roots.Select(root => Directory.GetParent(root)?.FullName ?? root).Distinct(SolutionPaths.Comparer).ToArray();
-        notifications = new(scopes, queue.Fail);
+        var dependencies = await new SolutionDependencyScopes().ReadAsync(cancellation);
+        notifications = new([.. scopes, .. dependencies], queue.Fail);
 
         if (options.ParentDirectory is not null && !options.IncludeParent)
             parentLease = SolutionWatchLease.Acquire(options.ParentDirectory);

@@ -6,12 +6,23 @@ internal static class SolutionGraph
     /// <summary>Configurations supported by the repository development solutions.</summary>
     internal static IReadOnlyList<string> Configurations => ["Debug", "Release"];
 
-    /// <summary>Registers MSBuild before entering any method whose types require its assemblies.</summary>
-    public static IReadOnlyList<SolutionProject> Read(string root, SolutionWatchInputs? inputs)
+    /// <summary>Registers MSBuild and returns its SDK directory for shared native filesystem subscriptions.</summary>
+    public static string Register()
     {
         if (!MSBuildLocator.IsRegistered)
             MSBuildLocator.RegisterDefaults();
 
+        return RegisteredDirectory();
+    }
+
+    /// <summary>Locates the loaded SDK only after the assembly resolver has been registered.</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static string RegisteredDirectory() => Path.GetDirectoryName(typeof(ProjectCollection).Assembly.Location)!;
+
+    /// <summary>Registers MSBuild before entering any method whose types require its assemblies.</summary>
+    public static IReadOnlyList<SolutionProject> Read(string root, SolutionWatchInputs? inputs)
+    {
+        Register();
         return Evaluate(root, inputs);
     }
 

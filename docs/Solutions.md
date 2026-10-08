@@ -164,7 +164,11 @@ scan, polling timer, or timed retry. Subscriptions are installed before reading
 inputs and replaced after evaluation; MSBuild's XML-cache reads are checked
 for changes during subscription setup. Shared native watches sit above the
 repository trees so Windows can move project directories and checkouts. An
-input-path index routes notifications to the affected solutions. Per-user leases
+SDK or global NuGet package tree also shares recursive native watches, keeping
+Linux inotify-instance usage independent of the number of imported SDK/package
+directories. Their locations come from the registered MSBuild SDK and NuGet's
+configuration. Ancestor moves and individual input changes remain observable.
+An input-path index routes notifications to the affected solutions. Per-user leases
 under the operating system's local application-data directory prevent overlapping
 watchers from owning the same checkout, including across parent and explicit
 repository modes. No persistent lock files or project file streams are held inside

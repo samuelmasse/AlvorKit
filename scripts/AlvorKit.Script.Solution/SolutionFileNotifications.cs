@@ -86,8 +86,16 @@ internal class SolutionFileNotifications(IReadOnlyList<string> roots, Action<Exc
 
         if (created)
         {
-            try { watcher!.EnableRaisingEvents = true; }
-            catch (Exception exception) { failed(exception); throw; }
+            try
+            {
+                watcher!.EnableRaisingEvents = true;
+            }
+            catch (Exception exception)
+            {
+                var error = new IOException($"Could not watch '{path}': {exception.Message}", exception);
+                failed(error);
+                throw error;
+            }
         }
     }
 
