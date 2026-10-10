@@ -1,0 +1,1 @@
+return ComparisonCommand.Run(args);

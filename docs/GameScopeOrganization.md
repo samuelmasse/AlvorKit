@@ -89,7 +89,9 @@ Examples of root-scope services:
 - `RootState`: owns the current top-level `State`.
 - `RootScripts`: owns long-lived `Script` instances.
 - `RootScreen`, `RootCanvas`, `RootKeyboard`, `RootMouse`: window facades.
-- `RootSprites`, `RootFonts`, `RootText`: shared 2D rendering helpers.
+- `RootSprites`, `RootText`: shared 2D rendering helpers.
+- `RootFonts`: root-owned fonts, including embedded UI fonts.
+- `RootFontPacking`: rendering-time atlas packing across active font collections.
 - `RootMetrics`, `RootBackbuffer`, `RootScale`: frame and display helpers.
 - `RootCube`, `RootQuadIndexBuffer`: shared rendering geometry resources.
 

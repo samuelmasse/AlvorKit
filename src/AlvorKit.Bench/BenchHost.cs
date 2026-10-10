@@ -5,10 +5,10 @@ public static class BenchHost
 {
     /// <summary>Parses arguments and runs the requested suite through benchmark-scope injection.</summary>
     public static int Run<TSuite>(string[] args) where TSuite : class, IBenchSuiteProvider =>
-        new BenchCommandLine(Execute<TSuite>).Invoke(args);
+        new BenchCommandLine(Run<TSuite>).Invoke(args);
 
     /// <summary>Creates one scope with invocation options and binds the suite provider.</summary>
-    private static int Execute<TSuite>(BenchCommand command) where TSuite : class, IBenchSuiteProvider
+    public static int Run<TSuite>(BenchCommand command) where TSuite : class, IBenchSuiteProvider
     {
         var bench = new Injector()
             .Scope<BenchScope>()

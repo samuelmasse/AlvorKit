@@ -55,12 +55,14 @@ public class BenchExecutionTest
         Assert.AreEqual(1000d, new BenchResult(TimeSpan.FromSeconds(1), 1000, "op", "N0").OperationsPerSecond);
     }
 
-    /// <summary>The host composes the migrated services, lists without running, and fails an empty selection clearly.</summary>
+    /// <summary>The host composes the runner, lists without running, and fails an empty selection clearly.</summary>
     [TestMethod]
     public void HostListsRunsAndRejectsMissingSelection()
     {
         using var output = new BenchOutputCapture();
         Assert.AreEqual(0, BenchHost.Run<BenchTestSuite>(["list"]));
+        var parsed = new BenchCommand(BenchCommandKind.List, ["Plain"], [], 1, 2, null, new(false, false, false));
+        Assert.AreEqual(0, BenchHost.Run<BenchTestSuite>(parsed));
         StringAssert.Contains(output.Text, "comparison candidate; baseline: Group/Compare/Base");
         Assert.AreEqual(0, BenchHost.Run<BenchTestSuite>(["list", "Plain"]));
         Assert.AreEqual(2, BenchHost.Run<BenchTestSuite>(["list", "Missing"]));

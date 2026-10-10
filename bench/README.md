@@ -19,7 +19,15 @@ only JSON. `--memory-tree` prints supplied native allocation trees.
 
 ## Suites
 
-- `AlvorKit.ECS.Bench` distills the AlvorKit cases from `Ecs.CSharp.Benchmark`:
+- `AlvorKit.ECS.Bench.Comparison` compares AlvorKit against other C# ECS frameworks:
+  Ten frameworks, seven scenarios, and 200 runnable parameterized cases. Runs
+  automatically save JSON and an offline HTML heatmap with sample ranges,
+  variant details, and VS Code source links. AlvorKit archetypal and sparse storage
+  have separate rows. Scalar and SIMD results are separate, with ratios relative
+  to the fastest measured representative in each workload.
+  See the [comparison guide](AlvorKit.ECS.Bench.Comparison/README.md)
+  for dependencies, workload contracts, and report commands.
+- `AlvorKit.ECS.Bench` measures AlvorKit creation and traversal:
   sparse writes, three-component creation, archetypal handle access, rows,
   chunk spans, and Vector256 traversal. Creation includes storage growth;
   traversal excludes fixture preparation and teardown.
@@ -58,13 +66,12 @@ only JSON. `--memory-tree` prints supplied native allocation trees.
   The simulated-copy case visits relocation metadata and sums logical byte
   counts; it does not copy payload bytes or measure memory bandwidth.
 
-The seven sparse component/lifetime cases formerly in the ECS demo also live
-under `Lifetime` in `AlvorKit.ECS.Bench`. Allocation/disposal cycles include
+Seven sparse component/lifetime cases live under `Lifetime` in
+`AlvorKit.ECS.Bench`. Allocation/disposal cycles include
 those operations; existing-component cases exclude fixture setup and cleanup.
 All benchmark executables live under `bench/` and share `list`, `run`, filters,
-warmups, samples, and schema-9 JSON. The former demo CLIs and BenchmarkDotNet
-dependencies have been removed. Range output uses the common timing/allocation
-columns instead of the former allocator-specific counters.
+warmups, samples, and schema-9 JSON. Range output uses the common timing/allocation
+columns.
 
 ## Allocation boundaries
 

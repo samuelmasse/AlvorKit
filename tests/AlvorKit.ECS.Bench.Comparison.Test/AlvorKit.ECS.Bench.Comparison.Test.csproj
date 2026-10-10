@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <Using Include="System.Text.Json.Nodes" />
+        <ProjectReference Include="../../bench/AlvorKit.ECS.Bench.Comparison/AlvorKit.ECS.Bench.Comparison.csproj" />
+        <!-- Svelto supplies its assembly through a nontransitive build target. -->
+        <PackageReference Include="Svelto.ECS" Version="3.5.2" />
+        <PackageReference Include="Svelto.Common" Version="3.6.0" />
+    </ItemGroup>
+</Project>

@@ -9,13 +9,14 @@ public class RootGraphics2D(
     RootState state,
     RootScripts scripts,
     RootFonts fonts,
+    RootFontPacking fontPacking,
     RootSprites sprites)
 {
     public void Unload() => fonts.Unload();
 
     public void Render()
     {
-        fonts.Pack();
+        fontPacking.Pack();
 
         sprites.Begin(canvas.Size);
         state.Current.Draw();
