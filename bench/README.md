@@ -77,6 +77,10 @@ columns.
 
 Use `BenchTimer.Stop(operationCount, unit)` immediately after the workload.
 It captures elapsed time first and then current-thread managed allocation bytes.
+Retain computed value results afterward with `BenchRetain.Value(in result)`.
+Passing a value to `GC.KeepAlive(object)` boxes it, and the JIT may move that
+allocation before the stop boundary even when the call follows it in C#.
+Use `GC.KeepAlive` for reference-type fixtures.
 `WorkloadAllocatedBytes` excludes fixture preparation, observation, and disposal.
 A missing value means unmeasured, not zero. Cross-thread allocations need a
 separate measurement; this counter covers synchronous workloads only.

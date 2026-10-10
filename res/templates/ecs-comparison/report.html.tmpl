@@ -33,138 +33,270 @@ th:first-child,td:first-child{text-align:left}thead th{white-space:nowrap}tbody 
 .details-table{font-size:12px;min-width:850px}.details-table td:nth-child(2){text-align:left}
 a{color:var(--accent)}.empty{padding:24px;color:var(--muted)}
 @media(max-width:700px){main{padding:24px 14px}.panel{padding:16px}h1{font-size:28px}.bar-row{grid-template-columns:120px 1fr 85px;gap:8px}.right{margin-left:0}}
+
+[hidden]{display:none!important}button{font:inherit;cursor:pointer}button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.link{border:0;padding:0;background:none;color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.cell .link{color:inherit;font-size:inherit}.column-title.link{width:100%;text-align:right;text-decoration:none;color:inherit}
+.cell .method{max-width:160px;margin:auto;overflow:hidden;text-overflow:ellipsis}.cell .allocation{opacity:1}
+.column-title[aria-pressed="true"]{box-shadow:inset 0 -2px var(--accent);color:var(--text)}
+.heatmap th:first-child{position:sticky;left:0;background:var(--panel);z-index:1;min-width:160px}
+.heatmap th:not(:first-child){min-width:125px}.heatmap small{max-width:none}.heatmap td{vertical-align:middle}
+.cell .result-link{font-weight:700;text-decoration:none}.cell.reference{background:var(--bg)}
+.dimensions{margin:16px 0}.dimensions label{font-weight:400}.details-table small{display:block}
+.details-table td{white-space:nowrap}.details-table td:last-child{white-space:normal;min-width:100px}
+.warn{color:#e6c27e}summary{cursor:pointer;color:var(--accent);font-weight:600}
+details.panel>summary{font-size:16px}details[open]>summary{margin-bottom:18px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.grid>*{min-width:0}
+svg{width:100%;height:auto}svg text{fill:var(--muted);font-size:11px}
+.legend i{display:inline-block;width:10px;height:10px;margin-right:5px;border-radius:3px}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;width:min(1100px,95vw);max-height:90vh}
+dialog::backdrop{background:#000a}pre{white-space:pre-wrap;font-size:12px;line-height:1.6}
+#close-source{float:right;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:8px 12px}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.controls{gap:12px}.heatmap th:first-child{min-width:145px}}
 </style>
 </head>
-<body>
-<main>
+<body><main>
 <header><h1>ECS performance</h1><p class="muted" id="run-summary"></p></header>
+<p class="note" id="raw-data-note" hidden><a id="raw-data" download>Full raw measurements (JSON)</a> · Includes every warmup and contributing run.</p>
 <section class="panel" aria-labelledby="overview-title">
 <div class="controls">
 <h2 id="overview-title">Performance by workload</h2>
-<label class="right">Mode<select id="mode"><option value="Scalar">Scalar</option><option value="Simd">SIMD</option></select></label>
-<label>Nonmatching Ents<select id="padding"><option value="0">None</option><option value="10">10 per matching Ent</option></select></label>
+<label>Mode<select id="mode" aria-label="Mode"></select></label>
+<label id="padding-control">Nonmatching Ents<select id="padding" aria-label="Nonmatching Ents"><option value="0">None</option><option value="10">10 per matching Ent</option></select></label>
 </div>
 <div class="legend"><span><i class="swatch" style="background:#264c40"></i>1.00× fastest</span><span><i class="swatch" style="background:#56502b"></i>2× the time</span><span><i class="swatch" style="background:#663c32"></i>4× or more</span><span>— Unavailable / not run</span></div>
-<p class="note">a, b, c are separate integer components. Mixed updates four fixed component compositions.</p>
-<div class="scroll"><table class="heatmap" id="heatmap"></table></div>
+<p class="note" id="overview-note"></p>
+<div class="scroll"><table class="heatmap" id="heatmap" aria-label="Performance by workload heatmap"></table></div>
+<p class="note">Ratios compare the declared representatives within each column. Each cell names its access method and timed managed allocation per operation. Click a workload or result for bars, all access methods, and inputs. † Difference unresolved by the measured uncertainty. Quality labels identify short samples, wide launch intervals, and single-process results.</p>
 </section>
 <section class="panel" id="detail" aria-labelledby="detail-title">
-<div class="controls"><h2 id="detail-title"></h2><label class="right">Workload<select id="scenario"></select></label></div>
-<p id="operation"></p><div class="bars" id="bars"></div>
-<p class="note">Bars: median ns/Ent · Whiskers: min–max</p>
-<h3>All variants</h3><p class="note">★ Used in the overview · Code links open VS Code</p>
-<div class="scroll"><table class="details-table" id="variants"></table></div>
+<div class="controls"><h2 id="detail-title"></h2><label class="right">Workload<select id="scenario" aria-label="Workload"></select></label></div>
+<p id="operation"></p><p class="note" id="explanation"></p>
+<div id="dimensions" class="controls dimensions"></div><p class="note" id="timing"></p>
+<div class="bars" id="bars"></div><p class="note" id="estimate-note"></p>
+<h3>All variants</h3><p class="note">★ Used in the overview · Code and setup open the source captured with that measurement.</p>
+<div class="scroll"><table class="details-table" id="variants" aria-label="All measured and authored variants"></table></div>
 </section>
+<details class="panel"><summary>Run quality</summary><div class="scroll" id="memory"></div></details>
+<details class="panel"><summary>Coverage, environment, and measurement provenance</summary><div id="coverage"></div>
+<h3>Environment and packages</h3><pre id="environment"></pre><h3>Measurement batches</h3><pre id="provenance"></pre></details>
+<dialog id="source"><button id="close-source">Close</button><h2 id="source-title"></h2><pre id="source-text"></pre></dialog>
 </main>
 <script type="application/json" id="data">{{Data}}</script>
-<script type="application/json" id="sources">{{Sources}}</script>
 <script>
 'use strict';
-const data = JSON.parse(document.getElementById('data').textContent);
-const meta = data.ecsComparison;
-const sources = JSON.parse(document.getElementById('sources').textContent);
-const scenarios = [
-  ['Create1','Create · 1','Create Ents with one zero-initialized integer component.','1 component'],
-  ['Create2','Create · 2','Create Ents with two zero-initialized integer components.','2 components'],
-  ['Create3','Create · 3','Create Ents with three zero-initialized integer components.','3 components'],
-  ['Update1','Update · 1','a += 1 on every matching Ent.','a += 1'],
-  ['Update2','Update · 2','a += b on every matching Ent.','a += b'],
-  ['Update3','Update · 3','a += b + c on every matching Ent.','a += b + c'],
-  ['Mixed','Mixed','a += b across four fixed component compositions.','a += b · 4 shapes']
-];
-const frameworks = [...new Set(meta.approaches.map(x => x.framework))];
-const rowKey = (framework,storage) => `${framework}/${storage}`;
-const rowLabel = (framework,storage) => storage ? `${framework} / ${storage}` : framework;
-const rows = frameworks.flatMap(framework =>
-  [...new Set(meta.approaches.filter(x => x.framework === framework).map(x => x.storage))].sort().map(storage =>
-    ({framework,storage,key:rowKey(framework,storage),label:rowLabel(framework,storage)})));
-const $ = id => document.getElementById(id);
-const escape = value => String(value).replace(/[&<>"']/g, x => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
-const number = value => value.toLocaleString(undefined, {maximumSignificantDigits:4});
-const allocation = value => value.toLocaleString(undefined, {maximumSignificantDigits:3});
-function sourceLink(entry,kind,label){
-  const source = sources.approaches[`${entry.scenario}/${entry.mode}/${entry.framework}/${entry.variant}`][kind];
-  const root = sources.root.replaceAll('\\','/').replace(/\/+$/,'');
-  const path = `${root}/${source.path}`;
-  const encoded = path.split('/').map((part,index) => index===0 && /^[A-Za-z]:$/.test(part) ? part : encodeURIComponent(part)).join('/');
-  const title = `Open ${kind==='workload'?'timed workload':'setup and timing'} in VS Code: ${source.path}:${source.line}`;
-  return `<a href="vscode://file/${encoded}:${source.line}:1" title="${escape(title)}">${escape(label)}</a>`;
+
+const data=JSON.parse(document.getElementById('data').textContent),meta=data.ecsComparison;
+const runs=data.reportRuns||[data],origin=row=>runs[row.reportRun??0];
+const names={Create1:'Create 1 component',Create2:'Create 2 components',Create3:'Create 3 components',Update1:'Update 1 component',Update2:'Update 2 components',Update3:'Update 3 components',Mixed:'Mixed updates'};
+
+const $=id=>document.getElementById(id),esc=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+if(data.rawDataPath){$('raw-data').href=data.rawDataPath.split('/').map(encodeURIComponent).join('/');$('raw-data-note').hidden=false;}
+
+const num=x=>Number(x).toLocaleString(undefined,Number.isInteger(Number(x))?{}:{maximumSignificantDigits:4});
+
+const median=a=>{const b=[...a].sort((x,y)=>x-y),i=Math.floor(b.length/2);return b.length%2?b[i]:(b[i-1]+b[i])/2;};
+
+const dims=[['count','Matching count'],['padding','Nonmatches per match']];
+
+const inputs=new Map(meta.experiments.map(x=>[x.id,x]));
+
+const measured=new Map(data.benchmarks.map(x=>{const times=x.samples.map(s=>s.elapsedNanoseconds/s.operationCount),estimate=x.launchEstimate;return [x.id,{...x,contract:inputs.get(x.id),times,value:estimate?estimate.mean:median(times),estimate}];}));
+
+const previous=new Map((data.baseline?.benchmarks||[]).map(x=>[x.id,x]));
+
+const labels=x=>[x.framework,x.variant].filter(Boolean).join(' / ');
+
+const available=[...new Set(meta.experiments.map(x=>x.scenario))];
+
+
+const titles={Create1:'Create · 1',Create2:'Create · 2',Create3:'Create · 3',Update1:'Update · 1',Update2:'Update · 2',Update3:'Update · 3',Mixed:'Mixed'};
+const operations={Create1:'1 component',Create2:'2 components',Create3:'3 components',Update1:'a += 1',Update2:'a += b',Update3:'a += b + c',Mixed:'a += b · 4 shapes'};
+const selections=new Map();
+let selection={};
+const rowKey=c=>`${c.framework}/${c.storage}`,rowLabel=c=>[c.framework,c.storage].filter(Boolean).join(' / ');
+const isReference=row=>row.contract.framework==='Arrays';
+const modes=[...new Set(meta.experiments.map(x=>x.mode))];
+$('mode').innerHTML=modes.map(m=>`<option value="${esc(m)}">${m==='Simd'?'SIMD':esc(m)}</option>`).join('');
+$('scenario').innerHTML=available.map(s=>`<option value="${esc(s)}">${esc(names[s]||s)}</option>`).join('');
+$('scenario').value=available.includes('Update2')?'Update2':available[0];
+$('run-summary').textContent=`${data.benchmarks.length.toLocaleString()} measured cases · ${new Set([...measured.values()].map(x=>x.contract.scenario)).size} workloads · Lower is better`;
+$('environment').textContent=JSON.stringify({environment:data.environment,cpu:meta.cpu,packages:meta.packages,runtimeOverrides:meta.runtimeOverrides,simd:{v128:meta.vector128,v256:meta.vector256,v512:meta.vector512}},null,2);
+$('provenance').textContent=JSON.stringify(runs.map((run,index)=>({batch:index+1,revision:run.ecsComparison.revision,workingTree:run.ecsComparison.workingTree,startedAtUtc:run.startedAtUtc,selection:run.selection,study:run.study?{launches:run.study.launches,state:run.study.state}:null,sourceSnapshots:Object.keys(run.ecsComparison.sources?.files||{}).length})),null,2);
+
+
+function defaultSelection(scenario,mode){
+ let candidates=[...measured.values()].map(row=>row.contract).filter(c=>c.scenario===scenario&&c.mode===mode);
+ if(!candidates.length)candidates=meta.experiments.filter(c=>c.scenario===scenario&&c.mode===mode);
+ if(!candidates.length)return null;
+ const support=new Map(),key=c=>JSON.stringify(dims.map(([name])=>c.input[name]));
+ for(const c of candidates){if(!support.has(key(c)))support.set(key(c),new Set());support.get(key(c)).add(c.framework);}
+ candidates.sort((a,b)=>support.get(key(b)).size-support.get(key(a)).size||a.input.padding-b.input.padding);
+ return {...candidates[0].input};
 }
-const median = values => {
-  const sorted = [...values].sort((a,b) => a-b);
-  const middle = Math.floor(sorted.length/2);
-  return sorted.length % 2 ? sorted[middle] : (sorted[middle-1]+sorted[middle])/2;
-};
-const cases = data.benchmarks.map(entry => {
-  const [scenario,n,p,mode,framework,variant] = entry.id.split('/');
-  const approach = meta.approaches.find(x => x.scenario === scenario && x.framework === framework && x.mode === mode && x.variant === variant);
-  const times = entry.samples.map(x => x.elapsedNanoseconds/x.operationCount);
-  const bytes = entry.samples.map(x => x.allocations.workloadBytes === null ? null : x.allocations.workloadBytes/x.operationCount);
-  return {...entry, scenario, count:Number(n.slice(1)), padding:Number(p.slice(7)), mode, framework, variant,
-    storage:approach.storage, row:rowKey(framework,approach.storage), label:rowLabel(framework,approach.storage),
-    representative:approach.representative === true, times, median:median(times), min:Math.min(...times), max:Math.max(...times),
-    bytes:bytes.every(x => x !== null) ? median(bytes) : null};
-});
-let selectedScenario = (cases.find(x => x.representative) || cases[0]).scenario;
-$('scenario').innerHTML = scenarios.map(([id,label,,operation]) =>
-  `<option value="${id}">${label} — ${operation}</option>`).join('');
-$('scenario').value = selectedScenario;
-const initial = cases.find(x => x.representative) || cases[0];
-const count = initial.count;
-$('mode').value = initial.mode;
-$('padding').value = initial.padding;
-$('run-summary').textContent = `${count.toLocaleString()} Ents · Median time per Ent · Lower is better`;
-function matching(scenario){
-  return cases.filter(x => x.scenario === scenario && x.mode === $('mode').value && x.count === count && x.padding === Number($('padding').value));
+function selectedInput(scenario){
+ const key=`${scenario}/${$('mode').value}`;
+ if(!selections.has(key))selections.set(key,defaultSelection(scenario,$('mode').value));
+ return selections.get(key);
 }
-function representatives(scenario){ return matching(scenario).filter(x => x.representative).sort((a,b) => a.median-b.median); }
-function missing(scenario,row){
-  if(Number($('padding').value) && !scenario.startsWith('Update')) return 'Padding does not apply';
-  const authored = meta.approaches.some(x => x.scenario === scenario && x.framework === row.framework && x.storage === row.storage && x.mode === $('mode').value && x.representative);
-  if(authored) return 'Not run';
-  if(row.storage === 'Sparse' && $('mode').value === 'Simd') return 'Sparse storage has no aligned chunk SIMD API';
-  return 'No representative in this mode';
+function sameInput(contract,input,except){
+ return input&&dims.every(([key])=>key===except||String(contract.input[key])===String(input[key]));
+}
+function matches(contract,except){return sameInput(contract,selection,except);}
+function contractsFor(scenario){
+ return meta.experiments.filter(c=>c.scenario===scenario&&c.mode===$('mode').value&&sameInput(c,selectedInput(scenario)));
+}
+function authored(){return meta.experiments.filter(c=>c.scenario===$('scenario').value&&c.mode===$('mode').value&&c.representative);}
+function representatives(scenario){
+ return contractsFor(scenario).filter(c=>c.representative).map(c=>measured.get(c.id)).filter(Boolean).sort((a,b)=>a.value-b.value);
+}
+function bounds(row){
+ return row.estimate?.lower95!=null?[Math.max(0,row.estimate.lower95),row.estimate.upper95]:[Math.min(...row.times),Math.max(...row.times)];
+}
+function unresolved(row,best){
+ const a=row.estimate,b=best.estimate;
+ return row!==best&&(row.value/best.value<1.03||(a?.lower95!=null&&b?.lower95!=null&&a.lower95<=b.upper95&&b.lower95<=a.upper95));
+}
+function quality(row){
+ const flags=[],estimate=row.estimate;
+ if(estimate?.lower95==null)flags.push('Single process');
+ else if((estimate.upper95-estimate.lower95)/(2*row.value)>.1)flags.push('Wide interval');
+ if(median(row.samples.map(s=>s.elapsedNanoseconds))<1e6)flags.push('Short sample');
+ return flags.join(' · ');
+}
+function ratio(row,best){
+ if(isReference(row))return 'Reference';
+ if(!best||!comparable(row,best))return 'Different protocol';
+ return `${(row.value/best.value).toFixed(2)}×${unresolved(row,best)?'†':''}`;
 }
 function color(ratio){
-  const t = Math.min(1,Math.log2(ratio)/2);
-  const a = t < .5 ? [38,76,64] : [86,80,43];
-  const b = t < .5 ? [86,80,43] : [102,60,50];
-  const weight = t < .5 ? t*2 : (t-.5)*2;
-  return `rgb(${a.map((v,i) => Math.round(v+(b[i]-v)*weight)).join(',')})`;
+ const t=Math.min(1,Math.max(0,Math.log2(ratio)/2)),a=t<.5?[38,76,64]:[86,80,43],b=t<.5?[86,80,43]:[102,60,50],w=t<.5?t*2:(t-.5)*2;
+ return `rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*w)).join(',')})`;
 }
-function render(){
-  const columns = scenarios.map(([id]) => representatives(id));
-  $('heatmap').innerHTML = `<thead><tr><th>Framework</th>${scenarios.map(([id,label,,operation]) => `<th scope="col"><span class="column-title">${label}<small>${operation}</small></span></th>`).join('')}</tr></thead><tbody>`+
-    rows.map(row => `<tr><th scope="row">${escape(row.label)}</th>`+
-      scenarios.map(([scenario],i) => {
-        const entry = columns[i].find(x => x.row === row.key);
-        if(!entry) return `<td><span class="cell unavailable" title="${escape(missing(scenario,row))}">—<small>${missing(scenario,row)==='Not run'?'Not run':'Unavailable'}</small></span></td>`;
-        const ratio = entry.median/columns[i][0].median;
-        return `<td><span class="cell" style="--cell:${color(ratio)}" title="${escape(entry.variant)}: ${number(entry.median)} ns/Ent; ${entry.samples.length} samples">${ratio.toFixed(2)}×<small>${number(entry.median)} ns · ${sourceLink(entry,'workload','code')}</small></span></td>`;
-      }).join('')+'</tr>').join('')+'</tbody>';
-  renderDetails();
+function inputLabel(scenario){
+ const i=selectedInput(scenario);if(!i)return 'No cases in this mode';
+ const parts=[`${num(i.count)} Ents`];
+ if(operations[scenario])parts.push(operations[scenario]);
+ if(i.padding)parts.push(`+${i.padding} nonmatches / match`);
+ return parts.map(esc).join('<br>');
 }
+function renderOverview(){
+ const scenarios=available;
+ $('padding-control').hidden=!scenarios.some(s=>s.startsWith('Update'));
+ $('overview-note').textContent='a, b, c are separate integer components. Mixed updates four fixed component compositions. Nonmatching Ents applies to Update columns.';
+ const columns=scenarios.map(s=>({contracts:contractsFor(s),entries:representatives(s)}));
+ const identities=new Map();
+ for(const c of meta.experiments.filter(c=>scenarios.includes(c.scenario)&&c.representative))identities.set(rowKey(c),c);
+ const rows=[...identities.values()].sort((a,b)=>Number(b.framework==='AlvorKit')-Number(a.framework==='AlvorKit')||
+  Number(a.framework==='Arrays')-Number(b.framework==='Arrays')||a.framework.localeCompare(b.framework)||a.storage.localeCompare(b.storage));
+ $('heatmap').innerHTML='<thead><tr><th scope="col">Framework</th>'+scenarios.map(s=>
+  `<th scope="col"><button class="column-title link" data-workload="${s}" aria-pressed="${s===$('scenario').value}">${esc(titles[s]||names[s])}<small>${inputLabel(s)}</small></button></th>`).join('')+'</tr></thead><tbody>'+rows.map(c=>
+  `<tr><th scope="row">${esc(rowLabel(c))}${c.framework==='Arrays'?'<small>Arithmetic only</small>':''}</th>`+columns.map((column,index)=>{
+   const row=column.entries.find(r=>rowKey(r.contract)===rowKey(c));
+   if(!row){const exists=column.contracts.some(x=>rowKey(x)===rowKey(c)&&x.representative);return `<td><span class="cell unavailable" title="${exists?'Authored but not measured for these inputs':'No authored representative for these inputs and mode'}">—<small>${exists?'Not run':'Unavailable'}</small></span></td>`;}
+   const best=column.entries.find(r=>!isReference(r)),canCompare=best&&!isReference(row)&&comparable(row,best);
+   return `<td><span class="cell ${canCompare?'':'reference'}" style="--cell:${canCompare?color(row.value/best.value):'var(--bg)'}" title="${esc(row.contract.variant)} · ${esc(protocol(row))} · ${num(row.contract.input.passes)} passes"><button class="link result-link" data-workload="${scenarios[index]}">${ratio(row,best)}</button><small>${num(row.value)} ns/${esc(row.unit)} · ${sourceButton(row.id,'workload','code')}</small><small class="method">${esc(row.contract.variant)}</small><small class="allocation">${allocation(row)}</small>${quality(row)?`<small class="warn">${quality(row)}</small>`:''}</span></td>`;
+  }).join('')+'</tr>').join('')+'</tbody>';
+ for(const button of $('heatmap').querySelectorAll('[data-workload]'))button.onclick=()=>{
+  selectScenario(button.dataset.workload);$('detail').scrollIntoView({block:'start'});
+ };
+}
+function dimensionValue(key,value){return typeof value==='number'?num(value):String(value);}
+function controls(){
+ selection=selectedInput($('scenario').value)||{};
+ const cases=meta.experiments.filter(c=>c.scenario===$('scenario').value&&c.mode===$('mode').value);
+ $('dimensions').innerHTML=dims.map(([key,label])=>{
+  const values=[...new Set(cases.map(c=>c.input[key]))].sort((a,b)=>typeof a==='number'?a-b:String(a).localeCompare(String(b)));
+  if(values.length<2)return '';
+  return `<label>${label}<select data-dimension="${key}">${values.map(v=>`<option value="${esc(v)}" ${String(v)===String(selection[key])?'selected':''}>${esc(dimensionValue(key,v))}</option>`).join('')}</select></label>`;
+ }).join('');
+ for(const element of $('dimensions').querySelectorAll('select'))element.onchange=()=>{
+  selection[element.dataset.dimension]=element.value;
+  if(element.dataset.dimension==='padding'){$('padding').value=element.value;updatePadding();}
+  render();
+ };
+
+}
+function sourceButton(id,kind,label){return `<button class="link" data-source="${esc(id)}" data-kind="${kind}">${esc(label||(kind==='workload'?'Code':'Setup'))}</button>`;}
 function renderDetails(){
-  const scenario = scenarios.find(x => x[0] === selectedScenario);
-  $('detail-title').textContent = `${scenario[1]} / ${$('mode').selectedOptions[0].text}`;
-  $('operation').textContent = scenario[2]+(selectedScenario.startsWith('Create') ? '' : ' 64 passes per sample.');
-  const entries = representatives(selectedScenario);
-  const max = entries.length ? Math.max(...entries.map(x => x.max)) : 1;
-  const position = value => value/max*100;
-  $('bars').innerHTML = entries.length ? entries.map(entry => `<div class="bar-row">
-    <div class="bar-label">${escape(entry.label)}<small>${sourceLink(entry,'workload',entry.variant)}</small></div>
-    <div class="track" title="${number(entry.min)}–${number(entry.max)} ns/Ent"><div class="bar" style="width:${position(entry.median)}%"></div><div class="range" style="left:${position(entry.min)}%;width:${position(entry.max)-position(entry.min)}%"></div></div>
-    <div class="bar-value">${number(entry.median)} ns<br><small>${(entry.median/entries[0].median).toFixed(2)}×</small></div></div>`).join('') : '<p class="empty">No representative measurements for this selection.</p>';
-  const variants = matching(selectedScenario).sort((a,b) => a.median-b.median);
-  $('variants').innerHTML = '<thead><tr><th>Framework</th><th>Variant</th><th>Median ns/Ent</th><th>Min–max</th><th title="Managed bytes allocated in the timed workload on the measurement thread">Managed B/Ent</th><th>Setup / timing</th></tr></thead><tbody>'+
-    variants.map(entry => `<tr><td>${escape(entry.label)}</td><td>${entry.representative?'★ ':''}${sourceLink(entry,'workload',entry.variant)}</td><td>${number(entry.median)}</td><td>${number(entry.min)}–${number(entry.max)}</td><td>${entry.bytes===null?'Not measured':allocation(entry.bytes)}</td><td>${sourceLink(entry,'measurement','Open')}</td></tr>`).join('')+'</tbody>';
+ const scenario=$('scenario').value,contracts=contractsFor(scenario),entries=representatives(scenario),
+  rows=contracts.map(c=>measured.get(c.id)).filter(Boolean).sort((a,b)=>a.value-b.value),unit=contracts[0]?.unit||'operation';
+ $('detail-title').textContent=`${titles[scenario]||names[scenario]} / ${$('mode').selectedOptions[0].text}`;
+ $('operation').textContent=contracts[0]?.description||'No authored combination for these inputs.';
+ $('explanation').textContent=explain(contracts[0]);
+ const fixed=dims.filter(([key])=>!$('dimensions').querySelector(`[data-dimension="${key}"]`)).map(([key,label])=>`${label}: ${dimensionValue(key,selection[key]??'—')}`);
+ $('timing').textContent=contracts[0]?`${contracts[0].timing}. ${fixed.join(' · ')}`:'';
+ const best=entries.find(r=>!isReference(r)),max=entries.length?Math.max(...entries.map(r=>bounds(r)[1])):1,position=v=>v/max*100;
+ $('bars').innerHTML=entries.length?entries.map(row=>{const [low,high]=bounds(row);return `<div class="bar-row">
+  <div class="bar-label">${esc(rowLabel(row.contract))}<small>${sourceButton(row.id,'workload',row.contract.variant)}</small></div>
+  <div class="track" title="${num(low)}–${num(high)} ns/${esc(unit)} · ${row.estimate?'95% launch interval':'sample min–max'}"><div class="bar" style="width:${position(row.value)}%"></div><div class="range" style="left:${position(low)}%;width:${position(high-low)}%"></div></div>
+  <div class="bar-value">${num(row.value)} ns<br><small>${ratio(row,best)}</small></div></div>`;}).join(''):'<p class="empty">No representative measurements for this selection.</p>';
+ $('estimate-note').textContent=`Bars: ns/${unit}. Independent-process runs: mean and 95% launch interval. In-process runs: median and min–max. Ratios require matching pass counts and sampling protocol; † means overlapping launch intervals or less than 3% difference.`;
+ $('variants').innerHTML=`<thead><tr><th>Framework</th><th>Variant</th><th>ns/${esc(unit)}</th><th>Interval / range</th><th>Allocated B/${esc(unit)}</th><th>Protocol</th><th>Setup / timing</th>${data.baseline?'<th>Baseline change</th>':''}</tr></thead><tbody>`+
+  [...contracts].sort((a,b)=>(measured.get(a.id)?.value??Infinity)-(measured.get(b.id)?.value??Infinity)).map(c=>{
+   const row=measured.get(c.id);
+   if(!row)return `<tr><td>${esc(rowLabel(c))}</td><td>${c.representative?'★ ':''}${esc(c.variant)}</td><td colspan="${data.baseline?6:5}">Not run</td></tr>`;
+   const [low,high]=bounds(row);
+   return `<tr><td>${esc(rowLabel(c))}</td><td>${c.representative?'★ ':''}${sourceButton(row.id,'workload',c.variant)}</td><td>${num(row.value)}</td><td>${num(low)}–${num(high)}<small>${row.estimate?'95% launch interval':'Sample min–max'}</small></td><td>${bytes(row)}</td><td>${esc(protocol(row))}<small>${num(c.input.passes)} passes / sample</small></td><td>${sourceButton(row.id,'measurement')} · <button class="link" data-run="${esc(row.id)}">Run details</button></td>${data.baseline?`<td>${baseline(row)}</td>`:''}</tr>`;
+  }).join('')+'</tbody>';
+ if(!contracts.length)$('variants').innerHTML='<tbody><tr><td>No authored case for this combination.</td></tr></tbody>';
+ $('coverage').textContent=`${rows.length} measured / ${contracts.length} authored variants for this selection. ${data.benchmarks.length} measurements in the full report. Unavailable means no case was authored here; it does not establish that a framework lacks the capability.`;
+ diagnostics(rows);
 }
-for(const id of ['mode','padding']) $(id).addEventListener('change',render);
-$('scenario').addEventListener('change', () => {
-  selectedScenario = $('scenario').value;
-  renderDetails();
-});
-render();
+function render(){renderOverview();renderDetails();bindSources();}
+function selectScenario(scenario){
+ $('scenario').value=scenario;
+ controls();render();
+}
+function explain(contract){
+ if(!contract)return '';
+ const n=contract.input.count;
+ if(contract.scenario.startsWith('Create'))return `Create ${num(n)} Ents and their components. Registration, capacity growth, and required submission are included; world construction is excluded.`;
+ return `Prepared data and repeated arithmetic over ${num(n)} matching Ents. Creation, membership changes, and destruction are excluded.`;
+}
+function protocol(row){const run=origin(row);return run.study?`${run.study.launches} launches · ${run.selection.warmupCount} warmups`:`In process · ${run.selection.warmupCount} warmups`;}
+function comparable(a,b){const x=origin(a),y=origin(b);return a.contract.input.passes===b.contract.input.passes&&JSON.stringify(x.selection&&[x.selection.warmupCount,x.selection.sampleCount])===JSON.stringify(y.selection&&[y.selection.warmupCount,y.selection.sampleCount])&&x.study?.state===y.study?.state&&x.study?.launches===y.study?.launches;}
+
+function bytes(row){const values=row.samples.map(s=>s.allocations?.workloadBytes);return values.every(x=>x!==null&&x!==undefined)?num(median(values.map((v,i)=>v/row.samples[i].operationCount))):'Not measured';}
+function allocation(row){const value=bytes(row);return value==='Not measured'?'Allocation not measured':`${value} B/${esc(row.unit)} allocated`;}
+
+function baseline(row){
+ const old=previous.get(row.id);if(!old)return '—';
+ const current=origin(row),before=data.baseline.reportRuns?.[old.reportRun??0]||data.baseline,now=current.ecsComparison,then=before.ecsComparison;
+ const prior=data.baseline.ecsComparison.experiments.find(x=>x.id===row.id);
+ if(JSON.stringify(current.environment)!==JSON.stringify(before.environment)||now.cpu!==then.cpu||JSON.stringify(now.runtimeOverrides)!==JSON.stringify(then.runtimeOverrides))return 'Different environment';
+ if(JSON.stringify(now.packages)!==JSON.stringify(then.packages))return 'Different packages';
+ if(JSON.stringify(prior?.input)!==JSON.stringify(row.contract.input)||prior?.unit!==row.contract.unit||prior?.timing!==row.contract.timing||current.study?.state!==before.study?.state)return 'Different contract';
+ const value=old.launchEstimate?.mean??median(old.samples.map(s=>s.elapsedNanoseconds/s.operationCount)),delta=row.value/value-1;
+ const a=row.estimate,b=old.launchEstimate,overlap=a?.lower95!=null&&b?.lower95!=null&&a.lower95<=b.upper95&&b.lower95<=a.upper95;
+ const uncertainty=!a?.lower95||!b?.lower95||overlap||Math.abs(delta)<.03;
+ return `${(delta*100).toFixed(1)}%${uncertainty?' · unresolved':''}`;
+}
+function diagnostics(rows){
+ const mib=x=>x==null?'Not measured':num(x/1048576);
+ const headers=['Implementation','Quality','Sample ms','Warmup drift','Peak process MiB'];
+ $('memory').innerHTML='<table><thead><tr>'+headers.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>'+rows.map(row=>{
+  const duration=median(row.samples.map(s=>s.elapsedNanoseconds))/1e6,children=origin(row).study?.children.filter(x=>x.case===row.id)||[];
+  const peak=children.length?Math.max(...children.map(x=>x.peakProcessWorkingSetBytes)):origin(row).processPeakWorkingSetBytes;
+  const launches=[...new Set(row.samples.map(s=>s.launch??0))],drifts=launches.map(launch=>{
+   const warm=row.warmups.filter(s=>(s.launch??0)===launch).slice(-3),samples=row.samples.filter(s=>(s.launch??0)===launch);
+   if(!warm.length)return null;
+   return Math.abs(median(samples.map(s=>s.elapsedNanoseconds/s.operationCount))/median(warm.map(s=>s.elapsedNanoseconds/s.operationCount))-1);
+  }).filter(x=>x!==null),drift=drifts.length?Math.max(...drifts):null;
+  return `<tr><td>${esc(labels(row.contract))}</td><td class="warn">${quality(row)||'—'}</td><td class="${duration<1?'warn':''}">${num(duration)}${duration<1?' · short':''}</td><td class="${drift>.1?'warn':''}">${drift===null?'Not assessed':num(drift*100)+'%'}</td><td>${mib(peak)}</td></tr>`;
+ }).join('')+'</tbody></table><p class="muted">Wide interval means the 95% launch half-width exceeds 10% of the estimate. Short samples are under 1 ms. Single-process results do not measure process-to-process variation. Drift is the largest launch difference between the last three warmups and retained-sample median; over 10% needs investigation. Peak process memory includes the runtime, JIT, fixtures, and native libraries; it is not owned ECS memory.</p>';
+}
+function bindSources(){for(const button of document.querySelectorAll('[data-source]'))button.onclick=()=>{const sources=origin(measured.get(button.dataset.source)).ecsComparison.sources,loc=sources?.locations[button.dataset.source]?.[button.dataset.kind];$('source-title').textContent=loc?`${loc.path}:${loc.line}`:'Source unavailable';$('source-text').textContent=loc?sources.files[loc.path]:'No captured source.';$('source').showModal();};for(const button of document.querySelectorAll('[data-run]'))button.onclick=()=>{const row=measured.get(button.dataset.run),run=origin(row);$('source-title').textContent=`Run details · ${labels(row.contract)}`;$('source-text').textContent=JSON.stringify({batch:(row.reportRun??0)+1,startedAtUtc:run.startedAtUtc,contract:row.contract,selection:run.selection,study:run.study?{launches:run.study.launches,state:run.study.state}:null,revision:run.ecsComparison.revision,assemblyModuleId:run.ecsComparison.assemblyModuleId,ecsAssemblyModuleIds:run.ecsComparison.ecsAssemblyModuleIds,allocatedBytesPerOperation:bytes(row),launchEstimate:row.launchEstimate},null,2);$('source').showModal();};}
+
+
+$('close-source').onclick=()=>$('source').close();
+$('scenario').onchange=()=>selectScenario($('scenario').value);
+function updatePadding(){
+ for(const s of available.filter(s=>s.startsWith('Update'))){const i=selectedInput(s);if(i)i.padding=Number($('padding').value);}
+}
+$('mode').onchange=()=>{updatePadding();controls();render();};
+$('padding').onchange=()=>{updatePadding();controls();render();};
+controls();render();
 </script>
 </body>
 </html>

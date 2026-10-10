@@ -113,23 +113,24 @@ internal static partial class EntArchRows<A>
         ref var rows = ref RowSetAt(rowSetId);
         int lastRow = rows.Count - 1;
 
-        if (row != lastRow)
-            Compact(rowSetId, row, lastRow, ref rows);
+        foreach (int fieldId in EntArchGraph<A>.FieldIds(rows.ArchId))
+            EntArchGraph<A>.ColumnOps(fieldId).Remove(rowSetId, row, lastRow);
 
-        ClearTailFields(rowSetId, lastRow, rows.ArchId);
+        if (row != lastRow)
+            RepairMovedEnt(rowSetId, row, lastRow, ref rows);
+
         rows.Count = lastRow;
         ReduceCapacity(rowSetId, ref rows);
         if (lastRow == 0)
             Deactivate(allocId, ref rows);
     }
 
-    /// <summary>Moves one Ent between alloc-local archs and copies the requested common fields.</summary>
+    /// <summary>Moves an Ent, copying retained fields and compacting each source column in one pass.</summary>
     internal static EntArchLoc Move(
         int allocId,
         int srcRowSetId,
         int srcRow,
-        int dstArchId,
-        int commonFieldsArchId)
+        int dstArchId)
     {
         int dstRowSetId = GetOrCreateRowSet(allocId, dstArchId);
         ref var srcRows = ref RowSetAt(srcRowSetId);
@@ -138,17 +139,18 @@ internal static partial class EntArchRows<A>
 
         EnsureAppendCapacity(dstRowSetId, ref dstRows);
         dstRows.Ents[dstRow] = srcRows.Ents[srcRow];
-        CopyFields(srcRowSetId, srcRow, dstRowSetId, dstRow, commonFieldsArchId);
+        int srcLastRow = srcRows.Count - 1;
+
+        foreach (int fieldId in EntArchGraph<A>.FieldIds(srcRows.ArchId))
+            EntArchGraph<A>.ColumnOps(fieldId).Move(srcRowSetId, srcRow, dstRowSetId, dstRow, srcLastRow);
 
         dstRows.Count = dstRow + 1;
         if (dstRow == 0)
             Activate(allocId, dstRowSetId, ref dstRows);
 
-        int srcLastRow = srcRows.Count - 1;
         if (srcRow != srcLastRow)
-            Compact(srcRowSetId, srcRow, srcLastRow, ref srcRows);
+            RepairMovedEnt(srcRowSetId, srcRow, srcLastRow, ref srcRows);
 
-        ClearTailFields(srcRowSetId, srcLastRow, srcRows.ArchId);
         srcRows.Count = srcLastRow;
         ReduceCapacity(srcRowSetId, ref srcRows);
         if (srcLastRow == 0)
@@ -156,33 +158,11 @@ internal static partial class EntArchRows<A>
         return new(dstRowSetId, dstArchId, dstRow);
     }
 
-    /// <summary>Copies every field belonging to the common signature between two rows.</summary>
-    private static void CopyFields(
-        int srcRowSetId,
-        int srcRow,
-        int dstRowSetId,
-        int dstRow,
-        int commonFieldsArchId)
+    /// <summary>Repairs the Ent row and location after component columns have been compacted.</summary>
+    private static void RepairMovedEnt(int rowSetId, int row, int lastRow, ref EntArchRowSet rows)
     {
-        foreach (int fieldId in EntArchGraph<A>.FieldIds(commonFieldsArchId))
-            EntArchGraph<A>.ColumnOps(fieldId).Copy(srcRowSetId, srcRow, dstRowSetId, dstRow);
-    }
-
-    /// <summary>Fills a removed row from the tail and repairs the moved Ent's location.</summary>
-    private static void Compact(int rowSetId, int row, int lastRow, ref EntArchRowSet rows)
-    {
-        foreach (int fieldId in EntArchGraph<A>.FieldIds(rows.ArchId))
-            EntArchGraph<A>.ColumnOps(fieldId).Copy(rowSetId, lastRow, rowSetId, row);
-
         var movedEnt = rows.Ents[lastRow];
         rows.Ents[row] = movedEnt;
         movedEnt.Set<EntArchLoc, A>(new(rowSetId, rows.ArchId, row));
-    }
-
-    /// <summary>Clears reference-containing component values at an inactive tail row.</summary>
-    private static void ClearTailFields(int rowSetId, int lastRow, int archId)
-    {
-        foreach (int fieldId in EntArchGraph<A>.FieldIds(archId))
-            EntArchGraph<A>.ColumnOps(fieldId).Clear(rowSetId, lastRow);
     }
 }

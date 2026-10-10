@@ -31,6 +31,22 @@ public readonly record struct EntPtrIdx : IEntMut, IDisposable
 
     public bool Has<T, N>() => ent.Has<T, N>();
 
+    /// <summary>Reads archetypal storage directly without boxing the Indexed handle.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public T? GetArchetypal<T, N, A>() => ent.GetArchetypal<T, N, A>();
+
+    /// <summary>Tests archetypal membership without boxing or registering Indexed observers.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool HasArchetypal<T, N, A>() => ent.HasArchetypal<T, N, A>();
+
+    /// <summary>Writes unobserved archetypal storage while preserving sparse Indexed state.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void SetArchetypal<T, N, A>(in T value) => ent.SetArchetypal<T, N, A>(in value);
+
+    /// <summary>Removes an unobserved archetypal field without boxing or sparse callbacks.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool UnsetArchetypal<T, N, A>() => ent.UnsetArchetypal<T, N, A>();
+
     /// <summary>Commits a sparse write, maintains indexes, then synchronously delivers reactions.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public unsafe void Set<T, N>(in T value)

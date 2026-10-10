@@ -5,7 +5,7 @@
     <ItemGroup>
         <ProjectReference Include="../../src/AlvorKit.Bench/AlvorKit.Bench.csproj" />
         <ProjectReference Include="../../scripts/AlvorKit.Script.Workspace/AlvorKit.Script.Workspace.csproj" />
-        <ProjectReference Include="../../src/AlvorKit.ECS/AlvorKit.ECS.csproj" />
+        <ProjectReference Include="../../src/AlvorKit.ECS.Indexed/AlvorKit.ECS.Indexed.csproj" />
         <ProjectReference Include="../../src/AlvorKit.ECS.Generator/AlvorKit.ECS.Generator.csproj"
             OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <PackageReference Include="Arch" Version="2.1.0" EcsFramework="Arch" />

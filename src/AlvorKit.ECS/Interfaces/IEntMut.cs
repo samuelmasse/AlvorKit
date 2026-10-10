@@ -12,16 +12,8 @@ public interface IEntMut : IEnt
     void Clear() => EntMutate.ClearComponents(this);
 
     /// <summary>Overwrites or structurally adds an archetypal component.</summary>
-    void SetArchetypal<T, N, A>(in T value)
-    {
-        var handle = Handle;
-        new EntMut(handle.Index, handle.Generation).SetArchetypal<T, N, A>(value);
-    }
+    void SetArchetypal<T, N, A>(in T value);
 
     /// <summary>Structurally removes an archetypal component and returns whether it was present.</summary>
-    bool UnsetArchetypal<T, N, A>()
-    {
-        var handle = Handle;
-        return new EntMut(handle.Index, handle.Generation).UnsetArchetypal<T, N, A>();
-    }
+    bool UnsetArchetypal<T, N, A>();
 }

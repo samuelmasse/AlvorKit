@@ -3,6 +3,18 @@ namespace AlvorKit;
 [TestClass]
 public class BenchMeasurementTest
 {
+    /// <summary>Retaining scalar and larger value results adds no managed allocations to either measurement boundary.</summary>
+    [TestMethod]
+    public void ValueRetentionDoesNotAllocate()
+    {
+        MeasureValueRetention();
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var result = MeasureValueRetention();
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        Assert.AreEqual(0L, result.WorkloadAllocatedBytes);
+        Assert.AreEqual(0L, allocated);
+    }
+
     /// <summary>Small nonzero allocation measurements remain visible rather than rounding to zero.</summary>
     [TestMethod]
     [DoNotParallelize]
@@ -82,6 +94,21 @@ public class BenchMeasurementTest
         var result = timer.Stop(1, "operation");
         GC.KeepAlive(fixture);
         GC.KeepAlive(payload);
+        return result;
+    }
+
+    private static BenchResult MeasureValueRetention()
+    {
+        var timer = BenchTimer.Start();
+        long retained = 0;
+
+        for (var index = 0; index < 1000; index++)
+            retained += index;
+
+        var result = timer.Stop(1000, "operation");
+        BenchRetain.Value(in retained);
+        var larger = (retained, retained, retained, retained);
+        BenchRetain.Value(in larger);
         return result;
     }
 }

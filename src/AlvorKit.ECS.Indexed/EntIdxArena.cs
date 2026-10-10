@@ -22,6 +22,32 @@ public class EntIdxArena(EntIdxContext context) : IDisposable
         return new(arena.Alloc(), context.Identity);
     }
 
+    /// <summary>Begins final-shape allocation; Create freezes registration and returns an owning Indexed handle.</summary>
+    public EntIdxArchCreate<A> AllocArchetypal<A>()
+    {
+        if (!arena.IsAlive)
+            throw new EntArenaDisposedException();
+
+        return new(this);
+    }
+
+    /// <summary>
+    /// Queries unobserved archetypal columns within this arena. Use Indexed handles for every sparse mutation;
+    /// the query's base row handles must not bypass sparse hooks or Indexed lifecycle operations.
+    /// </summary>
+    public EntArchQuery<A> QueryArchetypal<A>() => arena.QueryArchetypal<A>();
+
+    /// <summary>Commits a typed final shape with the same context and allocation guards as ordinary allocation.</summary>
+    internal EntPtrIdx CreateArchetypal<A, TInit>(TInit init) where TInit : struct, IEntArchInit<A>
+    {
+        if (!arena.IsAlive)
+            throw new EntArenaDisposedException();
+
+        context.Freeze();
+        var ent = new EntArchCreate<A, TInit>(arena, init).Create();
+        return new(ent, context.Identity);
+    }
+
     /// <summary>Invalidates all owned Ents without per-Ent callbacks, then releases the context borrow.</summary>
     public virtual void Dispose()
     {

@@ -50,7 +50,11 @@ public interface IMotionComponents
 
 `Name` remains sparse. `Position` uses `MotionComponents` as `A`. Archetypal
 reads are part of `IEnt`; archetypal mutation is part of `IEntMut`, so every Ent
-wrapper supports the generated accessors consistently.
+wrapper supports the generated accessors consistently. Handle implementations
+must supply all archetypal interface methods directly. The interfaces do not
+provide default archetypal method bodies: those bodies can box value-type
+handles during constrained generic calls. Both owning and borrowed Indexed
+handles forward directly to base storage without boxing.
 
 Archetypal storage deliberately bypasses Indexed component hooks, including
 when accessed through an Indexed handle. Indexed component-hook and bag

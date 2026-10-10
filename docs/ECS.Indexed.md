@@ -290,6 +290,30 @@ lifetime and membership guarantees.
 Component page creation, bag capacity growth, equality implementations, and
 consumer-owned callbacks and collections retain their normal allocation costs.
 
+`EntIdxArena.AllocArchetypal<A>()` creates directly in a final dense shape:
+
+```csharp
+var ent = arena.AllocArchetypal<RunComponents>()
+    .With<Vec3, RunComponents.Position>(position)
+    .With<Vec3, RunComponents.Velocity>(velocity)
+    .Create();
+ent.IsProjectile = true;
+```
+
+The fields in the builder must be archetypal. Building the shape does not allocate
+an Ent or close registration; `Create()` does both and returns an owning
+`EntPtrIdx`. Publish sparse membership afterward through that handle so bags and
+callbacks see fully initialized dense data. Reuse a builder when its values are
+constant. This avoids moving through an intermediate archetype for every setter.
+
+`EntIdxArena.QueryArchetypal<A>()` exposes arena-local rows and aligned component
+spans, with the same query contract as `EntArena`. Use it for bulk dense updates.
+A query filtering a sparse marker still examines every candidate row; an
+`EntIdxBag` instead visits maintained matches and pays maintenance on changes.
+Measure selectivity and complete ticks before choosing between them. Query chunk
+Ents are base handles: use Indexed handles for sparse mutation, Clear, and Dispose
+so those operations retain their hooks and guards.
+
 Archetypal reads, writes, queries, rows, and spans deliberately remain
 unobserved. Sparse and archetypal components may coexist on one Ent, and
 lifecycle callbacks can read both. Raw storage mutation and mutation through

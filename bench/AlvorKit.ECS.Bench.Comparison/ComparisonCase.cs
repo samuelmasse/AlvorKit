@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 internal record ComparisonCase(
     string Scenario, string Framework, string Storage, string Variant, string Mode,
-    Type Workload, Func<int, int, BenchResult> Measure)
+    Type Workload, Func<int, int, int, BenchResult> Measure)
 {
     private string RepresentativeVariant => (Framework, Mode) switch
     {

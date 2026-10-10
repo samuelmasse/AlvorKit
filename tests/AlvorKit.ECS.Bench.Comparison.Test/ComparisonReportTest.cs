@@ -3,157 +3,151 @@ namespace AlvorKit;
 [TestClass]
 public class ComparisonReportTest
 {
-    /// <summary>Every comparable group has exactly one predetermined overview representative.</summary>
+    /// <summary>Every case has unique explicit metadata and exactly one representative for its comparison row.</summary>
     [TestMethod]
-    public void RepresentativesCoverEverySupportedGroupExactlyOnce()
+    public void ContractsMatchRunnableCatalog()
     {
-        var cases = ComparisonCatalog.Cases;
-        Assert.AreEqual(134, cases.Length);
-        Assert.AreEqual(200, cases.Sum(entry => entry.Scenario.StartsWith("Update") ? 2 : 1));
-        string[] frameworks =
-        [
-            "AlvorKit", "Arch", "DefaultEcs", "Entitas", "Fennecs", "FlecsNet", "Frent", "FrifloEngineEcs", "Morpeh", "SveltoECS",
-        ];
-        CollectionAssert.AreEquivalent(frameworks, cases.Select(entry => entry.Framework).Distinct().ToArray());
+        var experiments = ComparisonExperiments.All;
         var catalog = new BenchCatalogBuilder().Create(new ComparisonBenchmarks().Create());
-        Assert.AreEqual(200, catalog.Cases.Select(entry => entry.Id).Distinct().Count());
+        Assert.AreEqual(experiments.Length, catalog.Cases.Length);
+        Assert.AreEqual(experiments.Length, experiments.Select(entry => entry.Id).Distinct().Count());
+        CollectionAssert.AreEquivalent(experiments.Select(entry => entry.Id).ToArray(), catalog.Cases.Select(entry => entry.Id).ToArray());
+        Assert.IsTrue(experiments.All(entry => entry.Input.Count == 100000));
+        var originalIds = ComparisonCatalog.Cases.SelectMany(entry =>
+            (entry.Scenario.StartsWith("Update") ? new[] { 0, 10 } : [0]).Select(padding => entry.Id(100000, padding))).ToArray();
+        CollectionAssert.AreEquivalent(originalIds, catalog.Cases.Select(entry => entry.Id).ToArray());
+        CollectionAssert.AreEquivalent(new[] { "Create1", "Create2", "Create3", "Update1", "Update2", "Update3", "Mixed" },
+            experiments.Select(entry => entry.Scenario).Distinct().ToArray());
 
-        foreach (var entry in cases)
-        {
-            Assert.IsTrue(catalog.Cases.Any(item => item.Id == entry.Id(100000, 0)));
-
-            if (entry.Scenario.StartsWith("Update"))
-                Assert.IsTrue(catalog.Cases.Any(item => item.Id == entry.Id(100000, 10)));
-        }
-
-        foreach (var group in cases.GroupBy(entry => (entry.Scenario, entry.Framework, entry.Storage, entry.Mode)))
+        foreach (var group in experiments.GroupBy(entry => (entry.Scenario, entry.Framework, entry.Storage, entry.Mode, entry.Input)))
             Assert.AreEqual(1, group.Count(entry => entry.Representative), group.Key.ToString());
 
-        Assert.IsTrue(cases.All(entry => entry.Mode is "Scalar" or "Simd"));
-
-        foreach (var group in cases.GroupBy(entry => (entry.Scenario, entry.Mode)))
-        {
-            Assert.IsTrue(group.Any(entry => entry.Framework == "AlvorKit" && entry.Representative));
-            Assert.IsTrue(group.Any(entry => entry.Framework != "AlvorKit" && entry.Representative));
-        }
+        Assert.IsTrue(experiments.All(entry => entry.Operations > 0));
     }
 
-    /// <summary>Embedded JSON cannot close its script element, and retains the exact metadata after parsing.</summary>
+    /// <summary>Every source snapshot identifies the concrete workload between the timer boundaries.</summary>
     [TestMethod]
-    public void ReportEscapesEmbeddedDataWithoutChangingIt()
+    public void SourceSnapshotsContainActualTimedCalls()
     {
-        var document = Document();
-        const string text = "</script><script>alert('benchmark')</script>";
-        document["note"] = text;
-        var html = ComparisonReport.Render(document.ToJsonString());
-        Assert.IsFalse(html.Contains(text));
-        const string start = "<script type=\"application/json\" id=\"data\">";
-        var offset = html.IndexOf(start, StringComparison.Ordinal) + start.Length;
-        var end = html.IndexOf("</script>", offset, StringComparison.Ordinal);
-        var embedded = JsonNode.Parse(html[offset..end])!;
-        Assert.AreEqual(text, (string?)embedded["note"]);
-        Assert.AreEqual(100, (int)embedded["benchmarks"]![0]!["samples"]![0]!["elapsedNanoseconds"]!);
-    }
+        var experiments = ComparisonExperiments.All.DistinctBy(entry => entry.Workload).ToArray();
+        var sources = ComparisonSources.Capture(experiments);
 
-    /// <summary>Every source link reaches the timed workload called by its registered measurement method.</summary>
-    [TestMethod]
-    public void SourceLinksMatchEveryRegisteredMeasurement()
-    {
-        var approaches = ComparisonProvenance.Capture()["approaches"]!.AsArray();
-        var sources = ComparisonSources.Capture(approaches);
-        var root = (string)sources["root"]!;
-        var recorded = sources["approaches"]!.AsObject();
-        Assert.AreEqual(134, recorded.Count);
-
-        foreach (var entry in ComparisonCatalog.Cases)
+        foreach (var entry in experiments)
         {
-            var source = recorded[$"{entry.Scenario}/{entry.Mode}/{entry.Framework}/{entry.Variant}"]!;
+            var source = sources["locations"]![entry.Id]!;
             var workload = source["workload"]!;
             var measurement = source["measurement"]!;
-            var workloadLines = File.ReadAllLines(Path.Combine(root, (string)workload["path"]!));
-            StringAssert.Contains(workloadLines[(int)workload["line"]! - 1], " Run(");
-            var measurementLines = File.ReadAllLines(Path.Combine(root, (string)measurement["path"]!));
-            var start = (int)measurement["line"]! - 1;
-            StringAssert.Contains(measurementLines[start], $" BenchResult {entry.Measure.Method.Name}(");
-            var body = string.Join('\n', measurementLines.Skip(start + 1).TakeWhile(line => line != "    }"));
-            var timedCall = body.IndexOf($"{entry.Workload.Name}.Run(", StringComparison.Ordinal);
-            var timingStart = body.IndexOf("BenchTimer.Start()", StringComparison.Ordinal);
-            var timingEnd = body.IndexOf("timer.Stop(", StringComparison.Ordinal);
-            Assert.IsTrue(timingStart >= 0 && timedCall > timingStart && timedCall < timingEnd, entry.Id(100000, 0));
+            var workloadText = (string)sources["files"]![(string)workload["path"]!]!;
+            var measurementText = (string)sources["files"]![(string)measurement["path"]!]!;
+            StringAssert.Contains(workloadText.Split('\n')[(int)workload["line"]! - 1], " Run(");
+            var body = string.Join('\n', measurementText.Split('\n').Skip((int)measurement["line"]!)
+                .TakeWhile(line => line.TrimEnd('\r') != "    }"));
+            var call = body.IndexOf($"{entry.Workload.Name}.Run(", StringComparison.Ordinal);
+            Assert.IsTrue(call > body.IndexOf("BenchTimer.Start()", StringComparison.Ordinal), entry.Id);
+            Assert.IsTrue(call < body.IndexOf("timer.Stop(", StringComparison.Ordinal), entry.Id);
         }
     }
 
-    /// <summary>Report source navigation is embedded separately and preserves the original saved observations.</summary>
+    /// <summary>Runtime and generator changes remain attributable even when the benchmark loop itself is unchanged.</summary>
     [TestMethod]
-    public void ReportEmbedsSourceLocationsSeparatelyFromMeasurements()
+    public void ProvenanceIncludesEcsImplementation()
+    {
+        var provenance = ComparisonProvenance.Capture([]);
+        var files = provenance["sources"]!["files"]!;
+        var indexed = (string)files["src/AlvorKit.ECS.Indexed/Ent/EntMutIdx.cs"]!;
+        StringAssert.Contains(indexed, "public T? GetArchetypal<T, N, A>()");
+        Assert.IsNotNull(files["src/AlvorKit.ECS/Archetypal/EntMut.Archetypal.cs"]);
+        Assert.IsNotNull(files["src/AlvorKit.ECS.Generator/ComponentSourceEmitter.cs"]);
+        Assert.IsNotNull(files["res/templates/ecs/source-generator/get-property-archetypal.csfrag.tmpl"]);
+        Assert.AreEqual(typeof(Ent).Module.ModuleVersionId.ToString(),
+            (string)provenance["ecsAssemblyModuleIds"]!["AlvorKit.ECS"]!);
+        Assert.AreEqual(typeof(EntPtrIdx).Module.ModuleVersionId.ToString(),
+            (string)provenance["ecsAssemblyModuleIds"]!["AlvorKit.ECS.Indexed"]!);
+    }
+
+    /// <summary>Saved source and metadata cannot break out of their JSON script element.</summary>
+    [TestMethod]
+    public void EmbeddedDataIsEscapedAndPreserved()
     {
         var document = Document();
+        const string injection = "</script><script>alert('benchmark')</script>";
+        document["note"] = injection;
         var html = ComparisonReport.Render(document.ToJsonString());
-        const string marker = "<script type=\"application/json\" id=\"sources\">";
+        Assert.IsFalse(html.Contains(injection));
+        const string marker = "<script type=\"application/json\" id=\"data\">";
         var start = html.IndexOf(marker, StringComparison.Ordinal) + marker.Length;
         var end = html.IndexOf("</script>", start, StringComparison.Ordinal);
-        var source = JsonNode.Parse(html[start..end])!;
-        var workload = source["approaches"]!["Create1/Scalar/Arch/Default"]!["workload"]!;
-        Assert.AreEqual("bench/AlvorKit.ECS.Bench.Comparison/Workloads/Create1/Scalar/RaceArchCreate1Default.cs",
-            (string)workload["path"]!);
-        Assert.IsTrue((int)workload["line"]! > 0);
-        Assert.IsTrue(Path.IsPathFullyQualified((string)source["root"]!));
-        const string dataMarker = "<script type=\"application/json\" id=\"data\">";
-        var dataStart = html.IndexOf(dataMarker, StringComparison.Ordinal) + dataMarker.Length;
-        var dataEnd = html.IndexOf("</script>", dataStart, StringComparison.Ordinal);
-        Assert.IsTrue(JsonNode.DeepEquals(document, JsonNode.Parse(html[dataStart..dataEnd])));
+        Assert.IsTrue(JsonNode.DeepEquals(document, JsonNode.Parse(html[start..end])));
     }
 
-    /// <summary>Both storage models have fixed scalar representatives in all seven workloads, with explicit SIMD gaps.</summary>
+    /// <summary>HTML keeps exact samples, sources, and per-launch drift inputs without embedding duplicate measurements.</summary>
     [TestMethod]
-    public void AlvorKitStorageModelsHaveIndependentRepresentatives()
+    public void EmbeddedDataPreservesChartInputs()
     {
-        var cases = ComparisonCatalog.Cases.Where(entry => entry.Framework == "AlvorKit").ToArray();
+        var first = Document();
+        var second = Document();
+        var warmups = new JsonArray();
 
-        foreach (var scenario in cases.Select(entry => entry.Scenario).Distinct())
+        for (var number = 1; number <= 7; number++)
         {
-            var scalar = cases.Where(entry => entry.Scenario == scenario && entry.Mode == "Scalar").ToArray();
-            Assert.AreEqual(2, scalar.Count(entry => entry.Representative));
-            Assert.AreEqual(1, scalar.Count(entry => entry.Storage == "Sparse" && entry.Representative));
-            Assert.AreEqual(1, scalar.Count(entry => entry.Storage == "Archetypal" && entry.Representative));
-
-            if (scenario.StartsWith("Create"))
-            {
-                Assert.IsTrue(scalar.Single(entry => entry.Variant == "ArchetypalReusedBuilder").Representative);
-                Assert.IsFalse(scalar.Single(entry => entry.Variant == "ArchetypalSetters").Representative);
-                Assert.IsFalse(scalar.Single(entry => entry.Variant == "SparseMutator").Representative);
-            }
+            for (var launch = 0; launch < 2; launch++)
+                warmups.Add(new JsonObject { ["number"] = number, ["launch"] = launch, ["elapsedNanoseconds"] = number * 100 });
         }
 
-        Assert.IsFalse(cases.Any(entry => entry.Storage == "Sparse" && entry.Mode == "Simd"));
-        var recorded = ComparisonProvenance.Capture()["approaches"]!.AsArray();
-        Assert.AreEqual(11, recorded.Select(entry => $"{entry!["framework"]}/{entry["storage"]}").Distinct().Count());
-        Assert.AreEqual(7, recorded.Count(entry =>
-            (string?)entry!["storage"] == "Sparse" && (string?)entry["mode"] == "Scalar" && (bool)entry["representative"]!));
+        second["benchmarks"]![0]!["warmups"] = warmups;
+        var combined = ComparisonReportCollection.Combine([first, second]);
+        var original = combined.ToJsonString();
+        var view = EmbeddedData(ComparisonReport.Render(original));
+        var expected = warmups.Where(sample => (int)sample!["number"]! >= 5)
+            .OrderBy(sample => (int)sample!["launch"]!).Select(sample => sample!.DeepClone()).ToArray();
+        Assert.IsTrue(JsonNode.DeepEquals(new JsonArray(expected), view["benchmarks"]![0]!["warmups"]));
+        Assert.IsTrue(JsonNode.DeepEquals(combined["benchmarks"]![0]!["samples"], view["benchmarks"]![0]!["samples"]));
+        Assert.AreEqual(1, (int)view["benchmarks"]![0]!["reportRun"]!);
+
+        for (var index = 0; index < 2; index++)
+        {
+            Assert.IsNull(view["reportRuns"]![index]!["benchmarks"]);
+            Assert.IsTrue(JsonNode.DeepEquals(combined["reportRuns"]![index]!["ecsComparison"]!["sources"],
+                view["reportRuns"]![index]!["ecsComparison"]!["sources"]));
+        }
+
+        Assert.AreEqual(original, combined.ToJsonString());
     }
 
-    /// <summary>Build metadata records package versions and identifies each external framework without separate manifests.</summary>
+    /// <summary>Writing a small HTML view leaves the full JSON intact and links to its actual relative path.</summary>
     [TestMethod]
-    public void PackageVersionsCoverEveryExternalFramework()
+    public void HtmlLinksUnmodifiedRawMeasurements()
     {
-        var packages = ComparisonProvenance.Capture()["packages"]!.AsArray();
-        Assert.AreEqual(packages.Count, packages.Select(entry => (string)entry!["package"]!).Distinct().Count());
-
-        foreach (var package in packages)
-        {
-            Assert.IsFalse(string.IsNullOrWhiteSpace((string?)package!["package"]));
-            Assert.IsFalse(string.IsNullOrWhiteSpace((string?)package["version"]));
-        }
-
-        foreach (var framework in ComparisonCatalog.Cases.Select(entry => entry.Framework).Distinct())
-        {
-            if (framework == "AlvorKit")
-                continue;
-            Assert.AreEqual(1, packages.Count(entry => (string?)entry!["framework"] == framework), framework);
-        }
+        using var workspace = TempWorkspace.Create();
+        var raw = Path.Combine(workspace.Root, "measurements #1.json");
+        var output = Path.Combine(workspace.Root, "view", "comparison.html");
+        var json = Document().ToJsonString();
+        File.WriteAllText(raw, json);
+        ComparisonReport.Write(raw, output);
+        Assert.AreEqual(json, File.ReadAllText(raw));
+        Assert.AreEqual("../measurements #1.json", (string)EmbeddedData(File.ReadAllText(output))["rawDataPath"]!);
     }
 
-    /// <summary>Invalid or incomparable observations fail before producing a misleading chart.</summary>
+    private static JsonNode EmbeddedData(string html)
+    {
+        const string marker = "<script type=\"application/json\" id=\"data\">";
+        var start = html.IndexOf(marker, StringComparison.Ordinal) + marker.Length;
+        var end = html.IndexOf("</script>", start, StringComparison.Ordinal);
+        return JsonNode.Parse(html[start..end])!;
+    }
+
+    /// <summary>Update padding and operation counts use their recorded contracts without path parsing.</summary>
+    [TestMethod]
+    public void PaddedUpdateContractsRemainComparable()
+    {
+        var document = Document();
+        var update = ComparisonExperiments.All.First(entry => entry.Scenario == "Update2" && entry.Input.Padding == 10);
+        document["ecsComparison"]!["experiments"]!.AsArray().Add(JsonSerializer.SerializeToNode(update.Metadata, ComparisonReport.Options));
+        document["benchmarks"]!.AsArray().Add(Measurement(update));
+        ComparisonReport.Validate(document);
+    }
+
+    /// <summary>Invalid durations, normalization, identity, and unsupported schemas fail before chart generation.</summary>
     [TestMethod]
     [DataRow("schema")]
     [DataRow("provenance")]
@@ -164,16 +158,8 @@ public class ComparisonReportTest
     [DataRow("duplicate")]
     [DataRow("unknown")]
     [DataRow("count")]
-    [DataRow("mixed_counts")]
-    [DataRow("padding")]
-    [DataRow("normalization")]
     [DataRow("no_cases")]
-    [DataRow("storage")]
-    [DataRow("representative")]
-    [DataRow("parallel")]
-    [DataRow("identity")]
-    [DataRow("no_alvorkit")]
-    [DataRow("no_external")]
+    [DataRow("duplicate_contract")]
     public void RejectsInvalidMeasurements(string defect)
     {
         var document = Document();
@@ -181,36 +167,26 @@ public class ComparisonReportTest
 
         switch (defect)
         {
-            case "no_alvorkit": document["ecsComparison"]!["approaches"]!.AsArray().RemoveAt(1); break;
-            case "no_external": document["ecsComparison"]!["approaches"]!.AsArray().RemoveAt(0); break;
-            case "parallel": document["ecsComparison"]!["approaches"]![0]!["mode"] = "Parallel"; break;
-            case "identity": document["ecsComparison"]!["approaches"]![0]!["mode"] = "Identity"; break;
-            case "storage": document["ecsComparison"]!["approaches"]![0]!["storage"] = "Sparse"; break;
-            case "representative": document["ecsComparison"]!["approaches"]![0]!["representative"] = false; break;
             case "schema": document["schemaVersion"] = 1; break;
             case "provenance": document["ecsComparison"]!["schemaVersion"] = 0; break;
-            case "operations": entry["samples"]![0]!["operationCount"] = 0; break;
+            case "operations": entry["samples"]![0]!["operationCount"] = 1; break;
             case "elapsed": entry["samples"]![0]!["elapsedNanoseconds"] = 0; break;
             case "empty": entry["samples"] = new JsonArray(); break;
             case "unit": entry["unit"] = "batch"; break;
             case "duplicate": document["benchmarks"]!.AsArray().Add(entry.DeepClone()); break;
-            case "unknown": entry["id"] = "Create1/N100000/Padding0/Scalar/Unknown/Default"; break;
-            case "count": entry["id"] = "Create1/N0/Padding0/Scalar/Arch/Default"; break;
-            case "mixed_counts":
-                var differentCount = entry.DeepClone();
-                differentCount["id"] = "Create1/N200000/Padding0/Scalar/Arch/Default";
-                differentCount["samples"]![0]!["operationCount"] = 200000;
-                document["benchmarks"]!.AsArray().Add(differentCount);
-                break;
-            case "padding": entry["id"] = "Create1/N100000/Padding10/Scalar/Arch/Default"; break;
-            case "normalization": entry["samples"]![0]!["operationCount"] = 1; break;
+            case "unknown": entry["id"] = "unknown"; break;
+            case "count": document["ecsComparison"]!["experiments"]![0]!["input"]!["count"] = 0; break;
             case "no_cases": document["benchmarks"] = new JsonArray(); break;
+            case "duplicate_contract":
+                var contracts = document["ecsComparison"]!["experiments"]!.AsArray();
+                contracts.Add(contracts[0]!.DeepClone());
+                break;
         }
 
         Assert.ThrowsExactly<InvalidDataException>(() => ComparisonReport.Render(document.ToJsonString()));
     }
 
-    /// <summary>Rendering a saved run cannot accidentally replace its source measurements.</summary>
+    /// <summary>Rendering cannot overwrite the raw input artifact.</summary>
     [TestMethod]
     public void RejectsOverwritingInput()
     {
@@ -218,41 +194,150 @@ public class ComparisonReportTest
         var path = Path.Combine(workspace.Root, "results.json");
         File.WriteAllText(path, Document().ToJsonString());
         Assert.ThrowsExactly<ArgumentException>(() => ComparisonReport.Write(path, path));
-        Assert.AreEqual(9, (int)JsonNode.Parse(File.ReadAllText(path))!["schemaVersion"]!);
+        Assert.ThrowsExactly<ArgumentException>(() => ComparisonReport.Write(path, path, path));
     }
 
-    private static JsonObject Document() => new()
+    /// <summary>Independent-launch estimates must agree with complete, correctly identified raw launches.</summary>
+    [TestMethod]
+    [DataRow("identity")]
+    [DataRow("missing")]
+    [DataRow("estimate")]
+    public void RejectsInvalidLaunchAggregation(string defect)
     {
-        ["schemaVersion"] = 9,
-        ["suite"] = "AlvorKit.ECS.Bench.Comparison",
-        ["ecsComparison"] = new JsonObject
+        var document = Document();
+        var entry = document["benchmarks"]![0]!;
+        var sample = entry["samples"]![0]!;
+        sample["launch"] = 0;
+        var second = sample.DeepClone();
+        second["launch"] = 1;
+        entry["samples"]!.AsArray().Add(second);
+        document["study"] = new JsonObject { ["launches"] = 2 };
+        document["selection"] = new JsonObject { ["sampleCount"] = 1 };
+        var mean = (double)sample["elapsedNanoseconds"]! / (int)sample["operationCount"]!;
+        entry["launchEstimate"] = JsonSerializer.SerializeToNode(BenchStatistics.Estimate([mean, mean]), ComparisonReport.Options);
+        ComparisonReport.Validate(document);
+
+        switch (defect)
         {
-            ["schemaVersion"] = 2,
-            ["approaches"] = new JsonArray(
-                new JsonObject
-                {
-                    ["scenario"] = "Create1",
-                    ["framework"] = "Arch",
-                    ["mode"] = "Scalar",
-                    ["variant"] = "Default",
-                    ["storage"] = "",
-                    ["representative"] = true,
-                },
-                new JsonObject
-                {
-                    ["scenario"] = "Create1",
-                    ["framework"] = "AlvorKit",
-                    ["mode"] = "Scalar",
-                    ["variant"] = "ArchetypalReusedBuilder",
-                    ["storage"] = "Archetypal",
-                    ["representative"] = true,
-                }),
-        },
-        ["benchmarks"] = new JsonArray(new JsonObject
+            case "identity": second["launch"] = 2; break;
+            case "missing": entry["samples"]!.AsArray().RemoveAt(1); break;
+            case "estimate": entry["launchEstimate"]!["mean"] = 999d; break;
+        }
+
+        Assert.ThrowsExactly<InvalidDataException>(() => ComparisonReport.Validate(document));
+    }
+
+    /// <summary>Calibration changes work duration without changing the population, padding, or operation unit.</summary>
+    [TestMethod]
+    public void CalibrationPreservesComparableInput()
+    {
+        var experiment = ComparisonExperiments.All.First(entry => entry.Scenario == "Update2");
+        var calibrated = experiment.WithPasses(experiment.Input.Passes * 2);
+        Assert.AreEqual(experiment.Input with { Passes = experiment.Input.Passes * 2 }, calibrated.Input);
+        Assert.AreEqual(experiment.Id, calibrated.Id);
+        Assert.AreEqual(experiment.Operations * 2, calibrated.Operations);
+        Assert.AreEqual(experiment.Unit, calibrated.Unit);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => experiment.WithPasses(0));
+    }
+
+    /// <summary>A near-empty query cannot inflate a full scan into hundreds of seconds of repeated warmup.</summary>
+    [TestMethod]
+    [DataRow(0.02, 0.1, 2, 1000, 100)]
+    [DataRow(0.001, 1, 2, 1000, 20)]
+    [DataRow(0.001, 1, 2, 7, 7)]
+    [DataRow(3, 30, 2, 1000, 1)]
+    public void CalibrationBoundsSlowStrategies(double fastest, double slowest, double target, int capacity, int expected)
+    {
+        Assert.AreEqual(expected, ComparisonCalibration.Multiplier(fastest, slowest, target, capacity));
+    }
+
+    /// <summary>Package provenance comes from the pinned build references for all external frameworks.</summary>
+    [TestMethod]
+    public void PackageVersionsCoverEveryExternalFramework()
+    {
+        var packages = ComparisonProvenance.Capture([])["packages"]!.AsArray();
+
+        foreach (var framework in ComparisonCatalog.Cases.Select(entry => entry.Framework).Distinct().Where(name => name != "AlvorKit"))
+            Assert.AreEqual(1, packages.Count(entry => (string?)entry!["framework"] == framework), framework);
+    }
+
+    private static JsonObject Document()
+    {
+        var entry = ComparisonExperiments.All.First(item => item.Id == "Create1/N100000/Padding0/Scalar/Arch/Default");
+        return new JsonObject
         {
-            ["id"] = "Create1/N100000/Padding0/Scalar/Arch/Default",
-            ["unit"] = "Ent",
-            ["samples"] = new JsonArray(new JsonObject { ["operationCount"] = 100000, ["elapsedNanoseconds"] = 100 }),
-        }),
+            ["schemaVersion"] = 9,
+            ["suite"] = "AlvorKit.ECS.Bench.Comparison",
+            ["ecsComparison"] = new JsonObject
+            {
+                ["schemaVersion"] = 3,
+                ["experiments"] = new JsonArray(JsonSerializer.SerializeToNode(entry.Metadata, ComparisonReport.Options)),
+                ["sources"] = ComparisonSources.Capture([entry]),
+            },
+            ["benchmarks"] = new JsonArray(Measurement(entry)),
+        };
+    }
+
+    /// <summary>Combining keeps the selected run's raw samples and source instead of pooling duplicate measurements.</summary>
+    [TestMethod]
+    public void CollectionPreservesCaseOrigins()
+    {
+        var first = Document();
+        var second = Document();
+        second["benchmarks"]![0]!["samples"]![0]!["elapsedNanoseconds"] = 250d;
+        second["ecsComparison"]!["sources"]!["note"] = "second source snapshot";
+        var combined = ComparisonReportCollection.Combine([first, second]);
+        Assert.AreEqual(1, combined["benchmarks"]!.AsArray().Count);
+        Assert.AreEqual(1, combined["benchmarks"]![0]!["samples"]!.AsArray().Count);
+        Assert.AreEqual(250d, (double)combined["benchmarks"]![0]!["samples"]![0]!["elapsedNanoseconds"]!);
+        Assert.AreEqual(1, (int)combined["benchmarks"]![0]!["reportRun"]!);
+        Assert.AreEqual("second source snapshot", (string)combined["reportRuns"]![1]!["ecsComparison"]!["sources"]!["note"]!);
+        Assert.IsTrue(JsonNode.DeepEquals(first, combined["reportRuns"]![0]));
+        ComparisonReport.Render(combined.ToJsonString());
+
+        combined["benchmarks"]![0]!["samples"]![0]!["elapsedNanoseconds"] = 300d;
+        Assert.ThrowsExactly<InvalidDataException>(() => ComparisonReport.Validate(combined));
+    }
+
+    /// <summary>Different environments and cold runs cannot be presented as one warmed comparison.</summary>
+    [TestMethod]
+    [DataRow("cpu")]
+    [DataRow("packages")]
+    [DataRow("runtimeOverrides")]
+    public void CollectionRejectsDifferentEnvironment(string key)
+    {
+        var first = Document();
+        var second = Document();
+        second["ecsComparison"]![key] = "different";
+        Assert.ThrowsExactly<InvalidDataException>(() => ComparisonReportCollection.Combine([first, second]));
+    }
+
+    /// <summary>Combined reports cannot recursively duplicate runs or overwrite their source JSON.</summary>
+    [TestMethod]
+    public void CollectionRejectsNestedInputAndOverwrite()
+    {
+        var first = Document();
+        var second = Document();
+        var combined = ComparisonReportCollection.Combine([first, second]);
+        Assert.ThrowsExactly<InvalidDataException>(() => ComparisonReportCollection.Combine([first, combined]));
+        second["study"] = new JsonObject { ["state"] = "ProcessCold", ["launches"] = 1 };
+        second["selection"] = new JsonObject { ["sampleCount"] = 1 };
+        var sample = second["benchmarks"]![0]!["samples"]![0]!;
+        sample["launch"] = 0;
+        var mean = (double)sample["elapsedNanoseconds"]! / (int)sample["operationCount"]!;
+        second["benchmarks"]![0]!["launchEstimate"] =
+            JsonSerializer.SerializeToNode(BenchStatistics.Estimate([mean]), ComparisonReport.Options);
+        Assert.ThrowsExactly<InvalidDataException>(() => ComparisonReportCollection.Combine([first, second]));
+        using var workspace = TempWorkspace.Create();
+        var path = Path.Combine(workspace.Root, "results.json");
+        File.WriteAllText(path, first.ToJsonString());
+        Assert.ThrowsExactly<ArgumentException>(() => ComparisonReportCollection.Write([path, path], path));
+    }
+
+    private static JsonObject Measurement(ComparisonExperiment entry) => new()
+    {
+        ["id"] = entry.Id,
+        ["unit"] = entry.Unit,
+        ["samples"] = new JsonArray(new JsonObject { ["operationCount"] = entry.Operations, ["elapsedNanoseconds"] = 100d }),
     };
 }

@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Performs cold structural operations and precise registration for one exact field.</summary>
-internal sealed class EntArchColumnOps<T, N, A> : EntArchColumnOps
+internal class EntArchColumnOps<T, N, A> : EntArchColumnOps
 {
     private static readonly EntArchColumnOps<T, N, A> Instance = new();
 
@@ -66,16 +66,33 @@ internal sealed class EntArchColumnOps<T, N, A> : EntArchColumnOps
             (int)BitOperations.RoundUpToPowerOf2((uint)(rowSetId + 1)));
     }
 
-    internal override void Copy(int srcRowSetId, int srcRow, int dstRowSetId, int dstRow)
+    /// <summary>Copies a retained field before compacting and clearing its source column.</summary>
+    internal override void Move(int srcRowSetId, int srcRow, int dstRowSetId, int dstRow, int lastRow)
     {
         var valuesByRowSet = EntArchColumn<T, N, A>.Values;
-        valuesByRowSet[dstRowSetId][dstRow] = valuesByRowSet[srcRowSetId][srcRow];
+        var source = valuesByRowSet[srcRowSetId];
+        var destination = (uint)dstRowSetId < (uint)valuesByRowSet.Length ? valuesByRowSet[dstRowSetId] : null;
+
+        if (destination != null)
+            destination[dstRow] = source[srcRow];
+
+        if (srcRow != lastRow)
+            source[srcRow] = source[lastRow];
+
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            source[lastRow] = default!;
     }
 
-    internal override void Clear(int rowSetId, int row)
+    /// <summary>Compacts and clears a removed value with one directory lookup.</summary>
+    internal override void Remove(int rowSetId, int row, int lastRow)
     {
+        var values = EntArchColumn<T, N, A>.Values[rowSetId];
+
+        if (row != lastRow)
+            values[row] = values[lastRow];
+
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-            EntArchColumn<T, N, A>.Values[rowSetId][row] = default!;
+            values[lastRow] = default!;
     }
 
     internal override void ClearRowSet(int rowSetId)

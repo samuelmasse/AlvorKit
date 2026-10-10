@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 internal static class RaceMorpehCreate1Measurements
 {
-    internal static BenchResult Direct(int count, int padding)
+    internal static BenchResult Direct(int count, int padding, int passes)
     {
         using var fixture = new RaceMorpehBaseContext();
         var timer = BenchTimer.Start();
@@ -12,7 +12,7 @@ internal static class RaceMorpehCreate1Measurements
         return result;
     }
 
-    internal static BenchResult Stash(int count, int padding)
+    internal static BenchResult Stash(int count, int padding, int passes)
     {
         using var fixture = new RaceMorpehBaseContext();
         var timer = BenchTimer.Start();

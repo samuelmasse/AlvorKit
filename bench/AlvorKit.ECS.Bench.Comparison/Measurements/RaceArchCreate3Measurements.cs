@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 internal static class RaceArchCreate3Measurements
 {
-    internal static BenchResult Default(int count, int padding)
+    internal static BenchResult Default(int count, int padding, int passes)
     {
         using var fixture = new RaceArchBaseContext();
         var timer = BenchTimer.Start();

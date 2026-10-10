@@ -48,7 +48,7 @@ internal static class ComparisonProvenance
         return output.GetAwaiter().GetResult();
     }
 
-    internal static JsonObject Capture()
+    internal static JsonObject Capture(IEnumerable<ComparisonExperiment> experiments)
     {
         var root = ProjectRoot.FindFromCurrentProcess(typeof(ComparisonProvenance), requireResDirectory: true);
         var cpu = OperatingSystem.IsWindows()
@@ -57,20 +57,41 @@ internal static class ComparisonProvenance
             : null;
         return new JsonObject
         {
-            ["schemaVersion"] = 2,
+            ["schemaVersion"] = 3,
             ["cpu"] = cpu,
             ["revision"] = Git(root, "rev-parse", "HEAD").Trim(),
             ["workingTree"] = Git(root, "status", "--short"),
             ["packages"] = Packages(),
-            ["approaches"] = JsonSerializer.SerializeToNode(ComparisonCatalog.Cases.Select(entry => new
+            ["experiments"] = JsonSerializer.SerializeToNode(experiments.Select(entry => entry.Metadata), ComparisonReport.Options),
+            ["sources"] = ComparisonSources.Capture(experiments),
+            ["sourceDiff"] = Git(root, "diff", "--binary", "HEAD", "--", "bench/AlvorKit.ECS.Bench.Comparison",
+                "src/AlvorKit.Bench", "src/AlvorKit.ECS", "src/AlvorKit.ECS.Indexed", "src/AlvorKit.ECS.Generator",
+                "res/templates/ecs", "res/templates/ecs-comparison", "tests/AlvorKit.ECS.Bench.Comparison.Test"),
+            ["vector128"] = Vector128.IsHardwareAccelerated,
+            ["vector256"] = Vector256.IsHardwareAccelerated,
+            ["vector512"] = Vector512.IsHardwareAccelerated,
+            ["assemblyModuleId"] = typeof(ComparisonProvenance).Module.ModuleVersionId.ToString(),
+            ["ecsAssemblyModuleIds"] = new JsonObject
             {
-                entry.Scenario,
-                entry.Framework,
-                entry.Storage,
-                entry.Variant,
-                entry.Mode,
-                entry.Representative,
-            }), ComparisonReport.Options),
+                ["AlvorKit.ECS"] = typeof(Ent).Module.ModuleVersionId.ToString(),
+                ["AlvorKit.ECS.Indexed"] = typeof(EntPtrIdx).Module.ModuleVersionId.ToString(),
+            },
+            ["runtimeOverrides"] = RuntimeOverrides(),
         };
+    }
+
+    private static JsonObject RuntimeOverrides()
+    {
+        var result = new JsonObject();
+
+        foreach (var prefix in new[] { "DOTNET_", "COMPlus_" })
+        {
+            foreach (var name in new[]
+                { "TieredCompilation", "TieredPGO", "ReadyToRun", "gcServer", "GCHeapHardLimit",
+                    "EnableHWIntrinsic", "EnableAVX2", "EnableAVX512F" })
+                result[prefix + name] = Environment.GetEnvironmentVariable(prefix + name);
+        }
+
+        return result;
     }
 }

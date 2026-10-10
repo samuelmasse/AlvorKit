@@ -104,7 +104,7 @@ public readonly partial record struct EntMut
             if (dstArchId == EntArchGraph<A>.UnresolvedTransitionArchId)
                 dstArchId = EntArchGraph<A>.ResolveAdd(srcArchId, fieldId);
 
-            loc = EntArchRows<A>.Move(allocId, loc.RowSetId, loc.Row, dstArchId, srcArchId);
+            loc = EntArchRows<A>.Move(allocId, loc.RowSetId, loc.Row, dstArchId);
         }
 
         Set<EntArchLoc, A>(loc);
@@ -135,7 +135,7 @@ public readonly partial record struct EntMut
             if (dstArchId == EntArchGraph<A>.UnresolvedTransitionArchId)
                 dstArchId = EntArchGraph<A>.ResolveRemove(srcArchId, fieldId);
 
-            loc = EntArchRows<A>.Move(allocId, loc.RowSetId, loc.Row, dstArchId, dstArchId);
+            loc = EntArchRows<A>.Move(allocId, loc.RowSetId, loc.Row, dstArchId);
             Set<EntArchLoc, A>(loc);
         }
 

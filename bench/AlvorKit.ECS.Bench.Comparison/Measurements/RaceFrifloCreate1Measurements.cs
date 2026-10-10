@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 internal static class RaceFrifloCreate1Measurements
 {
-    internal static BenchResult Default(int count, int padding)
+    internal static BenchResult Default(int count, int padding, int passes)
     {
         var fixture = new RaceFrifloCreateContext();
         var timer = BenchTimer.Start();

@@ -1,39 +1,60 @@
 namespace AlvorKit;
 
+/// <summary>Captures exact source text with the run so saved reports do not depend on the current checkout.</summary>
 internal static class ComparisonSources
 {
-    private const string ProjectPath = "bench/AlvorKit.ECS.Bench.Comparison";
-
-    internal static JsonObject Capture(JsonArray approaches)
+    internal static JsonObject Capture(IEnumerable<ComparisonExperiment> experiments)
     {
         var root = ProjectRoot.FindFromCurrentProcess(typeof(ComparisonSources), requireResDirectory: true);
-        var sources = new JsonObject();
+        var project = Path.Combine(root, "bench", "AlvorKit.ECS.Bench.Comparison");
+        var files = Directory.GetFiles(project, "*.cs", SearchOption.AllDirectories)
+            .ToDictionary(path => Path.GetFileNameWithoutExtension(path), path => path);
+        var locations = new JsonObject();
+        var contents = new JsonObject();
 
-        foreach (var approach in approaches)
+        foreach (var directory in new[]
         {
-            var entry = ComparisonCatalog.Cases.Single(item =>
-                item.Scenario == (string)approach!["scenario"]! && item.Mode == (string)approach["mode"]! &&
-                item.Framework == (string)approach["framework"]! && item.Variant == (string)approach["variant"]!);
-            var method = entry.Measure.Method;
-            sources.Add($"{entry.Scenario}/{entry.Mode}/{entry.Framework}/{entry.Variant}", new JsonObject
-            {
-                ["workload"] = Location(root,
-                    $"{ProjectPath}/Workloads/{entry.Scenario}/{entry.Mode}/{entry.Workload.Name}.cs", " Run("),
-                ["measurement"] = Location(root,
-                    $"{ProjectPath}/Measurements/{method.DeclaringType!.Name}.cs", $" BenchResult {method.Name}("),
-            });
+            project,
+            Path.Combine(root, "src", "AlvorKit.Bench"),
+            Path.Combine(root, "src", "AlvorKit.ECS"),
+            Path.Combine(root, "src", "AlvorKit.ECS.Indexed"),
+            Path.Combine(root, "src", "AlvorKit.ECS.Generator"),
+            Path.Combine(root, "res", "templates", "ecs", "source-generator"),
+        })
+        {
+            foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+                .Where(path => Path.GetExtension(path) is ".cs" or ".csproj" or ".tmpl"))
+                contents[Path.GetRelativePath(root, file).Replace('\\', '/')] = File.ReadAllText(file);
         }
-        return new JsonObject { ["root"] = root, ["approaches"] = sources };
+
+        var template = "res/templates/ecs-comparison/report.html.tmpl";
+        contents[template] = File.ReadAllText(Path.Combine(root, template));
+
+        foreach (var entry in experiments)
+        {
+            var workload = files[entry.Workload.Name];
+            var measurement = files[entry.MeasurementMethod.DeclaringType!.Name];
+            locations[entry.Id] = new JsonObject
+            {
+                ["workload"] = Location(root, workload, " Run(", contents),
+                ["measurement"] = Location(root, measurement, $" BenchResult {entry.MeasurementMethod.Name}(", contents),
+            };
+        }
+
+        return new JsonObject { ["root"] = root, ["locations"] = locations, ["files"] = contents };
     }
 
-    private static JsonObject Location(string root, string path, string declaration)
+    private static JsonObject Location(string root, string path, string declaration, JsonObject contents)
     {
-        var lines = File.ReadAllLines(Path.Combine(root, path));
-        var matches = lines.Select((text, index) => (text, line: index + 1))
-            .Where(item => item.text.Contains(declaration)).ToArray();
+        var relative = Path.GetRelativePath(root, path).Replace('\\', '/');
+        var text = File.ReadAllText(path);
+        var matches = text.Split('\n').Select((line, index) => (line, index))
+            .Where(item => item.line.Contains(declaration, StringComparison.Ordinal)).ToArray();
 
         if (matches.Length != 1)
-            throw new InvalidDataException($"Expected one source declaration '{declaration}' in {path}.");
-        return new JsonObject { ["path"] = path, ["line"] = matches[0].line };
+            throw new InvalidDataException($"Expected exactly one declaration '{declaration}' in {relative}.");
+
+        contents[relative] = text;
+        return new JsonObject { ["path"] = relative, ["line"] = matches[0].index + 1 };
     }
 }
