@@ -3,6 +3,27 @@ namespace AlvorKit;
 [TestClass]
 public class KeyboardTest
 {
+    /// <summary>Keypad bindings retain independent press, repeat, and release state from the number row.</summary>
+    [TestMethod]
+    public void Keyboard_KeypadTransitions_AreIndependentFromNumberRow()
+    {
+        var (host, loop) = WindowingTestFactory.Create();
+        var keyboard = new Keyboard(loop);
+        host.RaiseKeyDown(Keys.Keypad1);
+        host.RaiseKeyDown(Keys.KeypadAdd);
+        Assert.IsTrue(keyboard.IsKeyPressed(Keys.Keypad1));
+        Assert.IsTrue(keyboard.IsKeyDown(Keys.KeypadAdd));
+        Assert.IsFalse(keyboard.IsKeyDown(Keys.D1));
+        host.RaiseUpdate();
+        host.RaiseKeyDown(Keys.Keypad1, true);
+        Assert.IsFalse(keyboard.IsKeyPressed(Keys.Keypad1));
+        Assert.IsTrue(keyboard.IsKeyPressedRepeated(Keys.Keypad1));
+        host.RaiseKeyUp(Keys.Keypad1);
+        host.RaiseKeyUp(Keys.KeypadAdd);
+        Assert.IsTrue(keyboard.IsKeyUp(Keys.Keypad1));
+        Assert.IsTrue(keyboard.IsKeyUp(Keys.KeypadAdd));
+    }
+
     [TestMethod]
     public void Keyboard_EmptyState_HasCorrectValues()
     {
