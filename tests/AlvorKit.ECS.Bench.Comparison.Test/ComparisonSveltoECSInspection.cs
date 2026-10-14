@@ -3,13 +3,20 @@ using global::Svelto.ECS;
 
 namespace AlvorKit;
 
-internal static class ComparisonSveltoECSInspection
+/// <summary>Observes one benchmark root without registering duplicate engines or changing its readiness mode.</summary>
+internal class ComparisonSveltoECSInspection
 {
-    internal static ComparisonObservation Read(EnginesRoot root, int components)
+    private readonly ComparisonSveltoObserver observer = new();
+
+    /// <summary>Attaches the observer once; the root initializes querying engines when they are added.</summary>
+    internal ComparisonSveltoECSInspection(EnginesRoot root)
     {
-        var observer = new ComparisonSveltoObserver();
-        root.AddEngine(observer, true);
-        root.Ready();
+        root.AddEngine(observer);
+    }
+
+    /// <summary>Reads component counts and values before or after a benchmark workload.</summary>
+    internal ComparisonObservation Read(int components)
+    {
         var count = 0;
         long first = 0, second = 0, third = 0;
 
@@ -47,14 +54,11 @@ internal static class ComparisonSveltoECSInspection
         return new(count, first, second, third);
     }
 
-    internal static int Padding(EnginesRoot root)
+    /// <summary>Counts padding components through the same initialized observer.</summary>
+    internal int Padding()
     {
         var count = 0;
-        var observer = new ComparisonSveltoObserver();
-        root.AddEngine(observer, true);
-        root.Ready();
-
-        var (values, length) = observer.entitiesDB.QueryEntities<ComparisonPadding>(Group);
+        var (_, length) = observer.entitiesDB.QueryEntities<ComparisonPadding>(Group);
         count = length;
         return count;
     }
