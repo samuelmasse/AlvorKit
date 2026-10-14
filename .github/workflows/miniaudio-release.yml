@@ -155,7 +155,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          runner=()
+          runner=(env)
           if [[ "${{ matrix.rid }}" == "linux-arm" ]]; then
             runner=(qemu-arm -L /usr/arm-linux-gnueabihf)
           fi
