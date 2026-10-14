@@ -1,20 +1,18 @@
-kind: "single-c"
-windows: {}
+kind: "cmake"
+repositorySource: true
+windows:
+  cmakeOutput: "miniaudio.dll"
 linux:
+  cmakeOutput: "libminiaudio.so"
   packages:
     - "build-essential"
+    - "cmake"
   armPackages:
     - "gcc-arm-linux-gnueabihf"
-  linkLibraries:
-    - "dl"
-    - "pthread"
-    - "m"
   allowedDependencies:
     - "libc.so.6"
     - "libm.so.6"
     - "libpthread.so.0"
     - "libdl.so.2"
 macos:
-  linkLibraries:
-    - "pthread"
-    - "m"
+  cmakeOutput: "libminiaudio.dylib"

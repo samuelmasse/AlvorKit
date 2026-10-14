@@ -8,7 +8,9 @@ prefix: "ma_"
 workDir: "miniaudio-build"
 sourceDir: "miniaudio-{tag}"
 header: "miniaudio.h"
-implFile: "src/miniaudio.c"
+tuLines:
+  - '#include "miniaudio.h"'
+  - '#include "src/miniaudio_vorbis.h"'
 apiProject: "out/bindgen/AlvorKit.MiniAudio"
 backendProject: "out/bindgen/AlvorKit.MiniAudio.Backend"
 extraDefines:

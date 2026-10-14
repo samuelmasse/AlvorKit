@@ -1,10 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <PackageLicenseExpression>MIT-0</PackageLicenseExpression>
+        <PackageLicenseExpression>MIT-0 AND BSD-3-Clause</PackageLicenseExpression>
         <Description>miniaudio $(Version) binaries for win (x64, x86, arm64), linux (x64, arm,
             arm64) and osx (x64, arm64)</Description>
         <RepositoryUrl>https://github.com/mackron/miniaudio</RepositoryUrl>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="" />
+    </ItemGroup>
 
 </Project>
