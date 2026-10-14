@@ -3,7 +3,7 @@ namespace AlvorKit;
 /// <summary>Runs the C header binding pipeline for one configured native library.</summary>
 /// <param name="options">Command-line options that control strict validation.</param>
 [ExcludeFromCodeCoverage]
-internal sealed class CHeaderBindingGenerator(BindgenOptions options)
+internal class CHeaderBindingGenerator(BindgenOptions options)
 {
     /// <summary>Primary Clang target used to build the generated binding model.</summary>
     private const string PrimaryTarget = "x86_64-pc-windows-msvc";
@@ -24,6 +24,12 @@ internal sealed class CHeaderBindingGenerator(BindgenOptions options)
         var translationUnitPath = translationUnitWriter.Write(library);
         try
         {
+            if (library.Config.RuntimeIdentifiers.Length > 0)
+            {
+                await new RuntimeBindingGenerator(options).GenerateAsync(library, translationUnitPath, outputRoot);
+                return;
+            }
+
             EnsureShimFileExists(library);
 
             Console.WriteLine(

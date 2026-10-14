@@ -3,6 +3,17 @@
 #include "miniaudio.h"
 #include "extras/decoders/libvorbis/miniaudio_libvorbis.c"
 #include "miniaudio_vorbis.h"
+#include <stddef.h>
+#include "miniaudio_abi.inc"
+
+/* Layout probes are used by the managed release gate on each supported runtime. */
+MA_API size_t alvorkit_miniaudio_abi_count(void) {
+  return sizeof(alvorkit_abi_values) / sizeof(alvorkit_abi_values[0]);
+}
+
+MA_API size_t alvorkit_miniaudio_abi_value(size_t index) {
+  return index < alvorkit_miniaudio_abi_count() ? alvorkit_abi_values[index] : (size_t)-1;
+}
 
 static ma_decoding_backend_vtable *vorbis_backends[] = {
     &ma_gDecodingBackendVTable_libvorbis};

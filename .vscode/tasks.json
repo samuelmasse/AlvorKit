@@ -450,6 +450,22 @@
       ],
       "problemMatcher": "$msCompile",
       "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.BindingAbi",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "${workspaceFolder}/scripts/AlvorKit.Script.BindingAbi/AlvorKit.Script.BindingAbi.csproj", "--configuration", "Release", "--nologo"],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build AlvorKit.Script.MiniAudioVerify",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "${workspaceFolder}/scripts/AlvorKit.Script.MiniAudioVerify/AlvorKit.Script.MiniAudioVerify.csproj", "--configuration", "Release", "--nologo"],
+      "problemMatcher": "$msCompile",
+      "group": "build"
     }
   ]
 }

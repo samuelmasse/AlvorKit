@@ -11,4 +11,14 @@
         <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="" />
     </ItemGroup>
 
+    <ItemGroup>
+        <RequiredMiniAudioRuntime Include="win-x64/native/miniaudio.dll;win-x86/native/miniaudio.dll;win-arm64/native/miniaudio.dll" />
+        <RequiredMiniAudioRuntime Include="linux-x64/native/libminiaudio.so;linux-arm64/native/libminiaudio.so;linux-arm/native/libminiaudio.so" />
+        <RequiredMiniAudioRuntime Include="osx-x64/native/libminiaudio.dylib;osx-arm64/native/libminiaudio.dylib" />
+    </ItemGroup>
+    <Target Name="EnsureCompleteMiniAudioPackage" BeforeTargets="GenerateNuspec">
+        <Error Condition="!Exists('$(MSBuildProjectDirectory)/runtimes/%(RequiredMiniAudioRuntime.Identity)')"
+               Text="Missing MiniAudio runtime %(RequiredMiniAudioRuntime.Identity). Use the full MiniAudio release workflow." />
+    </Target>
+
 </Project>

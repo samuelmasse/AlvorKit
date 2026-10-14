@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Writes the generated C-header API, backend, native imports, and support projects.</summary>
-public sealed class BindingCodeEmitter(BindgenConfig config, string tag)
+public class BindingCodeEmitter(BindgenConfig config, string tag)
 {
     /// <summary>Emits all generated source and project files using the configured project paths.</summary>
     public void Emit(BindingModel model, string repoRoot, string bindingVersion, string nativeVersion)
@@ -27,6 +27,23 @@ public sealed class BindingCodeEmitter(BindgenConfig config, string tag)
         File.WriteAllText(Path.Combine(backendDirectory, backendProjectName + ".csproj"),
             projectEmitter.BackendProject(bindingVersion, nativeVersion, apiProjectName));
 
+        EmitSources(model, apiDirectory, backendDirectory);
+    }
+
+    /// <summary>Emits a separate source set for one native ABI within an existing project pair.</summary>
+    public void EmitRuntimeSources(BindingModel model, GeneratedProjectLayout layout, string runtime)
+    {
+        var apiDirectory = Path.Combine(layout.ApiDirectory, "runtimes", runtime);
+        var backendDirectory = Path.Combine(layout.BackendDirectory, "runtimes", runtime);
+        Directory.CreateDirectory(apiDirectory);
+        Directory.CreateDirectory(backendDirectory);
+        EmitSources(model, apiDirectory, backendDirectory);
+    }
+
+    /// <summary>Writes the C# declarations shared by ordinary and runtime-specific project layouts.</summary>
+    private void EmitSources(BindingModel model, string apiDirectory, string backendDirectory)
+    {
+        var context = new BindingEmitterContext(config, tag);
         var typeEmitter = new BindingTypeEmitter(context);
         foreach (var enumType in model.Enums)
             File.WriteAllText(Path.Combine(apiDirectory, enumType.ManagedName + ".cs"), typeEmitter.Enum(enumType));

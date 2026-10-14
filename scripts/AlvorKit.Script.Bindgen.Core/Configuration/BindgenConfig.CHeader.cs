@@ -3,6 +3,12 @@ namespace AlvorKit;
 /// <summary>C-header-specific configuration for one native library binding.</summary>
 public sealed partial class BindgenConfig
 {
+    /// <summary>Runtime ABIs emitted and packaged separately when native records differ between platforms.</summary>
+    public string[] RuntimeIdentifiers { get; set; } = [];
+
+    /// <summary>Generated native layout table compiled against real platform headers for release verification.</summary>
+    public string? AbiShim { get; set; }
+
     /// <summary>Generated native P/Invoke class name for C header bindings.</summary>
     public string NativeClass { get; set; } = "";
 

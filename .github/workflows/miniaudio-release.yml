@@ -1,0 +1,190 @@
+# MiniAudio's native and managed ABIs are released together, only after every
+# runtime has loaded the candidate NuGet packages and passed layout/audio checks.
+name: MiniAudio release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the verified native and managed packages to NuGet.org
+        required: true
+        default: false
+        type: boolean
+  push:
+    branches: [main]
+    paths:
+      - native/miniaudio/version/TAG
+      - native/miniaudio/version/REVISION
+      - native/miniaudio/version/BINDING_REVISION
+
+permissions:
+  contents: read
+
+concurrency:
+  group: miniaudio-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  native:
+    name: native ${{ matrix.rid }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: windows-2025, rid: win-x64 }
+          - { runner: windows-2025, rid: win-x86 }
+          - { runner: windows-11-arm, rid: win-arm64 }
+          - { runner: ubuntu-24.04, rid: linux-x64 }
+          - { runner: ubuntu-24.04-arm, rid: linux-arm64 }
+          - { runner: ubuntu-24.04-arm, rid: linux-arm }
+          - { runner: macos-26, rid: osx-arm64 }
+          - { runner: macos-26-intel, rid: osx-x64 }
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Build native runtime
+        run: dotnet run --project scripts/AlvorKit.Script.NativeBuild -- build miniaudio --rid ${{ matrix.rid }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: miniaudio-native-${{ matrix.rid }}
+          path: native/miniaudio/runtimes
+          if-no-files-found: error
+
+  packages:
+    needs: native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: miniaudio-native-*
+          path: native/miniaudio/runtimes
+          merge-multiple: true
+      - name: Pack complete native runtime matrix
+        run: dotnet pack native/miniaudio/AlvorKit.MiniAudio.Native.csproj -c Release -o out/miniaudio-packages
+      - name: Restore candidate native package for export verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(cat native/miniaudio/version/TAG).$(cat native/miniaudio/version/REVISION)"
+          dotnet new classlib -o out/miniaudio-native-restore --framework net10.0
+          dotnet add out/miniaudio-native-restore package AlvorKit.MiniAudio.Native --version "$version" --source "$PWD/out/miniaudio-packages"
+      - name: Generate and strictly verify all binding ABIs
+        run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- miniaudio --strict --setup-local
+      - name: Build every managed runtime assembly
+        shell: bash
+        run: |
+          set -euo pipefail
+          for rid in win-x64 win-x86 win-arm64 linux-x64 linux-arm64 linux-arm osx-x64 osx-arm64; do
+            dotnet build out/bindgen/AlvorKit.MiniAudio.Backend -c Release -p:BindingRuntimeIdentifier="$rid"
+          done
+      - name: Pack managed runtime assemblies
+        shell: bash
+        run: |
+          set -euo pipefail
+          for project in AlvorKit.MiniAudio AlvorKit.MiniAudio.Backend; do
+            dotnet pack "out/bindgen/$project" -c Release --no-build -p:BindingRuntimeIdentifier=win-x64 -o out/miniaudio-packages
+          done
+      - uses: actions/upload-artifact@v7
+        with:
+          name: miniaudio-candidate-packages
+          path: out/miniaudio-packages/*.nupkg
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        with:
+          name: miniaudio-abi-manifests
+          path: out/bindgen/miniaudio-abi-*.json
+          if-no-files-found: error
+
+  verify:
+    name: packages ${{ matrix.rid }}
+    needs: packages
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: windows-2025, rid: win-x64, binary: miniaudio.dll, exe: .exe }
+          - { runner: windows-2025, rid: win-x86, binary: miniaudio.dll, exe: .exe }
+          - { runner: windows-11-arm, rid: win-arm64, binary: miniaudio.dll, exe: .exe }
+          - { runner: ubuntu-24.04, rid: linux-x64, binary: libminiaudio.so, exe: "" }
+          - { runner: ubuntu-24.04-arm, rid: linux-arm64, binary: libminiaudio.so, exe: "" }
+          - { runner: ubuntu-24.04-arm, rid: linux-arm, binary: libminiaudio.so, exe: "" }
+          - { runner: macos-26, rid: osx-arm64, binary: libminiaudio.dylib, exe: "" }
+          - { runner: macos-26-intel, rid: osx-x64, binary: libminiaudio.dylib, exe: "" }
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/download-artifact@v8
+        with:
+          name: miniaudio-candidate-packages
+          path: out/miniaudio-packages
+      - uses: actions/download-artifact@v8
+        with:
+          name: miniaudio-abi-manifests
+          path: out/miniaudio-manifests
+      - name: Install ARM32 execution dependencies
+        if: matrix.rid == 'linux-arm'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user libc6-dev-armhf-cross libstdc++6-armhf-cross
+      - name: Publish verification executables from candidate packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(cat native/miniaudio/version/TAG).$(cat native/miniaudio/version/BINDING_REVISION)"
+          dotnet publish scripts/AlvorKit.Script.MiniAudioVerify -c Release -r "${{ matrix.rid }}" --self-contained true \
+            -p:MiniAudioVerifyVersion="$version" -p:RestoreAdditionalProjectSources="$PWD/out/miniaudio-packages" -o out/miniaudio-audio-probe
+          dotnet publish scripts/AlvorKit.Script.BindingAbi -c Release -r "${{ matrix.rid }}" --self-contained true -o out/miniaudio-abi-probe
+      - name: Verify native layouts and audio through restored packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          runner=()
+          if [[ "${{ matrix.rid }}" == "linux-arm" ]]; then
+            runner=(qemu-arm -L /usr/arm-linux-gnueabihf)
+          fi
+          "${runner[@]}" ./out/miniaudio-abi-probe/AlvorKit.Script.BindingAbi${{ matrix.exe }} \
+            --assembly out/miniaudio-audio-probe/AlvorKit.MiniAudio.dll \
+            --native out/miniaudio-audio-probe/${{ matrix.binary }} \
+            --manifest out/miniaudio-manifests/miniaudio-abi-${{ matrix.rid }}.json
+          "${runner[@]}" ./out/miniaudio-audio-probe/AlvorKit.Script.MiniAudioVerify${{ matrix.exe }}
+
+  publish:
+    needs: verify
+    if: github.event_name == 'push' || inputs.publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/download-artifact@v8
+        with:
+          name: miniaudio-candidate-packages
+          path: packages
+      - name: Publish native package, API, then backend
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          set -euo pipefail
+          for package in AlvorKit.MiniAudio.Native AlvorKit.MiniAudio AlvorKit.MiniAudio.Backend; do
+            dotnet nuget push "packages/$package."[0-9]*.nupkg \
+              --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          done

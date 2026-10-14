@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Resolves native records into managed struct descriptions on demand.</summary>
-internal sealed class CHeaderRecordResolver(
+internal class CHeaderRecordResolver(
     BindgenConfig config,
     CHeaderParseState state,
     CHeaderNameMapper names,
@@ -14,16 +14,17 @@ internal sealed class CHeaderRecordResolver(
             return existing;
         if (state.FailedStructs.Contains(nativeName) || !state.RecordByNativeName.TryGetValue(nativeName, out var record))
             return null;
-        return BuildStruct(record, nativeName);
+        return BuildStruct(record, nativeName, true);
     }
 
     /// <summary>Builds a managed struct and records failure for unsupported fields.</summary>
-    private BindingStruct? BuildStruct(RecordDecl record, string nativeName)
+    private BindingStruct? BuildStruct(RecordDecl record, string nativeName, bool isNativeType)
     {
         var isUnion = record.Handle.Kind == CXCursorKind.CXCursor_UnionDecl;
         var managedName = config.InteropTypeAliases.GetValueOrDefault(nativeName) ?? names.TypeName(nativeName);
         var built = new BindingStruct(nativeName, managedName, isUnion, (int)record.TypeForDecl.Handle.SizeOf, [], [],
-            XmlDocComment.Parse(record.Handle.RawCommentText.ToString())?.Summary);
+            XmlDocComment.Parse(record.Handle.RawCommentText.ToString())?.Summary)
+        { IsNativeType = isNativeType };
         state.StructByNativeName[nativeName] = built;
 
         var anonymousFieldIndex = 0;
@@ -82,7 +83,7 @@ internal sealed class CHeaderRecordResolver(
             return existing.ManagedName;
         if (state.FailedStructs.Contains(synthesizedName))
             return null;
-        return BuildStruct(definition, synthesizedName)?.ManagedName;
+        return BuildStruct(definition, synthesizedName, false)?.ManagedName;
     }
 
     /// <summary>Maps a fixed-size array field to a nested inline-buffer type.</summary>

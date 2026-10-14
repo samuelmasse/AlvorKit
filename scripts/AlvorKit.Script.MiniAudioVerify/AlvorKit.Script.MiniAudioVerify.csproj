@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="../../AlvorKit.Packages.props" />
+    <PropertyGroup>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <MiniAudioVerifyVersion Condition="'$(MiniAudioVerifyVersion)' == ''">$(MaBindVer)</MiniAudioVerifyVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <!-- Deliberately restore NuGet assets: this is the package-consumer release gate. -->
+        <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="$(MiniAudioVerifyVersion)" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="tone.ogg" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+</Project>

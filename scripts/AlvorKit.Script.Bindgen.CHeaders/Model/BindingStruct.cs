@@ -15,4 +15,8 @@ public record BindingStruct(
     int Size,
     List<BindingField> Fields,
     List<InlineBufferDefinition> NestedBuffers,
-    string? Documentation);
+    string? Documentation)
+{
+    /// <summary>Whether the name is a native typedef or tag, rather than a synthesized nested record name.</summary>
+    public bool IsNativeType { get; init; } = true;
+}

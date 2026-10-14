@@ -8,6 +8,7 @@
 #
 # Manual runs are artifact-oriented unless publishing is explicitly enabled.
 name: C header bindings packages
+# MiniAudio is released with its native ABI matrix by miniaudio-release.yml.
 
 on:
   # Manual dispatch can build one binding package or all C-header bindings.
@@ -24,7 +25,6 @@ on:
           - freetype
           - glfw
           - interception-profiler
-          - miniaudio
           - nfde
       publish:
         description: Publish generated binding packages to NuGet.org
@@ -43,7 +43,6 @@ on:
         "native/freetype/version/BINDING_REVISION",
         "native/glfw/version/BINDING_REVISION",
         "native/interception-profiler/version/BINDING_REVISION",
-        "native/miniaudio/version/BINDING_REVISION",
         "native/nfde/version/BINDING_REVISION",
       ]
 
@@ -90,7 +89,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             selection="${{ inputs.library }}"
             if [[ "$selection" == "all" ]]; then
-              selected=(fastnoise2 freetype glfw interception-profiler miniaudio nfde)
+              selected=(fastnoise2 freetype glfw interception-profiler nfde)
             else
               selected=("$selection")
             fi
@@ -133,7 +132,7 @@ jobs:
             }
 
             # version/BINDING_REVISION means "publish a new managed binding version".
-            for library in fastnoise2 freetype glfw interception-profiler miniaudio nfde; do
+            for library in fastnoise2 freetype glfw interception-profiler nfde; do
               if changed_any "native/${library}/version/BINDING_REVISION"; then
                 selected+=("$library")
               fi
@@ -168,12 +167,6 @@ jobs:
                 native_id="alvorkit.interception.profiler.native"
                 api_project="AlvorKit.Interception.Profiler"
                 backend_project="AlvorKit.Interception.Profiler.Backend"
-                ;;
-              miniaudio)
-                id="alvorkit.miniaudio"
-                native_id="alvorkit.miniaudio.native"
-                api_project="AlvorKit.MiniAudio"
-                backend_project="AlvorKit.MiniAudio.Backend"
                 ;;
               nfde)
                 id="alvorkit.nfde"

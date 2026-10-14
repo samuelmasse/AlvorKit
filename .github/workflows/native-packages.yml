@@ -7,6 +7,7 @@
 # Manual runs are useful for producing artifacts and validating the native build,
 # but they do not publish packages.
 name: native packages
+# MiniAudio is released with its managed ABI matrix by miniaudio-release.yml.
 
 on:
   # Manual dispatch lets you build one package, or all packages, on demand.
@@ -22,7 +23,6 @@ on:
           - fastnoise2
           - freetype
           - glfw
-          - miniaudio
           - nfde
 
   # Push releases are intentionally tied only to native version files.
@@ -38,8 +38,6 @@ on:
         "native/fastnoise2/version/REVISION",
         "native/glfw/version/TAG",
         "native/glfw/version/REVISION",
-        "native/miniaudio/version/TAG",
-        "native/miniaudio/version/REVISION",
         "native/nfde/version/TAG",
         "native/nfde/version/REVISION",
       ]
@@ -91,7 +89,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             selection="${{ inputs.library }}"
             if [[ "$selection" == "all" ]]; then
-              selected=(fastnoise2 freetype glfw miniaudio nfde)
+              selected=(fastnoise2 freetype glfw nfde)
             else
               selected=("$selection")
             fi
@@ -114,7 +112,7 @@ jobs:
             }
 
             # Only version/TAG and version/REVISION are native-package release signals.
-            for library in fastnoise2 freetype glfw miniaudio nfde; do
+            for library in fastnoise2 freetype glfw nfde; do
               if changed_any "^native/${library}/version/(TAG|REVISION)$"; then
                 selected+=("$library")
               fi
@@ -140,11 +138,6 @@ jobs:
                 package_id="alvorkit.glfw.native"
                 project="AlvorKit.GLFW.Native.csproj"
                 package_name="AlvorKit.GLFW.Native"
-                ;;
-              miniaudio)
-                package_id="alvorkit.miniaudio.native"
-                project="AlvorKit.MiniAudio.Native.csproj"
-                package_name="AlvorKit.MiniAudio.Native"
                 ;;
               nfde)
                 package_id="alvorkit.nfde.native"

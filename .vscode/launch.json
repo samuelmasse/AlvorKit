@@ -519,6 +519,26 @@
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.BindingAbi",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.BindingAbi",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.BindingAbi/Release/AlvorKit.Script.BindingAbi.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "AlvorKit.Script.MiniAudioVerify",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build AlvorKit.Script.MiniAudioVerify",
+      "program": "${workspaceFolder}/bin/AlvorKit.Script.MiniAudioVerify/Release/AlvorKit.Script.MiniAudioVerify.dll",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
     }
   ]
 }

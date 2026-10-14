@@ -4,6 +4,8 @@ apiSummary: "Managed API surface for <c>miniaudio.h</c>: devices, engines, sound
 backendClass: "MaBackend"
 nativeClass: "MaNative"
 nativeLibrary: "miniaudio"
+runtimeIdentifiers: [win-x64, win-x86, win-arm64, linux-x64, linux-arm64, linux-arm, osx-x64, osx-arm64]
+abiShim: "src/miniaudio_abi.inc"
 prefix: "ma_"
 workDir: "miniaudio-build"
 sourceDir: "miniaudio-{tag}"
@@ -17,6 +19,9 @@ extraDefines:
   - "MA_API="
 typeRenames:
   ma_backend: "MaBackendKind"
+typeAliases:
+  "ma_event *": "nint"
+  "ma_semaphore *": "nint"
 transparentStructs:
   - "ma_waveform_config"
 inParams:
@@ -25,6 +30,7 @@ inParams:
 outParams: {}
 skip:
   ma_log_postf: "intentional skip: variadic printf-style function; C# callers should format text themselves and use ma_log_post"
+  ma_log_postv: "intentional skip: platform-specific va_list; C# callers should format text themselves and use ma_log_post"
 sourceUrl: "https://github.com/mackron/miniaudio/archive/refs/tags/{tag}.tar.gz"
 boolTypes:
   - "ma_bool8"
