@@ -49,7 +49,8 @@ internal class RuntimeBindingGenerator(BindgenOptions options)
             ("RepositoryRoot", root), ("Runtime", runtime))));
         var properties = TemplateResource.Render(
             typeof(RuntimeBindingGenerator), "res/templates/bindgen/c-headers/runtime-directory.props.tmpl",
-            ("RepositoryRoot", root), ("RuntimeItems", runtimeItems), ("RuntimeChecks", runtimeChecks));
+            ("RepositoryRoot", root), ("HostRuntimeIdentifier", library.HostRuntimeIdentifier),
+            ("RuntimeItems", runtimeItems), ("RuntimeChecks", runtimeChecks));
         File.WriteAllText(Path.Combine(layout.ApiDirectory, "Directory.Build.props"), properties);
         File.WriteAllText(Path.Combine(layout.BackendDirectory, "Directory.Build.props"), properties);
     }

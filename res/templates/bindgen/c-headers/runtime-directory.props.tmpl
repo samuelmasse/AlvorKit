@@ -3,7 +3,8 @@
     <Import Project="../Directory.Build.props" />
     <PropertyGroup>
         <BindingRuntimeIdentifier Condition="'$(BindingRuntimeIdentifier)' == '' and '$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</BindingRuntimeIdentifier>
-        <BindingRuntimeIdentifier Condition="'$(BindingRuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</BindingRuntimeIdentifier>
+        <!-- The SDK runtime property is not available when Directory.Build.props is imported. -->
+        <BindingRuntimeIdentifier Condition="'$(BindingRuntimeIdentifier)' == ''">{{HostRuntimeIdentifier}}</BindingRuntimeIdentifier>
         <BaseOutputPath>{{RepositoryRoot}}/bin/$(MSBuildProjectName)/$(BindingRuntimeIdentifier)/</BaseOutputPath>
         <BaseIntermediateOutputPath>{{RepositoryRoot}}/obj/$(MSBuildProjectName)/$(BindingRuntimeIdentifier)/</BaseIntermediateOutputPath>
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -17,7 +18,9 @@
 {{RuntimeItems}}
     </ItemGroup>
     <Target Name="ValidateBindingRuntime" BeforeTargets="CoreCompile">
-        <Error Condition="!Exists('runtimes/$(BindingRuntimeIdentifier)')" Text="Unsupported binding runtime: $(BindingRuntimeIdentifier)" />
+        <Error Condition="'$(BindingRuntimeIdentifier)' == '' or !Exists('runtimes/$(BindingRuntimeIdentifier)')"
+            Text="Unsupported binding runtime: $(BindingRuntimeIdentifier)" />
+        <Error Condition="'@(Compile)' == ''" Text="No binding sources for runtime: $(BindingRuntimeIdentifier)" />
     </Target>
     <Target Name="ValidateBindingPackage" BeforeTargets="GenerateNuspec">
 {{RuntimeChecks}}
