@@ -19,14 +19,14 @@ public partial class SpriteBatchWriter
             return;
 
         var normal = Vec2.Normalize((-delta.Y, delta.X));
-        var endLeft = new LineVertex(end - (normal * width), Vec2.Zero);
-        var endRight = new LineVertex(end + (normal * width), (texture.Size.X, 0f));
-        var startLeft = new LineVertex(start - (normal * width), (0f, texture.Size.Y));
-        var startRight = new LineVertex(start + (normal * width), texture.Size);
+        var endLeft = new PolygonVertex(end - (normal * width), Vec2.Zero);
+        var endRight = new PolygonVertex(end + (normal * width), (texture.Size.X, 0f));
+        var startLeft = new PolygonVertex(start - (normal * width), (0f, texture.Size.Y));
+        var startRight = new PolygonVertex(start + (normal * width), texture.Size);
 
         if (!clip.HasValue)
         {
-            DrawLineQuad(texture, color, endLeft, endRight, startLeft, startRight);
+            DrawPolygonQuad(texture, color, endLeft, endRight, startLeft, startRight);
             return;
         }
 
@@ -34,39 +34,40 @@ public partial class SpriteBatchWriter
         if (clipValue.Min.X >= clipValue.Max.X || clipValue.Min.Y >= clipValue.Max.Y)
             return;
 
-        Span<LineVertex> polygon = stackalloc LineVertex[LineClipCapacity];
+        Span<PolygonVertex> polygon = stackalloc PolygonVertex[PolygonClipCapacity];
         polygon[0] = endLeft;
         polygon[1] = endRight;
         polygon[2] = startRight;
         polygon[3] = startLeft;
 
-        var count = ClipLinePolygon(polygon, 4, clipValue);
+        var count = ClipPolygon(polygon, 4, clipValue);
         if (count < 3)
             return;
 
         for (var i = 2; i < count; i++)
-            DrawLineTriangle(texture, color, polygon[0], polygon[i - 1], polygon[i]);
+            DrawPolygonTriangle(texture, color, polygon[0], polygon[i - 1], polygon[i]);
     }
 
-    /// <summary>Emits one line quad in the vertex order expected by the shared quad index buffer.</summary>
-    private void DrawLineQuad(Texture texture, Vec4 color, LineVertex endLeft, LineVertex endRight, LineVertex startLeft, LineVertex startRight)
+    /// <summary>Emits a textured quad in the vertex order expected by the shared quad index buffer.</summary>
+    private void DrawPolygonQuad(Texture texture, Vec4 color, PolygonVertex endLeft, PolygonVertex endRight,
+        PolygonVertex startLeft, PolygonVertex startRight)
     {
-        AddLineVertex(texture, color, endLeft);
-        AddLineVertex(texture, color, endRight);
-        AddLineVertex(texture, color, startLeft);
-        AddLineVertex(texture, color, startRight);
+        AddPolygonVertex(texture, color, endLeft);
+        AddPolygonVertex(texture, color, endRight);
+        AddPolygonVertex(texture, color, startLeft);
+        AddPolygonVertex(texture, color, startRight);
     }
 
     /// <summary>Emits one clipped triangle as a degenerate quad so the existing quad index buffer can draw it.</summary>
-    private void DrawLineTriangle(Texture texture, Vec4 color, LineVertex a, LineVertex b, LineVertex c)
+    private void DrawPolygonTriangle(Texture texture, Vec4 color, PolygonVertex a, PolygonVertex b, PolygonVertex c)
     {
-        AddLineVertex(texture, color, a);
-        AddLineVertex(texture, color, a);
-        AddLineVertex(texture, color, c);
-        AddLineVertex(texture, color, b);
+        AddPolygonVertex(texture, color, a);
+        AddPolygonVertex(texture, color, a);
+        AddPolygonVertex(texture, color, c);
+        AddPolygonVertex(texture, color, b);
     }
 
-    /// <summary>Adds one line vertex after converting canvas pixels and texture pixels to shader coordinates.</summary>
-    private void AddLineVertex(Texture texture, Vec4 color, LineVertex vertex) =>
+    /// <summary>Adds a polygon vertex after converting canvas pixels and texture pixels to shader coordinates.</summary>
+    private void AddPolygonVertex(Texture texture, Vec4 color, PolygonVertex vertex) =>
         vertices.Add(texture, new SpriteBatchVertex(NormalizePosition(vertex.Position), color, TexCoord(texture, vertex.TexCoord)));
 }
