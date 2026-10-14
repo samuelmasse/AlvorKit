@@ -1,18 +1,21 @@
 namespace AlvorKit;
 
 /// <summary>Tracks key down, press, and repeat state for a window loop.</summary>
-internal sealed class WindowKeyboard
+internal class WindowKeyboard
 {
+    /// <summary>Native repeat events pending consumption at the end of the tick.</summary>
     private readonly bool[] repeated;
-    private bool[] down;
-    private bool[] previous;
+    /// <summary>Current held state, independent of transition history.</summary>
+    private readonly bool[] down;
+    /// <summary>Press edges retained until Tick so a release in the same poll cannot erase a tap.</summary>
+    private readonly bool[] pressed;
 
     /// <summary>Creates a keyboard tracker from host key events.</summary>
     internal WindowKeyboard(IWindowHost window)
     {
         var keys = (int)Keys.Last + 1;
         down = new bool[keys];
-        previous = new bool[keys];
+        pressed = new bool[keys];
         repeated = new bool[keys];
         window.KeyDown += OnKeyDown;
         window.KeyUp += OnKeyUp;
@@ -21,8 +24,7 @@ internal sealed class WindowKeyboard
     /// <summary>Advances key transition state by one tick.</summary>
     internal void Tick()
     {
-        (down, previous) = (previous, down);
-        Array.Copy(previous, down, down.Length);
+        Array.Clear(pressed);
         Array.Clear(repeated);
     }
 
@@ -30,7 +32,7 @@ internal sealed class WindowKeyboard
     internal void Reset()
     {
         Array.Clear(down);
-        Array.Clear(previous);
+        Array.Clear(pressed);
         Array.Clear(repeated);
     }
 
@@ -40,8 +42,8 @@ internal sealed class WindowKeyboard
     /// <summary>Returns whether the key is currently up.</summary>
     internal bool IsKeyUp(Keys key) => !Down(key);
 
-    /// <summary>Returns whether the key transitioned down this tick.</summary>
-    internal bool IsKeyPressed(Keys key) => !Previous(key) && Down(key);
+    /// <summary>Returns whether the key transitioned down this tick, even if it was released before the next update.</summary>
+    internal bool IsKeyPressed(Keys key) => Pressed(key);
 
     /// <summary>Returns whether the key pressed or repeated this tick.</summary>
     internal bool IsKeyPressedRepeated(Keys key) => IsKeyPressed(key) || Repeated(key);
@@ -50,6 +52,9 @@ internal sealed class WindowKeyboard
     {
         if (e.Key == Keys.Unknown)
             return;
+
+        if (!Down(e.Key) && !e.IsRepeat)
+            Pressed(e.Key) = true;
 
         Down(e.Key) = true;
 
@@ -69,10 +74,11 @@ internal sealed class WindowKeyboard
         return ref down[(int)key];
     }
 
-    private ref bool Previous(Keys key)
+    /// <summary>Accesses the latched press independently of the current held state.</summary>
+    private ref bool Pressed(Keys key)
     {
         ValidateKey(key);
-        return ref previous[(int)key];
+        return ref pressed[(int)key];
     }
 
     private ref bool Repeated(Keys key)

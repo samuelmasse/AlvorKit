@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 /// <summary>Reads and writes GLFW window and monitor sizes using AlvorKit vector types.</summary>
 [ExcludeFromCodeCoverage]
-internal sealed class GlfwWindowSizes(Glfw glfw, GlfwWindow window)
+internal class GlfwWindowSizes(Glfw glfw, GlfwWindow window)
 {
     /// <summary>Converts a position from GLFW window coordinates to drawable framebuffer coordinates.</summary>
     internal Vec2 WindowToFramebuffer(Vec2 value) => value * FramebufferScale;
@@ -20,27 +20,30 @@ internal sealed class GlfwWindowSizes(Glfw glfw, GlfwWindow window)
         }
     }
 
-    /// <summary>Sets the requested client size through GLFW.</summary>
-    internal void Set(Vec2u size) => glfw.SetWindowSize(window, ((int)size.X), ((int)size.Y));
+    /// <summary>Converts the requested drawable size to GLFW window coordinates, including Retina framebuffers.</summary>
+    internal void Set(Vec2u size)
+    {
+        var logical = (Vec2)size / FramebufferScale;
+        glfw.SetWindowSize(window, (int)MathF.Round(logical.X), (int)MathF.Round(logical.Y));
+    }
 
-    /// <summary>Gets the primary monitor work area size.</summary>
+    /// <summary>Gets the current monitor work area in drawable pixels.</summary>
     internal Vec2u MonitorWorkareaSize
     {
         get
         {
-            var monitor = glfw.GetPrimaryMonitor();
+            var monitor = GlfwWindowMonitor.Find(glfw, window);
             glfw.GetMonitorWorkarea(monitor, out _, out _, out var width, out var height);
-            return new(((uint)width), ((uint)height));
+            return (Vec2u)(new Vec2(width, height) * FramebufferScale);
         }
     }
 
-    /// <summary>Gets the primary monitor horizontal content scale.</summary>
+    /// <summary>Gets this window's current DPI scale, including changes after moving between monitors.</summary>
     internal float MonitorContentScale
     {
         get
         {
-            var monitor = glfw.GetPrimaryMonitor();
-            glfw.GetMonitorContentScale(monitor, out var xscale, out _);
+            glfw.GetWindowContentScale(window, out var xscale, out _);
             return xscale;
         }
     }

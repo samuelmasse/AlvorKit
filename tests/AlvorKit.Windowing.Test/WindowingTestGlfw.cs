@@ -1,12 +1,16 @@
 namespace AlvorKit;
 
-internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsVisible = false) : GlfwNoop
+internal class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsVisible = false) : GlfwNoop
 {
+    private readonly GlfwMonitor[] monitors = CreateMonitors();
+    private readonly GlfwVidMode[] modes = CreateModes();
     private Vec2u clientSize = initialClientSize;
     private Vec2u framebufferSize = initialClientSize;
     private Vec2 cursorPosition;
     private nint cursorPositionCallback;
+    private nint framebufferSizeCallback;
     private bool isVisible = initialIsVisible;
+    private GlfwMonitor attachedMonitor;
 
     public GlfwWindow Window { get; } = new((nint)1);
     public int SwapBufferCalls { get; private set; }
@@ -27,6 +31,26 @@ internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsV
     public int SetWindowIconCalls { get; private set; }
     public (int Count, int Width, int Height) LastIcon { get; private set; }
     public byte[] LastIconPixels { get; private set; } = [];
+    public Vec2i WindowPosition { get; set; }
+    public Vec2 ContentScale { get; set; } = Vec2.One;
+    public int LastRefreshRate { get; private set; }
+    public Vec2u WindowSize => clientSize;
+
+    private static GlfwMonitor[] CreateMonitors()
+    {
+        var result = GC.AllocateArray<GlfwMonitor>(2, pinned: true);
+        result[0] = new((nint)2);
+        result[1] = new((nint)3);
+        return result;
+    }
+
+    private static GlfwVidMode[] CreateModes()
+    {
+        var result = GC.AllocateArray<GlfwVidMode>(2, pinned: true);
+        result[0] = new() { Width = 1920, Height = 1080, RefreshRate = 60 };
+        result[1] = new() { Width = 3840, Height = 2160, RefreshRate = 144 };
+        return result;
+    }
 
     public Vec2u FramebufferSize
     {
@@ -42,8 +66,8 @@ internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsV
 
     public override void GetWindowPos(GlfwWindow window, out int xpos, out int ypos)
     {
-        xpos = 0;
-        ypos = 0;
+        xpos = WindowPosition.X;
+        ypos = WindowPosition.Y;
     }
 
     public override void GetWindowSize(GlfwWindow window, out int width, out int height)
@@ -95,6 +119,55 @@ internal sealed class WindowingTestGlfw(Vec2u initialClientSize, bool initialIsV
         attrib == (int)GlfwWindowHint.Focused || (attrib == (int)GlfwWindowHint.Visible && isVisible) ? 1 : 0;
 
     public override GlfwMonitor GetPrimaryMonitor() => new((nint)2);
+
+    public override unsafe nint GetMonitors(out int count)
+    {
+        count = monitors.Length;
+
+        fixed (GlfwMonitor* pointer = monitors)
+            return (nint)pointer;
+    }
+
+    public override unsafe GlfwVidMode* GetVideoMode(GlfwMonitor monitor)
+    {
+        fixed (GlfwVidMode* pointer = modes)
+            return pointer + (monitor == monitors[0] ? 0 : 1);
+    }
+
+    public override void GetMonitorPos(GlfwMonitor monitor, out int xpos, out int ypos)
+    {
+        xpos = monitor == monitors[0] ? 0 : 1920;
+        ypos = 0;
+    }
+
+    public override GlfwMonitor GetWindowMonitor(GlfwWindow window) => attachedMonitor;
+
+    public override void SetWindowMonitor(GlfwWindow window, GlfwMonitor monitor, int x, int y, int width, int height, int rate)
+    {
+        attachedMonitor = monitor;
+        WindowPosition = new(x, y);
+        LastRefreshRate = rate;
+        SetWindowSize(window, width, height);
+
+        if (framebufferSizeCallback != 0)
+        {
+            var callback = Marshal.GetDelegateForFunctionPointer<GlfwFramebufferSizeDelegate>(framebufferSizeCallback);
+            callback(window, (int)framebufferSize.X, (int)framebufferSize.Y);
+        }
+    }
+
+    public override nint SetFramebufferSizeCallback(GlfwWindow window, nint callback)
+    {
+        var previous = framebufferSizeCallback;
+        framebufferSizeCallback = callback;
+        return previous;
+    }
+
+    public override void GetWindowContentScale(GlfwWindow window, out float xscale, out float yscale)
+    {
+        xscale = ContentScale.X;
+        yscale = ContentScale.Y;
+    }
 
     public override void GetMonitorWorkarea(GlfwMonitor monitor, out int xpos, out int ypos, out int width, out int height)
     {

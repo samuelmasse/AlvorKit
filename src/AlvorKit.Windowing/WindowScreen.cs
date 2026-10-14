@@ -48,10 +48,10 @@ public class WindowScreen(WindowLoop window)
         set => window.Physical.Size = value;
     }
 
-    /// <summary>Gets the primary monitor work-area size.</summary>
+    /// <summary>Gets the current monitor work-area size in drawable pixels.</summary>
     public Vec2u MonitorSize => window.Physical.MonitorSize;
 
-    /// <summary>Gets the primary monitor horizontal content scale.</summary>
+    /// <summary>Gets the window horizontal content scale.</summary>
     public float MonitorScale => window.Physical.MonitorScale;
 
     /// <summary>Sets the window icon from RGBA pixels.</summary>

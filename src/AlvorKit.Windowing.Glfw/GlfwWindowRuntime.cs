@@ -56,10 +56,10 @@ internal sealed class GlfwWindowRuntime
     /// <summary>Gets or sets the drawable client size.</summary>
     internal Vec2u ClientSize { get => sizes.FramebufferSize; set => sizes.Set(value); }
 
-    /// <summary>Gets the primary monitor work area size.</summary>
+    /// <summary>Gets the current monitor work area size in drawable pixels.</summary>
     internal Vec2u MonitorSize => sizes.MonitorWorkareaSize;
 
-    /// <summary>Gets the primary monitor horizontal content scale.</summary>
+    /// <summary>Gets the window horizontal content scale.</summary>
     internal float MonitorScale => sizes.MonitorContentScale;
 
     /// <summary>Gets or sets the GLFW cursor position in drawable framebuffer coordinates.</summary>

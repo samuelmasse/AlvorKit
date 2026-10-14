@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Tracks drawable size and resize/move update suppression for a window loop.</summary>
-internal sealed class WindowPhysical
+internal class WindowPhysical
 {
     private readonly IWindowHost window;
     private readonly Func<bool> callback;
@@ -29,10 +29,10 @@ internal sealed class WindowPhysical
         }
     }
 
-    /// <summary>Gets the primary monitor work-area size.</summary>
+    /// <summary>Gets the current monitor work-area size in drawable pixels.</summary>
     internal Vec2u MonitorSize => window.MonitorSize;
 
-    /// <summary>Gets the primary monitor horizontal content scale.</summary>
+    /// <summary>Gets the window horizontal content scale.</summary>
     internal float MonitorScale => window.MonitorScale;
 
     /// <summary>Gets or sets how many update ticks should be skipped after resize or move.</summary>
@@ -40,7 +40,7 @@ internal sealed class WindowPhysical
 
     private void OnResize(WindowResizeEvent e)
     {
-        if (e.Size == Vec2u.Zero)
+        if (e.Size.X == 0 || e.Size.Y == 0)
             return;
 
         size = e.Size;

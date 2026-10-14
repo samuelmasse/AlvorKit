@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Tracks fullscreen and vsync toggle state.</summary>
-internal sealed class WindowToggle(IWindowHost window)
+internal class WindowToggle(IWindowHost window)
 {
     private WindowState previousState = window.WindowState;
     private bool isVSyncEnabled = window.IsVSyncEnabled;
@@ -14,23 +14,23 @@ internal sealed class WindowToggle(IWindowHost window)
     /// <summary>Gets whether vertical synchronization is tracked as enabled.</summary>
     internal bool IsVSyncEnabled => isVSyncEnabled;
 
-    /// <summary>Toggles between fullscreen and the previous window state.</summary>
+    /// <summary>Toggles fullscreen, publishing the new state before native calls can synchronously draw resize frames.</summary>
     internal void ToggleFullscreen()
     {
         if (isFullscreen)
         {
-            window.WindowState = previousState;
             isFullscreen = false;
+            window.WindowState = previousState;
         }
         else
         {
             previousState = window.WindowState;
+            isFullscreen = true;
 
             if (window.WindowState == WindowState.Maximized)
                 window.WindowState = WindowState.Normal;
 
             window.WindowState = WindowState.Fullscreen;
-            isFullscreen = true;
         }
 
         window.IsVSyncEnabled = isVSyncEnabled || isVSyncForced;

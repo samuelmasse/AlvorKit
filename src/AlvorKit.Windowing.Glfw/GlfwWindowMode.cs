@@ -2,15 +2,15 @@ namespace AlvorKit;
 
 /// <summary>Tracks and applies GLFW window mode changes that need previous windowed bounds.</summary>
 [ExcludeFromCodeCoverage]
-internal sealed class GlfwWindowMode(Glfw glfw, GlfwWindow window)
+internal class GlfwWindowMode(Glfw glfw, GlfwWindow window)
 {
     private bool isFullscreen;
     private bool isIconified = glfw.GetWindowAttrib(window, GlfwWindowHint.Iconified) != 0;
     private bool isMaximized = glfw.GetWindowAttrib(window, GlfwWindowHint.Maximized) != 0;
-    private int windowedX;
-    private int windowedY;
-    private int windowedWidth;
-    private int windowedHeight;
+    /// <summary>Window-coordinate desktop position restored after fullscreen.</summary>
+    private Vec2i windowedPosition;
+    /// <summary>Window-coordinate client extent restored after fullscreen.</summary>
+    private Vec2i windowedSize;
 
     /// <summary>Gets whether the window is currently in fullscreen mode.</summary>
     internal bool IsFullscreen => isFullscreen;
@@ -72,28 +72,33 @@ internal sealed class GlfwWindowMode(Glfw glfw, GlfwWindow window)
     /// <summary>Accepts a GLFW maximize callback and updates the cached observed state.</summary>
     internal void AcceptMaximize(bool value) => isMaximized = value;
 
-    /// <summary>Stores current windowed bounds and switches the GLFW window to the primary monitor work area.</summary>
-    private void EnterFullscreen()
+    /// <summary>Stores windowed bounds and uses the current monitor's full native mode without changing its resolution.</summary>
+    private unsafe void EnterFullscreen()
     {
         if (IsFullscreen)
             return;
 
-        glfw.GetWindowPos(window, out windowedX, out windowedY);
-        glfw.GetWindowSize(window, out windowedWidth, out windowedHeight);
-        var monitor = glfw.GetPrimaryMonitor();
-        glfw.GetMonitorWorkarea(monitor, out _, out _, out var width, out var height);
-        glfw.SetWindowMonitor(window, monitor, 0, 0, width, height, (int)GlfwEnum.DontCare);
+        glfw.GetWindowPos(window, out windowedPosition.X, out windowedPosition.Y);
+        glfw.GetWindowSize(window, out windowedSize.X, out windowedSize.Y);
+        var monitor = GlfwWindowMonitor.Find(glfw, window);
+        var mode = glfw.GetVideoMode(monitor);
+
+        if (mode == null)
+            throw new InvalidOperationException("GLFW could not read the fullscreen monitor video mode.");
+
         isFullscreen = true;
         isIconified = false;
         isMaximized = false;
+        glfw.SetWindowMonitor(window, monitor, 0, 0, mode->Width, mode->Height, mode->RefreshRate);
     }
 
     /// <summary>Restores the bounds remembered before the last fullscreen transition.</summary>
     private void ExitFullscreen()
     {
-        glfw.SetWindowMonitor(window, default, windowedX, windowedY, windowedWidth, windowedHeight, (int)GlfwEnum.DontCare);
         isFullscreen = false;
         isIconified = false;
         isMaximized = false;
+        glfw.SetWindowMonitor(window, default, windowedPosition.X, windowedPosition.Y,
+            windowedSize.X, windowedSize.Y, (int)GlfwEnum.DontCare);
     }
 }

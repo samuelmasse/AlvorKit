@@ -3,6 +3,38 @@ namespace AlvorKit;
 [TestClass]
 public class KeyboardTest
 {
+    /// <summary>A complete tap between frames produces one press, without leaving the key held.</summary>
+    [TestMethod]
+    public void Keyboard_TapBetweenUpdates_PreservesPress()
+    {
+        var (host, loop) = WindowingTestFactory.Create();
+        var keyboard = new Keyboard(loop);
+        host.RaiseKeyDown(Keys.A);
+        host.RaiseKeyUp(Keys.A);
+
+        Assert.IsTrue(keyboard.IsKeyPressed(Keys.A));
+        Assert.IsTrue(keyboard.IsKeyUp(Keys.A));
+        host.RaiseUpdate();
+        Assert.IsFalse(keyboard.IsKeyPressed(Keys.A));
+
+        host.RaiseKeyDown(Keys.A);
+        Assert.IsTrue(keyboard.IsKeyPressed(Keys.A));
+    }
+
+    /// <summary>F11 must toggle once even when native key down and up arrive in a single event poll.</summary>
+    [TestMethod]
+    public void Keyboard_F11Tap_TogglesFullscreenOnce()
+    {
+        var (host, loop) = WindowingTestFactory.Create();
+        var screen = new WindowScreen(loop);
+        host.RaiseKeyDown(Keys.F11);
+        host.RaiseKeyUp(Keys.F11);
+        host.RaiseUpdate();
+        Assert.IsTrue(screen.IsFullscreen);
+        host.RaiseUpdate();
+        Assert.IsTrue(screen.IsFullscreen);
+    }
+
     /// <summary>Keypad bindings retain independent press, repeat, and release state from the number row.</summary>
     [TestMethod]
     public void Keyboard_KeypadTransitions_AreIndependentFromNumberRow()

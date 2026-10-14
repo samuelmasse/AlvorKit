@@ -34,14 +34,19 @@ public class CanvasTest
         Assert.AreEqual(1, host.SwapBuffersCount);
     }
 
+    /// <summary>Minimize events with either empty axis cannot replace a valid drawable or trigger rendering.</summary>
     [TestMethod]
-    public void Canvas_ResizeToZero_IsNoOp()
+    [DataRow(0u, 0u)]
+    [DataRow(0u, 300u)]
+    [DataRow(300u, 0u)]
+    public void Canvas_ResizeToZero_IsNoOp(uint width, uint height)
     {
         var (host, loop) = WindowingTestFactory.Create(new(300, 300));
         var canvas = new WindowCanvas(loop);
 
-        host.RaiseResize(Vec2u.Zero);
+        host.RaiseResize(new(width, height));
 
         Assert.AreEqual(new Vec2u(300u, 300u), canvas.Size);
+        Assert.AreEqual(0, host.SwapBuffersCount);
     }
 }

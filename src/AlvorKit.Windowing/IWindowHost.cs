@@ -54,10 +54,10 @@ public interface IWindowHost
     /// <summary>Gets or sets the drawable client size.</summary>
     Vec2u ClientSize { get; set; }
 
-    /// <summary>Gets the primary monitor work-area size.</summary>
+    /// <summary>Gets the current monitor work-area size in drawable pixels.</summary>
     Vec2u MonitorSize { get; }
 
-    /// <summary>Gets the primary monitor horizontal content scale.</summary>
+    /// <summary>Gets the window horizontal content scale.</summary>
     float MonitorScale { get; }
 
     /// <summary>Gets or sets the current cursor position in drawable client coordinates.</summary>
