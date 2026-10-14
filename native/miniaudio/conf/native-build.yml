@@ -9,6 +9,7 @@ linux:
     - "cmake"
   armPackages:
     - "gcc-arm-linux-gnueabihf"
+    - "g++-arm-linux-gnueabihf"
   allowedDependencies:
     - "libc.so.6"
     - "libm.so.6"

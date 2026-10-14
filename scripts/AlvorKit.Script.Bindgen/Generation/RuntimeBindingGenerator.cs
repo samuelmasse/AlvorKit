@@ -29,7 +29,7 @@ internal class RuntimeBindingGenerator(BindgenOptions options)
 
         WriteProjectSettings(library, layout);
         new BindingAbiEmitter(library.Config).Emit(models, library.Directory, layout.Root, options.Strict);
-        var host = RuntimeInformation.RuntimeIdentifier;
+        var host = library.HostRuntimeIdentifier;
 
         if (!models.TryGetValue(host, out var hostModel))
             throw new PlatformNotSupportedException($"No binding ABI configured for generator host {host}.");
