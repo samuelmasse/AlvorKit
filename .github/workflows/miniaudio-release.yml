@@ -73,7 +73,7 @@ jobs:
           path: native/miniaudio/runtimes
           merge-multiple: true
       - name: Pack complete native runtime matrix
-        run: dotnet pack native/miniaudio/AlvorKit.MiniAudio.Native.csproj -c Release -o out/miniaudio-packages
+        run: dotnet build native/miniaudio/AlvorKit.MiniAudio.Native.csproj -c Release -p:PackageOutputPath="$PWD/out/miniaudio-packages"
       - name: Restore candidate native package for export verification
         shell: bash
         run: |
