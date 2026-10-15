@@ -53,8 +53,10 @@ public class GlfwImageCursorTest
     [TestMethod]
     public void NativeCreationFailureIsReported()
     {
-        var glfw = new ImageCursorTestGlfw();
-        glfw.Created = default;
+        var glfw = new ImageCursorTestGlfw
+        {
+            Created = default
+        };
         Assert.ThrowsException<InvalidOperationException>(() => new GlfwImageCursor(glfw, new(1), [new(255)], default));
     }
 
