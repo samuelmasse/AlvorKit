@@ -20,7 +20,7 @@ internal sealed class WindowMouse
         window.MouseWheel += OnMouseWheel;
     }
 
-    /// <summary>Gets the mouse wheel offset for the current tick.</summary>
+    /// <summary>Gets the sum of wheel offsets received since the previous tick.</summary>
     internal Vec2 Wheel => wheel;
 
     /// <summary>Gets or sets the cursor capture and visibility mode.</summary>
@@ -66,7 +66,8 @@ internal sealed class WindowMouse
 
     private void OnMouseUp(WindowMouseButtonEvent e) => Down(e.Button) = false;
 
-    private void OnMouseWheel(WindowMouseWheelEvent e) => wheel = e.Offset;
+    /// <summary>Preserves every wheel delta until the update consumes the current tick.</summary>
+    private void OnMouseWheel(WindowMouseWheelEvent e) => wheel += e.Offset;
 
     private ref bool Down(MouseButton button)
     {
