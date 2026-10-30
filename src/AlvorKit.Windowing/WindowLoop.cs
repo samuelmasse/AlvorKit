@@ -18,6 +18,11 @@ public sealed class WindowLoop
     private bool rendering;
     private bool dispatching;
     private bool unloaded;
+    /// <summary>Allows a host game to own the fullscreen and vsync key bindings.</summary>
+    private bool enableDefaultShortcuts = true;
+
+    /// <summary>Gets or sets whether F11 and F12 apply the loop's fullscreen and vsync shortcuts.</summary>
+    public bool EnableDefaultShortcuts { get => enableDefaultShortcuts; set => enableDefaultShortcuts = value; }
 
     /// <summary>Raised at a safe outer-frame boundary before game update work begins.</summary>
     internal event Action? Dispatch;
@@ -158,9 +163,9 @@ public sealed class WindowLoop
         if (physical.Skips > 0)
             physical.Skips--;
 
-        if (keyboard.IsKeyPressed(Keys.F11))
+        if (enableDefaultShortcuts && keyboard.IsKeyPressed(Keys.F11))
             toggle.ToggleFullscreen();
-        if (keyboard.IsKeyPressed(Keys.F12))
+        if (enableDefaultShortcuts && keyboard.IsKeyPressed(Keys.F12))
             toggle.ToggleVSync();
 
         mouse.Tick();

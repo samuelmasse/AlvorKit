@@ -5,7 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="BigGustave" Version="1.0.6" />
+        <PackageReference Include="StbImageSharp" Version="2.30.16" />
     </ItemGroup>
 
     <ItemGroup>
@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="BigGustave" />
+        <Using Include="StbImageSharp" />
     </ItemGroup>
 
     <ItemGroup>

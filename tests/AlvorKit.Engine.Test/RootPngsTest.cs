@@ -1,8 +1,28 @@
 namespace AlvorKit;
 
 [TestClass]
-public sealed class RootPngsTest
+public class RootPngsTest
 {
+    /// <summary>Indexed PNG transparency preserves palette alpha and straight RGB while reversing rows for OpenGL.</summary>
+    [TestMethod]
+    public void Indexer_PreservesPaletteTransparencyAndRowOrder()
+    {
+        using var workspace = TempWorkspace.Create();
+        var path = workspace.PathFor("PaletteTransparency.png");
+        // Two-bit palette: transparent black, opaque black, half-transparent red, opaque blue, in top-down row order.
+        var png = Convert.FromBase64String(
+            "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAgMAAAAP2OW3AAAADFBMVEUAAAAAAAD/AAAAAP/8L3PX" +
+            "AAAABHRSTlMA/4D/G4olsQAAAAxJREFUeJxjEGDYAAAA5ADBJ6joVwAAAABJRU5ErkJggg==");
+        File.WriteAllBytes(path, png);
+
+        var image = new RootPngs()[path];
+
+        Assert.AreEqual(new Vec2i(2, 2), image.Size);
+        CollectionAssert.AreEqual(
+            new Vec4u8[] { (255, 0, 0, 128), (0, 0, 255, 255), (0, 0, 0, 0), (0, 0, 0, 255) },
+            image.Pixels.ToArray());
+    }
+
     /// <summary>PNG loading returns decoded RGBA pixels in bottom-left-origin order.</summary>
     [TestMethod]
     public void Indexer_DecodesPngPixels()
