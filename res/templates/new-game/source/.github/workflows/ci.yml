@@ -21,7 +21,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: "11.0.x"
           dotnet-quality: ga
       - name: Generate AlvorKit sources
         working-directory: AlvorKit
@@ -32,9 +32,10 @@ jobs:
         working-directory: AlvorKit
         run: dotnet run --project scripts/AlvorKit.Script.Solution -- --repo-root ../AlvorStarter
       - name: Build
+        working-directory: AlvorStarter
         run: |
-          dotnet restore AlvorStarter/AlvorStarter.slnx
-          dotnet build AlvorStarter/AlvorStarter.slnx --no-restore
+          dotnet restore AlvorStarter.slnx
+          dotnet build AlvorStarter.slnx --no-restore
       - name: Lint
         working-directory: AlvorKit
         run: dotnet run --project scripts/AlvorKit.Script.Lint -- --repo-root ../AlvorStarter
