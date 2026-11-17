@@ -3,14 +3,14 @@ namespace AlvorKit;
 // Later roots take precedence, then the parent. Successful paths are cached;
 // resource placement must remain stable for this instance's lifetime.
 [Root]
-public class RootFiles(RootFs fs, RootFileRoots roots)
+public class RootFiles(RootFs fs, ReadOnlySpan<string> roots)
 {
     private readonly RootFs fs = fs;
-    private readonly RootFileRoots roots = roots;
+    private readonly string[] roots = [.. roots];
     private readonly RootFiles? parent;
     private readonly Dictionary<string, string> resolved = [];
 
-    protected RootFiles(RootFiles parent, ReadOnlySpan<string> roots) : this(parent.fs, new RootFileRoots(roots))
+    protected RootFiles(RootFiles parent, ReadOnlySpan<string> roots) : this(parent.fs, roots)
     {
         this.parent = parent;
     }
@@ -41,11 +41,9 @@ public class RootFiles(RootFs fs, RootFileRoots roots)
 
     private string? FindInRoots(string path)
     {
-        var directories = roots.Span;
-
-        for (var i = directories.Length - 1; i >= 0; i--)
+        for (var i = roots.Length - 1; i >= 0; i--)
         {
-            var file = Path.Join(directories[i], path);
+            var file = Path.Join(roots[i], path);
 
             if (fs.Exists(file))
                 return file;

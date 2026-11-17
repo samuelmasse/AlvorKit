@@ -45,6 +45,7 @@ public static class RootLoop
         injector.Add<IWindowHost>(host);
         var root = CreateRootScope(injector, window, fileDialogs, gl);
         inject?.Invoke(injector);
+        root.Add(new RootFiles(root.Get<RootFs>(), [AppContext.BaseDirectory]));
 
         var state = root.Get<RootState>();
         state.Current = (State)root.New(bootState);
@@ -143,7 +144,6 @@ public static class RootLoop
     {
         var injector = new Injector();
         injector.Add(log);
-        injector.Add(new RootFileRoots([AppContext.BaseDirectory]));
         injector.Add<Fn>(new FnBackend());
         injector.Add<Ft>(new FtBackend());
         injector.Add<Ma>(CreateAudioBackend());

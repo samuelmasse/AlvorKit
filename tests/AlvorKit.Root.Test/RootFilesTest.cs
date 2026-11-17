@@ -3,28 +3,34 @@ namespace AlvorKit;
 [TestClass]
 public class RootFilesTest
 {
-    /// <summary>Root services resolve without Engine and child services can directly inject their RootFiles parent.</summary>
+    /// <summary>Registered file services retain their scope identity and share the root filesystem.</summary>
     [TestMethod]
     public void Injection_ResolvesRootServicesAndScopedParents()
     {
         var fs = new TestFs();
         fs.Add("host/shared.txt", "host");
         fs.Add("app/local.txt", "app");
+        fs.Add("sibling/local.txt", "sibling");
         var injector = new Injector();
-        injector.Add(new RootFileRoots(["host"]));
         var root = injector.Scope<RootScope>();
         root.Add<RootFs>(fs);
+        root.Add(new RootFiles(root.Get<RootFs>(), ["host"]));
         var app = root.Scope<ResourceScope>();
+        app.Add(new ResourceFiles(root.Get<RootFiles>(), ["app"]));
         var sibling = root.Scope<ResourceScope>();
+        sibling.Add(new ResourceFiles(root.Get<RootFiles>(), ["sibling"]));
         var files = app.Get<ResourceFiles>();
         var services = app.Get<ResourceServices>();
 
         Assert.AreSame(fs, services.Fs);
         Assert.AreSame(root.Get<RootFiles>(), services.Files);
+        Assert.AreSame(files, services.ResourceFiles);
         Assert.AreSame(files, app.Get<ResourceFiles>());
         Assert.AreNotSame(files, sibling.Get<ResourceFiles>());
         Assert.AreEqual("host", files.ReadAllText("shared.txt"));
         Assert.AreEqual("app", files.ReadAllText("local.txt"));
+        Assert.AreEqual("sibling", sibling.Get<ResourceFiles>().ReadAllText("local.txt"));
+        Assert.IsFalse(root.Get<RootFiles>().Exists("local.txt"));
     }
 
     /// <summary>The default filesystem is injected automatically and reads physical resources without registration.</summary>
@@ -34,8 +40,8 @@ public class RootFilesTest
         using var workspace = TempWorkspace.Create();
         workspace.Write("text.txt", "Mushroom 🍄");
         var injector = new Injector();
-        injector.Add(new RootFileRoots([workspace.Root]));
         var root = injector.Scope<RootScope>();
+        root.Add(new RootFiles(root.Get<RootFs>(), [workspace.Root]));
         var files = root.Get<RootFiles>();
 
         Assert.AreEqual("Mushroom 🍄", files.ReadAllText("text.txt"));
@@ -55,7 +61,7 @@ public class RootFilesTest
         fs.Add("app/shared.txt", "app");
         fs.Add("first/shared.txt", "first");
         fs.Add("last/shared.txt", "last");
-        var root = new RootFiles(fs, new RootFileRoots(["host"]));
+        var root = new RootFiles(fs, ["host"]);
         var app = new ChildFiles(root, ["app"]);
         string[] roots = ["first", "last"];
         var module = new ChildFiles(app, roots);
@@ -77,7 +83,7 @@ public class RootFilesTest
     {
         var fs = new TestFs();
         fs.Add("host/shared.txt", "host");
-        var root = new RootFiles(fs, new RootFileRoots(["host"]));
+        var root = new RootFiles(fs, ["host"]);
         var child = new ChildFiles(root, ["app"]);
 
         Assert.AreEqual("host", child.ReadAllText("shared.txt"));
@@ -95,7 +101,7 @@ public class RootFilesTest
         fs.Add("host/shared.txt", "host");
         fs.Add("host/parent.txt", "parent");
         fs.Add("app/shared.txt", "app");
-        var root = new RootFiles(fs, new RootFileRoots(["host"]));
+        var root = new RootFiles(fs, ["host"]);
         var child = new ChildFiles(root, ["app"]);
 
         Assert.IsTrue(child.Exists("shared.txt"));
@@ -113,7 +119,7 @@ public class RootFilesTest
     [TestMethod]
     public void MissingResource_ReportsLogicalName()
     {
-        var root = new RootFiles(new TestFs(), new RootFileRoots(["host"]));
+        var root = new RootFiles(new TestFs(), ["host"]);
         var child = new ChildFiles(root, ["app"]);
 
         Assert.IsFalse(child.Exists("missing.txt"));
@@ -129,10 +135,10 @@ public class RootFilesTest
     private class ResourceScope : InjectorScope<ResourceAttribute>;
 
     [Resource]
-    private class ResourceFiles(RootFiles parent) : RootFiles(parent, ["app"]);
+    private class ResourceFiles(RootFiles parent, ReadOnlySpan<string> roots) : RootFiles(parent, roots);
 
     [Resource]
-    private record ResourceServices(RootFs Fs, RootFiles Files);
+    private record ResourceServices(RootFs Fs, RootFiles Files, ResourceFiles ResourceFiles);
 
     private class ChildFiles(RootFiles parent, ReadOnlySpan<string> roots) : RootFiles(parent, roots);
 
