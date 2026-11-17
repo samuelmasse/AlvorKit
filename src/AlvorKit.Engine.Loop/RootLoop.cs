@@ -143,6 +143,7 @@ public static class RootLoop
     {
         var injector = new Injector();
         injector.Add(log);
+        injector.Add(new RootFileRoots([AppContext.BaseDirectory]));
         injector.Add<Fn>(new FnBackend());
         injector.Add<Ft>(new FtBackend());
         injector.Add<Ma>(CreateAudioBackend());

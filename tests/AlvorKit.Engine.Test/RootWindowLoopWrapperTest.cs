@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 [TestClass]
-public sealed class RootWindowLoopWrapperTest
+public class RootWindowLoopWrapperTest
 {
     /// <summary>Every public window-loop wrapper has a root-scoped subclass with the expected name.</summary>
     [TestMethod]
@@ -18,7 +18,7 @@ public sealed class RootWindowLoopWrapperTest
         foreach (var wrapper in wrappers)
         {
             var rootName = RootName(wrapper);
-            var rootType = typeof(RootScope).Assembly.GetType($"AlvorKit.{rootName}");
+            var rootType = typeof(RootCanvas).Assembly.GetType($"AlvorKit.{rootName}");
 
             Assert.IsNotNull(rootType, $"Missing root equivalent '{rootName}' for '{wrapper.FullName}'.");
             Assert.IsTrue(rootType.IsDefined(typeof(RootAttribute), false), $"'{rootName}' must be marked [Root].");

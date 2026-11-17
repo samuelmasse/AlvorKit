@@ -10,8 +10,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
-        <ProjectReference Include="..\AlvorKit.Injection\AlvorKit.Injection.csproj" />
         <ProjectReference Include="..\AlvorKit.Ranges\AlvorKit.Ranges.csproj" />
+        <ProjectReference Include="..\AlvorKit.Root\AlvorKit.Root.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
     </ItemGroup>
 

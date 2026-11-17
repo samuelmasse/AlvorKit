@@ -1,5 +1,0 @@
-namespace AlvorKit;
-
-/// <summary>Marks services that belong to the root engine lifetime scope.</summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
-public class RootAttribute : InjectorAttribute;

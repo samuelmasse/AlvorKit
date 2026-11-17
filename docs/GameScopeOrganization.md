@@ -31,7 +31,7 @@ dependencies used by the service.
 
 Common scope prefix choices:
 
-- `Root`: engine root services that live for the game process.
+- `Root`: shared runtime services that live for the host's root lifetime.
 - `Game` or `App`: application-wide configuration, logs, resource roots, and
   discovered content.
 - `Content`, `Module`, or `Plugin`: loaded gameplay content, registries,
@@ -79,13 +79,17 @@ The scope prefix should normally match the attribute. A type named
 
 ## Root Scope
 
-`Root` is the reserved prefix for engine root-scope services. Do not rename
+`Root` is the reserved prefix for root runtime services. Do not rename
 root services just to make them sound more general. The prefix is the signal
-that the service is available from the root engine scope.
+that the service is available from the root scope.
+
+`AlvorKit.Root` provides scope identity and file services without frontend
+dependencies. Graphics and UI packages add their own root services.
 
 Examples of root-scope services:
 
-- `RootScope`: the root engine scope itself.
+- `RootScope`: the shared runtime scope itself.
+- `RootFs`, `RootFiles`: storage access and ordered resource lookup.
 - `RootState`: owns the current top-level `State`.
 - `RootScripts`: owns long-lived `Script` instances.
 - `RootScreen`, `RootCanvas`, `RootKeyboard`, `RootMouse`: window facades.

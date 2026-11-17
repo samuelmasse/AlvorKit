@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Injection\AlvorKit.Injection.csproj" />
+    </ItemGroup>
+
+</Project>
