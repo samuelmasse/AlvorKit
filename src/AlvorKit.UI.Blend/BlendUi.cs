@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 /// <summary>
 /// Composes reusable Blend styles and builders over shared engine resources and an explicitly chosen graphics owner.
-/// Register the finished instance in its application scope; mounted controls retain their own interaction state.
+/// BlendUiSetup registers a root-owned default; narrower scopes can register their own toolkit.
 /// </summary>
 public class BlendUi
 {

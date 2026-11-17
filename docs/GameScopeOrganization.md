@@ -124,6 +124,20 @@ public class RootHudScript(
 }
 ```
 
+## Startup Setup
+
+Compose optional root features at the executable entry point:
+
+```csharp
+RootLoop.RunGlfw<RootLoadState>(new UiSetup(), new BlendUiSetup());
+```
+
+Setups run in the supplied order before the boot state is constructed.
+`UiSetup` registers the UI script and its existing shutdown lifecycle.
+`BlendUiSetup` supplies a default `BlendUi` with Root-owned control textures;
+it does not add UI setup implicitly. Child scopes inherit that toolkit and can
+register their own when they need a different appearance or resource lifetime.
+
 ## Scope Tree
 
 A game normally starts at `RootScope`, enters an application-level scope, then

@@ -6,16 +6,20 @@ public static class RootLoop
 {
     internal const string AudioSilentEnvironmentVariable = "ALVORKIT_AUDIO_SILENT";
 
-    /// <summary>Creates a default GLFW/OpenGL host and starts the root loop with the requested first state.</summary>
-    /// <typeparam name="TState">The concrete <see cref="State"/> type created before the first update.</typeparam>
-    /// <param name="inject">Optional callback that seeds caller services after built-in registrations.</param>
-    public static void RunGlfw<TState>(Action<Injector>? inject = null) where TState : State =>
-        RunGlfw(typeof(TState), inject);
+    /// <summary>Starts a GLFW/OpenGL host, applying setups in order before creating the first state.</summary>
+    public static void RunGlfw<TState>(params ReadOnlySpan<IRootSetup> setups) where TState : State =>
+        RunGlfw(typeof(TState), setups);
 
-    /// <summary>Creates a default GLFW/OpenGL host and starts the root loop with the requested first state.</summary>
-    /// <param name="bootState">The concrete <see cref="State"/> type created before the first update.</param>
-    /// <param name="inject">Optional callback that seeds caller services after built-in registrations.</param>
-    public static void RunGlfw(Type bootState, Action<Injector>? inject = null)
+    /// <summary>Seeds caller services before applying setups and creating the first state.</summary>
+    public static void RunGlfw<TState>(ReadOnlySpan<IRootSetup> setups, Action<Injector> inject) where TState : State =>
+        RunGlfw(typeof(TState), setups, inject);
+
+    /// <summary>Starts a GLFW/OpenGL host, applying setups in order before creating the requested state.</summary>
+    public static void RunGlfw(Type bootState, params ReadOnlySpan<IRootSetup> setups) =>
+        RunGlfw(bootState, setups, injector => { });
+
+    /// <summary>Seeds caller services before applying setups and creating the requested state.</summary>
+    public static void RunGlfw(Type bootState, ReadOnlySpan<IRootSetup> setups, Action<Injector> inject)
     {
         using var logging = new LogRuntime();
         logging.Start();
@@ -25,7 +29,7 @@ public static class RootLoop
         ConfigureGlfw(glfw);
 
         var nativeWindow = CreateNativeWindow(glfw);
-        RunGlfwWindow(glfw, nativeWindow, logging.Log, bootState, inject);
+        RunGlfwWindow(glfw, nativeWindow, logging.Log, bootState, setups, inject);
         glfw.DestroyWindow(nativeWindow);
         glfw.Terminate();
     }
@@ -37,22 +41,29 @@ public static class RootLoop
         RootGl gl,
         Log log,
         Type bootState,
-        Action<Injector>? inject)
+        ReadOnlySpan<IRootSetup> setups,
+        Action<Injector> inject)
     {
         var window = new WindowLoop(host);
         var injector = CreateInjector(log);
         injector.Add(window);
         injector.Add<IWindowHost>(host);
         var root = CreateRootScope(injector, window, fileDialogs, gl);
-        inject?.Invoke(injector);
+        inject(injector);
         root.Add(new RootFiles(root.Get<RootFs>(), [AppContext.BaseDirectory]));
-
-        var state = root.Get<RootState>();
-        state.Current = (State)root.New(bootState);
+        LoadState(root, bootState, setups);
 
         var engine = StartEngine(root);
         ConnectEngine(window, engine);
         window.Run();
+    }
+
+    internal static void LoadState(RootScope root, Type bootState, ReadOnlySpan<IRootSetup> setups)
+    {
+        foreach (var setup in setups)
+            setup.Apply(root);
+
+        root.Get<RootState>().Current = (State)root.New(bootState);
     }
 
     private static void ConfigureProcess()
@@ -108,7 +119,8 @@ public static class RootLoop
         GlfwWindow nativeWindow,
         Log log,
         Type bootState,
-        Action<Injector>? inject)
+        ReadOnlySpan<IRootSetup> setups,
+        Action<Injector> inject)
     {
         MakeCurrent(glfw, nativeWindow);
 
@@ -117,12 +129,12 @@ public static class RootLoop
         using var fileDialogs = new GlfwFileDialogHost(glfw, nativeWindow);
         using var window = new AgentGlfwWindowHost(glfw, nativeWindow, rootGl);
 
-        Run(window, fileDialogs, rootGl, log, bootState, injector =>
+        Run(window, fileDialogs, rootGl, log, bootState, setups, injector =>
         {
             injector.Add<Gl>(gl);
             injector.Add<Glfw>(glfw);
             injector.Add(nativeWindow);
-            inject?.Invoke(injector);
+            inject(injector);
         });
     }
 

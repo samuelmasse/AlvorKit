@@ -38,7 +38,7 @@ internal class BlendTestHarness : IDisposable
         appGl = new BlendTestGlLayer(gl);
         bl = new BlendUi(root.Get<RootBlend>(), appGl, palette, metrics);
         script = root.Get<RootUiScript>();
-        root.Get<RootScripts>().Add(script);
+        new UiSetup().Apply(root);
         graphics = root.Get<RootGraphics2D>();
         window.Update += script.Update;
         host.MousePosition = (790, 590);
