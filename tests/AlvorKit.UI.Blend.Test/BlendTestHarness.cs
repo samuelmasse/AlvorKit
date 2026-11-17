@@ -34,6 +34,7 @@ internal class BlendTestHarness : IDisposable
             .With(new RootKeyboard(window))
             .With(new RootMouse(window))
             .With(new RootSprites(new SpriteBatch(gl)));
+        root.Add(new RootFiles(root.Get<RootFs>(), []));
         appGl = new BlendTestGlLayer(gl);
         bl = new BlendUi(root.Get<RootBlend>(), appGl, palette, metrics);
         script = root.Get<RootUiScript>();

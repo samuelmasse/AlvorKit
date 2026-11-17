@@ -6,6 +6,7 @@ namespace AlvorKit
     [Root]
     internal sealed class TextureCubeState(
         Log log,
+        RootFiles files,
         RootInput input,
         RootMouse mouse,
         RootGl gl,
@@ -34,7 +35,8 @@ namespace AlvorKit
         /// <summary>Loads the texture, uploads cube vertices, binds controls, and shows the window.</summary>
         public override void Load()
         {
-            var image = pngs["Noise.png"];
+            using var stream = files.OpenRead("Noise.png");
+            var image = pngs.Read(stream);
             texture = new Texture2D(gl, (Vec2u)image.Size)
             {
                 PixelsMipmap = image.Pixels.Span,
