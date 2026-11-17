@@ -64,11 +64,11 @@ internal static class CoreClrProfilerGuard
                 CoreClrProfilerGuardFailureKind.Architecture,
                 "The interception profiler requires Windows x64, Linux x64/Arm64, or macOS Arm64 with matching process and OS architectures.");
         }
-        if (input.RuntimeMajor != 10 || !input.IsMicrosoftCoreClr)
+        if (input.RuntimeMajor != 11 || !input.IsMicrosoftCoreClr)
         {
             return Failed(
                 CoreClrProfilerGuardFailureKind.Runtime,
-                "The interception profiler requires Microsoft CoreCLR for .NET 10.");
+                "The interception profiler requires Microsoft CoreCLR for .NET 11.");
         }
         if (!input.IsDynamicCodeSupported)
         {

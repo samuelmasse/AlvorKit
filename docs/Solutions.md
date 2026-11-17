@@ -24,7 +24,7 @@ dotnet build MyGame.slnx
 Use the checkout directory name in the build command. With no explicit root,
 the generator finds the current Git checkout. Project discovery requires Git
 metadata; run `git init` first in a newly scaffolded directory or source archive.
-The generator requires Git and the .NET 10 SDK and bootstraps from its own project.
+The generator requires Git and the .NET 11 SDK and bootstraps from its own project.
 It evaluates MSBuild without running build targets or native builds.
 
 The generator project declares `<IsSolutionGenerator>true</IsSolutionGenerator>`

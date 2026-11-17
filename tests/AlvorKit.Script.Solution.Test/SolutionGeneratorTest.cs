@@ -114,7 +114,7 @@ public class SolutionGeneratorTest
 
     /// <summary>Creates SDK fixtures without importing repository build configuration.</summary>
     internal static string Project(string body) =>
-        "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>" +
+        "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net11.0</TargetFramework>" +
         "</PropertyGroup>" + body + "</Project>";
 
     /// <summary>Renaming a checkout replaces its old generated filename without leaving a second solution.</summary>

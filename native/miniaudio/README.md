@@ -35,7 +35,7 @@ decodes intervening samples when seeking. Neither upstream library is patched.
 MiniAudio exposes native records whose layouts depend on the operating system
 and architecture, including mutexes, semaphores, contexts, devices, and engines.
 The API and backend packages contain a managed assembly for every supported RID
-under `runtimes/<rid>/lib/net10.0`. NuGet supplies the compile-time reference;
+under `runtimes/<rid>/lib/net11.0`. NuGet supplies the compile-time reference;
 .NET selects the matching implementation at runtime. Common function signatures
 are verified across all variants. Platform-specific native record internals remain
 platform-specific; consumers should use the public configuration and function APIs.

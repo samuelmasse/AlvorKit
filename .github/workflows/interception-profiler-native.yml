@@ -122,7 +122,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
 
       - name: Read pinned CoreCLR tag
         id: coreclr
@@ -203,7 +203,7 @@ jobs:
           --
           --test-project tests/AlvorKit.Interception.CallerProof.Test/AlvorKit.Interception.CallerProof.Test.csproj
           --configuration Release
-          --filter FullyQualifiedName=AlvorKit.Interception.CallerProof.Test.LateMetadataGenerationProfilerTest.GenerationRelocatesLateCalliSignatureIdempotently
+          --filter FullyQualifiedName=AlvorKit.LateMetadataGenerationProfilerTest.GenerationRelocatesLateCalliSignatureIdempotently
           --profiler-path ${{ github.workspace }}/${{ matrix.library }}
           --module AlvorKit.Interception.CallerProof.Test
           --timeout-seconds 120
@@ -226,7 +226,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
 
       - uses: actions/download-artifact@v8
         with:
@@ -299,7 +299,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
 
       - uses: actions/download-artifact@v8
         with:

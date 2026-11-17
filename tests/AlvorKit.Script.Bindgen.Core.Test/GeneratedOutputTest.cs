@@ -24,7 +24,7 @@ public sealed class GeneratedOutputTest
     {
         var props = GeneratedOutput.EmitSharedProps();
 
-        StringAssert.Contains(props, "<TargetFramework>net10.0</TargetFramework>");
+        StringAssert.Contains(props, "<TargetFramework>net11.0</TargetFramework>");
         StringAssert.Contains(props, "<GeneratePackageOnBuild>false</GeneratePackageOnBuild>");
         StringAssert.Contains(props, "<GenerateDocumentationFile>true</GenerateDocumentationFile>");
         StringAssert.Contains(props, "<NoWarn>$(NoWarn);CS1573;CS1591</NoWarn>");

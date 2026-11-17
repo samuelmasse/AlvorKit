@@ -15,12 +15,15 @@ public class NewGameGeneratorTest
         var result = new NewGameGenerator().Generate(options);
 
         Assert.AreEqual(output, result.OutputPath);
-        Assert.AreEqual(19, result.FileCount);
+        Assert.AreEqual(20, result.FileCount);
+        using var sdk = JsonDocument.Parse(Read(output, "global.json"));
+        Assert.AreEqual("11.0.100", sdk.RootElement.GetProperty("sdk").GetProperty("version").GetString());
         AssertFile(output, "AGENTS.md");
         StringAssert.Contains(Read(output, "AGENTS.md"), "../AlvorKit/docs/GameRepositoryInstructions.md");
         Assert.IsFalse(File.Exists(Path(output, "AGENTS.md.template")));
         Assert.IsFalse(File.Exists(Path(output, "HelloAlvor.slnx")));
         AssertFile(output, "src/Directory.Build.props");
+        StringAssert.Contains(Read(output, "src/Directory.Build.props"), "<TargetFramework>net11.0</TargetFramework>");
         AssertFile(output, "src/HelloAlvor/Program.cs");
         AssertFile(output, "src/HelloAlvor.App/HelloAlvor.App.csproj");
         AssertFile(output, "src/HelloAlvor.App/AppScope.cs");
@@ -138,7 +141,7 @@ public class NewGameGeneratorTest
         Assert.IsFalse(Directory.Exists(Path(output, "bin")));
         Assert.IsFalse(Directory.Exists(Path(output, "obj")));
         StringAssert.Contains(Read(output, ".gitignore"), "tmp/");
-        Assert.AreEqual(19, Directory.GetFiles(output, "*", SearchOption.AllDirectories).Length);
+        Assert.AreEqual(20, Directory.GetFiles(output, "*", SearchOption.AllDirectories).Length);
     }
 
     /// <summary>Rejects names that cannot become a C# namespace and project name.</summary>

@@ -18,7 +18,7 @@ public sealed class CoreClrProfilerGuardTest
         StringAssert.Contains(result.Failure, "explicit");
     }
 
-    /// <summary>Accepts the supported Windows, Linux, and macOS .NET 10 hosts.</summary>
+    /// <summary>Accepts the supported Windows, Linux, and macOS .NET 11 hosts.</summary>
     [TestMethod]
     public void EvaluateAcceptsSupportedHost()
     {
@@ -113,7 +113,7 @@ public sealed class CoreClrProfilerGuardTest
                 OsArchitecture = Architecture.Arm64
             });
         var runtimeVersion = CoreClrProfilerGuard.Evaluate(
-            SupportedInput() with { RuntimeMajor = 9 });
+            SupportedInput() with { RuntimeMajor = 10 });
         var runtimeFamily = CoreClrProfilerGuard.Evaluate(
             SupportedInput() with { IsMicrosoftCoreClr = false });
         var dynamicCode = CoreClrProfilerGuard.Evaluate(
@@ -144,7 +144,7 @@ public sealed class CoreClrProfilerGuardTest
             debugger.FailureKind);
         StringAssert.Contains(operatingSystem.Failure, "Windows, Linux, and macOS");
         StringAssert.Contains(windowsArm64.Failure, "Windows x64");
-        StringAssert.Contains(runtimeVersion.Failure, ".NET 10");
+        StringAssert.Contains(runtimeVersion.Failure, ".NET 11");
         StringAssert.Contains(dynamicCode.Failure, "dynamic-code");
         StringAssert.Contains(debugger.Failure, "debugger");
     }
@@ -176,7 +176,7 @@ public sealed class CoreClrProfilerGuardTest
             IsMacOS: false,
             ProcessArchitecture: Architecture.X64,
             OsArchitecture: Architecture.X64,
-            RuntimeMajor: 10,
+            RuntimeMajor: 11,
             IsMicrosoftCoreClr: true,
             IsDynamicCodeSupported: true,
             IsDebuggerAttached: false,
