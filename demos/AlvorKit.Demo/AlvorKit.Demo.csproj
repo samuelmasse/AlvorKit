@@ -47,6 +47,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Logging\AlvorKit.Logging.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
     </ItemGroup>
 </Project>

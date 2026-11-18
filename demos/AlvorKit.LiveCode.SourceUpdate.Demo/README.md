@@ -1,4 +1,4 @@
-# AlvorKit Engine Source Update Demo
+# AlvorKit LiveCode Source Update Demo
 
 Launch this project through AlvorSense with `--editable-project`. The target
 starts from an immutable Debug PE/PDB copy and explicitly registers Source

@@ -5,23 +5,26 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Tomlyn" Version="0.19.0" />
         <PackageReference Include="StbImageSharp" Version="2.30.16" />
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Text\AlvorKit.Text.csproj" />
         <ProjectReference Include="..\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
         <ProjectReference Include="..\AlvorKit.Ranges\AlvorKit.Ranges.csproj" />
-        <ProjectReference Include="..\AlvorKit.Root\AlvorKit.Root.csproj" />
+        <ProjectReference Include="..\AlvorKit.Engine.Root\AlvorKit.Engine.Root.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <EmbeddedResource Include="..\..\res\fonts\RobotoMono-Regular.ttf" Visible="false">
-            <LogicalName>AlvorKit.Engine.res.fonts.RobotoMono-Regular.ttf</LogicalName>
+            <LogicalName>AlvorKit.Engine.Frontend.res.fonts.RobotoMono-Regular.ttf</LogicalName>
         </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="Tomlyn" />
         <Using Include="StbImageSharp" />
     </ItemGroup>
 

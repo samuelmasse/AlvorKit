@@ -30,7 +30,7 @@ This becomes disproportionately expensive as buffers grow and also affects
 Windows and Linux even if macOS requires special handling.
 
 The implementation is in
-[`SharedVertexBuffer.cs`](https://github.com/samuelmasse/AlvorKit/blob/main/src/AlvorKit.Engine/Buffers/SharedVertexBuffer.cs).
+[`SharedVertexBuffer.cs`](https://github.com/samuelmasse/AlvorKit/blob/main/src/AlvorKit.Engine.Frontend/Buffers/SharedVertexBuffer.cs).
 
 ## macOS uncertainty
 

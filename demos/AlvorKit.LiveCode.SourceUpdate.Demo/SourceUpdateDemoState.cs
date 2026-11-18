@@ -26,7 +26,7 @@ internal sealed class SourceUpdateDemoState(
         input.Track = true;
         liveCode = new(injector, root, scripts, new("source-update-demo"));
         _ = liveCode.Enable();
-        sourceUpdates = new RootSourceUpdate(
+        sourceUpdates = new SourceUpdateRegistration(
             liveCode.Bridges,
             SourceUpdateHostOptions.FromEnvironment(
                 typeof(SourceUpdateDemoState).Assembly)).Enable();

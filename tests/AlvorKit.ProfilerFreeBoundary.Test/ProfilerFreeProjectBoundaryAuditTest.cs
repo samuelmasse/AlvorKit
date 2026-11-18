@@ -39,7 +39,7 @@ public sealed class ProfilerFreeProjectBoundaryAuditTest
             "src/AlvorKit.Mocking/AlvorKit.Mocking.csproj",
             "src/AlvorKit.Mocking.Dynamic/AlvorKit.Mocking.Dynamic.csproj",
             "demos/AlvorKit.Mocking.Demo/AlvorKit.Mocking.Demo.csproj",
-            "src/AlvorKit.Engine/AlvorKit.Engine.csproj",
+            "src/AlvorKit.Engine.Frontend/AlvorKit.Engine.Frontend.csproj",
             "src/AlvorKit.Engine.Loop/AlvorKit.Engine.Loop.csproj"
         ];
 

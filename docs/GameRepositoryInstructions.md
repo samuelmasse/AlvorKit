@@ -137,8 +137,8 @@ Hard gates remain visible here:
 
 Before adding a `ProjectReference`, preserve the package split. Pure packages
 must not reference UI, GL, frontend, menu, audio, or windowing. Frontend may
-depend on `AlvorKit.Engine`, but loop ownership belongs to executables, menus,
-or another composition package rather than `AlvorKit.Engine.Loop`.
+use `AlvorKit.Engine.Frontend`. Menus participate through `AlvorKit.Engine.States`;
+executables start the desktop host through `AlvorKit.Engine.Loop`.
 
 When AlvorSense applies, run it from the game root with `--workdir .` so ignored
 artifacts stay in the game. It cannot drive real desktop windows or OS-level

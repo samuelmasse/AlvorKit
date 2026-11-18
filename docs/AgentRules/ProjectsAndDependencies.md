@@ -50,6 +50,9 @@ backend, server, protocol, or menu packages, read
 [ProjectSplitModel.md](../ProjectSplitModel.md). Keep dependency
 direction consistent with the pure/frontend/menu/backend/server split.
 
+For the `AlvorKit.Engine.*` package naming rule, see
+[Root Scope](../GameScopeOrganization.md#root-scope).
+
 ## Game Scope Organization
 
 Before creating or reorganizing game dependency-injection scopes,
@@ -117,8 +120,8 @@ allows a different local pattern.
 Before adding a project reference, preserve the role boundaries in
 `ProjectSplitModel.md`. Pure packages must not reference UI, GL, frontend,
 menu, audio, or windowing packages. Frontend packages may depend on
-`AlvorKit.Engine`, but should not depend on `AlvorKit.Engine.Loop`; loop
-ownership belongs in an executable, menu, or another composition package.
+`AlvorKit.Engine.Frontend`. Menus use `AlvorKit.Engine.States` for frame
+participation. Executables own desktop startup through `AlvorKit.Engine.Loop`.
 
 ## Minimal Direct Dependencies
 

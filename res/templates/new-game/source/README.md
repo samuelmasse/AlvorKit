@@ -25,8 +25,8 @@ so any app scope can inject the same application log. See
 
 Keep the split real in `.csproj` files. Pure packages should not reference UI,
 OpenGL, windowing, audio, menu, or frontend packages. Frontend packages should
-use `AlvorKit.Engine`, not `AlvorKit.Engine.Loop`; loop ownership belongs in the
-executable or menu/composition layer.
+use `AlvorKit.Engine.Frontend`. Menus use the state and script APIs supplied by
+`AlvorKit.Engine.States`. The executable starts the host through `AlvorKit.Engine.Loop`.
 
 Game Ents must use AlvorKit ECS. Before adding players, enemies,
 projectiles, items, chunks, or other mutable simulated objects, read

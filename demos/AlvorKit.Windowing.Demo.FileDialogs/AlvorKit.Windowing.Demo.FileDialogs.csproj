@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Logging\AlvorKit.Logging.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.Windowing.Agent\AlvorKit.Windowing.Agent.csproj" />
     </ItemGroup>

@@ -33,7 +33,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="$(MSBuildThisFileDirectory)..\src\AlvorKit.Logging\AlvorKit.Logging.csproj" />
         <ProjectReference Include="$(MSBuildThisFileDirectory)..\scripts\AlvorKit.Script.Workspace\AlvorKit.Script.Workspace.csproj" />
     </ItemGroup>
 </Project>

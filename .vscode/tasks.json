@@ -96,10 +96,16 @@
       "group": "build"
     },
     {
-      "label": "build AlvorKit.Engine.SourceUpdate.Demo",
+      "label": "build AlvorKit.LiveCode.SourceUpdate.Demo",
       "type": "process",
       "command": "dotnet",
-      "args": ["build", "${workspaceFolder}/demos/AlvorKit.Engine.SourceUpdate.Demo/AlvorKit.Engine.SourceUpdate.Demo.csproj", "--configuration", "Release", "--nologo"],
+      "args": [
+        "build",
+        "${workspaceFolder}/demos/AlvorKit.LiveCode.SourceUpdate.Demo/AlvorKit.LiveCode.SourceUpdate.Demo.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
       "problemMatcher": "$msCompile",
       "group": "build"
     },

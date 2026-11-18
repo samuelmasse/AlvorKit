@@ -39,5 +39,5 @@ Useful interactions:
 - Press `F` to deliberately freeze the game loop for out-of-band inspection.
 
 Use the dedicated
-[`AlvorKit.Engine.SourceUpdate.Demo`](../AlvorKit.Engine.SourceUpdate.Demo/)
+[`AlvorKit.LiveCode.SourceUpdate.Demo`](../AlvorKit.LiveCode.SourceUpdate.Demo/)
 when testing edits to an original C# method in a running process.

@@ -53,7 +53,7 @@ var liveCode = new RootLiveCode(
     new("weather-demo"));
 _ = liveCode.Enable();
 
-_ = new RootSourceUpdate(
+_ = new SourceUpdateRegistration(
     liveCode.Bridges,
     SourceUpdateHostOptions.FromEnvironment(
         typeof(Program).Assembly)).Enable();

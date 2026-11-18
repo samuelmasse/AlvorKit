@@ -38,7 +38,7 @@ run a normal project build behind a process and assume it is the same baseline.
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.AlvorSense -- start `
   --id source-demo `
-  --editable-project demos\AlvorKit.Engine.SourceUpdate.Demo\AlvorKit.Engine.SourceUpdate.Demo.csproj
+  --editable-project demos\AlvorKit.LiveCode.SourceUpdate.Demo\AlvorKit.LiveCode.SourceUpdate.Demo.csproj
 ```
 
 `--editable-project` builds with portable PDBs and optimizations disabled,
@@ -46,7 +46,7 @@ copies the complete output into the AlvorSense session, records PE/PDB hashes,
 MVID, SDK identity, and CodeView path, and launches that immutable copy with
 `DOTNET_MODIFIABLE_ASSEMBLIES=debug`.
 
-The target must explicitly enable `RootLiveCode` and `RootSourceUpdate`.
+The target must explicitly enable `RootLiveCode` and `SourceUpdateRegistration`.
 `SourceUpdateHostOptions.FromEnvironment` rejects a normal launch without the
 immutable manifest.
 
@@ -84,7 +84,7 @@ last acknowledged source to that exact current file. Then submit both:
 ```powershell
 dotnet run --project scripts\AlvorKit.Script.LiveCode -- source apply `
   --workspace source-demo `
-  --source demos\AlvorKit.Engine.SourceUpdate.Demo\PulseService.cs `
+  --source demos\AlvorKit.LiveCode.SourceUpdate.Demo\PulseService.cs `
   --diff path\to\pulse-update.diff `
   --update-id pulse-generation-1
 ```

@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Explicitly composes the editable-source bridge into one development LiveCode session.</summary>
-public sealed class RootSourceUpdate(
+public sealed class SourceUpdateRegistration(
     LiveCodeBridgeRegistry bridges,
     SourceUpdateHostOptions options)
 {
@@ -11,7 +11,7 @@ public sealed class RootSourceUpdate(
     public SourceUpdateModuleLedger Enable()
     {
         if (enabled)
-            throw new InvalidOperationException("Root Source Update has already been enabled.");
+            throw new InvalidOperationException("Source Update has already been enabled.");
 
         var ledger = new SourceUpdateModuleLedger(options);
         bridges.Register(new SourceUpdateBridge(ledger));

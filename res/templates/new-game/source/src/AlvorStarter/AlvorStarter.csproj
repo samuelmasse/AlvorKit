@@ -5,7 +5,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AlvorStarter.App\AlvorStarter.App.csproj" />
         <ProjectReference Include="..\AlvorStarter.Menus\AlvorStarter.Menus.csproj" />
         <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
     </ItemGroup>

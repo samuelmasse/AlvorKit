@@ -59,8 +59,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\AlvorKit.Script.LiveWorkspace\AlvorKit.Script.LiveWorkspace.csproj" />
-        <ProjectReference Include="..\..\src\AlvorKit.LiveCode\AlvorKit.LiveCode.csproj" />
-        <ProjectReference Include="..\..\src\AlvorKit.Engine.SourceUpdate\AlvorKit.Engine.SourceUpdate.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.LiveCode.SourceUpdate\AlvorKit.LiveCode.SourceUpdate.csproj" />
     </ItemGroup>
 
     <ItemGroup>

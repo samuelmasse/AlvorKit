@@ -13,7 +13,7 @@ screenshot commands as AlvorSense without requiring an agent to generate C#.
 Games can register narrower domain bridges for frequent operations while
 retaining arbitrary C# as the escape hatch.
 
-`AlvorKit.Engine.SourceUpdate` can register a `source-update` bridge in the same
+`AlvorKit.LiveCode.SourceUpdate` can register a `source-update` bridge in the same
 control plane. Its external coordinator compiles a normal edit to an original
 project file and submits verified metadata deltas at the game safe-frame
 boundary.
@@ -41,7 +41,7 @@ LiveCode has four separate responsibilities:
 games using `RootLoop`. It pumps queued work at the window loop's safe
 pre-update dispatch boundary, before an engine update is active.
 
-`AlvorKit.Engine.SourceUpdate` is a separate development-only composition. It
+`AlvorKit.LiveCode.SourceUpdate` is a separate development-only composition. It
 registers its versioned bridge in the same registry and applies a queued delta
 at the same safe-frame boundary.
 

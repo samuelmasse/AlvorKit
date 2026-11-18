@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Engine.Root\AlvorKit.Engine.Root.csproj" />
+        <ProjectReference Include="..\AlvorKit.Maths\AlvorKit.Maths.csproj" />
+    </ItemGroup>
+
+</Project>

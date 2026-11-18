@@ -21,4 +21,7 @@
     <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj')">
         <ProjectReference Include="$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj" />
     </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Logging\AlvorKit.Logging.csproj" />
+    </ItemGroup>
 </Project>

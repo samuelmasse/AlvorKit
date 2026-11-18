@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <InternalsVisibleTo Include="AlvorKit.Engine.Loop" />
+        <InternalsVisibleTo Include="AlvorKit.Engine.Frontend" />
         <InternalsVisibleTo Include="AlvorKit.Logging" />
         <InternalsVisibleTo Include="AlvorKit.Text.Test" />
     </ItemGroup>

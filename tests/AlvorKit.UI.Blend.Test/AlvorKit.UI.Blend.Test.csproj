@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.UI.Blend\AlvorKit.UI.Blend.csproj" />
     </ItemGroup>
 </Project>

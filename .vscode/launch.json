@@ -102,11 +102,11 @@
       "stopAtEntry": false
     },
     {
-      "name": "AlvorKit.Engine.SourceUpdate.Demo",
+      "name": "AlvorKit.LiveCode.SourceUpdate.Demo",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build AlvorKit.Engine.SourceUpdate.Demo",
-      "program": "${workspaceFolder}/bin/AlvorKit.Engine.SourceUpdate.Demo/Release/AlvorKit.Engine.SourceUpdate.Demo.dll",
+      "preLaunchTask": "build AlvorKit.LiveCode.SourceUpdate.Demo",
+      "program": "${workspaceFolder}/bin/AlvorKit.LiveCode.SourceUpdate.Demo/Release/AlvorKit.LiveCode.SourceUpdate.Demo.dll",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "stopAtEntry": false

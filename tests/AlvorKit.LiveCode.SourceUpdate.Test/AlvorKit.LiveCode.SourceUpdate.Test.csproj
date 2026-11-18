@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\AlvorKit.Engine.SourceUpdate\AlvorKit.Engine.SourceUpdate.csproj" />
+        <ProjectReference Include="..\..\src\AlvorKit.LiveCode.SourceUpdate\AlvorKit.LiveCode.SourceUpdate.csproj" />
     </ItemGroup>
 
     <ItemGroup>

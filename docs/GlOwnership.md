@@ -7,7 +7,7 @@ turns GPU resource lifetime into the same decision as service lifetime in
 
 ## The Layer Tree
 
-`RootGl` (`AlvorKit.Engine`) is the root node over the GL backend. A game declares one facade per
+`RootGl` (`AlvorKit.Engine.Frontend`) is the root node over the GL backend. A game declares one facade per
 dependency-injection scope whose services own GPU objects. Each facade is a single line:
 
 ```csharp

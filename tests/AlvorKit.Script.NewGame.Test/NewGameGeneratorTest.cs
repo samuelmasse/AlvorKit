@@ -83,9 +83,14 @@ public class NewGameGeneratorTest
         StringAssert.Contains(Read(output, "src/SplitGame.App/AppCounter.cs"), "AppCounter(Log log)");
 
         var frontend = Read(output, "src/SplitGame.App.Frontend/SplitGame.App.Frontend.csproj");
-        StringAssert.Contains(frontend, "AlvorKit.Engine.csproj");
+        StringAssert.Contains(frontend, "AlvorKit.Engine.Frontend.csproj");
         AssertDoesNotContain(frontend, "AlvorKit.Engine.Loop");
         AssertDoesNotContain(frontend, "SplitGame.Menus");
+
+        var menus = Read(output, "src/SplitGame.Menus/SplitGame.Menus.csproj");
+        AssertDoesNotContain(menus, "AlvorKit.Engine.Loop");
+        var launcher = Read(output, "src/SplitGame/SplitGame.csproj");
+        StringAssert.Contains(launcher, "AlvorKit.Engine.Loop.csproj");
     }
 
     /// <summary>Emits the documented sibling AlvorKit path and an actionable missing-clone hint.</summary>

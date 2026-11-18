@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <ProjectReference Include="..\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
+        <ProjectReference Include="..\AlvorKit.Engine.States\AlvorKit.Engine.States.csproj" />
+        <ProjectReference Include="..\AlvorKit.Engine.Frontend\AlvorKit.Engine.Frontend.csproj" />
         <ProjectReference Include="..\AlvorKit.LiveCode\AlvorKit.LiveCode.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing.Agent\AlvorKit.Windowing.Agent.csproj" />
     </ItemGroup>

@@ -90,7 +90,7 @@ public class ResourceLoadingTest
 
     private byte[] FontData()
     {
-        using var stream = typeof(RootRoboto).Assembly.GetManifestResourceStream("AlvorKit.Engine.res.fonts.RobotoMono-Regular.ttf")!;
+        using var stream = typeof(RootRoboto).Assembly.GetManifestResourceStream("AlvorKit.Engine.Frontend.res.fonts.RobotoMono-Regular.ttf")!;
         using var memory = new MemoryStream();
         stream.CopyTo(memory);
         return memory.ToArray();

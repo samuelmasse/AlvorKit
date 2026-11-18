@@ -16,7 +16,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.FastNoise2.Graph\AlvorKit.FastNoise2.Graph.csproj" />
-        <ProjectReference Include="..\..\src\AlvorKit.Graphics2D\AlvorKit.Graphics2D.csproj" />
     </ItemGroup>
 
     <ItemGroup>

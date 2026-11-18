@@ -83,8 +83,16 @@ The scope prefix should normally match the attribute. A type named
 root services just to make them sound more general. The prefix is the signal
 that the service is available from the root scope.
 
-`AlvorKit.Root` provides scope identity and file services without frontend
-dependencies. Graphics and UI packages add their own root services.
+Use `AlvorKit.Engine.*` for packages whose primary job is to provide or
+compose the application's root runtime. For example, `AlvorKit.Windowing`
+provides `Keyboard`, and `AlvorKit.Engine.Frontend` exposes it in the root
+scope as `RootKeyboard`. Feature packages keep their feature name when
+registering their own root services, as `AlvorKit.UI` does with `RootUi`.
+
+`AlvorKit.Engine.Root` provides scope identity, files, setup, and unload hooks.
+`AlvorKit.Engine.Frontend` adds scoped window and graphics services.
+`AlvorKit.Engine.States` owns the current state and scripts. The desktop host
+in `AlvorKit.Engine.Loop` starts the session and dispatches frames.
 
 Examples of root-scope services:
 
@@ -98,11 +106,6 @@ Examples of root-scope services:
 - `RootFontPacking`: rendering-time atlas packing across active font collections.
 - `RootMetrics`, `RootBackbuffer`, `RootScale`: frame and display helpers.
 - `RootCube`, `RootQuadIndexBuffer`: shared rendering geometry resources.
-
-Feature packages can add their own root services. For example, a UI package can
-contribute `RootUi`, `RootUiMouse`, `RootUiDraw`, and `RootUiScript`. Those are
-still root-scope services because the UI tree and its script are process-level
-engine participants.
 
 ```csharp
 [Root]
