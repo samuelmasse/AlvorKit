@@ -9,7 +9,7 @@ not replace FastNoise2's fused SIMD node graph; it makes that graph safer to con
 The package is pinned to:
 
 - FastNoise2 runtime metadata 1.1.1.
-- AlvorKit FastNoise2 binding 1.1.1.3.
+- AlvorKit FastNoise2 binding 1.1.1.4.
 - Audited upstream FastNoise2 commit `903c1f2d2f9d53ddce94cd223f32727d9ab3aeaa` and its pinned FastSIMD commit.
 - .NET 11 and the `AlvorKit` namespace.
 

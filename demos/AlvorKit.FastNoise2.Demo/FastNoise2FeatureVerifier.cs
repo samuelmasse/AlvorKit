@@ -67,7 +67,7 @@ internal class FastNoise2FeatureVerifier(Fn fn, FastNoise2FeatureDatabase databa
     {
         Require(database.SchemaVersion == 3, $"Unsupported FastNoise2 feature database schema {database.SchemaVersion}.");
         Require(database.FastNoiseVersion == "1.1.1", $"Unexpected FastNoise2 catalog version '{database.FastNoiseVersion}'.");
-        Require(database.BindingVersion == "1.1.1.3", $"Unexpected binding catalog version '{database.BindingVersion}'.");
+        Require(database.BindingVersion == "1.1.1.4", $"Unexpected binding catalog version '{database.BindingVersion}'.");
         Require(database.SourceRevision.ValueKind == JsonValueKind.Object, "The exact upstream source revision is missing.");
         Require(
             database.SourceRevision.GetProperty("commit").GetString() == "903c1f2d2f9d53ddce94cd223f32727d9ab3aeaa",

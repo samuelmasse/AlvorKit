@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "fastNoiseVersion": "1.1.1",
-  "bindingVersion": "1.1.1.3",
+  "bindingVersion": "1.1.1.4",
   "sourceRevision": {
     "repository": "https://github.com/Auburn/FastNoise2",
     "tag": "v1.1.1",
