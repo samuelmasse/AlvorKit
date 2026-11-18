@@ -4,9 +4,9 @@ namespace AlvorKit;
 [App]
 public class AppViewportMenu(
     RootText text,
-    RootUiMouse uiMouse,
+    RootUi ui,
     RootKeyboard keyboard,
-    BlendUi bl,
+    AppBlendUi bl,
     AppSession session)
 {
     public void Create(EntMut root)
@@ -66,7 +66,7 @@ public class AppViewportMenu(
                     .Mutate(bl.S.Border)
                     .OnPressF(() =>
                     {
-                        panStart = uiMouse.Position;
+                        panStart = ui.Mouse.Position;
                         panOffset = session.Offset;
                     })
                     .OnUpdateF(() =>
@@ -76,7 +76,7 @@ public class AppViewportMenu(
                         if (!view.IsPressedR)
                             return;
 
-                        var delta = uiMouse.Position - panStart;
+                        var delta = ui.Mouse.Position - panStart;
                         var offset = panOffset - delta;
                         if (offset != session.Offset)
                         {
@@ -110,7 +110,7 @@ public class AppViewportMenu(
                         if (session.Field.Width == 0)
                             return default;
 
-                        var local = uiMouse.Position - view.PositionR;
+                        var local = ui.Mouse.Position - view.PositionR;
                         var x = (int)local.X;
                         var y = (int)local.Y;
                         return text.Format(

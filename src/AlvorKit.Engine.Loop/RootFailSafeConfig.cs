@@ -1,8 +1,15 @@
 namespace AlvorKit;
 
 /// <summary>Configures whether unhandled exceptions request root shutdown before process exit.</summary>
-public sealed class FailSafeConfig
+[Root]
+public class RootFailSafeConfig
 {
+    private readonly bool enabled = true;
+
     /// <summary>Gets whether unhandled exceptions request root shutdown before process exit.</summary>
-    public bool Enabled { get; init; } = true;
+    public bool Enabled
+    {
+        get => enabled;
+        init => enabled = value;
+    }
 }

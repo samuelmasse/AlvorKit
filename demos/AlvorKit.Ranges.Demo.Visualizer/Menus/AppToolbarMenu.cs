@@ -4,7 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppToolbarMenu(
     RootText text,
-    BlendUi bl,
+    RootBlendUi bl,
     AppSession session,
     AppUiScale uiScale)
 {

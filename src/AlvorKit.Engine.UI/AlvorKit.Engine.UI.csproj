@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Engine.Frontend\AlvorKit.Engine.Frontend.csproj" />
+        <ProjectReference Include="..\AlvorKit.Engine.States\AlvorKit.Engine.States.csproj" />
+        <ProjectReference Include="..\AlvorKit.UI\AlvorKit.UI.csproj" />
+    </ItemGroup>
+
+</Project>

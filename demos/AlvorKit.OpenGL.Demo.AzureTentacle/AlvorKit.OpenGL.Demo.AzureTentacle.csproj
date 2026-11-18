@@ -6,11 +6,10 @@
 
     <ItemGroup>
         <PackageReference Include="BigGustave" Version="1.0.6" />
+        <ProjectReference Include="..\..\src\AlvorKit.Engine.UI.Blend\AlvorKit.Engine.UI.Blend.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
             OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\..\src\AlvorKit.Engine.Loop\AlvorKit.Engine.Loop.csproj" />
-        <ProjectReference Include="..\..\src\AlvorKit.UI\AlvorKit.UI.csproj" />
-        <ProjectReference Include="..\..\src\AlvorKit.UI.Blend\AlvorKit.UI.Blend.csproj" />
         <ProjectReference Include="..\..\src\AlvorKit.UI.Generator\AlvorKit.UI.Generator.csproj"
             OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>

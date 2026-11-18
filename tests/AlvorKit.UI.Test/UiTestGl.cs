@@ -5,6 +5,9 @@ internal sealed unsafe class UiTestGl : GlNoop
 {
     /// <summary>The next generated OpenGL object id.</summary>
     private uint next = 1;
+    private int drawCount;
+
+    internal int DrawCount => drawCount;
 
     /// <inheritdoc/>
     public override void GenTextures(int n, nint textures) => Fill(n, textures);
@@ -32,6 +35,12 @@ internal sealed unsafe class UiTestGl : GlNoop
 
     /// <inheritdoc/>
     public override int GetUniformLocation(GlProgramHandle program, nint name) => 0;
+
+    public override void DrawElements(GlPrimitiveType mode, int count, GlDrawElementsType type, nint indices) => drawCount++;
+
+    public override void GenFramebuffers(int count, nint destination) => Fill(count, destination);
+
+    public override GlFramebufferStatus CheckFramebufferStatus(GlFramebufferTarget target) => GlFramebufferStatus.FramebufferComplete;
 
     /// <summary>Writes generated ids into an OpenGL output pointer.</summary>
     private void Fill(int n, nint destination)

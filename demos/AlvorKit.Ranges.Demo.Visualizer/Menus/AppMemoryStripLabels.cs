@@ -4,7 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppMemoryStripLabels(
     RootText text,
-    BlendUi bl,
+    RootBlendUi bl,
     AppStyle s,
     AppSession session,
     AppMemoryStripGeometry geometry)

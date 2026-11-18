@@ -14,6 +14,16 @@ internal class WindowToggle(IWindowHost window)
     /// <summary>Gets whether vertical synchronization is tracked as enabled.</summary>
     internal bool IsVSyncEnabled => isVSyncEnabled;
 
+    /// <summary>Maximizes the host and restores the effective swap interval when leaving fullscreen.</summary>
+    internal void Maximize()
+    {
+        var wasFullscreen = isFullscreen;
+        isFullscreen = false;
+        window.WindowState = WindowState.Maximized;
+        if (wasFullscreen)
+            window.IsVSyncEnabled = isVSyncEnabled || isVSyncForced;
+    }
+
     /// <summary>Toggles fullscreen, publishing the new state before native calls can synchronously draw resize frames.</summary>
     internal void ToggleFullscreen()
     {

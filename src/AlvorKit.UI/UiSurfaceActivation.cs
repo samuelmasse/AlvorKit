@@ -2,8 +2,8 @@ namespace AlvorKit;
 
 /// <summary>Activates and restores the scale and viewport shared by one UI surface callback.</summary>
 internal sealed class UiSurfaceActivation(
-    RootUiScale scale,
-    RootUiContext context)
+    UiScale scale,
+    UiContext context)
 {
     /// <summary>Activates a surface and returns the context needed to restore the previous one.</summary>
     internal UiSurfaceActiveState Activate(UiSurface surface)
@@ -31,5 +31,5 @@ internal sealed class UiSurfaceActivation(
 
 /// <summary>Captures the scale and viewport active before a UI surface callback.</summary>
 internal readonly record struct UiSurfaceActiveState(
-    RootUiScale.ActiveState Scale,
-    RootUiContext.ActiveState Context);
+    UiScale.ActiveState Scale,
+    UiContext.ActiveState Context);

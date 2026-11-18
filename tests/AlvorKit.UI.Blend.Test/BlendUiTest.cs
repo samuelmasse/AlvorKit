@@ -11,7 +11,7 @@ public class BlendUiTest
         var palette = BlendPalette.Default with { AppBackground = (0.1f, 0.2f, 0.3f, 1), Raised = (0.4f, 0.2f, 0.1f, 1) };
         var metrics = new BlendMetrics { FieldHeight = 35, DropdownOptionHeight = 31 };
         using var h = new BlendTestHarness(palette, metrics);
-        var other = new BlendUi(h.Root.Get<RootBlend>(), h.AppGl);
+        var other = h.Root.Get<RootBlendUi>();
 
         Assert.AreEqual(palette, h.Blend.S.Palette);
         Assert.AreSame(metrics, h.Blend.S.Metrics);

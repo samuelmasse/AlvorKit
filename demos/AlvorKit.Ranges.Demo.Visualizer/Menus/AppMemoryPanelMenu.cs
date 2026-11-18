@@ -4,7 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppMemoryPanelMenu(
     RootText text,
-    BlendUi bl,
+    RootBlendUi bl,
     AppSession session,
     AppMemoryLegend legend,
     AppMemoryStats stats,

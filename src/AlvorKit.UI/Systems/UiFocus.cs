@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
-[Root]
-public class RootUiFocus(RootKeyboard keyboard)
+/// <summary>Tracks keyboard focus and dispatches navigation across the active UI surfaces.</summary>
+public class UiFocus(Keyboard keyboard)
 {
     private readonly List<EntMut> focusables = [];
     private readonly List<UiSurface> focusableSurfaces = [];
@@ -70,7 +70,7 @@ public class RootUiFocus(RootKeyboard keyboard)
             RemoveSelect(c);
     }
 
-    internal void Update(RootUiSurfaces surfaces)
+    internal void Update(UiSurfaces surfaces)
     {
         (inits, newInits) = (newInits, inits);
         focusables.Clear();
@@ -147,7 +147,7 @@ public class RootUiFocus(RootKeyboard keyboard)
     private void Focus(
         EntMut ent,
         bool tab,
-        RootUiSurfaces surfaces)
+        UiSurfaces surfaces)
     {
         UiSurface? surface = null;
         if (ent != default)

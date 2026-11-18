@@ -1,7 +1,6 @@
 namespace AlvorKit;
 
-[Root]
-public class RootUiSize(RootSprites sprites, RootUiScale scale)
+internal class UiSize(SpriteBatchWriter sprites, UiScale scale)
 {
     internal void Size(Vec2 s, EntMut n)
     {
@@ -70,7 +69,7 @@ public class RootUiSize(RootSprites sprites, RootUiScale scale)
         var sizeTextRelative = n.SizeTextRelativeFV.Resolve();
         var glyphSnap = n.TextGlyphAlignmentSnapFV.Resolve() * scale.Scale;
         var size = new Vec2(
-            sprites.Batch.Measure(font.Size(fontSize), text, glyphSnap) / scale.Scale,
+            sprites.Measure(font.Size(fontSize), text, glyphSnap) / scale.Scale,
             font.Size(fontSize).Metrics.Height / scale.Scale);
 
         var fontPadding = n.FontPaddingFV.Resolve();

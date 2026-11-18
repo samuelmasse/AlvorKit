@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>Finds the deepest mouse target within a clipped UI tree.</summary>
-internal sealed class UiMouseHitSearch(RootUiClipping clipping)
+internal sealed class UiMouseHitSearch(UiClipping clipping)
 {
     /// <summary>Finds the hovered selectable node at <paramref name="position"/>.</summary>
     internal EntMut Hovered(Vec2 position, EntMut root) =>

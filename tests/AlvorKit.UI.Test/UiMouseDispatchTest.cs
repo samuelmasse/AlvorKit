@@ -1,8 +1,8 @@
 namespace AlvorKit;
 
-/// <summary>Covers mouse hover, press, click, capture, and scroll dispatch through <see cref="RootUiScript"/> frames.</summary>
+/// <summary>Covers mouse hover, press, click, capture, and scroll dispatch through <see cref="UiRuntime"/> frames.</summary>
 [TestClass]
-public class RootUiMouseDispatchTest
+public class UiMouseDispatchTest
 {
     /// <summary>Hovering a selectable node marks it hovered and clears when the cursor leaves.</summary>
     [TestMethod]
@@ -247,10 +247,10 @@ public class RootUiMouseDispatchTest
 
         h.MoveMouse((50, 25));
         h.Frame();
-        h.Script.Draw();
+        h.Draw();
         Assert.AreEqual(CursorShape.Hand, h.Host.CursorShape);
 
-        h.Script.Unload();
+        h.UiMouse.Release();
         Assert.AreEqual(CursorShape.Default, h.Host.CursorShape);
     }
 

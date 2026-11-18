@@ -10,16 +10,16 @@ public static class RootLoop
     public static void RunGlfw<TState>(params ReadOnlySpan<IRootSetup> setups) where TState : State =>
         RunGlfw(typeof(TState), setups);
 
-    /// <summary>Seeds caller services before applying setups and creating the first state.</summary>
-    public static void RunGlfw<TState>(ReadOnlySpan<IRootSetup> setups, Action<Injector> inject) where TState : State =>
-        RunGlfw(typeof(TState), setups, inject);
+    /// <summary>Configures the root scope before applying setups and creating the first state.</summary>
+    public static void RunGlfw<TState>(ReadOnlySpan<IRootSetup> setups, Action<RootScope> configureRoot) where TState : State =>
+        RunGlfw(typeof(TState), setups, configureRoot);
 
     /// <summary>Starts a GLFW/OpenGL host, applying setups in order before creating the requested state.</summary>
     public static void RunGlfw(Type bootState, params ReadOnlySpan<IRootSetup> setups) =>
-        RunGlfw(bootState, setups, injector => { });
+        RunGlfw(bootState, setups, static _ => { });
 
-    /// <summary>Seeds caller services before applying setups and creating the requested state.</summary>
-    public static void RunGlfw(Type bootState, ReadOnlySpan<IRootSetup> setups, Action<Injector> inject)
+    /// <summary>Configures the root scope before applying setups and creating the requested state.</summary>
+    public static void RunGlfw(Type bootState, ReadOnlySpan<IRootSetup> setups, Action<RootScope> configureRoot)
     {
         using var logging = new LogRuntime();
         logging.Start();
@@ -29,7 +29,7 @@ public static class RootLoop
         ConfigureGlfw(glfw);
 
         var nativeWindow = CreateNativeWindow(glfw);
-        RunGlfwWindow(glfw, nativeWindow, logging.Log, bootState, setups, inject);
+        RunGlfwWindow(glfw, nativeWindow, logging.Log, bootState, setups, configureRoot);
         glfw.DestroyWindow(nativeWindow);
         glfw.Terminate();
     }
@@ -39,17 +39,16 @@ public static class RootLoop
         IWindowHost host,
         IFileDialogHost fileDialogs,
         RootGl gl,
-        Log log,
+        Injector injector,
         Type bootState,
         ReadOnlySpan<IRootSetup> setups,
-        Action<Injector> inject)
+        Action<RootScope> configureRoot)
     {
         var window = new WindowLoop(host);
-        var injector = CreateInjector(log);
         injector.Add(window);
         injector.Add<IWindowHost>(host);
         var root = CreateRootScope(injector, window, fileDialogs, gl);
-        inject(injector);
+        configureRoot(root);
         root.Add(new RootFiles(root.Get<RootFs>(), [AppContext.BaseDirectory]));
         LoadState(root, bootState, setups);
 
@@ -120,7 +119,7 @@ public static class RootLoop
         Log log,
         Type bootState,
         ReadOnlySpan<IRootSetup> setups,
-        Action<Injector> inject)
+        Action<RootScope> configureRoot)
     {
         MakeCurrent(glfw, nativeWindow);
 
@@ -129,13 +128,11 @@ public static class RootLoop
         using var fileDialogs = new GlfwFileDialogHost(glfw, nativeWindow);
         using var window = new AgentGlfwWindowHost(glfw, nativeWindow, rootGl);
 
-        Run(window, fileDialogs, rootGl, log, bootState, setups, injector =>
-        {
-            injector.Add<Gl>(gl);
-            injector.Add<Glfw>(glfw);
-            injector.Add(nativeWindow);
-            inject(injector);
-        });
+        var injector = CreateInjector(log);
+        injector.Add<Gl>(gl);
+        injector.Add<Glfw>(glfw);
+        injector.Add(nativeWindow);
+        Run(window, fileDialogs, rootGl, injector, bootState, setups, configureRoot);
     }
 
     private static (int Width, int Height) GetWindowSize(GlfwBackend glfw)

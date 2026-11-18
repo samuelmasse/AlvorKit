@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 /// <summary>App-specific overlay recipes for the azure tentacle demo.</summary>
 [App]
-public class AppStyle(BlendUi bl)
+public class AppStyle(RootBlendUi bl)
 {
     /// <summary>Gets the OpenGL clear color used behind the animated model.</summary>
     public Vec4 SceneClearColor => bl.S.Palette.AppBackground;

@@ -1,26 +1,27 @@
 namespace AlvorKit;
 
-/// <summary>Root-owned embedded Inter font faces used by the Blend design system.</summary>
-[Root]
-[ExcludeFromCodeCoverage]
-public class RootInter(RootFonts fonts)
+/// <summary>Embedded Inter font faces used by the Blend design system.</summary>
+public class BlendFonts(Func<FontOptions, Font> open)
 {
     private const string RegularResourceName = "AlvorKit.UI.Blend.res.fonts.Inter.ttf";
     private const string SemiBoldResourceName = "AlvorKit.UI.Blend.res.fonts.Inter-SemiBold.ttf";
 
+    private readonly Font regular = Open(open, RegularResourceName);
+    private readonly Font semiBold = Open(open, SemiBoldResourceName);
+
     /// <summary>Gets the regular Inter face.</summary>
-    public Font Regular { get; } = Open(fonts, RegularResourceName);
+    public Font Regular => regular;
 
     /// <summary>Gets the semi-bold Inter face used for emphasis text.</summary>
-    public Font SemiBold { get; } = Open(fonts, SemiBoldResourceName);
+    public Font SemiBold => semiBold;
 
-    private static Font Open(RootFonts fonts, string resourceName)
+    private static Font Open(Func<FontOptions, Font> open, string resourceName)
     {
-        var assembly = typeof(RootInter).Assembly;
+        var assembly = typeof(BlendFonts).Assembly;
         using var stream = assembly.GetManifestResourceStream(resourceName)
             ?? throw new InvalidOperationException($"Embedded Inter font resource '{resourceName}' is missing.");
         using var memory = new MemoryStream();
         stream.CopyTo(memory);
-        return fonts.Open(new() { Data = memory.ToArray() });
+        return open(new() { Data = memory.ToArray() });
     }
 }

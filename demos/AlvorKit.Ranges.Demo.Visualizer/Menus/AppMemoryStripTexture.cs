@@ -4,7 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppMemoryStripTexture(
     RootGl gl,
-    RootUiMouse uiMouse,
+    RootUi ui,
     AppStyle s,
     AppSession session,
     AppTextureLimits limits,
@@ -40,7 +40,7 @@ public class AppMemoryStripTexture(
     /// <summary>Returns tooltip text for the byte currently hovered inside a strip node.</summary>
     public ReadOnlySpan<char> Tooltip(AppMemoryStripView view, EntMut strip)
     {
-        if (strip.SizeR.X <= 0 || uiMouse.Position.X < strip.PositionR.X || uiMouse.Position.X > strip.PositionR.X + strip.SizeR.X)
+        if (strip.SizeR.X <= 0 || ui.Mouse.Position.X < strip.PositionR.X || ui.Mouse.Position.X > strip.PositionR.X + strip.SizeR.X)
             return [];
 
         var byteIndex = HoverByte(view, strip);
@@ -73,7 +73,7 @@ public class AppMemoryStripTexture(
     /// <summary>Returns the tooltip swatch color for the byte currently hovered inside a strip node.</summary>
     public Vec4 TooltipColor(AppMemoryStripView view, EntMut strip)
     {
-        if (strip.SizeR.X <= 0 || uiMouse.Position.X < strip.PositionR.X || uiMouse.Position.X > strip.PositionR.X + strip.SizeR.X)
+        if (strip.SizeR.X <= 0 || ui.Mouse.Position.X < strip.PositionR.X || ui.Mouse.Position.X > strip.PositionR.X + strip.SizeR.X)
             return default;
 
         var byteIndex = HoverByte(view, strip);
@@ -382,7 +382,7 @@ public class AppMemoryStripTexture(
 
     private long HoverByte(AppMemoryStripView view, EntMut strip)
     {
-        var localX = Math.Clamp(uiMouse.Position.X - strip.PositionR.X, 0, strip.SizeR.X);
+        var localX = Math.Clamp(ui.Mouse.Position.X - strip.PositionR.X, 0, strip.SizeR.X);
         var viewLength = Math.Max(1, view.ViewEnd - view.ViewStart);
         var offset = (long)Math.Floor(localX / Math.Max(1f, strip.SizeR.X) * viewLength);
         return Math.Clamp(view.ViewStart + offset, view.ViewStart, Math.Max(view.ViewStart, view.ViewEnd - 1));

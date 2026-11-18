@@ -1,12 +1,11 @@
 namespace AlvorKit;
 
-[Root]
-public class RootUiDraw(RootSprites sprites, RootUiScale scale, RootUiPosition position, RootUiClipping clipping)
+internal class UiDraw(SpriteBatchWriter sprites, UiScale scale, UiPosition position, UiClipping clipping)
 {
     internal void Draw(Ent n)
     {
-        var clip = sprites.Batch.Clip;
-        sprites.Batch.Clip = clipping.IntersectClips(clip, new(n.PositionR, n.PositionR + n.SizeR));
+        var clip = sprites.Clip;
+        sprites.Clip = clipping.IntersectClips(clip, new(n.PositionR, n.PositionR + n.SizeR));
 
         DrawNode(n);
         foreach (var sc in n.NodesR.Span)
@@ -25,7 +24,7 @@ public class RootUiDraw(RootSprites sprites, RootUiScale scale, RootUiPosition p
             Draw(sc);
         }
 
-        sprites.Batch.Clip = clip;
+        sprites.Clip = clip;
     }
 
     private void DrawNode(Ent n)
@@ -44,7 +43,7 @@ public class RootUiDraw(RootSprites sprites, RootUiScale scale, RootUiPosition p
         if (n.SizeR == (0, 0) || color.W == 0)
             return;
 
-        sprites.Batch.Draw(n.PositionR, n.SizeR, color);
+        sprites.Draw(n.PositionR, n.SizeR, color);
     }
 
     private void DrawTexture(Ent n)
@@ -70,7 +69,7 @@ public class RootUiDraw(RootSprites sprites, RootUiScale scale, RootUiPosition p
         var rotation = n.TextureRotationFV.Resolve() ?? SpriteBatchRotation.None;
         var flip = n.TextureFlipFV.Resolve() ?? SpriteBatchFlip.None;
 
-        sprites.Batch.Draw(texture, position, size, subPosition, subSize, color, rotation, flip);
+        sprites.Draw(texture, position, size, subPosition, subSize, color, rotation, flip);
     }
 
     private void DrawText(Ent n)
@@ -94,7 +93,7 @@ public class RootUiDraw(RootSprites sprites, RootUiScale scale, RootUiPosition p
         var alignment = n.TextAlignmentFV.Resolve() ?? Alignment.Center;
         var glyphSnap = n.TextGlyphAlignmentSnapFV.Resolve() * scale.Scale;
         var size = new Vec2(
-            sprites.Batch.Measure(font.Size(fontSize), text, glyphSnap) / scale.Scale,
+            sprites.Measure(font.Size(fontSize), text, glyphSnap) / scale.Scale,
             font.Size(fontSize).Metrics.Height / scale.Scale);
         var fontPadding = n.FontPaddingFV.Resolve();
         var textPadding = n.TextPaddingFV.Resolve();
@@ -116,9 +115,9 @@ public class RootUiDraw(RootSprites sprites, RootUiScale scale, RootUiPosition p
         {
             var shadowColor = n.TextShadowColorFV.Resolve()
                 ?? (n.TextShadowColorRelativeFV.Resolve() ?? Vec4.One) * textColor;
-            sprites.Batch.Write(font.Size(fontSize), text, (pos + shadowOffset.Value) * scale.Scale, shadowColor, scale.Scale, glyphSnap);
+            sprites.Write(font.Size(fontSize), text, (pos + shadowOffset.Value) * scale.Scale, shadowColor, scale.Scale, glyphSnap);
         }
 
-        sprites.Batch.Write(font.Size(fontSize), text, pos * scale.Scale, textColor, scale.Scale, glyphSnap);
+        sprites.Write(font.Size(fontSize), text, pos * scale.Scale, textColor, scale.Scale, glyphSnap);
     }
 }

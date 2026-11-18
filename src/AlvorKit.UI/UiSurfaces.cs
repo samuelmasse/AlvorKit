@@ -2,63 +2,41 @@ namespace AlvorKit;
 
 /// <summary>
 /// Owns the default full-window UI surface and any opt-in independently scaled surfaces.
-/// Existing <see cref="RootUi"/> trees automatically remain on <see cref="Default"/>.
 /// </summary>
-[Root]
-public class RootUiSurfaces : IDisposable
+public class UiSurfaces
 {
-    private readonly RootCanvas canvas;
-    private readonly RootScripts scripts;
-    private readonly RootUiScale scale;
+    private readonly WindowCanvas canvas;
+    private readonly UiScale scale;
     private readonly UiSurfaceActivation activation;
     private readonly UiSurfacePipeline pipeline;
     private readonly List<UiSurface> surfaces = [];
-    private readonly Dictionary<UiSurface, UiSurfaceScript> drawScripts = [];
     private readonly UiSurface defaultSurface;
 
-    public RootUiSurfaces(
-        RootCanvas canvas,
-        RootScripts scripts,
-        RootUnload unload,
-        RootUi ui,
-        RootUiScale scale,
-        RootUiContext context,
-        RootUiUpdate update,
-        RootUiTraverse traverse,
-        RootUiSize size,
-        RootUiPosition position,
-        RootUiDraw draw)
+    internal UiSurfaces(
+        WindowCanvas canvas,
+        UiScale scale,
+        UiContext context,
+        UiUpdate update,
+        SpriteBatchWriter sprites,
+        UiClipping clipping)
     {
         this.canvas = canvas;
-        this.scripts = scripts;
         this.scale = scale;
         activation = new(scale, context);
-        pipeline = new(
-            this,
-            context,
-            update,
-            traverse,
-            size,
-            position,
-            draw);
-        defaultSurface = new(
-            this,
-            ui,
-            null,
-            default,
-            null,
-            1f,
-            0f,
-            true,
-            true);
+        var position = new UiPosition(sprites, scale);
+        pipeline = new(this, context, update, new UiTraverse(), new UiSize(sprites, scale), position,
+            new UiDraw(sprites, scale, position, clipping));
+        defaultSurface = new(this, new UiRoot(), null, default, null, 1f, 0f, true, true);
         surfaces.Add(Default);
-        unload.Add(Dispose);
     }
 
-    /// <summary>
-    /// Gets the full-window surface used by the existing <see cref="RootUi"/>,
-    /// <see cref="RootUiScale"/>, and <see cref="RootUiScript"/> API.
-    /// </summary>
+    /// <summary>Raised when an additional surface joins the draw order.</summary>
+    public event Action<UiSurface>? Added;
+
+    /// <summary>Raised when an additional surface leaves the draw order.</summary>
+    public event Action<UiSurface>? Removed;
+
+    /// <summary>Gets the full-window surface.</summary>
     public UiSurface Default => defaultSurface;
 
     /// <summary>Gets all surfaces in ascending draw and input order without copying.</summary>
@@ -169,9 +147,7 @@ public class RootUiSurfaces : IDisposable
     internal void Draw(UiSurface surface) =>
         pipeline.Draw(surface);
 
-    internal void DrawDefault() => pipeline.Draw(Default);
-
-    internal void UpdateAll(RootUiUpdate update)
+    internal void UpdateAll(UiUpdate update)
     {
         foreach (var surface in Span)
         {
@@ -203,30 +179,26 @@ public class RootUiSurfaces : IDisposable
         if (index < 0)
             return;
 
+        RemoveAt(index);
+    }
+
+    /// <summary>Releases every UI tree owned by this runtime.</summary>
+    internal void Dispose()
+    {
+        while (surfaces.Count > 0)
+            RemoveAt(surfaces.Count - 1);
+    }
+
+    private void RemoveAt(int index)
+    {
+        var surface = surfaces[index];
         surfaces.RemoveAt(index);
-        if (drawScripts.TryGetValue(surface, out var script))
-            scripts.Remove(script);
         surface.Root.Dispose();
         surface.MarkDisposed();
-    }
 
-    /// <summary>Releases all UI trees after states and scripts have unloaded during root shutdown.</summary>
-    public void Dispose()
-    {
-        for (int index = surfaces.Count - 1; index >= 0; index--)
-        {
-            var surface = surfaces[index];
-            if (drawScripts.TryGetValue(surface, out var script))
-                scripts.Remove(script);
-            surface.Root.Dispose();
-            surface.MarkDisposed();
-        }
-        surfaces.Clear();
-        drawScripts.Clear();
+        if (surface != Default)
+            Removed?.Invoke(surface);
     }
-
-    internal void RemoveDrawScript(UiSurface surface) =>
-        drawScripts.Remove(surface);
 
     private UiSurface CreateCore(
         Func<Box2>? viewport,
@@ -252,12 +224,9 @@ public class RootUiSurfaces : IDisposable
             order,
             usesDefaultViewport,
             false);
-        var script = new UiSurfaceScript(this, surface);
-        drawScripts.Add(surface, script);
         surfaces.Add(surface);
         surfaces.Sort(static (left, right) => left.Order.CompareTo(right.Order));
-        scripts.Add(script);
+        Added?.Invoke(surface);
         return surface;
     }
-
 }

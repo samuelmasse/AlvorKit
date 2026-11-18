@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.Engine.UI\AlvorKit.Engine.UI.csproj" />
+        <ProjectReference Include="..\AlvorKit.UI.Blend\AlvorKit.UI.Blend.csproj" />
+    </ItemGroup>
+
+</Project>

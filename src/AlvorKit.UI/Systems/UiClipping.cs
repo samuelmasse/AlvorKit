@@ -1,7 +1,6 @@
 namespace AlvorKit;
 
-[Root]
-public class RootUiClipping
+internal class UiClipping
 {
     public SpriteBatchClip IntersectClips(SpriteBatchClip? current, SpriteBatchClip next)
     {

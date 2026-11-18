@@ -1,8 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>
-/// Composes reusable Blend styles and builders over shared engine resources and an explicitly chosen graphics owner.
-/// BlendUiSetup registers a root-owned default; narrower scopes can register their own toolkit.
+/// Composes reusable Blend styles and builders over a UI runtime and an explicitly chosen graphics owner.
 /// </summary>
 public class BlendUi
 {
@@ -28,15 +27,15 @@ public class BlendUi
     public BlendTooltipMenu Tooltip => tooltip;
 
     /// <summary>Creates a toolkit with the default appearance and control textures owned by <paramref name="gl"/>.</summary>
-    public BlendUi(RootBlend root, GlLayer gl) : this(root, gl, BlendPalette.Default, new BlendMetrics()) { }
+    public BlendUi(UiRuntime ui, BlendFonts fonts, GlLayer gl) : this(ui, fonts, gl, BlendPalette.Default, new BlendMetrics()) { }
 
     /// <summary>Creates a toolkit sharing the supplied appearance across its style and builders.</summary>
-    public BlendUi(RootBlend root, GlLayer gl, BlendPalette palette, BlendMetrics metrics)
+    public BlendUi(UiRuntime ui, BlendFonts fonts, GlLayer gl, BlendPalette palette, BlendMetrics metrics)
     {
-        s = new(root, gl, palette, metrics);
+        s = new(ui, fonts, gl, palette, metrics);
         scrollView = new(s);
-        fields = new(s, root.Scale, root.Sprites, root.Mouse, root.Keyboard);
-        dropdown = new(root.Keyboard, s);
-        tooltip = new(root.Mouse, s);
+        fields = new(s, ui.Scale, ui.Sprites, ui.Mouse, ui.Keyboard);
+        dropdown = new(ui.Keyboard, s);
+        tooltip = new(ui.Mouse, s);
     }
 }

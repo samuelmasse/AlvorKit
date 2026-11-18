@@ -3,6 +3,9 @@ namespace AlvorKit;
 /// <summary>Wraps title and visibility state for a window loop.</summary>
 internal sealed class WindowDecoration(IWindowHost window)
 {
+    /// <summary>Gets current input focus directly from the window host.</summary>
+    internal bool IsFocused => window.IsFocused;
+
     /// <summary>Gets or sets whether the window is visible.</summary>
     internal bool IsVisible
     {

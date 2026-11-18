@@ -7,11 +7,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AlvorKit.Engine.States\AlvorKit.Engine.States.csproj" />
+        <ProjectReference Include="..\AlvorKit.Windowing\AlvorKit.Windowing.csproj" />
         <ProjectReference Include="..\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
             OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\AlvorKit.ECS\AlvorKit.ECS.csproj" />
-        <ProjectReference Include="..\AlvorKit.Engine.Frontend\AlvorKit.Engine.Frontend.csproj" />
+        <ProjectReference Include="..\AlvorKit.Graphics2D.Fonts\AlvorKit.Graphics2D.Fonts.csproj" />
         <ProjectReference Include="..\AlvorKit.UI.Generator\AlvorKit.UI.Generator.csproj"
             OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>

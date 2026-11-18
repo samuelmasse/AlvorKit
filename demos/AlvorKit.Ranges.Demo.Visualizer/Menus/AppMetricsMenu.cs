@@ -4,7 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppMetricsMenu(
     RootText text,
-    BlendUi bl,
+    RootBlendUi bl,
     AppLayout layout,
     AppSession session)
 {

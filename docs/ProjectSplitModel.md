@@ -134,6 +134,13 @@ packages must not depend on frontend packages.
 Frontend packages may depend on `AlvorKit.Engine.Frontend` for engine primitives such as
 canvas, sprites, GL roots, input facades, and rendering helpers. They should not
 depend on `AlvorKit.Engine.Loop`. Executables use it to start the desktop host.
+
+The UI libraries sit on the presentation side of this split. `AlvorKit.UI`,
+`AlvorKit.UI.Blend`, and `AlvorKit.UI.Generator` are independent of the
+engine. `AlvorKit.Engine.UI` connects window input, ordered draw passes, and
+shutdown to an engine host. `AlvorKit.Engine.UI.Blend` supplies the optional
+engine-managed Blend toolkit and fonts.
+
 Menus and other composition packages participate through `AlvorKit.Engine.States`,
 which supplies `State`, `Script`, `RootScripts`, and state transitions. If a frontend package needs a script
 adapter, keep the resource in frontend and move the adapter up to the

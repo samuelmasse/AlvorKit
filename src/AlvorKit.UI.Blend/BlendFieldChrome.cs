@@ -4,7 +4,7 @@ namespace AlvorKit;
 /// Shared visual plumbing for Blend form fields: the field surface, reactive border rules, the edit-mode
 /// selection/caret overlay, and UI-space text measurement that mirrors the draw system's scaling.
 /// </summary>
-internal class BlendFieldChrome(BlendStyle s, RootUiScale uiScale, RootSprites sprites)
+internal class BlendFieldChrome(BlendStyle s, UiScale uiScale, SpriteBatchWriter sprites)
 {
     /// <summary>Applies the label-inside field surface: full-width FieldHeight board over AppBackground.</summary>
     internal void Surface(EntMut ent) => ent.Mutate()
@@ -129,6 +129,6 @@ internal class BlendFieldChrome(BlendStyle s, RootUiScale uiScale, RootSprites s
         if (fontSize <= 0)
             return 0;
 
-        return sprites.Batch.Measure(s.TextFont.Size(fontSize), text) / uiScale.Scale;
+        return sprites.Measure(s.TextFont.Size(fontSize), text) / uiScale.Scale;
     }
 }

@@ -86,8 +86,8 @@ that the service is available from the root scope.
 Use `AlvorKit.Engine.*` for packages whose primary job is to provide or
 compose the application's root runtime. For example, `AlvorKit.Windowing`
 provides `Keyboard`, and `AlvorKit.Engine.Frontend` exposes it in the root
-scope as `RootKeyboard`. Feature packages keep their feature name when
-registering their own root services, as `AlvorKit.UI` does with `RootUi`.
+scope as `RootKeyboard`. Likewise `AlvorKit.Engine.UI` supplies `RootUi`,
+the host's shared UI runtime. Each surface owns a separate `UiRoot` tree.
 
 `AlvorKit.Engine.Root` provides scope identity, files, setup, and unload hooks.
 `AlvorKit.Engine.Frontend` adds scoped window and graphics services.
@@ -132,14 +132,25 @@ public class RootHudScript(
 Compose optional root features at the executable entry point:
 
 ```csharp
-RootLoop.RunGlfw<RootLoadState>(new UiSetup(), new BlendUiSetup());
+RootLoop.RunGlfw<RootLoadState>(new UiSetup());
 ```
 
+For startup overrides, the optional configuration callback receives the new
+`RootScope` before setups run. The engine normally closes the window on an
+unhandled exception. A host can disable that behavior by registering
+`root.Add(new RootFailSafeConfig { Enabled = false })` in its callback.
+
 Setups run in the supplied order before the boot state is constructed.
-`UiSetup` registers the UI script and its existing shutdown lifecycle.
-`BlendUiSetup` supplies a default `BlendUi` with Root-owned control textures;
-it does not add UI setup implicitly. Child scopes inherit that toolkit and can
-register their own when they need a different appearance or resource lifetime.
+`UiSetup` attaches the root-scoped `RootUi` to the update and draw phases.
+Game services inject `RootUi ui` to access the default surface, mouse, focus,
+scale, and active viewport. Child scopes inherit the same runtime. Code that
+selects a surface passes its `UiRoot` or a mount node to its menus, or binds
+that tree explicitly in their child scope. Root shutdown releases all the trees.
+
+Menus inject `RootBlendUi` from `AlvorKit.Engine.UI.Blend`. The injector
+creates it on first use with `RootUi`, `RootInter`, and `RootGl`.
+Games that choose app-specific metrics or app-owned control textures declare
+an `[App] AppBlendUi` and inject it in the menus that use that choice.
 
 ## Scope Tree
 
@@ -358,7 +369,7 @@ An ordinary library object can be constructed explicitly and added to an
 attributed scope without defining a game-specific subclass or scope attribute:
 
 ```csharp
-app.Add(new BlendUi(root.Get<RootBlend>(), app.Get<AppGl>()));
+app.Add<TimeProvider>(TimeProvider.System);
 ```
 
 The registering scope owns the supplied instance. Constructors in that scope

@@ -10,7 +10,7 @@ namespace AlvorKit;
 internal class BlendDragField(
     BlendStyle s,
     BlendFieldChrome chrome,
-    RootUiMouse uiMouse,
+    UiMouse uiMouse,
     Keyboard keyboard)
 {
     private const float ArrowHitWidth = 12f;

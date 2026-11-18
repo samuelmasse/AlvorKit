@@ -4,7 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppMenu(
     RootText text,
-    BlendUi bl,
+    AppBlendUi bl,
     AppSession session,
     AppToolbarMenu toolbarMenu,
     AppParamsMenu paramsMenu,

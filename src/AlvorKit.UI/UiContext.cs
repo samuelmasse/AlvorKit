@@ -1,10 +1,9 @@
 namespace AlvorKit;
 
 /// <summary>Describes the physical viewport and logical extent of the UI surface currently being processed.</summary>
-[Root]
-public sealed class RootUiContext(
-    RootCanvas canvas,
-    RootUiScale scale)
+public class UiContext(
+    WindowCanvas canvas,
+    UiScale scale)
 {
     private Box2 viewport;
     private bool isActive;

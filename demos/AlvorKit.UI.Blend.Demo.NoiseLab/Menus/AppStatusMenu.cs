@@ -5,7 +5,7 @@ namespace AlvorKit;
 public class AppStatusMenu(
     RootText text,
     RootMetrics metrics,
-    BlendUi bl,
+    AppBlendUi bl,
     AppSession session)
 {
     /// <summary>Mounts live readouts for the selected nodes, sampling, and session state.</summary>

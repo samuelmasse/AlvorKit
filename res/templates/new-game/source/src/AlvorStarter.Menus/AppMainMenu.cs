@@ -2,7 +2,7 @@ namespace AlvorStarter;
 
 /// <summary>Builds the starter menu with a click counter.</summary>
 [App]
-public class AppMainMenu(RootText text, BlendUi bl, AppCounter counter)
+public class AppMainMenu(RootText text, RootBlendUi bl, AppCounter counter)
 {
     /// <summary>Creates the starter menu under the caller-owned root.</summary>
     public void Create(EntMut root)

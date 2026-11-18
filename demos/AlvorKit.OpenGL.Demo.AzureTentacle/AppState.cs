@@ -6,16 +6,13 @@ public class AppState(
     Log log,
     RootGl gl,
     RootScreen screen,
-    RootScripts scripts,
     RootUi ui,
-    RootUiScript uiScript,
     AppSession session,
     AppShortcuts shortcuts,
     AppSceneRenderer sceneRenderer,
     AppMenu menu) : State
 {
     private EntMut menuNode;
-    private bool uiScriptAdded;
 
     /// <summary>Loads the model, mounts the menu UI, and shows the window.</summary>
     public override void Load()
@@ -27,9 +24,7 @@ public class AppState(
         log.Info("Mouse look, WASD to move, Space up, Control down, Shift faster, Escape releases the cursor.");
 
         session.Load();
-        scripts.Add(uiScript);
-        uiScriptAdded = true;
-        menuNode = Node(ui)
+        menuNode = Node(ui.Default.Root)
             .OrderValueV(0)
             .SizeRelativeV((1, 1));
         {
@@ -42,13 +37,9 @@ public class AppState(
     public override void Unload()
     {
         if (menuNode != default)
-            NodesRemove(ui, menuNode);
+            NodesRemove(ui.Default.Root, menuNode);
 
-        if (uiScriptAdded)
-        {
-            scripts.Remove(uiScript);
-            uiScriptAdded = false;
-        }
+        ui.Mouse.Release();
 
         session.Dispose();
     }

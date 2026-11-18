@@ -85,12 +85,27 @@ public sealed class RootRuntimeModelTest
         Assert.AreEqual(0, second.Unloads);
     }
 
-    /// <summary>Fail-safe behavior is on by default and can be disabled through injected config.</summary>
+    /// <summary>Each root uses its own shutdown policy when handling an unhandled exception.</summary>
     [TestMethod]
-    public void FailSafeConfig_DefaultsToEnabledAndCanDisable()
+    public void RootShutdown_ClosesByDefaultAndHonorsARootOverride()
     {
-        Assert.IsTrue(new FailSafeConfig().Enabled);
-        Assert.IsFalse(new FailSafeConfig { Enabled = false }.Enabled);
+        var injector = new Injector();
+        var defaultHost = new FakeWindowHost();
+        var defaultRoot = injector.Scope<RootScope>().With(new RootScreen(new WindowLoop(defaultHost)));
+        var disabledHost = new FakeWindowHost();
+        var disabledRoot = injector.Scope<RootScope>()
+            .With(new RootScreen(new WindowLoop(disabledHost)))
+            .With(new RootFailSafeConfig { Enabled = false });
+
+        var defaultShutdown = defaultRoot.Get<RootShutdown>();
+        var disabledShutdown = disabledRoot.Get<RootShutdown>();
+        defaultShutdown.OnUnhandledException();
+        disabledShutdown.OnUnhandledException();
+
+        Assert.IsTrue(defaultShutdown.Started);
+        Assert.IsTrue(defaultHost.IsExiting);
+        Assert.IsTrue(disabledShutdown.Started);
+        Assert.IsFalse(disabledHost.IsExiting);
     }
 
     /// <summary>Root metrics exposes the old frame metric and timer-backed frame window.</summary>

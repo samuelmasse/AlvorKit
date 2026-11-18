@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 [App]
 public class AppAnimationMenu(
-    BlendUi bl,
+    RootBlendUi bl,
     AppLayout layout,
     AppSession session)
 {

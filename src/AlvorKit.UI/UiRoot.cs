@@ -1,10 +1,10 @@
 namespace AlvorKit;
 
-[Root]
-public class RootUi : IEntMut, IDisposable
+/// <summary>Owns the retained UI tree and the Ents allocated for one surface.</summary>
+public class UiRoot : IEntMut, IDisposable
 {
-    public static implicit operator Ent(RootUi value) => value.ent;
-    public static implicit operator EntMut(RootUi value) => value.ent;
+    public static implicit operator Ent(UiRoot value) => value.ent;
+    public static implicit operator EntMut(UiRoot value) => value.ent;
 
     private readonly NodeArrayAllocator allocator = new();
     private readonly EntArena arena = new();
@@ -27,7 +27,7 @@ public class RootUi : IEntMut, IDisposable
     public bool IsAlive => ent.IsAlive;
     public override string ToString() => ent.ToString();
 
-    public RootUi()
+    public UiRoot()
     {
         ent = arena.Alloc();
         this.UiId = nextId++;

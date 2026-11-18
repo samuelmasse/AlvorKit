@@ -1,7 +1,6 @@
 namespace AlvorKit;
 
-[Root]
-public class RootUiTraverse
+internal class UiTraverse
 {
     internal void Traverse(EntMut n, float? snap, int depth)
     {
@@ -128,7 +127,7 @@ public class RootUiTraverse
     }
 
     private static void AddToBuffer(
-        RootUi root,
+        UiRoot root,
         EntMut n)
     {
         ref var traversal = ref root.Traversal;

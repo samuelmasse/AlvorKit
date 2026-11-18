@@ -3,13 +3,13 @@ using System.Runtime.CompilerServices;
 namespace AlvorKit;
 
 [TestClass]
-public class RootUiLifetimeTest
+public class UiRootLifetimeTest
 {
     /// <summary>Root component access and borrowed handles address the same explicitly owned Ent.</summary>
     [TestMethod]
     public void RootComponents_ShareIdentityAndInvalidateOnDispose()
     {
-        using var ui = new RootUi();
+        using var ui = new UiRoot();
         Ent read = ui;
         EntMut mutable = ui;
         Assert.AreEqual(read.Handle, ui.Handle);
@@ -35,7 +35,7 @@ public class RootUiLifetimeTest
     [TestMethod]
     public void Dispose_ReleasesStackedViewsAndCompanions()
     {
-        using var ui = new RootUi();
+        using var ui = new UiRoot();
         EntMut first = NodeS(ui);
         EntMut second = NodeS(ui);
         var companion = NodeC(ui);
@@ -62,12 +62,12 @@ public class RootUiLifetimeTest
             Node(h.Ui, out children[index]).OrderValueV(children.Length - index);
         children[0].RenderDelayFV = 2;
 
-        h.Script.Draw();
+        h.Draw();
         CollectionAssert.AreEqual(children.Reverse().ToArray(), root.NodesR.ToArray());
         Assert.AreEqual(0, children[0].RenderDelayFV.Resolve());
         Assert.AreEqual(0f, children[0].SnapR);
 
-        h.Dispose();
+        h.Runtime.Dispose();
         Assert.IsTrue(children.All(child => !child.IsAlive));
     }
 
@@ -75,7 +75,7 @@ public class RootUiLifetimeTest
     [TestMethod]
     public void Dispose_ReleasesWholeTreeAndCapturedReferences()
     {
-        using var ui = new RootUi();
+        using var ui = new UiRoot();
         EntMut root = ui;
         var detached = ui.Alloc();
         var retained = AttachCallback(ui, out var child);
@@ -113,20 +113,19 @@ public class RootUiLifetimeTest
         Assert.IsTrue(secondChild.IsAlive);
         Assert.IsTrue(defaultChild.IsAlive);
 
-        h.Dispose();
+        h.Runtime.Dispose();
 
         Assert.IsFalse(second.Root.IsAlive);
         Assert.IsFalse(secondChild.IsAlive);
         Assert.IsFalse(h.Ui.IsAlive);
         Assert.IsFalse(defaultChild.IsAlive);
         Assert.AreEqual(0, h.Surfaces.Span.Length);
-        Assert.AreEqual(0, h.Scripts.Span.Length);
         Assert.ThrowsExactly<ObjectDisposedException>(() => h.Surfaces.Create());
         second.Dispose();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference AttachCallback(RootUi ui, out EntMut child)
+    private static WeakReference AttachCallback(UiRoot ui, out EntMut child)
     {
         var owner = new object();
         Node(ui, out child).OnUpdateF(() => GC.KeepAlive(owner));

@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 /// <summary>Verifies data refresh before layout, explicit requests, active lifetimes, and independent tick callbacks.</summary>
 [TestClass]
-public class RootUiRefreshTest
+public class UiRefreshTest
 {
     /// <summary>Initial refresh coalesces with a pending count, decrements before each call, and never invokes tick callbacks.</summary>
     [TestMethod]
@@ -18,12 +18,12 @@ public class RootUiRefreshTest
             .OnRefreshF(() => counts.Add(node.RefreshCountFV.Resolve()))
             .OnUpdateF(() => updates++);
 
-        h.Script.Draw();
+        h.Draw();
 
         CollectionAssert.AreEqual(new[] { 2, 1, 0 }, counts);
         Assert.AreEqual(new Vec2(30, 20), node.SizeR);
         Assert.AreEqual(0, updates);
-        h.Script.Draw();
+        h.Draw();
         Assert.AreEqual(3, counts.Count);
 
         h.Update();
@@ -31,7 +31,7 @@ public class RootUiRefreshTest
         Assert.AreEqual(1, updates);
 
         node.RefreshCountFV = 2;
-        h.Script.Draw();
+        h.Draw();
         CollectionAssert.AreEqual(new[] { 2, 1, 0, 1, 0 }, counts);
         Assert.AreEqual(new Vec2(50, 20), node.SizeR);
         Assert.AreEqual(1, updates);
@@ -55,7 +55,7 @@ public class RootUiRefreshTest
                     });
             });
 
-        h.Script.Draw();
+        h.Draw();
 
         Assert.AreNotEqual(default, leaf);
         Assert.AreEqual(new Vec2(73, 29), leaf.SizeR);
@@ -80,7 +80,7 @@ public class RootUiRefreshTest
                 first.RefreshCountFV = 2;
             });
 
-        h.Script.Draw();
+        h.Draw();
 
         Assert.AreEqual(3, firstCalls);
         Assert.AreEqual(1, laterCalls);
@@ -106,7 +106,7 @@ public class RootUiRefreshTest
                 NodesRemove(h.Ui, removed);
             });
 
-        h.Script.Draw();
+        h.Draw();
 
         Assert.AreEqual(0, removedCalls);
         Assert.AreEqual(1, survivorCalls);
@@ -124,12 +124,12 @@ public class RootUiRefreshTest
             .RefreshIntervalV(TimeSpan.FromSeconds(1))
             .OnRefreshF(() => calls++)
             .OnUpdateF(() => updates++);
-        h.Script.Draw();
+        h.Draw();
         Assert.AreEqual(1, calls);
 
         h.Host.RaiseUpdate(0.25);
         h.Host.RaiseUpdate(0.5);
-        h.Script.Draw();
+        h.Draw();
         Assert.AreEqual(1, calls);
         Assert.AreEqual(2, updates);
 
@@ -143,7 +143,7 @@ public class RootUiRefreshTest
         h.Host.RaiseUpdate(3);
         Assert.AreEqual(4, calls);
         Assert.AreEqual(5, updates);
-        h.Script.Draw();
+        h.Draw();
         Assert.AreEqual(4, calls);
     }
 
@@ -162,21 +162,21 @@ public class RootUiRefreshTest
             .IsDeletedV(true)
             .OnRefreshF(() => calls += 100);
 
-        h.Script.Draw();
+        h.Draw();
 
         Assert.AreEqual(0, calls);
         Assert.AreEqual(2, child.RefreshCountFV.Resolve());
         hidden.IsDisabledFV = false;
-        h.Script.Draw();
+        h.Draw();
         Assert.AreEqual(2, calls);
         Assert.AreEqual(0, child.RefreshCountFV.Resolve());
-        h.Script.Draw();
+        h.Draw();
         Assert.AreEqual(2, calls);
 
         hidden.IsDisabledFV = true;
-        h.Script.Draw();
+        h.Draw();
         hidden.IsDisabledFV = false;
-        h.Script.Draw();
+        h.Draw();
         Assert.AreEqual(3, calls);
     }
 
@@ -199,21 +199,21 @@ public class RootUiRefreshTest
         NodeS(h.Ui)
             .OnRefreshF(() => topCalls++);
 
-        h.Script.Draw();
+        h.Draw();
 
         Assert.AreEqual(1, companionCalls);
         Assert.AreEqual(0, coveredCalls);
         Assert.AreEqual(1, topCalls);
         Assert.AreEqual(1, covered.RefreshCountFV.Resolve());
         NodeStackPop(h.Ui);
-        h.Script.Draw();
+        h.Draw();
         Assert.AreEqual(1, companionCalls);
         Assert.AreEqual(1, coveredCalls);
 
         NodeS(h.Ui);
-        h.Script.Draw();
+        h.Draw();
         NodeStackPop(h.Ui);
-        h.Script.Draw();
+        h.Draw();
         Assert.AreEqual(2, coveredCalls);
     }
 
@@ -240,13 +240,13 @@ public class RootUiRefreshTest
                 return (40, 20);
             });
 
-        h.Script.Draw();
+        h.Draw();
         Assert.IsFalse(prepared);
         Assert.AreEqual(0, layouts);
         Assert.AreEqual(1, companionCalls);
 
         top.IsDisabledFV = false;
-        h.Script.Draw();
+        h.Draw();
         Assert.IsTrue(prepared);
         Assert.IsTrue(layouts > 0);
         Assert.AreEqual(1, companionCalls);
@@ -268,7 +268,7 @@ public class RootUiRefreshTest
                 observedViewport = h.Context.Viewport;
             });
 
-        h.Script.Draw();
+        h.Draw();
 
         Assert.AreEqual(2f, observedScale);
         Assert.AreEqual(viewport, observedViewport);
@@ -287,7 +287,7 @@ public class RootUiRefreshTest
         for (var i = 0; i < 100; i++)
         {
             node.RefreshCountFV = 1;
-            h.Script.Draw();
+            h.Draw();
         }
 
         var before = GC.GetAllocatedBytesForCurrentThread();
@@ -295,7 +295,7 @@ public class RootUiRefreshTest
         for (var i = 0; i < 1000; i++)
         {
             node.RefreshCountFV = 1;
-            h.Script.Draw();
+            h.Draw();
         }
 
         Assert.AreEqual(0L, GC.GetAllocatedBytesForCurrentThread() - before);

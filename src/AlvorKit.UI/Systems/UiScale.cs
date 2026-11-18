@@ -1,9 +1,9 @@
 namespace AlvorKit;
 
-[Root]
-public class RootUiScale(RootScale rscale)
+/// <summary>Provides the active surface scale and the configurable full-window scale.</summary>
+public class UiScale(float initialScale)
 {
-    private float scale = rscale.Scale;
+    private float scale = initialScale;
     private float activeScale;
     private bool isActive;
 

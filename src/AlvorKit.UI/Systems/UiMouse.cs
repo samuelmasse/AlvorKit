@@ -1,11 +1,14 @@
 namespace AlvorKit;
 
-[Root]
-public class RootUiMouse(RootMouse mouse, RootUiFocus focus, RootUiClipping clipping)
+/// <summary>Dispatches pointer input across ordered UI surfaces and tracks hover and press state.</summary>
+public class UiMouse
 {
     private const long DoubleClickMs = 500;
 
-    private readonly UiMouseHitSearch hitSearch = new(clipping);
+    private readonly Mouse mouse;
+    private readonly UiFocus focus;
+    private readonly UiMouseHitSearch hitSearch;
+
     private Vec2 position;
     private EntMut prevHovered;
     private EntMut pressedMain;
@@ -16,10 +19,17 @@ public class RootUiMouse(RootMouse mouse, RootUiFocus focus, RootUiClipping clip
     private EntMut lastClickTarget;
     private long lastClickTicks;
 
+    internal UiMouse(Mouse mouse, UiFocus focus, UiClipping clipping)
+    {
+        this.mouse = mouse;
+        this.focus = focus;
+        hitSearch = new(clipping);
+    }
+
     public Vec2 Position => position;
     public EntMut Hovered => prevHovered;
 
-    internal void Hover(RootUiSurfaces surfaces)
+    internal void Hover(UiSurfaces surfaces)
     {
         if (CursorGrabbed())
         {
@@ -70,14 +80,14 @@ public class RootUiMouse(RootMouse mouse, RootUiFocus focus, RootUiClipping clip
     }
 
     /// <summary>Clears transient hover and press state and releases the hardware cursor shape.</summary>
-    internal void Unload()
+    public void Release()
     {
         ClearHovered();
         ClearPressed();
         mouse.CursorShape = CursorShape.Default;
     }
 
-    internal void Update(RootUiSurfaces surfaces)
+    internal void Update(UiSurfaces surfaces)
     {
         if (CursorGrabbed())
         {
@@ -143,7 +153,7 @@ public class RootUiMouse(RootMouse mouse, RootUiFocus focus, RootUiClipping clip
         }
     }
 
-    private void DispatchScroll(RootUiSurfaces surfaces)
+    private void DispatchScroll(UiSurfaces surfaces)
     {
         if (mouse.Wheel == default)
             return;

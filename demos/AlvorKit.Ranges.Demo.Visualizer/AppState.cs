@@ -5,10 +5,8 @@ namespace AlvorKit;
 public class AppState(
     RootBackbuffer backbuffer,
     RootScreen screen,
-    RootScripts scripts,
     RootUi ui,
-    RootUiScript uiScript,
-    BlendUi bl,
+    RootBlendUi bl,
     AppSession session,
     AppShortcuts shortcuts,
     AppMenu visualizerMenu,
@@ -19,36 +17,33 @@ public class AppState(
     private EntMut pickerNode;
     private EntMut uiScaleNode;
     private EntMut tooltipNode;
-    private bool uiScriptAdded;
 
     /// <summary>Initializes the first scenario, builds the UI, and shows the window.</summary>
     public override void Load()
     {
         screen.Title = "AlvorKit.Ranges.Demo.Visualizer";
         session.LoadInitial();
-        scripts.Add(uiScript);
-        uiScriptAdded = true;
-        dashboardNode = Node(ui)
+        dashboardNode = Node(ui.Default.Root)
             .OrderValueV(0)
             .SizeRelativeV((1, 1));
         {
             visualizerMenu.Create(dashboardNode);
         }
 
-        pickerNode = Node(ui)
+        pickerNode = Node(ui.Default.Root)
             .OrderValueV(1)
             .SizeRelativeV((1, 1));
         {
             scenarioPickerMenu.Create(pickerNode);
         }
 
-        uiScaleNode = Node(ui)
+        uiScaleNode = Node(ui.Default.Root)
             .OrderValueV(2);
         {
             uiScaleMenu.Create(uiScaleNode);
         }
 
-        tooltipNode = Node(ui)
+        tooltipNode = Node(ui.Default.Root)
             .OrderValueV(3)
             .SizeRelativeV((1, 1));
         {
@@ -57,26 +52,22 @@ public class AppState(
         screen.IsVisible = true;
     }
 
-    /// <summary>Removes the visualizer UI and the UI script from the root loop.</summary>
+    /// <summary>Unmounts the visualizer UI and releases pointer input.</summary>
     public override void Unload()
     {
         if (dashboardNode != default)
-            NodesRemove(ui, dashboardNode);
+            NodesRemove(ui.Default.Root, dashboardNode);
 
         if (pickerNode != default)
-            NodesRemove(ui, pickerNode);
+            NodesRemove(ui.Default.Root, pickerNode);
 
         if (uiScaleNode != default)
-            NodesRemove(ui, uiScaleNode);
+            NodesRemove(ui.Default.Root, uiScaleNode);
 
         if (tooltipNode != default)
-            NodesRemove(ui, tooltipNode);
+            NodesRemove(ui.Default.Root, tooltipNode);
 
-        if (uiScriptAdded)
-        {
-            scripts.Remove(uiScript);
-            uiScriptAdded = false;
-        }
+        ui.Mouse.Release();
     }
 
     /// <summary>Advances the scripted allocator playback.</summary>

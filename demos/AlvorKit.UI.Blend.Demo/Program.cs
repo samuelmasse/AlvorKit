@@ -1,1 +1,1 @@
-RootLoop.RunGlfw<RootLoadState>();
+RootLoop.RunGlfw<RootLoadState>(new UiSetup());

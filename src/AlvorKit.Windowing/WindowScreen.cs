@@ -28,6 +28,9 @@ public class WindowScreen(WindowLoop window)
         }
     }
 
+    /// <summary>Gets whether the host window currently has input focus.</summary>
+    public bool IsFocused => window.Decoration.IsFocused;
+
     /// <summary>Gets or sets whether the window is visible.</summary>
     public bool IsVisible
     {
@@ -56,6 +59,9 @@ public class WindowScreen(WindowLoop window)
 
     /// <summary>Sets the window icon from RGBA pixels.</summary>
     public void SetIcon(Vec2u size, ReadOnlySpan<Vec4u8> pixels) => window.Decoration.SetIcon(size, pixels);
+
+    /// <summary>Maximizes the window, leaving fullscreen if necessary.</summary>
+    public void Maximize() => window.Toggle.Maximize();
 
     /// <summary>Toggles fullscreen mode.</summary>
     public void ToggleFullscreen() => window.Toggle.ToggleFullscreen();

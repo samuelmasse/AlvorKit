@@ -5,7 +5,7 @@ namespace AlvorKit;
 public class AppStatusMenu(
     RootText text,
     RootMetrics metrics,
-    BlendUi bl,
+    RootBlendUi bl,
     AppSession session,
     AppUiScale uiScale)
 {

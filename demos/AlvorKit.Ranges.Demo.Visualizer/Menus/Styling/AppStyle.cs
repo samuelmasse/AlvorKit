@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 /// <summary>App-specific allocator data-visualization colors and measures.</summary>
 [App]
-public class AppStyle(BlendUi bl)
+public class AppStyle(RootBlendUi bl)
 {
     /// <summary>Gets the backdrop color behind memory strips and the timeline lane.</summary>
     public Vec4 PanelInsetColor => bl.S.Palette.AppBackground;

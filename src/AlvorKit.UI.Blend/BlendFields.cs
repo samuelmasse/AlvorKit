@@ -16,9 +16,9 @@ public class BlendFields
     /// <summary>Creates the builders over the shared style and input roots.</summary>
     public BlendFields(
         BlendStyle s,
-        RootUiScale uiScale,
-        RootSprites sprites,
-        RootUiMouse uiMouse,
+        UiScale uiScale,
+        SpriteBatchWriter sprites,
+        UiMouse uiMouse,
         Keyboard keyboard)
     {
         this.s = s;

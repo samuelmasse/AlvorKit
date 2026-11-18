@@ -21,8 +21,8 @@ node subtree. Keep its layout together in `Create`.
   collaborators such as style, app/session command surfaces, text formatting,
   input roots, or child menus.
 - Name an injected app style collaborator `s`, regardless of the concrete
-  style type. Inject the Blend toolkit as `BlendUi bl`; use `bl.S`
-  for its standard recipes and `s` for app-specific recipes.
+  style type. Inject `RootBlendUi bl` for the default toolkit or `AppBlendUi bl`
+  for an app-owned toolkit. Use `bl.S` for standard recipes and `s` for app-specific recipes.
 - `Create` may accept explicit props, like `Create(EntMut root,
   AppInventoryRow row)`. Do not pass the owner, parent state object, or the
   main application state itself as a prop.
@@ -284,27 +284,25 @@ Use style objects for visual language, not for every number.
 
 ## Blend Integration
 
-Construct one `BlendUi` in the scope that owns its UI resources and register
-the completed instance before resolving its menus or app style:
+AlvorKit.UI owns layout, input dispatch, and UI trees. AlvorKit.UI.Blend adds
+styles, controls, and embedded Inter fonts. Both libraries work with ordinary
+windowing and graphics objects. AlvorKit.UI.Generator supplies the fluent
+component syntax at compile time.
+
+For an engine host, install `UiSetup` from `AlvorKit.Engine.UI` at startup.
+Menus can then inject `RootBlendUi` from `AlvorKit.Engine.UI.Blend`. The
+injector creates one toolkit on first use. `RootUi` supplies input, scale, and
+the sprite writer. `RootInter` shares the engine's Inter faces, and `RootGl`
+owns the default control textures.
+
+When an app chooses its own graphics lifetime or appearance, declare the
+toolkit in the game's menu project and inject `AppBlendUi` in its menus.
+This example uses app-owned textures and a 12-pixel chip font.
 
 ```csharp
-app.Add(new BlendUi(root.Get<RootBlend>(), app.Get<AppGl>()));
-```
-
-`RootBlend` provides the shared Inter fonts, UI scale, sprite batch, keyboard,
-and UI mouse. It does not retain toolkits or mounted UI. The supplied graphics
-node owns the toolkit's generated control textures. Inter font faces and glyph
-atlases retain their existing root lifetime.
-
-Use the explicit appearance overload when the app customizes toolkit-wide
-colors or metrics:
-
-```csharp
-app.Add(new BlendUi(
-    root.Get<RootBlend>(),
-    app.Get<AppGl>(),
-    BlendPalette.Default,
-    new BlendMetrics { ChipFontSize = 12 }));
+[App]
+public class AppBlendUi(RootUi ui, RootInter fonts, AppGl gl)
+    : BlendUi(ui, fonts, gl, BlendPalette.Default, new BlendMetrics { ChipFontSize = 12 });
 ```
 
 The toolkit constructs one style and its reusable builders. Keep app-specific
@@ -312,7 +310,7 @@ recipes in a separate injected collaborator:
 
 ```csharp
 [App]
-public class AppStyle(BlendUi bl)
+public class AppStyle(AppBlendUi bl)
 {
     public void AllocationRow(EntMut node) => node.Mutate()
         .Mutate(bl.S.HorizontalRow)
@@ -321,11 +319,9 @@ public class AppStyle(BlendUi bl)
 }
 ```
 
-Menus inject `BlendUi bl` and, when needed, `AppStyle s`. Use
-`bl.ScrollView.Create`, `bl.Fields`, `bl.Dropdown.Create`, and
-`bl.Tooltip.Create` directly. Do not add app subclasses that only forward
-the library builders' constructor parameters, or construct builders inside
-menu layout.
+Menus inject the chosen toolkit as `bl` and, when needed, `AppStyle s`. Use
+its shared builders directly through `bl.ScrollView.Create`, `bl.Fields`,
+`bl.Dropdown.Create`, and `bl.Tooltip.Create`.
 
 Each created control owns its mounted state. A dropdown popup returns a
 `BlendDropdownHandle`, which is an ordinary UI object passed through child
@@ -344,23 +340,24 @@ tree. Do not store mounted popup state on the injected toolkit or app style.
 
 ## UI Surfaces And Scaling
 
-Most apps should keep using the original full-window API. Inject `RootUi`,
-mount ordinary nodes on it, and add `RootUiScript` to `RootScripts`. That tree
-is the default surface; no surface setup is required.
+Install `UiSetup` once. Inject `RootUi ui` into a state that owns window-wide
+UI and mount its nodes on `ui.Default.Root`. Each state removes its own nodes
+when it unloads. For a menu used on several surfaces, pass the selected
+surface's root or a mount node into its `Create` method.
 
-Use `RootUiSurfaces` only when one window genuinely needs UI regions with
+Use `ui.Surfaces` when one window needs UI regions with
 different physical scales or viewport origins. A surface owns an independent
-`RootUi`, converts mouse input into its local coordinates, clips drawing to its
-physical viewport, and activates the matching `RootUiScale` and
-`RootUiContext` while its callbacks run.
+`UiRoot`, converts mouse input into its local coordinates, clips drawing to its
+physical viewport, and activates the matching `UiScale` and
+`UiContext` while its callbacks run.
 
 ```csharp
-game = surfaces.Create(
+game = ui.Surfaces.Create(
     () => new Box2(gameViewport.Min, gameViewport.Max),
     scale: 1f,
     order: 10f);
 
-tools = surfaces.Create(
+tools = ui.Surfaces.Create(
     () => userScale.Value,
     order: 20f);
 
@@ -378,11 +375,34 @@ chance to handle input, while transparent space falls through to lower
 surfaces. Dispose app-owned surfaces when their owning state unloads.
 
 Surface disposal invalidates its root and all child Ents, including detached
-nodes, and releases retained callbacks. `RootUiSurfaces` registers shutdown
-cleanup with `RootUnload`, which runs after the active state and scripts have
-unloaded. It disposes the default tree and any remaining surfaces. A directly
-constructed `RootUi` outside that composition must be explicitly disposed by
-its caller.
+nodes, and releases retained callbacks. The runtime owns the default tree and
+any remaining surfaces. In the engine, `UiSetup` registers its disposal with
+`RootUnload` so state and script teardown can still access the trees.
+
+### Standalone hosts
+
+Construct `UiRuntime` with a live canvas, input from the same window, the
+sprite batch writer, and an initial pixel scale. Connect `Update` to the
+window's logical update event so controls receive transient input.
+
+```csharp
+using var ui = new UiRuntime(new WindowCanvas(window), new Keyboard(window),
+    new Mouse(window), batch.Writer, 1f);
+window.Update += ui.Update;
+var blend = new BlendUi(ui, fonts, gl);
+Node(ui.Default.Root)
+    .Mutate(blend.S.Button)
+    .TextV("Apply")
+    .OnClickF(Apply);
+```
+
+Construct `BlendFonts` with the host's font-opening function. Its owner packs
+the faces before rendering and disposes them before their font context. On
+each render, iterate `ui.Surfaces.Span` in order. Set the physical viewport
+from `surface.CurrentViewport` (top-left origin), begin the sprite batch with
+`surface.Size`, call `ui.Draw(surface)`, and end the batch. Enable alpha
+blending for the pass. Disconnect `window.Update` before disposing the
+runtime if the window outlives it.
 
 ## Splitting Menus
 

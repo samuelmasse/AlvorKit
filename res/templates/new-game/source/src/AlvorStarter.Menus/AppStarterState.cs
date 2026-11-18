@@ -6,10 +6,8 @@ public class AppStarterState(
     RootBackbuffer backbuffer,
     RootKeyboard keyboard,
     RootScreen screen,
-    RootScripts scripts,
     RootUi ui,
-    RootUiScript uiScript,
-    BlendUi bl,
+    RootBlendUi bl,
     AppGlTriangle triangle,
     AppSpriteScene spriteScene,
     AppMainMenu menu) : State
@@ -22,8 +20,7 @@ public class AppStarterState(
         screen.Title = "Alvor Starter";
         screen.IsVSyncEnabled = true;
         triangle.Load();
-        scripts.Add(uiScript);
-        menuNode = Node(ui)
+        menuNode = Node(ui.Default.Root)
             .SizeRelativeV((1, 1));
         {
             menu.Create(menuNode);
@@ -31,13 +28,13 @@ public class AppStarterState(
         screen.IsVisible = true;
     }
 
-    /// <summary>Unmounts the UI script and menu node.</summary>
+    /// <summary>Unmounts the menu and releases pointer input.</summary>
     public override void Unload()
     {
         if (menuNode != default)
-            NodesRemove(ui, menuNode);
+            NodesRemove(ui.Default.Root, menuNode);
 
-        scripts.Remove(uiScript);
+        ui.Mouse.Release();
     }
 
     /// <summary>Updates input and sprite-batch animation state.</summary>

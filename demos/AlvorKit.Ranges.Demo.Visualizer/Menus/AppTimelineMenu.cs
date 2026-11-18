@@ -3,7 +3,7 @@ namespace AlvorKit;
 /// <summary>Builds the scrubbable command timeline lane with playhead, hover cell, and progress shade.</summary>
 [App]
 public class AppTimelineMenu(
-    RootUiMouse uiMouse,
+    RootUi ui,
     RootMouse mouse,
     AppStyle s,
     AppSession session,
@@ -102,7 +102,7 @@ public class AppTimelineMenu(
             if (count == 0 || lane.SizeR.X <= 0)
                 return;
 
-            var localX = Math.Clamp(uiMouse.Position.X - lane.PositionR.X, 0, lane.SizeR.X);
+            var localX = Math.Clamp(ui.Mouse.Position.X - lane.PositionR.X, 0, lane.SizeR.X);
             var cell = Math.Clamp((int)Math.Floor(localX / lane.SizeR.X * (double)count), 0, count - 1);
             session.JumpToStep(cell + 1);
         }
@@ -142,10 +142,10 @@ public class AppTimelineMenu(
         bool TimelinePointerInside(EntMut lane, int count) =>
             count > 0 &&
             lane.SizeR.X > 0 &&
-            uiMouse.Position.X >= lane.PositionR.X &&
-            uiMouse.Position.X <= lane.PositionR.X + lane.SizeR.X &&
-            uiMouse.Position.Y >= lane.PositionR.Y &&
-            uiMouse.Position.Y <= lane.PositionR.Y + lane.SizeR.Y;
+            ui.Mouse.Position.X >= lane.PositionR.X &&
+            ui.Mouse.Position.X <= lane.PositionR.X + lane.SizeR.X &&
+            ui.Mouse.Position.Y >= lane.PositionR.Y &&
+            ui.Mouse.Position.Y <= lane.PositionR.Y + lane.SizeR.Y;
 
         void Outline(EntMut parent, Func<Vec4> color)
         {

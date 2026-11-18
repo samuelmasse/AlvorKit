@@ -3,7 +3,7 @@ namespace AlvorKit;
 /// <summary>Builds the typed parameter dock; rebuilds its sections when the node graph changes.</summary>
 [App]
 public class AppParamsMenu(
-    BlendUi bl,
+    AppBlendUi bl,
     AppSession session,
     AppRamps ramps)
 {

@@ -1,6 +1,6 @@
 namespace AlvorKit;
 
-/// <summary>Applies Blender-inspired recipes to AlvorKit UI nodes, using the embedded Inter faces from <see cref="RootInter"/>.</summary>
+/// <summary>Applies Blender-inspired recipes to AlvorKit UI nodes, using the embedded Inter faces from <see cref="BlendFonts"/>.</summary>
 public class BlendStyle
 {
     /// <summary>Regular font exposed to style collaborators and callers that measure text.</summary>
@@ -30,15 +30,15 @@ public class BlendStyle
     /// <summary>Gets the regular text font face, for collaborators that measure text.</summary>
     public Font TextFont => font;
 
-    /// <summary>Creates toolkit recipes using root-owned fonts and the chosen control-texture owner.</summary>
-    internal BlendStyle(RootBlend root, GlLayer gl, BlendPalette palette, BlendMetrics metrics)
+    /// <summary>Creates toolkit recipes using the supplied fonts and the chosen control-texture owner.</summary>
+    internal BlendStyle(UiRuntime ui, BlendFonts fonts, GlLayer gl, BlendPalette palette, BlendMetrics metrics)
     {
         this.palette = palette;
         this.metrics = metrics;
-        font = root.Inter.Regular;
+        font = fonts.Regular;
         layout = new(this);
-        typography = new(this, font, root.Inter.SemiBold);
-        controls = new(this, font, gl, root.Scale, root.Keyboard);
+        typography = new(this, font, fonts.SemiBold);
+        controls = new(this, font, gl, ui.Scale, ui.Keyboard);
         surfaces = new(this);
     }
 

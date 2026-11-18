@@ -5,22 +5,17 @@ namespace AlvorKit;
 public class AppState(
     RootBackbuffer backbuffer,
     RootScreen screen,
-    RootScripts scripts,
     RootUi ui,
-    RootUiScript uiScript,
-    BlendUi bl,
+    AppBlendUi bl,
     AppSession session,
     AppMenu menu) : State
 {
     private EntMut menuNode;
-    private bool uiScriptAdded;
 
     public override void Load()
     {
         screen.Title = "AlvorKit Noise Lab";
-        scripts.Add(uiScript);
-        uiScriptAdded = true;
-        menuNode = Node(ui)
+        menuNode = Node(ui.Default.Root)
             .SizeRelativeV((1, 1));
         {
             menu.Create(menuNode);
@@ -32,13 +27,9 @@ public class AppState(
     public override void Unload()
     {
         if (menuNode != default)
-            NodesRemove(ui, menuNode);
+            NodesRemove(ui.Default.Root, menuNode);
 
-        if (uiScriptAdded)
-        {
-            scripts.Remove(uiScript);
-            uiScriptAdded = false;
-        }
+        ui.Mouse.Release();
     }
 
     public override void Update(double delta) => session.Update();

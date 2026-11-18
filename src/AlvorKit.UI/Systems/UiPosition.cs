@@ -1,7 +1,6 @@
 namespace AlvorKit;
 
-[Root]
-public class RootUiPosition(RootSprites sprites, RootUiScale scale)
+internal class UiPosition(SpriteBatchWriter sprites, UiScale scale)
 {
     internal void Position(Vec2 s, Vec2 padding, EntMut n)
     {
@@ -104,7 +103,7 @@ public class RootUiPosition(RootSprites sprites, RootUiScale scale)
         if (text.IsEmpty)
             return;
 
-        var size = new Vec2(sprites.Batch.Measure(font.Size(fontSize), text), font.Size(fontSize).Metrics.Height) / scale.Scale;
+        var size = new Vec2(sprites.Measure(font.Size(fontSize), text), font.Size(fontSize).Metrics.Height) / scale.Scale;
         n.OffsetR += n.OffsetTextRelativeFV.Resolve() * size;
     }
 

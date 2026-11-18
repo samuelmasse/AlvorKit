@@ -2,11 +2,11 @@ namespace AlvorKit;
 
 /// <summary>Covers independently scaled UI roots while preserving the default full-window path.</summary>
 [TestClass]
-public sealed class RootUiSurfacesTest
+public class UiSurfacesTest
 {
-    /// <summary>The existing RootUi and RootUiScale API remains the automatically managed default surface.</summary>
+    /// <summary>The default surface fills the canvas at the runtime scale.</summary>
     [TestMethod]
-    public void DefaultSurface_UsesExistingRootAndScale()
+    public void DefaultSurface_UsesRuntimeRootAndScale()
     {
         using var h = new UiTestHarness();
         h.Scale.Scale = 2f;
@@ -19,7 +19,7 @@ public sealed class RootUiSurfacesTest
         Assert.AreEqual(new Vec2(400, 300), h.Ui.SizeR);
         Assert.AreEqual(h.Ui.SizeR, fill.SizeR);
         Assert.AreEqual(Vec2.Zero, h.Context.Origin);
-        Assert.AreEqual(new Vec2(400, 300), h.Script.DrawArea);
+        Assert.AreEqual(new Vec2(400, 300), h.Runtime.Default.Size);
     }
 
     /// <summary>Every public creation shape resolves its fixed and dynamic viewport and scale inputs.</summary>
@@ -103,7 +103,7 @@ public sealed class RootUiSurfacesTest
         Assert.AreEqual(surface.Root.SizeR, fill.SizeR);
     }
 
-    /// <summary>Surface callbacks observe their own scale and physical viewport through root UI services.</summary>
+    /// <summary>Surface callbacks observe their own scale and physical viewport through the UI runtime.</summary>
     [TestMethod]
     public void UpdateCallback_ObservesActiveSurfaceContext()
     {
@@ -188,31 +188,6 @@ public sealed class RootUiSurfacesTest
         Assert.AreEqual(new Vec2(25, 25), h.UiMouse.Position);
     }
 
-    /// <summary>Disposing a surface removes both its tree and its draw script.</summary>
-    [TestMethod]
-    public void Dispose_RemovesSurfaceAndDrawScript()
-    {
-        using var h = new UiTestHarness();
-        var surface = h.Surfaces.Create(
-            new Box2((0, 0), (100, 100)),
-            order: 10f);
-
-        Assert.AreEqual(2, h.Surfaces.Span.Length);
-        Assert.AreEqual(1, h.Scripts.Span.Length);
-        Assert.AreEqual(
-            new Box2((0, 0), (100, 100)),
-            h.Scripts.Span[0].DrawViewport);
-        Assert.AreEqual(
-            new Vec2(100, 100),
-            h.Scripts.Span[0].DrawArea);
-
-        surface.Dispose();
-        surface.Dispose();
-
-        Assert.AreEqual(1, h.Surfaces.Span.Length);
-        Assert.AreEqual(0, h.Scripts.Span.Length);
-    }
-
     /// <summary>The automatically owned default surface cannot be disposed by an app.</summary>
     [TestMethod]
     public void DefaultSurface_Dispose_Throws()
@@ -236,10 +211,24 @@ public sealed class RootUiSurfacesTest
         Node(surface.Root, out var fill)
             .SizeRelativeV((1, 1));
 
-        h.Scripts.Span[0].Draw();
+        h.Runtime.Draw(surface);
 
         Assert.AreEqual(new Vec2(100, 50), surface.Root.SizeR);
         Assert.AreEqual(surface.Root.SizeR, fill.SizeR);
+    }
+
+    /// <summary>Hosts can only submit a live surface to the runtime that owns its layout and input.</summary>
+    [TestMethod]
+    public void Draw_RejectsForeignAndDisposedSurfaces()
+    {
+        using var h = new UiTestHarness();
+        using var other = new UiTestHarness();
+        Assert.ThrowsExactly<ArgumentException>(() => h.Runtime.Draw(other.Runtime.Default));
+        var surface = h.Surfaces.Create();
+        surface.Dispose();
+        Assert.ThrowsExactly<ObjectDisposedException>(() => h.Runtime.Draw(surface));
+        h.Runtime.Dispose();
+        Assert.ThrowsExactly<ObjectDisposedException>(() => h.Runtime.Update(0));
     }
 
     private static void Click(

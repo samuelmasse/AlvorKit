@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 [App]
 public class AppModelInfoMenu(
-    BlendUi bl,
+    RootBlendUi bl,
     AppLayout layout,
     AppSession session)
 {

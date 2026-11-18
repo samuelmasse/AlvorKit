@@ -13,7 +13,7 @@ public class BlendDropdownTest
         var (popup, layer, options, field) = Mount(h, index => picks++);
         h.Draw();
         h.Host.RaiseKeyDown(Keys.Enter);
-        h.Root.Get<RootUiFocus>().Focus(field, true);
+        h.Root.Get<RootUi>().Focus.Focus(field, true);
         field.OnUpdateFV.Resolve()!();
         Assert.IsTrue(popup.IsOpenFor(field));
 

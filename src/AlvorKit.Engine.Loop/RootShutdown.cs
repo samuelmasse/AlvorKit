@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 /// <summary>Tracks whether the root loop is shutting down after a requested close or runtime failure.</summary>
 [Root]
-public class RootShutdown(FailSafeConfig failSafe, RootScreen screen)
+public class RootShutdown(RootFailSafeConfig failSafe, RootScreen screen)
 {
     private bool started;
 
@@ -19,13 +19,16 @@ public class RootShutdown(FailSafeConfig failSafe, RootScreen screen)
             ShutDown(true);
         };
         AppDomain.CurrentDomain.ProcessExit += (_, _) => ShutDown(false);
-        AppDomain.CurrentDomain.UnhandledException += (_, _) =>
-        {
-            if (failSafe.Enabled)
-                ShutDown(false);
-            else
-                started = true;
-        };
+        AppDomain.CurrentDomain.UnhandledException += (_, _) => OnUnhandledException();
+    }
+
+    /// <summary>Applies the root's shutdown policy when an unhandled exception ends the process.</summary>
+    internal void OnUnhandledException()
+    {
+        if (failSafe.Enabled)
+            ShutDown(false);
+        else
+            started = true;
     }
 
     /// <summary>Marks shutdown and closes the screen when it is still safe to reach the host window.</summary>

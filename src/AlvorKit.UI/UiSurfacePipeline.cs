@@ -2,13 +2,13 @@ namespace AlvorKit;
 
 /// <summary>Runs layout and drawing while one UI surface's scale and viewport are active.</summary>
 internal sealed class UiSurfacePipeline(
-    RootUiSurfaces owner,
-    RootUiContext context,
-    RootUiUpdate update,
-    RootUiTraverse traverse,
-    RootUiSize size,
-    RootUiPosition position,
-    RootUiDraw draw)
+    UiSurfaces owner,
+    UiContext context,
+    UiUpdate update,
+    UiTraverse traverse,
+    UiSize size,
+    UiPosition position,
+    UiDraw draw)
 {
     /// <summary>Resolves a surface and lays out its retained UI tree.</summary>
     internal void Prepare(UiSurface surface)

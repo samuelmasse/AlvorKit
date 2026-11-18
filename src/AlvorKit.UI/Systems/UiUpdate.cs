@@ -1,7 +1,6 @@
 namespace AlvorKit;
 
-[Root]
-public class RootUiUpdate
+internal class UiUpdate
 {
     private double time;
 

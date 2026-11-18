@@ -3,7 +3,7 @@ namespace AlvorKit;
 /// <summary>Builds the node/seed/generate tool strip; rebuilds its controls when the session UI revision changes.</summary>
 [App]
 public class AppToolbarMenu(
-    BlendUi bl,
+    AppBlendUi bl,
     AppSession session)
 {
     /// <summary>Mounts the fractal selector and generation controls, rebinding them after selection changes.</summary>

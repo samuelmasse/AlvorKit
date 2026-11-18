@@ -1,1 +1,1 @@
-RootLoop.RunGlfw<AlvorStarter.RootLoadState>();
+RootLoop.RunGlfw<AlvorStarter.RootLoadState>(new UiSetup());

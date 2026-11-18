@@ -5,22 +5,17 @@ namespace AlvorKit;
 public class EditorShellState(
     RootBackbuffer backbuffer,
     RootScreen screen,
-    RootScripts scripts,
     RootUi ui,
-    RootUiScript uiScript,
-    BlendUi bl,
+    RootBlendUi bl,
     EditorShellMenu menu) : State
 {
     private EntMut menuNode;
-    private bool uiScriptAdded;
 
     public override void Load()
     {
         screen.Title = "AlvorKit Studio - Editor Shell";
         screen.Size = (3840u, 2160u);
-        scripts.Add(uiScript);
-        uiScriptAdded = true;
-        menuNode = Node(ui)
+        menuNode = Node(ui.Default.Root)
             .SizeRelativeV((1, 1));
         {
             menu.Create(menuNode);
@@ -31,13 +26,9 @@ public class EditorShellState(
     public override void Unload()
     {
         if (menuNode != default)
-            NodesRemove(ui, menuNode);
+            NodesRemove(ui.Default.Root, menuNode);
 
-        if (uiScriptAdded)
-        {
-            scripts.Remove(uiScript);
-            uiScriptAdded = false;
-        }
+        ui.Mouse.Release();
     }
 
     public override void Render() => backbuffer.Clear(bl.S.Palette.AppBackground);

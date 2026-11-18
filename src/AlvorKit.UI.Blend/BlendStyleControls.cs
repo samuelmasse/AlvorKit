@@ -10,13 +10,13 @@ internal class BlendStyleControls
     private readonly Font font;
 
     /// <summary>Keyboard root used for focus activation.</summary>
-    private readonly RootKeyboard keyboard;
+    private readonly Keyboard keyboard;
 
     /// <summary>Rounded surface renderer shared by every interactive control.</summary>
     private readonly BlendStyleControlSurface surface;
 
     /// <summary>Creates control recipes over the owning style and runtime collaborators.</summary>
-    internal BlendStyleControls(BlendStyle s, Font font, GlLayer gl, RootUiScale scale, RootKeyboard keyboard)
+    internal BlendStyleControls(BlendStyle s, Font font, GlLayer gl, UiScale scale, Keyboard keyboard)
     {
         this.s = s;
         this.font = font;

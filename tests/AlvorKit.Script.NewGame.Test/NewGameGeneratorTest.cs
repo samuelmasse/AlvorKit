@@ -54,9 +54,7 @@ public class NewGameGeneratorTest
         StringAssert.Contains(Read(output, "src/SampleGame.App.Frontend/AppGlTriangle.cs"), "gl.DrawArrays");
         StringAssert.Contains(Read(output, "src/SampleGame.App.Frontend/AppSpriteScene.cs"), "sprites.Batch.Draw");
         var menu = Read(output, "src/SampleGame.Menus/AppMainMenu.cs");
-        StringAssert.Contains(Read(output, "src/SampleGame/RootLoadState.cs"),
-            "app.Add(new BlendUi(scope.Get<RootBlend>(), scope.Get<RootGl>()))");
-        StringAssert.Contains(menu, "BlendUi bl");
+        StringAssert.Contains(menu, "RootBlendUi bl");
         StringAssert.Contains(menu, "bl.S.Button");
         StringAssert.Contains(menu, "OnClickF(counter.Increment)");
         Assert.IsFalse(menu.Contains("ActiveButton", StringComparison.Ordinal));

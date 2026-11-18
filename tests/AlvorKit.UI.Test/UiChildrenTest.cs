@@ -27,11 +27,11 @@ public class UiChildrenTest
         children.Set([new(1, "First", 40)]);
         var first = Nodes(parent)[0];
         Assert.AreEqual("First", first.TextFV.Resolve().ToString());
-        h.Script.Draw();
+        h.Draw();
         Assert.AreEqual(new Vec2(40, 20), first.SizeR);
 
         children.Set([new(1, "Changed", 90)]);
-        h.Script.Draw();
+        h.Draw();
         Assert.AreEqual(first, Nodes(parent)[0]);
         Assert.AreEqual("Changed", first.TextFV.Resolve().ToString());
         Assert.AreEqual(new Vec2(90, 20), first.SizeR);

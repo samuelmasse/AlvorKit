@@ -3,7 +3,7 @@ namespace AlvorKit;
 /// <summary>Builds the editor shell: menu bar, toolbar, workspace docks, and status bar.</summary>
 [App]
 public class AppMenu(
-    BlendUi bl,
+    RootBlendUi bl,
     AppLayout layout,
     AppSession session,
     AppToolbarMenu toolbarMenu,

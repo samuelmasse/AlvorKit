@@ -5,7 +5,7 @@ namespace AlvorKit;
 public class AppTimelineTexture(
     RootGl gl,
     RootText text,
-    RootUiMouse uiMouse,
+    RootUi ui,
     AppStyle s,
     AppSession session,
     AppTextureLimits limits)
@@ -41,7 +41,7 @@ public class AppTimelineTexture(
         if (count <= 0 || lane.SizeR.X <= 0)
             return 0;
 
-        var localX = Math.Clamp(uiMouse.Position.X - lane.PositionR.X, 0, lane.SizeR.X);
+        var localX = Math.Clamp(ui.Mouse.Position.X - lane.PositionR.X, 0, lane.SizeR.X);
         return Math.Clamp((int)Math.Floor(localX / lane.SizeR.X * (double)count), 0, count - 1);
     }
 

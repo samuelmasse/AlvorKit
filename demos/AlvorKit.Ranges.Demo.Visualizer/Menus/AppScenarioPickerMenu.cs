@@ -4,7 +4,7 @@ namespace AlvorKit;
 [App]
 public class AppScenarioPickerMenu(
     RootText text,
-    BlendUi bl,
+    RootBlendUi bl,
     AppSession session)
 {
     public void Create(EntMut root)

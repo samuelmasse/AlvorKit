@@ -2,7 +2,7 @@ namespace AlvorKit;
 
 /// <summary>Builds the stripped Blender-like editor shell demo using layout primitives.</summary>
 [App]
-public class EditorShellMenu(BlendUi bl, EditorShellLayout layout)
+public class EditorShellMenu(RootBlendUi bl, EditorShellLayout layout)
 {
     public void Create(EntMut root)
     {

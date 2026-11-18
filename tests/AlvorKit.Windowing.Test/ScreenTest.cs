@@ -3,6 +3,30 @@ namespace AlvorKit;
 [TestClass]
 public class ScreenTest
 {
+    /// <summary>Focus follows the host, and maximizing leaves fullscreen with the correct restoration state.</summary>
+    [TestMethod]
+    public void Screen_TracksFocusAndMaximizesFromFullscreen()
+    {
+        var (host, loop) = WindowingTestFactory.Create();
+        var screen = new WindowScreen(loop);
+
+        host.IsFocused = true;
+        Assert.IsTrue(screen.IsFocused);
+        host.IsFocused = false;
+        Assert.IsFalse(screen.IsFocused);
+
+        screen.Maximize();
+        Assert.AreEqual(WindowState.Maximized, host.WindowState);
+        screen.IsFullscreen = true;
+        screen.Maximize();
+        Assert.IsFalse(screen.IsFullscreen);
+        Assert.AreEqual(WindowState.Maximized, host.WindowState);
+
+        screen.IsFullscreen = true;
+        screen.IsFullscreen = false;
+        Assert.AreEqual(WindowState.Maximized, host.WindowState);
+    }
+
     [TestMethod]
     public void Screen_IsExiting_HasCorrectValue()
     {
