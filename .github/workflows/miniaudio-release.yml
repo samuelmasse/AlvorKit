@@ -149,7 +149,8 @@ jobs:
           set -euo pipefail
           version="$(cat native/miniaudio/version/TAG).$(cat native/miniaudio/version/BINDING_REVISION)"
           dotnet publish scripts/AlvorKit.Script.MiniAudioVerify -c Release -r "${{ matrix.rid }}" --self-contained true \
-            -p:MiniAudioVerifyVersion="$version" -p:RestoreAdditionalProjectSources="$PWD/out/miniaudio-packages" -o out/miniaudio-audio-probe
+            -p:MiniAudioVerifyVersion="$version" -p:RestoreConfigFile="$PWD/.github/miniaudio-verify.nuget.config" \
+            -p:RestorePackagesPath="$PWD/out/miniaudio-verify-restore" -o out/miniaudio-audio-probe
           dotnet publish scripts/AlvorKit.Script.BindingAbi -c Release -r "${{ matrix.rid }}" --self-contained true -o out/miniaudio-abi-probe
       - name: Verify native layouts and audio through restored packages
         shell: bash
