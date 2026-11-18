@@ -1,0 +1,71 @@
+name: NuGet trusted publishing
+
+on:
+  workflow_dispatch: # Verify the trust policy without uploading a package.
+  workflow_call:
+    inputs:
+      artifact:
+        description: Package artifact from the calling workflow run
+        type: string
+        required: true
+      package-ids:
+        description: Space-separated NuGet IDs in dependency order
+        type: string
+        required: true
+      skip-duplicate:
+        description: Accept package versions already present on NuGet
+        type: boolean
+        default: true
+
+permissions: {}
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    environment: nuget
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        if: inputs.artifact
+        with:
+          dotnet-version: 11.0.x
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        if: inputs.artifact
+        with:
+          name: ${{ inputs.artifact }}
+          path: packages
+      - name: Log in to NuGet
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: samuelmasse
+      - name: Push packages
+        if: inputs.artifact
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          PACKAGE_IDS: ${{ inputs.package-ids }}
+          SKIP_DUPLICATE: ${{ inputs.skip-duplicate }}
+        run: |
+          set -euo pipefail
+          shopt -s globstar nullglob
+          read -ra ids <<< "$PACKAGE_IDS"
+          packages=()
+          for id in "${ids[@]}"; do
+            matches=(packages/**/"$id".[0-9]*.nupkg)
+            if (( ${#matches[@]} != 1 )); then
+              echo "::error::Expected exactly one $id package in the release artifact."
+              exit 1
+            fi
+            packages+=("${matches[0]}")
+          done
+
+          options=()
+          if [[ "$SKIP_DUPLICATE" == "true" ]]; then
+            options+=(--skip-duplicate)
+          fi
+          for package in "${packages[@]}"; do
+            dotnet nuget push "$package" --source https://api.nuget.org/v3/index.json "${options[@]}"
+          done

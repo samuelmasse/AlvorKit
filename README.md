@@ -185,3 +185,7 @@ dotnet build -c Release native\fastnoise2\AlvorKit.FastNoise2.Native.csproj
 Native package revisions live in `native/<lib>/version/REVISION`; generated binding package
 revisions live in `native/<lib>/version/BINDING_REVISION`. Native build settings live in
 `native/<lib>/conf/native-build.yml`.
+
+Native, binding, and Maths releases share the [NuGet publishing workflow](.github/workflows/nuget-publish.yml).
+It authenticates through Trusted Publishing from the `nuget` GitHub environment on `main`.
+Run the workflow manually to verify the login without uploading packages.

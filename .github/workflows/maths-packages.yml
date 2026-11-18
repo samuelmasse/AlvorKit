@@ -84,18 +84,12 @@ jobs:
             bin/AlvorKit.Maths/Release/*.nupkg
           if-no-files-found: error
 
-      - name: Publish
-        if: github.event_name == 'push'
-        run: |
-          dotnet nuget push bin/AlvorKit.Maths.Core/Release/AlvorKit.Maths.Core.${{ steps.version.outputs.value }}.nupkg \
-            --api-key "${{ secrets.NUGET_API_KEY }}" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
-          dotnet nuget push bin/AlvorKit.Maths.Primitives/Release/AlvorKit.Maths.Primitives.${{ steps.version.outputs.value }}.nupkg \
-            --api-key "${{ secrets.NUGET_API_KEY }}" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
-          dotnet nuget push bin/AlvorKit.Maths/Release/AlvorKit.Maths.${{ steps.version.outputs.value }}.nupkg \
-            --api-key "${{ secrets.NUGET_API_KEY }}" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
+  publish:
+    needs: pack
+    if: github.event_name == 'push'
+    permissions:
+      id-token: write
+    uses: ./.github/workflows/nuget-publish.yml
+    with:
+      artifact: maths-nupkg
+      package-ids: AlvorKit.Maths.Core AlvorKit.Maths.Primitives AlvorKit.Maths

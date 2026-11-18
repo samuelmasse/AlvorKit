@@ -42,8 +42,6 @@ on:
         "native/nfde/version/REVISION",
       ]
 
-# The workflow only reads repository contents. Publishing uses the NuGet API key,
-# not elevated GitHub repository permissions.
 permissions:
   contents: read
 
@@ -289,11 +287,16 @@ jobs:
           path: bin/${{ matrix.package.package_name }}/Release/*.nupkg
           if-no-files-found: error
 
-      # Only main pushes publish to NuGet.org. workflow_dispatch stays artifact-only.
-      - name: Publish native package to NuGet.org
-        if: github.event_name == 'push'
-        run: |
-          dotnet nuget push bin/${{ matrix.package.package_name }}/Release/*.nupkg \
-            --api-key "${{ secrets.NUGET_API_KEY }}" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
+  publish:
+    needs: [detect, pack]
+    if: needs.detect.outputs.has_packages == 'true' && github.event_name == 'push'
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.detect.outputs.packages) }}
+    permissions:
+      id-token: write
+    uses: ./.github/workflows/nuget-publish.yml
+    with:
+      artifact: ${{ matrix.package.library }}-nupkg
+      package-ids: ${{ matrix.package.package_name }}

@@ -20,7 +20,6 @@ on:
     branches: [main]
     paths: ["native/opengl/version/BINDING_REVISION"]
 
-# This workflow only reads the repository. NuGet publishing uses NUGET_API_KEY.
 permissions:
   contents: read
 
@@ -103,15 +102,12 @@ jobs:
             bin/AlvorKit.OpenGL.Backend/Release/*.nupkg
           if-no-files-found: error
 
-      # Only push-triggered version-file changes publish to NuGet.org.
-      - name: Publish to NuGet.org
-        if: github.event_name == 'push'
-        run: |
-          dotnet nuget push bin/AlvorKit.OpenGL/Release/*.nupkg \
-            --api-key "${{ secrets.NUGET_API_KEY }}" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
-          dotnet nuget push bin/AlvorKit.OpenGL.Backend/Release/*.nupkg \
-            --api-key "${{ secrets.NUGET_API_KEY }}" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
+  publish:
+    needs: pack
+    if: github.event_name == 'push'
+    permissions:
+      id-token: write
+    uses: ./.github/workflows/nuget-publish.yml
+    with:
+      artifact: opengl-bindings-nupkg
+      package-ids: AlvorKit.OpenGL AlvorKit.OpenGL.Backend

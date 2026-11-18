@@ -168,24 +168,10 @@ jobs:
 
   publish:
     needs: verify
-    if: github.event_name == 'push' || inputs.publish
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 11.0.x
-      - uses: actions/download-artifact@v8
-        with:
-          name: miniaudio-candidate-packages
-          path: packages
-      - name: Publish native package, API, then backend
-        shell: bash
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: |
-          set -euo pipefail
-          for package in AlvorKit.MiniAudio.Native AlvorKit.MiniAudio AlvorKit.MiniAudio.Backend; do
-            dotnet nuget push "packages/$package."[0-9]*.nupkg \
-              --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          done
+    if: (github.event_name == 'push' || inputs.publish)
+    permissions:
+      id-token: write
+    uses: ./.github/workflows/nuget-publish.yml
+    with:
+      artifact: miniaudio-candidate-packages
+      package-ids: AlvorKit.MiniAudio.Native AlvorKit.MiniAudio AlvorKit.MiniAudio.Backend

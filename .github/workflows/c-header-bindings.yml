@@ -46,8 +46,6 @@ on:
         "native/nfde/version/BINDING_REVISION",
       ]
 
-# The workflow only needs repository reads. NuGet publishing is authenticated
-# through NUGET_API_KEY rather than GitHub write permissions.
 permissions:
   contents: read
 
@@ -180,14 +178,33 @@ jobs:
                 ;;
             esac
 
+            version_root="native/$library/version"
+            tag="$(tr -d '[:space:]' < "$version_root/TAG")"
+            native_revision="$(tr -d '[:space:]' < "$version_root/REVISION" 2>/dev/null || true)"
+            binding_revision="$(tr -d '[:space:]' < "$version_root/BINDING_REVISION" 2>/dev/null || true)"
+            binding_revision="${binding_revision:-$native_revision}"
+            native_version="$tag${native_revision:+.$native_revision}"
+            binding_version="$tag${binding_revision:+.$binding_revision}"
+
+            if [[ "${{ github.event_name }}" == "push" || "${{ inputs.publish }}" == "true" ]]; then
+              versions="$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/$id/index.json" || echo '{"versions":[]}')"
+              if jq -e --arg version "$binding_version" '.versions | index($version)' <<< "$versions" > /dev/null; then
+                if [[ "${{ github.event_name }}" == "push" ]]; then
+                  echo "::error::$id $binding_version is already published - bump $version_root/BINDING_REVISION."
+                  exit 1
+                fi
+                echo "$id $binding_version is already published; skipping."
+                continue
+              fi
+            fi
+
             objects+=("$(jq -cn \
               --arg selection "$library" \
-              --arg dir "native/$library/version" \
-              --arg id "$id" \
+              --arg native_version "$native_version" \
               --arg native_id "$native_id" \
               --arg api_project "$api_project" \
               --arg backend_project "$backend_project" \
-              '{selection:$selection,dir:$dir,id:$id,native_id:$native_id,api_project:$api_project,backend_project:$backend_project}')")
+              '{selection:$selection,native_version:$native_version,native_id:$native_id,api_project:$api_project,backend_project:$backend_project}')")
           done
 
           # Emit compact JSON for fromJson(...) and a simple boolean for job
@@ -196,7 +213,7 @@ jobs:
           echo "packages=$packages" >> "$GITHUB_OUTPUT"
           if [[ "$packages" == "[]" ]]; then
             echo "has_packages=false" >> "$GITHUB_OUTPUT"
-            echo "No standalone binding package version files changed."
+            echo "No binding packages selected for this run."
           else
             echo "has_packages=true" >> "$GITHUB_OUTPUT"
             echo "Selected packages: $(jq -r 'map(.selection) | join(", ")' <<< "$packages")"
@@ -223,69 +240,31 @@ jobs:
         with:
           dotnet-version: 11.0.x
 
-      # Compute the native and managed versions for both verification and release.
-      - name: Compute package versions
-        id: versions
-        shell: bash
-        run: |
-          set -euo pipefail
-          tag="$(tr -d '[:space:]' < "${{ matrix.package.dir }}/TAG")"
-          native_revision="$(tr -d '[:space:]' < "${{ matrix.package.dir }}/REVISION" 2>/dev/null || true)"
-          binding_revision="$(tr -d '[:space:]' < "${{ matrix.package.dir }}/BINDING_REVISION" 2>/dev/null || true)"
-          [[ -z "$binding_revision" ]] && binding_revision="$native_revision"
-          native_version="$tag"
-          binding_version="$tag"
-          [[ -n "$native_revision" ]] && native_version="${native_version}.${native_revision}"
-          [[ -n "$binding_revision" ]] && binding_version="${binding_version}.${binding_revision}"
-          echo "native=$native_version" >> "$GITHUB_OUTPUT"
-          echo "binding=$binding_version" >> "$GITHUB_OUTPUT"
-
-          # Artifact-only runs must rebuild even when NuGet already has this version.
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.publish }}" != "true" ]]; then
-            exit 0
-          fi
-
-          versions="$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/${{ matrix.package.id }}/index.json" || echo '{"versions":[]}')"
-          if jq -e --arg version "$binding_version" '.versions | index($version)' <<< "$versions" > /dev/null; then
-            if [[ "${{ github.event_name }}" == "push" ]]; then
-              echo "::error::${{ matrix.package.id }} ${binding_version} is already published - bump ${{ matrix.package.dir }}/BINDING_REVISION."
-              exit 1
-            fi
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "${{ matrix.package.id }} ${binding_version} is already published; skipping."
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-
       # The generated backend references the native runtime package, so verify
       # that the required native package version already exists before generation.
       - name: Verify native package is published
-        if: steps.versions.outputs.skip != 'true'
         shell: bash
         run: |
           set -euo pipefail
           versions="$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/${{ matrix.package.native_id }}/index.json" || echo '{"versions":[]}')"
-          if ! jq -e --arg version "${{ steps.versions.outputs.native }}" '.versions | index($version)' <<< "$versions" > /dev/null; then
-            echo "::error::${{ matrix.package.native_id }} ${{ steps.versions.outputs.native }} is not on NuGet.org yet."
+          if ! jq -e --arg version "${{ matrix.package.native_version }}" '.versions | index($version)' <<< "$versions" > /dev/null; then
+            echo "::error::${{ matrix.package.native_id }} ${{ matrix.package.native_version }} is not on NuGet.org yet."
             exit 1
           fi
 
       # Run bindgen in strict mode so missing exports, stale shims, layout issues,
       # and parser problems fail the release.
       - name: Generate bindings
-        if: steps.versions.outputs.skip != 'true'
         run: dotnet run --project scripts/AlvorKit.Script.Bindgen -- ${{ matrix.package.selection }} --strict --setup-local
 
       # Pack both generated projects for this library.
       - name: Pack bindings
-        if: steps.versions.outputs.skip != 'true'
         run: |
           dotnet pack -c Release out/bindgen/${{ matrix.package.api_project }}/${{ matrix.package.api_project }}.csproj
           dotnet pack -c Release out/bindgen/${{ matrix.package.backend_project }}/${{ matrix.package.backend_project }}.csproj
 
       # Upload .nupkg files for visibility and manual review.
       - uses: actions/upload-artifact@v7
-        if: steps.versions.outputs.skip != 'true'
         with:
           name: ${{ matrix.package.selection }}-bindings-nupkg
           path: |
@@ -293,16 +272,16 @@ jobs:
             bin/${{ matrix.package.backend_project }}/Release/*.nupkg
           if-no-files-found: error
 
-      # Push-triggered runs publish. Manual runs publish only when explicitly enabled.
-      - name: Publish to NuGet.org
-        if: steps.versions.outputs.skip != 'true' && (github.event_name == 'push' || inputs.publish)
-        shell: bash
-        run: |
-          dotnet nuget push bin/${{ matrix.package.api_project }}/Release/*.nupkg \
-            --api-key "${{ secrets.NUGET_API_KEY }}" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
-          dotnet nuget push bin/${{ matrix.package.backend_project }}/Release/*.nupkg \
-            --api-key "${{ secrets.NUGET_API_KEY }}" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
+  publish:
+    needs: [detect, pack]
+    if: needs.detect.outputs.has_packages == 'true' && (github.event_name == 'push' || inputs.publish)
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.detect.outputs.packages) }}
+    permissions:
+      id-token: write
+    uses: ./.github/workflows/nuget-publish.yml
+    with:
+      artifact: ${{ matrix.package.selection }}-bindings-nupkg
+      package-ids: ${{ matrix.package.api_project }} ${{ matrix.package.backend_project }}

@@ -288,64 +288,12 @@ jobs:
           if-no-files-found: error
 
   publish:
-    name: publish native profiler
-    needs: [pack]
-    if: github.event_name == 'push' || inputs.publish
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 11.0.x
-
-      - uses: actions/download-artifact@v8
-        with:
-          name: interception-profiler-native-nupkg
-          path: bin/AlvorKit.Interception.Profiler.Native/Release
-
-      - name: Require an unpublished package version
-        if: github.event_name == 'push' || inputs.publish
-        shell: pwsh
-        run: |
-          $versionRoot = "native/interception-profiler/version"
-          $version = (Get-Content "$versionRoot/TAG" -Raw).Trim()
-          $revisionPath = "$versionRoot/REVISION"
-          if (Test-Path -LiteralPath $revisionPath) {
-              $revision = (Get-Content $revisionPath -Raw).Trim()
-              if (-not [string]::IsNullOrWhiteSpace($revision)) {
-                  $version = "$version.$revision"
-              }
-          }
-          $packageId = "alvorkit.interception.profiler.native"
-          $index = "https://api.nuget.org/v3-flatcontainer/$packageId/index.json"
-          try {
-              $published = (Invoke-RestMethod -Uri $index).versions
-          }
-          catch {
-              if ($_.Exception.Response.StatusCode -ne [System.Net.HttpStatusCode]::NotFound) {
-                  throw
-              }
-              $published = @()
-          }
-          if ($published -contains $version) {
-              throw "AlvorKit.Interception.Profiler.Native $version is already published."
-          }
-
-      - name: Publish native profiler
-        if: github.event_name == 'push' || inputs.publish
-        shell: pwsh
-        run: |
-          $packageRoot = "bin/AlvorKit.Interception.Profiler.Native/Release"
-          $packages = @(Get-ChildItem -LiteralPath $packageRoot -Filter "*.nupkg" -File)
-          if ($packages.Count -ne 1) {
-              throw "Expected exactly one native package under $packageRoot; found $($packages.Count)."
-          }
-          dotnet nuget push $packages[0].FullName `
-              --api-key "${{ secrets.NUGET_API_KEY }}" `
-              --source https://api.nuget.org/v3/index.json
-          if ($LASTEXITCODE -ne 0) {
-              throw "dotnet nuget push failed with exit code $LASTEXITCODE."
-          }
+    needs: pack
+    if: (github.event_name == 'push' || inputs.publish)
+    permissions:
+      id-token: write
+    uses: ./.github/workflows/nuget-publish.yml
+    with:
+      artifact: interception-profiler-native-nupkg
+      package-ids: AlvorKit.Interception.Profiler.Native
+      skip-duplicate: false
