@@ -1,0 +1,12 @@
+
+    /// <inheritdoc/>
+{{Attributes}}    public {{Unsafe}}override {{ReturnType}} {{ManagedName}}({{Signature}})
+    {
+        if (IntPtr.Size == 4 && OperatingSystem.IsWindows())
+            return InvokeWindowsX86({{Arguments}});
+
+        return {{Body}};
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        static {{ReturnType}} InvokeWindowsX86({{Signature}}) => {{Body}};
+    }

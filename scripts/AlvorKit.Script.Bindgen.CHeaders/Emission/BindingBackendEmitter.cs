@@ -19,16 +19,24 @@ internal sealed class BindingBackendEmitter(BindingEmitterContext context)
     }
 
     /// <summary>Renders one backend override.</summary>
-    private string Method(BindingFunction function) =>
-        TemplateResource.Render(
+    private string Method(BindingFunction function)
+    {
+        // The .NET 11 x86 JIT can overwrite a cdecl return when popping one stack word.
+        // Zero explicit arguments can still pass a hidden struct-return pointer.
+        var isolateReturn = function.ReturnInteropType != "void" && function.Parameters.Count <= 1
+            && function.Platform is null or "windows";
+        var template = isolateReturn ? "backend-windows-x86-return.csfrag.tmpl" : "backend-method.csfrag.tmpl";
+        return TemplateResource.Render(
             typeof(BindingBackendEmitter),
-            "res/templates/bindgen/c-headers/csharp/backend-method.csfrag.tmpl",
+            $"res/templates/bindgen/c-headers/csharp/{template}",
             ("Attributes", BindingMethodAttributes.ForFunction(function)),
             ("ReturnType", function.ReturnType),
             ("ManagedName", function.ManagedName),
             ("Unsafe", BindingSignature.UnsafeModifier(function)),
             ("Signature", BindingSignature.ForFunction(function)),
+            ("Arguments", string.Join(", ", function.Parameters.Select(BindingSignature.Argument))),
             ("Body", Body(function)));
+    }
 
     /// <summary>Formats a backend method body for a native import call.</summary>
     private string Body(BindingFunction function)
