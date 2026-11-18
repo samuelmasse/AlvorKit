@@ -41,9 +41,7 @@ public class RootEngine(
         if (shutdown.Started)
             return;
 
-        foreach (var script in scripts.Span)
-            script.Update(delta);
-
+        scripts.Dispatch(delta, static (script, dt) => script.Update(dt));
         state.Current.Update(delta);
     }
 
@@ -53,9 +51,7 @@ public class RootEngine(
         if (shutdown.Started)
             return;
 
-        foreach (var script in scripts.Span)
-            script.Frame(delta);
-
+        scripts.Dispatch(delta, static (script, dt) => script.Frame(dt));
         state.Current.Frame(delta);
         text.Clear();
         binEmptyer.Empty();
@@ -70,9 +66,7 @@ public class RootEngine(
         if (shutdown.Started)
             return;
 
-        foreach (var script in scripts.Span)
-            script.Render();
-
+        scripts.Dispatch(static script => script.Render());
         state.Current.Render();
         text.Clear();
         graphics2D.Render();

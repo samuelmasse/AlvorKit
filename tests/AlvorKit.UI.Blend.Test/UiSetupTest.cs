@@ -106,6 +106,60 @@ public class UiSetupTest
         Assert.AreEqual(1, draws);
     }
 
+    /// <summary>Every engine phase lets a script detach itself and a UI surface while later game callbacks still run.</summary>
+    [TestMethod]
+    [DataRow(nameof(Script.Update))]
+    [DataRow(nameof(Script.Frame))]
+    [DataRow(nameof(Script.Render))]
+    [DataRow(nameof(Script.Draw))]
+    public void ScriptRemovalDuringPhase_ContinuesPastDetachedSurface(string phase)
+    {
+        using var h = new BlendTestHarness();
+        var scripts = h.Root.Get<RootScripts>();
+        var engine = h.Root.Get<RootEngine>();
+        using var surface = h.Root.Get<RootUi>().Surfaces.Create(order: 1);
+        var surfaceDraws = 0;
+        UiSyntax.Node(surface.Root).OnDrawF(() => surfaceDraws++);
+        var visited = new List<Script>();
+        var first = new PhaseScript(-1, (script, current) =>
+        {
+            if (current == phase)
+            {
+                visited.Add(script);
+                scripts.Remove(script);
+                surface.Dispose();
+            }
+        });
+        var last = new PhaseScript(2, (script, current) =>
+        {
+            if (current == phase)
+                visited.Add(script);
+        });
+        scripts.Add(first);
+        scripts.Add(last);
+
+        engine.Update(0.01);
+        engine.Frame(0.01);
+        engine.Render();
+
+        CollectionAssert.AreEqual(new Script[] { first, last }, visited);
+        Assert.AreEqual(1, first.Unloads);
+        Assert.AreEqual(0, last.Unloads);
+        Assert.AreEqual(0, surfaceDraws);
+    }
+
+    private class PhaseScript(float order, Action<Script, string> visit) : Script
+    {
+        public override float Order => order;
+        internal int Unloads { get; private set; }
+
+        public override void Update(double delta) => visit(this, nameof(Update));
+        public override void Frame(double delta) => visit(this, nameof(Frame));
+        public override void Render() => visit(this, nameof(Render));
+        public override void Draw() => visit(this, nameof(Draw));
+        public override void Unload() => Unloads++;
+    }
+
     private class GamePass : Script
     {
         public override float Order => 1f;

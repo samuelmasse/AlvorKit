@@ -22,13 +22,16 @@ public class RootGraphics2D(
         state.Current.Draw();
         End(null);
 
-        foreach (var script in scripts.Span)
-        {
-            var viewport = script.DrawViewport;
-            sprites.Begin(script.DrawArea ?? viewport?.Size ?? canvas.Size);
-            script.Draw();
-            End(viewport);
-        }
+        scripts.Dispatch(this, static (script, graphics) => graphics.DrawScript(script));
+    }
+
+    /// <summary>Flushes one script's sprite batch to its viewport before the next script draws.</summary>
+    private void DrawScript(Script script)
+    {
+        var viewport = script.DrawViewport;
+        sprites.Begin(script.DrawArea ?? viewport?.Size ?? canvas.Size);
+        script.Draw();
+        End(viewport);
     }
 
     private void End(Box2? viewport)
