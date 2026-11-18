@@ -223,9 +223,7 @@ jobs:
         with:
           dotnet-version: 11.0.x
 
-      # Compute the native package version and binding package version from
-      # marker files. Push runs fail if the binding version is already published;
-      # manual runs simply skip that package.
+      # Compute the native and managed versions for both verification and release.
       - name: Compute package versions
         id: versions
         shell: bash
@@ -242,8 +240,11 @@ jobs:
           echo "native=$native_version" >> "$GITHUB_OUTPUT"
           echo "binding=$binding_version" >> "$GITHUB_OUTPUT"
 
-          # NuGet versions are immutable. Push releases must use a new binding
-          # version; manual runs can still act as dry runs for unpublished ones.
+          # Artifact-only runs must rebuild even when NuGet already has this version.
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.publish }}" != "true" ]]; then
+            exit 0
+          fi
+
           versions="$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/${{ matrix.package.id }}/index.json" || echo '{"versions":[]}')"
           if jq -e --arg version "$binding_version" '.versions | index($version)' <<< "$versions" > /dev/null; then
             if [[ "${{ github.event_name }}" == "push" ]]; then
