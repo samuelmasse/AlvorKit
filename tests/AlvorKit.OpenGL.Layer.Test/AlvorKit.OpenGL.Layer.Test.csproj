@@ -6,12 +6,9 @@
         <ProjectReference Include="..\..\src\AlvorKit.OpenGL.Layer\AlvorKit.OpenGL.Layer.csproj" />
     </ItemGroup>
 
-    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj')">
-        <None Include="$(NuGetPackageRoot)alvorkit.opengl\$(GlBindVer)\lib\$(TargetFramework)\AlvorKit.OpenGL.xml"
-            CopyToOutputDirectory="PreserveNewest"
-            Link="AlvorKit.OpenGL.xml"
-            Visible="false" />
-    </ItemGroup>
+    <PropertyGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj')">
+        <CopyDocumentationFilesFromPackages>true</CopyDocumentationFilesFromPackages>
+    </PropertyGroup>
 
     <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.OpenGL\AlvorKit.OpenGL.csproj')">
         <None Include="$(AlvorKitRepositoryRoot)bin\AlvorKit.OpenGL\$(Configuration)\AlvorKit.OpenGL.xml"
