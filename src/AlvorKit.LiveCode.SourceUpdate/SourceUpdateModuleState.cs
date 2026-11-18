@@ -10,5 +10,5 @@ internal sealed class SourceUpdateModuleState(
     internal SourceUpdateModuleIdentity Identity { get; set; } = identity;
 
     internal Dictionary<string, SourceUpdateApplyResult> Results { get; } =
-        new(StringComparer.Ordinal);
+        [with(StringComparer.Ordinal)];
 }
