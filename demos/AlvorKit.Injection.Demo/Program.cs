@@ -1,7 +1,7 @@
 var injector = new Injector();
 
-// The include filter makes this container intentionally local to the demo namespace.
-injector.Include(new(@"^AlvorKit\.Injection\.Demo\."));
+// The demo services share the AlvorKit namespace.
+injector.Include(new(@"^AlvorKit\."));
 injector.Add(new FrameClock(240));
 injector.Handler(new TextureAtlasHandler("Demo/Atlases/Gameplay.png", 1024, 1024));
 
