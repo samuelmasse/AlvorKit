@@ -7,42 +7,48 @@ public sealed class RootLoopBindingTest
     [TestMethod]
     public void Injector_BackendsAboveRootScope_ResolveFromRootState()
     {
-        var injector = new Injector();
-        var fn = new FnBackend();
+        using var host = RootHost.Start();
         var ft = new FtBackend();
         var ma = new MaBackend();
         var window = new GlfwWindow(123);
-        injector.Add<Fn>(fn);
-        injector.Add<Ft>(ft);
-        injector.Add<Ma>(ma);
-        injector.Add(window);
-        var root = injector.Scope<RootScope>();
+        host.Injector.Add<Ft>(ft);
+        host.Injector.Add<Ma>(ma);
+        host.Injector.Add(window);
 
-        var consumer = root.Get<RootBindingConsumer>();
+        var consumer = host.Root.Get<RootBindingConsumer>();
 
-        Assert.AreSame(fn, consumer.Fn);
+        Assert.IsInstanceOfType<FnBackend>(consumer.Fn);
         Assert.AreSame(ft, consumer.Ft);
         Assert.AreSame(ma, consumer.Ma);
         Assert.AreEqual(window, consumer.Window);
     }
 
-    /// <summary>The application log registered above the engine root resolves unchanged in nested game scopes.</summary>
+    /// <summary>A child resolves the host log, noise service, and scope graph shared with its root.</summary>
     [TestMethod]
-    public void Injector_LogAboveRootScope_ResolvesFromRootState()
+    public void RootHost_Start_SharesServicesWithChildren()
     {
-        using var logging = new LogRuntime(TextWriter.Null);
-        var injector = new Injector();
-        injector.Add(logging.Log);
-        var root = injector.Scope<RootScope>();
+        using var host = RootHost.Start();
+        var root = host.Root;
+        var graph = root.Get<InjectorScopeGraph>();
+        var child = graph.Scope<ChildScope>(root);
 
-        var consumer = root.Get<RootLogConsumer>();
+        var consumer = child.Get<ChildConsumer>();
 
-        Assert.AreSame(logging.Log, consumer.Log);
+        Assert.AreEqual(graph.RootId, graph.GetId(root));
+        Assert.AreSame(root.Get<Log>(), consumer.Log);
+        Assert.AreSame(root.Get<FnGraph>(), consumer.Noise);
+        Assert.AreSame(graph, consumer.Scopes);
+        Assert.AreSame(consumer.Noise, child.Get<FnGraph>());
     }
 
     [Root]
     private sealed record RootBindingConsumer(Fn Fn, Ft Ft, Ma Ma, GlfwWindow Window);
 
-    [Root]
-    private sealed record RootLogConsumer(Log Log);
+    private class ChildAttribute : InjectorAttribute;
+
+    [Child]
+    private class ChildScope : InjectorScope<ChildAttribute>;
+
+    [Child]
+    private record ChildConsumer(Log Log, FnGraph Noise, InjectorScopeGraph Scopes);
 }

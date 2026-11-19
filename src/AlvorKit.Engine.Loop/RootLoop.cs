@@ -21,33 +21,26 @@ public static class RootLoop
     /// <summary>Configures the root scope before applying setups and creating the requested state.</summary>
     public static void RunGlfw(Type bootState, ReadOnlySpan<IRootSetup> setups, Action<RootScope> configureRoot)
     {
-        using var logging = new LogRuntime();
-        logging.Start();
+        using var host = RootHost.Start();
 
         ConfigureProcess();
         var glfw = CreateGlfw();
         ConfigureGlfw(glfw);
 
         var nativeWindow = CreateNativeWindow(glfw);
-        RunGlfwWindow(glfw, nativeWindow, logging.Log, bootState, setups, configureRoot);
+        RunGlfwWindow(glfw, nativeWindow, host, bootState, setups, configureRoot);
         glfw.DestroyWindow(nativeWindow);
         glfw.Terminate();
     }
 
-    /// <summary>Builds the root scope and runs the application state machine.</summary>
+    /// <summary>Loads the boot state and runs the window loop.</summary>
     private static void Run(
-        IWindowHost host,
-        IFileDialogHost fileDialogs,
-        RootGl gl,
-        Injector injector,
+        WindowLoop window,
+        RootScope root,
         Type bootState,
         ReadOnlySpan<IRootSetup> setups,
         Action<RootScope> configureRoot)
     {
-        var window = new WindowLoop(host);
-        injector.Add(window);
-        injector.Add<IWindowHost>(host);
-        var root = CreateRootScope(injector, window, fileDialogs, gl);
         configureRoot(root);
         root.Add(new RootFiles(root.Get<RootFs>(), [AppContext.BaseDirectory]));
         LoadState(root, bootState, setups);
@@ -116,7 +109,7 @@ public static class RootLoop
     private static void RunGlfwWindow(
         GlfwBackend glfw,
         GlfwWindow nativeWindow,
-        Log log,
+        RootHost host,
         Type bootState,
         ReadOnlySpan<IRootSetup> setups,
         Action<RootScope> configureRoot)
@@ -126,13 +119,21 @@ public static class RootLoop
         var gl = new GlBackend(glfw.GetProcAddress);
         var rootGl = new RootGl(gl);
         using var fileDialogs = new GlfwFileDialogHost(glfw, nativeWindow);
-        using var window = new AgentGlfwWindowHost(glfw, nativeWindow, rootGl);
+        using var windowHost = new AgentGlfwWindowHost(glfw, nativeWindow, rootGl);
+        var window = new WindowLoop(windowHost);
 
-        var injector = CreateInjector(log);
+        var injector = host.Injector;
+        injector.Add<Ft>(new FtBackend());
+        injector.Add<Ma>(CreateAudioBackend());
         injector.Add<Gl>(gl);
         injector.Add<Glfw>(glfw);
         injector.Add(nativeWindow);
-        Run(window, fileDialogs, rootGl, injector, bootState, setups, configureRoot);
+        injector.Add<IWindowHost>(windowHost);
+        injector.Add<WindowLoop>(window);
+        var root = host.Root;
+        ConfigureWindowServices(root, window, fileDialogs, rootGl);
+        injector.Handler(root.Get<RootControlListInjector>());
+        Run(window, root, bootState, setups, configureRoot);
     }
 
     private static (int Width, int Height) GetWindowSize(GlfwBackend glfw)
@@ -148,31 +149,20 @@ public static class RootLoop
         glfw.SwapInterval(0);
     }
 
-    /// <summary>Creates the built-in root injector, including the application log.</summary>
-    private static Injector CreateInjector(Log log)
-    {
-        var injector = new Injector();
-        injector.Add(log);
-        injector.Add<Fn>(new FnBackend());
-        injector.Add<Ft>(new FtBackend());
-        injector.Add<Ma>(CreateAudioBackend());
-        return injector;
-    }
-
     internal static Ma CreateAudioBackend()
     {
         var backend = new MaBackend();
         return IsAudioSilentEnvironmentEnabled() ? new AgentSilentMa(backend) : backend;
     }
 
-    private static RootScope CreateRootScope(
-        Injector injector,
+    /// <summary>Registers the window, input, and graphics services on the desktop root.</summary>
+    private static void ConfigureWindowServices(
+        RootScope root,
         WindowLoop window,
         IFileDialogHost fileDialogs,
         RootGl gl)
     {
-        var root = injector.Scope<RootScope>()
-            .With(gl)
+        root.With(gl)
             .With(new RootCanvas(window))
             .With(new RootControls(window))
             .With(new RootGamepads(window))
@@ -182,9 +172,6 @@ public static class RootLoop
             .With(new RootFileDialogs(fileDialogs))
             .With(new RootScreen(window))
             .With(new RootSprites(new(gl)));
-
-        injector.Handler(root.Get<RootControlListInjector>());
-        return root;
     }
 
     private static RootEngine StartEngine(RootScope root)

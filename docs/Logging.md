@@ -6,9 +6,9 @@ thread so normal log calls do not wait for console output.
 
 ## Standard Games
 
-`RootLoop.RunGlfw` creates one `LogRuntime`, starts it before loading the boot
-state, and registers its `Log` above the engine root scope. Root and nested game
-scopes can therefore request `Log` directly:
+`RootLoop.RunGlfw` starts a `RootHost` before initializing GLFW.
+The host owns one `LogRuntime` and registers its `Log` with the injector.
+Services under the engine root can request `Log` through their constructors.
 
 ```csharp
 using AlvorKit;
@@ -23,10 +23,8 @@ public class AppLoader(Log log)
 The engine keeps logging alive through state and script unloading, then drains
 every published entry before shutting the runtime down.
 
-Projects that mention `Log` directly should reference
-`src/AlvorKit.Logging/AlvorKit.Logging.csproj`. The package does not depend on
-graphics, UI, windowing, or the engine loop, so pure, protocol, backend, and
-server projects may use it without changing their architectural role.
+`AlvorKit.Engine.Root` supplies `AlvorKit.Logging` transitively. Projects
+outside the engine dependency tree can reference `AlvorKit.Logging` directly.
 
 Application events and diagnostics should use the injected `Log`, including
 messages emitted by states, loaders, simulation services, development hosts,
@@ -43,27 +41,23 @@ failures while opening or writing such a capture should be reported through
 
 ## Dedicated Servers And Custom Hosts
 
-Hosts that do not use `RootLoop` own the runtime explicitly:
+Dedicated server launchers can reference `AlvorKit.Engine.Root.Host` and start
+a `RootHost` directly.
 
 ```csharp
 using AlvorKit;
 
-using var logging = new LogRuntime();
-logging.Start();
-
-new Injector()
-    .With(logging.Log)
-    .Scope<AppScope>()
-    .Run(scope => scope.Get<AppServer>().Run());
+using var host = RootHost.Start();
+var graph = host.Root.Get<InjectorScopeGraph>();
+var app = graph.Scope<AppScope>(host.Root);
+app.Get<AppServer>().Run();
 ```
 
-Disposal stops the worker and synchronously flushes entries submitted before
-shutdown. `Start` and `Stop` are idempotent in their current state, and
-`Dispose` may be called repeatedly.
-
-Pass a `TextWriter` to capture or redirect output. ANSI level colors default to
-enabled only for `Console.Out` and can be controlled through
-`LogRuntime.UseColor`.
+Disposing the host stops its logging worker and flushes pending entries.
+Tools that manage a standalone `LogRuntime` can pass a `TextWriter` to its
+constructor to capture output. ANSI colors default to enabled only for
+`Console.Out` and can be set through `UseColor`. Its `Start`, `Stop`, and
+`Dispose` methods support repeated calls in their respective states.
 
 ## Levels And Formatting
 

@@ -90,6 +90,9 @@ scope as `RootKeyboard`. Likewise `AlvorKit.Engine.UI` supplies `RootUi`,
 the host's shared UI runtime. Each surface owns a separate `UiRoot` tree.
 
 `AlvorKit.Engine.Root` provides scope identity, files, setup, and unload hooks.
+`AlvorKit.Engine.Root.Host` supplies the FastNoise2 backend. Calling
+`RootHost.Start()` creates the injector and root scope and starts logging. The
+root and its descendants share one `Log`, `FnGraph`, and `InjectorScopeGraph`.
 `AlvorKit.Engine.Frontend` adds scoped window and graphics services.
 `AlvorKit.Engine.States` owns the current state and scripts. The desktop host
 in `AlvorKit.Engine.Loop` starts the session and dispatches frames.
@@ -135,6 +138,9 @@ Compose optional root features at the executable entry point:
 RootLoop.RunGlfw<RootLoadState>(new UiSetup());
 ```
 
+`RootLoop.RunGlfw` owns the root host for the desktop session. Dedicated
+server launchers reference `AlvorKit.Engine.Root.Host` and start it directly.
+
 For startup overrides, the optional configuration callback receives the new
 `RootScope` before setups run. The engine normally closes the window on an
 unhandled exception. A host can disable that behavior by registering
@@ -178,7 +184,7 @@ flowchart TD
 
 Not every game path needs every scope. A tool might use only
 `RootScope -> GameScope`. A dedicated server might use
-`GameScope -> ContentScope -> WorldScope -> ServerScope`. A local client
+`RootScope -> GameScope -> ContentScope -> WorldScope -> ServerScope`. A local client
 usually adds a level or scene scope plus a player scope once play begins.
 
 ## Constructor Order

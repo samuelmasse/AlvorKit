@@ -1,7 +1,7 @@
 namespace AlvorKit;
 
 /// <summary>
-/// Explicitly enables the development-only scope graph, loopback host, and root-loop execution pump for an AlvorKit game.
+/// Enables a development loopback host and root-loop execution pump on the game's scope graph.
 /// </summary>
 public sealed class RootLiveCode(
     Injector injector,
@@ -21,16 +21,15 @@ public sealed class RootLiveCode(
         ?? throw new InvalidOperationException("Root LiveCode has not been enabled.");
 
     /// <summary>
-    /// Registers the graph as an unscoped injector dependency and adds a script that owns the host lifetime.
-    /// Call this before creating tracked game scopes.
+    /// Starts the host on the existing scope graph and adds a script that owns the host lifetime.
     /// </summary>
     public InjectorScopeGraph Enable()
     {
         if (enabled)
             throw new InvalidOperationException("Root LiveCode has already been enabled.");
 
-        var graph = new InjectorScopeGraph(root, options.Name);
-        injector.Add(graph);
+        var graph = root.Get<InjectorScopeGraph>();
+        graph.Label(root, options.Name);
         injector.Add(Bridges);
         RegisterBuiltInBridges();
         host = new(graph, options, Bridges);

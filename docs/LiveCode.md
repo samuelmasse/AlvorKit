@@ -52,17 +52,17 @@ manifest during normal shutdown.
 ## Enable A RootLoop Game
 
 Reference `AlvorKit.Engine.LiveCode` only from the development executable.
-Reference `AlvorKit.Injection.Graph` from the game packages that create or end
-tracked scopes. Reference `AlvorKit.LiveCode.Generator` from each development
-executable as an analyzer so LiveCode submissions inherit that executable's
-resolved project-wide imports:
+`AlvorKit.Engine.Root` supplies `AlvorKit.Injection.Graph` to game packages
+that create or end tracked scopes. Reference `AlvorKit.LiveCode.Generator` from
+each development executable as an analyzer so LiveCode submissions inherit
+that executable's resolved project-wide imports:
 
 ```xml
 <ProjectReference Include="..\AlvorKit.LiveCode.Generator\AlvorKit.LiveCode.Generator.csproj"
     OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 ```
 
-A development boot state can enable the graph and host before it creates the
+A development boot state can enable the host before it creates the
 application scope:
 
 ```csharp
@@ -86,10 +86,9 @@ public class RootLoadDevelopmentState(
 }
 ```
 
-`RootLiveCode.Enable` registers the graph as an unmarked root-injector
-dependency and registers its bridge registry alongside it. Services in child
-scopes can therefore request `InjectorScopeGraph` or
-`LiveCodeBridgeRegistry` normally.
+`RootLiveCode.Enable` uses the scope graph from `RootHost.Start` and registers
+its bridge registry with the injector. Services in child scopes can request
+`InjectorScopeGraph` or `LiveCodeBridgeRegistry` through their constructors.
 
 ## Register A Predefined Bridge
 

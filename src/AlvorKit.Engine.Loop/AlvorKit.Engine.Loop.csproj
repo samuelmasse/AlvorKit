@@ -4,20 +4,12 @@
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     </PropertyGroup>
 
-    <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
-        <PackageReference Include="AlvorKit.FastNoise2.Backend" Version="$(FastNoise2BindVer)" />
-    </ItemGroup>
-
     <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">
         <PackageReference Include="AlvorKit.MiniAudio.Backend" Version="$(MaBindVer)" />
     </ItemGroup>
 
     <ItemGroup Condition="!Exists('$(BindingsRoot)\AlvorKit.OpenGL.Backend\AlvorKit.OpenGL.Backend.csproj')">
         <PackageReference Include="AlvorKit.OpenGL.Backend" Version="$(GlBindVer)" />
-    </ItemGroup>
-
-    <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj')">
-        <ProjectReference Include="$(BindingsRoot)\AlvorKit.FastNoise2.Backend\AlvorKit.FastNoise2.Backend.csproj" />
     </ItemGroup>
 
     <ItemGroup Condition="Exists('$(BindingsRoot)\AlvorKit.MiniAudio.Backend\AlvorKit.MiniAudio.Backend.csproj')">
@@ -30,8 +22,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\AlvorKit.Engine.Frontend\AlvorKit.Engine.Frontend.csproj" />
+        <ProjectReference Include="..\AlvorKit.Engine.Root.Host\AlvorKit.Engine.Root.Host.csproj" />
         <ProjectReference Include="..\AlvorKit.Engine.States\AlvorKit.Engine.States.csproj" />
-        <ProjectReference Include="..\AlvorKit.Logging\AlvorKit.Logging.csproj" />
         <ProjectReference Include="..\AlvorKit.Windowing.Agent\AlvorKit.Windowing.Agent.csproj" />
     </ItemGroup>
 
