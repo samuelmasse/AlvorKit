@@ -24,6 +24,7 @@ public class RootEngine(
     /// <summary>Unloads state, scripts, and registered scopes before releasing root graphics after the host loop ends.</summary>
     public void Unload()
     {
+        shutdown.Unregister();
         state.Current = new();
 
         foreach (var script in scripts.Span.ToArray().Reverse())

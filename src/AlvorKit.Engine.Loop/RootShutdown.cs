@@ -13,14 +13,28 @@ public class RootShutdown(RootFailSafeConfig failSafe, RootScreen screen)
     [ExcludeFromCodeCoverage(Justification = "Registers process-wide callbacks that are not isolated for unit tests.")]
     public void Register()
     {
-        Console.CancelKeyPress += (_, e) =>
-        {
-            e.Cancel = true;
-            ShutDown(true);
-        };
-        AppDomain.CurrentDomain.ProcessExit += (_, _) => ShutDown(false);
-        AppDomain.CurrentDomain.UnhandledException += (_, _) => OnUnhandledException();
+        Console.CancelKeyPress += OnCancelKeyPress;
+        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
     }
+
+    /// <summary>Removes this root's shutdown hooks on unload.</summary>
+    public void Unregister()
+    {
+        Console.CancelKeyPress -= OnCancelKeyPress;
+        AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+        AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
+    }
+
+    private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    {
+        e.Cancel = true;
+        ShutDown(true);
+    }
+
+    private void OnProcessExit(object? sender, EventArgs e) => ShutDown(false);
+
+    private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e) => OnUnhandledException();
 
     /// <summary>Applies the root's shutdown policy when an unhandled exception ends the process.</summary>
     internal void OnUnhandledException()
