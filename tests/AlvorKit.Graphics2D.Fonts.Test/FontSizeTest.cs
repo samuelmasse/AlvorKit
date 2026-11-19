@@ -182,6 +182,38 @@ public class FontSizeTest
         }
     }
 
+    /// <summary>Fonts keep their own magnification filters when their atlases share a repacking buffer.</summary>
+    [TestMethod]
+    public void ForcePack_PreservesEachFontsMagnificationFilter()
+    {
+        var (backend, driver, batch, context) = FontsTestHarness.CreateContext();
+        driver.SetGlyph(new Rune('A'), 2, 2);
+
+        try
+        {
+            using var pixel = new Font(context, new FontOptions { File = "Pixel.ttf", MagFilter = GlTextureMagFilter.Nearest });
+            using var smooth = new Font(context, "Smooth.ttf");
+            var pixelGlyph = pixel.Size(9).GlyphSlot(new Rune('A'));
+            var smoothGlyph = smooth.Size(9).GlyphSlot(new Rune('A'));
+            var firstAtlas = pixelGlyph.Texture;
+            Assert.AreEqual(GlTextureMagFilter.Nearest, backend.MagFilters[firstAtlas.Id]);
+            Assert.AreEqual(GlTextureMagFilter.Linear, backend.MagFilters[smoothGlyph.Texture.Id]);
+
+            pixel.ForcePack();
+            smooth.ForcePack();
+
+            Assert.AreSame(firstAtlas, smoothGlyph.Texture);
+            Assert.AreEqual(GlTextureMagFilter.Linear, backend.MagFilters[smoothGlyph.Texture.Id]);
+            Assert.AreEqual(GlTextureMagFilter.Nearest, backend.MagFilters[pixelGlyph.Texture.Id]);
+        }
+        finally
+        {
+            context.Dispose();
+            batch.Dispose();
+            driver.Dispose();
+        }
+    }
+
     /// <summary>Pack skips unpacked atlases until a failed fit marks one as full.</summary>
     [TestMethod]
     public void Pack_OnlyReordersAfterAtlasWasMarkedFull()

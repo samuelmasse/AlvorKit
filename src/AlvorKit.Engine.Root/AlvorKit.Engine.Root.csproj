@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <ProjectReference Include="..\AlvorKit.ECS.Indexed\AlvorKit.ECS.Indexed.csproj" />
         <ProjectReference Include="..\AlvorKit.FastNoise2.Graph\AlvorKit.FastNoise2.Graph.csproj" />
         <ProjectReference Include="..\AlvorKit.Injection.Graph\AlvorKit.Injection.Graph.csproj" />
         <ProjectReference Include="..\AlvorKit.Logging\AlvorKit.Logging.csproj" />

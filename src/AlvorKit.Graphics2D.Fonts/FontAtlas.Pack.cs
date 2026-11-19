@@ -26,6 +26,7 @@ internal partial class FontAtlas
         }
 
         RenderRepackedAtlas();
+        buffer.Tablet.SetMagFilter(tablet.MagFilter);
         (tablet, buffer.Tablet) = (buffer.Tablet, tablet);
     }
 

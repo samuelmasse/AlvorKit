@@ -59,17 +59,11 @@ public class RootScripts
         }
 
         dispatchDepth++;
-        try
+        foreach (var script in CollectionsMarshal.AsSpan(pass))
         {
-            foreach (var script in CollectionsMarshal.AsSpan(pass))
-            {
-                if (script is not null)
-                    visit(script, context);
-            }
+            if (script != null)
+                visit(script, context);
         }
-        finally
-        {
-            dispatchDepth--;
-        }
+        dispatchDepth--;
     }
 }

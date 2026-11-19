@@ -3,6 +3,11 @@ namespace AlvorKit;
 /// <summary>Describes the face source and index used when opening a font.</summary>
 public class FontOptions
 {
+    private readonly GlTextureMagFilter magFilter = GlTextureMagFilter.Linear;
+
+    /// <summary>Gets the sampling filter used when a glyph is enlarged.</summary>
+    public GlTextureMagFilter MagFilter { get => magFilter; init => magFilter = value; }
+
     /// <summary>Gets the filesystem path for a file-backed font face.</summary>
     public string? File { get; init; }
 

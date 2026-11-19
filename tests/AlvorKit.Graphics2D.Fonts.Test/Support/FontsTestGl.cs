@@ -5,6 +5,10 @@ internal sealed unsafe class FontsTestGl : GlNoop
 {
     /// <summary>The next generated OpenGL object id.</summary>
     private uint next = 1;
+    private GlTextureHandle boundTexture;
+
+    /// <summary>Gets the magnification filter configured for each texture.</summary>
+    public Dictionary<GlTextureHandle, GlTextureMagFilter> MagFilters { get; } = [];
 
     /// <summary>Gets deleted object ids in deletion order.</summary>
     public List<uint> Deleted { get; } = [];
@@ -133,7 +137,16 @@ internal sealed unsafe class FontsTestGl : GlNoop
     }
 
     /// <inheritdoc/>
-    public override void TexParameteri(GlTextureTarget target, GlTextureParameterName pname, int param) => TexParameterCalls++;
+    public override void BindTexture(GlTextureTarget target, GlTextureHandle texture) => boundTexture = texture;
+
+    /// <inheritdoc/>
+    public override void TexParameteri(GlTextureTarget target, GlTextureParameterName pname, int param)
+    {
+        TexParameterCalls++;
+
+        if (pname == GlTextureParameterName.TextureMagFilter)
+            MagFilters[boundTexture] = (GlTextureMagFilter)param;
+    }
 
     /// <inheritdoc/>
     public override void FramebufferTexture(

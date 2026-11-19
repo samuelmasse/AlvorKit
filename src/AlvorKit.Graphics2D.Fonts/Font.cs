@@ -22,14 +22,15 @@ public class Font : IDisposable
     public Font(FontContext context, ReadOnlySpan<byte> data) : this(context, new FontFace(context.FreeType, context.Library, data, 0)) { }
 
     /// <summary>Creates a font from explicit options.</summary>
-    public Font(FontContext context, FontOptions options) : this(context, new FontFace(context.FreeType, context.Library, options)) { }
+    public Font(FontContext context, FontOptions options)
+        : this(context, new FontFace(context.FreeType, context.Library, options), options.MagFilter) { }
 
     /// <summary>Creates a font around an opened face.</summary>
-    private Font(FontContext context, FontFace face)
+    private Font(FontContext context, FontFace face, GlTextureMagFilter magFilter = GlTextureMagFilter.Linear)
     {
         ft = context.FreeType;
         this.face = face;
-        atlases = new FontAtlasList(context.GL, context.Batch, context.Buffer);
+        atlases = new FontAtlasList(context.GL, context.Batch, context.Buffer, magFilter);
     }
 
     /// <summary>Gets the current atlas textures used by this font.</summary>

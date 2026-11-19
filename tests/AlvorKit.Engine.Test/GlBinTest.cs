@@ -56,6 +56,23 @@ public sealed class GlBinTest
         Assert.AreEqual(0, root.Children.Length);
     }
 
+    /// <summary>Requests at the current capacity reuse the root quad index buffer.</summary>
+    [TestMethod]
+    public void RootQuadIndexBuffer_ExactCapacity_ReusesStorage()
+    {
+        using var gl = new RootGl(new RecordingGl());
+        var buffer = new RootQuadIndexBuffer(gl);
+
+        buffer.EnsureCapacity(0);
+        Assert.AreEqual(0, buffer.Capacity);
+        buffer.EnsureCapacity(4);
+        Assert.AreEqual(8, buffer.Capacity);
+        buffer.EnsureCapacity(8);
+        Assert.AreEqual(8, buffer.Capacity);
+        buffer.EnsureCapacity(12);
+        Assert.AreEqual(16, buffer.Capacity);
+    }
+
     private unsafe sealed class RecordingGl : GlNoop
     {
         private uint next = 1;

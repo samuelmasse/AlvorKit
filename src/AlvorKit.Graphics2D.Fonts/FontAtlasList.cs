@@ -12,6 +12,8 @@ internal class FontAtlasList : IDisposable
     /// <summary>The framebuffer and scratch texture used while repacking atlases.</summary>
     private readonly FontBuffer buffer;
 
+    private readonly GlTextureMagFilter magFilter;
+
     /// <summary>The atlas list.</summary>
     private readonly List<FontAtlas> atlases;
 
@@ -19,12 +21,13 @@ internal class FontAtlasList : IDisposable
     private Texture[] textures = [];
 
     /// <summary>Creates the first empty atlas.</summary>
-    internal FontAtlasList(GlLayer gl, SpriteBatch batch, FontBuffer buffer)
+    internal FontAtlasList(GlLayer gl, SpriteBatch batch, FontBuffer buffer, GlTextureMagFilter magFilter)
     {
         this.gl = gl;
         this.batch = batch;
         this.buffer = buffer;
-        atlases = [new FontAtlas(gl, batch, buffer)];
+        this.magFilter = magFilter;
+        atlases = [new FontAtlas(gl, batch, buffer, magFilter)];
     }
 
     /// <summary>Gets the current atlas textures.</summary>
@@ -69,7 +72,7 @@ internal class FontAtlasList : IDisposable
             atlas.Full = true;
         }
 
-        var newAtlas = new FontAtlas(gl, batch, buffer);
+        var newAtlas = new FontAtlas(gl, batch, buffer, magFilter);
         atlases.Add(newAtlas);
         return newAtlas;
     }

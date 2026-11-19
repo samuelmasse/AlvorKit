@@ -12,10 +12,13 @@ internal class FontTablet : IDisposable
     /// <summary>The atlas texture.</summary>
     private readonly Texture texture;
 
+    private GlTextureMagFilter magFilter;
+
     /// <summary>Creates an empty RGBA atlas texture.</summary>
-    internal FontTablet(GlLayer gl)
+    internal FontTablet(GlLayer gl, GlTextureMagFilter magFilter = GlTextureMagFilter.Linear)
     {
         this.gl = gl;
+        this.magFilter = magFilter;
         texture = new Texture(gl, (DefaultSize, DefaultSize), GlTextureTarget.Texture2D);
         AllocateTexture();
     }
@@ -25,6 +28,22 @@ internal class FontTablet : IDisposable
 
     /// <summary>Gets the atlas texture.</summary>
     internal Texture Texture => texture;
+
+    internal GlTextureMagFilter MagFilter => magFilter;
+
+    /// <summary>Applies the owning font's filter when the scratch tablet becomes its atlas.</summary>
+    internal void SetMagFilter(GlTextureMagFilter value)
+    {
+        if (value == magFilter)
+            return;
+
+        gl.ActiveTexture(GlTextureUnit.Texture0);
+        gl.BindTexture(GlTextureTarget.Texture2D, texture.Id);
+        gl.TexParameteri(GlTextureTarget.Texture2D, GlTextureParameterName.TextureMagFilter, (int)value);
+        gl.UnbindTexture(GlTextureTarget.Texture2D);
+        gl.ResetActiveTexture();
+        magFilter = value;
+    }
 
     /// <summary>Deletes the atlas texture.</summary>
     public void Dispose() => texture.Dispose();
@@ -36,7 +55,7 @@ internal class FontTablet : IDisposable
         gl.ActiveTexture(GlTextureUnit.Texture0);
         gl.BindTexture(GlTextureTarget.Texture2D, texture.Id);
         gl.TexParameteri(GlTextureTarget.Texture2D, GlTextureParameterName.TextureMinFilter, (int)GlTextureMinFilter.Linear);
-        gl.TexParameteri(GlTextureTarget.Texture2D, GlTextureParameterName.TextureMagFilter, (int)GlTextureMagFilter.Linear);
+        gl.TexParameteri(GlTextureTarget.Texture2D, GlTextureParameterName.TextureMagFilter, (int)magFilter);
         gl.TexParameteri(GlTextureTarget.Texture2D, GlTextureParameterName.TextureWrapS, (int)GlTextureWrapMode.ClampToEdge);
         gl.TexParameteri(GlTextureTarget.Texture2D, GlTextureParameterName.TextureWrapT, (int)GlTextureWrapMode.ClampToEdge);
         gl.TexImage2D(

@@ -33,7 +33,7 @@ public class RootFonts
     public Font Open(FontOptions options)
     {
         if (options.File is { } path)
-            options = new() { Data = files.ReadAllBytes(path), Index = options.Index };
+            options = new() { Data = files.ReadAllBytes(path), Index = options.Index, MagFilter = options.MagFilter };
 
         return fonts.Open(options);
     }

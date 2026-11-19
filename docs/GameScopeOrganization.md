@@ -90,6 +90,8 @@ scope as `RootKeyboard`. Likewise `AlvorKit.Engine.UI` supplies `RootUi`,
 the host's shared UI runtime. Each surface owns a separate `UiRoot` tree.
 
 `AlvorKit.Engine.Root` provides scope identity, files, setup, and unload hooks.
+It also supplies shared AlvorKit dependencies for game code, including
+`AlvorKit.ECS.Indexed`. Each game scope owns its ECS arenas and indexes.
 `AlvorKit.Engine.Root.Host` supplies the FastNoise2 backend. Calling
 `RootHost.Start()` creates the injector and root scope and starts logging. The
 root and its descendants share one `Log`, `FnGraph`, and `InjectorScopeGraph`.

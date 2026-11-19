@@ -1,26 +1,35 @@
 namespace AlvorKit;
 
-/// <summary>Samples a source metric at that metric's rolling duration.</summary>
+/// <summary>Samples a trailing interval on the metric owner's thread, at most once per duration.</summary>
 public class TickMetricWindow(TickMetric metric)
 {
-    private Timer? timer;
-    private long prevTicks;
+    private long? sampledAt;
     private TickMetricValue value;
 
-    /// <summary>Gets the last sampled metric snapshot.</summary>
-    public TickMetricValue Value => value;
+    /// <summary>Gets the interval snapshot, refreshing it when due.</summary>
+    public TickMetricValue Value => Read(Stopwatch.GetTimestamp());
 
-    /// <summary>Starts timer-backed sampling.</summary>
-    public void Start() => timer = new(_ => Timer(), null, TimeSpan.Zero, metric.Duration);
+    /// <summary>Samples the current interval and starts periodic refreshes on read.</summary>
+    public void Start() => Sample(Stopwatch.GetTimestamp());
 
-    /// <summary>Stops timer-backed sampling.</summary>
-    public void Stop() => timer?.Dispose();
-
-    private void Timer()
+    /// <summary>Freezes the latest interval snapshot.</summary>
+    public void Stop()
     {
-        long currentTicks = metric.Value.Ticks;
-        long delta = currentTicks - prevTicks;
-        value = metric.Value with { Ticks = delta };
-        prevTicks = currentTicks;
+        Read(Stopwatch.GetTimestamp());
+        sampledAt = null;
+    }
+
+    /// <summary>Returns the snapshot due at the given monotonic time.</summary>
+    internal TickMetricValue Read(long now)
+    {
+        if (sampledAt is long previous && Stopwatch.GetElapsedTime(previous, now) >= metric.Duration)
+            Sample(now);
+        return value;
+    }
+
+    private void Sample(long now)
+    {
+        value = metric.SampleWindow(now);
+        sampledAt = now;
     }
 }

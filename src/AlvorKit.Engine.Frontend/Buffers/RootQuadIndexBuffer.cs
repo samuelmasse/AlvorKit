@@ -17,7 +17,7 @@ public class RootQuadIndexBuffer(RootGl gl)
     /// <summary>Ensures enough indices exist for <paramref name="quadVertexCount"/> quad vertices.</summary>
     public void EnsureCapacity(int quadVertexCount)
     {
-        if (quadVertexCount < capacity)
+        if (quadVertexCount <= capacity)
             return;
 
         var newCapacity = (int)BitOperations.RoundUpToPowerOf2((uint)quadVertexCount + 1u);

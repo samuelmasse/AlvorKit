@@ -29,12 +29,7 @@ public class Camera3D
     public Vec3 Right => right;
 
     /// <summary>Adds radians to the current rotation, wrapping each component into one turn.</summary>
-    public void Rotate(Vec3 delta)
-    {
-        rotation.X = RotateAngle(rotation.X, delta.X);
-        rotation.Y = RotateAngle(rotation.Y, delta.Y);
-        rotation.Z = RotateAngle(rotation.Z, delta.Z);
-    }
+    public void Rotate(Vec3 delta) => rotation = Vec3.Modulo(rotation + delta, float.Tau);
 
     /// <summary>Adds yaw and pitch radians to the current rotation.</summary>
     public void Rotate(Vec2 delta) => Rotate((delta.X, delta.Y, 0));
@@ -48,7 +43,7 @@ public class Camera3D
             rotation.Y = DegreesToRadians(89.9f);
     }
 
-    /// <summary>Recomputes look, up, right, and front vectors from the current rotation.</summary>
+    /// <summary>Recomputes look, up, right, and front vectors from yaw (X) and pitch (Y).</summary>
     public void ComputeVectors()
     {
         lookAt = (0, 0, -1);
@@ -64,16 +59,6 @@ public class Camera3D
         var pitch = Quat.CreateFromAxisAngle(right, rotation.Y);
         lookAt = pitch * lookAt;
         up = pitch * up;
-    }
-
-    private static float RotateAngle(float angle, float delta)
-    {
-        angle += delta;
-        if (angle > float.Tau)
-            angle -= float.Tau;
-        else if (angle < 0)
-            angle += float.Tau;
-        return angle;
     }
 
     private static float DegreesToRadians(float degrees) => degrees * float.Pi / 180f;

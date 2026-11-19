@@ -4,7 +4,7 @@ namespace AlvorKit;
 [Root]
 public class RootShutdown(RootFailSafeConfig failSafe, RootScreen screen)
 {
-    private bool started;
+    private volatile bool started;
 
     /// <summary>Gets whether shutdown has started.</summary>
     public bool Started => started;
@@ -18,9 +18,12 @@ public class RootShutdown(RootFailSafeConfig failSafe, RootScreen screen)
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
     }
 
-    /// <summary>Removes this root's shutdown hooks on unload.</summary>
+    /// <summary>Ends shutdown callbacks' access to this window before the host is torn down.</summary>
     public void Unregister()
     {
+        lock (this)
+            started = true;
+
         Console.CancelKeyPress -= OnCancelKeyPress;
         AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
         AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
@@ -32,43 +35,24 @@ public class RootShutdown(RootFailSafeConfig failSafe, RootScreen screen)
         ShutDown(true);
     }
 
-    private void OnProcessExit(object? sender, EventArgs e) => ShutDown(false);
+    private void OnProcessExit(object? sender, EventArgs e) => ShutDown(true);
 
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e) => OnUnhandledException();
 
     /// <summary>Applies the root's shutdown policy when an unhandled exception ends the process.</summary>
-    internal void OnUnhandledException()
-    {
-        if (failSafe.Enabled)
-            ShutDown(false);
-        else
-            started = true;
-    }
+    internal void OnUnhandledException() => ShutDown(failSafe.Enabled);
 
     /// <summary>Marks shutdown and closes the screen when it is still safe to reach the host window.</summary>
-    private void ShutDown(bool cancel)
+    private void ShutDown(bool closeWindow)
     {
         lock (this)
         {
-            if (!started)
-            {
-                started = true;
-                if ((cancel || ScreenIsStillAlive()) && !screen.IsExiting)
-                    screen.Close();
-            }
-        }
-    }
+            if (started)
+                return;
 
-    private bool ScreenIsStillAlive()
-    {
-        try
-        {
-            _ = screen.MonitorSize;
-            return true;
-        }
-        catch
-        {
-            return false;
+            started = true;
+            if (closeWindow && !screen.IsExiting)
+                screen.Close();
         }
     }
 }

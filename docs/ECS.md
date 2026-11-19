@@ -36,12 +36,12 @@ small program. For the complete Indexed mutation contract, read
 
 ## Package Setup
 
-A project that declares and uses ECS components references the base package and
-the component generator:
+Games receive `AlvorKit.ECS.Indexed` and `AlvorKit.ECS` transitively through
+`AlvorKit.Engine.Root`. Projects that declare components also need the
+component generator as a build-time analyzer:
 
 ```xml
 <ItemGroup>
-    <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.ECS\AlvorKit.ECS.csproj" />
     <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.ECS.Generator\AlvorKit.ECS.Generator.csproj"
         OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 </ItemGroup>
@@ -51,23 +51,9 @@ the component generator:
 </ItemGroup>
 ```
 
-Add the Indexed package when a game Ent scope maintains bags, observes
-component writes, or keeps derived indexes:
-
-```xml
-<ItemGroup>
-    <ProjectReference Include="$(AlvorKitRoot)src\AlvorKit.ECS.Indexed\AlvorKit.ECS.Indexed.csproj" />
-</ItemGroup>
-
-<ItemGroup>
-    <Using Include="AlvorKit" />
-</ItemGroup>
-```
-
-Keep the references in the package that owns the Ent component declarations
-and scope. Do not add ECS references to unrelated packages merely to pass an
-Ent through them; preserve the dependency direction described in
-[`ProjectSplitModel.md`](ProjectSplitModel.md).
+Standalone projects can reference `AlvorKit.ECS` directly for components and
+arenas, or `AlvorKit.ECS.Indexed` when they also need bags, hooks, or indexes.
+The Indexed package includes base ECS transitively.
 
 ## Declare Components
 

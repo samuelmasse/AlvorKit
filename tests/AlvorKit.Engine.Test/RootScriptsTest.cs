@@ -104,9 +104,9 @@ public sealed class RootScriptsTest
         CollectionAssert.AreEqual(new Script[] { added, first, pending, last }, visited);
     }
 
-    /// <summary>Nested callbacks see removals, and an exception releases the pass so additions can run next time.</summary>
+    /// <summary>Nested callbacks see removals immediately and additions join the next outer pass.</summary>
     [TestMethod]
-    public void Dispatch_NestedFailure_PreservesRegistrationChanges()
+    public void Dispatch_NestedPass_PreservesRegistrationOrder()
     {
         var scripts = new RootScripts();
         var first = new TrackingScript(0);
@@ -116,18 +116,18 @@ public sealed class RootScriptsTest
         scripts.Add(survivor);
         var visited = new List<Script>();
 
-        Assert.ThrowsExactly<InvalidOperationException>(() => scripts.Dispatch(script =>
+        scripts.Dispatch(script =>
         {
-            scripts.Remove(script);
-            scripts.Add(added);
-            scripts.Dispatch(nested =>
+            visited.Add(script);
+            if (script == first)
             {
-                visited.Add(nested);
-                throw new InvalidOperationException();
-            });
-        }));
+                scripts.Remove(first);
+                scripts.Add(added);
+                scripts.Dispatch(visited.Add);
+            }
+        });
 
-        CollectionAssert.AreEqual(new Script[] { survivor }, visited);
+        CollectionAssert.AreEqual(new Script[] { first, survivor, survivor }, visited);
         visited.Clear();
         scripts.Dispatch(visited.Add);
         CollectionAssert.AreEqual(new Script[] { added, survivor }, visited);

@@ -50,16 +50,17 @@ public sealed class GeometryCameraTest
         Assert.AreNotEqual(default, camera.Front);
     }
 
-    /// <summary>Camera rotation wraps above and below one full turn.</summary>
+    /// <summary>Camera rotation wraps positive, negative, and exact multi-turn deltas.</summary>
     [TestMethod]
     public void Camera3D_Rotate_WrapsAngles()
     {
         var camera = new Camera3D();
 
-        camera.Rotate(new Vec3(float.Tau + 0.25f, -0.25f, 0));
+        camera.Rotate((4 * float.Tau + 0.25f, -3 * float.Tau - 0.25f, 2 * float.Tau));
 
         Assert.AreEqual(0.25f, camera.Rotation.X, 0.0001f);
         Assert.AreEqual(float.Tau - 0.25f, camera.Rotation.Y, 0.0001f);
+        Assert.AreEqual(0, camera.Rotation.Z, 0.0001f);
     }
 
     /// <summary>Camera pitch clamping prevents rotations through the vertical poles.</summary>

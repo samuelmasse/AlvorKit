@@ -31,12 +31,12 @@ internal partial class FontAtlas : IDisposable
     private bool full;
 
     /// <summary>Creates an empty atlas.</summary>
-    internal FontAtlas(GlLayer gl, SpriteBatch batch, FontBuffer buffer)
+    internal FontAtlas(GlLayer gl, SpriteBatch batch, FontBuffer buffer, GlTextureMagFilter magFilter)
     {
         this.gl = gl;
         this.batch = batch;
         this.buffer = buffer;
-        tablet = new FontTablet(gl);
+        tablet = new FontTablet(gl, magFilter);
         used = new int[tablet.Size];
     }
 

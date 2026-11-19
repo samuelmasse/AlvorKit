@@ -9,12 +9,10 @@ public class RootMetrics
 
     internal TickMetric FrameMetric => frameMetric;
 
-    internal TickMetricWindow FrameMetricWindow => frameMetricWindow;
-
     /// <summary>Gets the rolling frame metric.</summary>
     public TickMetricValue Frame => frameMetric.Value;
 
-    /// <summary>Gets the latest timer-backed frame metric window.</summary>
+    /// <summary>Gets the latest one-second sample of completed frames.</summary>
     public TickMetricValue FrameWindow => frameMetricWindow.Value;
 
     /// <summary>Creates frame metrics with a one-second rolling duration.</summary>
@@ -24,9 +22,13 @@ public class RootMetrics
         frameMetricWindow = new(frameMetric);
     }
 
-    /// <summary>Starts timer-backed metric sampling.</summary>
-    internal void Start() => frameMetricWindow.Start();
+    /// <summary>Begins measuring the first frame and sampling frame intervals.</summary>
+    internal void Start()
+    {
+        frameMetric.Start();
+        frameMetricWindow.Start();
+    }
 
-    /// <summary>Stops timer-backed metric sampling.</summary>
+    /// <summary>Freezes the final frame window on unload.</summary>
     internal void Stop() => frameMetricWindow.Stop();
 }

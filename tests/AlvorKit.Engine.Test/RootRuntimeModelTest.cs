@@ -90,7 +90,7 @@ public sealed class RootRuntimeModelTest
     public void RootShutdown_ClosesByDefaultAndHonorsARootOverride()
     {
         var injector = new Injector();
-        var defaultHost = new FakeWindowHost();
+        var defaultHost = new FakeWindowHost { ThrowOnMonitorSize = true };
         var defaultRoot = injector.Scope<RootScope>().With(new RootScreen(new WindowLoop(defaultHost)));
         var disabledHost = new FakeWindowHost();
         var disabledRoot = injector.Scope<RootScope>()
@@ -108,19 +108,19 @@ public sealed class RootRuntimeModelTest
         Assert.IsFalse(disabledHost.IsExiting);
     }
 
-    /// <summary>Root metrics exposes the old frame metric and timer-backed frame window.</summary>
+    /// <summary>The root measures its first frame from startup and freezes the interval on unload.</summary>
     [TestMethod]
     public void RootMetrics_ExposesFrameMetricAndWindow()
     {
         var metrics = new RootMetrics();
 
-        metrics.FrameMetric.Start();
-        metrics.FrameMetric.End();
         metrics.Start();
+        metrics.FrameMetric.End();
         metrics.Stop();
 
         Assert.AreEqual(1, metrics.Frame.Ticks);
         Assert.IsTrue(metrics.Frame.Last >= 0);
+        Assert.AreEqual(metrics.Frame.Last, metrics.Frame.Average);
     }
 
     private sealed class TrackingState : State

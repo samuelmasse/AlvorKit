@@ -67,7 +67,7 @@ namespace AlvorKit
             quadIndexBuffer.EnsureCapacity(vertices.Length);
             count = quadIndexBuffer.IndexCount(vertices.Length);
 
-            controlsToml.AddFromFile("Controls.toml");
+            controlsToml.AddFromFile(files.Resolve("Controls.toml"));
 
             screen.Title = "AlvorKit.Engine.Demo.TextureCube";
             screen.IsVisible = true;
